@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.0" name="jboss-threads" group="org.jboss.threads">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module group="org.jboss.logging" name="jboss-logging"/>
+    </dependencies>
+</module>

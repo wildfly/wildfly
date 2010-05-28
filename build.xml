@@ -1,0 +1,22 @@
+<project name="module-repository" basedir="." default="build-repo">
+	<import file="lib.xml" />
+    
+    <target name="init">
+        <mkdir dir="${module.repo.output.dir}"/>
+    </target>
+    
+    <target name="build-repo" depends="init">
+        <module-def group="org.jboss.logging" artifact="jboss-logging">
+            <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
+        </module-def>
+
+        <module-def group="org.jboss.threads" artifact="jboss-threads">
+            <resource group="org.jboss.threads" artifact="jboss-threads" version="2.0.0.CR4"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="slf4j-api">
+            <resource group="org.slf4j" artifact="slf4j-api" version="1.5.9.RC1"/>
+            <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logging" version="1.0.2.GA"/>
+        </module-def>
+    </target>
+</project>

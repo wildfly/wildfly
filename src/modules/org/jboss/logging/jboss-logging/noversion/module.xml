@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.0" name="jboss-logging" group="org.jboss.logging">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module group="org.jboss.logmanager" name="jboss-logmanager"/>
+        <module group="log4j" name="log4j"/>
+    </dependencies>
+</module>

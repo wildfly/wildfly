@@ -1,0 +1,78 @@
+<project name="module-repository-lib" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+    
+    <path id="maven-ant-tasks.classpath" path="maven-ant-tasks-2.1.0.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+        uri="antlib:org.apache.maven.artifact.ant"
+        classpathref="maven-ant-tasks.classpath" />
+
+    <property name="src.dir" value="src"/>
+    <property name="module.repo.src.dir" value="${src.dir}/modules"/>
+    <property name="output.dir" value="target"/>
+    <property name="module.repo.output.dir" value="${output.dir}/modules"/>
+    <property name="module.xml" value="module.xml"/>
+    
+    <macrodef name="module-def">
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <attribute name="version" default="noversion"/>
+        <element name="resources" implicit="yes"/>
+                
+        <sequential>
+            <echo message="Initializing module -> @{group}:@{artifact}"/>
+            <!-- Figure out the correct module path -->
+            <define-module-dir group="@{group}" artifact="@{artifact}" version="@{version}"/>
+            <!-- Make the module output director -->
+            <mkdir dir="${module.repo.output.dir}/${current.module.path}"/>
+            
+            <!-- Copy the module.xml to the output director -->
+            <copy file="${module.repo.src.dir}/${current.module.path}/${module.xml}" toDir="${module.repo.output.dir}/${current.module.path}"/>
+            
+            <!-- Process the resource -->
+            <resources/>
+            
+            <!-- Some final cleanup -->
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+              <replacetoken><![CDATA[
+        <!-- Insert resources here -->]]></replacetoken>
+              <replacevalue></replacevalue>
+            </replace>
+        </sequential>
+    </macrodef>
+    
+    <scriptdef name="define-module-dir" language="javascript">
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <attribute name="version"/>
+        <![CDATA[
+            group = attributes.get("group");
+            group = group.replace(".", "/");
+            project.setProperty("current.module.path", group + "/" + attributes.get("artifact") + "/" + attributes.get("version"));
+        ]]>
+    </scriptdef>
+    
+    <macrodef name="resource">
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <attribute name="version"/>
+        
+        <sequential>
+            <!-- Copy the jar to the module dir -->
+            <artifact:dependencies>
+                <dependency groupId="@{group}" artifactId="@{artifact}" version="@{version}" scope="provided"/>
+            </artifact:dependencies>
+            <copy todir="${module.repo.output.dir}/${current.module.path}">
+                <fileset refid="@{group}:@{artifact}:jar" />
+                <mapper type="flatten" />
+            </copy>
+
+            <!-- Update the resource entry in module.xml -->
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+              <replacetoken><![CDATA[<!-- Insert resources here -->]]></replacetoken>
+              <replacevalue><![CDATA[<resource-root path="@{artifact}-@{version}.jar"/>
+        <!-- Insert resources here -->]]></replacevalue>
+            </replace>
+        </sequential>
+        
+    </macrodef>
+    
+</project>
