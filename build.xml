@@ -68,4 +68,6 @@
         <delete file="maven-ant-tasks.jar"/>
         <delete dir="target"/>
     </target>
+
+    <target name="all" depends="build-repo"/>
 </project>
