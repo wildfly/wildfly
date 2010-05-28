@@ -14,3 +14,6 @@ target
 *.ipr
 *.iws
 /.idea
+
+# Ignore maven-ant-tasks
+maven-ant-tasks.jar
