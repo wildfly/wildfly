@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project name="module-repository" basedir="." default="build-repo">
+<project name="module-repository" basedir="." default="build-repo" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
     <import file="lib.xml"/>
 
@@ -42,6 +42,14 @@
     </target>
 
     <target name="build-repo" depends="init">
+        <artifact:dependencies>
+            <dependency groupid="org.jboss.modules" artifactid="jboss-modules" version="1.0.0.Beta1-SNAPSHOT" scope="provided"/>
+        </artifact:dependencies>
+
+        <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
+
+        <!-- All modules.  Keep alphabetical -->
+
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
         </module-def>
@@ -54,5 +62,10 @@
             <resource group="org.slf4j" artifact="slf4j-api" version="1.5.9.RC1"/>
             <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logging" version="1.0.2.GA"/>
         </module-def>
+    </target>
+
+    <target name="clean">
+        <delete file="maven-ant-tasks.jar"/>
+        <delete dir="target"/>
     </target>
 </project>
