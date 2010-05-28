@@ -22,12 +22,21 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="slf4j-api" group="org.slf4j">
+<module xmlns="urn:jboss:module:1.0" name="jboss-msc" group="org.jboss.msc">
+
+    <main-class name="org.jboss.msc.Version"/>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module group="org.jboss.logmanager" name="jboss-logmanager"/>
+        <module group="org.jboss.logging" name="jboss-logging"/>
+
+        <!-- Optional deps -->
+
+        <module group="javax.inject" name="javax.inject" optional="true"/>
+        <module group="org.jboss.threads" name="jboss-threads" optional="true"/>
+        <module group="org.jboss" name="jboss-vfs" optional="true"/>
     </dependencies>
 </module>

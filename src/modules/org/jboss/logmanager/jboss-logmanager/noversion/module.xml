@@ -22,12 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="slf4j-api" group="org.slf4j">
+<module xmlns="urn:jboss:module:1.0" name="jboss-logmanager" group="org.jboss.logmanager">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module group="org.jboss.logmanager" name="jboss-logmanager"/>
     </dependencies>
 </module>
