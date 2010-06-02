@@ -54,6 +54,10 @@
             <resource group="javax.inject" artifact="javax.inject" version="1"/>
         </module-def>
 
+        <module-def group="org.jboss.as" artifact="example-bootstrap">
+            <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
+        </module-def>
+
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
         </module-def>
