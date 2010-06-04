@@ -57,6 +57,10 @@
         <module-def group="org.jboss.as" artifact="example-bootstrap">
             <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
         </module-def>
+        
+        <module-def group="org.jboss.deployers" artifact="jboss-service-deployer">
+            <resource group="org.jboss.deployers" artifact="jboss-service-deployer" version="1.0.0-SNAPSHOT"/>
+        </module-def>
 
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
@@ -77,6 +81,14 @@
         <module-def group="org.slf4j" artifact="slf4j-api">
             <resource group="org.slf4j" artifact="slf4j-api" version="1.5.9.RC1"/>
             <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager" version="1.0.0.CR2"/>
+        </module-def>
+        
+        <module-def group="org.jboss" artifact="jboss-vfs">
+            <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0.CR5"/>
+        </module-def>
+
+        <module-def group="org.jboss" artifact="jboss-common-core">
+            <resource group="org.jboss" artifact="jboss-common-core" version="2.2.17.GA"/>
         </module-def>
     </target>
 
