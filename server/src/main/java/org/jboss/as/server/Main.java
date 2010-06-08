@@ -23,8 +23,21 @@
 package org.jboss.as.server;
 
 /**
+ * The main-class entry point for server instances.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Main {
 
+    private Main() {
+    }
+
+    /**
+     * The main method.
+     *
+     * @param args the command-line arguments
+     */
+    public static void main(String[] args) {
+        
+    }
 }
