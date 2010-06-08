@@ -61,7 +61,7 @@
         <module-def group="org.jboss.deployers" artifact="jboss-service-deployer">
             <resource group="org.jboss.deployers" artifact="jboss-service-deployer" version="1.0.0-SNAPSHOT"/>
         </module-def>
-
+        
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
         </module-def>
@@ -73,7 +73,11 @@
         <module-def group="org.jboss.msc" artifact="jboss-msc">
             <resource group="org.jboss.msc" artifact="jboss-msc" version="1.0.0.CR1-SNAPSHOT"/>
         </module-def>
-
+        
+        <module-def group="org.jboss.naming" artifact="jnpserver">
+            <resource group="org.jboss.naming" artifact="jnpserver" version="5.0.4.GA"/>
+        </module-def>
+        
         <module-def group="org.jboss.threads" artifact="jboss-threads">
             <resource group="org.jboss.threads" artifact="jboss-threads" version="2.0.0.CR4"/>
         </module-def>
