@@ -58,6 +58,18 @@
             <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
         </module-def>
         
+        <module-def group="org.jboss.as" artifact="domain-controller">
+            <resource group="org.jboss.as" artifact="domain-controller" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="server">
+            <resource group="org.jboss.as" artifact="server" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="server-manager">
+            <resource group="org.jboss.as" artifact="server-manager" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
         <module-def group="org.jboss.deployers" artifact="jboss-service-deployer">
             <resource group="org.jboss.deployers" artifact="jboss-service-deployer" version="1.0.0-SNAPSHOT"/>
         </module-def>
