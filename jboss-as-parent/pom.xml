@@ -34,6 +34,10 @@
 
     <name>JBoss Application Server: Parent</name>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -53,12 +57,13 @@
                 <!-- Attach sources -->
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
+                    <version>2.1.1</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
                             <phase>verify</phase>
                             <goals>
-                                <goal>jar</goal>
+                                <goal>jar-no-fork</goal>
                             </goals>
                         </execution>
                     </executions>
