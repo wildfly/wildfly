@@ -1,6 +1,13 @@
-*.iml
-*.iws
-*.ipr
+# ignore .svn metadata files
+.svn
+# ignore Maven generated target folders
 target
-*.jar
-*.zip
+# ignore eclipse files
+.project
+.classpath
+.settings
+# ignore IDEA files
+*.iml
+*.ipr
+*.iws
+/.idea
