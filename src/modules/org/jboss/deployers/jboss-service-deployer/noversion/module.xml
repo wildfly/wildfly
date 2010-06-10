@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module group="system" name="system"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss" name="jboss-vfs"/>
