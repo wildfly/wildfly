@@ -22,6 +22,17 @@
 
 package org.jboss.as.server;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
+
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+
 /**
  * The main-class entry point for server instances.
  *
@@ -39,5 +50,43 @@ public final class Main {
      */
     public static void main(String[] args) {
         
+        // Grab copies of our streams.
+        final InputStream in = System.in;
+        final PrintStream out = System.out;
+        final PrintStream err = System.err;
+
+        // Install JBoss Stdio to avoid any nasty crosstalk.
+        StdioContext.install();
+        final StdioContext context = StdioContext.create(
+            new NullInputStream(),
+            new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
+            new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
+        );
+        StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
+
+        out.println("200 Server Ready");
+        try {
+            for (;;) {
+                final String command = readCommand(in);
+                if (command == null) break;
+                out.println("000 Got command: " + command);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(err);
+            System.exit(1);
+        }
+        System.exit(0);
+    }
+
+    private static String readCommand(final InputStream in) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        int c;
+        while ((c = in.read()) != -1 && c != '\n') {
+            b.append((char) (c & 0xff));
+        }
+        if (b.length() == 0 && c == -1) {
+            return null;
+        }
+        return b.toString();
     }
 }
