@@ -95,6 +95,10 @@
             <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager" version="1.0.0.CR2"/>
         </module-def>
         
+        <module-def group="org.jboss.stdio" artifact="jboss-stdio">
+            <resource group="org.jboss.stdio" artifact="jboss-stdio" version="1.0.0.CR3"/>
+        </module-def>
+
         <module-def group="org.jboss" artifact="jboss-vfs">
             <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0.CR5"/>
         </module-def>
