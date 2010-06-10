@@ -34,6 +34,7 @@
     <name>JBoss Application Server Aggregator</name>
 
     <modules>
+        <module>jboss-as-parent</module>
         <module>server-manager</module>
         <module>server</module>
         <module>domain-controller</module>
