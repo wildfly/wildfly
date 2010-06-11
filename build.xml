@@ -54,6 +54,8 @@
             <resource group="javax.inject" artifact="javax.inject" version="1"/>
         </module-def>
 
+        <module-def group="javax.management" artifact="management-api"/>
+
         <module-def group="org.jboss.as" artifact="example-bootstrap">
             <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
         </module-def>
@@ -81,6 +83,8 @@
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
             <resource group="org.jboss.logmanager" artifact="jboss-logmanager" version="1.2.0.CR2"/>
         </module-def>
+
+        <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
         <module-def group="org.jboss.msc" artifact="jboss-msc">
             <resource group="org.jboss.msc" artifact="jboss-msc" version="1.0.0.CR1-SNAPSHOT"/>

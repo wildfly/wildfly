@@ -22,16 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="jboss-service-deployer" group="org.jboss.deployers">
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
-
+<module xmlns="urn:jboss:module:1.0" name="management-api" group="javax.management">
     <dependencies>
-        <module group="javax.management" name="management-api"/>
-        <module group="org.jboss.modules" name="jboss-modules"/>
-        <module group="org.jboss.msc" name="jboss-msc"/>
-        <module group="org.jboss.logging" name="jboss-logging"/>
-        <module group="org.jboss" name="jboss-vfs"/>
+        <module group="system" name="system" export="true">
+            <exports>
+                <exclude path="**"/>
+                <include path="javax/management"/>
+            </exports>
+        </module>
     </dependencies>
 </module>

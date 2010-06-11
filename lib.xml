@@ -10,7 +10,7 @@
         <attribute name="group"/>
         <attribute name="artifact"/>
         <attribute name="version" default="noversion"/>
-        <element name="resources" implicit="yes"/>
+        <element name="resources" implicit="yes" optional="yes"/>
                 
         <sequential>
             <echo message="Initializing module -> @{group}:@{artifact}"/>
