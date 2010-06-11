@@ -104,7 +104,7 @@
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-vfs">
-            <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0.CR5"/>
+            <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0-SNAPSHOT"/>
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-common-core">
