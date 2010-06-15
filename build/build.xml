@@ -114,6 +114,10 @@
         <module-def group="org.jboss" artifact="jboss-common-core">
             <resource group="org.jboss" artifact="jboss-common-core" version="2.2.17.GA"/>
         </module-def>
+        
+        <module-def group="org.jboss" artifact="staxmapper">
+            <resource group="org.jboss" artifact="staxmapper" version="1.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
     </target>
 
     <target name="clean-target">
