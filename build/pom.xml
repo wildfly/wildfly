@@ -28,18 +28,37 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as</artifactId>
+    <artifactId>jboss-as-build</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Aggregator</name>
-
-    <modules>
-        <module>jboss-as-parent</module>
-        <module>server-manager</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>build</module>
-    </modules>
-
+    <name>JBoss Application Server Build</name>
     <packaging>pom</packaging>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.4</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-dist</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <ant antfile="build.xml"  inheritRefs="true">
+                                    <target name="all"/>
+                                </ant>
+                            </tasks>
+                        </configuration>
+                   </execution>
+               </executions>
+           </plugin>
+       </plugins>
+   </build>
+    
 </project>
