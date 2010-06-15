@@ -31,7 +31,7 @@
     <artifactId>jboss-as-build</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Build</name>
+    <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
     
     <build>

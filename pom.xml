@@ -31,7 +31,7 @@
     <artifactId>jboss-as</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server Aggregator</name>
+    <name>JBoss Application Server: Aggregator</name>
 
     <modules>
         <module>jboss-as-parent</module>
