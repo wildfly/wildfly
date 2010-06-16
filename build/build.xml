@@ -1,0 +1,132 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat Middleware LLC, and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project name="module-repository" basedir="." default="build-repo" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+    <import file="lib.xml"/>
+
+    <path id="maven-ant-tasks.classpath" path="maven-ant-tasks.jar" />
+
+    <target name="init" depends="maven-ant-tasks">
+        <mkdir dir="${module.repo.output.dir}"/>
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+            uri="antlib:org.apache.maven.artifact.ant"
+            classpathref="maven-ant-tasks.classpath" />
+    </target>
+
+    <target name="maven-ant-tasks-check">
+        <available file="maven-ant-tasks.jar" property="maven-ant-tasks.exists"/>
+    </target>
+
+    <target name="maven-ant-tasks" depends="maven-ant-tasks-check" unless="maven-ant-tasks.exists">
+        <get src="http://mirror.cc.columbia.edu/pub/software/apache/maven/binaries/maven-ant-tasks-2.1.0.jar" dest="maven-ant-tasks.jar"/>
+    </target>
+
+    <target name="build-repo" depends="clean-target,init">
+        <artifact:dependencies>
+            <dependency groupid="org.jboss.modules" artifactid="jboss-modules" version="1.0.0.Beta1-SNAPSHOT" scope="provided"/>
+        </artifact:dependencies>
+
+        <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
+
+        <!-- All modules.  Keep alphabetical -->
+
+        <module-def group="javax.inject" artifact="javax.inject">
+            <resource group="javax.inject" artifact="javax.inject" version="1"/>
+        </module-def>
+
+        <module-def group="javax.management" artifact="management-api"/>
+
+        <module-def group="org.jboss.as" artifact="example-bootstrap">
+            <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
+        </module-def>
+        
+        <module-def group="org.jboss.as" artifact="domain-controller">
+            <resource group="org.jboss.as" artifact="domain-controller" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="server">
+            <resource group="org.jboss.as" artifact="server" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="server-manager">
+            <resource group="org.jboss.as" artifact="server-manager" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss.deployers" artifact="jboss-service-deployer">
+            <resource group="org.jboss.deployers" artifact="jboss-service-deployer" version="1.0.0-SNAPSHOT"/>
+        </module-def>
+        
+        <module-def group="org.jboss.logging" artifact="jboss-logging">
+            <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
+        </module-def>
+
+        <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
+            <resource group="org.jboss.logmanager" artifact="jboss-logmanager" version="1.2.0.CR2"/>
+        </module-def>
+
+        <module-def group="org.jboss.modules" artifact="jboss-modules"/>
+
+        <module-def group="org.jboss.msc" artifact="jboss-msc">
+            <resource group="org.jboss.msc" artifact="jboss-msc" version="1.0.0.CR1-SNAPSHOT"/>
+        </module-def>
+        
+        <module-def group="org.jboss.naming" artifact="jnpserver">
+            <resource group="org.jboss.naming" artifact="jnpserver" version="5.0.4.GA"/>
+        </module-def>
+        
+        <module-def group="org.jboss.threads" artifact="jboss-threads">
+            <resource group="org.jboss.threads" artifact="jboss-threads" version="2.0.0.CR4"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="slf4j-api">
+            <resource group="org.slf4j" artifact="slf4j-api" version="1.5.9.RC1"/>
+            <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager" version="1.0.0.CR2"/>
+        </module-def>
+        
+        <module-def group="org.jboss.stdio" artifact="jboss-stdio">
+            <resource group="org.jboss.stdio" artifact="jboss-stdio" version="1.0.0.CR3"/>
+        </module-def>
+
+        <module-def group="org.jboss" artifact="jboss-vfs">
+            <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0-SNAPSHOT"/>
+        </module-def>
+
+        <module-def group="org.jboss" artifact="jboss-common-core">
+            <resource group="org.jboss" artifact="jboss-common-core" version="2.2.17.GA"/>
+        </module-def>
+        
+        <module-def group="org.jboss" artifact="staxmapper">
+            <resource group="org.jboss" artifact="staxmapper" version="1.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+    </target>
+
+    <target name="clean-target">
+        <delete dir="target"/>
+    </target>
+
+    <target name="clean" depends="clean-target">
+        <delete file="maven-ant-tasks.jar"/>
+    </target>
+
+    <target name="all" depends="build-repo"/>
+</project>

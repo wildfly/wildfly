@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.0" name="jboss-common-core" group="org.jboss">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module group="org.jboss.logging" name="jboss-logging"/>
+        <!-- <module group="stax" name="stax-api"/> -->
+    </dependencies>
+</module>
