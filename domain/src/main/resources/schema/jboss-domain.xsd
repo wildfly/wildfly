@@ -22,25 +22,35 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:1.0"
+            xmlns="urn:jboss:domain:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as</artifactId>
-    <version>7.0.0.Beta1-SNAPSHOT</version>
+    <!--
+      ~ Basic types.
+      ~
+      ~ These types are used throughout the schema.
+      -->
 
-    <name>JBoss Application Server: Aggregator</name>
+    <xs:complexType name="location">
+        <xs:attribute name="location" type="xs:anyURI" use="required"/>
+        <!-- the interface to bind to for outbound connections to the given location -->
+        <xs:attribute name="bind-interface" type="xs:string" use="optional"/>
+    </xs:complexType>
 
-    <modules>
-        <module>jboss-as-parent</module>
-        <module>domain</module>
-        <module>server-manager</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>build</module>
-    </modules>
+    <xs:complexType name="arguments">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="argument" type="argument"/>
+        </xs:choice>
+    </xs:complexType>
 
-    <packaging>pom</packaging>
-</project>
+    <xs:complexType name="argument">
+        <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    
+
+</xs:schema>
