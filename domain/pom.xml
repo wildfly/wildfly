@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat Middleware LLC, and individual contributors
@@ -27,20 +26,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-parent</artifactId>
+        <version>7.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as</artifactId>
-    <version>7.0.0.Beta1-SNAPSHOT</version>
+    <artifactId>domain</artifactId>
 
-    <name>JBoss Application Server: Aggregator</name>
+    <name>JBoss Application Server: Domain Core</name>
 
-    <modules>
-        <module>jboss-as-parent</module>
-        <module>domain</module>
-        <module>server-manager</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>build</module>
-    </modules>
-
-    <packaging>pom</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>staxmapper</artifactId>
+        </dependency>
+    </dependencies>
 </project>

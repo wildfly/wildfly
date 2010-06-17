@@ -85,6 +85,12 @@
                 <artifactId>jboss-modules</artifactId>
                 <version>1.0.0.Beta1-SNAPSHOT</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>staxmapper</artifactId>
+                <version>1.0.0.Beta1-SNAPSHOT</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
