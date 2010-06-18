@@ -31,13 +31,16 @@ import java.util.Map;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum DomainElement {
-    DOMAIN("domain"),
+    // must be first
+    UNKNOWN(null),
 
+    // Domain 1.0 elements in alpha order
+    DOMAIN("domain"),
+    DEPLOYMENT("deployment"),
 
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),
 
-    UNKNOWN(null)
     ;
 
     private final String name;

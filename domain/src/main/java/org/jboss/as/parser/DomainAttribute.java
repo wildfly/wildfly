@@ -31,9 +31,13 @@ import java.util.Map;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum DomainAttribute {
-    ID("id"),
+    // always first
+    UNKNOWN(null),
 
-    UNKNOWN(null)
+    // domain 1.0 attributes in alpha order
+    NAME("name"),
+
+
     ;
 
     private final String name;

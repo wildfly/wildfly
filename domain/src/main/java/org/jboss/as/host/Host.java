@@ -35,11 +35,10 @@ public final class Host extends AbstractModel<Host> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
-    protected Host(final String id) {
-        super(id);
+    protected Host() {
     }
 
-    public long checksum() {
+    public long elementHash() {
         return 0;
     }
 
@@ -47,6 +46,10 @@ public final class Host extends AbstractModel<Host> {
         return null;
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    }
+
+    public boolean isSameElement(final Host other) {
+        return true;
     }
 }

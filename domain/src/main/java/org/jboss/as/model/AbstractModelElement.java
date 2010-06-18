@@ -35,20 +35,17 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
 
     private static final long serialVersionUID = 66064050420378211L;
 
-    private final String id;
-
-    protected AbstractModelElement(final String id) {
-        this.id = id;
+    protected AbstractModelElement() {
     }
 
     /**
-     * Calculate a checksum of this model element.  This checksum is used to verify the state of the model
+     * Calculate a hash of this model element's complete contents.  This value is used to verify the state of the model
      * after applying a change; it is unlikely (but not guaranteed) to return the same value for two complete model
      * representations that differ by either small or large changes.
      *
      * @return the checksum
      */
-    public abstract long checksum();
+    public abstract long elementHash();
 
     /**
      * Get the difference between this model element and another, as a list of updates which, when applied, would make
@@ -60,11 +57,21 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     public abstract Collection<? extends AbstractModelUpdate<?>> getDifference(E other);
 
     /**
-     * Get the XML ID that was declared with this element, if any.
+     * Add this element to the model.
      *
-     * @return the ID or {@code null} for none
+     * @param model the model to add to
+     * @throws IllegalArgumentException if the object is not valid for some reason
      */
-    public String getId() {
-        return id;
+    protected void addToModel(AbstractModel<?> model) throws IllegalArgumentException {
+        model.addElement(this);
     }
+
+    /**
+     * Determine if this model element is the same as (can replace) the other.
+     *
+     * @param other the other element
+     *
+     * @return {@code true} if they are the same element; {@code false} if they differ
+     */
+    public abstract boolean isSameElement(E other);
 }

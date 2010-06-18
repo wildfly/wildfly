@@ -37,7 +37,7 @@ public abstract class AbstractDomainDeployment<E extends AbstractDomainDeploymen
     private boolean disabled;
 
     protected AbstractDomainDeployment(final String id, final String name) {
-        super(id);
+        super();
         this.name = name;
     }
 

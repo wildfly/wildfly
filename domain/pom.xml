@@ -42,5 +42,10 @@
             <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
     </dependencies>
 </project>

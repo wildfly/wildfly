@@ -23,6 +23,7 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
+import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -35,23 +36,48 @@ import javax.xml.stream.XMLStreamWriter;
 public final class DomainServerGroupDeployment extends AbstractDomainElement<DomainServerGroupDeployment> {
     private static final long serialVersionUID = -7282640684801436543L;
 
-    private final AbstractDomainDeployment domainDeployment;
-    private final DomainServerGroup domainServerGroup;
+    private final String deploymentName;
+    private final byte[] deploymentHash;
+    // todo: deployment overrides
 
-    public DomainServerGroupDeployment(final String id, final AbstractDomainDeployment domainDeployment, final DomainServerGroup domainServerGroup) {
-        super(id);
-        this.domainDeployment = domainDeployment;
-        this.domainServerGroup = domainServerGroup;
+    public DomainServerGroupDeployment(final String deploymentName, final byte[] deploymentHash) {
+        if (deploymentName == null) {
+            throw new IllegalArgumentException("deploymentName is null");
+        }
+        if (deploymentHash == null) {
+            throw new IllegalArgumentException("deploymentHash is null");
+        }
+        if (deploymentHash.length != 20) {
+            throw new IllegalArgumentException("deploymentHash is not a valid length");
+        }
+        this.deploymentName = deploymentName;
+        this.deploymentHash = deploymentHash;
     }
 
-    public long checksum() {
-        return 0;
+    /** {@inheritDoc} */
+    public long elementHash() {
+        final byte[] hash = deploymentHash;
+        return deploymentName.hashCode() & 0xFFFFFFFF ^ (
+                (hash[12] & 0xffL) << 56 |
+                (hash[13] & 0xffL) << 48 |
+                (hash[14] & 0xffL) << 40 |
+                (hash[15] & 0xffL) << 32 |
+                (hash[16] & 0xffL) << 24 |
+                (hash[17] & 0xffL) << 16 |
+                (hash[18] & 0xffL) << 8 |
+                (hash[19] & 0xffL) << 0);
     }
 
     public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroupDeployment other) {
+        assert isSameElement(other);
         return null;
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public boolean isSameElement(final DomainServerGroupDeployment other) {
+        return deploymentName.equals(other.deploymentName) && deploymentHash.equals(other.deploymentHash);
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Domain.NAMESPACE, DomainElement.DEPLOYMENT.getLocalName());
     }
 }
