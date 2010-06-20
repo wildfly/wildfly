@@ -67,6 +67,13 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     }
 
     /**
+     * Create a full deep copy of a model element.
+     *
+     * @return the copy
+     */
+    public abstract E clone();
+
+    /**
      * Determine if this model element is the same as (can replace) the other.
      *
      * @param other the other element
