@@ -22,14 +22,17 @@
 
 package org.jboss.as.deployment.item;
 
+import java.io.Serializable;
 import java.util.List;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * A deployment item which acts as some type of JavaEE managed bean.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanDeploymentItem extends DeploymentItem {
+public final class ManagedBeanDeploymentItem implements DeploymentItem, Serializable {
     private final String name;
     private final String className;
     private final String postConstructMethodName;
@@ -39,12 +42,14 @@ public final class ManagedBeanDeploymentItem extends DeploymentItem {
     public static final ServiceName JBOSS_MANAGEDBEAN = ServiceName.JBOSS.append("managedbean");
 
     private static final String BINDING = "binding";
+    private static final long serialVersionUID = -2132700755920008127L;
 
-    protected ManagedBeanDeploymentItem(final String name, final String className, final String postConstructMethodName, final String preDestroyMethodName) {
+    protected ManagedBeanDeploymentItem(final String name, final String className, final String postConstructMethodName, final String preDestroyMethodName, final List<Resource> resources) {
         this.name = name;
         this.className = className;
         this.postConstructMethodName = postConstructMethodName;
         this.preDestroyMethodName = preDestroyMethodName;
+        this.resources = resources;
     }
 
     public String getName() {
@@ -63,9 +68,8 @@ public final class ManagedBeanDeploymentItem extends DeploymentItem {
         return preDestroyMethodName;
     }
 
-    protected DeployedItem install(final BatchBuilder builder) {
+    public void install(final BatchBuilder builder) {
 //        builder.addService(JBOSS_MANAGEDBEAN.append("module-name-here").append(BINDING).append(name), new JNDIBindingService(name));
-        return null;
     }
 
     protected static abstract class Resource {

@@ -20,44 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
-
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+package org.jboss.as.deployment;
 
 /**
- * A deployment within a domain.
+ * An entity which can contain attachments.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public interface Attachable {
 
-    private static final long serialVersionUID = -6410644146472087909L;
+    /**
+     * Get an attachment value.  If no attachment exists for this key, {@code null} is returned.
+     *
+     * @param key
+     * @param <T>
+     * @return
+     */
+    <T> T getAttachment(AttachmentKey<T> key);
 
-    private final String name;
+    /**
+     * Set an attachment value.  If an attachment for this key was already set, return the original value.  If the value
+     * being set is {@code null}, the attachment key is removed.
+     *
+     * @param key the attachment key
+     * @param value the new value
+     * @param <T> the value type
+     * @return the old value, or {@code null} if there was none
+     */
+    <T> T putAttachment(AttachmentKey<T> key, T value);
 
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
-    }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
+    <T> T removeAttachment(AttachmentKey<T> key);
 }

@@ -22,12 +22,16 @@
 
 package org.jboss.as.deployment.item;
 
+import java.io.Serializable;
 import org.jboss.msc.service.BatchBuilder;
 
 /**
- * A general deployment item which can deploy and undeploy itself, and wh
+ * A general deployment item which can deploy itself, either at deploy time or server startup.  Deployment items
+ * must be serializable in order to preserve state when the server is shut down.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DeploymentItem {
+public interface DeploymentItem extends Serializable {
 
     /**
      * Install this item into the batch builder.

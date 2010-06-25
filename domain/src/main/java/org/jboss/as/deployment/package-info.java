@@ -30,11 +30,17 @@
  * <li>Domain Deployment.  This phase runs on the domain controller to install the validated deployment unit into the
  * domain model itself, and coordinate the distribution of the domain update to the relevant servers, using the deployment
  * plan to coordinate distribution appropriately.</li>
- * <li>Descriptor Parsing.  In this phase, a deployer chain is executed on each server over a deployment unit to parse any descriptors
- * add them to the {@link DeploymentUnitContext}.</li>
- * <li>Processing.  In this phase, the deployer chain is executed over the deployment unit context to process descriptors
- * and produce {@link DeploymentItem}s.</li>
+ * <li>Deployment Processing.  In this phase, a chain of {@link DeploymentUnitProcessor}s are executed on each server
+ * over a deployment unit to parse any descriptors, add them to the {@link DeploymentUnitContext}, and transform them into
+ * {@link DeploymentItem}s.</li>
  * <li>Installation.  In this phase, the deployment items are executed to install the actual services.</li>
  * </ol>
+ * <p/>
+ * The deployment items corresponding to a deployment unit are started, stopped, and removed by way of a unit-wide
+ * dependency service.
  */
 package org.jboss.as.deployment;
+
+import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
