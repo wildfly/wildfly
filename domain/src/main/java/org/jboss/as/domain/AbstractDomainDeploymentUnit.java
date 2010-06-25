@@ -23,43 +23,39 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-/**
- * A server group within a {@link Domain}.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- */
-public final class DomainServerGroup extends AbstractDomainElement<DomainServerGroup> {
+public abstract class AbstractDomainDeploymentUnit<E extends AbstractDomainDeploymentUnit<E>> extends AbstractDomainDeployment<E> {
 
-    private static final long serialVersionUID = 3780369374145922407L;
+    private final String fileName;
+    private final byte[] sha1Hash;
 
-    private final String name;
-    private final Map<String, DomainServerGroupDeployment> deploymentMappings = new TreeMap<String, DomainServerGroupDeployment>();
-
-    public DomainServerGroup(final String name) {
-        this.name = name;
+    protected AbstractDomainDeploymentUnit(final String name, final String fileName, final byte[] sha1Hash) {
+        super(name);
+        this.fileName = fileName;
+        this.sha1Hash = sha1Hash;
     }
 
-    public long elementHash() {
-        long cksum = name.hashCode() & 0xffffffffL;
-        for (DomainServerGroupDeployment deployment : deploymentMappings.values()) {
-            cksum = Long.rotateLeft(cksum, 1) ^ deployment.elementHash();
-        }
-        return cksum;
-    }
-
-    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroup other) {
-        assert isSameElement(other);
+    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other) {
         return null;
     }
 
-    public boolean isSameElement(final DomainServerGroup other) {
-        return (name.equals(other.name));
+    public long elementHash() {
+        return super.elementHash() ^ Long.rotateLeft(fileName.hashCode() & 0xffffffffL, 32) ^ elementHashOf(sha1Hash);
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public byte[] getSha1Hash() {
+        return sha1Hash.clone();
+    }
+
+    public boolean isSameElement(final E other) {
+        return false;
     }
 
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {

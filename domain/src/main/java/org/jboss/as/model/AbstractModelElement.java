@@ -27,6 +27,8 @@ import java.util.Collection;
 import org.jboss.staxmapper.XMLContentWriter;
 
 /**
+ * A generic model element.  Model elements are not generally thread-safe.
+ *
  * @param <E> the concrete model element type
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,6 +38,22 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     private static final long serialVersionUID = 66064050420378211L;
 
     protected AbstractModelElement() {
+    }
+
+    /**
+     * Get an element hash consisting of the last 8 bytes of the given array.
+     *
+     * @param bytes the bytes
+     * @return the element hash
+     */
+    protected static long elementHashOf(byte[] bytes) {
+        assert bytes.length >= 8;
+        long h = 0L;
+        final int offs = bytes.length - 8;
+        for (int i = 0; i < 8; i ++) {
+            h = h << 8 | bytes[offs + i] & 0xffL;
+        }
+        return h;
     }
 
     /**
@@ -71,7 +89,14 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      *
      * @return the copy
      */
-    public abstract E clone();
+    @SuppressWarnings({ "unchecked" })
+    public E clone() {
+        try {
+            return (E) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     /**
      * Determine if this model element is the same as (can replace) the other.

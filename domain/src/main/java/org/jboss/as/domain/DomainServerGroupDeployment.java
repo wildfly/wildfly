@@ -22,7 +22,9 @@
 
 package org.jboss.as.domain;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
@@ -57,24 +59,21 @@ public final class DomainServerGroupDeployment extends AbstractDomainElement<Dom
     /** {@inheritDoc} */
     public long elementHash() {
         final byte[] hash = deploymentHash;
-        return deploymentName.hashCode() & 0xFFFFFFFF ^ (
-                (hash[12] & 0xffL) << 56 |
-                (hash[13] & 0xffL) << 48 |
-                (hash[14] & 0xffL) << 40 |
-                (hash[15] & 0xffL) << 32 |
-                (hash[16] & 0xffL) << 24 |
-                (hash[17] & 0xffL) << 16 |
-                (hash[18] & 0xffL) << 8 |
-                (hash[19] & 0xffL) << 0);
+        return deploymentName.hashCode() & 0xFFFFFFFFL ^ elementHashOf(hash);
     }
+
+    public DomainServerGroupDeployment clone() {
+        return super.clone();
+    }
+
 
     public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroupDeployment other) {
         assert isSameElement(other);
-        return null;
+        return Collections.emptySet();
     }
 
     public boolean isSameElement(final DomainServerGroupDeployment other) {
-        return deploymentName.equals(other.deploymentName) && deploymentHash.equals(other.deploymentHash);
+        return deploymentName.equals(other.deploymentName) && Arrays.equals(deploymentHash, other.deploymentHash);
     }
 
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
