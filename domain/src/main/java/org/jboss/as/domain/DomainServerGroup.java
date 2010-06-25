@@ -23,9 +23,8 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -39,24 +38,30 @@ public final class DomainServerGroup extends AbstractDomainElement<DomainServerG
 
     private static final long serialVersionUID = 3780369374145922407L;
 
-    private final Domain domain;
     private final String name;
-    private final Map<String, DomainServerGroupDeployment> deploymentMappings = Collections.synchronizedMap(new HashMap<String, DomainServerGroupDeployment>());
+    private final Map<String, DomainServerGroupDeployment> deploymentMappings = new TreeMap<String, DomainServerGroupDeployment>();
 
-    public DomainServerGroup(final String id, final Domain domain, final String name) {
-        super(id);
-        this.domain = domain;
+    public DomainServerGroup(final String name) {
         this.name = name;
     }
 
-    public long checksum() {
-        return 0;
+    public long elementHash() {
+        long cksum = name.hashCode() & 0xffffffffL;
+        for (DomainServerGroupDeployment deployment : deploymentMappings.values()) {
+            cksum = Long.rotateLeft(cksum, 1) ^ deployment.elementHash();
+        }
+        return cksum;
     }
 
     public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroup other) {
+        assert isSameElement(other);
         return null;
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public boolean isSameElement(final DomainServerGroup other) {
+        return (name.equals(other.name));
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
     }
 }

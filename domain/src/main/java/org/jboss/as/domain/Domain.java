@@ -30,6 +30,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import org.jboss.as.model.AbstractModel;
+import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -39,8 +40,6 @@ import javax.xml.stream.XMLStreamWriter;
  * <p/>
  * All updates to the domain occur via instances of the {@link AbstractDomainUpdate} class.  There is no other public
  * mutability of this class.
- * <p/>
- * Instances of this class are guaranteed to be thread-safe in the presence of invocations from multiple threads.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -48,24 +47,40 @@ public final class Domain extends AbstractModel<Domain> {
 
     private static final long serialVersionUID = 5516070442013067881L;
 
+    /**
+     * The namespace of version 1.0 of the domain model.
+     */
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:1.0";
+    /**
+     * The default namespace.
+     */
+    public static final String NAMESPACE = NAMESPACE_1_0;
 
     /**
      * The set of recognized domain namespaces.
      */
     public static final Set<String> NAMESPACES = Collections.singleton(NAMESPACE_1_0);
 
-    private transient final NavigableMap<String, DomainServerGroup> serverGroups = new TreeMap<String, DomainServerGroup>();
-    private transient final NavigableMap<String, AbstractDomainDeployment<?>> deployments = new TreeMap<String, AbstractDomainDeployment<?>>();
-    private transient final NavigableMap<String, DomainSubsystem> subsystems = new TreeMap<String, DomainSubsystem>();
+    private final NavigableMap<String, DomainServerGroup> serverGroups = new TreeMap<String, DomainServerGroup>();
+    private final NavigableMap<String, AbstractDomainDeployment<?>> deployments = new TreeMap<String, AbstractDomainDeployment<?>>();
+    private final NavigableMap<String, DomainSubsystem> subsystems = new TreeMap<String, DomainSubsystem>();
 
-    public Domain(final String id) {
-        super(id);
+    public Domain() {
     }
 
     /** {@inheritDoc} */
-    public long checksum() {
-        throw new IllegalStateException();
+    public long elementHash() {
+        long hash = 0L;
+        for (DomainServerGroup item : serverGroups.values()) {
+            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
+        }
+        for (AbstractDomainDeployment<?> item : deployments.values()) {
+            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
+        }
+        for (DomainSubsystem item : subsystems.values()) {
+            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
+        }
+        return hash;
     }
 
     /**
@@ -75,24 +90,40 @@ public final class Domain extends AbstractModel<Domain> {
      * @return the collection of updates which, when applied in order, would bring this model to equivalency with the other
      */
     public Collection<AbstractDomainUpdate<?>> getDifference(Domain other) {
-        if (other == null) {
-            throw new IllegalArgumentException("other is null");
-        }
         final List<AbstractDomainUpdate<?>> list = new ArrayList<AbstractDomainUpdate<?>>();
         
         return list;
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    /** {@inheritDoc}  Domain elements are always the same because it is the root element of the model. */
+    public boolean isSameElement(final Domain other) {
+        return true;
+    }
+
+    protected void addElement(AbstractDomainElement<?> element) {
+        super.addElement(element);
+    }
+
+    protected boolean removeElement(AbstractDomainElement<?> element) {
+        return super.removeElement(element);
+    }
+
+    public DomainServerGroup getServerGroup(String name) {
+        return serverGroups.get(name);
+    }
+
+    public Domain clone() {
+        return super.clone();
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeComment(
                 "!!! NOTE !!!\n\n" +
                 "This file is generated and managed by the\n" +
                 "Domain Controller and should only be edited when\n" +
                 "it is offline."
         );
-        streamWriter.writeStartElement(NAMESPACE_1_0, "domain");
-        final String id = getId();
-        if (id != null) streamWriter.writeAttribute("id", id);
+        streamWriter.writeStartElement(NAMESPACE, DomainElement.DOMAIN.getLocalName());
         streamWriter.writeEndElement();
     }
 }

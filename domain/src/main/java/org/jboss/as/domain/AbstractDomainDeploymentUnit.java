@@ -23,34 +23,41 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-import org.jboss.as.model.AbstractModelElement;
 
-/**
- * An object within the domain model.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- */
-public abstract class AbstractDomainElement<E extends AbstractDomainElement<E>> extends AbstractModelElement<E> {
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-    private static final long serialVersionUID = 1L;
+public abstract class AbstractDomainDeploymentUnit<E extends AbstractDomainDeploymentUnit<E>> extends AbstractDomainDeployment<E> {
 
-    protected AbstractDomainElement() {
+    private final String fileName;
+    private final byte[] sha1Hash;
+
+    protected AbstractDomainDeploymentUnit(final String name, final String fileName, final byte[] sha1Hash) {
+        super(name);
+        this.fileName = fileName;
+        this.sha1Hash = sha1Hash;
     }
 
-    /** {@inheritDoc} */
-    protected final void addToModel(final AbstractModel<?> model) throws IllegalArgumentException {
-        if (model instanceof Domain) {
-            addToDomain((Domain) model);
-        } else {
-            throw new IllegalArgumentException("Domain element cannot be added to this model");
-        }
+    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other) {
+        return null;
     }
 
-    protected void addToDomain(final Domain domain) throws IllegalArgumentException {
-        domain.addElement(this);
+    public long elementHash() {
+        return super.elementHash() ^ Long.rotateLeft(fileName.hashCode() & 0xffffffffL, 32) ^ elementHashOf(sha1Hash);
     }
 
-    /** {@inheritDoc} */
-    public abstract Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other);
+    public String getFileName() {
+        return fileName;
+    }
+
+    public byte[] getSha1Hash() {
+        return sha1Hash.clone();
+    }
+
+    public boolean isSameElement(final E other) {
+        return false;
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    }
 }

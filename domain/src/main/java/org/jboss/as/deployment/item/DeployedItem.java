@@ -20,36 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host;
-
-import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+package org.jboss.as.deployment.item;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ *
  */
-public final class Host extends AbstractModel<Host> {
-
-    private static final long serialVersionUID = 7667892965813702351L;
-
-    protected Host() {
-    }
-
-    public long elementHash() {
-        return 0;
-    }
-
-    public Collection<AbstractHostUpdate<?>> getDifference(final Host other) {
-        return null;
-    }
-
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-    }
-
-    public boolean isSameElement(final Host other) {
-        return true;
-    }
+public interface DeployedItem {
+    void remove();
 }

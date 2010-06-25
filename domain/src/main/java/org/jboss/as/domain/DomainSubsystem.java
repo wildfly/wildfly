@@ -23,6 +23,7 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -34,18 +35,61 @@ public final class DomainSubsystem extends AbstractDomainElement<DomainSubsystem
 
     private static final long serialVersionUID = -90177370272205647L;
 
-    public DomainSubsystem(final String id) {
-        super(id);
+    private final String name;
+    private final String moduleIdentifier;
+    private volatile boolean enabled;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param name the subsystem name
+     * @param moduleIdentifier the module identifier of the subsystem, if any
+     */
+    public DomainSubsystem(final String name, final String moduleIdentifier) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        this.name = name;
+        this.moduleIdentifier = moduleIdentifier;
     }
 
-    public long checksum() {
-        throw new IllegalStateException();
+    /** {@inheritDoc} */
+    public long elementHash() {
+        final String moduleIdentifier = this.moduleIdentifier;
+        long hc = name.hashCode() & 0xFFFFFFFFL << 32L | (moduleIdentifier == null ? 0 : moduleIdentifier.hashCode() & 0xFFFFFFFF);
+        if (enabled) hc ++;
+        return hc;
     }
 
+    /** {@inheritDoc} */
     public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainSubsystem other) {
-        return null;
+        assert isSameElement(other);
+        if (enabled == other.enabled) {
+            return Collections.emptySet();
+        } else {
+            // TODO - enable/disable mgmt op
+            return Collections.singleton(null);
+        }
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    /** {@inheritDoc} */
+    public boolean isSameElement(final DomainSubsystem other) {
+        return name.equals(other.name) && (moduleIdentifier == null ? other.moduleIdentifier == null : moduleIdentifier.equals(other.moduleIdentifier));
+    }
+
+    /**
+     * Determine whether this subsystem is enabled.
+     *
+     * @return {@code true} if the subsystem is enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Domain.NAMESPACE, "subsystem");
+        streamWriter.writeAttribute("name", name);
+        if (moduleIdentifier != null) streamWriter.writeAttribute("module", moduleIdentifier);
+        if (enabled) streamWriter.writeAttribute("enabled", "true");
     }
 }

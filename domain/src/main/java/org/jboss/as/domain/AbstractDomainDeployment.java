@@ -25,6 +25,10 @@ package org.jboss.as.domain;
 import org.jboss.as.server.Server;
 
 /**
+ * A deployment within a domain.
+ *
+ * todo: what happens when a deployment is removed w.r.t. dependencies??
+ * 
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
@@ -36,8 +40,7 @@ public abstract class AbstractDomainDeployment<E extends AbstractDomainDeploymen
     // Mutable state
     private boolean disabled;
 
-    protected AbstractDomainDeployment(final String id, final String name) {
-        super(id);
+    protected AbstractDomainDeployment(final String name) {
         this.name = name;
     }
 
@@ -49,10 +52,13 @@ public abstract class AbstractDomainDeployment<E extends AbstractDomainDeploymen
         return disabled;
     }
 
+    public boolean isSameElement(final E other) {
+        return name.equals(other.name);
+    }
 
-    protected abstract void deployTo(Domain domain);
-
-    protected abstract void undeployFrom(Domain domain);
+    public long elementHash() {
+        return name.hashCode() & 0xFFFFFFFFL;
+    }
 
     protected abstract void deployTo(Server server);
 

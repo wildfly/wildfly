@@ -20,37 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.deployment.item;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-import org.jboss.as.model.AbstractModelElement;
+import org.jboss.msc.service.BatchBuilder;
 
 /**
- * An object within the domain model.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * A deployment item which installs the domain controller into a server.
  */
-public abstract class AbstractDomainElement<E extends AbstractDomainElement<E>> extends AbstractModelElement<E> {
+public final class DomainControllerDeploymentItem implements DeploymentItem {
 
-    private static final long serialVersionUID = 1L;
-
-    protected AbstractDomainElement() {
+    public void install(final BatchBuilder builder) {
+        // add services
+        
     }
-
-    /** {@inheritDoc} */
-    protected final void addToModel(final AbstractModel<?> model) throws IllegalArgumentException {
-        if (model instanceof Domain) {
-            addToDomain((Domain) model);
-        } else {
-            throw new IllegalArgumentException("Domain element cannot be added to this model");
-        }
-    }
-
-    protected void addToDomain(final Domain domain) throws IllegalArgumentException {
-        domain.addElement(this);
-    }
-
-    /** {@inheritDoc} */
-    public abstract Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other);
 }

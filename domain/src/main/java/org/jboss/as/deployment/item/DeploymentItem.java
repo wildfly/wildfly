@@ -20,36 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host;
+package org.jboss.as.deployment.item;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import org.jboss.msc.service.BatchBuilder;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * A general deployment item which can deploy and undeploy itself, and wh
  */
-public final class Host extends AbstractModel<Host> {
+public interface DeploymentItem {
 
-    private static final long serialVersionUID = 7667892965813702351L;
-
-    protected Host() {
-    }
-
-    public long elementHash() {
-        return 0;
-    }
-
-    public Collection<AbstractHostUpdate<?>> getDifference(final Host other) {
-        return null;
-    }
-
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-    }
-
-    public boolean isSameElement(final Host other) {
-        return true;
-    }
+    /**
+     * Install this item into the batch builder.
+     *
+     * @param builder the batch builder into which the item should be added
+     *
+     * @return the runtime state
+     */
+    void install(BatchBuilder builder);
 }
