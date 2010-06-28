@@ -56,10 +56,6 @@
 
         <module-def group="javax.management" artifact="management-api"/>
 
-        <module-def group="org.jboss.as" artifact="example-bootstrap">
-            <resource group="org.jboss.as" artifact="example-bootstrap" version="1.0.0"/>
-        </module-def>
-        
         <module-def group="org.jboss.as" artifact="domain-controller">
             <resource group="org.jboss.as" artifact="domain-controller" version="7.0.0.Beta1-SNAPSHOT"/>
         </module-def>

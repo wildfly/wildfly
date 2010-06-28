@@ -10,4 +10,5 @@ target
 *.iml
 *.ipr
 *.iws
-/.idea
+.idea
+maven-ant-tasks.jar
