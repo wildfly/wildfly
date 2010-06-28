@@ -23,6 +23,7 @@
 package org.jboss.as.domain;
 
 import java.util.Collection;
+import org.jboss.as.model.AbstractModel;
 import org.jboss.as.model.AbstractModelElement;
 
 /**
@@ -34,8 +35,20 @@ public abstract class AbstractDomainElement<E extends AbstractDomainElement<E>> 
 
     private static final long serialVersionUID = 1L;
 
-    protected AbstractDomainElement(final String id) {
-        super(id);
+    protected AbstractDomainElement() {
+    }
+
+    /** {@inheritDoc} */
+    protected final void addToModel(final AbstractModel<?> model) throws IllegalArgumentException {
+        if (model instanceof Domain) {
+            addToDomain((Domain) model);
+        } else {
+            throw new IllegalArgumentException("Domain element cannot be added to this model");
+        }
+    }
+
+    protected void addToDomain(final Domain domain) throws IllegalArgumentException {
+        domain.addElement(this);
     }
 
     /** {@inheritDoc} */

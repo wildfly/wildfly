@@ -20,44 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
-
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+package org.jboss.as.deployment;
 
 /**
- * A deployment within a domain.
+ * An immutable, type-safe object attachment key.  Such a key has no value outside of its object identity.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @param <T> the attachment type
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public final class AttachmentKey<T> {
 
-    private static final long serialVersionUID = -6410644146472087909L;
+    private final Class<T> valueClass;
 
-    private final String name;
-
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
-        this.name = name;
+    /**
+     * Construct a new instance.
+     *
+     * @param valueClass the attachment value class
+     */
+    public AttachmentKey(final Class<T> valueClass) {
+        this.valueClass = valueClass;
     }
 
-    public String getName() {
-        return name;
+    /**
+     * Get the value class for this attachment key.
+     *
+     * @return the value class
+     */
+    public Class<T> getValueClass() {
+        return valueClass;
     }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
-    }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
 }

@@ -22,13 +22,21 @@
 
 package org.jboss.as.model;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.marshalling.FieldSetter;
 
 /**
+ * A controlled object model which is related to an XML representation.  Such an object model can be serialized to
+ * XML or to binary.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractModel<E extends AbstractModel<E>> extends AbstractModelElement<E> {
@@ -36,16 +44,11 @@ public abstract class AbstractModel<E extends AbstractModel<E>> extends Abstract
     private static final long serialVersionUID = 66064050420378211L;
 
     /**
-     * The complete set of elements within this domain.
+     * The complete set of elements within this model.
      */
-    private final Set<AbstractModelElement<?>> elements = Collections.newSetFromMap(new IdentityHashMap<AbstractModelElement<?>, Boolean>());
-    /**
-     * An index of elements which have an associated ID.
-     */
-    private transient final Map<String, AbstractModelElement<?>> elementsById = new HashMap<String, AbstractModelElement<?>>();
+    private transient final Set<AbstractModelElement<?>> elements = Collections.newSetFromMap(new IdentityHashMap<AbstractModelElement<?>, Boolean>());
 
-    protected AbstractModel(final String id) {
-        super(id);
+    protected AbstractModel() {
     }
 
     // Protected members
@@ -57,18 +60,7 @@ public abstract class AbstractModel<E extends AbstractModel<E>> extends Abstract
      * @param element the element to add
      */
     protected final void addElement(AbstractModelElement<?> element) {
-        final String id = element.getId();
-        if (id != null) {
-            final Map<String, AbstractModelElement<?>> elementsById = this.elementsById;
-            if (elementsById.containsKey(id)) {
-                throw new IllegalArgumentException("Domain already contains an element with ID '" + id + "'");
-            }
-            elementsById.put(id, element);
-        }
         if (! elements.add(element)) {
-            if (id != null) {
-                elementsById.remove(id);
-            }
             throw new IllegalArgumentException("Domain already contains element " + element);
         }
     }
@@ -84,18 +76,45 @@ public abstract class AbstractModel<E extends AbstractModel<E>> extends Abstract
         if (! elements.remove(element)) {
             return false;
         }
-        assert elementsById.get(element.getId()) == element;
-        elementsById.remove(element.getId());
         return true;
     }
 
+    // Serialization
+
+    private static final FieldSetter elementsSetter = FieldSetter.get(AbstractModel.class, "elements");
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        final int objectCount = ois.readInt();
+        final Set<AbstractModelElement<?>> elements = Collections.newSetFromMap(new IdentityHashMap<AbstractModelElement<?>, Boolean>(objectCount));
+        elementsSetter.set(this, elements);
+        for (int i = 0; i < objectCount; i ++) {
+            deserializeElement((AbstractModelElement<?>) ois.readObject());
+        }
+    }
+
     /**
-     * Get an element by ID.  Called under a lock.  If no such element exists, {@code null} is returned.
+     * Override to perform additional actions upon deserialize.
      *
-     * @param id the ID
-     * @return the element, or {@code null} if it is missing
+     * @param element
+     * @throws InvalidObjectException
      */
-    protected final AbstractModelElement<?> getElementById(String id) {
-        return elementsById.get(id);
+    protected void deserializeElement(AbstractModelElement<?> element) throws InvalidObjectException {
+        try {
+            addElement(element);
+        } catch (IllegalArgumentException e) {
+            final InvalidObjectException ioe = new InvalidObjectException("An element in the model is not valid");
+            ioe.initCause(e);
+            throw ioe;
+        }
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        final Set<AbstractModelElement<?>> elements = this.elements;
+        oos.writeInt(elements.size());
+        for (AbstractModelElement<?> element : elements) {
+            oos.writeObject(element);
+        }
     }
 }

@@ -42,20 +42,18 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Domain> value) throws XMLStreamException {
         // read attributes first
         // no required attributes
-        String id = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
                 reader.handleAttribute(value, i);
             } else {
                 switch (DomainAttribute.forName(reader.getAttributeLocalName(i))) {
-                    case ID: id = reader.getAttributeValue(i); break;
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
         }
         // construct our new domain!
-        final Domain domain = new Domain(id);
+        final Domain domain = new Domain();
         // next, elements
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -96,7 +94,6 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
                 reader.handleAttribute(domain, i);
             } else {
                 switch (DomainAttribute.forName(reader.getAttributeLocalName(i))) {
-                    case ID: break;
                     default: throw unexpectedAttribute(reader, i);
                 }
             }

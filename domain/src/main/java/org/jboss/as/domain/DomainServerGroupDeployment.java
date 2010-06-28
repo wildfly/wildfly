@@ -22,7 +22,10 @@
 
 package org.jboss.as.domain;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -35,23 +38,45 @@ import javax.xml.stream.XMLStreamWriter;
 public final class DomainServerGroupDeployment extends AbstractDomainElement<DomainServerGroupDeployment> {
     private static final long serialVersionUID = -7282640684801436543L;
 
-    private final AbstractDomainDeployment domainDeployment;
-    private final DomainServerGroup domainServerGroup;
+    private final String deploymentName;
+    private final byte[] deploymentHash;
+    // todo: deployment overrides
 
-    public DomainServerGroupDeployment(final String id, final AbstractDomainDeployment domainDeployment, final DomainServerGroup domainServerGroup) {
-        super(id);
-        this.domainDeployment = domainDeployment;
-        this.domainServerGroup = domainServerGroup;
+    public DomainServerGroupDeployment(final String deploymentName, final byte[] deploymentHash) {
+        if (deploymentName == null) {
+            throw new IllegalArgumentException("deploymentName is null");
+        }
+        if (deploymentHash == null) {
+            throw new IllegalArgumentException("deploymentHash is null");
+        }
+        if (deploymentHash.length != 20) {
+            throw new IllegalArgumentException("deploymentHash is not a valid length");
+        }
+        this.deploymentName = deploymentName;
+        this.deploymentHash = deploymentHash;
     }
 
-    public long checksum() {
-        return 0;
+    /** {@inheritDoc} */
+    public long elementHash() {
+        final byte[] hash = deploymentHash;
+        return deploymentName.hashCode() & 0xFFFFFFFFL ^ elementHashOf(hash);
     }
+
+    public DomainServerGroupDeployment clone() {
+        return super.clone();
+    }
+
 
     public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroupDeployment other) {
-        return null;
+        assert isSameElement(other);
+        return Collections.emptySet();
     }
 
-    public void writeObject(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public boolean isSameElement(final DomainServerGroupDeployment other) {
+        return deploymentName.equals(other.deploymentName) && Arrays.equals(deploymentHash, other.deploymentHash);
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Domain.NAMESPACE, DomainElement.DEPLOYMENT.getLocalName());
     }
 }

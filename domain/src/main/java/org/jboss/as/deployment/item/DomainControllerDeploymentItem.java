@@ -20,44 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.deployment.item;
 
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+import java.io.Serializable;
+import org.jboss.msc.service.BatchBuilder;
 
 /**
- * A deployment within a domain.
+ * A deployment item which installs the domain controller into a server.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public final class DomainControllerDeploymentItem implements DeploymentItem, Serializable {
 
-    private static final long serialVersionUID = -6410644146472087909L;
+    private static final long serialVersionUID = 4835276878814763612L;
 
-    private final String name;
-
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
-        this.name = name;
+    public void install(final BatchBuilder builder) {
+        // add services
+        
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
-    }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
 }

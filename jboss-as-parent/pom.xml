@@ -91,6 +91,12 @@
                 <artifactId>staxmapper</artifactId>
                 <version>1.0.0.Beta1-SNAPSHOT</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.marshalling</groupId>
+                <artifactId>jboss-marshalling</artifactId>
+                <version>1.3.0.CR3</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
