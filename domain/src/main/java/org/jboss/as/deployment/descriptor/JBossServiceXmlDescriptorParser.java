@@ -20,44 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.deployment.descriptor;
 
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.as.parser.ParseResult;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
 /**
- * A deployment within a domain.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public final class JBossServiceXmlDescriptorParser implements XMLElementReader<ParseResult<JBossServiceXmlDescriptor>>, XMLStreamConstants {
 
-    private static final long serialVersionUID = -6410644146472087909L;
-
-    private final String name;
-
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
-        this.name = name;
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<JBossServiceXmlDescriptor> value) throws XMLStreamException {
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
-    }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
 }

@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.unit;
 
+import org.jboss.as.deployment.Attachable;
 import org.jboss.as.deployment.item.DeploymentItem;
 import org.jboss.vfs.VirtualFile;
 
@@ -34,7 +35,7 @@ import org.jboss.vfs.VirtualFile;
  * </ol>
  * Once deployment is complete, the deployment unit context need not be retained.
  */
-public interface DeploymentUnitContext {
+public interface DeploymentUnitContext extends Attachable {
 
     /**
      * Get the simple name of the deployment unit.
@@ -51,35 +52,9 @@ public interface DeploymentUnitContext {
     VirtualFile getVirtualFile();
 
     /**
-     * Add a deployment item to this deployment unit context.
+     * Add a deployment item to this deployment unit context.  Once a deployment item is added, it may not be removed.
      *
-     * @param item
+     * @param item the item to add
      */
     void addDeploymentItem(DeploymentItem item);
-
-    /**
-     * Get an attachment value.  If no attachment exists for this key, {@code null} is returned.
-     *
-     * @param key
-     * @param <T>
-     * @return
-     */
-    <T> T getAttachment(Key<T> key);
-
-    /**
-     * Set an attachment value.  If an attachment for this key was already set, return the original value.  If the value
-     * being set is {@code null}, the attachment key is removed.
-     *
-     * @param key the attachment key
-     * @param value the new value
-     * @param <T> the value type
-     * @return the old value, or {@code null} if there was none
-     */
-    <T> T putAttachment(Key<T> key, T value);
-
-    <T> T removeAttachment(Key<T> key);
-
-    interface Key<T> {
-        Class<T> getValueClass();
-    }
 }

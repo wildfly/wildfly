@@ -20,44 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
-
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+package org.jboss.as.deployment.unit;
 
 /**
- * A deployment within a domain.
+ * A deployment processor.  Instances of this interface represent a step in the deployer chain.  They may perform
+ * a variety of tasks, including (but not limited to):
+ * <ol>
+ * <li>Parsing a deployment descriptor and adding it to the context</li>
+ * <li>Reading a deployment descriptor's data and using it to produce deployment items</li>
+ * <li>Replacing a deployment descriptor with a transformed version of that descriptor</li>
+ * <li>Removing a deployment descriptor to prevent it from being processed</li>
+ * </ol>
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * 
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public interface DeploymentUnitProcessor {
 
-    private static final long serialVersionUID = -6410644146472087909L;
-
-    private final String name;
-
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
-    }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
+    /**
+     * Process the deployment unit.
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException if an error occurs during processing
+     */
+    void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException;
 }

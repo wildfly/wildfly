@@ -22,12 +22,17 @@
 
 package org.jboss.as.deployment.item;
 
+import java.io.Serializable;
 import org.jboss.msc.service.BatchBuilder;
 
 /**
  * A deployment item which installs the domain controller into a server.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DomainControllerDeploymentItem implements DeploymentItem {
+public final class DomainControllerDeploymentItem implements DeploymentItem, Serializable {
+
+    private static final long serialVersionUID = 4835276878814763612L;
 
     public void install(final BatchBuilder builder) {
         // add services

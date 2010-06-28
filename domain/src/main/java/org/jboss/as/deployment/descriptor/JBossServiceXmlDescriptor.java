@@ -20,11 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.descriptor;
+
+import java.io.Serializable;
+import org.jboss.as.deployment.AttachmentKey;
 
 /**
- *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DeployedItem {
-    void remove();
+public final class JBossServiceXmlDescriptor implements Serializable {
+
+    private static final long serialVersionUID = 3148478338698997486L;
+
+    public static final AttachmentKey<JBossServiceXmlDescriptor> JBOSS_SERVICE_XML = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
+
 }
