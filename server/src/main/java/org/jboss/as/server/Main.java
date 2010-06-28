@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -37,6 +38,7 @@ import org.jboss.logmanager.Logger;
  * The main-class entry point for server instances.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
 public final class Main {
 
@@ -64,6 +66,8 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
+        boot(args);
+
         out.println("200 Server Ready");
         try {
             for (;;) {
@@ -76,6 +80,25 @@ public final class Main {
             System.exit(1);
         }
         System.exit(0);
+    }
+
+    private static void boot(final String[] args) {
+        if(args.length < 3) throw new IllegalArgumentException("Server bootstrap requires config root, server group  and server name");
+
+        final File configRoot = new File(args[0]);
+        if(!configRoot.exists()) throw new IllegalArgumentException("Invalid config root.  Directory does not exist");
+
+        final String serverGroup = args[1];
+        final String serverName = args[2];
+
+        final Server server = initializeServerConfig(configRoot, serverGroup, serverName);
+
+        // Do something real with the Server config..
+    }
+
+    private static Server initializeServerConfig(final File configRoot, final String serverGroup, final String serverName) {
+        // Read serialized config and apply changes from log
+        return null;
     }
 
     private static String readCommand(final InputStream in) throws IOException {
