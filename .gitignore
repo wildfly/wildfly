@@ -11,3 +11,4 @@ target
 *.ipr
 *.iws
 .idea
+maven-ant-tasks.jar
