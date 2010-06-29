@@ -67,10 +67,6 @@
         <module-def group="org.jboss.as" artifact="server-manager">
             <resource group="org.jboss.as" artifact="server-manager" version="7.0.0.Beta1-SNAPSHOT"/>
         </module-def>
-
-        <module-def group="org.jboss.deployers" artifact="jboss-service-deployer">
-            <resource group="org.jboss.deployers" artifact="jboss-service-deployer" version="1.0.0-SNAPSHOT"/>
-        </module-def>
         
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>

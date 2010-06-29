@@ -1,0 +1,78 @@
+<host xmlns="urn:jboss:host:1.0">
+    
+    <domain-controller location="http://somehost.example.com/domain-controller"
+                       callback-location=""
+                       outbound-interface="public3"
+                       inbound-interface="public3"/>
+
+    <jvms>
+       <jvm name="icedtea1">
+         <java-home path="/opt/java/blah"/>
+         <system-properties>
+           <property name="foo" value="foo"/>
+         </system-properties>
+         
+       </jvm>
+    </jvms>
+    
+    <interfaces>
+        <interface name="public3">
+           <inet-address address="10.0.0.52"/>
+        </interface>
+    </interfaces>
+
+    <servers>
+        <server name="server-one" group="main-server-group">
+            
+            <cpu-affinity cpus="1 2 3 4"/>
+            
+            <heap size="512m" max-size="512m"/>
+
+            <jvm-arguments>
+                <argument value="-server"/>
+                <argument value="-ea"/>
+            </jvm-arguments>
+
+            <system-properties>
+                <property name="blah" value="blahblah"/>
+            </system-properties>
+        </server>
+        
+        <server name="server-two" group="main-server-group">
+            
+            <heap size="512m" max-size="512m"/>
+
+            <jvm-arguments>
+                <argument value="-server"/>
+                <argument value="-ea"/>
+            </jvm-arguments>
+
+            <system-properties>
+                <property name="blah" value="blahblah"/>
+            </system-properties>
+            
+            <!-- Use a different set of ports on this server -->
+            <socket-group port-offset="100"/>
+        </server>
+        
+        <server name="server-three" group="main-server-group" start="false">
+            
+            <heap size="512m" max-size="512m"/>
+
+            <jvm-arguments>
+                <argument value="-server"/>
+                <argument value="-ea"/>
+            </jvm-arguments>
+
+            <system-properties>
+                <property name="blah" value="blahblah"/>
+            </system-properties>
+            
+            <!-- Bind this server to a different nic from the server-group default -->
+            <interface name="external">
+               <nic name="eth0"/>
+            </interface>              
+        </server>
+    </servers>
+    
+</host>
