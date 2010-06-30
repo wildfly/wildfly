@@ -1,0 +1,120 @@
+<domain xmlns="urn:jboss:domain:1.0">
+
+  <extension prefix="xx" module="org.foo:blah"/>
+  
+  <profiles>
+    <profile name="web">
+      <subsystem name="ejb"/>
+      <subsystem name="http"/>
+    </profile>
+    <profile name="messaging">
+      <subsystem name="jms"/>
+    </profile>
+    <profile name="something" extends="web">
+      <subsystem name="xx:fancy"/>
+    </profile>
+  </profiles>
+  
+  <deployments>
+    <deployment name="my-app.ear" sha1="xxx"/>
+    <deployment name="my-ejb.jar" sha1="xxx"/>
+    <deployment name="my-war.ear" sha1="xxx" start="false"/>
+  </deployments>
+  
+  <interfaces>
+        <interface name="default">
+           <inet-address address="127.0.0.1"/>
+        </interface>
+        <interface name="external">
+          <nic name="eth1"/>
+        </interface>        
+        <interface name="internal">
+         <not>
+            <loopback/>
+         </not>
+         <multicast/>
+         <any>
+            <inet-address-match value="10.0.0.0/8"/>
+            <inet-address-match value="192.168.0.0/16"/>
+         </any>
+        </interface>
+        <!-- This interface requires configuration at the host level -->
+        <interface name="public3"/>
+   </interfaces>
+
+  <socket-groups>
+     <socket-group name="standard-sockets" default-interface="external">
+        <socket name="http" port="8080"/>
+        <socket name="https" port="8447"/>
+        <socket name="remoting" port="4447"/>
+     </socket-group>
+     <socket-group name="standard-clustered-sockets" extends="standard-sockets">
+        <socket name="cluster-udp" interface="internal" port="" multicast-port="55200"/>
+        <socket name="cluster-failure-detection" interface="internal" port="54200"/>
+        <socket name="ha-jndi" port="1100"/>
+        <socket name="ha-jndi-discovery" multicast-port="1102"/>
+     </socket-group>
+  </socket-groups>
+
+  <containers>
+    <web-container>
+      <http-service>
+        <access-log log-directory="domain/web/log"/>
+
+        <http-connector id="httpConnector" socket="http"/>
+
+        <http-connector id="httpsConnector" socket="https" protocol="tls" scheme="https" client-auth="true">
+          <ssl cert-nickname="certnick" ssl3-enabled="true" ssl3-tls-ciphers="xxx"/>
+        </http-connector>
+
+        <virtual-host name="VirtualHost" default="true">
+          <access-log log-directory="domain/foo.com/web/log"/>
+          <host name="foo.com"/>
+          <host address="1.2.3.4"/>
+          <connector name="httpConnector"/>
+          <connector name="httpsConnector"/>
+        </virtual-host>
+      </http-service>
+    </web-container>
+  </containers>
+
+  <system-properties>
+    <property name="prop1" value="value1"/>
+    <property name="prop2" value="value2"/>
+  </system-properties>
+
+  <server-groups>
+    <server-group group-name="main-server-group" profile="something">
+       
+       <cluster default-multicast-address="230.0.0.4">
+         <group-communication-config name="udp">
+             <udp-tranpsort socket="cluster-udp"/>
+         </group-communication-config>  
+         <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
+         <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
+       </cluster>
+       
+       <jvm name="icedtea1">
+         <heap size="512m" max-size="1024m"/>
+         <stack size="256k"/>
+         <jvm-option value="-XX:-DisableExplicitGC"/>         
+       </jvm>
+       
+       <socket-group name="standard-clustered-sockets"/>
+       
+       <deployments>
+         <deployment name="my-ejb.jar" sha1="xxx" start="false"/>
+         <deployment name="my-app.ear" sha1="xxx"/>
+       </deployments>
+
+       <system-properties>
+         <properties>
+           <property name="prop1" value="value1"/>
+           <property name="prop2" value="value2"/>
+         </properties>
+       </system-properties>
+
+    </server-group>
+  </server-groups>
+
+</domain>
