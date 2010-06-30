@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat Middleware LLC, and individual contributors
@@ -27,21 +26,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-parent</artifactId>
+        <version>7.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <name>JBoss Application Server: Process Manager</name>
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as</artifactId>
+    <artifactId>process-manager</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Aggregator</name>
-
-    <modules>
-        <module>jboss-as-parent</module>
-        <module>domain</module>
-        <module>server-manager</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>process-manager</module>
-        <module>build</module>
-    </modules>
-
-    <packaging>pom</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+    </dependencies>
+    
 </project>

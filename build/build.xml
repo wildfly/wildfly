@@ -60,6 +60,10 @@
             <resource group="org.jboss.as" artifact="domain-controller" version="7.0.0.Beta1-SNAPSHOT"/>
         </module-def>
 
+        <module-def group="org.jboss.as" artifact="process-manager">
+            <resource group="org.jboss.as" artifact="process-manager" version="7.0.0.Beta1-SNAPSHOT"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="server">
             <resource group="org.jboss.as" artifact="server" version="7.0.0.Beta1-SNAPSHOT"/>
         </module-def>
