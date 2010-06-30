@@ -102,7 +102,7 @@ final class ManagedProcess {
         final StringBuilder b = new StringBuilder();
         b.append("MSG");
         for (String s : msg) {
-            b.append('\0').append(msg);
+            b.append('\0').append(s);
         }
         b.append('\n');
         StreamUtils.writeString(commandStream, b);
