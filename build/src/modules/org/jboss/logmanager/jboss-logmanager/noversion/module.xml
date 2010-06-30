@@ -24,6 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.0" name="jboss-logmanager" group="org.jboss.logmanager">
     <resources>
+        <resource-root path="config"/>
         <!-- Insert resources here -->
     </resources>
 

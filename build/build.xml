@@ -77,7 +77,7 @@
         </module-def>
 
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
-            <resource group="org.jboss.logmanager" artifact="jboss-logmanager" version="1.2.0.CR2"/>
+            <resource group="org.jboss.logmanager" artifact="jboss-logmanager" version="1.2.0.CR3"/>
         </module-def>
 
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>

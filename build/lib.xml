@@ -19,8 +19,12 @@
             <!-- Make the module output director -->
             <mkdir dir="${module.repo.output.dir}/${current.module.path}"/>
             
-            <!-- Copy the module.xml to the output director -->
-            <copy file="${module.repo.src.dir}/${current.module.path}/${module.xml}" toDir="${module.repo.output.dir}/${current.module.path}"/>
+            <!-- Copy the module.xml and other stuff to the output director -->
+            <copy todir="${module.repo.output.dir}/${current.module.path}">
+                <fileset dir="${module.repo.src.dir}/${current.module.path}">
+                    <include name="**"/>
+                </fileset>
+            </copy>
             
             <!-- Process the resource -->
             <resources/>

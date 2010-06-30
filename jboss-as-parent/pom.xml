@@ -84,7 +84,7 @@
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
                 <artifactId>jboss-logmanager</artifactId>
-                <version>1.2.0.CR2</version>
+                <version>1.2.0.CR3</version>
             </dependency>
 
             <dependency>
