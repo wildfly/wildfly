@@ -25,6 +25,7 @@ package org.jboss.as.domain;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import org.jboss.as.parser.DomainAttribute;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -63,5 +64,9 @@ public final class DomainServerGroup extends AbstractDomainElement<DomainServerG
     }
 
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeStartElement(Domain.NAMESPACE, "server-group");
+        streamWriter.writeAttribute(DomainAttribute.NAME.getLocalName(), name);
+        // todo write content
+        streamWriter.writeEndElement();
     }
 }

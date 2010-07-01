@@ -20,31 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.deployment.item;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DomainController {
+public final class ArchiveMountDeploymentService implements Service<VirtualFile> {
 
-    /**
-     * Apply a domain update to this domain controller.
-     *
-     * @param update the update
-     */
-    void performDomainUpdate(AbstractDomainUpdate update);
+    public void start(final StartContext context) throws StartException {
+    }
 
-    /**
-     * Install a deployment unit processor at a point in the chain.  Deployment unit processors are executed in
-     * increasing order by priority.  In the case of a conflict, the processors are executed in alpha order by
-     * fully qualified class name.  If that conflicts, order is indeterminate.
-     *
-     * @param processor the processor
-     * @param priority the priority
-     */
-    void installDeploymentUnitProcessor(DeploymentUnitProcessor processor, int priority);
+    public void stop(final StopContext context) {
+    }
 
-    void removeDeploymentUnitProcessor(DeploymentUnitProcessor processor, int priority);
+    public VirtualFile getValue() throws IllegalStateException {
+        return null;
+    }
 }

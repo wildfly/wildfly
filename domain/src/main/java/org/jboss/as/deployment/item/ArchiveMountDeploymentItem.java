@@ -20,31 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.deployment.item;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.msc.service.BatchBuilder;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DomainController {
+public final class ArchiveMountDeploymentItem implements DeploymentItem {
 
-    /**
-     * Apply a domain update to this domain controller.
-     *
-     * @param update the update
-     */
-    void performDomainUpdate(AbstractDomainUpdate update);
+    private static final long serialVersionUID = 4335426754596642638L;
 
-    /**
-     * Install a deployment unit processor at a point in the chain.  Deployment unit processors are executed in
-     * increasing order by priority.  In the case of a conflict, the processors are executed in alpha order by
-     * fully qualified class name.  If that conflicts, order is indeterminate.
-     *
-     * @param processor the processor
-     * @param priority the priority
-     */
-    void installDeploymentUnitProcessor(DeploymentUnitProcessor processor, int priority);
+    public void install(final BatchBuilder builder) {
 
-    void removeDeploymentUnitProcessor(DeploymentUnitProcessor processor, int priority);
+    }
 }
