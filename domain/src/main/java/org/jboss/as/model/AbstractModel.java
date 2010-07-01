@@ -59,7 +59,7 @@ public abstract class AbstractModel<E extends AbstractModel<E>> extends Abstract
      */
     protected final void addElement(AbstractModelElement<?> element) {
         if (! elements.add(element)) {
-            throw new IllegalArgumentException("Domain already contains element " + element);
+            throw new IllegalArgumentException("Duplicate element " + element);
         }
     }
 

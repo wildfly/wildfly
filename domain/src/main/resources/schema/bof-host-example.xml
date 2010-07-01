@@ -1,4 +1,4 @@
-<host xmlns="urn:jboss:host:1.0">
+<host xmlns="urn:jboss:domain:1.0">
     
     <domain-controller location="http://somehost.example.com/domain-controller"
                        callback-location=""

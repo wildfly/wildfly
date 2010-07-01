@@ -23,7 +23,9 @@
 package org.jboss.as.host;
 
 import java.util.Collection;
+import org.jboss.as.domain.Domain;
 import org.jboss.as.model.AbstractModel;
+import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -46,10 +48,31 @@ public final class Host extends AbstractModel<Host> {
         return null;
     }
 
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-    }
-
+    /** {@inheritDoc}  Host elements are always the same because it is the root element of the model. */
     public boolean isSameElement(final Host other) {
         return true;
+    }
+
+    protected void addElement(AbstractHostElement<?> hostElement) {
+        super.addElement(hostElement);
+    }
+
+    protected void removeElement(AbstractHostElement<?> hostElement) {
+        super.removeElement(hostElement);
+    }
+
+    public Host clone() {
+        return super.clone();
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeComment(
+                "!!! NOTE !!!\n\n" +
+                "This file is generated and managed by the\n" +
+                "Server Manager and should only be edited when\n" +
+                "it is offline."
+        );
+        streamWriter.writeStartElement(Domain.NAMESPACE, DomainElement.DOMAIN.getLocalName());
+        streamWriter.writeEndElement();
     }
 }
