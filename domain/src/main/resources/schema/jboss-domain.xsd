@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+  xmlns="urn:jboss:domain:1.0"
+  targetNamespace="urn:jboss:domain:1.0"
+  xmlns:sec="urn:jboss:security-config:5.0">
+
+  <!-- Include the common definitions -->
+  <xs:include schemaLocation="jboss-domain-common.xsd" />
+  <!-- Include the web schema definitions for reuse -->
+  <xs:include schemaLocation="jboss-domain-web.xsd"/>
+  <!-- Import the security schema definitions for reuse -->
+  <xs:import namespace="urn:jboss:security-config:5.0"  schemaLocation="security-config_5_0.xsd"/>
+  
+  <xs:element name="domain">
+    <xs:complexType>
+      <xs:all minOccurs="0" maxOccurs="1">
+        <xs:element name="domain-configuration" type="domain-configurationType"/>
+        <xs:element name="subsystems" type="domainSubsystemsType"/>
+        <xs:element name="interfaces" type="interfacesType"/>
+        <xs:element name="socket-groups" type="socket-groupsType"/>
+        <xs:element name="server-groups" type="server-groupType"/>
+        <xs:element name="clusters" type="clustersType"/>
+        <xs:element name="security-policy" type="sec:PolicyConfig" />
+        <xs:element name="containers">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="web-containers" type="web-containersType" />
+            </xs:all>
+          </xs:complexType>
+          
+        </xs:element>
+        <xs:element name="system-properties" type="propertiesType"/>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- domain-configuration related definitions -->
+  <xs:complexType name="domain-configurationType">
+    <xs:annotation>
+      <xs:documentation>The domain manager/server bootstrap configuration</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element ref="bootstrapURI"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="bootstrapURI" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>The URI for bootstraping a domain server</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:complexType name="domainSubsystemsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of domain-level subsystems</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="subsystem" type="subsystemType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="subsystemType">
+    <xs:annotation>
+      <xs:documentation>Subsystem is a specific technology, service or a set of or a functionality
+                        which can be enabled or disabled on a domain level.
+                        Subsystems enabled on the domain level by default are enabled for all the server-groups in the domain.
+                        If a certain subsystem (or a set of) is not relevant for a specific server-group
+                        this subsystem (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the subsystem</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Whether the subsystem is allowed.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="domainDeploymentsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="deploymentType">
+    <xs:annotation>
+      <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
+                        any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
+                        which can be enabled or disabled on a domain level.
+
+                        If a certain deployment (or a set of) is not relevant for a specific server-group
+                        this deployment (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the deployment</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sha1" use="required">
+      <xs:annotation>
+        <xs:documentation>The checksum of the deployment</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Whether the deployment is allowed.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+   <xs:complexType name="socket-groupsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of socket groups</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="socket-group" type="socket-groupType" maxOccurs="unbounded"/>
+    </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="socket-groupType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of socket configurations</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="socket" type="socketType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="extends" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Name of a previously declared socket group this group extends.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="default-interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of an interface that should be used as the interface for
+            any sockets that do not explicitly declare an interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="socketType">
+    <xs:annotation>
+      <xs:documentation>Configuration information for a socket.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of the interface to which the socket should be bound, or, for multicast
+            sockets, the interface on which it should listen. This should
+            be one of the declared interfaces.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of the interface to which the socket should be bound. This should
+            be one of the declared interfaces.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="xs:short" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation>
+            Number of the port to which the socket should be bound.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>
+            Whether the port value should remain fixed even if numerically offsets
+            are applied to the other sockets in the socket group..
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-address" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Multicast address on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-port" type="xs:short" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Port on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
+
+</xs:schema>

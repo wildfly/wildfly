@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2009, Red Hat Middleware LLC, and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<!-- Modified from the urn:jboss:logging:6.0 (jboss-logging_6_0.xsd) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:1.0"
+            xmlns="urn:jboss:domain:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <!-- Allow access to common domain schema elements
+    <xs:include schemaLocation="jboss-domain-common.xsd"/> -->
+
+    <xs:element name="logging" type="loggingType"/>
+
+    <xs:complexType name="loggingType">
+        <xs:annotation>
+            <xs:documentation>
+                The logging configuration root type.  Contains a list of named handlers, loggers, and formatters for
+                this configuration.  Use the "context" attribute to depend upon a logging context which is separate
+                from the default system context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <!-- handlers -->
+            <xs:group ref="handlersGroup"/>
+            <!-- loggers -->
+            <xs:element name="logger" type="loggerType"/>
+            <xs:element name="root-logger" type="rootLoggerType"/>
+            <!-- install-handlers -->
+            <xs:element name="install-handler" type="installHandlerType"/>
+            <!-- contexts -->
+            <xs:element name="define-context" type="defineContextType"/>
+        </xs:choice>
+        <xs:attribute name="context" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="refType">
+        <xs:annotation>
+            <xs:documentation>
+                A named reference to another object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!-- Log Context -->
+
+    <xs:complexType name="defineContextType">
+        <xs:annotation>
+            <xs:documentation>
+                A named log context.  If the name is not specified, the context name of the enclosing
+                "logging" element is used, otherwise a log context of the given name will be created.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!-- Loggers -->
+
+    <xs:complexType name="loggersType">
+        <xs:annotation>
+            <xs:documentation>
+                A collection of logger references to apply to the enclosing object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice maxOccurs="unbounded">
+            <xs:group ref="loggersGroup"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:group name="loggersGroup">
+        <xs:annotation>
+            <xs:documentation>
+                An element group for the collection of logger references to apply to the enclosing object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="logger" type="loggerRefType"/>
+            <xs:element name="root-logger" type="contextRefType"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="contextRefType">
+        <xs:annotation>
+            <xs:documentation>
+                An object which contains an optional reference to a logging context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="context" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="loggerRefType">
+        <xs:annotation>
+            <xs:documentation>
+                An object which contains a reference to a logger category and an optional reference to a logging context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="contextRefType">
+                <xs:attribute name="category" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="rootLoggerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines the root logger for this log context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all minOccurs="1" maxOccurs="1">
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="handlers" minOccurs="0" type="handlersType"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="loggerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a logger category for this log context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="rootLoggerType">
+                <xs:attribute name="use-parent-handlers" type="xs:boolean" use="optional" default="true"/>
+                <xs:attribute name="category" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Handlers -->
+
+    <xs:group name="handlersGroup">
+        <xs:annotation>
+            <xs:documentation>
+                An element group for the collection of handlers to apply to the enclosing object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="handler" type="handlerType"/>
+            <xs:element name="log4j-appender" type="log4jAppenderType"/>
+            <xs:element name="console-handler" type="consoleHandlerType"/>
+            <xs:element name="file-handler" type="fileHandlerType"/>
+            <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
+            <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
+            <xs:element name="async-handler" type="asyncHandlerType"/>
+            <xs:element name="null-handler" type="handlerBaseType"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="handlersType">
+        <xs:annotation>
+            <xs:documentation>
+                A collection of handlers to apply to the enclosing object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="handler-ref" type="refType"/>
+            <!-- actual handler types -->
+            <xs:group ref="handlersGroup"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="installHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines an installation of a handler into one or more loggers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all minOccurs="1" maxOccurs="1">
+            <xs:element name="handler-ref" type="refType" minOccurs="1"/>
+            <xs:element name="loggers" minOccurs="1" type="loggersType"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="handlerBaseType">
+        <xs:annotation>
+            <xs:documentation>
+                The base type for all handlers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="error-manager" type="errorManagerType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="loggers" type="loggersType" minOccurs="0"/>
+            <xs:element name="sub-handlers" type="handlersType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+        <xs:attribute name="encoding" type="xs:string" use="optional"/>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler of the given class to be instantiated and optionally installed into one or more
+                loggers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="handlerBaseType">
+                <xs:attribute name="class" type="xs:token" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="log4jAppenderType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a log4j appender of the given class to be instantiated and optionally installed into one or more
+                loggers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="handlerType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="consoleHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to the console.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="handlerBaseType">
+                <xs:attribute name="target" type="consoleTargetType" use="optional" default="System.out"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="consoleTargetType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a the target for a console handler (System.out or System.err).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="System.out"/>
+            <xs:enumeration value="System.err"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="fileHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to a file.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="handlerBaseType">
+                <xs:attribute name="file-name" type="xs:string" use="required"/>
+                <xs:attribute name="append" type="xs:boolean" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="periodicFileHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to a file, rotating the log after a time period derived from the given
+                suffix string, which should be in a format understood by java.text.SimpleDateFormat.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="fileHandlerType">
+                <xs:attribute name="suffix" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="sizeFileHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a
+                certain point and keeping a fixed number of backups.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="fileHandlerType">
+                <xs:attribute name="rotate-size" type="xs:string" use="optional" default="500k"/>
+                <xs:attribute name="max-backup-index" type="xs:positiveInteger" use="optional" default="1"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="asyncHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to the sub-handlers in an asynchronous thread.  Used for handlers which
+                introduce a substantial amount of lag.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="handlerBaseType">
+                <xs:attribute name="queue-length" type="xs:positiveInteger" use="optional" default="512"/>
+                <xs:attribute name="overflow-action" type="asyncOverflowActionType" use="optional" default="block"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="asyncOverflowActionType">
+        <xs:annotation>
+            <xs:documentation>
+                The action to take when the async queue overflows.  Either the calling thread may be blocked, or the
+                message may be discarded.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="block"/>
+            <xs:enumeration value="discard"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Filters -->
+
+    <xs:complexType name="filterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a named logging filter.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:group ref="simpleFilterGroup"/>
+        <xs:attribute name="name" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="simpleFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a simple filter type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:group ref="simpleFilterGroup"/>
+    </xs:complexType>
+
+    <xs:complexType name="multiFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a composite filter type.  The "any" filter will return true of any of its constituent filters
+                returns true; the "all" filter will return false if any of its constituent filters returns false.  Both
+                composite filter types are short-circuiting, meaning that if the result can be determined with an earlier
+                filter, later filters are not run.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:group ref="simpleFilterGroup" maxOccurs="unbounded"/>
+    </xs:complexType>
+
+    <xs:group name="simpleFilterGroup">
+        <xs:choice>
+            <xs:element name="all" type="multiFilterType"/>
+            <xs:element name="any" type="multiFilterType"/>
+            <xs:element name="accept"/>
+            <xs:element name="deny"/>
+            <xs:element name="not" type="simpleFilterType"/>
+            <xs:element name="match" type="regexFilterType"/>
+            <xs:element name="replace" type="replaceFilterType"/>
+            <xs:element name="level" type="levelFilterType"/>
+            <xs:element name="level-range" type="levelRangeFilterType"/>
+            <xs:element name="change-level" type="levelChangeFilterType"/>
+            <xs:element name="filter-ref" type="refType"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="regexFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                A regular expression-based filter.  The filter returns true if the pattern matches.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="pattern" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="replaceFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                A regular expression substitution filter.  This filter modifies the log message and always returns true.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="pattern" type="xs:string" use="required"/>
+        <xs:attribute name="replacement" type="xs:string" use="required"/>
+        <xs:attribute name="replace-all" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="levelFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                A level filter.  This filter returns true if the log message level matches the parameter.  It is a
+                numerical match; two differently-named levels with the same numeric value will be considered equal.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="level" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="levelRangeFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                A level range filter.  This filter returns true if the log message level matches the range specified
+                by the parameters.  It is a
+                numerical match; two differently-named levels with the same numeric value will be considered equal.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="min-level" type="xs:string" use="required"/>
+        <xs:attribute name="min-inclusive" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="max-level" type="xs:string" use="required"/>
+        <xs:attribute name="max-inclusive" type="xs:boolean" use="optional" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="levelChangeFilterType">
+        <xs:annotation>
+            <xs:documentation>
+                A level change filter.  This filter modifies the log message and always returns true.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="level" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!-- Formatters -->
+
+    <xs:complexType name="formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a formatter.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="pattern-formatter" type="patternFormatterType" maxOccurs="1"/>
+            <xs:element name="formatter-ref" type="refType" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="patternFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a pattern formatter.  See the documentation for org.jboss.logmanager.formatters.FormatStringParser
+                for more information about the format string.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="pattern" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!-- Error managers -->
+
+    <xs:complexType name="errorManagerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler error-manager.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="only-once">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            An error manager which logs errors to System.err only the first time an error occurs.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+</xs:schema>

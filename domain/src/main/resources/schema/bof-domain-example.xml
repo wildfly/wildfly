@@ -1,4 +1,4 @@
-<domain xmlns="urn:jboss:domain:1.0">
+ <domain xmlns="urn:jboss:domain:1.0">
 
   <extension prefix="xx" module="org.foo:blah"/>
   

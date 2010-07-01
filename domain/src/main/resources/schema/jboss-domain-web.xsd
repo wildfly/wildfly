@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0">
+ 
+    <!-- Include the common definitions
+    <xs:include schemaLocation="jboss-domain-common.xsd"/> -->
+
+   <xs:complexType name="web-containersType">
+       <xs:sequence>
+           <xs:element name="web-container" type="web-containerType" minOccurs="1" maxOccurs="unbounded" />
+       </xs:sequence>
+   </xs:complexType>
+
+      <!-- The web container configuration -->
+  <xs:complexType name="web-containerType">
+    <xs:sequence>
+      <xs:element name="thread-group">
+        <xs:complexType>
+          <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="http-service" minOccurs="1" maxOccurs="unbounded" type="http-serviceType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- http-service connectors -->
+    <xs:complexType name="http-serviceType">
+      <xs:sequence>
+        <xs:element name="access-log" minOccurs="0" type="http-access-logType" />
+        <xs:element maxOccurs="unbounded" ref="http-connector"/>
+        <xs:element maxOccurs="unbounded" ref="virtual-server"/>
+        <xs:element name="properties" minOccurs="0" maxOccurs="unbounded" type="propertiesType" />
+      </xs:sequence>
+    </xs:complexType>
+
+  <xs:element name="http-connector">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="ssl"/>
+        <xs:element name="properties" type="propertiesType" />
+      </xs:sequence>
+      <xs:attributeGroup ref="http-connector-attlist"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="http-connector-attlist">
+    <xs:attribute name="id" use="required"/>
+    <xs:attribute name="address" use="required"/>
+    <xs:attribute name="port" use="required"/>
+    <xs:attribute name="protocol"/>
+    <xs:attribute name="scheme"/>
+    <xs:attribute name="redirect-port"/>
+    <xs:attribute name="blocking-enabled" default="false" type="boolean"/>
+    <xs:attribute name="secure" default="false" type="boolean"/>
+    <xs:attribute name="client-auth" default="false" type="boolean"/>
+    <xs:attribute name="default-virtual-server"/>
+    <xs:attribute name="xpowered-by"/>
+    <xs:attribute name="enabled" default="true" type="boolean"/>
+      <xs:attribute name="acceptor-executor" type="xs:IDREF" />
+      <xs:attribute name="request-executor" type="xs:IDREF" />      
+  </xs:attributeGroup>
+
+    <xs:element name="ssl">
+    <xs:complexType>
+      <xs:attributeGroup ref="ssl-attlist"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="ssl-attlist">
+    <xs:attribute name="cert-nickname" use="required"/>
+    <xs:attribute name="ssl2-enabled" default="false" type="boolean"/>
+    <xs:attribute name="ssl2-ciphers"/>
+    <xs:attribute name="ssl3-enabled" default="true" type="boolean"/>
+    <xs:attribute name="ssl3-tls-ciphers"/>
+    <xs:attribute name="tls-enabled" default="true" type="boolean"/>
+    <xs:attribute name="tls-rollback-enabled" default="true" type="boolean"/>
+    <xs:attribute name="client-auth-enabled" default="false" type="boolean"/>
+  </xs:attributeGroup>
+
+  <xs:element name="virtual-server">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
+        <xs:element name="properties" type="propertiesType" />
+      </xs:sequence>
+      <xs:attributeGroup ref="virtual-server-attlist"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="virtual-server-attlist">
+    <xs:attribute name="id" use="required"/>
+    <xs:attribute name="http-connectors"/>
+    <xs:attribute name="default-web-module"/>
+    <xs:attribute name="hosts" use="required"/>
+    <xs:attribute name="docroot"/>
+    <xs:attribute name="log-file" default="${jboss.web.virtual-server}.log"/>
+  </xs:attributeGroup>
+
+    <xs:complexType name="http-access-logType">
+        <xs:attribute name="log-directory" default="${com.sun.aas.instanceRoot}/logs/access"/>
+        <xs:attribute name="iponly" default="true" type="boolean"/>
+    </xs:complexType>
+
+</xs:schema>
