@@ -20,25 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.deployment.item;
 
-import org.jboss.as.domain.AbstractDomainUpdate;
-import org.jboss.as.domain.Domain;
-import org.jboss.as.host.Host;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * A server instance in a domain.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Server {
+public final class ArchiveMountDeploymentService implements Service<VirtualFile> {
 
-    private final Domain domain;
-    private final Host host;
-
-    public Server(final Domain domain, final Host host) {
-        this.domain = domain;
-        this.host = host;
+    public void start(final StartContext context) throws StartException {
     }
 
+    public void stop(final StopContext context) {
+    }
+
+    public VirtualFile getValue() throws IllegalStateException {
+        return null;
+    }
 }

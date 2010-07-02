@@ -20,20 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.parser;
+package org.jboss.as.deployment.item;
+
+import org.jboss.msc.service.BatchBuilder;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ParseResult<T> {
+public final class ArchiveMountDeploymentItem implements DeploymentItem {
 
-    private T result;
+    private static final long serialVersionUID = 4335426754596642638L;
 
-    public void setResult(T result) {
-        this.result = result;
-    }
+    public void install(final BatchBuilder builder) {
 
-    public T getResult() {
-        return result;
     }
 }

@@ -20,28 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host;
+package org.jboss.as.model;
 
-import java.io.Serializable;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.server.Server;
+import java.util.Collection;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractHostUpdate<R> extends AbstractModelUpdate<R> implements Serializable {
+public final class Host extends AbstractModel<Host> {
 
-    private static final long serialVersionUID = -46837337005143198L;
+    private static final long serialVersionUID = 7667892965813702351L;
 
-    protected AbstractHostUpdate(final Class<R> resultType, final long beforeChecksum, final long afterChecksum) {
-        super(resultType, beforeChecksum, afterChecksum);
+    protected Host() {
     }
 
-    protected abstract void applyUpdate(Host host, Object token);
+    public long elementHash() {
+        return 0;
+    }
 
-    protected abstract R applyUpdate(Server server, Object token);
+    /** {@inheritDoc}  Host elements are always the same because it is the root element of the model. */
+    public boolean isSameElement(final Host other) {
+        return true;
+    }
 
-    protected abstract void revertFrom(Host host);
+    protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
+        
+    }
 
-    protected abstract R revertFrom(Server server);
+    protected Class<Host> getElementClass() {
+        return Host.class;
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEndElement();
+    }
 }

@@ -20,30 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.model;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-public abstract class AbstractDomainDeploymentUnit<E extends AbstractDomainDeploymentUnit<E>> extends AbstractDomainDeployment<E> {
+public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
+
+    private static final long serialVersionUID = 5335163070198512362L;
 
     private final String fileName;
     private final byte[] sha1Hash;
 
-    protected AbstractDomainDeploymentUnit(final String name, final String fileName, final byte[] sha1Hash) {
-        super(name);
+    protected DeploymentUnitElement(final String fileName, final byte[] sha1Hash) {
         this.fileName = fileName;
         this.sha1Hash = sha1Hash;
-    }
-
-    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other) {
-        return null;
-    }
-
-    public long elementHash() {
-        return super.elementHash() ^ Long.rotateLeft(fileName.hashCode() & 0xffffffffL, 32) ^ elementHashOf(sha1Hash);
     }
 
     public String getFileName() {
@@ -54,10 +48,24 @@ public abstract class AbstractDomainDeploymentUnit<E extends AbstractDomainDeplo
         return sha1Hash.clone();
     }
 
-    public boolean isSameElement(final E other) {
-        return false;
+    public long elementHash() {
+        return fileName.hashCode() & 0xffffffffL ^ elementHashOf(sha1Hash);
+    }
+
+    protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
+    }
+
+    protected Class<DeploymentUnitElement> getElementClass() {
+        return DeploymentUnitElement.class;
+    }
+
+    public boolean isSameElement(final DeploymentUnitElement other) {
+        return fileName.equals(other.fileName) && Arrays.equals(sha1Hash, other.sha1Hash);
     }
 
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute("name", fileName);
+        streamWriter.writeAttribute("sha1", bytesToHexString(sha1Hash));
+        streamWriter.writeEndElement();
     }
 }

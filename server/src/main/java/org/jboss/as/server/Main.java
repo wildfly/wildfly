@@ -91,15 +91,15 @@ public final class Main {
         final String serverGroup = args[1];
         final String serverName = args[2];
 
-        final Server server = initializeServerConfig(configRoot, serverGroup, serverName);
+//        final Server server = initializeServerConfig(configRoot, serverGroup, serverName);
 
         // Do something real with the Server config..
     }
 
-    private static Server initializeServerConfig(final File configRoot, final String serverGroup, final String serverName) {
-        // Read serialized config and apply changes from log
-        return null;
-    }
+//    private static Server initializeServerConfig(final File configRoot, final String serverGroup, final String serverName) {
+//        // Read serialized config and apply changes from log
+//        return null;
+//    }
 
     private static String readCommand(final InputStream in) throws IOException {
         final StringBuilder b = new StringBuilder();

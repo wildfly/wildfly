@@ -31,9 +31,11 @@
  * domain model itself, and coordinate the distribution of the domain update to the relevant servers, using the deployment
  * plan to coordinate distribution appropriately.</li>
  * <li>Deployment Processing.  In this phase, a chain of {@link DeploymentUnitProcessor}s are executed on each server
- * over a deployment unit to parse any descriptors, add them to the {@link DeploymentUnitContext}, and transform them into
- * {@link DeploymentItem}s.</li>
- * <li>Installation.  In this phase, the deployment items are executed to install the actual services.</li>
+ * over a deployment unit to parse any descriptors, add them to the {@link DeploymentUnitContext}, and/or transform them into
+ * {@link DeploymentItem}s.  These {@code DeploymentItem}s represent the deployed state of the deployment unit.</li>
+ * <li>Installation.  In this phase, the deployment items are executed to install the actual services.  At this point
+ * the deployment is considered to be "installed".</li>
+ * <li>Starting.  In this phase the services in the deployment are actually started up.</li>
  * </ol>
  * <p/>
  * The deployment items corresponding to a deployment unit are started, stopped, and removed by way of a unit-wide

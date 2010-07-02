@@ -20,36 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host;
+package org.jboss.as.deployment.item;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Host extends AbstractModel<Host> {
+public final class ModuleDeploymentService implements Service<Module> {
 
-    private static final long serialVersionUID = 7667892965813702351L;
+    private final ModuleDeploymentItem moduleDeploymentItem;
 
-    protected Host() {
+    public ModuleDeploymentService(final ModuleDeploymentItem moduleDeploymentItem) {
+        this.moduleDeploymentItem = moduleDeploymentItem;
     }
 
-    public long elementHash() {
-        return 0;
+    public void start(final StartContext context) throws StartException {
+//        final ModuleSpec spec = new ModuleSpec(moduleDeploymentItem.getIdentifier());
+//        final ModuleContentLoader.Builder builder = ModuleContentLoader.build();
+//        for (ModuleDeploymentItem.Resource resource : moduleDeploymentItem.getResources()) {
+//            builder.add(resource.getRootName(), new VFSResourceLoader());
+//        }
+//        spec.setContentLoader(new ModuleContentLoader());
     }
 
-    public Collection<AbstractHostUpdate<?>> getDifference(final Host other) {
+    public void stop(final StopContext context) {
+    }
+
+    public Module getValue() throws IllegalStateException {
         return null;
-    }
-
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-    }
-
-    public boolean isSameElement(final Host other) {
-        return true;
     }
 }

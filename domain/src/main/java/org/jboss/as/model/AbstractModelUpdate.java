@@ -25,33 +25,18 @@ package org.jboss.as.model;
 import java.io.Serializable;
 
 /**
- * @param <R> the result type
+ * @param <M> the model type that this update applies to
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<R> implements Serializable {
+public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
 
     private static final long serialVersionUID = -46837337005143198L;
 
-    private final long beforeChecksum;
-    private final long afterChecksum;
-    private final Class<R> resultType;
-
-    protected AbstractModelUpdate(final Class<R> resultType, final long beforeChecksum, final long afterChecksum) {
-        this.resultType = resultType;
-        this.beforeChecksum = beforeChecksum;
-        this.afterChecksum = afterChecksum;
+    protected AbstractModelUpdate() {
     }
 
-    public final long getBeforeChecksum() {
-        return beforeChecksum;
-    }
+    protected abstract Class<E> getModelElementType();
 
-    public final long getAfterChecksum() {
-        return afterChecksum;
-    }
-
-    public Class<R> getResultType() {
-        return resultType;
-    }
+    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
 }

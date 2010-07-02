@@ -22,7 +22,7 @@
 
 package org.jboss.as.deployment.descriptor;
 
-import org.jboss.as.parser.ParseResult;
+import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 

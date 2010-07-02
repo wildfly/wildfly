@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Map;
@@ -34,34 +34,44 @@ import javax.xml.stream.XMLStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DomainServerGroup extends AbstractDomainElement<DomainServerGroup> {
+public final class ServerGroupElement extends AbstractModelElement<ServerGroupElement> {
 
     private static final long serialVersionUID = 3780369374145922407L;
 
     private final String name;
-    private final Map<String, DomainServerGroupDeployment> deploymentMappings = new TreeMap<String, DomainServerGroupDeployment>();
+    private final Map<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
 
-    public DomainServerGroup(final String name) {
+    public ServerGroupElement(final String name) {
         this.name = name;
     }
 
+    /** {@inheritDoc} */
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
-        for (DomainServerGroupDeployment deployment : deploymentMappings.values()) {
+        for (ServerGroupDeploymentElement deployment : deploymentMappings.values()) {
             cksum = Long.rotateLeft(cksum, 1) ^ deployment.elementHash();
         }
         return cksum;
     }
 
-    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroup other) {
-        assert isSameElement(other);
-        return null;
+    /** {@inheritDoc} */
+    protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupElement>> target, final ServerGroupElement other) {
     }
 
-    public boolean isSameElement(final DomainServerGroup other) {
+    /** {@inheritDoc} */
+    protected Class<ServerGroupElement> getElementClass() {
+        return ServerGroupElement.class;
+    }
+
+    /** {@inheritDoc} */
+    public boolean isSameElement(final ServerGroupElement other) {
         return (name.equals(other.name));
     }
 
+    /** {@inheritDoc} */
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
+        // todo write content
+        streamWriter.writeEndElement();
     }
 }

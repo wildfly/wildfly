@@ -24,6 +24,7 @@ package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.Attachable;
 import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -36,6 +37,16 @@ import org.jboss.vfs.VirtualFile;
  * Once deployment is complete, the deployment unit context need not be retained.
  */
 public interface DeploymentUnitContext extends Attachable {
+
+    /**
+     * The service name under which all deployment unit services are registered.
+     */
+    ServiceName JBOSS_DEPLOYMENT_UNIT = ServiceName.JBOSS.append("deployment", "unit");
+
+    /**
+     * The service name under which all root controllers for deployment units are registered.
+     */
+    ServiceName JBOSS_DEPLOYMENT_UNIT_CONTROLLER = JBOSS_DEPLOYMENT_UNIT.append("controller");
 
     /**
      * Get the simple name of the deployment unit.
