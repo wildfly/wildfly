@@ -23,8 +23,6 @@
 package org.jboss.as.deployment.item;
 
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleContentLoader;
-import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

@@ -23,96 +23,103 @@
 package org.jboss.as.model;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.marshalling.FieldSetter;
 
 /**
  * A controlled object model which is related to an XML representation.  Such an object model can be serialized to
  * XML or to binary.
  *
+ * @param <M> the concrete model type
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModel<E extends AbstractModel<E>> extends AbstractModelElement<E> {
+public abstract class AbstractModel<M extends AbstractModel<M>> extends AbstractModelElement<M> {
 
     private static final long serialVersionUID = 66064050420378211L;
 
     /**
      * The complete set of elements within this model.
      */
-    private transient final Set<AbstractModelElement<?>> elements = Collections.newSetFromMap(new IdentityHashMap<AbstractModelElement<?>, Boolean>());
+    private transient final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     protected AbstractModel() {
     }
 
-    // Protected members
-
     /**
-     * Add an element to the model.  Called under a lock.  Should be called at the start of an element-specific
-     * add operation.
+     * Get the difference between this model element and another, as a list of updates which, when applied, would make
+     * this model element equivalent to the other.  Locks this model, then the other model, for read.
      *
-     * @param element the element to add
+     * @param other the other model element
+     * @return the collection of updates
      */
-    protected final void addElement(AbstractModelElement<?> element) {
-        if (! elements.add(element)) {
-            throw new IllegalArgumentException("Duplicate element " + element);
+    public final List<AbstractModelUpdate<M>> getDifference(M other) {
+        lockForRead();
+        try {
+            other.lockForRead();
+            try {
+                final List<AbstractModelUpdate<M>> list = new ArrayList<AbstractModelUpdate<M>>();
+                appendDifference(list, other);
+                return list;
+            } finally {
+                other.unlockForRead();
+            }
+        } finally {
+            unlockForRead();
         }
     }
 
     /**
-     * Remove an element from the model.  Called under a lock.  Should be called at the start of an element-specific
-     * remove operation.
+     * Synchronize this model with the other model.  Gets all the differences with the other and merges them into this
+     * one, one update at a time, under a single lock.
      *
-     * @param element the element to remove
-     * @return {@code true} if the element was found within the model
+     * @param other the other model
      */
-    protected final boolean removeElement(AbstractModelElement<?> element) {
-        if (! elements.remove(element)) {
-            return false;
+    public final void synchronize(M other) {
+        lockForWrite();
+        try {
+            for (AbstractModelUpdate<M> update : getDifference(other)) {
+                update.applyUpdate(cast());
+            }
+        } finally {
+            unlockForWrite();
         }
-        return true;
+    }
+
+    // Protected members
+
+    /** {@inheritDoc} */
+    protected final Class<M> getModelClass() {
+        return getElementClass();
+    }
+
+    @SuppressWarnings({ "LockAcquiredButNotSafelyReleased" })
+    protected final void lockForRead() {
+        readWriteLock.readLock().lock();
+    }
+
+    protected final void unlockForRead() {
+        readWriteLock.readLock().unlock();
+    }
+
+    @SuppressWarnings({ "LockAcquiredButNotSafelyReleased" })
+    protected final void lockForWrite() {
+        readWriteLock.writeLock().lock();
+    }
+
+    protected final void unlockForWrite() {
+        readWriteLock.writeLock().unlock();
     }
 
     // Serialization
 
-    private static final FieldSetter elementsSetter = FieldSetter.get(AbstractModel.class, "elements");
+    private static final FieldSetter readWriteLockSetter = FieldSetter.get(AbstractModel.class, "readWriteLock");
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        readWriteLockSetter.set(this, new ReentrantReadWriteLock());
         ois.defaultReadObject();
-        final int objectCount = ois.readInt();
-        final Set<AbstractModelElement<?>> elements = Collections.newSetFromMap(new IdentityHashMap<AbstractModelElement<?>, Boolean>(objectCount));
-        elementsSetter.set(this, elements);
-        for (int i = 0; i < objectCount; i ++) {
-            deserializeElement((AbstractModelElement<?>) ois.readObject());
-        }
-    }
-
-    /**
-     * Override to perform additional actions upon deserialize.
-     *
-     * @param element
-     * @throws InvalidObjectException
-     */
-    protected void deserializeElement(AbstractModelElement<?> element) throws InvalidObjectException {
-        try {
-            addElement(element);
-        } catch (IllegalArgumentException e) {
-            final InvalidObjectException ioe = new InvalidObjectException("An element in the model is not valid");
-            ioe.initCause(e);
-            throw ioe;
-        }
-    }
-
-    private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.defaultWriteObject();
-        final Set<AbstractModelElement<?>> elements = this.elements;
-        oos.writeInt(elements.size());
-        for (AbstractModelElement<?> element : elements) {
-            oos.writeObject(element);
-        }
     }
 }

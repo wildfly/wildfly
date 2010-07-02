@@ -25,7 +25,6 @@ package org.jboss.as.deployment.item;
 import java.io.Serializable;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * A deployment item which defines a module.

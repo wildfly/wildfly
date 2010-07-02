@@ -20,29 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.model;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- * A deployment which is mapped into a {@link DomainServerGroup}.
+ * A deployment which is mapped into a {@link ServerGroupElement}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DomainServerGroupDeployment extends AbstractDomainElement<DomainServerGroupDeployment> {
+public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> {
     private static final long serialVersionUID = -7282640684801436543L;
 
     private final String deploymentName;
     private final byte[] deploymentHash;
     // todo: deployment overrides
 
-    public DomainServerGroupDeployment(final String deploymentName, final byte[] deploymentHash) {
+    /**
+     * Construct a new instance.
+     *
+     * @param deploymentName the name of the deployment unit
+     * @param deploymentHash the hash of the deployment unit
+     */
+    public ServerGroupDeploymentElement(final String deploymentName, final byte[] deploymentHash) {
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
         }
@@ -62,21 +66,21 @@ public final class DomainServerGroupDeployment extends AbstractDomainElement<Dom
         return deploymentName.hashCode() & 0xFFFFFFFFL ^ elementHashOf(hash);
     }
 
-    public DomainServerGroupDeployment clone() {
-        return super.clone();
+    /** {@inheritDoc} */
+    protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupDeploymentElement>> target, final ServerGroupDeploymentElement other) {
     }
 
-
-    public Collection<? extends AbstractDomainUpdate<?>> getDifference(final DomainServerGroupDeployment other) {
-        assert isSameElement(other);
-        return Collections.emptySet();
+    /** {@inheritDoc} */
+    protected Class<ServerGroupDeploymentElement> getElementClass() {
+        return ServerGroupDeploymentElement.class;
     }
 
-    public boolean isSameElement(final DomainServerGroupDeployment other) {
+    /** {@inheritDoc} */
+    public boolean isSameElement(final ServerGroupDeploymentElement other) {
         return deploymentName.equals(other.deploymentName) && Arrays.equals(deploymentHash, other.deploymentHash);
     }
 
+    /** {@inheritDoc} */
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEmptyElement(Domain.NAMESPACE, DomainElement.DEPLOYMENT.getLocalName());
     }
 }

@@ -20,20 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.parser;
+package org.jboss.as.model;
+
+import java.util.Collection;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ParseResult<T> {
+public final class Host extends AbstractModel<Host> {
 
-    private T result;
+    private static final long serialVersionUID = 7667892965813702351L;
 
-    public void setResult(T result) {
-        this.result = result;
+    protected Host() {
     }
 
-    public T getResult() {
-        return result;
+    public long elementHash() {
+        return 0;
+    }
+
+    /** {@inheritDoc}  Host elements are always the same because it is the root element of the model. */
+    public boolean isSameElement(final Host other) {
+        return true;
+    }
+
+    protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
+        
+    }
+
+    protected Class<Host> getElementClass() {
+        return Host.class;
+    }
+
+    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEndElement();
     }
 }

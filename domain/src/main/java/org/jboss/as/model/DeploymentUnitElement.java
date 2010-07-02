@@ -20,59 +20,52 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.host;
+package org.jboss.as.model;
 
+import java.util.Arrays;
 import java.util.Collection;
-import org.jboss.as.domain.Domain;
-import org.jboss.as.model.AbstractModel;
-import org.jboss.as.parser.DomainElement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-/**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- */
-public final class Host extends AbstractModel<Host> {
+public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
 
-    private static final long serialVersionUID = 7667892965813702351L;
+    private static final long serialVersionUID = 5335163070198512362L;
 
-    protected Host() {
+    private final String fileName;
+    private final byte[] sha1Hash;
+
+    protected DeploymentUnitElement(final String fileName, final byte[] sha1Hash) {
+        this.fileName = fileName;
+        this.sha1Hash = sha1Hash;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public byte[] getSha1Hash() {
+        return sha1Hash.clone();
     }
 
     public long elementHash() {
-        return 0;
+        return fileName.hashCode() & 0xffffffffL ^ elementHashOf(sha1Hash);
     }
 
-    public Collection<AbstractHostUpdate<?>> getDifference(final Host other) {
-        return null;
+    protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
     }
 
-    /** {@inheritDoc}  Host elements are always the same because it is the root element of the model. */
-    public boolean isSameElement(final Host other) {
-        return true;
+    protected Class<DeploymentUnitElement> getElementClass() {
+        return DeploymentUnitElement.class;
     }
 
-    protected void addElement(AbstractHostElement<?> hostElement) {
-        super.addElement(hostElement);
-    }
-
-    protected void removeElement(AbstractHostElement<?> hostElement) {
-        super.removeElement(hostElement);
-    }
-
-    public Host clone() {
-        return super.clone();
+    public boolean isSameElement(final DeploymentUnitElement other) {
+        return fileName.equals(other.fileName) && Arrays.equals(sha1Hash, other.sha1Hash);
     }
 
     public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeComment(
-                "!!! NOTE !!!\n\n" +
-                "This file is generated and managed by the\n" +
-                "Server Manager and should only be edited when\n" +
-                "it is offline."
-        );
-        streamWriter.writeStartElement(Domain.NAMESPACE, DomainElement.DOMAIN.getLocalName());
+        streamWriter.writeAttribute("name", fileName);
+        streamWriter.writeAttribute("sha1", bytesToHexString(sha1Hash));
         streamWriter.writeEndElement();
     }
 }

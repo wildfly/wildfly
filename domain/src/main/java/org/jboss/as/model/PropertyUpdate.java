@@ -20,57 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.parser;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.jboss.as.model;
 
 /**
- * An enumeration of all the possible XML elements in the domain schema, by name.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum DomainElement {
-    // must be first
-    UNKNOWN(null),
+public final class PropertyUpdate extends AbstractModelUpdate<PropertyElement> {
 
-    // Domain 1.0 elements in alpha order
-    DOMAIN("domain"),
-    DEPLOYMENT("deployment"),
+    private static final long serialVersionUID = 7481356183023660806L;
 
-    SERVER_GROUP("server-group"),
-    SERVER_GROUPS("server-groups"),
+    private final String value;
 
-    ;
-
-    private final String name;
-
-    DomainElement(final String name) {
-        this.name = name;
+    public PropertyUpdate(final String value) {
+        this.value = value;
     }
 
-    /**
-     * Get the local name of this element.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
-        return name;
+    protected Class<PropertyElement> getModelElementType() {
+        return PropertyElement.class;
     }
 
-    private static final Map<String, DomainElement> MAP;
-
-    static {
-        final Map<String, DomainElement> map = new HashMap<String,DomainElement>();
-        for (DomainElement element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+    protected AbstractModelUpdate<PropertyElement> applyUpdate(final PropertyElement element) {
+        try {
+            return new PropertyUpdate(element.getValue());
+        } finally {
+            element.setValue(value);
         }
-        MAP = map;
     }
 
-    public static DomainElement forName(String localName) {
-        final DomainElement element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
+    public String getValue() {
+        return value;
     }
 }

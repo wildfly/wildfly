@@ -20,9 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.parser;
+package org.jboss.as.model;
 
-import org.jboss.as.domain.Domain;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -47,7 +46,7 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
             if (reader.getAttributeNamespace(i) != null) {
                 reader.handleAttribute(value, i);
             } else {
-                switch (DomainAttribute.forName(reader.getAttributeLocalName(i))) {
+                switch (Attribute.forName(reader.getAttributeLocalName(i))) {
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
@@ -63,7 +62,7 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
                 }
                 case START_ELEMENT: {
                     if (Domain.NAMESPACES.contains(reader.getNamespaceURI())) {
-                        switch (DomainElement.forName(reader.getLocalName())) {
+                        switch (Element.forName(reader.getLocalName())) {
                             case SERVER_GROUPS: {
                                 readServerGroupsElement(reader, domain);
                                 break;
@@ -93,7 +92,7 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
             if (reader.getAttributeNamespace(i) != null) {
                 reader.handleAttribute(domain, i);
             } else {
-                switch (DomainAttribute.forName(reader.getAttributeLocalName(i))) {
+                switch (Attribute.forName(reader.getAttributeLocalName(i))) {
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
