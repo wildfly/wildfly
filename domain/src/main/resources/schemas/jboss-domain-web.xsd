@@ -78,7 +78,7 @@
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
         <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
-        <xs:element name="properties" type="dc:propertiesType" />
+        <xs:element name="properties" type="propertiesType" />
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
