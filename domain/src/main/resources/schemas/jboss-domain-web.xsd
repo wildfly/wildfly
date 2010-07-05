@@ -46,17 +46,15 @@
     <xs:attribute name="id" use="required"/>
     <xs:attribute name="address" use="required"/>
     <xs:attribute name="port" use="required"/>
+    <xs:attribute name="native" default="true" type="boolean"/>
     <xs:attribute name="protocol"/>
     <xs:attribute name="scheme"/>
     <xs:attribute name="redirect-port"/>
-    <xs:attribute name="blocking-enabled" default="false" type="boolean"/>
     <xs:attribute name="secure" default="false" type="boolean"/>
-    <xs:attribute name="client-auth" default="false" type="boolean"/>
     <xs:attribute name="default-virtual-server"/>
     <xs:attribute name="xpowered-by"/>
     <xs:attribute name="enabled" default="true" type="boolean"/>
-      <xs:attribute name="acceptor-executor" type="xs:IDREF" />
-      <xs:attribute name="request-executor" type="xs:IDREF" />      
+    <xs:attribute name="executor" type="xs:IDREF" />     
   </xs:attributeGroup>
 
     <xs:element name="ssl">
@@ -79,18 +77,25 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
-        <xs:element name="properties" type="propertiesType" />
+        <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
+        <xs:element name="properties" type="dc:propertiesType" />
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="virtual-server-attlist">
-    <xs:attribute name="id" use="required"/>
+    <xs:attribute name="id" use="required"> 
+        <xs:annotation>
+	      	<xs:documentation>Reference to vhost name</xs:documentation>
+    	</xs:annotation>
+    </xs:attribute>
     <xs:attribute name="http-connectors"/>
     <xs:attribute name="default-web-module"/>
-    <xs:attribute name="hosts" use="required"/>
-    <xs:attribute name="docroot"/>
-    <xs:attribute name="log-file" default="${jboss.web.virtual-server}.log"/>
+    <xs:attribute name="hosts" use="required">
+        <xs:annotation>
+	      	<xs:documentation>Reference to vhost aliases</xs:documentation>
+    	</xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">
