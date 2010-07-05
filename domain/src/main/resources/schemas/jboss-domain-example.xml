@@ -1,0 +1,227 @@
+<domain xmlns="urn:jboss:domain:1.0"
+  targetNamespace="urn:jboss:domain:1.0"
+  xmlns:sec="urn:jboss:security-config:5.0"
+>
+
+  <!-- The domain manager/server bootstrap configuration -->
+  <domain-configuration>
+    <!-- The URI for bootstraping a domain server -->
+    <bootstrapURI>http://bootstrap.uri</bootstrapURI>
+  </domain-configuration>
+
+  <subsystems>
+    <subsystem name="ejb"/>
+    <subsystem name="war"/>
+    <subsystem name="jms" allowed="false"/>
+  </subsystems>
+
+  <deployments>
+    <deployment name="my-app.ear" sha1="xxx"/>
+    <deployment name="my-ejb.jar" sha1="xxx"/>
+    <deployment name="my-war.ear" sha1="xxx" allowed="false"/>
+  </deployments>
+
+  <server-groups>
+    <server-group group-name="group1">
+       <java-config java-home="${java.home}"
+                    debug-enabled="true" debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"
+                    javac-options="-g" env-classpath-ignored="true">
+
+         <heap size="512m" max-size="1024m"/>
+         <jvm-option value="-server"/>
+         <jvm-option value="-XX:-DisableExplicitGC"/>
+       
+         <jvm-properties>
+           <property name="prop1" value="value1"/>
+           <property name="prop2" value="value2"/>
+         </jvm-properties>
+
+         <system-properties>
+           <property name="prop1" value="value1"/>
+           <property name="prop2" value="value2"/>
+         </system-properties>
+         <classpath-prefix>../lib</classpath-prefix>
+         <classpath-suffix>/last.jar</classpath-suffix>
+         <server-classpath>server/lib/server.jar</server-classpath>
+         <system-classpath>${root}/lib/launch.jar</system-classpath>
+         <native-library-path-prefix>native/lib/main</native-library-path-prefix>
+         <native-library-path-suffix>native/lib/last</native-library-path-suffix>
+         <bytecode-preprocessors>org.xxx.BytecodePreprocessorImpl,com.xxx.BytecodePreprocessorImpl</bytecode-preprocessors>
+       </java-config>
+
+       <subsystems>
+         <disable name="http"/>
+         <disable name="ejb"/>
+       </subsystems>
+       <deployments>
+         <disable name="my-ejb.jar"/>
+       </deployments>
+
+       <resources>
+          <external-jndi-resource jndi-lookup-name="external/JNDIResource1"
+                                  res-type="org.xxx.ResourceType"
+                                  factory-class="org.xxx.ResourceJNDIFactory"
+                                  enabled="true">
+             <properties>
+               <property name="prop1" value="value1"/>
+               <property name="prop2" value="value2"/>
+             </properties>
+          </external-jndi-resource>
+
+          <jdbc-resource pool-name="JDBCConnectionPool1" enabled="false">
+             <properties>
+               <property name="prop1" value="value1"/>
+               <property name="prop2" value="value2"/>
+             </properties>
+          </jdbc-resource>
+
+          <mail-resource user="server-group1" password="servergroup1password">
+            <!-- The JavaMail connection properties -->
+            <mail-store-protocol>pop3</mail-store-protocol>
+            <mail-transfer-protocol>smtp</mail-transfer-protocol>
+            <mail-user>server-group1</mail-user>
+            <mail-pop3-host>xxx.xxx.xxx.xxx</mail-pop3-host>
+            <mail-smtp-host>xxx.xxx.xxx.xxx</mail-smtp-host>
+            <mail-smtp-port>25</mail-smtp-port>
+            <mail-from>server-group1@domain.com</mail-from>
+            <mail-debug>false</mail-debug>
+            <properties>
+              <property name="prop1" value="value1"/>
+              <property name="prop2" value="value2"/>
+            </properties>
+          </mail-resource>
+
+          <!-- The class name of the JPA factory + properties -->
+          <persistence-manager-factory-resource factory-class="org.xxx.JPAFactoryImpl">
+            <properties>
+              <property name="prop1" value="value1"/>
+              <property name="prop2" value="value2"/>
+            </properties>
+          </persistence-manager-factory-resource>
+       </resources>
+
+       <system-properties>
+         <properties>
+           <property name="prop1" value="value1"/>
+           <property name="prop2" value="value2"/>
+         </properties>
+       </system-properties>
+
+    </server-group>
+  </server-groups>
+
+  <clusters>
+    <clusster name="cluster1" category="cat1">
+      <!-- same possibilities as in server-group -->
+      <java-config>
+      </java-config>
+      <profiles>
+      </profiles>
+      <resources>
+      </resources>
+      <system-properties>
+      </system-properties>
+
+      <partition-name>partition1</partition-name>
+      <state-transfer-timeout>5000</state-transfer-timeout>
+      <method-call-timeout>2000</method-call-timeout>
+    </clusster>
+  </clusters>
+
+  <servers>
+    <server>
+       <!-- The name of the server group or cluster the server is associated with. -->
+       <server-group-ref ref="group1"/>
+
+       <!-- see example in the server-group above -->
+       <java-config>
+       </java-config>
+
+       <loggers>
+         <!-- An object which contains an optional reference to a logging context. -->
+         <root-logger context="logger.context"/>
+
+         <!-- An object which contains a reference to a logger category and an optional reference to a logging context. -->
+         <logger context="logger.context" category="TRACE"/>
+       </loggers>
+
+       <system-properties>
+         <properties>
+           <property name="prop1" value="value1"/>
+           <property name="prop2" value="value2"/>
+         </properties>
+       </system-properties>
+    </server>
+  </servers>
+
+  <security-policy>
+    <authentication>
+      <login-module code="org.xxx.LoginModule1" flag="sufficient">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </login-module>
+      <login-module code="org.xxx.LoginModule2" flag="optional">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </login-module>
+    </authentication>
+
+    <authorization>
+      <policy-module code="org.xxx.PolicyModule1" flag="required">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </policy-module>
+      <policy-module code="org.xxx.PolicyModule2" flag="required">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </policy-module>
+    </authorization>
+
+    <acl>
+      <acl-module code="org.xxx.ACLModule1" flag="requisite">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </acl-module>
+      <acl-module code="org.xxx.ACLModule2" flag="sufficient">
+         <module-option name="option1">value1</module-option>
+         <module-option name="option2">value2</module-option>
+      </acl-module>
+    </acl>
+  </security-policy>
+
+  <containers>
+    <web-container>
+      <thread-group name="ThreadGroupBean1"/>
+      <http-service>
+        <access-log log-directory="domain/web/log"/>
+
+        <http-connector id="httpConnector1" address="xxx.xxx.xxx.xxx" port="xxxx" protocol="tls" scheme="https" client-auth="true">
+          <ssl cert-nickname="certnick" ssl3-enabled="true" ssl3-tls-ciphers="xxx"/>
+          <properties>
+            <property name="prop1" value="value1"/>
+            <property name="prop2" value="value2"/>
+          </properties>
+        </http-connector>
+
+        <virtual-server id="VirtualServer1" http-connectors="httpConnector1" hosts="xxx.xxx.xxx.xxx">
+          <access-log log-directory="domain/web/log"/>
+          <properties>
+            <property name="prop1" value="value1"/>
+            <property name="prop2" value="value2"/>
+          </properties>        
+        </virtual-server>
+
+        <properties>
+          <property name="prop1" value="value1"/>
+          <property name="prop2" value="value2"/>
+        </properties>
+      </http-service>
+    </web-container>
+  </containers>
+
+  <system-properties>
+    <property name="prop1" value="value1"/>
+    <property name="prop2" value="value2"/>
+  </system-properties>
+
+</domain>
