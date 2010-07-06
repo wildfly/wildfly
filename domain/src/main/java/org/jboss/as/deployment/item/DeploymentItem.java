@@ -41,4 +41,12 @@ public interface DeploymentItem extends Serializable {
      * @return the runtime state
      */
     void install(BatchBuilder builder);
+
+    /**
+     * Get a human-readable description of this deployment item.  The string should state what type of deployment item
+     * it is, along with any identifier such as a name.  An example would be {@code "servlet 'MyServlet'"}.
+     *
+     * @return the string representation
+     */
+    String toString();
 }
