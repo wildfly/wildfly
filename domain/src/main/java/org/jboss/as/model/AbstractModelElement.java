@@ -104,7 +104,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
         @SuppressWarnings("unchecked")
         public int compare(final Object o1, final Object o2) {
-            return ((Comparable<Object>) o1).compareTo(o2);
+            return ((Comparable) o1).compareTo(o2);
         }
     };
 
@@ -165,7 +165,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
                     if (! theirIterator.hasNext()) {
                         break;
                     }
-                    ours = theirIterator.next();
+                    theirs = theirIterator.next();
                 }
             }
         }
