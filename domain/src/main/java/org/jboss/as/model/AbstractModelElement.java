@@ -102,8 +102,9 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     protected abstract void appendDifference(Collection<AbstractModelUpdate<E>> target, E other);
 
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
+        @SuppressWarnings("unchecked")
         public int compare(final Object o1, final Object o2) {
-            return ((Comparable<?>)o1).compareTo(o2);
+            return ((Comparable<Object>) o1).compareTo(o2);
         }
     };
 
