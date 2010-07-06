@@ -14,12 +14,13 @@
   <xs:element name="domain">
     <xs:complexType>
       <xs:all minOccurs="0" maxOccurs="1">
+        <!-- TODO the domain-configuration concept needs review -->
         <xs:element name="domain-configuration" type="domain-configurationType"/>
+        <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
         <xs:element name="subsystems" type="domainSubsystemsType"/>
         <xs:element name="interfaces" type="interfacesType"/>
         <xs:element name="socket-groups" type="socket-groupsType"/>
         <xs:element name="server-groups" type="server-groupType"/>
-        <xs:element name="clusters" type="clustersType"/>
         <xs:element name="security-policy" type="sec:PolicyConfig" />
         <xs:element name="containers">
           <xs:complexType>
@@ -48,6 +49,27 @@
       <xs:documentation>The URI for bootstraping a domain server</xs:documentation>
     </xs:annotation>
   </xs:element>
+  
+  <xs:complexType name="domain-extensionType">
+    <xs:annotation>
+      <xs:documentation>An extension module that adds extensions to the domain</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="prefix" use="optional">
+      <xs:annotation>
+        <xs:documentation>A prefix that if applied to a subsystem name identifies
+         that subsystem as being associated with this extension module. Used to
+         provide a namespace for subsystem names so unrelated extension modules
+         that happen to use the same subsystem names can be used.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="module" use="required" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of the module, in group:artifiact format; e.g. org.foo:widget</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    
+  </xs:complexType>
 
   <xs:complexType name="domainSubsystemsType">
     <xs:annotation>
@@ -155,14 +177,6 @@
         <xs:documentation>
             Name of the interface to which the socket should be bound, or, for multicast
             sockets, the interface on which it should listen. This should
-            be one of the declared interfaces.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="interface" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Name of the interface to which the socket should be bound. This should
             be one of the declared interfaces.
         </xs:documentation>
       </xs:annotation>
