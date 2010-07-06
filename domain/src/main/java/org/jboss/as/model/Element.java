@@ -20,37 +20,57 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.model;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModel;
-import org.jboss.as.model.AbstractModelElement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * An object within the domain model.
+ * An enumeration of all the possible XML elements in the domain schema, by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainElement<E extends AbstractDomainElement<E>> extends AbstractModelElement<E> {
+public enum Element {
+    // must be first
+    UNKNOWN(null),
 
-    private static final long serialVersionUID = 1L;
+    // Domain 1.0 elements in alpha order
+    DOMAIN("domain"),
+    DEPLOYMENT("deployment"),
 
-    protected AbstractDomainElement() {
+    SERVER_GROUP("server-group"),
+    SERVER_GROUPS("server-groups"),
+
+    ;
+
+    private final String name;
+
+    Element(final String name) {
+        this.name = name;
     }
 
-    /** {@inheritDoc} */
-    protected final void addToModel(final AbstractModel<?> model) throws IllegalArgumentException {
-        if (model instanceof Domain) {
-            addToDomain((Domain) model);
-        } else {
-            throw new IllegalArgumentException("Domain element cannot be added to this model");
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
+        return name;
+    }
+
+    private static final Map<String, Element> MAP;
+
+    static {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
         }
+        MAP = map;
     }
 
-    protected void addToDomain(final Domain domain) throws IllegalArgumentException {
-        domain.addElement(this);
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
     }
-
-    /** {@inheritDoc} */
-    public abstract Collection<? extends AbstractDomainUpdate<?>> getDifference(final E other);
 }

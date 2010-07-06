@@ -20,44 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
+package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * A deployment within a domain.
+ * An enumeration of all the possible XML attributes in the domain schema, by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainDeployment<E extends AbstractDomainDeployment<E>> extends AbstractDomainElement<E> {
+public enum Attribute {
+    // always first
+    UNKNOWN(null),
 
-    private static final long serialVersionUID = -6410644146472087909L;
+    // domain 1.0 attributes in alpha order
+    NAME("name"),
+
+
+    ;
 
     private final String name;
 
-    // Mutable state
-    private boolean disabled;
-
-    protected AbstractDomainDeployment(final String name) {
+    Attribute(final String name) {
         this.name = name;
     }
 
-    public String getName() {
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
         return name;
     }
 
-    public boolean isDisabled() {
-        return disabled;
+    private static final Map<String, Attribute> MAP;
+
+    static {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
     }
 
-    public boolean isSameElement(final E other) {
-        return name.equals(other.name);
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
     }
-
-    public long elementHash() {
-        return name.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected abstract <T> ServiceController<T> deployTo(ServiceContainer container);
 }

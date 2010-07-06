@@ -20,24 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
-
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+package org.jboss.as.model;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DomainController {
+public final class PropertyUpdate extends AbstractModelUpdate<PropertyElement> {
 
-    void performDomainUpdate(AbstractDomainUpdate update);
+    private static final long serialVersionUID = 7481356183023660806L;
 
-    /**
-     * Install a deployment unit processor at a point in the chain.  Deployment unit processors are executed in
-     * increasing order by priority.  In the case of a conflict, the processors are executed in alpha order by
-     * fully qualified class name.  If that conflicts, order is indeterminate.
-     *
-     * @param processor the processor
-     * @param priority the priority
-     */
-    void installDeploymentUnitProcessor(DeploymentUnitProcessor processor, int priority);
+    private final String value;
+
+    public PropertyUpdate(final String value) {
+        this.value = value;
+    }
+
+    protected Class<PropertyElement> getModelElementType() {
+        return PropertyElement.class;
+    }
+
+    protected AbstractModelUpdate<PropertyElement> applyUpdate(final PropertyElement element) {
+        try {
+            return new PropertyUpdate(element.getValue());
+        } finally {
+            element.setValue(value);
+        }
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

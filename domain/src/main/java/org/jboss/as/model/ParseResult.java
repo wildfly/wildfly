@@ -20,28 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain;
-
-import java.io.Serializable;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.server.Server;
+package org.jboss.as.model;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractDomainUpdate<R> extends AbstractModelUpdate<R> implements Serializable {
+public final class ParseResult<T> {
 
-    private static final long serialVersionUID = -46837337005143198L;
+    private T result;
 
-    protected AbstractDomainUpdate(final Class<R> resultType, final long beforeChecksum, final long afterChecksum) {
-        super(resultType, beforeChecksum, afterChecksum);
+    public void setResult(T result) {
+        this.result = result;
     }
 
-    protected abstract void applyUpdate(Domain domain, Object token);
-
-    protected abstract R applyUpdate(Server server, Object token);
-
-    protected abstract void revertFrom(Domain domain);
-
-    protected abstract R revertFrom(Server server);
+    public T getResult() {
+        return result;
+    }
 }
