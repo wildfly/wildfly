@@ -17,8 +17,8 @@
             <nic name="eth1"/>
             <nic-match value="eth[0-9]+"/>
             <any>
-                <inet-address-match value="10.0.0.0/8"/>
-                <inet-address-match value="192.168.0.0/16"/>
+                <subnet-match value="10.0.0.0/8"/>
+                <subnet-match value="192.168.0.0/16"/>
             </any>
         </interface>
         <interface name="public2">
