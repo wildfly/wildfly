@@ -66,25 +66,19 @@
     </socket-groups>
 
     <containers>
-        <web-container>
-            <http-service>
-                <access-log log-directory="domain/web/log"/>
-
-                <http-connector name="httpConnector1" socket="http" protocol="tls" scheme="https" client-auth="true">
-                    <ssl cert-nickname="certnick" ssl3-enabled="true" ssl3-tls-ciphers="xxx"/>
+        <web-containers>
+            <web-container name="jboss.web">
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl password="changeit" cypher-suite="SSLv2+SSLv3"/>
                 </http-connector>
 
-                <virtual-host name="VirtualServer1" default="true">
-                    <host name="foo.com"/>
-                    <host address="1.2.3.4"/>
-                    <connector name="httpConnector1"/>
-                    <connector name="httpConnector1"/>
-
-                    <access-log log-directory="domain/web/log2"/>
-                </virtual-host>
-
-            </http-service>
-        </web-container>
+                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
+                    <access-log/>
+                </virtual-server>
+            </web-container>
+        </web-containers>
     </containers>
 
     <system-properties>
@@ -96,10 +90,14 @@
         <server-group group-name="group1" profile="something">
 
             <socket-group name="blah"/>
-
-            <cluster>
-
-            </cluster>
+       
+           <cluster default-multicast-address="230.0.0.4">
+             <group-communication-config name="udp">
+                 <udp-tranpsort socket="cluster-udp"/>
+             </group-communication-config>  
+             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
+             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
+           </cluster>
 
             <jvm name="icedtea1">
 
