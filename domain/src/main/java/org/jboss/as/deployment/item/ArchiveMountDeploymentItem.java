@@ -23,15 +23,40 @@
 package org.jboss.as.deployment.item;
 
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.DuplicateServiceException;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Values;
+import org.jboss.vfs.VirtualFile;
 
 /**
+ * DeploymentItem used to manage the mounting of a VFS archive.
+ *
+ * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ArchiveMountDeploymentItem implements DeploymentItem {
+    public static final ServiceName ARCHIVE_MOUNT_DEPLOYMENT_SERVICE = ServiceName.JBOSS.append("mount", "service");
+
+    private final VirtualFile root;
 
     private static final long serialVersionUID = 4335426754596642638L;
 
-    public void install(final BatchBuilder builder) {
+    public ArchiveMountDeploymentItem(VirtualFile root) {
+        this.root = root;
+    }
 
+    public void install(final BatchBuilder builder) {
+        final ServiceName serviceName = ARCHIVE_MOUNT_DEPLOYMENT_SERVICE.append(root.getPathName());
+        try {
+            builder.addServiceValueIfNotExist(serviceName, Values.immediateValue(new ArchiveMountDeploymentService(root)))
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        } catch (DuplicateServiceException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public VirtualFile getRoot() {
+        return root;
     }
 }

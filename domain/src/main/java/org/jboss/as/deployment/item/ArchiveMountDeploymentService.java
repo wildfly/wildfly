@@ -26,20 +26,45 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
 /**
+ * A service used for mounting a VFS archive.
+ * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ArchiveMountDeploymentService implements Service<VirtualFile> {
+    private final VirtualFile root;
+    private Closeable handle;
+    private TempFileProvider tempProvider;
+
+    public ArchiveMountDeploymentService(VirtualFile root) {
+        this.root = root;
+    }
 
     public void start(final StartContext context) throws StartException {
+        try {
+            tempProvider = TempFileProvider.create("test", Executors.newScheduledThreadPool(2));
+            if(root.isFile())
+                handle = VFS.mountZip(root, root, tempProvider);
+        } catch(IOException e) {
+            VFSUtils.safeClose(handle, tempProvider);
+            throw new StartException("Failed to mount archive " + root, e);
+        }
     }
 
     public void stop(final StopContext context) {
+        VFSUtils.safeClose(handle, tempProvider);
     }
 
     public VirtualFile getValue() throws IllegalStateException {
-        return null;
+        return root;
     }
 }
