@@ -62,6 +62,10 @@ public class DeploymentUnitContextImpl implements DeploymentUnitContext {
         deploymentItems.add(item);
     }
 
+    public List<DeploymentItem> getDeploymentItems() {
+        return new ArrayList<DeploymentItem>(deploymentItems);        
+    }
+
     @Override
     public <T> T getAttachment(final AttachmentKey<T> key) {
         return safeCast(key, attachments.get(key));
