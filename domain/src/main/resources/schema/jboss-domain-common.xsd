@@ -75,11 +75,156 @@
     </xs:complexType>
 
     <xs:complexType name="interfaceType">
+        <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="inet-address" type="inet-addressType"/> 
+            <xs:element name="nic" type="nicType"/> 
+            <xs:sequence>
+                <xs:element name="loopback" type="loopbackType"/>
+                <xs:element name="multicast" type="multicastType"/>
+                <xs:element name="point-to-point" type="point-to-pointType"/>
+                <xs:element name="virtual" type="interface-virtualType"/>
+                <xs:element name="up" type="interface-upType"/>
+                <xs:element name="public-address" type="public-addressType"/>
+                <xs:element name="private-address" type="private-addressType"/>
+                <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
+                <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
+                <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/> 
+                <xs:element name="not" type="address-exclusionType"/>
+            </xs:sequence>
+        </xs:choice>
+        
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="address" type="xs:string" use="required"/>
+    </xs:complexType>
+    
+    <xs:complexType name="inet-addressType">
+        <xs:attribute name="address" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Either a IP address in IPv6 or IPv4 dotted decimal notation,
+                    or a hostname that can be resolved to an IP address.
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="nicType">
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of a network interface (e.g. eth0, eth1, lo).
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="nic-matchType">
+        <xs:attribute name="value" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    A regular expression against which the names of the network
+                    interfaces available on the machine can be matched to find
+                    an acceptable interface.
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="subnet-matchType">
+        <xs:attribute name="value" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    A network IP address and the number of bits in the
+                    address' network prefix, written in "slash notation";
+                    e.g. "192.168.0.0/16".
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="address-exclusionType">
+        <xs:sequence>
+            <xs:element name="loopback" type="loopbackType"/>
+            <xs:element name="multicast" type="multicastType"/>
+            <xs:element name="point-to-point" type="point-to-pointType"/>
+            <xs:element name="virtual" type="interface-virtualType"/>
+            <xs:element name="up" type="interface-upType"/>
+            <xs:element name="public-address" type="public-addressType"/>
+            <xs:element name="private-address" type="private-addressType"/> 
+            <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
+            <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
+            <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
 
+    <xs:complexType name="loopbackType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it is a loopback
+                    interface.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="multicastType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it supports
+                    multicast.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="point-to-pointType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it is a point-to-point
+                    interface.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="interface-upType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it is currently up.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="interface-virtualType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it is a virtual
+                    interface.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="public-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it has a publicly
+                    routable address.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="private-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not it has a publicly
+                    routable address.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+    
   <xs:complexType name="disabledSubsystemsType">
     <xs:annotation>
       <xs:documentation>Contains a list of disabled subsystems per server-group</xs:documentation>

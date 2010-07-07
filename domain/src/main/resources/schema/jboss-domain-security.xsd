@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="urn:jboss:domain:1.0"
+    targetNamespace="urn:jboss:domain:1.0"
+    >
+
+    <!-- Include the common definitions -->
+    <xs:include schemaLocation="jboss-domain-common.xsd" />
+
+    <xs:complexType name="security-domainType">
+        <xs:sequence>
+        </xs:sequence>
+        <xs:attribute name="domain-name" type="xs:ID">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the server group
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+</xs:schema>

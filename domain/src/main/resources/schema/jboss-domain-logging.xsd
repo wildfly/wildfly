@@ -29,8 +29,8 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-    <!-- Allow access to common domain schema elements -->
-    <xs:include schemaLocation="jboss-domain-common.xsd"/>
+    <!-- Allow access to common domain schema elements
+    <xs:include schemaLocation="jboss-domain-common.xsd"/> -->
 
     <xs:element name="logging" type="loggingType"/>
 
@@ -209,7 +209,7 @@
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="loggers" type="loggersType" minOccurs="0"/>
             <xs:element name="sub-handlers" type="handlersType" minOccurs="0"/>
-            <xs:element name="properties" type="com:propertiesType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="optional"/>
         <xs:attribute name="encoding" type="xs:string" use="optional"/>

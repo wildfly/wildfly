@@ -3,41 +3,6 @@
         xmlns:sec="urn:jboss:security-config:5.0"
         >
 
-    <interfaces>
-        <interface name="default">
-            <inet-address value="127.0.0.1"/>
-        </interface>
-        <interface name="public">
-            <not><loopback/></not>
-            <point-to-point/>
-            <up/>
-            <public-address/>
-            <private-address/>
-            <multicast/>
-            <nic name="eth1"/>
-            <nic-match value="eth[0-9]+"/>
-            <any>
-                <inet-address-match value="10.0.0.0/8"/>
-                <inet-address-match value="192.168.0.0/16"/>
-            </any>
-        </interface>
-        <interface name="public2">
-            <nic name="eth1"/>
-        </interface>
-        <!-- require override at the host level -->
-        <interface name="public3"/>
-    </interfaces>
-
-    <socket-groups>
-        <socket-group name="foo">
-            <socket name="jndi" port="1099"/>
-            <socket name="http" port="8080"/>
-            <socket name="https" port="8443"/>
-            <socket name="remoting" port="1234"/>
-            <socket name="cluster-udp" interface="internal" port="55200" multicast-addr="1.2.3.4"/>
-        </socket-group>
-        <socket-group name="foo2" extends="foo"/>
-    </socket-groups>
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
@@ -63,15 +28,76 @@
         <deployment name="my-ejb.jar" sha1="xxx"/>
         <deployment name="my-war.ear" sha1="xxx" start="false"/>
     </deployments>
+    
+    <interfaces>
+        <interface name="default">
+            <inet-address value="127.0.0.1"/>
+        </interface>
+        <interface name="public">
+            <not><loopback/></not>
+            <point-to-point/>
+            <up/>
+            <public-address/>
+            <private-address/>
+            <multicast/>
+            <nic name="eth1"/>
+            <nic-match value="eth[0-9]+"/>
+            <any>
+                <subnet-match value="10.0.0.0/8"/>
+                <subnet-match value="192.168.0.0/16"/>
+            </any>
+        </interface>
+        <interface name="public2">
+            <nic name="eth1"/>
+        </interface>
+        <!-- require override at the host level -->
+        <interface name="public3"/>
+    </interfaces>
+
+    <socket-groups>
+        <socket-group name="foo">
+            <socket name="jndi" port="1099"/>
+            <socket name="http" port="8080"/>
+            <socket name="https" port="8443"/>
+            <socket name="remoting" port="1234"/>
+            <socket name="cluster-udp" interface="internal" port="55200" multicast-addr="1.2.3.4"/>
+        </socket-group>
+        <socket-group name="foo2" extends="foo"/>
+    </socket-groups>
+
+    <containers>
+        <web-containers>
+            <web-container name="jboss.web">
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl password="changeit" cypher-suite="SSLv2+SSLv3"/>
+                </http-connector>
+
+                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
+                    <access-log/>
+                </virtual-server>
+            </web-container>
+        </web-containers>
+    </containers>
+
+    <system-properties>
+        <property name="prop1" value="value1"/>
+        <property name="prop2" value="value2"/>
+    </system-properties>
 
     <server-groups>
         <server-group group-name="group1" profile="something">
 
             <socket-group name="blah"/>
-
-            <cluster>
-
-            </cluster>
+       
+           <cluster default-multicast-address="230.0.0.4">
+             <group-communication-config name="udp">
+                 <udp-tranpsort socket="cluster-udp"/>
+             </group-communication-config>  
+             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
+             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
+           </cluster>
 
             <jvm name="icedtea1">
 
@@ -92,32 +118,5 @@
 
         </server-group>
     </server-groups>
-
-    <containers>
-        <web-container>
-            <http-service>
-                <access-log log-directory="domain/web/log"/>
-
-                <http-connector name="httpConnector1" socket="http" protocol="tls" scheme="https" client-auth="true">
-                    <ssl cert-nickname="certnick" ssl3-enabled="true" ssl3-tls-ciphers="xxx"/>
-                </http-connector>
-
-                <virtual-host name="VirtualServer1" default="true">
-                    <host name="foo.com"/>
-                    <host address="1.2.3.4"/>
-                    <connector name="httpConnector1"/>
-                    <connector name="httpConnector1"/>
-
-                    <access-log log-directory="domain/web/log2"/>
-                </virtual-host>
-
-            </http-service>
-        </web-container>
-    </containers>
-
-    <system-properties>
-        <property name="prop1" value="value1"/>
-        <property name="prop2" value="value2"/>
-    </system-properties>
 
 </domain>
