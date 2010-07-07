@@ -36,6 +36,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Dependency versions. Please keep alphabetical -->
+        <version.junit>4.6</version.junit>        
     </properties>
 
     <build>
@@ -109,6 +111,12 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>staxmapper</artifactId>
                 <version>1.0.0.Beta1-SNAPSHOT</version>
+            </dependency>
+      
+            <dependency>
+               <groupId>junit</groupId>
+               <artifactId>junit</artifactId>
+               <version>${version.junit}</version>
             </dependency>
 
         </dependencies>
