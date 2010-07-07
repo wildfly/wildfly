@@ -49,9 +49,9 @@ public class DeploymentChainImpl implements DeploymentChain {
     }
 
     @Override
-    public void addProcessor(DeploymentUnitProcessor processor, long processingOrder) {
+    public void addProcessor(DeploymentUnitProcessor processor, long priority) {
         final Set<OrderedProcessor> processors = this.orderedProcessors;
-        processors.add(new OrderedProcessor(processor, processingOrder));
+        processors.add(new OrderedProcessor(processor, priority));
     }
 
     @Override

@@ -20,32 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.attachment;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Processes a deployment from a VirtualFile root. 
- *
+ * Utility to help attach and retrieve a VirtualFile from a deployment context.
+ *  
  * @author John E. Bailey
  */
-public interface DeploymentProcessor {
-    /**
-     * Process a new deployment from a VirtualFile.
-     *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     */
-    void processDeployment(String name, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException;
+public class VirtualFileAttachment {
+    public static final AttachmentKey<VirtualFile> KEY = new AttachmentKey<VirtualFile>(VirtualFile.class);
 
-    /**
-     * Process a new deployment from a VirtualFile with an existing service batch.
-     *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     * @param batchBuilder The BatchBuilder to use for deployment.
-     */
-    void processDeployment(String name, VirtualFile deploymentRoot, BatchBuilder batchBuilder) throws DeploymentUnitProcessingException ;
+    public static void attachVirtualFile(final DeploymentUnitContext context, final VirtualFile virtualFile) {
+        context.putAttachment(KEY, virtualFile);
+    }
+
+    public static VirtualFile getVirtualFileAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
+    }
 }

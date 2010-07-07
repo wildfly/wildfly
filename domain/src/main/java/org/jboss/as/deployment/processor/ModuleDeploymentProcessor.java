@@ -23,13 +23,15 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.Dependencies;
+import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.item.ModuleDeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleDeploymentItem.
@@ -42,7 +44,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = context.getVirtualFile();
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", context.getName(), "noversion");
         final ModuleDeploymentItem.ResourceRoot[] resourceRoots = new ModuleDeploymentItem.ResourceRoot[]{new ModuleDeploymentItem.ResourceRoot(deploymentRoot)};
         final Dependencies dependenciesAttachment = context.getAttachment(Dependencies.KEY);
