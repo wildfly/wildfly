@@ -20,34 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.attachment;
 
-import java.io.Serializable;
-
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivator;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.modules.Module;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Utility to help attach and retrieve modules for a deployment unit.
+ * @author John E. Bailey
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
+public class ModuleAttachment {
+    public static AttachmentKey<Module> KEY = new AttachmentKey<Module>(Module.class);
 
-    private static final long serialVersionUID = -8208357864488821428L;
-
-    private final ServiceDeployment serviceDeployment;
-
-    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
-        this.serviceDeployment = serviceDeployment;
+    public static void attachModule(final DeploymentUnitContext context, final Module module) {
+        context.putAttachment(KEY, module);
     }
 
-    @Override
-    public void install(BatchBuilder builder) {
-        final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
-        try {
-            serviceDeployment.install(builder);
-        } finally {
-            Thread.currentThread().setContextClassLoader(currentCl);
-        }
+    public static Module getModuleAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

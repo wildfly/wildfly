@@ -39,7 +39,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    private static final long MODULE_DEPLOYMENT_PROCESSOR_ORDER = DeploymentPhases.MODULARIZE.plus(100L);
+    public static final long MODULE_DEPLOYMENT_PROCESSOR_ORDER = DeploymentPhases.MODULARIZE.plus(100L);
     private static final ModuleDeploymentItem.Dependency[] NO_DEPS = new ModuleDeploymentItem.Dependency[0];
 
     @Override

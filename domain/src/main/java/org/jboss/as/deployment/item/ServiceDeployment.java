@@ -24,30 +24,11 @@ package org.jboss.as.deployment.item;
 
 import java.io.Serializable;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivator;
-
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Marker interface allowing deployments to provide custom deployment items to install services.
+ * These are intended to be loaded via a ServiceLoader from the deployment. 
+ *
+ * @author John E. Bailey
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
-
-    private static final long serialVersionUID = -8208357864488821428L;
-
-    private final ServiceDeployment serviceDeployment;
-
-    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
-        this.serviceDeployment = serviceDeployment;
-    }
-
-    @Override
-    public void install(BatchBuilder builder) {
-        final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
-        try {
-            serviceDeployment.install(builder);
-        } finally {
-            Thread.currentThread().setContextClassLoader(currentCl);
-        }
-    }
+public interface ServiceDeployment extends DeploymentItem, Serializable{
 }
