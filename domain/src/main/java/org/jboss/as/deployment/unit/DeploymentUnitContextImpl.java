@@ -73,6 +73,8 @@ public class DeploymentUnitContextImpl implements DeploymentUnitContext {
 
     @Override
     public <T> T putAttachment(final AttachmentKey<T> key, final T value) {
+        if(value == null)
+            return removeAttachment(key);
         return safeCast(key, attachments.put(key, value));
     }
 
