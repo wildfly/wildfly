@@ -59,7 +59,7 @@
     </xs:complexType>
 
     <xs:complexType name="server-group-refType">
-        <xs:attribute name="ref" type="xs:IDREF">
+        <xs:attribute name="ref" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     The name of the server group or cluster the server is associated with.
