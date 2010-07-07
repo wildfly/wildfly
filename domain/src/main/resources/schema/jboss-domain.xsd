@@ -13,7 +13,7 @@
   
   <xs:element name="domain">
     <xs:complexType>
-      <xs:all minOccurs="0" maxOccurs="1">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
         <!-- TODO the domain-configuration concept needs review -->
         <xs:element name="domain-configuration" type="domain-configurationType"/>
         <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
@@ -31,7 +31,7 @@
           
         </xs:element>
         <xs:element name="system-properties" type="propertiesType"/>
-      </xs:all>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
   
