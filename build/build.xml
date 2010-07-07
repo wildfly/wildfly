@@ -73,7 +73,7 @@
         </module-def>
         
         <module-def group="org.jboss.logging" artifact="jboss-logging">
-            <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
+            <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta3-SNAPSHOT"/>
         </module-def>
 
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">

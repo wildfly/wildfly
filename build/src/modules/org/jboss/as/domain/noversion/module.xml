@@ -22,27 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<module xmlns="urn:jboss:module:1.0" name="domain" group="org.jboss.as">
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as</artifactId>
-    <version>7.0.0.Beta1-SNAPSHOT</version>
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-    <name>JBoss Application Server: Aggregator</name>
-
-    <modules>
-        <module>jboss-as-parent</module>
-        <module>domain</module>
-        <module>server-manager</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>process-manager</module>
-        <module>remoting</module>
-        <module>build</module>
-    </modules>
-
-    <packaging>pom</packaging>
-</project>
+    <dependencies>
+        <module group="org.jboss.msc" name="jboss-msc"/>
+        <module group="org.jboss.logging" name="jboss-logging"/>
+    </dependencies>
+</module>
