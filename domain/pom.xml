@@ -38,6 +38,13 @@
     <name>JBoss Application Server: Domain Core</name>
 
     <dependencies>
+    
+		<dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
