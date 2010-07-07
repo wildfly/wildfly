@@ -20,33 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.processor;
 
-import java.io.Serializable;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.item.ArchiveMountDeploymentItem;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * A general deployment item which can deploy itself, either at deploy time or server startup.  Deployment items
- * must be serializable in order to preserve state when the server is shut down.
+ * DeploymentUnitProcessor responsible for creating a ArchiveMountDeploymentItem for the deployment unit context. 
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John E. Bailey
  */
-public interface DeploymentItem extends Serializable {
+public class ArchiveMountProcessor implements DeploymentUnitProcessor {
+    private static final long ARCHIVE_MOUNT_PROCESSOR_ORDER = DeploymentPhases.MOUNT.getOrder();
 
-    /**
-     * Install this item into the batch builder.
-     *
-     * @param builder the batch builder into which the item should be added
-     *
-     * @return the runtime state
-     */
-    void install(BatchBuilder builder);
-
-    /**
-     * Get a human-readable description of this deployment item.  The string should state what type of deployment item
-     * it is, along with any identifier such as a name.  An example would be {@code "servlet 'MyServlet'"}.
-     *
-     * @return the string representation
-     */
-    String toString();
+    @Override
+    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        final VirtualFile root = context.getVirtualFile();
+        if(root != null && root.exists())
+            context.addDeploymentItem(new ArchiveMountDeploymentItem(root));
+    }
 }

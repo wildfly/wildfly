@@ -124,6 +124,10 @@ public final class ModuleDeploymentItem implements DeploymentItem {
         private final String rootName;
         private final VirtualFile root;
 
+        public ResourceRoot(final VirtualFile root) {
+            this(root.getName(), root);
+        }
+
         public ResourceRoot(final String rootName, final VirtualFile root) {
             this.rootName = rootName;
             this.root = root;

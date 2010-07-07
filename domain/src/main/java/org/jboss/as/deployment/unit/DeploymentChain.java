@@ -24,28 +24,16 @@ package org.jboss.as.deployment.unit;
 
 /**
  * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
- * 
+ *
  * @author John E. Bailey
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
-     * Builder used to create DeploymentChainImpl instances.
+     * Add a new DeploymentUnitProcessor.
+     *
+     * @param processor       The processor to add
+     * @param processingOrder The expected order this processor should be in the chain
+     * @return The builder instance for chaining.
      */
-    public static interface Builder {
-        /**
-         * Add a new DeploymentUnitProcessor.
-         *
-         * @param processor       The processor to add
-         * @param processingOrder The expected order this processor should be in the chain
-         * @return The builder instance for chaining.
-         */
-        Builder addProcessor(DeploymentUnitProcessor processor, long processingOrder);
-
-        /**
-         * Create the DeploymentChainImpl instance.
-         *
-         * @return The DeploymentChainImpl
-         */
-        DeploymentChainImpl create();
-    }
+    void addProcessor(DeploymentUnitProcessor processor, long processingOrder);
 }

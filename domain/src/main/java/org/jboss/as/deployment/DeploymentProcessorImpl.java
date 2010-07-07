@@ -27,8 +27,16 @@ import org.jboss.as.deployment.unit.DeploymentChain;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.DuplicateServiceException;
+import org.jboss.msc.service.Location;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VirtualFile;
 
 import java.util.Collection;
@@ -38,46 +46,71 @@ import java.util.Collection;
  * 
  * @author John E. Bailey
  */
-public class DeploymentProcessorImpl implements DeploymentProcessor {
+public class DeploymentProcessorImpl implements DeploymentProcessor, Service<DeploymentProcessor> {
+    public static final ServiceName DEPLOYMENT_PROCESSOR_NAME = ServiceName.JBOSS.append("deployment", "processor");
 
-    private final ServiceContainer serviceContainer;
-    private final DeploymentChain defaultChain;
+    private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
-    public DeploymentProcessorImpl(final DeploymentChain defaultChain, ServiceContainer serviceContainer) {
-        this.defaultChain = defaultChain;
-        this.serviceContainer = serviceContainer;
+    private ServiceContainer serviceContainer;
+    private DeploymentChain deploymentChain;
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        logger.debugf("Deployment processor starting with chain: %s", deploymentChain);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+    }
+
+    @Override
+    public DeploymentProcessor getValue() throws IllegalStateException {
+        return this;
     }
 
     @Override
     public void processDeployment(String name, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException {
-        final DeploymentUnitContextImpl context = new DeploymentUnitContextImpl(name, deploymentRoot);
-        processChain(context);
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        processDeploymentItems(context, batchBuilder);
+        process(name, deploymentRoot, batchBuilder);
     }
 
     @Override
     public void processDeployment(String name, VirtualFile deploymentRoot, BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
-        final DeploymentUnitContextImpl context = new DeploymentUnitContextImpl(name, deploymentRoot);
-        processChain(context);
         final BatchBuilder subBatchBuilder = batchBuilder.subBatchBuilder();
-        processDeploymentItems(context, subBatchBuilder);
+        process(name, deploymentRoot, subBatchBuilder);
     }
 
-    private void processChain(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final DeploymentChain deploymentChain = getChain(context);
+    private void process(final String name, final VirtualFile deploymentRoot, final BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
+        // Create the context
+        final DeploymentUnitContextImpl context = new DeploymentUnitContextImpl(name, deploymentRoot);
+
+        // Add service for this deployment unit
+        final ServiceName deploymentUnitServiceName = DeploymentUnitContext.JBOSS_DEPLOYMENT_UNIT.append(name); 
+        try {
+            batchBuilder.addService(deploymentUnitServiceName, Service.NULL);
+        } catch(DuplicateServiceException e) {
+            throw new DeploymentUnitProcessingException(e, new Location(e.getStackTrace()[0].getFileName(), e.getStackTrace()[0].getLineNumber(), -1, null));
+        }
+
+        // Execute the deployment chain
+        final DeploymentChain deploymentChain = this.deploymentChain;
         deploymentChain.processDeployment(context);
-    }
 
-    private void processDeploymentItems(DeploymentUnitContextImpl context, BatchBuilder batchBuilder) {
+        //  Add batch level dependency for this deployment
+        batchBuilder.addDependency(deploymentUnitServiceName);
+
+        // Process all the deployment items with the batch
         final Collection<DeploymentItem> deploymentItems = context.getDeploymentItems();
         for(DeploymentItem deploymentItem : deploymentItems) {
             deploymentItem.install(batchBuilder);
         }
     }
 
-    private DeploymentChain getChain(final DeploymentUnitContext context) {
-        // TODO: how do we do this correctly......
-        return defaultChain;
+    public void setServiceContainer(ServiceContainer serviceContainer) {
+        this.serviceContainer = serviceContainer;
+    }
+
+    public void setDeploymentChain(DeploymentChain deploymentChain) {
+        this.deploymentChain = deploymentChain;
     }
 }

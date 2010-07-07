@@ -26,6 +26,8 @@ import java.io.Serializable;
 import org.jboss.as.deployment.AttachmentKey;
 
 /**
+ * The object representation of a Servlet spec "web.xml" descriptor file.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class WebXmlDescriptor implements Serializable {

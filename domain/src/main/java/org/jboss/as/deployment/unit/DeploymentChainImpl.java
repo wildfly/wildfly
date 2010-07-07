@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.unit;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -31,12 +32,7 @@ import java.util.TreeSet;
  * @author John E. Bailey
  */
 public class DeploymentChainImpl implements DeploymentChain {
-
-    private final DeploymentUnitProcessor[] processors;
-
-    private DeploymentChainImpl(final DeploymentUnitProcessor[] processors) {
-        this.processors = processors;
-    }
+    private final Set<OrderedProcessor> orderedProcessors = new TreeSet<OrderedProcessor>();
 
     /**
      * Process the deployment unit using the chain of DeploymentUnitProcessor instances.
@@ -46,48 +42,23 @@ public class DeploymentChainImpl implements DeploymentChain {
      *          if an error occurs during processing
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final DeploymentUnitProcessor[] processors = this.processors;
-        for(DeploymentUnitProcessor processor : processors) {
-            processor.processDeployment(context);
+        final Set<OrderedProcessor> processors = this.orderedProcessors;
+        for(OrderedProcessor orderedProcessor : processors) {
+            orderedProcessor.processor.processDeployment(context);
         }
     }
 
-    /**
-     * Create a new DeploymentChainImpl builder.
-     *
-     * @return the builder
-     */
-    public static Builder build() {
-        return new Builder() {
-            private final Set<OrderedProcessor> orderedProcessors = new TreeSet<OrderedProcessor>();
-            private boolean created;
+    @Override
+    public void addProcessor(DeploymentUnitProcessor processor, long processingOrder) {
+        final Set<OrderedProcessor> processors = this.orderedProcessors;
+        processors.add(new OrderedProcessor(processor, processingOrder));
+    }
 
-            @Override
-            public Builder addProcessor(DeploymentUnitProcessor processor, long processingOrder) {
-                checkCreated();
-                final Set<OrderedProcessor> processors = this.orderedProcessors;
-                processors.add(new OrderedProcessor(processor, processingOrder));
-                return this;
-            }
-
-            @Override
-            public DeploymentChainImpl create() {
-                checkCreated();
-                created = true;
-                final Set<OrderedProcessor> orderedProcessors = this.orderedProcessors;
-                final DeploymentUnitProcessor[] processors = new DeploymentUnitProcessor[orderedProcessors.size()];
-                int i = 0;
-                for(final OrderedProcessor orderedProcessor : orderedProcessors) {
-                    processors[i++] = orderedProcessor.processor;
-                }
-                return new DeploymentChainImpl(processors);
-            }
-
-            private void checkCreated() {
-                if(created)
-                    throw new IllegalStateException("DeploymentChainImpl has already been created");
-            }
-        };
+    @Override
+    public String toString() {
+        return "DeploymentChainImpl{" +
+            "processors=" + (orderedProcessors == null ? null : Arrays.asList(orderedProcessors)) +
+            '}';
     }
 
     private static class OrderedProcessor implements Comparable<OrderedProcessor> {
