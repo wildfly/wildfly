@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.Dependencies;
+import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.item.ModuleDeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -36,6 +36,8 @@ import org.jboss.vfs.VirtualFile;
 import java.io.IOException;
 import java.util.jar.Manifest;
 
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+
 /**
  * DeploymentUnitProcessor that will extract module dependencies from an archive. 
  *
@@ -46,7 +48,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = context.getVirtualFile();
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final Manifest manifest;
         try {
             manifest = VFSUtils.getManifest(deploymentRoot);

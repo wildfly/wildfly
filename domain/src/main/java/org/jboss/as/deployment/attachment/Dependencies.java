@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.attachment;
 
 import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.item.ModuleDeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 import java.util.ArrayList;
