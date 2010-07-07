@@ -71,6 +71,7 @@
         <xs:enumeration value="SSLv3"/>
         <xs:enumeration value="TLSv1"/>
         <xs:enumeration value="SSLv2+SSLv3"/>
+        <xs:enumeration value="ALL"/>
     </xs:restriction>
   </xs:simpleType>
 
