@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -35,7 +36,7 @@ import javax.xml.stream.XMLStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PropertiesElement extends AbstractModelElement<PropertiesElement> {
+public final class PropertiesElement extends AbstractModelElement<PropertiesElement> implements Iterable<PropertyElement> {
 
     private static final long serialVersionUID = 1614693052895734582L;
 
@@ -97,6 +98,15 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     void changeProperty(final String name, final String value) {
         properties.get(name).setValue(value);
+    }
+
+    public int size() {
+        return properties.size();
+    }
+
+    /** {@inheritDoc} */
+    public Iterator<PropertyElement> iterator() {
+        return properties.values().iterator();
     }
 
     /**

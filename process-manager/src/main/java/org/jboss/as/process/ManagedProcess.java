@@ -69,7 +69,13 @@ final class ManagedProcess {
             env.clear();
             env.putAll(this.env);
             processBuilder.directory(new File(workingDirectory));
-            final Process process = processBuilder.start();
+            final Process process;
+            synchronized (ManagedProcess.class) {
+                // this is the only point in the process manager which opens FDs OR fork/execs after initial boot.  By
+                // restricting it to a single thread we reduce the risk of bogus FDs, resource leaks, and other
+                // issues surrounding fork/exec vs. Java.
+                process = processBuilder.start();
+            }
             final ErrorStreamHandler errorStreamHandler = new ErrorStreamHandler(processName, process.getErrorStream());
             final Thread errorThread = new Thread(errorStreamHandler);
             errorThread.setName("Process " + processName + " stderr thread");
@@ -102,7 +108,7 @@ final class ManagedProcess {
         final StringBuilder b = new StringBuilder();
         b.append("MSG");
         for (String s : msg) {
-            b.append('\0').append(msg);
+            b.append('\0').append(s);
         }
         b.append('\n');
         StreamUtils.writeString(commandStream, b);

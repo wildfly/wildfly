@@ -58,6 +58,8 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
 
+    private final PropertiesElement systemProperties = new PropertiesElement();
+
     public Domain() {
     }
 
@@ -73,6 +75,7 @@ public final class Domain extends AbstractModel<Domain> {
         for (DeploymentUnitElement item : deployments.values()) {
             hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
         }
+        hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
 
@@ -118,6 +121,7 @@ public final class Domain extends AbstractModel<Domain> {
                 // todo redeploy...? or maybe just modify stuff
             }
         });
+        systemProperties.appendDifference(null, systemProperties);
     }
 
     protected Class<Domain> getElementClass() {
@@ -137,6 +141,10 @@ public final class Domain extends AbstractModel<Domain> {
         for (ExtensionElement element : extensions.values()) {
             streamWriter.writeStartElement("extension");
             element.writeContent(streamWriter);
+        }
+        if (systemProperties.size() > 0) {
+            streamWriter.writeStartElement("system-properties");
+            systemProperties.writeContent(streamWriter);
         }
         for (ServerGroupElement element : serverGroups.values()) {
             streamWriter.writeStartElement("server-group");
