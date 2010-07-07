@@ -20,20 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.processor;
+
+import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.item.ArchiveMountDeploymentItem;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
+ * DeploymentUnitProcessor responsible for creating a ArchiveMountDeploymentItem for the deployment unit context. 
  *
  * @author John E. Bailey
  */
-public interface DeploymentChain extends DeploymentUnitProcessor {
-    /**
-     * Add a new DeploymentUnitProcessor.
-     *
-     * @param processor       The processor to add
-     * @param processingOrder The expected order this processor should be in the chain
-     * @return The builder instance for chaining.
-     */
-    void addProcessor(DeploymentUnitProcessor processor, long processingOrder);
+public class ArchiveMountProcessor implements DeploymentUnitProcessor {
+    private static final long ARCHIVE_MOUNT_PROCESSOR_ORDER = DeploymentPhases.MOUNT.getOrder();
+
+    @Override
+    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        final VirtualFile root = context.getVirtualFile();
+        if(root != null && root.exists())
+            context.addDeploymentItem(new ArchiveMountDeploymentItem(root));
+    }
 }
