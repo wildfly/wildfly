@@ -101,7 +101,10 @@
 
     <xs:complexType name="http-access-logType">
         <xs:attribute name="log-directory" default="${jboss.server.home.dir}/logs/access"/>
-        <xs:attribute name="iponly" default="true" type="boolean"/>
+        <xs:attribute name="pattern" default="common"/>
+        <xs:attribute name="resolveHosts" default="false" type="boolean"/>
+        <xs:attribute name="extended" default="false" type="boolean"/>
+        <xs:attribute name="prefix" default="access_log."/>
     </xs:complexType>
     
     <xs:complexType name="http-rewriteType">
@@ -111,17 +114,21 @@
         
         <xs:attribute name="pattern" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Pattern is a perl compatible regular expression,
+                  which is applied to the current URL
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="substitution" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>The substitution of a rewrite rule is the string 
+                  which is substituted for (or replaces) the original URL which Pattern matched
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="flags" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Substitution options</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -129,17 +136,20 @@
     <xs:complexType name="rewrite-conditionType">        
         <xs:attribute name="test" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>The test string is first evaluated, before being 
+                  matched against the specified pattern</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="pattern" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>CondPattern is the condition pattern, a regular
+                  expression which is applied to the current instance of the test string
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="flags" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Matching options</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
