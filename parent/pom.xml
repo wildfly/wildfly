@@ -82,13 +82,13 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>domain</artifactId>
+                <artifactId>jboss-as-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>domain-controller</artifactId>
+                <artifactId>jboss-as-domain-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -100,19 +100,19 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>process-manager</artifactId>
+                <artifactId>jboss-as-process-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>server</artifactId>
+                <artifactId>jboss-as-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>server-manager</artifactId>
+                <artifactId>jboss-as-server-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

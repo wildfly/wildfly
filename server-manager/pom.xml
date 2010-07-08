@@ -33,7 +33,7 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>server-manager</artifactId>
+    <artifactId>jboss-as-server-manager</artifactId>
 
     <name>JBoss Application Server: Server Manager</name>
 
