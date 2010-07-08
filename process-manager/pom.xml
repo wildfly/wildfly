@@ -34,7 +34,7 @@
 
     <name>JBoss Application Server: Process Manager</name>
     <groupId>org.jboss.as</groupId>
-    <artifactId>process-manager</artifactId>
+    <artifactId>jboss-as-process-manager</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
     <dependencies>

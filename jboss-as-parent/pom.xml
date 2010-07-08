@@ -37,7 +37,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependency versions. Please keep alphabetical -->
-        <version.junit>4.6</version.junit>        
+        <version.junit>4.7</version.junit>        
     </properties>
 
     <build>
@@ -77,12 +77,6 @@
 
     <dependencyManagement>
         <dependencies>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.7</version>
-				<scope>test</scope>
-			</dependency>
         
             <dependency>
                 <groupId>org.jboss</groupId>

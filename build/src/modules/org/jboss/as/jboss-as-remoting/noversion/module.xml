@@ -29,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module group="org.jboss.as" name="domain"/>
+        <module group="org.jboss.as" name="jboss-as-domain"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.remoting3" name="jboss-remoting"/>
     </dependencies>

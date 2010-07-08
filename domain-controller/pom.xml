@@ -33,7 +33,7 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>domain-controller</artifactId>
+    <artifactId>jboss-as-domain-controller</artifactId>
 
     <name>JBoss Application Server: Domain Controller</name>
 
