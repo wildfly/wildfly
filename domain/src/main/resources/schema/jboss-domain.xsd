@@ -18,7 +18,7 @@
         <xs:element name="domain-configuration" type="domain-configurationType"/>
         <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
         <xs:element name="subsystems" type="domainSubsystemsType"/>
-        <xs:element name="interfaces" type="interfacesType"/>
+        <xs:element name="interfaces" type="named-interfacesType"/>
         <xs:element name="socket-groups" type="socket-groupsType"/>
         <xs:element name="server-groups" type="server-groupType"/>
         <xs:element name="security-policy" type="sec:PolicyConfig" />
@@ -181,7 +181,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="port" type="xs:short" use="optional" default="0">
+    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
       <xs:annotation>
         <xs:documentation>
             Number of the port to which the socket should be bound.

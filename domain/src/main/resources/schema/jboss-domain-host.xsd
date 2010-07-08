@@ -38,18 +38,10 @@
         <xs:all>
             <xs:element name="domain-controller" type="locationType" minOccurs="1"/>
             <xs:element name="servers" type="serversType" minOccurs="0"/>
-            <xs:element name="interfaces" type="interfacesType" minOccurs="0"/>
+            <xs:element name="interfaces" type="named-interfacesType" minOccurs="0"/>
             <xs:element name="java-config" type="java-configType" minOccurs="0"/>
             <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
         </xs:all>
-    </xs:complexType>
-
-    <xs:complexType name="network-configurationType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="server-socket" type="net-conf-serverType"/>
-        </xs:choice>
-        <xs:attribute name="group-size" type="xs:nonNegativeInteger" default="0" use="optional"/>
-        <xs:attribute name="maximum-offset" type="xs:nonNegativeInteger" default="100" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="locationType">
@@ -63,24 +55,6 @@
             <xs:element name="server" type="serverType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
- 
-    <xs:complexType name="net-conf-serverType">
-        <xs:all>
-            <xs:element name="interface" type="refType" minOccurs="0"/>
-            <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-        </xs:all>
-        <xs:attribute name="service-name" type="xs:string" use="required"/>
-        <xs:attribute name="binding-name" type="xs:string" default="default" use="optional"/>
-        <xs:attribute name="port" type="port-numberType" use="required"/>
-        <xs:attribute name="fixed" type="xs:boolean" default="false" use="optional"/>
-    </xs:complexType>
-
-    <xs:simpleType name="port-numberType">
-        <xs:restriction base="xs:int">
-            <xs:minInclusive value="0"/>
-            <xs:maxExclusive value="65536"/>
-        </xs:restriction>
-    </xs:simpleType>
 
     <xs:complexType name="extensionsType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
