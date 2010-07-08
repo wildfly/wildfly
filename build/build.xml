@@ -134,20 +134,28 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="domain-controller">
-            <maven-resource group="org.jboss.as" artifact="domain-controller"/>
+        <module-def group="org.jboss.as" artifact="jboss-as-domain">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="process-manager">
-            <maven-resource group="org.jboss.as" artifact="process-manager"/>
+        <module-def group="org.jboss.as" artifact="jboss-as-domain-controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="server">
-            <maven-resource group="org.jboss.as" artifact="server"/>
+        <module-def group="org.jboss.as" artifact="jboss-as-process-manager">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="server-manager">
-            <maven-resource group="org.jboss.as" artifact="server-manager"/>
+        <module-def group="org.jboss.as" artifact="jboss-as-remoting">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-server">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-server-manager">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
         
         <module-def group="org.jboss.logging" artifact="jboss-logging">

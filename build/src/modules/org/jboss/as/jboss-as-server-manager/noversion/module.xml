@@ -22,15 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="process-manager" group="org.jboss.as">
+<module xmlns="urn:jboss:module:1.0" name="jboss-as-server-manager" group="org.jboss.as">
 
-    <main-class name="org.jboss.as.process.ProcessManagerMaster"/>
+    <main-class name="org.jboss.as.server.manager.Main"/>
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
     </dependencies>
 </module>
