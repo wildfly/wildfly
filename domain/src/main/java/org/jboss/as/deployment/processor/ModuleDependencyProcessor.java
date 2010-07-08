@@ -44,7 +44,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long MODULE_DEPENDENCY_PROCESSOR_ORDER = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {

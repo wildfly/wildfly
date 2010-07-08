@@ -22,27 +22,38 @@
 
 package org.jboss.as.deployment.descriptor;
 
-import java.io.Serializable;
-import java.util.List;
-
-import org.jboss.as.deployment.AttachmentKey;
-
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Configuration object for a JBoss service constructor.
+ * 
+ * @author John E. Bailey
  */
-public final class JBossServiceXmlDescriptor implements Serializable {
+public class JBossServiceConstructorConfig {
+    public static final Argument[] EMPTY_ARGS = {};
+    private Argument[] arguments = EMPTY_ARGS;
 
-    private static final long serialVersionUID = 3148478338698997486L;
-
-    public static final AttachmentKey<JBossServiceXmlDescriptor> JBOSS_SERVICE_XML = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
-
-    private List<JBossServiceConfig> serviceConfigs;
-
-    public JBossServiceXmlDescriptor(List<JBossServiceConfig> serviceConfigs) {
-        this.serviceConfigs = serviceConfigs;
+    public Argument[] getArguments() {
+        return arguments;
     }
 
-    public List<JBossServiceConfig> getServiceConfigs() {
-        return serviceConfigs;
+    public void setArguments(Argument[] arguments) {
+        this.arguments = arguments;
+    }
+
+    public static class Argument {
+        private final String value;
+        private final String type;
+
+        public Argument(final String type, final String value) {
+            this.value = value;
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

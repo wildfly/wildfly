@@ -41,7 +41,7 @@ import static org.jboss.as.deployment.attachment.ModuleAttachment.getModuleAttac
  * @author John E. Bailey
  */
 public class ServiceDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long SERVICE_ACTIVATOR_PROCESSOR_PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
