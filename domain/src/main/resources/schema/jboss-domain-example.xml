@@ -51,40 +51,66 @@
         <deployment name="my-war.ear" sha1="xxx" start="false"/>
     </deployments>
     
+    <!--  
+         Named interfaces that can be referenced elsewhere. Different
+         mechanisms for associating an IP address with the interface
+         are shown.
+    -->
     <interfaces>
+        
         <interface name="default">
+            <!--  Here we directly state the IP address -->
             <inet-address value="127.0.0.1"/>
         </interface>
-        <interface name="public">
+        <interface name="external">
+            <!--  
+                Here we name the NIC; the IP address associated with NIC whose
+                byte representation has the lowest
+            -->
+            <nic name="eth1"/>
+        </interface>
+        <interface name="internal">
+            <!-- 
+                Here we provide a set of criteria that are used to narrow the
+                set of IP addresses available on the host to one that is acceptable.
+             -->
             <not><loopback/></not>
             <point-to-point/>
-            <up/>
-            <public-address/>
-            <private-address/>
             <multicast/>
-            <nic name="eth1"/>
+            <up/>
+            <private-address/>
+            
+            <!-- Alternatively... 
+            <public-address/>
+            -->
+            <nic name="eth0"/>
             <nic-match value="eth[0-9]+"/>
+            <!-- The 'any' element means the included criteria are not exclusive -->
             <any>
                 <subnet-match value="10.0.0.0/8"/>
                 <subnet-match value="192.168.0.0/16"/>
             </any>
         </interface>
-        <interface name="public2">
-            <nic name="eth1"/>
-        </interface>
-        <!-- require override at the host level -->
+        <!-- 
+             For these next two, no address selection criteria is provided, so 
+             an override at the host or server level is required. 
+        -->
         <interface name="public3"/>
+        <interface name="public4"/>
     </interfaces>
 
     <socket-groups>
-        <socket-group name="foo">
-            <socket name="jndi" port="1099"/>
+         <socket-group name="standard-sockets" default-interface="external">
             <socket name="http" port="8080"/>
-            <socket name="https" port="8443"/>
-            <socket name="remoting" port="1234"/>
-            <socket name="cluster-udp" interface="internal" port="55200" multicast-addr="1.2.3.4"/>
-        </socket-group>
-        <socket-group name="foo2" extends="foo"/>
+            <socket name="https" port="8447"/>
+            <socket name="remoting" port="4447"/>
+         </socket-group>
+         <socket-group name="standard-clustered-sockets" extends="standard-sockets">
+            <socket name="cluster-udp" interface="internal" port="" multicast-port="55200"/>
+            <socket name="cluster-failure-detection" interface="internal" port="54200"/>
+            <socket name="ha-jndi" port="1100"/>
+            <socket name="ha-jndi-discovery" multicast-port="1102"/>
+         </socket-group>
     </socket-groups>
 
     <containers>
@@ -109,9 +135,9 @@
     </system-properties>
 
     <server-groups>
-        <server-group group-name="group1" profile="something">
+        <server-group group-name="main-server-group" profile="something">
 
-            <socket-group name="blah"/>
+           <socket-group name="standard-clustered-sockets"/>
        
            <cluster default-multicast-address="230.0.0.4">
              <group-communication-config name="udp">
