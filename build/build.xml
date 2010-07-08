@@ -30,6 +30,8 @@
 
         <!-- All modules.  Keep alphabetical -->
 
+        <module-def group="javaee" artifact="api"/>
+
         <module-def group="javax" artifact="api"/>
 
         <module-def group="javax.activation" artifact="api">
