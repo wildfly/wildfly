@@ -122,6 +122,10 @@
             <maven-resource group="org.jboss.spec.javax.xml.registry" artifact="jboss-jaxr-api_1.0_spec"/>
         </module-def>
 
+        <module-def group="javax.xml.rpc" artifact="api">
+            <maven-resource group="javax.xml" artifact="jaxrpc-api"/>
+        </module-def>
+
         <module-def group="javax.xml.soap" artifact="api">
             <maven-resource group="org.jboss.spec.javax.xml.soap" artifact="jboss-saaj-api_1.3_spec"/>
         </module-def>

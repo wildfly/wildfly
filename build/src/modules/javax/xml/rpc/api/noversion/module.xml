@@ -22,9 +22,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="api" group="javax.jms">
+<module xmlns="urn:jboss:module:1.0" name="api" group="javax.xml.rpc">
     <dependencies>
-        <module group="javax.transaction" name="api" export="true"/>
+        <module group="javax.xml.soap" name="api" export="true"/>
     </dependencies>
 
     <resources>

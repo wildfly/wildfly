@@ -25,6 +25,7 @@
 <module xmlns="urn:jboss:module:1.0" name="api" group="javax.ejb">
     <dependencies>
         <module group="javax.transaction" name="api" export="true"/>
+        <module group="javax.xml.rpc" name="api" export="true"/>
     </dependencies>
 
     <resources>

@@ -23,6 +23,13 @@
   -->
 
 <module xmlns="urn:jboss:module:1.0" name="api" group="javax.faces">
+    <dependencies>
+        <module group="javax.el" name="api" export="true"/>
+        <module group="javax.servlet" name="api" export="true"/>
+        <module group="javax.servlet.jsp" name="api" export="true"/>
+        <module group="javax.validation" name="api" export="true"/>
+    </dependencies>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

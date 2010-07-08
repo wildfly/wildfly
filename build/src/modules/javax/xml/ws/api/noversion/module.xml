@@ -23,6 +23,11 @@
   -->
 
 <module xmlns="urn:jboss:module:1.0" name="api" group="javax.xml.ws">
+    <dependencies>
+        <module group="javax.xml.bind" name="api" export="true"/>
+        <module group="javax.xml.soap" name="api" export="true"/>
+    </dependencies>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

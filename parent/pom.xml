@@ -167,6 +167,12 @@
             </dependency>
 
             <dependency>
+                <groupId>javax.xml</groupId>
+                <artifactId>jaxrpc-api</artifactId>
+                <version>1.1</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>staxmapper</artifactId>
                 <version>1.0.0.Beta1-SNAPSHOT</version>
