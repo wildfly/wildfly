@@ -83,7 +83,7 @@
         </module-def>
 
         <module-def group="javax.resource" artifact="api">
-            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.6_spec"/>
+            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.5_spec"/>
         </module-def>
 
         <module-def group="javax.security.auth.message" artifact="api">

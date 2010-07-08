@@ -264,7 +264,7 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.resource</groupId>
-                <artifactId>jboss-connector-api_1.6_spec</artifactId>
+                <artifactId>jboss-connector-api_1.5_spec</artifactId>
                 <version>1.0.0.Beta1</version>
             </dependency>
 
