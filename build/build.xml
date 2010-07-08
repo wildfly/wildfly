@@ -1,6 +1,6 @@
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat Middleware LLC, and individual contributors
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -20,99 +20,185 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project name="module-repository" basedir="." default="build-repo" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+<project name="module-repository" basedir="." default="build-repo">
 
     <import file="lib.xml"/>
 
-    <path id="maven-ant-tasks.classpath" path="maven-ant-tasks.jar" />
-
-    <target name="init" depends="maven-ant-tasks">
-        <mkdir dir="${module.repo.output.dir}"/>
-        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
-            uri="antlib:org.apache.maven.artifact.ant"
-            classpathref="maven-ant-tasks.classpath" />
-    </target>
-
-    <target name="maven-ant-tasks-check">
-        <available file="maven-ant-tasks.jar" property="maven-ant-tasks.exists"/>
-    </target>
-
-    <target name="maven-ant-tasks" depends="maven-ant-tasks-check" unless="maven-ant-tasks.exists">
-        <get src="http://mirror.cc.columbia.edu/pub/software/apache/maven/binaries/maven-ant-tasks-2.1.0.jar" dest="maven-ant-tasks.jar"/>
-    </target>
-
-    <target name="build-repo" depends="clean-target,init">
-        <artifact:dependencies>
-            <dependency groupid="org.jboss.modules" artifactid="jboss-modules" version="1.0.0.Beta1-SNAPSHOT" scope="provided"/>
-        </artifact:dependencies>
+    <target name="build-repo" depends="clean-target">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
 
         <!-- All modules.  Keep alphabetical -->
 
-        <module-def group="javax.inject" artifact="javax.inject">
-            <resource group="javax.inject" artifact="javax.inject" version="1"/>
+        <module-def group="javaee" artifact="api"/>
+
+        <module-def group="javax" artifact="api"/>
+
+        <module-def group="javax.activation" artifact="api">
+            <maven-resource group="javax.activation" artifact="activation"/>
         </module-def>
 
-        <module-def group="javax.management" artifact="management-api"/>
-
-        <module-def group="org.jboss.as" artifact="domain-controller">
-            <resource group="org.jboss.as" artifact="domain-controller" version="7.0.0.Beta1-SNAPSHOT"/>
+        <module-def group="javax.annotation" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.annotation" artifact="jboss-annotations-api_1.1_spec"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="process-manager">
-            <resource group="org.jboss.as" artifact="process-manager" version="7.0.0.Beta1-SNAPSHOT"/>
+        <module-def group="javax.ejb" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.ejb" artifact="jboss-ejb-api_3.1_spec"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="server">
-            <resource group="org.jboss.as" artifact="server" version="7.0.0.Beta1-SNAPSHOT"/>
+        <module-def group="javax.el" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_2.2_spec"/>
         </module-def>
 
-        <module-def group="org.jboss.as" artifact="server-manager">
-            <resource group="org.jboss.as" artifact="server-manager" version="7.0.0.Beta1-SNAPSHOT"/>
+        <module-def group="javax.enterprise" artifact="api">
+            <maven-resource group="javax.enterprise" artifact="cdi-api"/>
+        </module-def>
+
+        <module-def group="javax.enterprise.deploy" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.enterprise.deploy" artifact="jboss-jad-api_1.2_spec"/>
+        </module-def>
+
+        <module-def group="javax.faces" artifact="api">
+            <maven-resource group="javax.faces" artifact="jsf-api"/>
+        </module-def>
+
+        <module-def group="javax.inject" artifact="api">
+            <maven-resource group="javax.inject" artifact="javax.inject"/>
+        </module-def>
+
+        <module-def group="javax.interceptor" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.interceptor" artifact="jboss-interceptors-api_1.1_spec"/>
+        </module-def>
+
+        <module-def group="javax.jms" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.jms" artifact="jboss-jms-api_1.1_spec"/>
+        </module-def>
+
+        <module-def group="javax.jws" artifact="api">
+            <maven-resource group="javax.jws" artifact="jsr181-api"/>
+        </module-def>
+
+        <module-def group="javax.mail" artifact="api">
+            <maven-resource group="javax.mail" artifact="mail"/>
+        </module-def>
+
+        <module-def group="javax.resource" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.6_spec"/>
+        </module-def>
+
+        <module-def group="javax.security.auth.message" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.security.auth.message" artifact="jboss-jaspi-api_1.0_spec"/>
+        </module-def>
+
+        <module-def group="javax.security.jacc" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.security.jacc" artifact="jboss-jacc-api_1.4_spec"/>
+        </module-def>
+
+        <module-def group="javax.servlet" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.servlet" artifact="jboss-servlet-api_3.0_spec"/>
+        </module-def>
+
+        <module-def group="javax.servlet.jsp" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.2_spec"/>
+        </module-def>
+
+        <module-def group="javax.transaction" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.transaction" artifact="jboss-transaction-api_1.1_spec"/>
+        </module-def>
+
+        <module-def group="javax.validation" artifact="api">
+            <maven-resource group="javax.validation" artifact="validation-api"/>
+        </module-def>
+
+        <module-def group="javax.ws.rs" artifact="api">
+            <maven-resource group="javax.ws.rs" artifact="jsr311-api"/>
+        </module-def>
+
+        <module-def group="javax.xml.bind" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.xml.bind" artifact="jboss-jaxb-api_2.2_spec"/>
+        </module-def>
+
+        <module-def group="javax.xml.registry" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.xml.registry" artifact="jboss-jaxr-api_1.0_spec"/>
+        </module-def>
+
+        <module-def group="javax.xml.rpc" artifact="api">
+            <maven-resource group="javax.xml" artifact="jaxrpc-api"/>
+        </module-def>
+
+        <module-def group="javax.xml.soap" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.xml.soap" artifact="jboss-saaj-api_1.3_spec"/>
+        </module-def>
+
+        <module-def group="javax.xml.ws" artifact="api">
+            <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-domain">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-domain-controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-process-manager">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-remoting">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-server">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-server-manager">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
         
         <module-def group="org.jboss.logging" artifact="jboss-logging">
-            <resource group="org.jboss.logging" artifact="jboss-logging" version="3.0.0.Beta2"/>
+            <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
         </module-def>
 
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
-            <resource group="org.jboss.logmanager" artifact="jboss-logmanager" version="1.2.0.CR3"/>
+            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
 
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
         <module-def group="org.jboss.msc" artifact="jboss-msc">
-            <resource group="org.jboss.msc" artifact="jboss-msc" version="1.0.0.CR1-SNAPSHOT"/>
+            <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
         </module-def>
         
         <module-def group="org.jboss.naming" artifact="jnpserver">
-            <resource group="org.jboss.naming" artifact="jnpserver" version="5.0.4.GA"/>
+            <maven-resource group="org.jboss.naming" artifact="jnpserver"/>
         </module-def>
         
         <module-def group="org.jboss.threads" artifact="jboss-threads">
-            <resource group="org.jboss.threads" artifact="jboss-threads" version="2.0.0.CR4"/>
+            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
         </module-def>
 
-        <module-def group="org.slf4j" artifact="slf4j-api">
-            <resource group="org.slf4j" artifact="slf4j-api" version="1.5.9.RC1"/>
-            <resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager" version="1.0.0.CR2"/>
-        </module-def>
-        
         <module-def group="org.jboss.stdio" artifact="jboss-stdio">
-            <resource group="org.jboss.stdio" artifact="jboss-stdio" version="1.0.0.CR3"/>
+            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-vfs">
-            <resource group="org.jboss" artifact="jboss-vfs" version="3.0.0-SNAPSHOT"/>
+            <maven-resource group="org.jboss" artifact="jboss-vfs"/>
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-common-core">
-            <resource group="org.jboss" artifact="jboss-common-core" version="2.2.17.GA"/>
+            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
         
         <module-def group="org.jboss" artifact="staxmapper">
-            <resource group="org.jboss" artifact="staxmapper" version="1.0.0.Beta1-SNAPSHOT"/>
+            <maven-resource group="org.jboss" artifact="staxmapper"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="slf4j-api">
+            <maven-resource group="org.slf4j" artifact="slf4j-api"/>
+            <maven-resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager"/>
         </module-def>
     </target>
 

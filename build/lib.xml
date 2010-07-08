@@ -1,3 +1,25 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <project name="module-repository-lib" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
     
     <property name="src.dir" value="src"/>
@@ -49,25 +71,23 @@
         ]]>
     </scriptdef>
     
-    <macrodef name="resource">
+    <macrodef name="maven-resource">
         <attribute name="group"/>
         <attribute name="artifact"/>
-        <attribute name="version"/>
         
         <sequential>
             <!-- Copy the jar to the module dir -->
-            <artifact:dependencies>
-                <dependency groupId="@{group}" artifactId="@{artifact}" version="@{version}" scope="provided"/>
-            </artifact:dependencies>
-            <copy todir="${module.repo.output.dir}/${current.module.path}">
-                <fileset refid="@{group}:@{artifact}:jar" />
+            <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
+                <fileset file="${@{group}:@{artifact}:jar}"/>
                 <mapper type="flatten" />
             </copy>
+
+            <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
 
             <!-- Update the resource entry in module.xml -->
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
               <replacetoken><![CDATA[<!-- Insert resources here -->]]></replacetoken>
-              <replacevalue><![CDATA[<resource-root path="@{artifact}-@{version}.jar"/>
+              <replacevalue><![CDATA[<resource-root path="${resourcename.@{group}.@{artifact}}"/>
         <!-- Insert resources here -->]]></replacevalue>
             </replace>
         </sequential>

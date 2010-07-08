@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0">
  
-    <!-- Include the common definitions
-    <xs:include schemaLocation="jboss-domain-common.xsd"/> -->
+    <!-- Include the common definitions  -->
+    <xs:include schemaLocation="jboss-domain-common.xsd"/>
 
    <xs:complexType name="web-containersType">
        <xs:sequence>
@@ -13,25 +35,12 @@
 
       <!-- The web container configuration -->
   <xs:complexType name="web-containerType">
-    <xs:sequence>
-      <xs:element name="thread-group">
-        <xs:complexType>
-          <xs:attribute name="name" use="required"/>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="http-service" minOccurs="1" maxOccurs="unbounded" type="http-serviceType"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <!-- http-service connectors -->
-    <xs:complexType name="http-serviceType">
       <xs:sequence>
-        <xs:element name="access-log" minOccurs="0" type="http-access-logType" />
         <xs:element maxOccurs="unbounded" ref="http-connector"/>
         <xs:element maxOccurs="unbounded" ref="virtual-server"/>
-        <xs:element name="properties" minOccurs="0" maxOccurs="unbounded" type="propertiesType" />
       </xs:sequence>
-    </xs:complexType>
+      <xs:attribute name="name" use="required"/>
+  </xs:complexType>
 
   <xs:element name="http-connector">
     <xs:complexType>
@@ -42,21 +51,20 @@
       <xs:attributeGroup ref="http-connector-attlist"/>
     </xs:complexType>
   </xs:element>
+  <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
   <xs:attributeGroup name="http-connector-attlist">
     <xs:attribute name="id" use="required"/>
     <xs:attribute name="address" use="required"/>
     <xs:attribute name="port" use="required"/>
+    <xs:attribute name="native" default="true" type="boolean"/>
     <xs:attribute name="protocol"/>
     <xs:attribute name="scheme"/>
     <xs:attribute name="redirect-port"/>
-    <xs:attribute name="blocking-enabled" default="false" type="boolean"/>
     <xs:attribute name="secure" default="false" type="boolean"/>
-    <xs:attribute name="client-auth" default="false" type="boolean"/>
     <xs:attribute name="default-virtual-server"/>
     <xs:attribute name="xpowered-by"/>
     <xs:attribute name="enabled" default="true" type="boolean"/>
-      <xs:attribute name="acceptor-executor" type="xs:IDREF" />
-      <xs:attribute name="request-executor" type="xs:IDREF" />      
+    <xs:attribute name="executor" type="xs:IDREF" />     
   </xs:attributeGroup>
 
     <xs:element name="ssl">
@@ -65,37 +73,98 @@
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="ssl-attlist">
-    <xs:attribute name="cert-nickname" use="required"/>
-    <xs:attribute name="ssl2-enabled" default="false" type="boolean"/>
-    <xs:attribute name="ssl2-ciphers"/>
-    <xs:attribute name="ssl3-enabled" default="true" type="boolean"/>
-    <xs:attribute name="ssl3-tls-ciphers"/>
-    <xs:attribute name="tls-enabled" default="true" type="boolean"/>
-    <xs:attribute name="tls-rollback-enabled" default="true" type="boolean"/>
-    <xs:attribute name="client-auth-enabled" default="false" type="boolean"/>
+    <xs:attribute name="key-alias" default="jbossweb"/>
+    <xs:attribute name="password"/>
+    <xs:attribute name="certificate-key-file" default="${user.home}/.keystore"/>
+    <xs:attribute name="cipher-suite" default="ALL"/>
+    <xs:attribute name="protocol" default="ALL" type="SSlProtocolType"/>
+    <xs:attribute name="verify-client" default="none"/>
+    <xs:attribute name="verify-depth" default="10"/>
+    <xs:attribute name="certificate-file"/>
+    <xs:attribute name="ca-certificate-file"/>
+    <xs:attribute name="ca-revocation-url"/>
+    <xs:attribute name="session-cache-size" default="0"/>
+    <xs:attribute name="session-timeout" default="86400"/>
   </xs:attributeGroup>
+  
+  <xs:simpleType name="SSlProtocolType">
+    <xs:restriction base="xs:token">
+        <xs:enumeration value="SSLv2"/>
+        <xs:enumeration value="SSLv3"/>
+        <xs:enumeration value="TLSv1"/>
+        <xs:enumeration value="SSLv2+SSLv3"/>
+        <xs:enumeration value="ALL"/>
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:element name="virtual-server">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
+        <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
         <xs:element name="properties" type="propertiesType" />
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="virtual-server-attlist">
-    <xs:attribute name="id" use="required"/>
+    <xs:attribute name="id" use="required"> 
+        <xs:annotation>
+            <xs:documentation>Reference to vhost name</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="http-connectors"/>
     <xs:attribute name="default-web-module"/>
-    <xs:attribute name="hosts" use="required"/>
-    <xs:attribute name="docroot"/>
-    <xs:attribute name="log-file" default="${jboss.web.virtual-server}.log"/>
+    <xs:attribute name="hosts" use="required">
+        <xs:annotation>
+            <xs:documentation>Reference to vhost aliases</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">
-        <xs:attribute name="log-directory" default="${com.sun.aas.instanceRoot}/logs/access"/>
+        <xs:attribute name="log-directory" default="${jboss.server.home.dir}/logs/access"/>
         <xs:attribute name="iponly" default="true" type="boolean"/>
+    </xs:complexType>
+    
+    <xs:complexType name="http-rewriteType">
+        <xs:sequence>
+            <xs:element name="condition" type="rewrite-conditionType" />
+        </xs:sequence>
+        
+        <xs:attribute name="pattern" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="substitution" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flags" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="rewrite-conditionType">        
+        <xs:attribute name="test" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="pattern" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flags" use="required">
+            <xs:annotation>
+                <xs:documentation>FIXME: document this attribute</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>

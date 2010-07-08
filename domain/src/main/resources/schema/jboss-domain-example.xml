@@ -1,8 +1,56 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
 <domain xmlns="urn:jboss:domain:1.0"
         targetNamespace="urn:jboss:domain:1.0"
         xmlns:sec="urn:jboss:security-config:5.0"
         >
 
+
+    <!-- The domain manager/server bootstrap configuration -->
+    <domain-configuration>
+        <!-- The URI for bootstraping a domain server -->
+        <bootstrapURI>http://bootstrap.uri</bootstrapURI>
+    </domain-configuration>
+
+    <extension prefix="xx" module="org.foo:blah"/>
+
+    <profile name="something">
+        <subsystem name="ejb"/>
+        <subsystem name="war"/>
+        <subsystem name="jms"/>
+        <subsystem name="xx:fancy"/>
+    </profile>
+
+    <profile name="something2" extends="something">
+        <subsystem name="additional"/>
+    </profile>
+
+    <deployments>
+        <deployment name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear" sha1="xxx" start="false"/>
+    </deployments>
+    
     <interfaces>
         <interface name="default">
             <inet-address value="127.0.0.1"/>
@@ -39,39 +87,39 @@
         <socket-group name="foo2" extends="foo"/>
     </socket-groups>
 
-    <!-- The domain manager/server bootstrap configuration -->
-    <domain-configuration>
-        <!-- The URI for bootstraping a domain server -->
-        <bootstrapURI>http://bootstrap.uri</bootstrapURI>
-    </domain-configuration>
+    <containers>
+        <web-containers>
+            <web-container name="jboss.web">
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl password="changeit" cypher-suite="SSLv2+SSLv3"/>
+                </http-connector>
 
-    <extension prefix="xx" module="org.foo:blah"/>
+                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
+                    <access-log/>
+                </virtual-server>
+            </web-container>
+        </web-containers>
+    </containers>
 
-    <profile name="something">
-        <subsystem name="ejb"/>
-        <subsystem name="war"/>
-        <subsystem name="jms"/>
-        <subsystem name="xx:fancy"/>
-    </profile>
-
-    <profile name="something2" extends="something">
-        <subsystem name="additional"/>
-    </profile>
-
-    <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" start="false"/>
-    </deployments>
+    <system-properties>
+        <property name="prop1" value="value1"/>
+        <property name="prop2" value="value2"/>
+    </system-properties>
 
     <server-groups>
         <server-group group-name="group1" profile="something">
 
             <socket-group name="blah"/>
-
-            <cluster>
-
-            </cluster>
+       
+           <cluster default-multicast-address="230.0.0.4">
+             <group-communication-config name="udp">
+                 <udp-tranpsort socket="cluster-udp"/>
+             </group-communication-config>  
+             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
+             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
+           </cluster>
 
             <jvm name="icedtea1">
 
@@ -92,32 +140,5 @@
 
         </server-group>
     </server-groups>
-
-    <containers>
-        <web-container>
-            <http-service>
-                <access-log log-directory="domain/web/log"/>
-
-                <http-connector name="httpConnector1" socket="http" protocol="tls" scheme="https" client-auth="true">
-                    <ssl cert-nickname="certnick" ssl3-enabled="true" ssl3-tls-ciphers="xxx"/>
-                </http-connector>
-
-                <virtual-host name="VirtualServer1" default="true">
-                    <host name="foo.com"/>
-                    <host address="1.2.3.4"/>
-                    <connector name="httpConnector1"/>
-                    <connector name="httpConnector1"/>
-
-                    <access-log log-directory="domain/web/log2"/>
-                </virtual-host>
-
-            </http-service>
-        </web-container>
-    </containers>
-
-    <system-properties>
-        <property name="prop1" value="value1"/>
-        <property name="prop2" value="value2"/>
-    </system-properties>
 
 </domain>

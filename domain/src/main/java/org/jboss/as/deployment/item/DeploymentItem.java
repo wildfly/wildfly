@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -40,4 +40,12 @@ public interface DeploymentItem extends Serializable {
      * @return the runtime state
      */
     void install(DeploymentItemContext context);
+
+    /**
+     * Get a human-readable description of this deployment item.  The string should state what type of deployment item
+     * it is, along with any identifier such as a name.  An example would be {@code "servlet 'MyServlet'"}.
+     *
+     * @return the string representation
+     */
+    String toString();
 }
