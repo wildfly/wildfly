@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="javax.inject" group="javax.inject">
+<module xmlns="urn:jboss:module:1.0" name="api" group="javax.validation">
     <resources>
         <!-- Insert resources here -->
     </resources>

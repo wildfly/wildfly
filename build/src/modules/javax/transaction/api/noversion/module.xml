@@ -22,13 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="management-api" group="javax.management">
-    <dependencies>
-        <module group="system" name="system" export="true">
-            <exports>
-                <exclude path="**"/>
-                <include path="javax/management"/>
-            </exports>
-        </module>
-    </dependencies>
+<module xmlns="urn:jboss:module:1.0" name="api" group="javax.transaction">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 </module>
