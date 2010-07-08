@@ -32,6 +32,6 @@ public final class ServletDeploymentItem implements DeploymentItem, Serializable
 
     private static final long serialVersionUID = -1448326750887634809L;
 
-    public void install(final BatchBuilder builder) {
+    public void install(final DeploymentItemContext context) {
     }
 }

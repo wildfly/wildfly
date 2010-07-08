@@ -22,13 +22,20 @@
 
 package org.jboss.as.deployment.item;
 
+import org.jboss.msc.service.BatchBuilder;
 import java.io.Serializable;
 
 /**
- * Marker interface allowing deployments to provide custom deployment items to install services.
+ * Deployment interface allowing deployments to provide custom deployment items to install services.
  * These are intended to be loaded via a ServiceLoader from the deployment. 
  *
  * @author John E. Bailey
  */
-public interface ServiceDeployment extends DeploymentItem, Serializable{
+public interface ServiceDeployment extends Serializable {
+    /**
+     * Install services into the provided batch builder.
+     *
+     * @param batchBuilder the batch
+     */
+    void install(BatchBuilder batchBuilder);
 }

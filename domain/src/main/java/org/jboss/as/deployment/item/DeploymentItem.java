@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.item;
 
 import java.io.Serializable;
-import org.jboss.msc.service.BatchBuilder;
 
 /**
  * A general deployment item which can deploy itself, either at deploy time or server startup.  Deployment items
@@ -36,9 +35,9 @@ public interface DeploymentItem extends Serializable {
     /**
      * Install this item into the batch builder.
      *
-     * @param builder the batch builder into which the item should be added
+     * @param context the context used for this item execution
      *
      * @return the runtime state
      */
-    void install(BatchBuilder builder);
+    void install(DeploymentItemContext context);
 }

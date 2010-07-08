@@ -22,36 +22,26 @@
 
 package org.jboss.as.deployment.item;
 
-import java.io.Serializable;
-
+import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivator;
 
 /**
- * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
+ * The DeploymentItem context.  Instances of this interface are passed to each deployment item during execution.
  *
  * @author John E. Bailey
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
+public interface DeploymentItemContext {
+    /**
+     * The batch builder for this deployment item execution.
+     *
+     * @return the batch builder
+     */
+    BatchBuilder getBatchBuilder();
 
-    private static final long serialVersionUID = -8208357864488821428L;
-
-    private final ServiceDeployment serviceDeployment;
-
-    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
-        this.serviceDeployment = serviceDeployment;
-    }
-
-    @Override
-    public void install(final DeploymentItemContext context) {
-        final BatchBuilder builder = context.getBatchBuilder();
-        final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
-        try {
-            serviceDeployment.install(builder);
-        } finally {
-            Thread.currentThread().setContextClassLoader(currentCl);
-        }
-    }
+    /**
+     * The module for this deployment item execution.
+     *
+     * @return the module
+     */
+    Module getModule();
 }

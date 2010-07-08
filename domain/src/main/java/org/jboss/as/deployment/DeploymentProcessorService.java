@@ -22,11 +22,20 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.as.deployment.item.DeploymentItemContextImpl;
+import org.jboss.as.deployment.item.VFSResourceLoader;
 import org.jboss.as.deployment.unit.DeploymentChain;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -38,6 +47,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -62,6 +72,7 @@ public class DeploymentProcessorService implements Service<Void> {
     }
 
     private DeploymentService deploymentService;
+    private ModuleLoader moduleLoader;
 
     @Override
     public void start(final StartContext context) throws StartException {
@@ -90,10 +101,21 @@ public class DeploymentProcessorService implements Service<Void> {
         //  Add batch level dependency for this deployment
         batchBuilder.addDependency(controller.getName());
 
-        // Process all the deployment items with the batch
+        // Get the module for the deployment
+        final Module module;
+        try {
+            module = buildModule(deploymentContext);
+        } catch(Exception e) {
+            throw new StartException("Failed to build module for deployment [" + deploymentName + "]", e);
+        }
+
+        // Construct an item context
+        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, batchBuilder);
+
+        // Process all the deployment items with the item context
         final Collection<DeploymentItem> deploymentItems = deploymentContext.getDeploymentItems();
         for(DeploymentItem deploymentItem : deploymentItems) {
-            deploymentItem.install(batchBuilder);
+            deploymentItem.install(deploymentItemContext);
         }
 
         // Install the batch
@@ -113,7 +135,32 @@ public class DeploymentProcessorService implements Service<Void> {
         return null;
     }
 
+    private Module buildModule(final DeploymentUnitContext deploymentUnitContext) throws ModuleLoadException, IOException {
+        final ModuleConfig moduleConfig = deploymentUnitContext.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        if(moduleConfig == null)
+            return null;
+        
+        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
+        for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
+            specBuilder.addRoot(resource.getRootName(), new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot()));
+        }
+        final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
+        for(ModuleConfig.Dependency dependency : dependencies) {
+            specBuilder.addDependency(dependency.getIdentifier())
+                .setExport(dependency.isExport())
+                .setOptional(dependency.isOptional());
+        }
+        final ModuleSpec moduleSpec = specBuilder.create();
+        // Somehow jam the spec into the provided loader //
+        //((DynamicModuleLoader)moduleLoader).addSpec(moduleSpec);
+        return moduleLoader.loadModule(moduleConfig.getIdentifier());
+    }
+
     public void setDeploymentService(DeploymentService deploymentService) {
         this.deploymentService = deploymentService;
+    }
+
+    public void setModuleLoader(ModuleLoader moduleLoader) {
+        this.moduleLoader = moduleLoader;
     }
 }

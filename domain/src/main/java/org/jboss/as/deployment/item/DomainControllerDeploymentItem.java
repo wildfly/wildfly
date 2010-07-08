@@ -34,7 +34,7 @@ public final class DomainControllerDeploymentItem implements DeploymentItem, Ser
 
     private static final long serialVersionUID = 4835276878814763612L;
 
-    public void install(final BatchBuilder builder) {
+    public void install(final DeploymentItemContext context) {
         // add services
         
     }

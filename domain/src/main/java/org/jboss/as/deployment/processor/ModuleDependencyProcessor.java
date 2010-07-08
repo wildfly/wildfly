@@ -24,7 +24,7 @@ package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
-import org.jboss.as.deployment.item.ModuleDeploymentItem;
+import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -69,7 +69,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "export");
-            ModuleDeploymentItem.Dependency dependency = new ModuleDeploymentItem.Dependency(dependencyId, true, optional, export);
+            ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
             Dependencies.addDependency(context, dependency);
         }
     }
