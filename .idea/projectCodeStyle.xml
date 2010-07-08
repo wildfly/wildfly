@@ -4,6 +4,14 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <option name="LINE_SEPARATOR" value="&#10;" />
+        <option name="SPACE_BEFORE_IF_PARENTHESES" value="false" />
+        <option name="SPACE_BEFORE_WHILE_PARENTHESES" value="false" />
+        <option name="SPACE_BEFORE_FOR_PARENTHESES" value="false" />
+        <option name="SPACE_BEFORE_CATCH_PARENTHESES" value="false" />
+        <option name="SPACE_BEFORE_SWITCH_PARENTHESES" value="false" />
+        <option name="SPACE_BEFORE_SYNCHRONIZED_PARENTHESES" value="false" />
+        <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="5000" />
+        <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="3000" />
         <ADDITIONAL_INDENT_OPTIONS fileType="groovy">
           <option name="INDENT_SIZE" value="2" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />

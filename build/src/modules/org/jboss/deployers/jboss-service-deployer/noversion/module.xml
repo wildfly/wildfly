@@ -28,7 +28,7 @@
     </resources>
 
     <dependencies>
-        <module group="javax.management" name="management-api"/>
+        <module group="javax" name="api"/>
         <module group="org.jboss.modules" name="jboss-modules"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>

@@ -28,6 +28,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
+ * A model extension element.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ExtensionElement extends AbstractModelElement<ExtensionElement> {
@@ -78,5 +80,6 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         final String prefix = this.prefix;
         if (prefix != null) streamWriter.writeAttribute("prefix", prefix);
         streamWriter.writeAttribute("module", module);
+        streamWriter.writeEndElement();
     }
 }
