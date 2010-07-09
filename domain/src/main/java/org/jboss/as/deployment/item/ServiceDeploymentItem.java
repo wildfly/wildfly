@@ -25,7 +25,6 @@ package org.jboss.as.deployment.item;
 import java.io.Serializable;
 
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivator;
 
 /**
  * DeploymentItem that executes a ServiceDeployment against a batchBuilder.

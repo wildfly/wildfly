@@ -275,14 +275,13 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
     private JBossServiceDependencyConfig parseDepends(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final JBossServiceDependencyConfig dependencyConfig = new JBossServiceDependencyConfig();
-        String optionalAttributeName = null;
         final int count = reader.getAttributeCount();
         for(int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             final String attributeValue = reader.getAttributeValue(i);
             switch(attribute) {
                 case OPTIONAL_ATTRIBUTE_NAME:
-                    optionalAttributeName = attributeValue;
+                    dependencyConfig.setOptionalAttributeName(attributeValue);
                     break;
                 case PROXY_TYPE:
                     dependencyConfig.setProxyType(attributeValue);
@@ -292,7 +291,6 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             }
         }
         parseDependency(reader, dependencyConfig);
-        // If optionalAttributeName is set, we need to create an attribute...
         return dependencyConfig;
     }
 

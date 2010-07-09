@@ -31,6 +31,7 @@ public class JBossServiceDependencyConfig {
     private String dependencyName;
     private JBossServiceConfig serviceConfig;
     private String proxyType;
+    private String optionalAttributeName;
 
     public String getDependencyName() {
         return dependencyName;
@@ -54,5 +55,13 @@ public class JBossServiceDependencyConfig {
 
     public void setProxyType(String proxyType) {
         this.proxyType = proxyType;
+    }
+
+    public String getOptionalAttributeName() {
+        return optionalAttributeName;
+    }
+
+    public void setOptionalAttributeName(String optionalAttributeName) {
+        this.optionalAttributeName = optionalAttributeName;
     }
 }
