@@ -29,8 +29,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.DuplicateServiceException;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -85,13 +83,8 @@ public class DeploymentProcessorImpl implements DeploymentProcessor, Service<Dep
         final DeploymentUnitContextImpl context = new DeploymentUnitContextImpl(name, deploymentRoot);
 
         // Add service for this deployment unit
-        final ServiceName deploymentUnitServiceName = DeploymentUnitContext.JBOSS_DEPLOYMENT_UNIT.append(name); 
-        try {
-            batchBuilder.addService(deploymentUnitServiceName, Service.NULL);
-        } catch(DuplicateServiceException e) {
-            throw new DeploymentUnitProcessingException(e, new Location(e.getStackTrace()[0].getFileName(), e.getStackTrace()[0].getLineNumber(), -1, null));
-        }
-
+        final ServiceName deploymentUnitServiceName = DeploymentUnitContext.JBOSS_DEPLOYMENT_UNIT.append(name);
+        batchBuilder.addService(deploymentUnitServiceName, Service.NULL);
         // Execute the deployment chain
         final DeploymentChain deploymentChain = this.deploymentChain;
         deploymentChain.processDeployment(context);

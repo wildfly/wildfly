@@ -20,25 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.remoting;
 
-import java.io.Serializable;
+import org.jboss.as.model.AbstractModelUpdate;
 
 /**
- * An update to an element in the model.
- *
- * @param <E> the element type that this update applies to
+ * An update which removes a connector from the remoting container.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
+public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingContainerElement> {
 
-    private static final long serialVersionUID = -46837337005143198L;
+    private static final long serialVersionUID = -8965990593053845956L;
 
-    protected AbstractModelUpdate() {
+    private final String name;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param name the name of the connector to remove
+     */
+    public RemoveConnectorUpdate(final String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        this.name = name;
     }
 
-    protected abstract Class<E> getModelElementType();
+    /** {@inheritDoc} */
+    protected Class<RemotingContainerElement> getModelElementType() {
+        return RemotingContainerElement.class;
+    }
 
-    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
+    /** {@inheritDoc} */
+    protected AbstractModelUpdate<RemotingContainerElement> applyUpdate(final RemotingContainerElement element) {
+        return new AddConnectorUpdate(element.removeConnector(name).clone());
+    }
 }

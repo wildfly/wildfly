@@ -28,7 +28,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
@@ -53,16 +52,12 @@ public final class ModuleDeploymentItem implements DeploymentItem {
     }
 
     public void install(final BatchBuilder builder) {
-        try {
-            final ServiceName serviceName = getModuleServiceName(identifier);
-            final BatchServiceBuilder<Module> serviceBuilder = builder.addService(serviceName, new ModuleDeploymentService(this, null));
-            final Dependency[] dependencies = this.dependencies;
-            for(Dependency dependency : dependencies) {
-                if(!dependency.isStatic())
-                    serviceBuilder.addDependency(getModuleServiceName(dependency.getIdentifier()));
-            }
-        } catch (DuplicateServiceException e) {
-            throw new RuntimeException(e);
+        final ServiceName serviceName = getModuleServiceName(identifier);
+        final BatchServiceBuilder<Module> serviceBuilder = builder.addService(serviceName, new ModuleDeploymentService(this, null));
+        final Dependency[] dependencies = this.dependencies;
+        for(Dependency dependency : dependencies) {
+            if(!dependency.isStatic())
+                serviceBuilder.addDependency(getModuleServiceName(dependency.getIdentifier()));
         }
     }
 

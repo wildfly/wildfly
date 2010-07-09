@@ -22,23 +22,30 @@
 
 package org.jboss.as.model;
 
-import java.io.Serializable;
+import org.jboss.msc.service.Location;
+
+import javax.xml.namespace.QName;
 
 /**
- * An update to an element in the model.
- *
- * @param <E> the element type that this update applies to
+ * A root element in the model.  A root element has a fixed name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
+public abstract class AbstractModelRootElement<E extends AbstractModelRootElement<E>> extends AbstractModelElement<E> {
 
-    private static final long serialVersionUID = -46837337005143198L;
-
-    protected AbstractModelUpdate() {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of this model root element
+     */
+    protected AbstractModelRootElement(final Location location) {
+        super(location);
     }
 
-    protected abstract Class<E> getModelElementType();
-
-    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
+    /**
+     * Get the name of this root element.
+     *
+     * @return the name
+     */
+    protected abstract QName getElementName();
 }

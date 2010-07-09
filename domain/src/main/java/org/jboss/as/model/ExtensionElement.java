@@ -23,9 +23,10 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * A model extension element.
@@ -42,13 +43,12 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
     /**
      * Construct a new instance.
      *
+     * @param location the declaration location of this element
      * @param prefix the extension prefix, if any
      * @param module the module identifier of the subsystem
      */
-    public ExtensionElement(final String prefix, final String module) {
-        if (module == null) {
-            throw new IllegalArgumentException("module is null");
-        }
+    public ExtensionElement(final Location location, final String prefix, final String module) {
+        super(location);
         this.prefix = prefix;
         this.module = module;
     }
@@ -62,11 +62,6 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
     }
 
     /** {@inheritDoc} */
-    public boolean isSameElement(final ExtensionElement other) {
-        return (prefix == null ? other.prefix == null : prefix.equals(other.prefix)) && module.equals(other.module);
-    }
-
-    /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<ExtensionElement>> target, final ExtensionElement other) {
         // no mutable state
     }
@@ -76,7 +71,8 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         return ExtensionElement.class;
     }
 
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    /** {@inheritDoc} */
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         final String prefix = this.prefix;
         if (prefix != null) streamWriter.writeAttribute("prefix", prefix);
         streamWriter.writeAttribute("module", module);

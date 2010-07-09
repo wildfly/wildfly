@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.item;
 
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
@@ -48,12 +47,8 @@ public final class ArchiveMountDeploymentItem implements DeploymentItem {
 
     public void install(final BatchBuilder builder) {
         final ServiceName serviceName = ARCHIVE_MOUNT_DEPLOYMENT_SERVICE.append(root.getPathName());
-        try {
-            builder.addServiceValueIfNotExist(serviceName, Values.immediateValue(new ArchiveMountDeploymentService(root)))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        } catch (DuplicateServiceException e) {
-            throw new RuntimeException(e);
-        }
+        builder.addServiceValueIfNotExist(serviceName, Values.immediateValue(new ArchiveMountDeploymentService(root)))
+            .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     public VirtualFile getRoot() {

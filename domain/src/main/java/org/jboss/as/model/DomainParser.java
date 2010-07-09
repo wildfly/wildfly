@@ -52,7 +52,7 @@ public final class DomainParser implements XMLElementReader<ParseResult<Domain>>
             }
         }
         // construct our new domain!
-        final Domain domain = new Domain();
+        final Domain domain = new Domain(null);
         // next, elements
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
