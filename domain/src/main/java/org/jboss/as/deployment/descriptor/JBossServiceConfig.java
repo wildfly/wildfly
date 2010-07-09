@@ -30,13 +30,10 @@ package org.jboss.as.deployment.descriptor;
 public class JBossServiceConfig {
     private String name;
     private String code;
-    private String interfaceName;
-    private String xmbeanDD;
-    private String xmbeanCode;
     private String[] aliases;
     private String[] annotations;
     private JBossServiceDependencyConfig[] dependencyConfigs;
-
+    private JBossServiceAttributeConfig[] attributeConfigs;
     private JBossServiceConstructorConfig constructorConfig;
 
     public String getName() {
@@ -53,30 +50,6 @@ public class JBossServiceConfig {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    public String getXmbeanDD() {
-        return xmbeanDD;
-    }
-
-    public void setXmbeanDD(String xmbeanDD) {
-        this.xmbeanDD = xmbeanDD;
-    }
-
-    public String getXmbeanCode() {
-        return xmbeanCode;
-    }
-
-    public void setXmbeanCode(String xmbeanCode) {
-        this.xmbeanCode = xmbeanCode;
     }
 
     public JBossServiceConstructorConfig getConstructorConfig() {
@@ -109,5 +82,13 @@ public class JBossServiceConfig {
 
     public void setDependencyConfigs(JBossServiceDependencyConfig[] dependencyConfigs) {
         this.dependencyConfigs = dependencyConfigs;
+    }
+
+    public JBossServiceAttributeConfig[] getAttributeConfigs() {
+        return attributeConfigs;
+    }
+
+    public void setAttributeConfigs(JBossServiceAttributeConfig[] attributeConfigs) {
+        this.attributeConfigs = attributeConfigs;
     }
 }
