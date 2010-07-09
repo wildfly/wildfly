@@ -36,7 +36,7 @@ import java.util.Set;
  * @author John E. Bailey
  */
 public class Dependencies {
-    public static final AttachmentKey<Dependencies> KEY = new AttachmentKey<Dependencies>(Dependencies.class);
+    public static final AttachmentKey<Dependencies> KEY = AttachmentKey.create(Dependencies.class);
 
     private final Set<ModuleConfig.Dependency> dependencies = new HashSet<ModuleConfig.Dependency>();
 

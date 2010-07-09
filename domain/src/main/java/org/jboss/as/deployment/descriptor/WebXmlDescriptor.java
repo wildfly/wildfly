@@ -34,5 +34,5 @@ public final class WebXmlDescriptor implements Serializable {
 
     private static final long serialVersionUID = 5844905201567666811L;
 
-    public static final AttachmentKey<WebXmlDescriptor> WEB_XML = new AttachmentKey<WebXmlDescriptor>(WebXmlDescriptor.class);
+    public static final AttachmentKey<WebXmlDescriptor> WEB_XML = AttachmentKey.create(WebXmlDescriptor.class);
 }

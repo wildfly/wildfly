@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -50,7 +50,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  */
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
-    private static final AttachmentKey<JBossServiceXmlDescriptor> DESCRIPTOR_ATTACHMENT_KEY = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
+    private static final AttachmentKey<JBossServiceXmlDescriptor> DESCRIPTOR_ATTACHMENT_KEY = AttachmentKey.create(JBossServiceXmlDescriptor.class);
 
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();

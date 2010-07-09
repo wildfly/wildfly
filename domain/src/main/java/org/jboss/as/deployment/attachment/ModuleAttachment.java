@@ -31,7 +31,7 @@ import org.jboss.modules.Module;
  * @author John E. Bailey
  */
 public class ModuleAttachment {
-    public static AttachmentKey<Module> KEY = new AttachmentKey<Module>(Module.class);
+    public static AttachmentKey<Module> KEY = AttachmentKey.create(Module.class);
 
     public static void attachModule(final DeploymentUnitContext context, final Module module) {
         context.putAttachment(KEY, module);

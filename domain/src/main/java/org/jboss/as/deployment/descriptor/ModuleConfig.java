@@ -36,7 +36,7 @@ import java.io.Serializable;
  */
 public final class ModuleConfig implements Serializable {
 
-    public static final AttachmentKey<ModuleConfig> ATTACHMENT_KEY = new AttachmentKey<ModuleConfig>(ModuleConfig.class);
+    public static final AttachmentKey<ModuleConfig> ATTACHMENT_KEY = AttachmentKey.create(ModuleConfig.class);
 
     private static final long serialVersionUID = 210753378958448029L;
 

@@ -38,7 +38,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
     private static final long serialVersionUID = 3148478338698997486L;
 
-    public static final AttachmentKey<JBossServiceXmlDescriptor> ATTACHMENT_KEY = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
+    public static final AttachmentKey<JBossServiceXmlDescriptor> ATTACHMENT_KEY = AttachmentKey.create(JBossServiceXmlDescriptor.class);
 
     private ControllerMode controllerMode = ControllerMode.AUTOMATIC;
     private List<JBossServiceConfig> serviceConfigs;
