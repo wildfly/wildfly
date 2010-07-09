@@ -77,18 +77,14 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
         final JBossService<?> jBossService = new JBossService<Object>(constructedValue);
 
         final String serviceName = serviceConfig.getName();
-        try {
-            final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ServiceName.of(serviceName), jBossService);
-            final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
-            for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
-                final BatchInjectionBuilder injectionBuilder = serviceBuilder.addDependency(ServiceName.of(dependencyConfig.getDependencyName()));
-                final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
-                if(optionalAttributeName != null) {
-                    injectionBuilder.toProperty(optionalAttributeName);
-                }
+        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ServiceName.of(serviceName), jBossService);
+        final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
+        for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
+            final BatchInjectionBuilder injectionBuilder = serviceBuilder.addDependency(ServiceName.of(dependencyConfig.getDependencyName()));
+            final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
+            if(optionalAttributeName != null) {
+                injectionBuilder.toProperty(optionalAttributeName);
             }
-        } catch(DuplicateServiceException e) {
-            throw new RuntimeException(e);
         }
         // TODO: What should we do with the MBEAN attributes
     }
