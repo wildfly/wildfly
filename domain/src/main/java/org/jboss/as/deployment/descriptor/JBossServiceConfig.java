@@ -33,6 +33,9 @@ public class JBossServiceConfig {
     private String interfaceName;
     private String xmbeanDD;
     private String xmbeanCode;
+    private String[] aliases;
+    private String[] annotations;
+    private JBossServiceDependencyConfig[] dependencyConfigs;
 
     private JBossServiceConstructorConfig constructorConfig;
 
@@ -82,5 +85,29 @@ public class JBossServiceConfig {
 
     public void setConstructorConfig(JBossServiceConstructorConfig constructorConfig) {
         this.constructorConfig = constructorConfig;
+    }
+
+    public String[] getAliases() {
+        return aliases;
+    }
+
+    public void setAliases(String[] aliases) {
+        this.aliases = aliases;
+    }
+
+    public String[] getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String[] annotations) {
+        this.annotations = annotations;
+    }
+
+    public JBossServiceDependencyConfig[] getDependencyConfigs() {
+        return dependencyConfigs;
+    }
+
+    public void setDependencyConfigs(JBossServiceDependencyConfig[] dependencyConfigs) {
+        this.dependencyConfigs = dependencyConfigs;
     }
 }
