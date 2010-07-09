@@ -31,8 +31,11 @@
 
     <xs:complexType name="server-groupType">
         <xs:sequence>
+        
             <xs:element name="java-config" type="java-configType" />
 
+            <xs:element name="socket-group" type="socket-group-refType"/>
+            
             <xs:element name="subsystems" type="disabledSubsystemsType"/>
             <xs:element name="deployments" type="disabledDeploymentsType"/>
 
@@ -70,8 +73,8 @@
             <!-- this element is present if the server is started at boot; otherwise, the server is configured but idle -->
             <xs:element name="running" minOccurs="0"/>
 
-            <xs:element name="interfaces" type="interfacesType" minOccurs="0"/>
-            <xs:element name="port-group" type="attributeNameType" minOccurs="0"/>
+            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="socket-group" type="socket-group-refType" minOccurs="1"/>
 
 
             <xs:element name="loggers" type="loggersType" />
@@ -90,14 +93,85 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="interfacesType">
+    <xs:complexType name="socket-group-refType">
+        <xs:attribute name="ref" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The socket group to use for the server group or server.
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+        <xs:attribute name="port-offset" type="xs:int" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Increment to apply to the base port values defined in the 
+                    referenced socket group to derive the values to use on this
+                    server.
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="named-interfacesType">
+        <xs:annotation>
+            <xs:documentation>
+                A list of named network interfaces. The interfaces may or may
+                not be fully specified (i.e. include criteria on how to determine
+                their IP address.)
+            </xs:documentation>
+        </xs:annotation> 
         <xs:sequence>
-            <xs:element name="interface" type="interfaceType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="interface" type="named-interfaceType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="interfaceType">
-        <xs:choice minOccurs="0" maxOccurs="1">
+    <xs:complexType name="named-interfaceType">
+        <xs:annotation>
+            <xs:documentation>
+                A named network interface, but without any criteria
+                for determining the IP address to associate with that interface.
+                Acts as a placeholder in the model (e.g. at the domain level)
+                until a fully specified interface definition is applied at a
+                lower level (e.g. at the server level, where available addresses
+                are known.)
+            </xs:documentation>
+        </xs:annotation> 
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="specified-interfacesType">
+        <xs:annotation>
+            <xs:documentation>
+                A list of fully specified named network interfaces.
+            </xs:documentation>
+        </xs:annotation> 
+        <xs:sequence>
+            <xs:element name="interface" type="specified-interfaceType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="specified-interfaceType" >
+        <xs:annotation>
+            <xs:documentation>
+                A named network interface, along with required criteria
+                for determining the IP address to associate with that interface.
+            </xs:documentation>
+        </xs:annotation>   
+        <xs:complexContent>
+            <xs:extension base="named-interfaceType">
+                <xs:group ref="interface-criteriaGroup" minOccurs="1"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:group name="interface-criteriaGroup">
+        <xs:annotation>
+            <xs:documentation>
+                A set of criteria that can be used at runtime to determine
+                what IP address to use for an interface.
+            </xs:documentation>
+        </xs:annotation>            
+        <xs:choice>
             <xs:element name="inet-address" type="inet-addressType"/> 
             <xs:element name="nic" type="nicType"/> 
             <xs:sequence>
@@ -114,9 +188,7 @@
                 <xs:element name="not" type="address-exclusionType"/>
             </xs:sequence>
         </xs:choice>
-        
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
+    </xs:group>
     
     <xs:complexType name="inet-addressType">
         <xs:attribute name="address" type="xs:string" use="required">
