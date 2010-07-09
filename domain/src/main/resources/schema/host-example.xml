@@ -20,7 +20,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:host:1.0">
+<host xmlns="urn:jboss:domain:1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain-host.xsd">
+
     <domain-controller
             location="http://somehost.example.com/domain-controller"
             callback-location="http://dakldjskal"
@@ -36,15 +39,14 @@
 
     <jvms>
         <!-- all-jvm settings e.g. sys props, -->
-        <jvm name="icedtea1">
-            <java-home path="/blha"/>
+        <jvm name="icedtea1" java-home="/blha">
             <system-properties>
-                <property name="foo"/>
+                <property name="foo" value="bar"/>
             </system-properties>
 
-            <environment-properties>
-                <property name="foo"/>
-            </environment-properties>
+            <jvm-properties>
+                <property name="foo" value="bar"/>
+            </jvm-properties>
         </jvm>
     </jvms>
 
@@ -65,19 +67,17 @@
 
             <!-- server-one inherits the default socket-group declared in the server-group -->
             
-            <heap size="64m" max-size="512m"/>
-
-            <stack size="128k"/>
-
-            <system-properties>
-                <property name="blah" value="blahblah"/>
-            </system-properties>
-
-            <jvm-arguments>
-                <argument value="-server"/>
-                <argument value="-ea"/>
-            </jvm-arguments>
-
+            <jvm>
+               <heap size="64m" max-size="512m"/>
+               <stack size="128k"/>
+               <system-properties>
+                  <property name="blah" value="blahblah"/>
+               </system-properties>
+               <jvm-options>
+                  <option value="-server"/>
+                  <option value="-ea"/>
+               </jvm-options>
+            </jvm>
         </server>
         <server name="server-two" group="main-server-group" start="false">
 
@@ -95,20 +95,22 @@
             
             <!-- server-two avoids port conflicts by incrementing the ports in 
                  the default socket-group declared in the server-group -->
-            <socket-group name="standard-clustered-sockets" port-offset="150"/>
+            <socket-group ref="standard-clustered-sockets" port-offset="150"/>
             
-            <heap size="64m" max-size="512m"/>
+            <jvm>
+               <heap size="64m" max-size="512m"/>
 
-            <stack size="128k"/>
+               <stack size="128k"/>
 
-            <system-properties>
-                <property name="blah" value="blahblah"/>
-            </system-properties>
+               <system-properties>
+                  <property name="blah" value="blahblah"/>
+               </system-properties>
 
-            <jvm-arguments>
-                <argument value="-server"/>
-                <argument value="-ea"/>
-            </jvm-arguments>
+               <jvm-options>
+                  <option value="-server"/>
+                  <option value="-ea"/>
+               </jvm-options>
+            </jvm>
 
         </server>
         <server name="server-three" group="main-server-group" start="false">
@@ -133,20 +135,21 @@
                     <inet-address value="192.168.100.3"/>
                 </interface>
             </interface-specs>
-            
-            <heap size="64m" max-size="512m"/>
 
-            <stack size="128k"/>
+            <jvm>            
+               <heap size="64m" max-size="512m"/>
 
-            <system-properties>
-                <property name="blah" value="blahblah"/>
-            </system-properties>
+               <stack size="128k"/>
+      
+               <system-properties>
+                  <property name="blah" value="blahblah"/>
+               </system-properties>
 
-            <jvm-arguments>
-                <argument value="-server"/>
-                <argument value="-ea"/>
-            </jvm-arguments>
-
+               <jvm-options>
+                  <option value="-server"/>
+                  <option value="-ea"/>
+               </jvm-options>
+            </jvm>
         </server>
     </servers>
 </host>

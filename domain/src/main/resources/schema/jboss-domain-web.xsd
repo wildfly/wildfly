@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0">
+    targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+>
  
     <!-- Include the common definitions  -->
     <xs:include schemaLocation="jboss-domain-common.xsd"/>
@@ -24,7 +27,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" ref="ssl"/>
-        <xs:element name="properties" type="propertiesType" />
+        <xs:element name="properties" type="propertiesType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="http-connector-attlist"/>
     </xs:complexType>
@@ -80,7 +83,7 @@
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
         <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
-        <xs:element name="properties" type="propertiesType" />
+        <xs:element name="properties" type="propertiesType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
