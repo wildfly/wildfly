@@ -22,11 +22,11 @@
 
 package org.jboss.as.model;
 
-import java.util.Arrays;
 import java.util.Collection;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
@@ -43,10 +43,12 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     /**
      * Construct a new instance.
      *
+     * @param location the declaration location of this element
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final String deploymentName, final byte[] deploymentHash) {
+    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash) {
+        super(location);
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
         }
@@ -63,7 +65,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     /** {@inheritDoc} */
     public long elementHash() {
         final byte[] hash = deploymentHash;
-        return deploymentName.hashCode() & 0xFFFFFFFFL ^ elementHashOf(hash);
+        return deploymentName.hashCode() & 0xFFFFFFFFL ^ calculateElementHashOf(hash);
     }
 
     /** {@inheritDoc} */
@@ -76,11 +78,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     /** {@inheritDoc} */
-    public boolean isSameElement(final ServerGroupDeploymentElement other) {
-        return deploymentName.equals(other.deploymentName) && Arrays.equals(deploymentHash, other.deploymentHash);
-    }
-
-    /** {@inheritDoc} */
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
     }
 }

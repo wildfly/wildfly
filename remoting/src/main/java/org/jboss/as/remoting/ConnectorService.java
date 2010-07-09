@@ -20,25 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.remoting;
 
-import java.io.Serializable;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * An update to an element in the model.
- *
- * @param <E> the element type that this update applies to
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
+public final class ConnectorService implements Service<Void> {
 
-    private static final long serialVersionUID = -46837337005143198L;
-
-    protected AbstractModelUpdate() {
+    public void start(final StartContext context) throws StartException {
     }
 
-    protected abstract Class<E> getModelElementType();
+    public void stop(final StopContext context) {
+    }
 
-    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
+    public Void getValue() throws IllegalStateException {
+        return null;
+    }
 }

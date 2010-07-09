@@ -22,23 +22,35 @@
 
 package org.jboss.as.model;
 
-import java.io.Serializable;
-
 /**
- * An update to an element in the model.
- *
- * @param <E> the element type that this update applies to
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
+public final class PropertyAdd extends AbstractModelUpdate<PropertiesElement> {
 
-    private static final long serialVersionUID = -46837337005143198L;
+    private static final long serialVersionUID = 5040034824081445679L;
 
-    protected AbstractModelUpdate() {
+    private final String name;
+    private final String value;
+
+    public PropertyAdd(final String name, final String value) {
+        this.name = name;
+        this.value = value;
     }
 
-    protected abstract Class<E> getModelElementType();
+    protected Class<PropertiesElement> getModelElementType() {
+        return PropertiesElement.class;
+    }
 
-    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
+    protected AbstractModelUpdate<PropertiesElement> applyUpdate(final PropertiesElement element) {
+        element.addProperty(name, value);
+        return new PropertyRemove(name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

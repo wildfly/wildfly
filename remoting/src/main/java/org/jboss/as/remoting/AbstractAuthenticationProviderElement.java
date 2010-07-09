@@ -20,25 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.remoting;
 
-import java.io.Serializable;
+import org.jboss.as.model.AbstractModelRootElement;
+import org.jboss.msc.service.Location;
 
 /**
- * An update to an element in the model.
- *
- * @param <E> the element type that this update applies to
+ * An element which defines an authentication provider for a Remoting connector.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>> implements Serializable {
+public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
 
-    private static final long serialVersionUID = -46837337005143198L;
+    private static final long serialVersionUID = -3738115019035803045L;
 
-    protected AbstractModelUpdate() {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the location at which this element was declared
+     */
+    protected AbstractAuthenticationProviderElement(final Location location) {
+        super(location);
     }
-
-    protected abstract Class<E> getModelElementType();
-
-    protected abstract AbstractModelUpdate<E> applyUpdate(E element);
 }

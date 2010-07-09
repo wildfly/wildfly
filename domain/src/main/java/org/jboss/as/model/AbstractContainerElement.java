@@ -23,50 +23,42 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
+ * The base class of all container elements.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Host extends AbstractModel<Host> {
+public abstract class AbstractContainerElement<E extends AbstractContainerElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
 
-    private static final long serialVersionUID = 7667892965813702351L;
+    private static final long serialVersionUID = 899219830157478004L;
 
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the host element
+     * @param location the declaration location of this element
      */
-    public Host(final Location location) {
+    protected AbstractContainerElement(final Location location) {
         super(location);
     }
 
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return new QName(Domain.NAMESPACE, "host");
-    }
+    /**
+     * Activate this container within a service container.
+     *
+     * @param container the container
+     * @param batchBuilder the current batch builder
+     */
+    public abstract void activate(final ServiceContainer container, final BatchBuilder batchBuilder);
 
-    /** {@inheritDoc} */
-    public long elementHash() {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
-        
-    }
-
-    /** {@inheritDoc} */
-    protected Class<Host> getElementClass() {
-        return Host.class;
-    }
-
-    /** {@inheritDoc} */
-    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEndElement();
-    }
+    /**
+     * Get the collection of all socket bindings referenced by this container.  Used to validate
+     * the domain model.
+     *
+     * @return the collection of socket bindings
+     */
+    public abstract Collection<String> getReferencedSocketBindings();
 }
