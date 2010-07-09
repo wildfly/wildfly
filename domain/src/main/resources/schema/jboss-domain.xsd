@@ -118,46 +118,6 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="domainDeploymentsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="deploymentType">
-    <xs:annotation>
-      <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
-                        any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
-                        which can be enabled or disabled on a domain level.
-
-                        If a certain deployment (or a set of) is not relevant for a specific server-group
-                        this deployment (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the deployment</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sha1" use="required">
-      <xs:annotation>
-        <xs:documentation>The checksum of the deployment</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the deployment is allowed.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
    <xs:complexType name="socket-groupsType">
     <xs:annotation>
       <xs:documentation>Contains a list of socket groups</xs:documentation>
