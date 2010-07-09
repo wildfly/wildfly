@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.attachment;
 
-import java.io.Serializable;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Utility to help attach and retrieve a VirtualFile from a deployment context.
+ *  
+ * @author John E. Bailey
  */
-public final class ServletDeploymentItem implements DeploymentItem, Serializable {
+public class VirtualFileAttachment {
+    public static final AttachmentKey<VirtualFile> KEY = new AttachmentKey<VirtualFile>(VirtualFile.class);
 
-    private static final long serialVersionUID = -1448326750887634809L;
+    public static void attachVirtualFile(final DeploymentUnitContext context, final VirtualFile virtualFile) {
+        context.putAttachment(KEY, virtualFile);
+    }
 
-    public void install(final DeploymentItemContext context) {
+    public static VirtualFile getVirtualFileAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

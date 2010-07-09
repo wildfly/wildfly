@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.attachment;
 
 import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ import java.util.Set;
 public class Dependencies {
     public static final AttachmentKey<Dependencies> KEY = new AttachmentKey<Dependencies>(Dependencies.class);
 
-    private final Set<ModuleDeploymentItem.Dependency> dependencies = new HashSet<ModuleDeploymentItem.Dependency>();
+    private final Set<ModuleConfig.Dependency> dependencies = new HashSet<ModuleConfig.Dependency>();
 
     /**
      * Add a dependency to a DeploymentUnitContext.  Adding the attachment if needed.
@@ -45,7 +46,7 @@ public class Dependencies {
      * @param context    The DeploymentUnitContext
      * @param dependency The dependency to add
      */
-    public static void addDependency(final DeploymentUnitContext context, final ModuleDeploymentItem.Dependency dependency) {
+    public static void addDependency(final DeploymentUnitContext context, final ModuleConfig.Dependency dependency) {
         Dependencies dependencies = context.getAttachment(KEY);
         if(dependencies == null) {
             dependencies = new Dependencies();
@@ -54,12 +55,16 @@ public class Dependencies {
         dependencies.dependencies.add(dependency);
     }
 
+    public static Dependencies getAttachedDependencies(DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
+    }
+
     /**
      * Get the dependencies for a this attachment.
      *
      * @return The dependencies
      */
-    public ModuleDeploymentItem.Dependency[] getDependencies() {
-        return new ArrayList<ModuleDeploymentItem.Dependency>(dependencies).toArray(new ModuleDeploymentItem.Dependency[dependencies.size()]);
+    public ModuleConfig.Dependency[] getDependencies() {
+        return new ArrayList<ModuleConfig.Dependency>(dependencies).toArray(new ModuleConfig.Dependency[dependencies.size()]);
     }
 }

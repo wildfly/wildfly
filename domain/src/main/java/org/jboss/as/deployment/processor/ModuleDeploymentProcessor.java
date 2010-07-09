@@ -23,13 +23,16 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.Dependencies;
-import org.jboss.as.deployment.item.ModuleDeploymentItem;
+import org.jboss.as.deployment.attachment.Dependencies;
+import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.deployment.attachment.Dependencies.getAttachedDependencies;
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleDeploymentItem.
@@ -37,18 +40,18 @@ import org.jboss.vfs.VirtualFile;
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    private static final long MODULE_DEPLOYMENT_PROCESSOR_ORDER = DeploymentPhases.MODULARIZE.plus(100L);
-    private static final ModuleDeploymentItem.Dependency[] NO_DEPS = new ModuleDeploymentItem.Dependency[0];
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
+    private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = context.getVirtualFile();
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", context.getName(), "noversion");
-        final ModuleDeploymentItem.ResourceRoot[] resourceRoots = new ModuleDeploymentItem.ResourceRoot[]{new ModuleDeploymentItem.ResourceRoot(deploymentRoot)};
-        final Dependencies dependenciesAttachment = context.getAttachment(Dependencies.KEY);
-        final ModuleDeploymentItem.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
-        final ModuleDeploymentItem moduleDeploymentItem = new ModuleDeploymentItem(moduleIdentifier, dependencies, resourceRoots);
-        context.addDeploymentItem(moduleDeploymentItem);
+        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};
+        final Dependencies dependenciesAttachment = getAttachedDependencies(context);
+        final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
+        final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
+        context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
     }
 
 }

@@ -38,23 +38,16 @@ import java.util.Map;
  */
 public class DeploymentUnitContextImpl implements DeploymentUnitContext {
     private final String name;
-    private final VirtualFile virtualFile;
     private final List<DeploymentItem> deploymentItems = new ArrayList<DeploymentItem>();
     private final Map<AttachmentKey, Object> attachments = new HashMap<AttachmentKey, Object>();
 
-    public DeploymentUnitContextImpl(String name, VirtualFile virtualFile) {
+    public DeploymentUnitContextImpl(String name) {
         this.name = name;
-        this.virtualFile = virtualFile;
     }
 
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public VirtualFile getVirtualFile() {
-        return virtualFile;
     }
 
     @Override

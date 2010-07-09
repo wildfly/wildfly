@@ -22,8 +22,12 @@
 
 package org.jboss.as.deployment.descriptor;
 
-import java.io.Serializable;
 import org.jboss.as.deployment.AttachmentKey;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The object representation of a legacy "jboss-service.xml" descriptor file.
@@ -34,6 +38,47 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
     private static final long serialVersionUID = 3148478338698997486L;
 
-    public static final AttachmentKey<JBossServiceXmlDescriptor> JBOSS_SERVICE_XML = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
+    public static final AttachmentKey<JBossServiceXmlDescriptor> ATTACHMENT_KEY = new AttachmentKey<JBossServiceXmlDescriptor>(JBossServiceXmlDescriptor.class);
 
+    private ControllerMode controllerMode = ControllerMode.AUTOMATIC;
+    private List<JBossServiceConfig> serviceConfigs;
+
+    public List<JBossServiceConfig> getServiceConfigs() {
+        return serviceConfigs;
+    }
+
+    public void setServiceConfigs(List<JBossServiceConfig> serviceConfigs) {
+        this.serviceConfigs = serviceConfigs;
+    }
+
+    public ControllerMode getControllerMode() {
+        return controllerMode;
+    }
+
+    public void setControllerMode(ControllerMode controllerMode) {
+        this.controllerMode = controllerMode;
+    }
+
+    public static enum ControllerMode {
+         IMMEDIATE("immediate"), AUTOMATIC("automatic"), ON_DEMAND("on demand"), NEVER("never");
+
+        private static final Map<String, ControllerMode> MAP = new HashMap<String, ControllerMode>();
+
+        static {
+            for(ControllerMode mode : ControllerMode.values()) {
+                MAP.put(mode.value, mode);
+            }
+        }
+
+        private final String value;
+
+        private ControllerMode(final String value) {
+            this.value = value;
+        }
+
+        static ControllerMode of(String value) {
+            final ControllerMode controllerMode = MAP.get(value);
+            return controllerMode == null ? AUTOMATIC : controllerMode;
+        }
+    }
 }

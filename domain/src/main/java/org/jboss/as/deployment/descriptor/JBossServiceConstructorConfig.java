@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
-
-import java.io.Serializable;
-import org.jboss.msc.service.BatchBuilder;
+package org.jboss.as.deployment.descriptor;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Configuration object for a JBoss service constructor.
+ * 
+ * @author John E. Bailey
  */
-public final class ServletDeploymentItem implements DeploymentItem, Serializable {
+public class JBossServiceConstructorConfig {
+    public static final Argument[] EMPTY_ARGS = {};
+    private Argument[] arguments = EMPTY_ARGS;
 
-    private static final long serialVersionUID = -1448326750887634809L;
+    public Argument[] getArguments() {
+        return arguments;
+    }
 
-    public void install(final DeploymentItemContext context) {
+    public void setArguments(Argument[] arguments) {
+        this.arguments = arguments;
+    }
+
+    public static class Argument {
+        private final String value;
+        private final String type;
+
+        public Argument(final String type, final String value) {
+            this.value = value;
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

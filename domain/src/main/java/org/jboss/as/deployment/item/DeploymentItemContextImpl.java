@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,35 +22,30 @@
 
 package org.jboss.as.deployment.item;
 
-import java.io.Serializable;
-
+import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 
 /**
- * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
- *
+ * Default implementation of DeploymentItemContext.
+ * 
  * @author John E. Bailey
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
+public class DeploymentItemContextImpl implements DeploymentItemContext {
+    private final Module module;
+    private final BatchBuilder batchBuilder;
 
-    private static final long serialVersionUID = -8208357864488821428L;
-
-    private final ServiceDeployment serviceDeployment;
-
-    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
-        this.serviceDeployment = serviceDeployment;
+    public DeploymentItemContextImpl(Module module, BatchBuilder batchBuilder) {
+        this.module = module;
+        this.batchBuilder = batchBuilder;
     }
 
     @Override
-    public void install(final DeploymentItemContext context) {
-        final BatchBuilder builder = context.getBatchBuilder();
-        final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
-        try {
-            serviceDeployment.install(builder);
-        } finally {
-            Thread.currentThread().setContextClassLoader(currentCl);
-        }
+    public BatchBuilder getBatchBuilder() {
+        return batchBuilder;
+    }
+
+    @Override
+    public Module getModule() {
+        return module;
     }
 }

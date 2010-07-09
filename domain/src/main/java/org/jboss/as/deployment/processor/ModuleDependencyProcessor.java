@@ -23,8 +23,8 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.Dependencies;
-import org.jboss.as.deployment.item.ModuleDeploymentItem;
+import org.jboss.as.deployment.attachment.Dependencies;
+import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -36,17 +36,19 @@ import org.jboss.vfs.VirtualFile;
 import java.io.IOException;
 import java.util.jar.Manifest;
 
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+
 /**
  * DeploymentUnitProcessor that will extract module dependencies from an archive. 
  *
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    private static final long MODULE_DEPENDENCY_PROCESSOR_ORDER = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = context.getVirtualFile();
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final Manifest manifest;
         try {
             manifest = VFSUtils.getManifest(deploymentRoot);
@@ -67,7 +69,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "export");
-            ModuleDeploymentItem.Dependency dependency = new ModuleDeploymentItem.Dependency(dependencyId, true, optional, export);
+            ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
             Dependencies.addDependency(context, dependency);
         }
     }

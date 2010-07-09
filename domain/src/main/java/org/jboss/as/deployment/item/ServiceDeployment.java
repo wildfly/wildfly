@@ -20,32 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.item;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.vfs.VirtualFile;
+import java.io.Serializable;
 
 /**
- * Processes a deployment from a VirtualFile root. 
+ * Deployment interface allowing deployments to provide custom deployment items to install services.
+ * These are intended to be loaded via a ServiceLoader from the deployment. 
  *
  * @author John E. Bailey
  */
-public interface DeploymentProcessor {
+public interface ServiceDeployment extends Serializable {
     /**
-     * Process a new deployment from a VirtualFile.
+     * Install services into the provided batch builder.
      *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
+     * @param batchBuilder the batch
      */
-    void processDeployment(String name, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException;
-
-    /**
-     * Process a new deployment from a VirtualFile with an existing service batch.
-     *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     * @param batchBuilder The BatchBuilder to use for deployment.
-     */
-    void processDeployment(String name, VirtualFile deploymentRoot, BatchBuilder batchBuilder) throws DeploymentUnitProcessingException ;
+    void install(BatchBuilder batchBuilder);
 }
