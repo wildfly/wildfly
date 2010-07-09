@@ -43,6 +43,86 @@
      </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="server-groupType">
+     <xs:sequence>
+        <xs:element name="jvm" type="java-configType" minOccurs="0"/>
+        <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+            
+        <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
+
+        <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
+        <xs:element name="system-properties" minOccurs="0" type="propertiesType"/>
+     </xs:sequence>
+     <xs:attribute name="group-name" type="xs:ID">
+        <xs:annotation>
+           <xs:documentation>
+              The name of the server group
+           </xs:documentation>
+        </xs:annotation>
+     </xs:attribute>
+     <xs:attribute name="profile" type="xs:string">
+        <xs:annotation>
+           <xs:documentation>
+              The name of the profile this server is running.
+           </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="domainDeploymentsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="deploymentType">
+    <xs:annotation>
+      <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
+                        any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
+                        which can be enabled or disabled on a domain level.
+
+                        If a certain deployment (or a set of) is not relevant for a specific server-group
+                        this deployment (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the deployment</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sha1" use="required">
+      <xs:annotation>
+        <xs:documentation>The checksum of the deployment</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Whether the deployment is allowed.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+<!-- TODO this is not used anywhere yet -->
+    <xs:complexType name="clustersType">
+        <xs:complexContent>
+            <xs:extension base="server-groupType">
+                <xs:sequence>
+                    <xs:element name="partition-name" type="xs:string"/>
+                    <xs:element name="state-transfer-timeout" type="xs:integer"/>
+                    <xs:element name="method-call-timeout" type="xs:integer"/>
+                </xs:sequence>
+                <xs:attribute name="category" type="xs:string" use="required"/>                    
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
   <!-- domain-configuration related definitions -->
   <xs:complexType name="domain-configurationType">
     <xs:annotation>
@@ -198,5 +278,96 @@
       </xs:annotation>
     </xs:attribute>
    </xs:complexType>
+
+    <!-- resources related definitions -->
+    <xs:complexType name="resourcesType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="external-jndi-resource" type="external-jndi-resourceType"/>
+            <xs:element name="jdbc-resource" type="external-jndi-resourceType"/>
+            <xs:element name="mail-resource" type="mail-resourceType"/>
+            <xs:element name="persistence-manager-factory-resource"
+                type="persistence-manager-factory-resourceType"/>
+            <!-- 
+            <xs:group ref="connector-resource"/>
+            <xs:group ref="resource-adapter-config"/>
+            <xs:group ref="connector-connection-pool"/>
+            -->
+        </xs:choice>
+        <xs:attribute name="name"/>
+        <xs:attribute name="jndi-name">
+            <xs:annotation>
+                <xs:documentation>The JNDI name under which to bind the resource</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="factory-class">
+            <xs:annotation>
+                <xs:documentation>The class name of the ObjectFactory</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="external-jndi-resourceType">
+        <xs:complexContent>
+            <xs:extension base="resource-commonType">
+                <xs:attribute name="jndi-lookup-name" use="required"/>
+                <xs:attribute name="res-type" use="required"/>
+                <xs:attribute name="factory-class" use="required"/>
+                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="jdbc-resourceType">
+        <xs:complexContent>
+            <xs:extension base="resource-commonType">
+                <xs:attribute name="pool-name" use="required"/>
+                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:attributeGroup name="jdbc-connection-pool">
+        <xs:attribute name="name" use="required"/>
+    </xs:attributeGroup>
+
+    <xs:complexType name="mail-resourceType">
+        <xs:complexContent>
+            <xs:extension base="resource-commonType">
+                <xs:sequence minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>The JavaMail connection properties</xs:documentation>
+                    </xs:annotation>
+                    <xs:element name="mail.store.protocol" type="xs:string"/>
+                    <xs:element name="mail.transport.protocol" type="xs:string"/>
+                    <xs:element name="mail.user" type="xs:string"/>
+                    <xs:element name="mail.pop3.host" type="xs:string"/>
+                    <xs:element name="mail.smtp.host" type="xs:string"/>
+                    <xs:element name="mail.smtp.port" type="xs:string"/>
+                    <xs:element name="mail.from" type="xs:string"/>
+                    <xs:element name="mail.debug" type="xs:string"/>
+                </xs:sequence>
+                <xs:attribute name="user" use="required"/>
+                <xs:attribute name="password" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="persistence-manager-factory-resourceType">
+        <xs:complexContent>
+            <xs:extension base="resource-commonType">
+                <xs:attribute name="factory-class" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The class name of the JPA factory</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="resource-commonType">
+        <xs:sequence minOccurs="0" maxOccurs="1">
+            <xs:element name="properties" type="propertiesType"/>
+        </xs:sequence>
+    </xs:complexType>
 
 </xs:schema>

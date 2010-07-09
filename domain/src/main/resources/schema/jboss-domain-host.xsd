@@ -66,6 +66,43 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="serverType">
+        <xs:all>
+            <xs:element name="priority" type="priorityType" minOccurs="0"/>
+            <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
+
+            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+
+            <xs:element name="loggers" type="loggersType" minOccurs="0"/>
+            <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="java-configType" />
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="group" type="xs:string" use="required"/>
+        <xs:attribute name="start" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="priorityType">
+        <xs:attribute name="value" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation>
+                    TODO
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="cpu-affinityType">
+        <xs:attribute name="cpus" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    TODO
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="extensionsType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:any/>
