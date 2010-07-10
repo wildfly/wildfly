@@ -96,7 +96,7 @@
                 for determining the IP address to associate with that interface.
             </xs:documentation>
         </xs:annotation>
-        <xs:group ref="interface-criteriaGroup" minOccurs="0"/>
+        <xs:group ref="interface-criteriaGroup" minOccurs="1"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
     
