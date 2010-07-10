@@ -34,6 +34,6 @@ public final class JBossWebXmlDescriptor implements Serializable {
 
     private static final long serialVersionUID = 5844905201567666811L;
 
-    public static final AttachmentKey<JBossWebXmlDescriptor> WEB_XML = new AttachmentKey<JBossWebXmlDescriptor>(JBossWebXmlDescriptor.class);
+    public static final AttachmentKey<JBossWebXmlDescriptor> WEB_XML = AttachmentKey.create(JBossWebXmlDescriptor.class);
 
 }

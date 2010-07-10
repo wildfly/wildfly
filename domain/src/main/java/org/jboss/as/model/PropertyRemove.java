@@ -25,29 +25,26 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PropertyUpdate extends AbstractModelUpdate<PropertyElement> {
+public final class PropertyRemove extends AbstractModelUpdate<PropertiesElement> {
 
-    private static final long serialVersionUID = 7481356183023660806L;
+    private static final long serialVersionUID = 5040034824081445679L;
 
-    private final String value;
+    private final String name;
 
-    public PropertyUpdate(final String value) {
-        this.value = value;
+    public PropertyRemove(final String name) {
+        this.name = name;
     }
 
-    protected Class<PropertyElement> getModelElementType() {
-        return PropertyElement.class;
+    protected Class<PropertiesElement> getModelElementType() {
+        return PropertiesElement.class;
     }
 
-    protected AbstractModelUpdate<PropertyElement> applyUpdate(final PropertyElement element) {
-        try {
-            return new PropertyUpdate(element.getValue());
-        } finally {
-            element.setValue(value);
-        }
+    protected AbstractModelUpdate<PropertiesElement> applyUpdate(final PropertiesElement element) {
+        final String value = element.removeProperty(name);
+        return new PropertyAdd(name, value);
     }
 
-    public String getValue() {
-        return value;
+    public String getName() {
+        return name;
     }
 }

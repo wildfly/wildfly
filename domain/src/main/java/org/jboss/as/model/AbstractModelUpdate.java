@@ -25,7 +25,9 @@ package org.jboss.as.model;
 import java.io.Serializable;
 
 /**
- * @param <M> the model type that this update applies to
+ * An update to an element in the model.
+ *
+ * @param <E> the element type that this update applies to
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

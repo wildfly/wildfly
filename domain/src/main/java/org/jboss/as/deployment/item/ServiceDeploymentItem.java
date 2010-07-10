@@ -23,15 +23,34 @@
 package org.jboss.as.deployment.item;
 
 import java.io.Serializable;
+
 import org.jboss.msc.service.BatchBuilder;
 
 /**
+ * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
+ *
+ * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
 
     private static final long serialVersionUID = -8208357864488821428L;
 
-    public void install(final BatchBuilder builder) {
+    private final ServiceDeployment serviceDeployment;
+
+    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
+        this.serviceDeployment = serviceDeployment;
+    }
+
+    @Override
+    public void install(final DeploymentItemContext context) {
+        final BatchBuilder builder = context.getBatchBuilder();
+        final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
+        try {
+            serviceDeployment.install(builder);
+        } finally {
+            Thread.currentThread().setContextClassLoader(currentCl);
+        }
     }
 }

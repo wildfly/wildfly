@@ -34,5 +34,5 @@ public final class BeansXmlDescriptor implements Serializable {
 
     private static final long serialVersionUID = 2238421096712364033L;
 
-    public static final AttachmentKey<BeansXmlDescriptor> BEANS_XML = new AttachmentKey<BeansXmlDescriptor>(BeansXmlDescriptor.class);
+    public static final AttachmentKey<BeansXmlDescriptor> BEANS_XML = AttachmentKey.create(BeansXmlDescriptor.class);
 }

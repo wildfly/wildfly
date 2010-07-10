@@ -56,13 +56,6 @@ public interface DeploymentUnitContext extends Attachable {
     String getName();
 
     /**
-     * Get the root virtual file of the deployment unit.
-     *
-     * @return the root virtual file
-     */
-    VirtualFile getVirtualFile();
-
-    /**
      * Add a deployment item to this deployment unit context.  Once a deployment item is added, it may not be removed.
      *
      * @param item the item to add
