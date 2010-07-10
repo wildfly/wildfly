@@ -21,9 +21,10 @@
   -->
 
 <domain xmlns="urn:jboss:domain:1.0"
-        targetNamespace="urn:jboss:domain:1.0"
         xmlns:sec="urn:jboss:security-config:5.0"
-        >
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
+                            urn:jboss:security-config:5.0 security-config_5_0.xsd">
 
 
     <!-- The domain manager/server bootstrap configuration -->
@@ -50,14 +51,14 @@
         <deployment name="my-ejb.jar" sha1="xxx"/>
         <deployment name="my-war.ear" sha1="xxx" start="false"/>
     </deployments>
-    
+
     <!--  
          Named interfaces that can be referenced elsewhere. Different
          mechanisms for associating an IP address with the interface
          are shown.
     -->
     <interfaces>
-        
+
         <interface name="default">
             <!--  Here we directly state the IP address -->
             <inet-address value="127.0.0.1"/>
@@ -73,13 +74,13 @@
             <!-- 
                 Here we provide a set of criteria that are used to narrow the
                 set of IP addresses available on the host to one that is acceptable.
-             -->
+            -->
             <not><loopback/></not>
             <point-to-point/>
             <multicast/>
             <up/>
             <private-address/>
-            
+
             <!-- Alternatively... 
             <public-address/>
             -->
@@ -103,10 +104,10 @@
          <socket-group name="standard-sockets" default-interface="external">
             <socket name="http" port="8080"/>
             <socket name="https" port="8447"/>
-            <socket name="remoting" port="4447"/>
+           <socket name="remoting" port="4447"/>
          </socket-group>
          <socket-group name="standard-clustered-sockets" extends="standard-sockets">
-            <socket name="cluster-udp" interface="internal" port="" multicast-port="55200"/>
+            <socket name="cluster-udp" interface="internal" multicast-port="55200"/>
             <socket name="cluster-failure-detection" interface="internal" port="54200"/>
             <socket name="ha-jndi" port="1100"/>
             <socket name="ha-jndi-discovery" multicast-port="1102"/>
@@ -119,13 +120,13 @@
                 <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
                 <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
                                 default-virtual-server="localhost">
-                    <ssl password="changeit" cypher-suite="SSLv2+SSLv3"/>
+                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
                 </http-connector>
 
                 <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
                     <access-log/>
                 </virtual-server>
-            </web-container>
+           </web-container>
         </web-containers>
     </containers>
 
@@ -137,8 +138,13 @@
     <server-groups>
         <server-group group-name="main-server-group" profile="something">
 
-           <socket-group name="standard-clustered-sockets"/>
-       
+           <jvm name="icedtea1">
+              <heap size="512m" max-size="1024m"/>
+           </jvm>
+
+           <socket-group ref="standard-clustered-sockets"/>
+
+<!--       TODO this has to be clarified
            <cluster default-multicast-address="230.0.0.4">
              <group-communication-config name="udp">
                  <udp-tranpsort socket="cluster-udp"/>
@@ -146,24 +152,16 @@
              <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
              <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
            </cluster>
-
-            <jvm name="icedtea1">
-
-                <heap size="512m" max-size="1024m"/>
-            </jvm>
-
+-->
             <deployments>
                 <deployment name="my-app1.ear" sha1="xxx" start="true"/>
                 <deployment name="my-app2.ear" sha1="xxx" start="false"/>
             </deployments>
 
             <system-properties>
-                <properties>
-                    <property name="prop1" value="value1"/>
-                    <property name="prop2" value="value2"/>
-                </properties>
+               <property name="prop1" value="value1"/>
+               <property name="prop2" value="value2"/>
             </system-properties>
-
         </server-group>
     </server-groups>
 
