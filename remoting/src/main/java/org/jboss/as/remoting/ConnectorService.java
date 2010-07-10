@@ -22,23 +22,68 @@
 
 package org.jboss.as.remoting;
 
+import java.net.InetSocketAddress;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.UnknownURISchemeException;
+import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.remoting3.spi.NetworkServerProvider;
+import org.jboss.xnio.ChannelListener;
+import org.jboss.xnio.OptionMap;
+import org.jboss.xnio.channels.ConnectedStreamChannel;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConnectorService implements Service<Void> {
+public final class ConnectorService implements Service<ChannelListener<ConnectedStreamChannel<InetSocketAddress>>> {
+    private final InjectedValue<Endpoint> endpointInjectedValue = new InjectedValue<Endpoint>();
+    private final InjectedValue<ServerAuthenticationProvider> authenticationProviderInjectedValue = new InjectedValue<ServerAuthenticationProvider>();
 
-    public void start(final StartContext context) throws StartException {
+    private OptionMap optionMap;
+    private ChannelListener<ConnectedStreamChannel<InetSocketAddress>> listener;
+
+    public synchronized void start(final StartContext context) throws StartException {
+        final Endpoint endpoint = endpointInjectedValue.getValue();
+        final NetworkServerProvider provider;
+        try {
+            // We can just use "remote" here because that just means that any SSL config is relegated to us.
+            provider = endpoint.getConnectionProviderInterface("remote", NetworkServerProvider.class);
+        } catch (UnknownURISchemeException e) {
+            throw new StartException(e);
+        }
+        listener = provider.getServerListener(optionMap, authenticationProviderInjectedValue.getValue());
     }
 
-    public void stop(final StopContext context) {
+    public synchronized void stop(final StopContext context) {
+        listener = null;
     }
 
-    public Void getValue() throws IllegalStateException {
-        return null;
+    public synchronized ChannelListener<ConnectedStreamChannel<InetSocketAddress>> getValue() throws IllegalStateException {
+        final ChannelListener<ConnectedStreamChannel<InetSocketAddress>> listener = this.listener;
+        if (listener == null) {
+            throw new IllegalStateException();
+        }
+        return listener;
+    }
+
+    OptionMap getOptionMap() {
+        return optionMap;
+    }
+
+    void setOptionMap(final OptionMap optionMap) {
+        this.optionMap = optionMap;
+    }
+
+    Injector<ServerAuthenticationProvider> getAuthenticationProviderInjector() {
+        return authenticationProviderInjectedValue;
+    }
+
+    Injector<Endpoint> getEndpointInjector() {
+        return endpointInjectedValue;
     }
 }
