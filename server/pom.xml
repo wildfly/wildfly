@@ -51,7 +51,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>domain</artifactId>
+            <artifactId>jboss-as-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
