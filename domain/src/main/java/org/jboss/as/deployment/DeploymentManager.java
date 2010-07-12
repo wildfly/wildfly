@@ -113,7 +113,7 @@ public class DeploymentManager implements Service<DeploymentManager> {
 
             // Install the batch.
             batchBuilder.install();
-            deploymentServiceListener.waitForCompletion();
+            deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
         } catch(DeploymentException e) {
             throw e;
         } catch(Throwable t) {
