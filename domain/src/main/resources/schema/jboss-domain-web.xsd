@@ -36,11 +36,23 @@
        </xs:sequence>
    </xs:complexType>
 
-      <!-- The web container configuration -->
-  <xs:complexType name="web-containerType">
+   <!-- The web container configuration -->
+   <xs:complexType name="web-containerType">
+   <!--  FIXME classloading delegation and package filtering ? -->
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="http-connector"/>
-        <xs:element maxOccurs="unbounded" ref="virtual-server"/>
+          <xs:element maxOccurs="unbounded" ref="http-connector"/>
+          <xs:element maxOccurs="unbounded" ref="virtual-server"/>
+          <xs:element name="web-jar" maxOccurs="unbounded" type="xs:string">
+              <xs:annotation>
+                  <xs:documentation>JARs which may contain shared TLDs or SCIs</xs:documentation>
+              </xs:annotation>
+          </xs:element>
+          <xs:element name="web-xml" maxOccurs="1" type="xs:string" 
+            default="${jboss.server.home.dir}/conf/web.xml">
+              <xs:annotation>
+                  <xs:documentation>Path to shared web.xml</xs:documentation>
+              </xs:annotation>
+          </xs:element>
       </xs:sequence>
       <xs:attribute name="name" use="required"/>
   </xs:complexType>
@@ -65,7 +77,7 @@
     <xs:attribute name="redirect-port"/>
     <xs:attribute name="secure" default="false" type="boolean"/>
     <xs:attribute name="default-virtual-server"/>
-    <xs:attribute name="xpowered-by"/>
+    <xs:attribute name="production" default="false" type="boolean"/>
     <xs:attribute name="enabled" default="true" type="boolean"/>
     <xs:attribute name="executor" type="xs:IDREF" />     
   </xs:attributeGroup>
@@ -117,7 +129,7 @@
         </xs:annotation>
     </xs:attribute>
     <xs:attribute name="http-connectors"/>
-    <xs:attribute name="default-web-module"/>
+    <xs:attribute name="default-web-module" default="ROOT.war" />
     <xs:attribute name="hosts" use="required">
         <xs:annotation>
             <xs:documentation>Reference to vhost aliases</xs:documentation>
@@ -126,8 +138,12 @@
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">
-        <xs:attribute name="log-directory" default="${jboss.server.home.dir}/logs/access"/>
-        <xs:attribute name="iponly" default="true" type="boolean"/>
+        <xs:attribute name="directory" default="${jboss.server.home.dir}/logs/access"/>
+        <xs:attribute name="pattern" default="common"/>
+        <xs:attribute name="resolve-hosts" default="false" type="boolean"/>
+        <xs:attribute name="extended" default="false" type="boolean"/>
+        <xs:attribute name="prefix" default="access_log."/>
+        <xs:attribute name="rotate" default="true" type="boolean"/>
     </xs:complexType>
     
     <xs:complexType name="http-rewriteType">
@@ -137,17 +153,21 @@
         
         <xs:attribute name="pattern" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Pattern is a perl compatible regular expression,
+                  which is applied to the current URL
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="substitution" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>The substitution of a rewrite rule is the string 
+                  which is substituted for (or replaces) the original URL which Pattern matched
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="flags" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Substitution options</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -155,17 +175,20 @@
     <xs:complexType name="rewrite-conditionType">        
         <xs:attribute name="test" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>The test string is first evaluated, before being 
+                  matched against the specified pattern</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="pattern" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>CondPattern is the condition pattern, a regular
+                  expression which is applied to the current instance of the test string
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="flags" use="required">
             <xs:annotation>
-                <xs:documentation>FIXME: document this attribute</xs:documentation>
+                <xs:documentation>Matching options</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
