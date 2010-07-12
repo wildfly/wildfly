@@ -78,7 +78,7 @@ public class DeploymentManager implements Service<DeploymentManager> {
      * 
      * @param deploymentRoot The root to deploy
      */
-    public final void deploy(final VirtualFile deploymentRoot) {
+    public final void deploy(final VirtualFile deploymentRoot) throws DeploymentException {
         final ServiceContainer serviceContainer = this.serviceContainer;
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final String deploymentPath = deploymentRoot.getPathName();
@@ -107,10 +107,13 @@ public class DeploymentManager implements Service<DeploymentManager> {
             deploymentServiceBuilder.addDependency(deploymentModuleLoaderServiceName)
                 .toMethod(DeploymentService.DEPLOYMENT_MODULE_LOADER_SETTER, Collections.singletonList(Values.injectedValue()));
 
+            // TODO:  Add a start listener
+            // TODO:  Add a error listener  
+
             // Install the batch.
             batchBuilder.install();
         } catch(Throwable t) {
-            throw new RuntimeException(t); // Throw something real...
+            throw new DeploymentException(t);
         }
     }
 
