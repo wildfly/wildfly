@@ -100,19 +100,19 @@
         <interface name="public4"/>
     </interfaces>
 
-    <socket-groups>
-         <socket-group name="standard-sockets" default-interface="external">
-            <socket name="http" port="8080"/>
-            <socket name="https" port="8447"/>
-           <socket name="remoting" port="4447"/>
-         </socket-group>
-         <socket-group name="standard-clustered-sockets" extends="standard-sockets">
-            <socket name="cluster-udp" interface="internal" multicast-port="55200"/>
-            <socket name="cluster-failure-detection" interface="internal" port="54200"/>
-            <socket name="ha-jndi" port="1100"/>
-            <socket name="ha-jndi-discovery" multicast-port="1102"/>
-         </socket-group>
-    </socket-groups>
+    <socket-binding-groups>
+         <socket-binding-group name="standard-sockets" default-interface="external">
+            <socket-binding name="http" port="8080"/>
+            <socket-binding name="https" port="8447"/>
+           <socket-binding name="remoting" port="4447"/>
+         </socket-binding-group>
+         <socket-binding-group name="standard-clustered-sockets" extends="standard-sockets">
+            <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
+            <socket-binding name="cluster-failure-detection" interface="internal" port="54200"/>
+            <socket-binding name="ha-jndi" port="1100"/>
+            <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
+         </socket-binding-group>
+    </socket-binding-groups>
 
     <containers>
         <web-containers>
@@ -142,7 +142,7 @@
               <heap size="512m" max-size="1024m"/>
            </jvm>
 
-           <socket-group ref="standard-clustered-sockets"/>
+           <socket-binding-group ref="standard-clustered-sockets"/>
 
 <!--       TODO this has to be clarified
            <cluster default-multicast-address="230.0.0.4">

@@ -72,7 +72,7 @@
             <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
 
             <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
-            <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
             <xs:element name="loggers" type="loggersType" minOccurs="0"/>
             <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>

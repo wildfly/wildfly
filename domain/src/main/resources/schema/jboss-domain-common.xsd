@@ -31,7 +31,7 @@
     <!-- Include the logging schema definitions for reuse -->
     <xs:include schemaLocation="jboss-domain-logging.xsd"/>
 
-    <xs:complexType name="socket-group-refType">
+    <xs:complexType name="socket-binding-group-refType">
         <xs:attribute name="ref" type="xs:string">
             <xs:annotation>
                 <xs:documentation>

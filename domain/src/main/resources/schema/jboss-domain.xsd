@@ -44,7 +44,7 @@
         <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
         <xs:element name="interfaces" type="named-interfacesType"/>
-        <xs:element name="socket-groups" type="socket-groupsType"/>
+        <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
         <xs:element name="server-groups" type="server-groupsType"/>
         <xs:element name="security-policy" type="sec:PolicyConfig" />
         <xs:element name="containers">
@@ -69,7 +69,7 @@
   <xs:complexType name="server-groupType">
      <xs:sequence>
         <xs:element name="jvm" type="java-configType" minOccurs="0"/>
-        <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+        <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
             
         <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
 
@@ -221,21 +221,21 @@
     </xs:attribute>
   </xs:complexType>
 
-   <xs:complexType name="socket-groupsType">
+   <xs:complexType name="socket-binding-groupsType">
     <xs:annotation>
       <xs:documentation>Contains a list of socket groups</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="socket-group" type="socket-groupType" maxOccurs="unbounded"/>
+      <xs:element name="socket-binding-group" type="socket-binding-groupType" maxOccurs="unbounded"/>
     </xs:sequence>
    </xs:complexType>
 
-   <xs:complexType name="socket-groupType">
+   <xs:complexType name="socket-binding-groupType">
     <xs:annotation>
       <xs:documentation>Contains a list of socket configurations</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="socket" type="socketType" maxOccurs="unbounded"/>
+      <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="extends" type="xs:string" use="optional">
@@ -253,7 +253,7 @@
     </xs:attribute>
    </xs:complexType>
    
-   <xs:complexType name="socketType">
+   <xs:complexType name="socket-bindingType">
     <xs:annotation>
       <xs:documentation>Configuration information for a socket.</xs:documentation>
     </xs:annotation>
