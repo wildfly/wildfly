@@ -107,11 +107,15 @@ public class DeploymentManager implements Service<DeploymentManager> {
             deploymentServiceBuilder.addDependency(deploymentModuleLoaderServiceName)
                 .toMethod(DeploymentService.DEPLOYMENT_MODULE_LOADER_SETTER, Collections.singletonList(Values.injectedValue()));
 
-            // TODO:  Add a start listener
-            // TODO:  Add a error listener  
+            // Setup deployment listener
+            final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener();
+            batchBuilder.addListener(deploymentServiceListener);
 
             // Install the batch.
             batchBuilder.install();
+            deploymentServiceListener.waitForCompletion();
+        } catch(DeploymentException e) {
+            throw e;
         } catch(Throwable t) {
             throw new DeploymentException(t);
         }

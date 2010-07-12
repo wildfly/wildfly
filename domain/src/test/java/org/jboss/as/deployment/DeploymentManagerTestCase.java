@@ -46,11 +46,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Test to verify the DeploymentManager correctly installs the deployment service. 
+ * Test to verify the DeploymentManager correctly installs the deployment service.
  *
  * @author John E. Bailey
  */
-public class DeploymentManagerTest {
+public class DeploymentManagerTestCase {
 
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain =  new DeploymentChainImpl();
@@ -80,7 +80,7 @@ public class DeploymentManagerTest {
         batchBuilder.addService(moduleLoaderServiceName, new PassThroughService(deploymentModuleLoader));
         batchBuilder.install();
     }
-    
+
     @Test
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/deploymentOne"));
@@ -98,7 +98,7 @@ public class DeploymentManagerTest {
     }
 
     private URL getResource(final String path) {
-        return DeploymentManagerTest.class.getResource(path);
+        return DeploymentManagerTestCase.class.getResource(path);
     }
 
     private <T> T getPrivateFieldValue(final Object target, final String fieldName, final Class<T> fieldType) throws Exception {

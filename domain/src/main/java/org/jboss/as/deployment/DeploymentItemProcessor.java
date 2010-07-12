@@ -53,7 +53,7 @@ public class DeploymentItemProcessor implements Service<Void> {
     static final Method DEPLOYMENT_MODULE_SETTER;
     static {
         try {
-            DEPLOYMENT_MODULE_SETTER = DeploymentService.class.getMethod("setModule", Module.class);
+            DEPLOYMENT_MODULE_SETTER = DeploymentItemProcessor.class.getMethod("setModule", Module.class);
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);  // Gross....
         }
