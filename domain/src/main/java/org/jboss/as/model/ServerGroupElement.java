@@ -25,9 +25,10 @@ package org.jboss.as.model;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * A server group within a {@link Domain}.
@@ -41,7 +42,14 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     private final String name;
     private final Map<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
 
-    public ServerGroupElement(final String name) {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of this element
+     * @param name the name of the server group
+     */
+    public ServerGroupElement(final Location location, final String name) {
+        super(location);
         this.name = name;
     }
 
@@ -64,12 +72,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
 
     /** {@inheritDoc} */
-    public boolean isSameElement(final ServerGroupElement other) {
-        return (name.equals(other.name));
-    }
-
-    /** {@inheritDoc} */
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         // todo write content
         streamWriter.writeEndElement();

@@ -20,32 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.remoting;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.as.model.AbstractModelRootElement;
+import org.jboss.msc.service.Location;
 
 /**
- * Processes a deployment from a VirtualFile root. 
+ * An element which defines an authentication provider for a Remoting connector.
  *
- * @author John E. Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DeploymentProcessor {
-    /**
-     * Process a new deployment from a VirtualFile.
-     *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     */
-    void processDeployment(String name, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException;
+public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
+
+    private static final long serialVersionUID = -3738115019035803045L;
 
     /**
-     * Process a new deployment from a VirtualFile with an existing service batch.
+     * Construct a new instance.
      *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     * @param batchBuilder The BatchBuilder to use for deployment.
+     * @param location the location at which this element was declared
      */
-    void processDeployment(String name, VirtualFile deploymentRoot, BatchBuilder batchBuilder) throws DeploymentUnitProcessingException ;
+    protected AbstractAuthenticationProviderElement(final Location location) {
+        super(location);
+    }
 }

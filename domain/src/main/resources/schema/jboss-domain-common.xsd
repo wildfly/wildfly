@@ -50,6 +50,7 @@
         </xs:attribute>
     </xs:complexType>
 
+
     <xs:complexType name="named-interfacesType">
         <xs:annotation>
             <xs:documentation>
@@ -63,6 +64,7 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!-- TODO make this and specified-interfaceType the same except for interface-criteriaGroup minOccurs -->
     <xs:complexType name="named-interfaceType">
         <xs:annotation>
             <xs:documentation>

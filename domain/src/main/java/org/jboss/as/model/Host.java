@@ -23,9 +23,11 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -34,27 +36,37 @@ public final class Host extends AbstractModel<Host> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
-    protected Host() {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of the host element
+     */
+    public Host(final Location location) {
+        super(location);
     }
 
+    /** {@inheritDoc} */
+    protected QName getElementName() {
+        return new QName(Domain.NAMESPACE, "host");
+    }
+
+    /** {@inheritDoc} */
     public long elementHash() {
         return 0;
     }
 
-    /** {@inheritDoc}  Host elements are always the same because it is the root element of the model. */
-    public boolean isSameElement(final Host other) {
-        return true;
-    }
-
+    /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
         
     }
 
+    /** {@inheritDoc} */
     protected Class<Host> getElementClass() {
         return Host.class;
     }
 
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    /** {@inheritDoc} */
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
     }
 }

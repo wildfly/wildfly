@@ -20,25 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.descriptor;
+
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.vfs.VirtualFile;
 
 import java.io.Serializable;
 
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.DuplicateServiceException;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
-
 /**
- * A deployment item which defines a module.
+ * A config object capturing the required information to construct a module.
  *
  * @author John E. Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ModuleDeploymentItem implements DeploymentItem {
+public final class ModuleConfig implements Serializable {
+
+    public static final AttachmentKey<ModuleConfig> ATTACHMENT_KEY = AttachmentKey.create(ModuleConfig.class);
 
     private static final long serialVersionUID = 210753378958448029L;
 
@@ -46,24 +44,10 @@ public final class ModuleDeploymentItem implements DeploymentItem {
     private final Dependency[] dependencies;
     private final ResourceRoot[] resources;
 
-    public ModuleDeploymentItem(final ModuleIdentifier identifier, final Dependency[] dependencies, final ResourceRoot[] resources) {
+    public ModuleConfig(final ModuleIdentifier identifier, final Dependency[] dependencies, final ResourceRoot[] resources) {
         this.identifier = identifier;
         this.dependencies = dependencies;
         this.resources = resources;
-    }
-
-    public void install(final BatchBuilder builder) {
-        try {
-            final ServiceName serviceName = getModuleServiceName(identifier);
-            final BatchServiceBuilder<Module> serviceBuilder = builder.addService(serviceName, new ModuleDeploymentService(this, null));
-            final Dependency[] dependencies = this.dependencies;
-            for(Dependency dependency : dependencies) {
-                if(!dependency.isStatic())
-                    serviceBuilder.addDependency(getModuleServiceName(dependency.getIdentifier()));
-            }
-        } catch (DuplicateServiceException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public ModuleIdentifier getIdentifier() {
@@ -71,15 +55,11 @@ public final class ModuleDeploymentItem implements DeploymentItem {
     }
 
     public Dependency[] getDependencies() {
-        return dependencies.clone();
+        return dependencies;
     }
 
     public ResourceRoot[] getResources() {
-        return resources.clone();
-    }
-
-    private ServiceName getModuleServiceName(final ModuleIdentifier moduleIdentifier) {
-        return ModuleDeploymentService.MODULE_DEPLOYMENT_SERVICE.append(moduleIdentifier.toString());
+        return resources;
     }
 
     public static final class Dependency implements Serializable {

@@ -48,4 +48,15 @@ public final class AttachmentKey<T> {
     public Class<T> getValueClass() {
         return valueClass;
     }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param valueClass the value class
+     * @param <T> the attachment type
+     * @return the new instance
+     */
+    public static <T> AttachmentKey<T> create(final Class<T> valueClass) {
+        return new AttachmentKey<T>(valueClass);
+    }
 }

@@ -31,9 +31,9 @@ public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
      * Add a new DeploymentUnitProcessor.
      *
-     * @param processor       The processor to add
-     * @param processingOrder The expected order this processor should be in the chain
+     * @param processor The processor to add
+     * @param priority The priority of this processor in the chain
      * @return The builder instance for chaining.
      */
-    void addProcessor(DeploymentUnitProcessor processor, long processingOrder);
+    void addProcessor(DeploymentUnitProcessor processor, long priority);
 }

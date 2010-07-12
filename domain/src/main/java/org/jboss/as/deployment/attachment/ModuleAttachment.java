@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.processor;
+package org.jboss.as.deployment.attachment;
 
-import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.ArchiveMountDeploymentItem;
+import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.modules.Module;
 
 /**
- * DeploymentUnitProcessor responsible for creating a ArchiveMountDeploymentItem for the deployment unit context. 
- *
+ * Utility to help attach and retrieve modules for a deployment unit.
  * @author John E. Bailey
  */
-public class ArchiveMountProcessor implements DeploymentUnitProcessor {
-    private static final long ARCHIVE_MOUNT_PROCESSOR_ORDER = DeploymentPhases.MOUNT.getOrder();
+public class ModuleAttachment {
+    public static AttachmentKey<Module> KEY = AttachmentKey.create(Module.class);
 
-    @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile root = context.getVirtualFile();
-        if(root != null && root.exists())
-            context.addDeploymentItem(new ArchiveMountDeploymentItem(root));
+    public static void attachModule(final DeploymentUnitContext context, final Module module) {
+        context.putAttachment(KEY, module);
+    }
+
+    public static Module getModuleAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

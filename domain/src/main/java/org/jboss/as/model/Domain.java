@@ -27,9 +27,11 @@ import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * The JBoss AS Domain state.  An instance of this class represents the complete running state of the domain.
@@ -58,27 +60,28 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
 
-    private final PropertiesElement systemProperties = new PropertiesElement();
+    private final PropertiesElement systemProperties = new PropertiesElement(null);
 
-    public Domain() {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of the domain element
+     */
+    public Domain(final Location location) {
+        super(location);
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
         long hash = 0L;
-        for (ExtensionElement item : extensions.values()) {
-            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
-        }
-        for (ServerGroupElement item : serverGroups.values()) {
-            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
-        }
-        for (DeploymentUnitElement item : deployments.values()) {
-            hash = Long.rotateLeft(hash, 1) ^ item.elementHash();
-        }
+        hash = calculateElementHashOf(extensions.values(), hash);
+        hash = calculateElementHashOf(serverGroups.values(), hash);
+        hash = calculateElementHashOf(deployments.values(), hash);
         hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
 
+    /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<Domain>> target, final Domain other) {
         calculateDifference(target, extensions, other.extensions, new DifferenceHandler<String, ExtensionElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement newElement) {
@@ -121,24 +124,23 @@ public final class Domain extends AbstractModel<Domain> {
                 // todo redeploy...? or maybe just modify stuff
             }
         });
-        systemProperties.appendDifference(null, systemProperties);
+        // todo enclosing diff item
+        systemProperties.appendDifference(null, other.systemProperties);
     }
 
+    /** {@inheritDoc} */
     protected Class<Domain> getElementClass() {
         return Domain.class;
     }
 
-    public boolean isSameElement(final Domain other) {
-        return true;
-    }
-
-    public ServerGroupElement getServerGroup(String name) {
-        return serverGroups.get(name);
+    /** {@inheritDoc} */
+    protected QName getElementName() {
+        return new QName(NAMESPACE, "domain");
     }
 
     /** {@inheritDoc} */
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-        for (ExtensionElement element : extensions.values()) {
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if (! extensions.isEmpty()) for (ExtensionElement element : extensions.values()) {
             streamWriter.writeStartElement("extension");
             element.writeContent(streamWriter);
         }
@@ -146,11 +148,11 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeStartElement("system-properties");
             systemProperties.writeContent(streamWriter);
         }
-        for (ServerGroupElement element : serverGroups.values()) {
+        if (! serverGroups.isEmpty()) for (ServerGroupElement element : serverGroups.values()) {
             streamWriter.writeStartElement("server-group");
             element.writeContent(streamWriter);
         }
-        for (DeploymentUnitElement element : deployments.values()) {
+        if (! deployments.isEmpty()) for (DeploymentUnitElement element : deployments.values()) {
             streamWriter.writeStartElement("deployment");
             element.writeContent(streamWriter);
         }

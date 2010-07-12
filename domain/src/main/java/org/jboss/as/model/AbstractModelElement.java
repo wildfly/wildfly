@@ -28,10 +28,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
+import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.
@@ -40,12 +41,20 @@ import javax.xml.stream.XMLStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, XMLContentWriter {
+public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter {
 
     private static final long serialVersionUID = 66064050420378211L;
 
-    protected AbstractModelElement() {
+    private final Location location;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of this model element
+     */
+    protected AbstractModelElement(final Location location) {
         assert getClass() == getElementClass();
+        this.location = location;
     }
 
     /**
@@ -54,7 +63,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param bytes the bytes
      * @return the element hash
      */
-    protected static long elementHashOf(byte[] bytes) {
+    protected static long calculateElementHashOf(byte[] bytes) {
         assert bytes.length >= 8;
         long h = 0L;
         final int offs = bytes.length - 8;
@@ -64,6 +73,50 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         return h;
     }
 
+    /**
+     * Calculate the cumulative element hash of an array of objects.  Changing the order of the objects will change
+     * the result.
+     *
+     * @param objects the objects
+     * @param initial the base hash (can be 0)
+     * @return the modified hash
+     */
+    protected static long calculateElementHashOf(final Object[] objects, long initial) {
+        for (Object o : objects) {
+            if (o != null) initial = Long.rotateLeft(initial, 1) ^ o.hashCode() & 0xffffffffL;
+        }
+        return initial;
+    }
+
+    /**
+     * Calculate the cumulative element hash of an array of enums.  Changing the order of the objects will change
+     * the result.
+     *
+     * @param enums the enums
+     * @param initial the base hash (can be 0)
+     * @return the modified hash
+     */
+    protected static long calculateElementHashOf(final Enum<?>[] enums, long initial) {
+        for (Enum<?> e : enums) {
+            if (e != null) initial = Long.rotateLeft(initial, 1) ^ e.ordinal() & 0xffffffffL;
+        }
+        return initial;
+    }
+
+    /**
+     * Calculate the cumulative element hash of an iterable sequence of elements.  In order to return consistent
+     * results, the sequence should be sorted in some predictable order.
+     *
+     * @param elements the elements
+     * @param initial the base hash (can be 0)
+     * @return the modified hash
+     */
+    protected static long calculateElementHashOf(Iterable<? extends AbstractModelElement<?>> elements, long initial) {
+        for (AbstractModelElement<?> element : elements) {
+            initial = Long.rotateLeft(initial, 1) ^ element.elementHash();
+        }
+        return initial;
+    }
 
     private static char[] table = {
             '0', '1', '2', '3', '4', '5', '6', '7',
@@ -127,9 +180,9 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param theirMap the other model's view of the sorted map
      * @param handler the difference handler
      * @param <K> the map key type
-     * @param <V> the map value (model element) type
+     * @param <V> the map value type
      */
-    protected final <K, V extends AbstractModelElement<V>> void calculateDifference(Collection<AbstractModelUpdate<E>> target, SortedMap<K, V> ourMap, SortedMap<K, V> theirMap, DifferenceHandler<K, V, E> handler) {
+    protected final <K, V> void calculateDifference(Collection<AbstractModelUpdate<E>> target, SortedMap<K, V> ourMap, SortedMap<K, V> theirMap, DifferenceHandler<K, V, E> handler) {
         final Iterator<Map.Entry<K, V>> ourIterator = ourMap.entrySet().iterator();
         final Iterator<Map.Entry<K, V>> theirIterator = theirMap.entrySet().iterator();
         final Comparator<? super K> comparator = comparatorOf(ourMap);
@@ -185,7 +238,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param <K> the key type
      * @param <V> the model element type
      */
-    protected interface DifferenceHandler<K, V extends AbstractModelElement<V>, E extends AbstractModelElement<E>> {
+    protected interface DifferenceHandler<K, V, E extends AbstractModelElement<E>> {
 
         /**
          * Handle a model addition.
@@ -235,6 +288,19 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     }
 
     /**
+     * Base clone method.
+     *
+     * @return the clone
+     */
+    protected E clone() {
+        try {
+            return cast(super.clone());
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
      * Get the concrete class of the element.
      *
      * @return the concrete class
@@ -242,19 +308,38 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     protected abstract Class<E> getElementClass();
 
     /**
-     * Determine if this model element is the same as (can replace) the other.
-     *
-     * @param other the other element
-     *
-     * @return {@code true} if they are the same element; {@code false} if they differ
-     */
-    public abstract boolean isSameElement(E other);
-
-    /**
-     * Write the content for this type.  The start element should have already been written.
+     * Write the content for this type.  The start element will have already been written.
      *
      * @param streamWriter the stream writer
      * @throws XMLStreamException if an error occurs
      */
-    public abstract void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException;
+    public abstract void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException;
+
+    /**
+     * Get the declaration location of this element.
+     *
+     * @return the declaration location
+     */
+    public final Location getLocation() {
+        return location;
+    }
+
+    /**
+     * Determine if this object is the same as the given object.  This is an identity comparison.
+     *
+     * @param obj the other object
+     * @return {@code true} if the objects are the same
+     */
+    public final boolean equals(final Object obj) {
+        return super.equals(obj);
+    }
+
+    /**
+     * Get the identity hash code of this object.
+     *
+     * @return the identity hash code
+     */
+    public final int hashCode() {
+        return super.hashCode();
+    }
 }
