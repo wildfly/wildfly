@@ -69,11 +69,14 @@ public class DeploymentService implements Service<DeploymentService> {
             throw new RuntimeException(e);  // Gross....
         }
     }
-
+    private final String deploymentName;
     private VirtualFile deploymentRoot;
-    private String deploymentName;
     private DeploymentChain deploymentChain;
     private DeploymentModuleLoader deploymentModuleLoader;
+
+    public DeploymentService(String deploymentName) {
+        this.deploymentName = deploymentName;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -81,9 +84,6 @@ public class DeploymentService implements Service<DeploymentService> {
         final ServiceName deploymentServiceName = serviceController.getName();
         final String deploymentPath = deploymentRoot.getPathName();
         
-        // Root should be mounted at this point
-        this.deploymentName = deploymentRoot.getPathName();
-
         // Create the deployment unit context
         final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName);
         attachVirtualFile(deploymentUnitContext, deploymentRoot);
@@ -105,22 +105,24 @@ public class DeploymentService implements Service<DeploymentService> {
         batchBuilder.addDependency(deploymentServiceName);
 
         // Setup deployment module service
+        final ServiceName moduleServiceName = DeploymentModuleService.SERVICE_NAME.append(deploymentPath);
+        DeploymentModuleService deploymentModuleService = null;
         final ModuleConfig moduleConfig = deploymentUnitContext.getAttachment(ModuleConfig.ATTACHMENT_KEY);
-        if(moduleConfig == null) {
-            throw new StartException("Failed to find attached moduleConfig");
+        if(moduleConfig != null) {
+            deploymentModuleService = new DeploymentModuleService(deploymentModuleLoader, moduleConfig);
+            final BatchServiceBuilder<?> moduleServiceBuilder = batchBuilder.addService(moduleServiceName, deploymentModuleService);
+            for(ModuleConfig.Dependency dependency : moduleConfig.getDependencies()) {
+                // TODO determine whether the dependency comes from the deployment module loader and if so add a service dep
+            }
         }
-        final ServiceName deploymentModuleServiceName = DeploymentModuleService.SERVICE_NAME.append(deploymentPath);
-        final DeploymentModuleService deploymentModuleService = new DeploymentModuleService(deploymentModuleLoader, moduleConfig);
-        final BatchServiceBuilder<?> moduleServiceBuilder = batchBuilder.addService(deploymentModuleServiceName, deploymentModuleService);
-        for(ModuleConfig.Dependency dependency : moduleConfig.getDependencies()) {
-            // TODO determine whether the dependency comes from the deployment module loader and if so add a service dep            
-        }
-
+        
         // Setup deployment item processor service
         final ServiceName deploymentItemProcessorName = DeploymentItemProcessor.SERVICE_NAME.append(deploymentPath);
         final DeploymentItemProcessor deploymentItemProcessor = new DeploymentItemProcessor(deploymentUnitContext);
-        batchBuilder.addService(deploymentItemProcessorName, deploymentItemProcessor)
-            .addDependency(deploymentModuleServiceName).toMethod(DeploymentItemProcessor.DEPLOYMENT_MODULE_SETTER, Collections.singletonList(deploymentModuleService));
+        final BatchServiceBuilder<?> itemProcessorServiceBuilder = batchBuilder.addService(deploymentItemProcessorName, deploymentItemProcessor);
+        if(deploymentModuleService != null) {
+            itemProcessorServiceBuilder.addDependency(moduleServiceName).toMethod(DeploymentItemProcessor.DEPLOYMENT_MODULE_SETTER, Collections.singletonList(deploymentModuleService));
+        }
 
         // Install the batch
         try {

@@ -26,7 +26,6 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -85,10 +84,11 @@ public class DeploymentManager implements Service<DeploymentManager> {
         final String deploymentPath = deploymentRoot.getPathName();
         try {
             // Setup VFS mount service
+            // TODO: We should make sure this is an archive first...
             final ServiceName mountServiceName = MOUNT_SERVICE_NAME.append(deploymentPath);
             final VFSMountService vfsMountService = new VFSMountService(deploymentRoot.getPathName(), tempFileProvider, false);
-            batchBuilder.addServiceValueIfNotExist(mountServiceName, Values.immediateValue(vfsMountService))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+            batchBuilder.addService(mountServiceName, vfsMountService);
+                //.setInitialMode(ServiceController.Mode.ON_DEMAND);
 
             // Determine which deployment chain to use for this deployment
             final ServiceName deploymentChainServiceName = determineDeploymentChain();
@@ -98,9 +98,10 @@ public class DeploymentManager implements Service<DeploymentManager> {
 
             // Setup deployment service
             final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentPath);
-            final DeploymentService deploymentService = new DeploymentService();
+            final DeploymentService deploymentService = new DeploymentService(deploymentPath);
             final BatchServiceBuilder<?> deploymentServiceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
-            deploymentServiceBuilder.addDependency(mountServiceName).toMethod(DeploymentService.DEPLOYMENT_ROOT_SETTER, Collections.singletonList(Values.injectedValue()));
+            deploymentServiceBuilder.addDependency(mountServiceName)
+                .toMethod(DeploymentService.DEPLOYMENT_ROOT_SETTER, Collections.singletonList(Values.immediateValue(deploymentRoot)));
             deploymentServiceBuilder.addDependency(deploymentChainServiceName)
                 .toMethod(DeploymentService.DEPLOYMENT_CHAIN_SETTER, Collections.singletonList(Values.injectedValue()));
             deploymentServiceBuilder.addDependency(deploymentModuleLoaderServiceName)
@@ -113,11 +114,11 @@ public class DeploymentManager implements Service<DeploymentManager> {
         }
     }
 
-    private ServiceName determineDeploymentChain() {
+    protected ServiceName determineDeploymentChain() {
         return null; // TODO:  Determine the chain
     }
 
-    private ServiceName determineDeploymentModuleLoader() {
+    protected ServiceName determineDeploymentModuleLoader() {
         return null; // TODO:  Determine the loader
     }
 }
