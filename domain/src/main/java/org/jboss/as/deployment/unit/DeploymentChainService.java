@@ -29,19 +29,19 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
 /**
- * Service responsible for wrapping a deployment unit processor to support life-cycle management and injection.
+ * Service responsible for wrapping a deployment chain to support life-cycle management and injection.
  *
  * @author John E. Bailey
  */
-public class DeploymentUnitProcessorService<T extends DeploymentUnitProcessor> implements Service<T> {
-    private final Value<T> deploymentProcessorValue;
+public class DeploymentChainService implements Service<DeploymentChain> {
+    private final Value<DeploymentChain> deploymentChainValue;
 
-    public DeploymentUnitProcessorService(final Value<T> deploymentProcessorValue) {
-        this.deploymentProcessorValue = deploymentProcessorValue;
+    public DeploymentChainService(Value<DeploymentChain> deploymentChainValue) {
+        this.deploymentChainValue = deploymentChainValue;
     }
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public void start(StartContext context) throws StartException {
     }
 
     @Override
@@ -49,7 +49,7 @@ public class DeploymentUnitProcessorService<T extends DeploymentUnitProcessor> i
     }
 
     @Override
-    public T getValue() throws IllegalStateException {
-        return deploymentProcessorValue.getValue();
+    public DeploymentChain getValue() throws IllegalStateException {
+        return deploymentChainValue.getValue();
     }
 }
