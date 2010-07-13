@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.descriptor;
+package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.modules.ModuleIdentifier;

@@ -24,7 +24,7 @@ package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
-import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -45,6 +45,8 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
+            return;
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", context.getName(), "noversion");
         final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};

@@ -22,7 +22,7 @@
 
 package org.jboss.as.deployment;
 
-import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleService;
 import org.jboss.as.deployment.unit.DeploymentChain;
