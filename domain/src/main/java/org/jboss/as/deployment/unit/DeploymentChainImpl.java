@@ -27,12 +27,23 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Default deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
+ * Deployment chain implementation used to execute multiple DeploymentUnitProcessor instances in priority order.
  *
  * @author John E. Bailey
  */
 public class DeploymentChainImpl implements DeploymentChain {
     private final Set<OrderedProcessor> orderedProcessors = new TreeSet<OrderedProcessor>();
+    private final String name;
+
+    public DeploymentChainImpl(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String geName() {
+        return name;
+    }
+
 
     /**
      * Process the deployment unit using the chain of DeploymentUnitProcessor instances.
@@ -52,6 +63,11 @@ public class DeploymentChainImpl implements DeploymentChain {
     public void addProcessor(DeploymentUnitProcessor processor, long priority) {
         final Set<OrderedProcessor> processors = this.orderedProcessors;
         processors.add(new OrderedProcessor(processor, priority));
+    }
+
+    @Override
+    public void removeProcessor(DeploymentUnitProcessor processor, long priority) {
+        orderedProcessors.remove(new OrderedProcessor(processor, priority));
     }
 
     @Override
@@ -75,6 +91,21 @@ public class DeploymentChainImpl implements DeploymentChain {
             long thisOrder = this.processingOrder;
             long otherOrder = other.processingOrder;
             return (thisOrder < otherOrder ? -1 : (thisOrder == otherOrder ? 0 : 1));
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if(this == o) return true;
+            if(o == null || getClass() != o.getClass()) return false;
+            final OrderedProcessor that = (OrderedProcessor) o;
+            return processingOrder == that.processingOrder && (processor != null ? processor.equals(that.processor) : that.processor == null);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = processor != null ? processor.hashCode() : 0;
+            result = 31 * result + (int) (processingOrder ^ (processingOrder >>> 32));
+            return result;
         }
     }
 }

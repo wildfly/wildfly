@@ -48,7 +48,7 @@ public class DeploymentServiceTestCase {
 
     @Before
     public void setup() throws Exception {
-        deploymentService.setDeploymentChain(new DeploymentChainImpl());
+        deploymentService.setDeploymentChain(new DeploymentChainImpl("test.chain"));
         deploymentService.setDeploymentModuleLoader(new DeploymentModuleLoaderImpl(null));
 
         serviceContainer = ServiceContainer.Factory.create();
@@ -80,7 +80,7 @@ public class DeploymentServiceTestCase {
             deploymentService.start(startContext);
             fail("Should have thrown StartException");
         } catch(StartException expected){}
-        deploymentService.setDeploymentChain(new DeploymentChainImpl());
+        deploymentService.setDeploymentChain(new DeploymentChainImpl("test.chain"));
         try {
             deploymentService.start(startContext);
             fail("Should have thrown StartException");

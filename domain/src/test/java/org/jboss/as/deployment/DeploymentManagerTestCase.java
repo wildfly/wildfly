@@ -56,7 +56,7 @@ import static org.junit.Assert.fail;
 public class DeploymentManagerTestCase {
 
     private ServiceContainer serviceContainer;
-    private final DeploymentChain deploymentChain =  new DeploymentChainImpl();
+    private final DeploymentChain deploymentChain =  new DeploymentChainImpl("test.chain");
     private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(null);
     private DeploymentManager deploymentManager;
 

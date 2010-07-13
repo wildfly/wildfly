@@ -29,11 +29,27 @@ package org.jboss.as.deployment.unit;
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
-     * Add a new DeploymentUnitProcessor.
+     * Get the name of the deployment chain.  Ex. "deployment.chain.war"
+     *
+     * @return the name
+     */
+    String geName();
+
+    /**
+     * Add a new DeploymentUnitProcessor to the chain with a specified priority.
      *
      * @param processor The processor to add
      * @param priority The priority of this processor in the chain
-     * @return The builder instance for chaining.
      */
     void addProcessor(DeploymentUnitProcessor processor, long priority);
+
+    /**
+     * Remove a DeploymentUnitProcessor from the chain at a specific priority.
+     * The priority is required for removal to not restrict processor instance to
+     * a single location int the chain. 
+     *
+     * @param processor The processor to removed
+     * @param priority The priority location to remove the processor from
+     */
+    void removeProcessor(DeploymentUnitProcessor processor, long priority);
 }
