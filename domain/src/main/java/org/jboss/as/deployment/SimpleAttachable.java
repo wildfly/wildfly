@@ -20,20 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.descriptor;
+package org.jboss.as.deployment;
 
-import java.io.Serializable;
-import org.jboss.as.deployment.AttachmentKey;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * The object representation of a "jboss-web.xml" descriptor file.
+ * A simple implementation of {@link Attachable} which may be used as a base class or on a standalone basis.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class JBossWebXmlDescriptor implements Serializable {
+public class SimpleAttachable implements Attachable {
+    private final Map<AttachmentKey<?>, Object> attachments = new HashMap<AttachmentKey<?>, Object>();
 
-    private static final long serialVersionUID = 5844905201567666811L;
+    /** {@inheritDoc} */
+    public <T> T getAttachment(final AttachmentKey<T> key) {
+        if (key == null) {
+            return null;
+        }
+        return key.getValueClass().cast(attachments.get(key));
+    }
 
-    public static final AttachmentKey<JBossWebXmlDescriptor> WEB_XML = AttachmentKey.create(JBossWebXmlDescriptor.class);
+    /** {@inheritDoc} */
+    public <T> T putAttachment(final AttachmentKey<T> key, final T value) {
+        if (key == null) {
+            throw new IllegalArgumentException("key is null");
+        }
+        return key.getValueClass().cast(attachments.put(key, key.getValueClass().cast(value)));
+    }
 
+    /** {@inheritDoc} */
+    public <T> T removeAttachment(final AttachmentKey<T> key) {
+        if (key == null) {
+            return null;
+        }
+        return key.getValueClass().cast(attachments.get(key));
+    }
 }

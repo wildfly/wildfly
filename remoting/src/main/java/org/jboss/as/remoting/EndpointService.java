@@ -81,7 +81,7 @@ public final class EndpointService implements Service<Endpoint> {
      *
      * @return the injector
      */
-    public Injector<Executor> getExecutorInjector() {
+    Injector<Executor> getExecutorInjector() {
         return executor;
     }
 }

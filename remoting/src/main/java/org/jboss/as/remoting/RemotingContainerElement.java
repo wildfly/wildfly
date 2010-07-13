@@ -34,6 +34,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.services.ThreadPoolExecutorService;
 import org.jboss.remoting3.Endpoint;
@@ -140,6 +141,7 @@ public final class RemotingContainerElement extends AbstractContainerElement<Rem
         final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
         serviceBuilder.addDependency(ServiceName.of(ThreadPoolExecutorService.JBOSS_THREADS_EXECUTOR.append(threadPoolName))).toInjector(executorInjector);
         serviceBuilder.setLocation(getLocation());
+        serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
     }

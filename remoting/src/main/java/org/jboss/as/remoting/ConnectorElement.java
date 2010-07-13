@@ -22,16 +22,21 @@
 
 package org.jboss.as.remoting;
 
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.xnio.ChannelListener;
 import org.jboss.xnio.OptionMap;
+import org.jboss.xnio.channels.ConnectedStreamChannel;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -117,8 +122,22 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
      */
     public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
         final OptionMap.Builder builder = OptionMap.builder();
-        if (saslElement != null) saslElement.applyTo(builder);
 
-        batchBuilder.addService(JBOSS_REMOTING_CONNECTOR.append(name), new ConnectorService());
+        // First, apply options to option map.
+        if (saslElement != null) saslElement.applyTo(builder);
+        // todo: apply connector properties to option map
+
+        // Create the service.
+        final ConnectorService connectorService = new ConnectorService();
+        connectorService.setOptionMap(builder.getMap());
+
+        // Register the service with the container and inject dependencies.
+        final ServiceName connectorName = JBOSS_REMOTING_CONNECTOR.append(name);
+        final BatchServiceBuilder<ChannelListener<ConnectedStreamChannel<InetSocketAddress>>> serviceBuilder = batchBuilder.addService(connectorName, connectorService);
+        serviceBuilder.addDependency(connectorName.append("auth-provider")).toInjector(connectorService.getAuthenticationProviderInjector());
+        serviceBuilder.addDependency(RemotingContainerElement.JBOSS_REMOTING_ENDPOINT).toInjector(connectorService.getEndpointInjector());
+        serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+        // todo: create XNIO connector service from socket-binding, with dependency on connectorName
     }
 }

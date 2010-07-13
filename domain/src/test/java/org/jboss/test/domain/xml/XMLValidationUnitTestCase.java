@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.domain.xsd;
+package org.jboss.test.domain.xml;
 
+import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 import junit.framework.TestCase;
 
@@ -38,37 +45,54 @@ import junit.framework.TestCase;
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
-public class XSDValidationUnitTestCase extends TestCase
+public class XMLValidationUnitTestCase extends TestCase
 {
-   public void testCommon() throws Exception
+   public void testHost() throws Exception
    {
-      validateXsd("jboss-domain-common.xsd");
+      parseXml("host-example.xml");
    }
 
    public void testDomain() throws Exception
    {
-      validateXsd("jboss-domain.xsd");
+      parseXml("jboss-domain-example.xml");
    }
 
-   public void testHost() throws Exception
+   private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, SAXNotRecognizedException,
+         SAXNotSupportedException, IOException
    {
-      validateXsd("jboss-domain-host.xsd");
+      SAXParserFactory factory = SAXParserFactory.newInstance();
+      if(!factory.isNamespaceAware())
+         factory.setNamespaceAware(true);
+      if(!factory.isValidating())
+         factory.setValidating(true);
+      if(!factory.isXIncludeAware())
+         factory.setXIncludeAware(true);
+      
+      SAXParser parser = factory.newSAXParser();
+      XMLReader reader = parser.getXMLReader();
+      reader.setFeature("http://apache.org/xml/features/validation/schema", true);
+      reader.setErrorHandler(new ErrorHandlerImpl());
+      reader.setEntityResolver(new EntityResolver()
+      {
+         @Override
+         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException
+         {
+            if(systemId == null)
+               fail("Failed to resolve schema: systemId is null");
+            int lastSlash = systemId.lastIndexOf('/');
+            if(lastSlash > 0)
+               systemId = systemId.substring(lastSlash + 1);
+            URL xsdUrl = getXmlUrl(systemId);
+            return new InputSource(xsdUrl.openStream());
+         }}
+      );
+      URL xmlUrl = getXmlUrl(xmlName);
+      InputSource is = new InputSource();
+      is.setByteStream(xmlUrl.openStream());
+      reader.parse(is);
    }
 
-   public void testWeb() throws Exception
-   {
-      validateXsd("jboss-domain-web.xsd");
-   }
-
-   private void validateXsd(String xsdName) throws SAXException
-   {
-      URL jbossDomain = getXsdUrl(xsdName);
-      SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-      schemaFactory.setErrorHandler(new ErrorHandlerImpl());
-      schemaFactory.newSchema(jbossDomain);
-   }
-
-   private URL getXsdUrl(String xsdName)
+   private URL getXmlUrl(String xsdName)
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource("schema/" + xsdName);
       assertNotNull(url);

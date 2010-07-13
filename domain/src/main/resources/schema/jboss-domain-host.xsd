@@ -32,30 +32,32 @@
   <!-- Include the common definitions -->
   <xs:include schemaLocation="jboss-domain-common.xsd" />
 
-    <xs:element name="host-config" type="host-configType"/>
+    <xs:element name="host" type="host-configType"/>
 
     <xs:complexType name="host-configType">
         <xs:all>
             <xs:element name="domain-controller" type="locationType" minOccurs="1"/>
             <xs:element name="servers" type="serversType" minOccurs="0"/>
-            <xs:element name="interfaces" type="interfacesType" minOccurs="0"/>
-            <xs:element name="java-config" type="java-configType" minOccurs="0"/>
+            <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
             <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
         </xs:all>
-    </xs:complexType>
-
-    <xs:complexType name="network-configurationType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="server-socket" type="net-conf-serverType"/>
-        </xs:choice>
-        <xs:attribute name="group-size" type="xs:nonNegativeInteger" default="0" use="optional"/>
-        <xs:attribute name="maximum-offset" type="xs:nonNegativeInteger" default="100" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="locationType">
         <xs:attribute name="location" type="xs:anyURI" use="required"/>
         <!-- the interface to bind to for outbound connections to the given location -->
         <xs:attribute name="bind-interface" type="xs:string" use="optional"/>
+        <xs:attribute name="callback-location" type="xs:anyURI" use="required"/>
+        <xs:attribute name="outbound-interface" type="xs:string"/>
+        <xs:attribute name="callback-outbound-interface" type="xs:string"/>
+
+    </xs:complexType>
+
+    <xs:complexType name="jvmsType">
+        <xs:sequence>
+            <xs:element name="jvm" type="java-configType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="serversType">
@@ -63,24 +65,43 @@
             <xs:element name="server" type="serverType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
- 
-    <xs:complexType name="net-conf-serverType">
+
+    <xs:complexType name="serverType">
         <xs:all>
-            <xs:element name="interface" type="refType" minOccurs="0"/>
-            <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
+            <xs:element name="priority" type="priorityType" minOccurs="0"/>
+            <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
+
+            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+
+            <xs:element name="loggers" type="loggersType" minOccurs="0"/>
+            <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="java-configType" />
         </xs:all>
-        <xs:attribute name="service-name" type="xs:string" use="required"/>
-        <xs:attribute name="binding-name" type="xs:string" default="default" use="optional"/>
-        <xs:attribute name="port" type="port-numberType" use="required"/>
-        <xs:attribute name="fixed" type="xs:boolean" default="false" use="optional"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="group" type="xs:string" use="required"/>
+        <xs:attribute name="start" type="xs:boolean" default="true"/>
     </xs:complexType>
 
-    <xs:simpleType name="port-numberType">
-        <xs:restriction base="xs:int">
-            <xs:minInclusive value="0"/>
-            <xs:maxExclusive value="65536"/>
-        </xs:restriction>
-    </xs:simpleType>
+    <xs:complexType name="priorityType">
+        <xs:attribute name="value" type="xs:nonNegativeInteger">
+            <xs:annotation>
+                <xs:documentation>
+                    TODO
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="cpu-affinityType">
+        <xs:attribute name="cpus" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    TODO
+                </xs:documentation>
+            </xs:annotation>            
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="extensionsType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">

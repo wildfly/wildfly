@@ -32,7 +32,7 @@ import org.jboss.vfs.VirtualFile;
  * @author John E. Bailey
  */
 public class VirtualFileAttachment {
-    public static final AttachmentKey<VirtualFile> KEY = new AttachmentKey<VirtualFile>(VirtualFile.class);
+    public static final AttachmentKey<VirtualFile> KEY = AttachmentKey.create(VirtualFile.class);
 
     public static void attachVirtualFile(final DeploymentUnitContext context, final VirtualFile virtualFile) {
         context.putAttachment(KEY, virtualFile);
