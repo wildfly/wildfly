@@ -80,6 +80,10 @@ public class DeploymentService implements Service<DeploymentService> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        if(deploymentRoot == null) throw new StartException("DeploymentService requires a deployment root to start");
+        if(deploymentChain == null) throw new StartException("DeploymentService requires a deployment chain to start");
+        if(deploymentModuleLoader == null) throw new StartException("DeploymentService requires a deployment deployment ModuleLoader to start");
+
         final ServiceController<?> serviceController = context.getController();
         final ServiceName deploymentServiceName = serviceController.getName();
         final String deploymentPath = deploymentRoot.getPathName();

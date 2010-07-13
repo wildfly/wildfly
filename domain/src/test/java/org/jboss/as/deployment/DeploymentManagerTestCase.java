@@ -36,6 +36,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,6 +45,8 @@ import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test to verify the DeploymentManager correctly installs the deployment service.
@@ -81,20 +84,44 @@ public class DeploymentManagerTestCase {
         batchBuilder.install();
     }
 
+    @After
+    public void shutdown() {
+        serviceContainer.shutdown();
+    }
+
     @Test
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/deploymentOne"));
 
         deploymentManager.deploy(virtualFile);
 
-        ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getPathName()));
+        // Verify the DeploymentService is correctly setup
+        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getPathName()));
         assertNotNull(serviceController);
-
-        DeploymentService deploymentService = (DeploymentService)serviceController.getValue();
+        assertEquals(ServiceController.State.UP, serviceController.getState());
+        final DeploymentService deploymentService = (DeploymentService)serviceController.getValue();
         assertNotNull(deploymentService);
+
         assertEquals(virtualFile.getPathName(), deploymentService.getDeploymentName());
         assertEquals(deploymentChain, getPrivateFieldValue(deploymentService, "deploymentChain", DeploymentChain.class));
         assertEquals(deploymentModuleLoader, getPrivateFieldValue(deploymentService, "deploymentModuleLoader", DeploymentModuleLoader.class));
+
+        // Verify the mount service is setup
+        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(virtualFile.getPathName()));
+        assertNotNull(mountServiceController);
+        assertEquals(ServiceController.State.UP, mountServiceController.getState());
+        assertNull(mountServiceController.getValue());
+    }
+
+    @Test
+    public void testDeploymentException() throws Exception {
+        final VirtualFile virtualFile = VFS.getChild("/test/bogus");
+
+        try {
+            deploymentManager.deploy(virtualFile);
+            fail("Should have thrown a DeploymentException");
+        } catch(DeploymentException expected){
+        }
     }
 
     private URL getResource(final String path) {

@@ -46,7 +46,6 @@ public class DeploymentServiceListener implements ServiceListener {
     private final TimingServiceListener delegateListener = new TimingServiceListener(new Runnable() {
         @Override
         public void run() {
-            System.out.print("Finished");
             latch.countDown();
         }
     });
@@ -87,6 +86,7 @@ public class DeploymentServiceListener implements ServiceListener {
     public void serviceFailed(ServiceController serviceController, StartException reason) {
         startExceptions.add(reason);
         delegateListener.serviceFailed(serviceController, reason);
+        latch.countDown(); // Short-circuit 
     }
 
     @Override
