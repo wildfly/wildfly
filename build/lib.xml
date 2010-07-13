@@ -84,6 +84,8 @@
 
             <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
 
+            <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}}" update="true"/>
+
             <!-- Update the resource entry in module.xml -->
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
               <replacetoken><![CDATA[<!-- Insert resources here -->]]></replacetoken>
