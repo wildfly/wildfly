@@ -41,7 +41,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:attributeGroup name="proxy-conf-attlist"/>
+  <xs:attributeGroup name="proxy-conf-attlist">
     <xs:attribute name="id" use="required"/>
     <xs:attribute name="proxyList" />
     <xs:attribute name="proxyURL" />
@@ -55,25 +55,13 @@
     <xs:attribute name="advertiseSecurityKey" />
   </xs:attributeGroup>
   
-  <xs:element name="load-metric" type="modClusterMetricsType" />
-
-  <xs:complexType name="modClusterMetricsType">
-    <xs:complexContent>
-      <xs:extension base="resource-commonType">
-         <xs:attribute name="name"  default="JFCfindit" type="xs:listofnames" />
-         <xs:attribute name="history"  default="9" type="xs:integer"/>
-         <xs:attribute name="decayFactor" default="2" type="xs:integer"/>
-      </xs:extension>
-     </xs:complexContent>
-  </xs:complexType>
-
   <!-- Set of possible loadmetrics -->
-  <xs:element name="modClusterMetricsType">
+  <xs:element name="load-metric">
     <xs:complexType>
-      <xs:choice default="load-metric-simple">
+      <xs:choice>
         <xs:element name="load-metric-simple" type="load-metric-simpleType"/>
         <xs:element name="load-metric-server-side" type="load-metric-server-sideType"/>
-        <xs:element name="load-metric-web-container-side" type="load-metric-web-containerType"/>
+        <xs:element name="load-metric-web-container-side" type="load-metric-web-container-sideType"/>
         <xs:element name="load-metric-other" type="load-metric-otherType"/>
       </xs:choice>
     </xs:complexType>
@@ -94,7 +82,7 @@
   <!-- name be one of ActiveSessionsLoadMetric, BusyConnectorsLoadMetric, ReceiveTrafficLoadMetric, SendTrafficLoadMetric or RequestCountLoadMetric -->
   <xs:complexType name="load-metric-web-container-sideType">
     <xs:attribute name="name" default="ActiveSessionsLoadMetric" />
-    <xs:attribute name="capacity=" default="512"/>
+    <xs:attribute name="capacity" default="512"/>
   </xs:complexType>
 
   <!-- <load-metric-other method="name"/> -->
