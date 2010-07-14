@@ -32,10 +32,11 @@
         <version>7.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <name>JBoss Application Server: Process Manager</name>
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-process-manager</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
+
+    <name>JBoss Application Server: Process Manager</name>
 
     <dependencies>
         <dependency>
