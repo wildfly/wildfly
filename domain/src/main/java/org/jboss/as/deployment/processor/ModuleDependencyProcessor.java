@@ -24,7 +24,11 @@ package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
+<<<<<<< HEAD
 import org.jboss.as.deployment.item.ModuleDeploymentItem;
+=======
+import org.jboss.as.deployment.descriptor.ModuleConfig;
+>>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -44,7 +48,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    private static final long MODULE_DEPENDENCY_PROCESSOR_ORDER = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
@@ -69,7 +73,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             final ModuleIdentifier dependencyId = ModuleIdentifier.fromString(dependencyParts[0]);
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "export");
-            ModuleDeploymentItem.Dependency dependency = new ModuleDeploymentItem.Dependency(dependencyId, true, optional, export);
+            ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
             Dependencies.addDependency(context, dependency);
         }
     }

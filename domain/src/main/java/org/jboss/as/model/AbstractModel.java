@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.marshalling.FieldSetter;
+import org.jboss.msc.service.Location;
 
 /**
  * A controlled object model which is related to an XML representation.  Such an object model can be serialized to
@@ -37,7 +38,7 @@ import org.jboss.marshalling.FieldSetter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModel<M extends AbstractModel<M>> extends AbstractModelElement<M> {
+public abstract class AbstractModel<M extends AbstractModel<M>> extends AbstractModelRootElement<M> {
 
     private static final long serialVersionUID = 66064050420378211L;
 
@@ -46,7 +47,13 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
      */
     private transient final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
-    protected AbstractModel() {
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of this model
+     */
+    protected AbstractModel(final Location location) {
+        super(location);
     }
 
     /**
@@ -90,11 +97,6 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
     }
 
     // Protected members
-
-    /** {@inheritDoc} */
-    protected final Class<M> getModelClass() {
-        return getElementClass();
-    }
 
     @SuppressWarnings({ "LockAcquiredButNotSafelyReleased" })
     protected final void lockForRead() {

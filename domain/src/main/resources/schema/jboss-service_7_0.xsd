@@ -42,6 +42,8 @@
             <xs:element name="attribute" type="attribute" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="depends" type="depends" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="depends-list" type="depends-list" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="annotation" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -64,6 +66,54 @@
             <xs:enumeration value="never"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:complexType name="attribute">
+        <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="inject" type="inject"/>
+            <xs:element name="value-factory" type="value-factory"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="replace" type="xs:boolean" use="optional"/>
+        <xs:attribute name="trim" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="depends">
+        <xs:sequence>
+            <xs:element name="mbean" type="mbean" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="optional-attribute-name" type="xs:string" use="optional"/>
+        <xs:attribute name="proxy-type" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="depends-list">
+        <xs:sequence>
+            <xs:element name="depends-list-element" type="depends-list-element" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="optional-attribute-name" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="depends-list-element">
+        <xs:sequence>
+            <xs:element name="mbean" type="mbean" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="inject">
+        <xs:attribute name="bean" type="xs:string" use="required"/>
+        <xs:attribute name="property" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="value-factory">
+        <xs:sequence>
+            <xs:element name="parameter" type="parameter" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="bean" type="xs:string" use="required"/>
+        <xs:attribute name="method" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="parameter">
+        <xs:attribute name="clsss" type="xs:string" use="required"/>
+    </xs:complexType>
 
     <!-- Root elements -->
 

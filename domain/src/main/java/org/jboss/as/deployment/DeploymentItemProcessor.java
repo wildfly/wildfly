@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,10 +23,10 @@
 package org.jboss.as.deployment;
 
 import org.jboss.as.deployment.item.DeploymentItem;
-import org.jboss.as.deployment.unit.DeploymentChain;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.as.deployment.item.DeploymentItemContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -36,71 +36,62 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.vfs.VirtualFile;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
-
 /**
- * Service that processes a deployment using a deployment chain.   
+ * Service responsible for processing the deployment items for a deployment.  A new batch will be created for the items
+ * to install services to.  All services in the batch will be given a dependency on this service in order to properly
+ * setup th startup and shutdown ordering. 
  *
  * @author John E. Bailey
  */
-public class DeploymentProcessorService implements Service<Void> {
-    public static final ServiceName DEPLOYMENT_PROCESSOR_SERVICE_NAME = DeploymentService.DEPLOYMENT_SERVICE_NAME.append("processor");
-    private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
-    public static final Method DEPLOYMENT_SERVICE_SETTER;
+public class DeploymentItemProcessor implements Service<Void> {
+    public static final ServiceName SERVICE_NAME = DeploymentService.SERVICE_NAME.append("item", "processor");
 
+    static final Method DEPLOYMENT_MODULE_SETTER;
     static {
         try {
-            DEPLOYMENT_SERVICE_SETTER = DeploymentService.class.getMethod("setDeploymentService", DeploymentService.class);
+            DEPLOYMENT_MODULE_SETTER = DeploymentItemProcessor.class.getMethod("setModule", Module.class);
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);  // Gross....
         }
     }
+    
+    private DeploymentUnitContextImpl deploymentUnitContext;
+    private Module module;
 
-    private DeploymentService deploymentService;
+    public DeploymentItemProcessor(DeploymentUnitContextImpl deploymentUnitContext) {
+        this.deploymentUnitContext = deploymentUnitContext;
+    }
 
     @Override
-    public void start(final StartContext context) throws StartException {
-        final DeploymentService deploymentService = this.deploymentService;
+    public void start(StartContext context) throws StartException {
         final ServiceController<?> controller = context.getController();
         final ServiceContainer serviceContainer = controller.getServiceContainer();
 
-        final String deploymentName = deploymentService.getDeploymentName();
-        final VirtualFile deploymentRoot = deploymentService.getDeploymentRoot();
-
-        // Create the context
-        final DeploymentUnitContextImpl deploymentContext = new DeploymentUnitContextImpl(deploymentName);
-        attachVirtualFile(deploymentContext, deploymentRoot);
-
-        // Execute the deployment chain
-        final DeploymentChain deploymentChain = deploymentService.getDeploymentChain();
-        logger.debugf("Deployment processor starting with chain: %s", deploymentChain);
-        try {
-            deploymentChain.processDeployment(deploymentContext);
-        } catch(DeploymentUnitProcessingException e) {
-            throw new StartException("Failed to process deployment chain.", e);
-        }
-
+        final DeploymentUnitContextImpl deploymentUnitContext = this.deploymentUnitContext;
+        
         // Create batch for these items
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         //  Add batch level dependency for this deployment
         batchBuilder.addDependency(controller.getName());
 
-        // Process all the deployment items with the batch
-        final Collection<DeploymentItem> deploymentItems = deploymentContext.getDeploymentItems();
+        // Construct an item context
+        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, batchBuilder);
+
+        // Process all the deployment items with the item context
+        final Collection<DeploymentItem> deploymentItems = deploymentUnitContext.getDeploymentItems();
         for(DeploymentItem deploymentItem : deploymentItems) {
-            deploymentItem.install(batchBuilder);
+            deploymentItem.install(deploymentItemContext);
         }
 
         // Install the batch
         try {
             batchBuilder.install();
         } catch(ServiceRegistryException e) {
-            throw new StartException("Failed to install deployment batch for " + deploymentName, e);
+            throw new StartException("Failed to install deployment batch for " + deploymentUnitContext.getName(), e);
         }
     }
 
@@ -113,7 +104,7 @@ public class DeploymentProcessorService implements Service<Void> {
         return null;
     }
 
-    public void setDeploymentService(DeploymentService deploymentService) {
-        this.deploymentService = deploymentService;
+    public void setModule(Module module) {
+        this.module = module;
     }
 }

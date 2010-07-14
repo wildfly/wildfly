@@ -20,25 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.remoting;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.as.model.AbstractModelRootElement;
+import org.jboss.msc.service.Location;
 
 /**
- * Utility to help attach and retrieve a VirtualFile from a deployment context.
- *  
- * @author John E. Bailey
+ * An element which defines an authentication provider for a Remoting connector.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class VirtualFileAttachment {
-    public static final AttachmentKey<VirtualFile> KEY = new AttachmentKey<VirtualFile>(VirtualFile.class);
+public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
 
-    public static void attachVirtualFile(final DeploymentUnitContext context, final VirtualFile virtualFile) {
-        context.putAttachment(KEY, virtualFile);
-    }
+    private static final long serialVersionUID = -3738115019035803045L;
 
-    public static VirtualFile getVirtualFileAttachment(final DeploymentUnitContext context) {
-        return context.getAttachment(KEY);
+    /**
+     * Construct a new instance.
+     *
+     * @param location the location at which this element was declared
+     */
+    protected AbstractAuthenticationProviderElement(final Location location) {
+        super(location);
     }
 }

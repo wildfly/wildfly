@@ -22,11 +22,10 @@
 
 package org.jboss.as.model;
 
-import java.util.Arrays;
 import java.util.Collection;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
 
@@ -36,6 +35,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     private final byte[] sha1Hash;
 
     protected DeploymentUnitElement(final String fileName, final byte[] sha1Hash) {
+        super(null);
         this.fileName = fileName;
         this.sha1Hash = sha1Hash;
     }
@@ -49,7 +49,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     }
 
     public long elementHash() {
-        return fileName.hashCode() & 0xffffffffL ^ elementHashOf(sha1Hash);
+        return fileName.hashCode() & 0xffffffffL ^ calculateElementHashOf(sha1Hash);
     }
 
     protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
@@ -59,11 +59,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         return DeploymentUnitElement.class;
     }
 
-    public boolean isSameElement(final DeploymentUnitElement other) {
-        return fileName.equals(other.fileName) && Arrays.equals(sha1Hash, other.sha1Hash);
-    }
-
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", fileName);
         streamWriter.writeAttribute("sha1", bytesToHexString(sha1Hash));
         streamWriter.writeEndElement();

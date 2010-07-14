@@ -45,4 +45,12 @@
     </modules>
 
     <packaging>pom</packaging>
+
+    <distributionManagement>
+        <repository>
+            <id>repository.jboss.org</id>
+            <name>JBoss Maven2 Repository</name>
+            <url>http://repository.jboss.org/maven2</url>
+        </repository>
+    </distributionManagement>
 </project>

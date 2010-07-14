@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,11 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.module;
 
+import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.item.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -35,51 +36,53 @@ import org.jboss.msc.service.StopContext;
 import java.io.IOException;
 
 /**
- * Service that deploys a module into a module loader.
- * 
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Service responsible for managing the life-cycle of a deployment module.
+ *  
  * @author John E. Bailey
  */
-public final class ModuleDeploymentService implements Service<Module> {
+public class DeploymentModuleService implements Service<Module> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment","module");
 
-    private final ModuleDeploymentItem moduleDeploymentItem;
-    private final ModuleLoader moduleLoader;
+    private final ModuleConfig moduleConfig;
+    private final DeploymentModuleLoader deploymentModuleLoader;
 
-    public static final ServiceName MODULE_DEPLOYMENT_SERVICE = ServiceName.JBOSS.append("module", "service");
-
-    public ModuleDeploymentService(final ModuleDeploymentItem moduleDeploymentItem, final ModuleLoader moduleLoader) {
-        this.moduleDeploymentItem = moduleDeploymentItem;
-        this.moduleLoader = moduleLoader;
+    public DeploymentModuleService(DeploymentModuleLoader deploymentModuleLoader, ModuleConfig moduleConfig) {
+        this.deploymentModuleLoader = deploymentModuleLoader;
+        this.moduleConfig = moduleConfig;
     }
 
-    public void start(final StartContext context) throws StartException {
-        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleDeploymentItem.getIdentifier());
-        for(ModuleDeploymentItem.ResourceRoot resource : moduleDeploymentItem.getResources()) {
+    @Override
+    public void start(StartContext context) throws StartException {
+        final ModuleConfig moduleConfig = this.moduleConfig;
+        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
+        for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
             try {
                 specBuilder.addRoot(resource.getRootName(), new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot()));
-            } catch (IOException e) {
-                throw new StartException("Failed to create module roots", e);
+            } catch(IOException e) {
+                throw new StartException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
             }
         }
-        final ModuleDeploymentItem.Dependency[] dependencies = moduleDeploymentItem.getDependencies();
-        for(ModuleDeploymentItem.Dependency dependency : dependencies) {
+        final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
+        for(ModuleConfig.Dependency dependency : dependencies) {
             specBuilder.addDependency(dependency.getIdentifier())
                 .setExport(dependency.isExport())
                 .setOptional(dependency.isOptional());
         }
         final ModuleSpec moduleSpec = specBuilder.create();
-        // Somehow jam the spec into the provided loaded//
-        //((DynamicModuleLoader)moduleLoader).addSpec(moduleSpec);
+        deploymentModuleLoader.addModuleSpec(moduleSpec);
     }
 
-    public void stop(final StopContext context) {
+    @Override
+    public void stop(StopContext context) {
+        deploymentModuleLoader.removeModule(moduleConfig.getIdentifier());
     }
 
+    @Override
     public Module getValue() throws IllegalStateException {
         try {
-            return moduleLoader.loadModule(moduleDeploymentItem.getIdentifier());
-        } catch (ModuleLoadException e) {
-            throw new IllegalStateException("Unable to load module value", e);
+            return deploymentModuleLoader.loadModule(moduleConfig.getIdentifier());
+        } catch(ModuleLoadException e) {
+            throw new IllegalStateException("Unable to load module value for module " + moduleConfig.getIdentifier());
         }
     }
 }

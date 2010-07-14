@@ -68,7 +68,7 @@ public final class ManagedBeanDeploymentItem implements DeploymentItem, Serializ
         return preDestroyMethodName;
     }
 
-    public void install(final BatchBuilder builder) {
+    public void install(final DeploymentItemContext context) {
 //        builder.addService(JBOSS_MANAGEDBEAN.append("module-name-here").append(BINDING).append(name), new JNDIBindingService(name));
     }
 

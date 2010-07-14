@@ -24,74 +24,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     targetNamespace="urn:jboss:domain:1.0"
     xmlns="urn:jboss:domain:1.0"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
     >
 
     <!-- Include the logging schema definitions for reuse -->
     <xs:include schemaLocation="jboss-domain-logging.xsd"/>
-
-    <xs:complexType name="server-groupType">
-        <xs:sequence>
-        
-            <xs:element name="java-config" type="java-configType" />
-
-            <xs:element name="socket-group" type="socket-group-refType"/>
-            
-            <xs:element name="subsystems" type="disabledSubsystemsType"/>
-            <xs:element name="deployments" type="disabledDeploymentsType"/>
-
-            <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
-            <xs:element name="system-properties" minOccurs="0" type="propertiesType"/>
-        </xs:sequence>
-        <xs:attribute name="group-name" type="xs:ID">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of the server group
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="clustersType">
-        <xs:complexContent>
-            <xs:extension base="server-groupType">
-                <xs:sequence>
-                    <xs:element name="subsystems" type="disabledSubsystemsType"/>
-                    <xs:element name="partition-name" type="xs:string"/>
-                    <xs:element name="state-transfer-timeout" type="xs:integer"/>
-                    <xs:element name="method-call-timeout" type="xs:integer"/>
-                </xs:sequence>
-                <xs:attribute name="category" type="xs:string" use="required"/>                    
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="serverType">
-        <xs:sequence>
-            <xs:element name="server-group-ref" minOccurs="1" maxOccurs="unbounded" type="server-group-refType" />
-            <xs:element name="java-config" minOccurs="0" type="java-configType" />
-
-            <!-- this element is present if the server is started at boot; otherwise, the server is configured but idle -->
-            <xs:element name="running" minOccurs="0"/>
-
-            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
-            <xs:element name="socket-group" type="socket-group-refType" minOccurs="1"/>
-
-
-            <xs:element name="loggers" type="loggersType" />
-            <xs:element name="system-properties" type="propertiesType"/>
-        </xs:sequence>
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="server-group-refType">
-        <xs:attribute name="ref" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of the server group or cluster the server is associated with.
-                </xs:documentation>
-            </xs:annotation>            
-        </xs:attribute>
-    </xs:complexType>
 
     <xs:complexType name="socket-group-refType">
         <xs:attribute name="ref" type="xs:string">
@@ -112,6 +50,7 @@
         </xs:attribute>
     </xs:complexType>
 
+
     <xs:complexType name="named-interfacesType">
         <xs:annotation>
             <xs:documentation>
@@ -125,6 +64,7 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!-- TODO make this and specified-interfaceType the same except for interface-criteriaGroup minOccurs -->
     <xs:complexType name="named-interfaceType">
         <xs:annotation>
             <xs:documentation>
@@ -173,8 +113,8 @@
         </xs:annotation>            
         <xs:choice>
             <xs:element name="inet-address" type="inet-addressType"/> 
-            <xs:element name="nic" type="nicType"/> 
-            <xs:sequence>
+            <!-- xs:element name="nic" type="nicType"/ --> 
+            <xs:choice maxOccurs="unbounded">
                 <xs:element name="loopback" type="loopbackType"/>
                 <xs:element name="multicast" type="multicastType"/>
                 <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -186,12 +126,13 @@
                 <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
                 <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/> 
                 <xs:element name="not" type="address-exclusionType"/>
-            </xs:sequence>
+                <xs:element name="any" type="address-exclusionType"/>
+            </xs:choice>
         </xs:choice>
     </xs:group>
     
     <xs:complexType name="inet-addressType">
-        <xs:attribute name="address" type="xs:string" use="required">
+        <xs:attribute name="value" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     Either a IP address in IPv6 or IPv4 dotted decimal notation,
@@ -236,7 +177,7 @@
     </xs:complexType>
 
     <xs:complexType name="address-exclusionType">
-        <xs:sequence>
+        <xs:choice>
             <xs:element name="loopback" type="loopbackType"/>
             <xs:element name="multicast" type="multicastType"/>
             <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -247,7 +188,7 @@
             <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
             <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
             <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="loopbackType">
@@ -319,134 +260,26 @@
             </xs:annotation>            
     </xs:complexType>
     
-  <xs:complexType name="disabledSubsystemsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of disabled subsystems per server-group</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="disable" type="attributeNameType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="disabledDeploymentsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of disabled deplyments per server-group</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="disable" type="attributeNameType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-    <!-- resources related definitions -->
-    <xs:complexType name="resourcesType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="external-jndi-resource" type="external-jndi-resourceType"/>
-            <xs:element name="jdbc-resource" type="external-jndi-resourceType"/>
-            <xs:element name="mail-resource" type="mail-resourceType"/>
-            <xs:element name="persistence-manager-factory-resource"
-                type="persistence-manager-factory-resourceType"/>
-            <!-- 
-            <xs:group ref="connector-resource"/>
-            <xs:group ref="resource-adapter-config"/>
-            <xs:group ref="connector-connection-pool"/>
-            -->
-        </xs:choice>
-        <xs:attribute name="name"/>
-        <xs:attribute name="jndi-name">
-            <xs:annotation>
-                <xs:documentation>The JNDI name under which to bind the resource</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="factory-class">
-            <xs:annotation>
-                <xs:documentation>The class name of the ObjectFactory</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="external-jndi-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="jndi-lookup-name" use="required"/>
-                <xs:attribute name="res-type" use="required"/>
-                <xs:attribute name="factory-class" use="required"/>
-                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="jdbc-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="pool-name" use="required"/>
-                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:attributeGroup name="jdbc-connection-pool">
-        <xs:attribute name="name" use="required"/>
-    </xs:attributeGroup>
-
-    <xs:complexType name="mail-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:sequence minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation>The JavaMail connection properties</xs:documentation>
-                    </xs:annotation>
-                    <xs:element name="mail.store.protocol" type="xs:string"/>
-                    <xs:element name="mail.transport.protocol" type="xs:string"/>
-                    <xs:element name="mail.user" type="xs:string"/>
-                    <xs:element name="mail.pop3.host" type="xs:string"/>
-                    <xs:element name="mail.smtp.host" type="xs:string"/>
-                    <xs:element name="mail.smtp.port" type="xs:string"/>
-                    <xs:element name="mail.from" type="xs:string"/>
-                    <xs:element name="mail.debug" type="xs:string"/>
-                </xs:sequence>
-                <xs:attribute name="user" use="required"/>
-                <xs:attribute name="password" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="persistence-manager-factory-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="factory-class" use="required">
-                    <xs:annotation>
-                        <xs:documentation>The class name of the JPA factory</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="resource-commonType">
-        <xs:sequence minOccurs="0" maxOccurs="1">
-            <xs:element name="properties" type="propertiesType"/>
-        </xs:sequence>
-    </xs:complexType>
-
 <!-- Common definitions -->
     <xs:complexType name="java-configType">
         <xs:all minOccurs="0" maxOccurs="1">
-            <xs:element name="heap" type="heapType"/>
+            <xs:element name="heap" type="heapType" minOccurs="0"/>
             <!-- XX:PermSize, XX:MaxPermSize -->
             <xs:element name="permgen" type="bounded-memory-sizeType" minOccurs="0"/>
             <!-- Xss -->
             <xs:element name="stack" type="memory-sizeType" minOccurs="0"/>
-            <xs:element name="jvm-option" type="jvm-optionType" />
-            <xs:element name="jvm-properties" type="propertiesType" />
-            <xs:element name="system-properties" type="propertiesType" />
-            <xs:element name="classpath-prefix"/>
-            <xs:element name="classpath-suffix"/>
-            <xs:element name="server-classpath"/>
-            <xs:element name="system-classpath"/>
-            <xs:element name="native-library-path-prefix"/>
-            <xs:element name="native-library-path-suffix"/>
-            <xs:element name="bytecode-preprocessors"/>
+            <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
+            <xs:element name="jvm-properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="classpath-prefix" minOccurs="0"/>
+            <xs:element name="classpath-suffix" minOccurs="0"/>
+            <xs:element name="server-classpath" minOccurs="0"/>
+            <xs:element name="system-classpath" minOccurs="0"/>
+            <xs:element name="native-library-path-prefix" minOccurs="0"/>
+            <xs:element name="native-library-path-suffix" minOccurs="0"/>
+            <xs:element name="bytecode-preprocessors" minOccurs="0"/>
         </xs:all>
+        <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="java-home" />
         <xs:attribute name="debug-enabled" default="false" type="boolean"/>
         <xs:attribute name="debug-options" default="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"/>
@@ -467,6 +300,12 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="jvm-optionsType">
+       <xs:sequence>
+          <xs:element name="option" type="jvm-optionType" minOccurs="0" maxOccurs="unbounded"/>
+       </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="jvm-optionType">
         <xs:attribute name="value" use="required">
             <xs:annotation>
@@ -475,12 +314,13 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="resource-refType">
-        <xs:attribute name="name" use="required">
-            <xs:annotation>
-                <xs:documentation>A reference to a resource</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+    <xs:complexType name="bounded-memory-sizeType">
+        <xs:attribute name="size" type="xs:string"/>
+        <xs:attribute name="max-size" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="memory-sizeType">
+        <xs:attribute name="size" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="propertiesType">
@@ -493,14 +333,6 @@
         <xs:attribute name="value" use="required"/>
     </xs:complexType>
 
-    <xs:simpleType name="isolation">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="read-uncommitted"/>
-            <xs:enumeration value="read-committed"/>
-            <xs:enumeration value="repeatable-read"/>
-            <xs:enumeration value="serializable"/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:simpleType name="boolean">
         <xs:restriction base="xs:token">
             <xs:enumeration value="yes"/>
@@ -513,25 +345,5 @@
             <xs:enumeration value="false"/>
         </xs:restriction>
     </xs:simpleType>
-
-  <xs:complexType name="attributeNameType">
-    <xs:annotation>
-      <xs:documentation>A complex type that declares only attribute 'name'.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" use="required">
-      <xs:annotation>
-        <xs:documentation>The meaning depends on the context the type is used in.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
-    <xs:complexType name="bounded-memory-sizeType">
-        <xs:attribute name="size" type="xs:string"/>
-        <xs:attribute name="max-size" type="xs:string"/>
-    </xs:complexType>
-
-    <xs:complexType name="memory-sizeType">
-        <xs:attribute name="size" type="xs:string" use="required"/>
-    </xs:complexType>
 
 </xs:schema>

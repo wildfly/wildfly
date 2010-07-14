@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ModuleSpec;
 
 /**
- * Processes a deployment from a VirtualFile root. 
+ * Module loader capable of having modules added and removed at runtime.  The primary goal is to support deployment units being
+ * built into modules.  The basic contract requires the module spec to be added to the loader and the module can be
+ * loaded at a later time using the normal ModuleLoader.loadModule method.
  *
  * @author John E. Bailey
  */
-public interface DeploymentProcessor {
+public abstract class DeploymentModuleLoader extends ModuleLoader {
     /**
-     * Process a new deployment from a VirtualFile.
+     * Add a module spec to the module loader enabling it to be looked up at a later time.
      *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
+     * @param moduleSpec The module spec to add
      */
-    void processDeployment(String name, VirtualFile deploymentRoot) throws DeploymentUnitProcessingException;
+    public abstract void addModuleSpec(ModuleSpec moduleSpec);
 
     /**
-     * Process a new deployment from a VirtualFile with an existing service batch.
+     * Remove a module from the module loader.
      *
-     * @param name The deployment name
-     * @param deploymentRoot The deployment root
-     * @param batchBuilder The BatchBuilder to use for deployment.
+     * @param moduleIdentifier The module identifier
      */
-    void processDeployment(String name, VirtualFile deploymentRoot, BatchBuilder batchBuilder) throws DeploymentUnitProcessingException ;
+    public abstract void removeModule(ModuleIdentifier moduleIdentifier);
 }

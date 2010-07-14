@@ -23,47 +23,52 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * An element representing a list of properties (name/value pairs).
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PropertiesElement extends AbstractModelElement<PropertiesElement> implements Iterable<PropertyElement> {
+public final class PropertiesElement extends AbstractModelElement<PropertiesElement> {
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private transient final SortedMap<String, PropertyElement> properties = new TreeMap<String, PropertyElement>();
+    private transient final SortedMap<String, String> properties = new TreeMap<String, String>();
+
+    public PropertiesElement(final Location location) {
+        super(location);
+    }
 
     /** {@inheritDoc} */
     public long elementHash() {
         long total = 0;
-        for (PropertyElement element : properties.values()) {
-            total = Long.rotateLeft(total, 5) ^ element.elementHash();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            total = Long.rotateLeft(total, 1) ^ ((long)entry.getKey().hashCode() << 32L | entry.getValue().hashCode() & 0xffffffffL);
         }
         return total;
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<PropertiesElement>> target, final PropertiesElement other) {
-        calculateDifference(target, properties, other.properties, new DifferenceHandler<String, PropertyElement, PropertiesElement>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final PropertyElement newElement) {
-                target.add(new PropertiesUpdate(PropertiesUpdate.Kind.ADD, name, new PropertyUpdate(newElement.getValue())));
+        calculateDifference(target, properties, other.properties, new DifferenceHandler<String, String, PropertiesElement>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String newElement) {
+                target.add(new PropertyAdd(name, newElement));
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final PropertyElement oldElement) {
-                target.add(new PropertiesUpdate(PropertiesUpdate.Kind.REMOVE, name, null));
+            public void handleRemove(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String oldElement) {
+                target.add(new PropertyRemove(name));
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final PropertyElement oldElement, final PropertyElement newElement) {
-                target.add(new PropertiesUpdate(PropertiesUpdate.Kind.CHANGE, name, new PropertyUpdate(newElement.getValue())));
+            public void handleChange(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String oldElement, final String newElement) {
+                target.add(new PropertyRemove(name));
+                target.add(new PropertyAdd(name, newElement));
             }
         });
     }
@@ -74,39 +79,32 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     }
 
     /** {@inheritDoc} */
-    public boolean isSameElement(final PropertiesElement other) {
-        // properties elements don't have identity within their containers; there is only one.
-        return true;
-    }
-
-    /** {@inheritDoc} */
-    public void writeContent(final XMLStreamWriter streamWriter) throws XMLStreamException {
-        for (Map.Entry<String, PropertyElement> entry : properties.entrySet()) {
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             streamWriter.writeEmptyElement("property");
-            entry.getValue().writeContent(streamWriter);
+            streamWriter.writeAttribute("name", entry.getKey());
+            streamWriter.writeAttribute("value", entry.getValue());
         }
         streamWriter.writeEndElement();
     }
 
     void addProperty(final String name, final String value) {
-        properties.put(name, new PropertyElement(name, value));
+        if (properties.containsKey(name)) {
+            throw new IllegalArgumentException("Property already exists");
+        }
+        properties.put(name, value);
     }
 
-    void removeProperty(final String name) {
-        properties.remove(name);
-    }
-
-    void changeProperty(final String name, final String value) {
-        properties.get(name).setValue(value);
+    String removeProperty(final String name) {
+        final String old = properties.remove(name);
+        if (old == null) {
+            throw new IllegalArgumentException("Property does not exist");
+        }
+        return old;
     }
 
     public int size() {
         return properties.size();
-    }
-
-    /** {@inheritDoc} */
-    public Iterator<PropertyElement> iterator() {
-        return properties.values().iterator();
     }
 
     /**
@@ -116,7 +114,6 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      * @return the value, or {@code null} if the property does not exist
      */
     public String getProperty(final String name) {
-        final PropertyElement element = properties.get(name);
-        return element == null ? null : element.getValue();
+        return properties.get(name);
     }
 }
