@@ -32,7 +32,7 @@ import org.jboss.modules.ModuleLoaderSelector;
  */
 public class DeploymentModuleLoaderSelector implements ModuleLoaderSelector {
 
-    public static ThreadLocal<ModuleLoader> CURRENT_MODULE_LOADER = new ThreadLocal<ModuleLoader>();
+    public static ThreadLocal<DeploymentModuleLoader> CURRENT_MODULE_LOADER = new ThreadLocal<DeploymentModuleLoader>();
 
     @Override
     public ModuleLoader getCurrentLoader() {

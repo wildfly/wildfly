@@ -23,37 +23,49 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.attachment.Dependencies;
+import org.jboss.as.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.module.VFSResourceLoader;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.modules.ModuleSpec;
 
-import static org.jboss.as.deployment.attachment.Dependencies.getAttachedDependencies;
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+import java.io.IOException;
 
 /**
- * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleDeploymentItem.
+ * DeploymentUnitProcessor capable creating a module spec from a ModuleConfig attachment.
  *
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
-    private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
-
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
+        final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        if(moduleConfig == null)
             return;
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", deploymentRoot.getName(), "noversion");
-        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};
-        final Dependencies dependenciesAttachment = getAttachedDependencies(context);
-        final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
-        final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
-        context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
-    }
 
+        final DeploymentModuleLoader deploymentModuleLoader = DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.get();
+        if(deploymentModuleLoader == null)
+            return;
+
+        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
+        for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
+            try {
+                specBuilder.addRoot(resource.getRootName(), new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot()));
+            } catch(IOException e) {
+                throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName() + "]", e, null);
+            }
+        }
+        final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
+        for(ModuleConfig.Dependency dependency : dependencies) {
+            specBuilder.addDependency(dependency.getIdentifier())
+                .setExport(dependency.isExport())
+                .setOptional(dependency.isOptional());
+        }
+        final ModuleSpec moduleSpec = specBuilder.create();
+        deploymentModuleLoader.addModuleSpec(moduleSpec);
+    }
 }

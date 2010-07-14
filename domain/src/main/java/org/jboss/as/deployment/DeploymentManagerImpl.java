@@ -22,8 +22,19 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.as.deployment.item.DeploymentItemContextImpl;
+import org.jboss.as.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
+import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.unit.DeploymentChain;
+import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -32,19 +43,21 @@ import org.jboss.msc.service.ServiceUtils;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.services.VFSMountService;
-import org.jboss.msc.value.Values;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
+
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 /**
  * Deployment manager implementation.
@@ -52,7 +65,8 @@ import java.util.concurrent.Executors;
  * @author John E. Bailey
  */
 public class DeploymentManagerImpl implements DeploymentManager, Service<DeploymentManager> {
-    private static final ServiceName MOUNT_SERVICE_NAME = ServiceName.JBOSS.append("mounts");
+    private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
+
     private final ServiceContainer serviceContainer;
     private final ConcurrentMap<VirtualFile, ServiceName> deploymentMap = new ConcurrentHashMap<VirtualFile, ServiceName>();
     private TempFileProvider tempFileProvider;
@@ -82,7 +96,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
 
     /**
      * Deploy a virtual file as a deployment.
-     * 
+     *
      * @param deploymentRoots The roots to deploy
      */
     public final void deploy(final VirtualFile... deploymentRoots) throws DeploymentException {
@@ -93,44 +107,87 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener();
         batchBuilder.addListener(deploymentServiceListener);
 
-        for(VirtualFile deploymentRoot : deploymentRoots) {
-            final String deploymentPath = deploymentRoot.getPathName();
-            final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentPath);
-            if(deploymentMap.putIfAbsent(deploymentRoot, deploymentServiceName) != null)
-                throw new DeploymentException("Deployment already exists for deployment root: " + deploymentRoot);
+        // Run through each deployment
+        try {
+            for(VirtualFile deploymentRoot : deploymentRoots) {
+                if(!deploymentRoot.exists())
+                    throw new DeploymentException("Deployment root does not exist." + deploymentRoot);
+                deploy(deploymentRoot, batchBuilder);
+            }
+
+            // Install the batch.
+            batchBuilder.install();
+            deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
+        } catch(DeploymentException e) {
+            throw e;
+        } catch(Throwable t) {
+            throw new DeploymentException(t);
+        }
+    }
+
+    private void deploy(final VirtualFile deploymentRoot, final BatchBuilder batchBuilder) throws DeploymentException {
+        final String deploymentPath = deploymentRoot.getPathName();
+        final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentPath);
+        if(deploymentMap.putIfAbsent(deploymentRoot, deploymentServiceName) != null)
+            throw new DeploymentException("Deployment already exists for deployment root: " + deploymentRoot);
+
+        // Create a sub-batch for this deployment
+        final BatchBuilder subBatchBuilder = batchBuilder.subBatchBuilder();
+
+        // TODO: Mount properly........
+
+        // Determine which deployment chain to use for this deployment
+        final DeploymentChain deploymentChain = determineDeploymentChain(deploymentRoot);
+
+        // Determine which deployment module loader to use for this deployment
+        final DeploymentModuleLoader deploymentModuleLoader = determineDeploymentModuleLoader(deploymentRoot);
+        DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.set(deploymentModuleLoader);
+
+        // Setup deployment service
+        subBatchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentPath));
+        // Add batch level dependency on the deployment service
+        subBatchBuilder.addDependency(deploymentServiceName);
+
+        // Create the deployment unit context
+        final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentPath);
+        attachVirtualFile(deploymentUnitContext, deploymentRoot);
+
+        // Execute the deployment chain
+        logger.debugf("Deployment processor starting with chain: %s", deploymentChain);
+        try {
+            deploymentChain.processDeployment(deploymentUnitContext);
+        } catch(DeploymentUnitProcessingException e) {
+            throw new DeploymentException("Failed to process deployment chain.", e);
+        }
+
+        // Setup deployment module
+        Module module = null;
+        final ModuleConfig moduleConfig = deploymentUnitContext.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        if(moduleConfig != null) {
             try {
-                // Setup VFS mount service
-                // TODO: We should make sure this is an archive first...
-                final ServiceName mountServiceName = MOUNT_SERVICE_NAME.append(deploymentPath);
-                final VFSMountService vfsMountService = new VFSMountService(deploymentRoot.getPathName(), tempFileProvider, false);
-                batchBuilder.addService(mountServiceName, vfsMountService);
-
-                // Determine which deployment chain to use for this deployment
-                final ServiceName deploymentChainServiceName = determineDeploymentChain();
-
-                // Determine which deployment module loader to use for this deployment
-                final ServiceName deploymentModuleLoaderServiceName = determineDeploymentModuleLoader();
-
-                // Setup deployment service
-                final DeploymentService deploymentService = new DeploymentService(deploymentPath);
-                deploymentService.setDeploymentListener(deploymentServiceListener);
-                final BatchServiceBuilder<?> deploymentServiceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
-                deploymentServiceBuilder.addDependency(mountServiceName)
-                    .toMethod(DeploymentService.DEPLOYMENT_ROOT_SETTER, Collections.singletonList(Values.immediateValue(deploymentRoot)));
-                deploymentServiceBuilder.addDependency(deploymentChainServiceName)
-                    .toMethod(DeploymentService.DEPLOYMENT_CHAIN_SETTER, Collections.singletonList(Values.injectedValue()));
-                deploymentServiceBuilder.addDependency(deploymentModuleLoaderServiceName)
-                    .toMethod(DeploymentService.DEPLOYMENT_MODULE_LOADER_SETTER, Collections.singletonList(Values.injectedValue()));
-
-                // Install the batch.
-                batchBuilder.install();
-                deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
-            } catch(DeploymentException e) {
-                throw e;
-            } catch(Throwable t) {
-                throw new DeploymentException(t);
+                module = deploymentModuleLoader.loadModule(moduleConfig.getIdentifier());
+            } catch(ModuleLoadException e) {
+                throw new DeploymentException("Faild to load deployment module.  The module spec was likely not added to the deployment module loader", e);
             }
         }
+
+        final ClassLoader currentCl = getContextClassLoader();
+        if(module != null) {
+            setContextClassLoader(module.getClassLoader());
+        }
+        try {
+            // Construct an item context
+            final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, subBatchBuilder);
+
+            // Process all the deployment items with the item context
+            final Collection<DeploymentItem> deploymentItems = deploymentUnitContext.getDeploymentItems();
+            for(DeploymentItem deploymentItem : deploymentItems) {
+                deploymentItem.install(deploymentItemContext);
+            }
+        } finally {
+            setContextClassLoader(currentCl);
+        }
+
     }
 
     @Override
@@ -155,11 +212,29 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         }, serviceControllers);
     }
 
-    protected ServiceName determineDeploymentChain() {
+    private ClassLoader getContextClassLoader() {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
+    }
+
+    private void setContextClassLoader(final ClassLoader classLoader) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(classLoader);
+                return null;
+            }
+        });
+    }
+
+    protected DeploymentChain determineDeploymentChain(final VirtualFile deploymentRoot) {
         return null; // TODO:  Determine the chain
     }
 
-    protected ServiceName determineDeploymentModuleLoader() {
+    protected DeploymentModuleLoader determineDeploymentModuleLoader(final VirtualFile deploymentRoot) {
         return null; // TODO:  Determine the loader
     }
 }

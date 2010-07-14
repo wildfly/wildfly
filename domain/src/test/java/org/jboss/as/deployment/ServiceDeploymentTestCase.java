@@ -25,6 +25,7 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
+import org.jboss.as.deployment.processor.ModuleConfgProcessor;
 import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
 import org.jboss.as.deployment.processor.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.ServiceDeploymentParsingProcessor;
@@ -73,9 +74,8 @@ public class ServiceDeploymentTestCase {
     @Test
     public void testServiceDeployment() throws Exception {
         Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
-        final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
         final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
-        final DeploymentManagerImpl deploymentManager = setupDeploymentManger(serviceContainer, deploymentModuleLoader);
+        final DeploymentManagerImpl deploymentManager = setupDeploymentManger(serviceContainer);
         setupProcessors(serviceContainer);
         deploymentManager.deploy(initializeDeployment());
 
@@ -85,19 +85,20 @@ public class ServiceDeploymentTestCase {
         serviceContainer.shutdown();
     }
 
-    private DeploymentManagerImpl setupDeploymentManger(final ServiceContainer serviceContainer, final DeploymentModuleLoader deploymentModuleLoader) throws Exception {
+    private DeploymentManagerImpl setupDeploymentManger(final ServiceContainer serviceContainer) throws Exception {
+        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
         final DeploymentManagerImpl deploymentManager = new DeploymentManagerImpl(serviceContainer) {
             @Override
-            protected ServiceName determineDeploymentChain() {
-                return CHAIN_SERVICE_NAME;
+            protected DeploymentChain determineDeploymentChain(VirtualFile deploymentRoo) {
+                return deploymentChain;
             }
 
             @Override
-            protected ServiceName determineDeploymentModuleLoader() {
-                return DEPLOYMENT_MODULE_LOADER_SERVICE_NAME;
+            protected DeploymentModuleLoader determineDeploymentModuleLoader(VirtualFile deploymentRoo) {
+                return deploymentModuleLoader;
             }
         };
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
 
         final BatchBuilder builder = serviceContainer.batchBuilder();
         final DeploymentServiceListener listener = new DeploymentServiceListener();
@@ -122,6 +123,7 @@ public class ServiceDeploymentTestCase {
 
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "dependency", "test"), new TestModuleDependencyProcessor(), TestModuleDependencyProcessor.PRIORITY);
+        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "config"), new ModuleConfgProcessor(), ModuleConfgProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "deployment"), new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "parser"), new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "deployment"), new ServiceDeploymentProcessor(), ServiceDeploymentProcessor.PRIORITY);

@@ -42,7 +42,6 @@ import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -65,13 +64,13 @@ public class DeploymentManagerTestCase {
 
         deploymentManager = new DeploymentManagerImpl(serviceContainer) {
             @Override
-            protected ServiceName determineDeploymentChain() {
-                return chainServiceName;
+            protected DeploymentChain determineDeploymentChain(final VirtualFile deploymentRoot) {
+                return deploymentChain;
             }
 
             @Override
-            protected ServiceName determineDeploymentModuleLoader() {
-                return moduleLoaderServiceName;
+            protected DeploymentModuleLoader determineDeploymentModuleLoader(final VirtualFile deploymentRoot) {
+                return deploymentModuleLoader;
             }
         };
 
@@ -100,14 +99,6 @@ public class DeploymentManagerTestCase {
         assertNotNull(deploymentService);
 
         assertEquals(virtualFile.getPathName(), deploymentService.getDeploymentName());
-        assertEquals(deploymentChain, getPrivateFieldValue(deploymentService, "deploymentChain", DeploymentChain.class));
-        assertEquals(deploymentModuleLoader, getPrivateFieldValue(deploymentService, "deploymentModuleLoader", DeploymentModuleLoader.class));
-
-        // Verify the mount service is setup
-        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(virtualFile.getPathName()));
-        assertNotNull(mountServiceController);
-        assertEquals(ServiceController.State.UP, mountServiceController.getState());
-        assertNull(mountServiceController.getValue());
     }
 
     @Test
