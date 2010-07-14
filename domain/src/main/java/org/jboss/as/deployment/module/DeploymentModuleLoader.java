@@ -20,24 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ModuleSpec;
 
 /**
- * Utility to help attach and retrieve modules for a deployment unit.
+ * Module loader capable of having modules added and removed at runtime.  The primary goal is to support deployment units being
+ * built into modules.  The basic contract requires the module spec to be added to the loader and the module can be
+ * loaded at a later time using the normal ModuleLoader.loadModule method.
+ *
  * @author John E. Bailey
  */
-public class ModuleAttachment {
-    public static AttachmentKey<Module> KEY = AttachmentKey.create(Module.class);
+public abstract class DeploymentModuleLoader extends ModuleLoader {
+    /**
+     * Add a module spec to the module loader enabling it to be looked up at a later time.
+     *
+     * @param moduleSpec The module spec to add
+     */
+    public abstract void addModuleSpec(ModuleSpec moduleSpec);
 
-    public static void attachModule(final DeploymentUnitContext context, final Module module) {
-        context.putAttachment(KEY, module);
-    }
-
-    public static Module getModuleAttachment(final DeploymentUnitContext context) {
-        return context.getAttachment(KEY);
-    }
+    /**
+     * Remove a module from the module loader.
+     *
+     * @param moduleIdentifier The module identifier
+     */
+    public abstract void removeModule(ModuleIdentifier moduleIdentifier);
 }

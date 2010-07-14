@@ -28,11 +28,9 @@ import org.jboss.as.deployment.item.ServiceDeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 
-import java.util.ServiceLoader;
-
-import static org.jboss.as.deployment.attachment.ModuleAttachment.getModuleAttachment;
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor that detects ServiceDeployment instances for a deployment and creates the appropriate
@@ -45,10 +43,12 @@ public class ServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final Module module = getModuleAttachment(context);
-        final ServiceLoader<ServiceDeployment> serviceDeploymentLoader = module.loadService(ServiceDeployment.class);
-        for(ServiceDeployment serviceDeployment : serviceDeploymentLoader) {
-            context.addDeploymentItem(new ServiceDeploymentItem(serviceDeployment));
-        }
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+        if(deploymentRoot == null || !deploymentRoot.exists() || deploymentRoot.isFile())
+            return;
+
+        final VirtualFile serviceLoaderConfig = deploymentRoot.getChild("META-INF/services").getChild(ServiceDeployment.class.getName());
+        if(serviceLoaderConfig.exists())
+            context.addDeploymentItem(new ServiceDeploymentItem());
     }
 }

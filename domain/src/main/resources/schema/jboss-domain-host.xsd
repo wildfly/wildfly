@@ -56,7 +56,7 @@
 
     <xs:complexType name="jvmsType">
         <xs:sequence>
-            <xs:element name="jvm" type="java-configType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="jvm" type="jvmType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -75,8 +75,8 @@
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
             <xs:element name="loggers" type="loggersType" minOccurs="0"/>
-            <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>
-            <xs:element name="jvm" minOccurs="0" type="java-configType" />
+            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="jvmType" />
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>

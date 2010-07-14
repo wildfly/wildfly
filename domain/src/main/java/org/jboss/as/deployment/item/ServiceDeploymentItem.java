@@ -22,9 +22,11 @@
 
 package org.jboss.as.deployment.item;
 
-import java.io.Serializable;
-
+import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
+
+import java.io.Serializable;
+import java.util.ServiceLoader;
 
 /**
  * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
@@ -36,19 +38,17 @@ public final class ServiceDeploymentItem implements DeploymentItem, Serializable
 
     private static final long serialVersionUID = -8208357864488821428L;
 
-    private final ServiceDeployment serviceDeployment;
-
-    public ServiceDeploymentItem(ServiceDeployment serviceDeployment) {
-        this.serviceDeployment = serviceDeployment;
-    }
-
     @Override
     public void install(final DeploymentItemContext context) {
+        final Module module = context.getModule();
+        ServiceLoader<ServiceDeployment> loader = module.loadService(ServiceDeployment.class);
         final BatchBuilder builder = context.getBatchBuilder();
         final ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(serviceDeployment.getClass().getClassLoader());
+        Thread.currentThread().setContextClassLoader(module.getClassLoader());
         try {
-            serviceDeployment.install(builder);
+            for(ServiceDeployment serviceDeployment : loader) {
+                serviceDeployment.install(builder);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(currentCl);
         }

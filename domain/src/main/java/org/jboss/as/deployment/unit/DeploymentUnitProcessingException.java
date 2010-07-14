@@ -22,13 +22,14 @@
 
 package org.jboss.as.deployment.unit;
 
+import org.jboss.as.deployment.DeploymentException;
 import org.jboss.msc.service.Location;
 
 /**
  * An exception which is thrown when deployment unit processing fails.  This can occur as a result of a failure
  * to parse a descriptor, an error transforming a descriptor, an error preparing a deployment item, or other causes.
  */
-public class DeploymentUnitProcessingException extends Exception {
+public class DeploymentUnitProcessingException extends DeploymentException {
 
     private static final long serialVersionUID = -3242784227234412566L;
 

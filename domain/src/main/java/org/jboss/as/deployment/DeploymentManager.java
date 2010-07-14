@@ -23,9 +23,9 @@
 package org.jboss.as.deployment;
 
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -37,7 +37,7 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 
 /**
@@ -78,34 +78,54 @@ public class DeploymentManager implements Service<DeploymentManager> {
      * 
      * @param deploymentRoot The root to deploy
      */
-    public final void deploy(final VirtualFile deploymentRoot) {
+    public final void deploy(final VirtualFile deploymentRoot) throws DeploymentException {
         final ServiceContainer serviceContainer = this.serviceContainer;
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final String deploymentPath = deploymentRoot.getPathName();
         try {
             // Setup VFS mount service
+            // TODO: We should make sure this is an archive first...
             final ServiceName mountServiceName = MOUNT_SERVICE_NAME.append(deploymentPath);
             final VFSMountService vfsMountService = new VFSMountService(deploymentRoot.getPathName(), tempFileProvider, false);
-            batchBuilder.addServiceValueIfNotExist(mountServiceName, Values.immediateValue(vfsMountService))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+            batchBuilder.addService(mountServiceName, vfsMountService);
+                //.setInitialMode(ServiceController.Mode.ON_DEMAND);
 
-            // Setup deploymentRoot service
-            final ServiceName deploymentServiceName = DeploymentService.DEPLOYMENT_SERVICE_NAME.append(deploymentPath);
-            final DeploymentService deploymentService = new DeploymentService();
-            batchBuilder.addService(deploymentServiceName, deploymentService)
-                .addDependency(mountServiceName).toMethod(DeploymentService.DEPLOYMENT_ROOT_SETTER, Arrays.asList(vfsMountService));
+            // Determine which deployment chain to use for this deployment
+            final ServiceName deploymentChainServiceName = determineDeploymentChain();
 
-            // Setup deploymentRoot processor service
-            final ServiceName deploymentServiceProcessorName = DeploymentProcessorService.DEPLOYMENT_PROCESSOR_SERVICE_NAME.append(deploymentPath);
-            final DeploymentProcessorService deploymentProcessorService = new DeploymentProcessorService();
-            batchBuilder.addService(deploymentServiceProcessorName, deploymentProcessorService)
-                .addDependency(deploymentServiceName).toMethod(DeploymentProcessorService.DEPLOYMENT_SERVICE_SETTER, Arrays.asList(deploymentService));
+            // Determine which deployment module loader to use for this deployment
+            final ServiceName deploymentModuleLoaderServiceName = determineDeploymentModuleLoader();
+
+            // Setup deployment service
+            final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentPath);
+            final DeploymentService deploymentService = new DeploymentService(deploymentPath);
+            final BatchServiceBuilder<?> deploymentServiceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
+            deploymentServiceBuilder.addDependency(mountServiceName)
+                .toMethod(DeploymentService.DEPLOYMENT_ROOT_SETTER, Collections.singletonList(Values.immediateValue(deploymentRoot)));
+            deploymentServiceBuilder.addDependency(deploymentChainServiceName)
+                .toMethod(DeploymentService.DEPLOYMENT_CHAIN_SETTER, Collections.singletonList(Values.injectedValue()));
+            deploymentServiceBuilder.addDependency(deploymentModuleLoaderServiceName)
+                .toMethod(DeploymentService.DEPLOYMENT_MODULE_LOADER_SETTER, Collections.singletonList(Values.injectedValue()));
+
+            // Setup deployment listener
+            final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener();
+            batchBuilder.addListener(deploymentServiceListener);
 
             // Install the batch.
             batchBuilder.install();
+            deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
+        } catch(DeploymentException e) {
+            throw e;
         } catch(Throwable t) {
-            throw new RuntimeException(t); // Throw something real...
+            throw new DeploymentException(t);
         }
     }
 
+    protected ServiceName determineDeploymentChain() {
+        return null; // TODO:  Determine the chain
+    }
+
+    protected ServiceName determineDeploymentModuleLoader() {
+        return null; // TODO:  Determine the loader
+    }
 }
