@@ -55,7 +55,7 @@ public class DeploymentManagerTestCase {
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain =  new DeploymentChainImpl("test.chain");
     private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(null);
-    private DeploymentManager deploymentManager;
+    private DeploymentManagerImpl deploymentManager;
 
     @Before
     public void setupDeploymentManager() throws Exception {
@@ -63,7 +63,7 @@ public class DeploymentManagerTestCase {
         final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
         final ServiceName moduleLoaderServiceName = ServiceName.JBOSS.append("deployment", "module", "loader");
 
-        deploymentManager = new DeploymentManager(serviceContainer) {
+        deploymentManager = new DeploymentManagerImpl(serviceContainer) {
             @Override
             protected ServiceName determineDeploymentChain() {
                 return chainServiceName;

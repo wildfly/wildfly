@@ -64,6 +64,7 @@ public class DeploymentItemProcessor implements Service<Void> {
 
     private DeploymentUnitContextImpl deploymentUnitContext;
     private Module module;
+    private DeploymentServiceListener deploymentListener;
 
     public DeploymentItemProcessor(DeploymentUnitContextImpl deploymentUnitContext) {
         this.deploymentUnitContext = deploymentUnitContext;
@@ -78,20 +79,26 @@ public class DeploymentItemProcessor implements Service<Void> {
 
         // Create batch for these items
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        if(deploymentListener != null)
+            batchBuilder.addListener(deploymentListener);
+        
         //  Add batch level dependency for this deployment
         batchBuilder.addDependency(controller.getName());
 
-        // Construct an item context
-        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, batchBuilder);
-
         final ClassLoader currentCl = getContextClassLoader();
-        setContextClassLoader(module.getClassLoader());
-        try {
+        if(module != null) {
+            setContextClassLoader(module.getClassLoader());
             DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.set(module.getModuleLoader());
+        }
+        try {
             try {
                 // Process all the deployment items with the item context
                 final Collection<DeploymentItem> deploymentItems = deploymentUnitContext.getDeploymentItems();
                 for(DeploymentItem deploymentItem : deploymentItems) {
+                    // Create a sub-batch to disable individual items from installing the batch or polluting other items service deps/listeners
+                    final BatchBuilder subBatchBuilder = batchBuilder.subBatchBuilder();
+                    // Construct an item context
+                    final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, subBatchBuilder);
                     deploymentItem.install(deploymentItemContext);
                 }
             } finally {
@@ -138,5 +145,9 @@ public class DeploymentItemProcessor implements Service<Void> {
 
     public void setModule(Module module) {
         this.module = module;
+    }
+
+    public void setDeploymentListener(DeploymentServiceListener deploymentListener) {
+        this.deploymentListener = deploymentListener;
     }
 }

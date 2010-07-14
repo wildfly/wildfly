@@ -73,6 +73,7 @@ public class DeploymentService implements Service<DeploymentService> {
     private VirtualFile deploymentRoot;
     private DeploymentChain deploymentChain;
     private DeploymentModuleLoader deploymentModuleLoader;
+    private DeploymentServiceListener deploymentListener;
 
     public DeploymentService(String deploymentName) {
         this.deploymentName = deploymentName;
@@ -104,9 +105,11 @@ public class DeploymentService implements Service<DeploymentService> {
         // Setup batch for the next phases of deployment
         final ServiceContainer serviceContainer = serviceController.getServiceContainer();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        if(deploymentListener != null)
+            batchBuilder.addListener(deploymentListener);
 
         // Add batch level dependency on this service
-        //batchBuilder.addDependency(deploymentServiceName);
+        batchBuilder.addDependency(deploymentServiceName);
 
         // Setup deployment module service
         final ServiceName moduleServiceName = DeploymentModuleService.SERVICE_NAME.append(deploymentPath);
@@ -123,6 +126,7 @@ public class DeploymentService implements Service<DeploymentService> {
         // Setup deployment item processor service
         final ServiceName deploymentItemProcessorName = DeploymentItemProcessor.SERVICE_NAME.append(deploymentPath);
         final DeploymentItemProcessor deploymentItemProcessor = new DeploymentItemProcessor(deploymentUnitContext);
+        deploymentItemProcessor.setDeploymentListener(deploymentListener);
         final BatchServiceBuilder<?> itemProcessorServiceBuilder = batchBuilder.addService(deploymentItemProcessorName, deploymentItemProcessor);
         if(deploymentModuleService != null) {
             itemProcessorServiceBuilder.addDependency(moduleServiceName).toMethod(DeploymentItemProcessor.DEPLOYMENT_MODULE_SETTER, Collections.singletonList(deploymentModuleService));
@@ -151,6 +155,10 @@ public class DeploymentService implements Service<DeploymentService> {
 
     public void setDeploymentChain(DeploymentChain deploymentChain) {
         this.deploymentChain = deploymentChain;
+    }
+
+    public void setDeploymentListener(DeploymentServiceListener deploymentListener) {
+        this.deploymentListener = deploymentListener;
     }
 
     public VirtualFile getDeploymentRoot() {

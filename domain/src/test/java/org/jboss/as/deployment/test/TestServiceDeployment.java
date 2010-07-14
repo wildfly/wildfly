@@ -24,13 +24,17 @@ package org.jboss.as.deployment.test;
 
 import org.jboss.as.deployment.item.ServiceDeployment;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author John E. Bailey
  */
 public class TestServiceDeployment implements ServiceDeployment {
+    public static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+
     @Override
     public void install(BatchBuilder batchBuilder) {
-        System.out.println("Here");
+        batchBuilder.addService(TEST_SERVICE_NAME, Service.NULL);
     }
 }

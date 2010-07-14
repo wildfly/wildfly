@@ -32,28 +32,16 @@ import org.jboss.modules.ModuleIdentifier;
 import static org.jboss.as.deployment.attachment.Dependencies.addDependency;
 
 /**
- * DeploymentUnitProcessor used to add a dependency on SYSTEM to deployment modules.
+ * DeploymentUnitProcessor used to add a dependency on SYSTEM to deployment modules.  This simulates what a processor
+ * could do to add deps for a subsystem.  Ex.  A similar processor could be used to add all the EJB3 deps.
+ *
  * @author John E. Bailey
  */
 public class TestModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final ModuleIdentifier TEST_MODULE_IDENTIFIER = new ModuleIdentifier("org.jboss.test", "test-module", "1.0");
     public static final long PRIORITY = ModuleDependencyProcessor.PRIORITY + 1;
-
-    private final boolean includeTestModule;
-
-    public TestModuleDependencyProcessor(boolean includeTestModule) {
-        this.includeTestModule = includeTestModule;
-    }
-
-    public TestModuleDependencyProcessor() {
-        this(false);
-    }
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         addDependency(context, new ModuleConfig.Dependency(ModuleIdentifier.SYSTEM, true, false, false));
-        if(includeTestModule) {
-            addDependency(context, new ModuleConfig.Dependency(TEST_MODULE_IDENTIFIER, true, false, false));
-        }
     }
 }
