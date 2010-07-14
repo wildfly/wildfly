@@ -138,20 +138,12 @@
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">
-<<<<<<< HEAD
-        <xs:attribute name="log-directory" default="${jboss.server.home.dir}/logs/access"/>
-        <xs:attribute name="pattern" default="common"/>
-        <xs:attribute name="resolveHosts" default="false" type="boolean"/>
-        <xs:attribute name="extended" default="false" type="boolean"/>
-        <xs:attribute name="prefix" default="access_log."/>
-=======
         <xs:attribute name="directory" default="${jboss.server.home.dir}/logs/access"/>
         <xs:attribute name="pattern" default="common"/>
         <xs:attribute name="resolve-hosts" default="false" type="boolean"/>
         <xs:attribute name="extended" default="false" type="boolean"/>
         <xs:attribute name="prefix" default="access_log."/>
         <xs:attribute name="rotate" default="true" type="boolean"/>
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
     </xs:complexType>
     
     <xs:complexType name="http-rewriteType">
