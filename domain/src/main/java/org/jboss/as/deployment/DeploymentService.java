@@ -106,7 +106,7 @@ public class DeploymentService implements Service<DeploymentService> {
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
         // Add batch level dependency on this service
-        batchBuilder.addDependency(deploymentServiceName);
+        //batchBuilder.addDependency(deploymentServiceName);
 
         // Setup deployment module service
         final ServiceName moduleServiceName = DeploymentModuleService.SERVICE_NAME.append(deploymentPath);

@@ -24,16 +24,13 @@ package org.jboss.as.deployment;
 
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.as.deployment.unit.DeploymentChain;
 import org.jboss.as.deployment.unit.DeploymentChainImpl;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
@@ -79,8 +76,8 @@ public class DeploymentManagerTestCase {
         };
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        batchBuilder.addService(chainServiceName, new PassThroughService(deploymentChain));
-        batchBuilder.addService(moduleLoaderServiceName, new PassThroughService(deploymentModuleLoader));
+        batchBuilder.addService(chainServiceName, new PassthroughService(deploymentChain));
+        batchBuilder.addService(moduleLoaderServiceName, new PassthroughService(deploymentModuleLoader));
         batchBuilder.install();
     }
 
@@ -133,26 +130,4 @@ public class DeploymentManagerTestCase {
         field.setAccessible(true);
         return (T)field.get(target);
     }
-
-    private static class PassThroughService<T> implements Service<T> {
-        private final T value;
-
-        private PassThroughService(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public void start(StartContext context) throws StartException {
-        }
-
-        @Override
-        public void stop(StopContext context) {
-        }
-
-        @Override
-        public T getValue() throws IllegalStateException {
-            return value;
-        }
-    }
-
 }

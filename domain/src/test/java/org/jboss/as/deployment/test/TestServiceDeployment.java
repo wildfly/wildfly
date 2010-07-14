@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.test;
 
-import org.jboss.modules.Module;
+import org.jboss.as.deployment.item.ServiceDeployment;
 import org.jboss.msc.service.BatchBuilder;
 
-import java.io.Serializable;
-import java.util.ServiceLoader;
-
 /**
- * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
- *
  * @author John E. Bailey
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
-
-    private static final long serialVersionUID = -8208357864488821428L;
-
+public class TestServiceDeployment implements ServiceDeployment {
     @Override
-    public void install(final DeploymentItemContext context) {
-        final Module module = context.getModule();
-        ServiceLoader<ServiceDeployment> loader = module.loadService(ServiceDeployment.class);
-        final BatchBuilder builder = context.getBatchBuilder();
-        for(ServiceDeployment serviceDeployment : loader) {
-            serviceDeployment.install(builder);
-        }
+    public void install(BatchBuilder batchBuilder) {
+        System.out.println("Here");
     }
 }

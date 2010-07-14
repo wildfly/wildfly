@@ -31,6 +31,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VFS;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,6 +72,11 @@ public class DeploymentServiceTestCase {
                 return serviceController;
             }
         };
+    }
+
+    @After
+    public void shutdown() {
+        serviceContainer.shutdown();
     }
 
     @Test

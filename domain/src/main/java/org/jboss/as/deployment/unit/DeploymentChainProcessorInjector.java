@@ -37,12 +37,12 @@ import org.jboss.msc.value.Value;
  *
  * @author John E. Bailey
  */
-public class DeploymentChainProcessorInjector implements Injector<DeploymentChain> {
-    private final Value<DeploymentUnitProcessor> deploymentUnitProcessorValue;
+public class DeploymentChainProcessorInjector <T extends DeploymentUnitProcessor> implements Injector<DeploymentChain> {
+    private final Value<T> deploymentUnitProcessorValue;
     private final long priority;
     private DeploymentChain deploymentChain;
 
-    public DeploymentChainProcessorInjector(final Value<DeploymentUnitProcessor> deploymentUnitProcessorValue, final long priority) {
+    public DeploymentChainProcessorInjector(final Value<T> deploymentUnitProcessorValue, final long priority) {
         this.deploymentUnitProcessorValue = deploymentUnitProcessorValue;
         this.priority = priority;
     }

@@ -27,6 +27,8 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.TimingServiceListener;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -40,7 +42,14 @@ import java.util.concurrent.TimeUnit;
  * @author John E. Bailey
  */
 public class DeploymentServiceListener implements ServiceListener {
-    public static final long DEPLOYMENT_TIMEOUT_IN_SECONDS = Long.parseLong(System.getProperty("org.jboss.as.deployment.DeploymentTimeout", "30"));
+    public static final long DEPLOYMENT_TIMEOUT_IN_SECONDS;
+    static {
+        DEPLOYMENT_TIMEOUT_IN_SECONDS = AccessController.doPrivileged(new PrivilegedAction<Long>() {
+            public Long run() {
+                return Long.parseLong(System.getProperty("org.jboss.as.deployment.DeploymentTimeout", "30"));
+            }
+        }).longValue();
+    }
 
     private final CountDownLatch latch = new CountDownLatch(1);
     private final TimingServiceListener delegateListener = new TimingServiceListener(new Runnable() {

@@ -25,6 +25,7 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.item.DeploymentItem;
 import org.jboss.as.deployment.item.DeploymentItemContext;
 import org.jboss.as.deployment.item.DeploymentItemContextImpl;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
@@ -38,12 +39,14 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 
 /**
  * Service responsible for processing the deployment items for a deployment.  A new batch will be created for the items
  * to install services to.  All services in the batch will be given a dependency on this service in order to properly
- * setup th startup and shutdown ordering. 
+ * setup the startup and shutdown ordering.
  *
  * @author John E. Bailey
  */
@@ -58,7 +61,7 @@ public class DeploymentItemProcessor implements Service<Void> {
             throw new RuntimeException(e);  // Gross....
         }
     }
-    
+
     private DeploymentUnitContextImpl deploymentUnitContext;
     private Module module;
 
@@ -72,7 +75,7 @@ public class DeploymentItemProcessor implements Service<Void> {
         final ServiceContainer serviceContainer = controller.getServiceContainer();
 
         final DeploymentUnitContextImpl deploymentUnitContext = this.deploymentUnitContext;
-        
+
         // Create batch for these items
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         //  Add batch level dependency for this deployment
@@ -81,10 +84,21 @@ public class DeploymentItemProcessor implements Service<Void> {
         // Construct an item context
         final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(module, batchBuilder);
 
-        // Process all the deployment items with the item context
-        final Collection<DeploymentItem> deploymentItems = deploymentUnitContext.getDeploymentItems();
-        for(DeploymentItem deploymentItem : deploymentItems) {
-            deploymentItem.install(deploymentItemContext);
+        final ClassLoader currentCl = getContextClassLoader();
+        setContextClassLoader(module.getClassLoader());
+        try {
+            DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.set(module.getModuleLoader());
+            try {
+                // Process all the deployment items with the item context
+                final Collection<DeploymentItem> deploymentItems = deploymentUnitContext.getDeploymentItems();
+                for(DeploymentItem deploymentItem : deploymentItems) {
+                    deploymentItem.install(deploymentItemContext);
+                }
+            } finally {
+                DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.set(null);
+            }
+        } finally {
+            setContextClassLoader(currentCl);
         }
 
         // Install the batch
@@ -93,6 +107,24 @@ public class DeploymentItemProcessor implements Service<Void> {
         } catch(ServiceRegistryException e) {
             throw new StartException("Failed to install deployment batch for " + deploymentUnitContext.getName(), e);
         }
+    }
+
+    private ClassLoader getContextClassLoader() {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
+    }
+
+    private void setContextClassLoader(final ClassLoader classLoader) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(classLoader);
+                return null;
+            }
+        });
     }
 
     @Override

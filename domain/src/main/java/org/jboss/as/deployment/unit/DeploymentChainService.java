@@ -27,6 +27,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
  * Service responsible for wrapping a deployment chain to support life-cycle management and injection.
@@ -36,16 +37,20 @@ import org.jboss.msc.value.Value;
 public class DeploymentChainService implements Service<DeploymentChain> {
     private final Value<DeploymentChain> deploymentChainValue;
 
-    public DeploymentChainService(Value<DeploymentChain> deploymentChainValue) {
+    public DeploymentChainService(final Value<DeploymentChain> deploymentChainValue) {
         this.deploymentChainValue = deploymentChainValue;
     }
 
-    @Override
-    public void start(StartContext context) throws StartException {
+    public DeploymentChainService(DeploymentChain deploymentChain) {
+        this(Values.immediateValue(deploymentChain));
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void start(final StartContext context) throws StartException {
+    }
+
+    @Override
+    public void stop(final StopContext context) {
     }
 
     @Override

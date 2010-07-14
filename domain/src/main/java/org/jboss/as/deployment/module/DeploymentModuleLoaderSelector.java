@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.module;
 
-import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
-
-import java.io.Serializable;
-import java.util.ServiceLoader;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ModuleLoaderSelector;
 
 /**
- * DeploymentItem that executes a ServiceDeployment against a batchBuilder.
+ * Module loader selector that returns the current deployment module loader.
  *
- * @author John E. Bailey
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
-public final class ServiceDeploymentItem implements DeploymentItem, Serializable {
+public class DeploymentModuleLoaderSelector implements ModuleLoaderSelector {
 
-    private static final long serialVersionUID = -8208357864488821428L;
+    public static ThreadLocal<ModuleLoader> CURRENT_MODULE_LOADER = new ThreadLocal<ModuleLoader>();
 
     @Override
-    public void install(final DeploymentItemContext context) {
-        final Module module = context.getModule();
-        ServiceLoader<ServiceDeployment> loader = module.loadService(ServiceDeployment.class);
-        final BatchBuilder builder = context.getBatchBuilder();
-        for(ServiceDeployment serviceDeployment : loader) {
-            serviceDeployment.install(builder);
-        }
+    public ModuleLoader getCurrentLoader() {
+        final ModuleLoader currentModuleLoader = CURRENT_MODULE_LOADER.get();
+        if(currentModuleLoader != null)
+            return currentModuleLoader;
+        return ModuleLoaderSelector.DEFAULT.getCurrentLoader();
     }
 }

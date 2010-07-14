@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.item.VFSResourceLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;

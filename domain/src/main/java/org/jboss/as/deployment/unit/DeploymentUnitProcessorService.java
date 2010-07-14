@@ -27,6 +27,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
  * Service responsible for wrapping a deployment unit processor to support life-cycle management and injection.
@@ -40,12 +41,16 @@ public class DeploymentUnitProcessorService<T extends DeploymentUnitProcessor> i
         this.deploymentProcessorValue = deploymentProcessorValue;
     }
 
+    public DeploymentUnitProcessorService(final T deploymentProcessor) {
+        this(Values.immediateValue(deploymentProcessor));
+    }
+
     @Override
     public void start(final StartContext context) throws StartException {
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
     }
 
     @Override
