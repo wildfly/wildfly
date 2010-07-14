@@ -82,7 +82,7 @@ public class XMLValidationUnitTestCase extends TestCase
             int lastSlash = systemId.lastIndexOf('/');
             if(lastSlash > 0)
                systemId = systemId.substring(lastSlash + 1);
-            URL xsdUrl = getXmlUrl(systemId);
+            URL xsdUrl = getXsdUrl(systemId);
             return new InputSource(xsdUrl.openStream());
          }}
       );
@@ -92,9 +92,19 @@ public class XMLValidationUnitTestCase extends TestCase
       reader.parse(is);
    }
 
-   private URL getXmlUrl(String xsdName)
+   private URL getXmlUrl(String xmlName)
    {
-      URL url = Thread.currentThread().getContextClassLoader().getResource("schema/" + xsdName);
+      return getResourceUrl("examples/" + xmlName);
+   }
+
+   private URL getXsdUrl(String xsdName)
+   {
+      return getResourceUrl("schema/" + xsdName);
+   }
+   
+   private URL getResourceUrl(String resourceName)
+   {
+      URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
       assertNotNull(url);
       return url;
    }
