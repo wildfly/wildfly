@@ -104,7 +104,7 @@
          <socket-binding-group name="standard-sockets" default-interface="external">
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
-           <socket name="remoting" port="4447"/>
+            <socket-binding name="remoting" port="4447"/>
          </socket-binding-group>
          <socket-binding-group name="standard-clustered-sockets" extends="standard-sockets">
             <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
@@ -142,7 +142,7 @@
               <heap size="512m" max-size="1024m"/>
            </jvm>
 
-           <socket-group ref="standard-clustered-sockets"/>
+           <socket-binding-group ref="standard-clustered-sockets"/>
 
 <!--       TODO this has to be clarified
            <cluster default-multicast-address="230.0.0.4">
