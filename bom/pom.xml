@@ -146,14 +146,20 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
+                <artifactId>jboss-vfs</artifactId>
+                <version>3.0.0.CR5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
                 <artifactId>staxmapper</artifactId>
-                <version>1.0.0.Beta1-SNAPSHOT</version>
+                <version>1.0.0.Beta1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>3.0.0.Beta3-SNAPSHOT</version>
+                <version>3.0.0.Beta3</version>
             </dependency>
 
             <dependency>
@@ -177,19 +183,19 @@
             <dependency>
                 <groupId>org.jboss.msc</groupId>
                 <artifactId>jboss-msc</artifactId>
-                <version>1.0.0.CR1-SNAPSHOT</version>
+                <version>1.0.0.Beta1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.modules</groupId>
                 <artifactId>jboss-modules</artifactId>
-                <version>1.0.0.Beta1-SNAPSHOT</version>
+                <version>1.0.0.Beta1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.remoting3</groupId>
                 <artifactId>jboss-remoting</artifactId>
-                <version>3.1.0.Beta3-SNAPSHOT</version>
+                <version>3.1.0.Beta2</version>
             </dependency>
 
             <dependency>
