@@ -23,11 +23,7 @@
 package org.jboss.as.deployment.attachment;
 
 import org.jboss.as.deployment.AttachmentKey;
-<<<<<<< HEAD:domain/src/main/java/org/jboss/as/deployment/attachment/Dependencies.java
-import org.jboss.as.deployment.item.ModuleDeploymentItem;
-=======
 import org.jboss.as.deployment.descriptor.ModuleConfig;
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea:domain/src/main/java/org/jboss/as/deployment/attachment/Dependencies.java
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 import java.util.ArrayList;

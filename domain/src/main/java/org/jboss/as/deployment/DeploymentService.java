@@ -22,11 +22,6 @@
 
 package org.jboss.as.deployment;
 
-<<<<<<< HEAD
-import org.jboss.as.deployment.unit.DeploymentChain;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-=======
 import org.jboss.as.deployment.descriptor.ModuleConfig;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleService;
@@ -41,18 +36,12 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VirtualFile;
 
 import java.lang.reflect.Method;
-<<<<<<< HEAD
-
-/**
- * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
-=======
 import java.util.Collections;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
@@ -61,18 +50,10 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVir
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
  * When started this service will initialize the deployment process and will install additional services to support the
  * specific deployment type.
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
  *
  * @author John E. Bailey
  */
 public class DeploymentService implements Service<DeploymentService> {
-<<<<<<< HEAD
-    public static final ServiceName DEPLOYMENT_SERVICE_NAME = ServiceName.JBOSS.append("deployment");
-    public static final Method DEPLOYMENT_ROOT_SETTER;
-    static {
-        try {
-            DEPLOYMENT_ROOT_SETTER = DeploymentService.class.getMethod("setDeploymentRoot", VirtualFile.class);
-=======
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
@@ -84,29 +65,10 @@ public class DeploymentService implements Service<DeploymentService> {
             DEPLOYMENT_ROOT_SETTER = DeploymentService.class.getMethod("setDeploymentRoot", VirtualFile.class);
             DEPLOYMENT_CHAIN_SETTER = DeploymentService.class.getMethod("setDeploymentChain", DeploymentChain.class);
             DEPLOYMENT_MODULE_LOADER_SETTER = DeploymentService.class.getMethod("setDeploymentModuleLoader", DeploymentModuleLoader.class);
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
         } catch(NoSuchMethodException e) {
             throw new RuntimeException(e);  // Gross....
         }
     }
-<<<<<<< HEAD
-
-    private VirtualFile deploymentRoot;
-    private DeploymentChain deploymentChain;
-    private String deploymentName;
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        // Root should be mounted at this point
-        this.deploymentName = deploymentRoot.getPathName();
-
-        // Determine the deployment chain
-        this.deploymentChain = determineDeploymentChain(deploymentRoot);
-    }
-
-    private DeploymentChain determineDeploymentChain(VirtualFile deploymentRoot) {
-        return null;
-=======
     private final String deploymentName;
     private VirtualFile deploymentRoot;
     private DeploymentChain deploymentChain;
@@ -172,7 +134,6 @@ public class DeploymentService implements Service<DeploymentService> {
         } catch(ServiceRegistryException e) {
             throw new StartException("Failed to install deployment phase batch for " + deploymentName, e);
         }
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
     }
 
     @Override
@@ -188,13 +149,10 @@ public class DeploymentService implements Service<DeploymentService> {
         this.deploymentRoot = deploymentRoot;
     }
 
-<<<<<<< HEAD
-=======
     public void setDeploymentChain(DeploymentChain deploymentChain) {
         this.deploymentChain = deploymentChain;
     }
 
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
     public VirtualFile getDeploymentRoot() {
         return deploymentRoot;
     }
@@ -203,12 +161,7 @@ public class DeploymentService implements Service<DeploymentService> {
         return deploymentName;
     }
 
-<<<<<<< HEAD
-    public DeploymentChain getDeploymentChain() {
-        return deploymentChain;
-=======
     public void setDeploymentModuleLoader(DeploymentModuleLoader deploymentModuleLoader) {
         this.deploymentModuleLoader = deploymentModuleLoader;
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
     }
 }

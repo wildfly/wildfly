@@ -24,11 +24,7 @@ package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
-<<<<<<< HEAD
-import org.jboss.as.deployment.item.ModuleDeploymentItem;
-=======
 import org.jboss.as.deployment.descriptor.ModuleConfig;
->>>>>>> bf5e5784e281e51c89497aee3feab2adcaf0b0ea
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
