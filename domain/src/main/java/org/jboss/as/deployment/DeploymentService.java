@@ -31,12 +31,11 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
- * When started this service will initialize the deployment process and will install additional services to support the
- * specific deployment type.
+ * The life-cycle of this service should be used to control the life-cycle of the deployment. 
  *
  * @author John E. Bailey
  */
-public class DeploymentService implements Service<DeploymentService> {
+public class DeploymentService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
@@ -55,8 +54,8 @@ public class DeploymentService implements Service<DeploymentService> {
     }
 
     @Override
-    public DeploymentService getValue() throws IllegalStateException {
-        return this;
+    public Void getValue() throws IllegalStateException {
+        return null;
     }
 
     public String getDeploymentName() {

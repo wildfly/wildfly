@@ -42,6 +42,7 @@ import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -52,7 +53,7 @@ import static org.junit.Assert.fail;
 public class DeploymentManagerTestCase {
 
     private ServiceContainer serviceContainer;
-    private final DeploymentChain deploymentChain =  new DeploymentChainImpl("test.chain");
+    private final DeploymentChain deploymentChain = new DeploymentChainImpl("test.chain");
     private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(null);
     private DeploymentManagerImpl deploymentManager;
 
@@ -92,13 +93,15 @@ public class DeploymentManagerTestCase {
         deploymentManager.deploy(virtualFile);
 
         // Verify the DeploymentService is correctly setup
-        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getPathName()));
+        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getName()));
         assertNotNull(serviceController);
         assertEquals(ServiceController.State.UP, serviceController.getState());
-        final DeploymentService deploymentService = (DeploymentService)serviceController.getValue();
-        assertNotNull(deploymentService);
 
-        assertEquals(virtualFile.getPathName(), deploymentService.getDeploymentName());
+        // Verify the mount service is setup
+        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(virtualFile.getName()));
+        assertNotNull(mountServiceController);
+        assertEquals(ServiceController.State.UP, mountServiceController.getState());
+        assertNull(mountServiceController.getValue());
     }
 
     @Test
@@ -108,7 +111,7 @@ public class DeploymentManagerTestCase {
         try {
             deploymentManager.deploy(virtualFile);
             fail("Should have thrown a DeploymentException");
-        } catch(DeploymentException expected){
+        } catch(DeploymentException expected) {
         }
     }
 
@@ -119,6 +122,6 @@ public class DeploymentManagerTestCase {
     private <T> T getPrivateFieldValue(final Object target, final String fieldName, final Class<T> fieldType) throws Exception {
         final Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
-        return (T)field.get(target);
+        return (T) field.get(target);
     }
 }
