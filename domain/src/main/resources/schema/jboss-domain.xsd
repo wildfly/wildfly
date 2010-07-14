@@ -56,7 +56,7 @@
           </xs:complexType>
                                                           
         </xs:element>
-        <xs:element name="system-properties" type="propertiesType"/>
+        <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -69,13 +69,13 @@
 
   <xs:complexType name="server-groupType">
      <xs:sequence>
-        <xs:element name="jvm" type="java-configType" minOccurs="0"/>
+        <xs:element name="jvm" type="jvmType" minOccurs="0"/>
         <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
             
         <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
 
         <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
-        <xs:element name="system-properties" minOccurs="0" type="propertiesType"/>
+        <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
      </xs:sequence>
      <xs:attribute name="group-name" type="xs:ID">
         <xs:annotation>
@@ -390,7 +390,7 @@
 
     <xs:complexType name="resource-commonType">
         <xs:sequence minOccurs="0" maxOccurs="1">
-            <xs:element name="properties" type="propertiesType"/>
+            <xs:element name="properties" type="propertiesWithRequiredValueType"/>
         </xs:sequence>
     </xs:complexType>
 

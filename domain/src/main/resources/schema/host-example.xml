@@ -40,13 +40,12 @@
     <jvms>
         <!-- all-jvm settings e.g. sys props, -->
         <jvm name="icedtea1" java-home="/blha">
+            <environment-variables>
+                <variable name="foo"/>
+            </environment-variables>
             <system-properties>
                 <property name="foo" value="bar"/>
             </system-properties>
-
-            <jvm-properties>
-                <property name="foo" value="bar"/>
-            </jvm-properties>
         </jvm>
     </jvms>
 
@@ -70,8 +69,14 @@
             <jvm>
                <heap size="64m" max-size="512m"/>
                <stack size="128k"/>
+               <environment-variables>
+                  <variable name="var1" value="value1"/>
+                  <variable name="var2"/>
+               </environment-variables>
+
                <system-properties>
                   <property name="blah" value="blahblah"/>
+                  <property name="justName"/>
                </system-properties>
                <jvm-options>
                   <option value="-server"/>
