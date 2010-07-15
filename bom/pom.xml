@@ -26,54 +26,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>5</version>
+    </parent>
+    
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-parent</artifactId>
+    <artifactId>jboss-as-bom</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
-    <name>JBoss Application Server: Parent</name>
+    <name>JBoss Application Server: BOM</name>
+    <description>JBoss Application Server: Bill of Materials POM</description>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependency versions. Please keep alphabetical -->
         <version.junit>4.6</version.junit>        
     </properties>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-
-                <!-- Compiler plugin -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.1</version>
-                    <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
-                        <showDeprecation>true</showDeprecation>
-                        <showWarnings>true</showWarnings>
-                    </configuration>
-                </plugin>
-
-                <!-- Attach sources -->
-                <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.1.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
     <dependencyManagement>
         <dependencies>
@@ -361,11 +332,4 @@
         </dependencies>
     </dependencyManagement>
 
-    <distributionManagement>
-        <repository>
-            <id>repository.jboss.org</id>
-            <name>JBoss Maven2 Repository</name>
-            <url>http://repository.jboss.org/maven2</url>
-        </repository>
-    </distributionManagement>
 </project>
