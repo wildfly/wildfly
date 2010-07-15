@@ -47,14 +47,6 @@
         <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
         <xs:element name="server-groups" type="server-groupsType"/>
         <xs:element name="security-policy" type="sec:PolicyConfig" />
-        <xs:element name="containers">
-          <xs:complexType>
-            <xs:all>
-              <xs:element name="web-containers" type="web-containersType" />
-            </xs:all>
-          </xs:complexType>
-                                                          
-        </xs:element>
         <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
       </xs:choice>
     </xs:complexType>
@@ -187,7 +179,19 @@
       <xs:documentation>Contains a list of subsystems</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="subsystem" type="subsystemType" maxOccurs="unbounded"/>
+      <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:element name="subsystem" type="simple-subsystemType"/>
+          <!-- FIXME move web-containers to another namespace and remove this -->
+          <xs:element ref="web-containers"/>
+          <xs:any namespace="##other">
+            <xs:annotation>
+                <xs:documentation>A profile declaration may include configuration
+                elements from other namespaces for the subsystems that make up the profile.
+                </xs:documentation>
+            </xs:annotation>
+          </xs:any>
+      </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
@@ -195,28 +199,30 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="extends" type="xs:string" use="optional">
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="profile-includeType">
+    <xs:annotation>
+      <xs:documentation>Specifies that a contents of a named profile are to be included in
+      the profile whose definition includes this type.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="profile" use="required">
       <xs:annotation>
-        <xs:documentation>Name of the profile this profile extends</xs:documentation>
+        <xs:documentation>Name of the profile to include</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="subsystemType">
+  <xs:complexType name="simple-subsystemType">
     <xs:annotation>
-      <xs:documentation>Subsystem is a specific technology, service or a set of or a functionality
-                        which can be enabled or disabled on a domain level.
-                        Subsystems enabled on the domain level by default are enabled for all the server-groups in the domain.
-                        If a certain subsystem (or a set of) is not relevant for a specific server-group
-                        this subsystem (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+      <xs:documentation>A subsystem is a specific technology, service or a set of or a functionality
+                        which can be enabled in a profile. A simple subsystem is one
+                        that has no configuration its name.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" use="required">
       <xs:annotation>
         <xs:documentation>Name of the subsystem</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the subsystem is allowed.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>

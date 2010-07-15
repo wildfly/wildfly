@@ -22,9 +22,11 @@
 
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:sec="urn:jboss:security-config:5.0"
+        xmlns:naming="urn:jboss:domain:naming:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
-                            urn:jboss:security-config:5.0 security-config_5_0.xsd">
+                            urn:jboss:security-config:5.0 security-config_5_0.xsd
+                            urn:jboss:domain:naming:1.0 jboss-domain-naming.xsd">
 
 
     <!-- The domain manager/server bootstrap configuration -->
@@ -37,12 +39,26 @@
 
     <profile name="something">
         <subsystem name="ejb"/>
-        <subsystem name="war"/>
         <subsystem name="jms"/>
         <subsystem name="xx:fancy"/>
+        <!-- FIXME move web-containers to another namespace -->
+        <web-containers>
+            <web-container name="jboss.web">
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+                </http-connector>
+    
+                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
+                    <access-log/>
+                </virtual-server>
+           </web-container>
+       </web-containers>
     </profile>
 
-    <profile name="something2" extends="something">
+    <profile name="something2">
+        <include profile="something"/>
         <subsystem name="additional"/>
     </profile>
 
@@ -113,22 +129,6 @@
             <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
          </socket-binding-group>
     </socket-binding-groups>
-
-    <containers>
-        <web-containers>
-            <web-container name="jboss.web">
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-                </http-connector>
-
-                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
-                    <access-log/>
-                </virtual-server>
-           </web-container>
-        </web-containers>
-    </containers>
 
     <system-properties>
         <property name="prop1" value="value1"/>
