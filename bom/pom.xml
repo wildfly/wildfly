@@ -42,6 +42,7 @@
     <description>JBoss Application Server: Bill of Materials POM</description>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependency versions. Please keep alphabetical -->
         <version.junit>4.6</version.junit>        
     </properties>
