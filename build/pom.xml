@@ -27,15 +27,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-build</artifactId>
-    <version>7.0.0.Beta1-SNAPSHOT</version>
-
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
         <version>7.0.0.Beta1-SNAPSHOT</version>
     </parent>
+
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-build</artifactId>
+    <version>7.0.0.Beta1-SNAPSHOT</version>
 
     <name>JBoss Application Server: Build</name>
     <packaging>pom</packaging>
@@ -68,11 +68,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>

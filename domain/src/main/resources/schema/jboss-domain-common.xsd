@@ -31,7 +31,7 @@
     <!-- Include the logging schema definitions for reuse -->
     <xs:include schemaLocation="jboss-domain-logging.xsd"/>
 
-    <xs:complexType name="socket-group-refType">
+    <xs:complexType name="socket-binding-group-refType">
         <xs:attribute name="ref" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -76,6 +76,7 @@
                 are known.)
             </xs:documentation>
         </xs:annotation> 
+        <xs:group ref="interface-criteriaGroup" minOccurs="0"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
@@ -96,12 +97,9 @@
                 A named network interface, along with required criteria
                 for determining the IP address to associate with that interface.
             </xs:documentation>
-        </xs:annotation>   
-        <xs:complexContent>
-            <xs:extension base="named-interfaceType">
-                <xs:group ref="interface-criteriaGroup" minOccurs="1"/>
-            </xs:extension>
-        </xs:complexContent>
+        </xs:annotation>
+        <xs:group ref="interface-criteriaGroup" minOccurs="1"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
     
     <xs:group name="interface-criteriaGroup">
@@ -260,8 +258,7 @@
             </xs:annotation>            
     </xs:complexType>
     
-<!-- Common definitions -->
-    <xs:complexType name="java-configType">
+    <xs:complexType name="jvmType">
         <xs:all minOccurs="0" maxOccurs="1">
             <xs:element name="heap" type="heapType" minOccurs="0"/>
             <!-- XX:PermSize, XX:MaxPermSize -->
@@ -269,8 +266,8 @@
             <!-- Xss -->
             <xs:element name="stack" type="memory-sizeType" minOccurs="0"/>
             <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
-            <xs:element name="jvm-properties" type="propertiesType" minOccurs="0"/>
-            <xs:element name="system-properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="environment-variables" type="environmentVariablesType" minOccurs="0"/>
+            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
             <xs:element name="classpath-prefix" minOccurs="0"/>
             <xs:element name="classpath-suffix" minOccurs="0"/>
             <xs:element name="server-classpath" minOccurs="0"/>
@@ -323,15 +320,30 @@
         <xs:attribute name="size" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="propertiesType">
+    <xs:complexType name="propertiesWithRequiredValueType">
         <xs:sequence>
-            <xs:element name="property" type="propertyType" maxOccurs="unbounded" />
+            <xs:element name="property" type="propertyWithRequiredValueType" maxOccurs="unbounded" />
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="propertyType">
+    <xs:complexType name="propertiesWithOptionalValueType">
+        <xs:sequence>
+            <xs:element name="property" type="propertyWithOptionalValueType" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="environmentVariablesType">
+        <xs:sequence>
+            <xs:element name="variable" type="propertyWithOptionalValueType" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="propertyWithRequiredValueType">
         <xs:attribute name="name" use="required"/>
         <xs:attribute name="value" use="required"/>
     </xs:complexType>
+    <xs:complexType name="propertyWithOptionalValueType">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="value" use="optional"/>
+    </xs:complexType>
+
 
     <xs:simpleType name="boolean">
         <xs:restriction base="xs:token">
