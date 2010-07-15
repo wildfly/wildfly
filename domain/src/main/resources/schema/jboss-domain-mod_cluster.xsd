@@ -37,12 +37,16 @@
 
   <xs:element name="proxy-conf">
     <xs:complexType>
-      <xs:attributeGroup ref="proxy-conf-attlist"/>
+    <xs:sequence>
+      <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
+      <xs:element name="advertiseSocket" type="socketType" />
+      <xs:element name="proxy-conf-attlist" type="proxy-conf-attlistType" />
+    </xs:sequence>
+    <xs:attribute name="name" use="required"/>
     </xs:complexType>
   </xs:element>
 
-  <xs:attributeGroup name="proxy-conf-attlist">
-    <xs:attribute name="id" use="required"/>
+  <xs:complexType name="proxy-conf-attlistType">
     <xs:attribute name="proxyList" />
     <xs:attribute name="proxyURL" />
     <xs:attribute name="excludedContexts" default="ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console" />
@@ -50,10 +54,8 @@
     <xs:attribute name="stopContextTimeout" default="10" />
     <xs:attribute name="socketTimeout" />
     <xs:attribute name="advertise" />
-    <xs:attribute name="advertiseGroupAddress" default="224.0.1.105" />
-    <xs:attribute name="advertisePort" default="23364" />
     <xs:attribute name="advertiseSecurityKey" />
-  </xs:attributeGroup>
+  </xs:complexType>
   
   <!-- Set of possible loadmetrics -->
   <xs:element name="load-metric">

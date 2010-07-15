@@ -259,6 +259,56 @@
                 </xs:documentation>
             </xs:annotation>            
     </xs:complexType>
+
+<!-- general socket definition -->
+   <xs:complexType name="socketType">
+    <xs:annotation>
+      <xs:documentation>Configuration information for a socket.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of the interface to which the socket should be bound, or, for multicast
+            sockets, the interface on which it should listen. This should
+            be one of the declared interfaces.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation>
+            Number of the port to which the socket should be bound.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>
+            Whether the port value should remain fixed even if numerically offsets
+            are applied to the other sockets in the socket group..
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-address" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Multicast address on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Port on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
     
 <!-- Common definitions -->
     <xs:complexType name="java-configType">
