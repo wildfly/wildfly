@@ -46,6 +46,7 @@ import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -57,9 +58,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test case to do some basic Service deployment functionality checking.
@@ -77,7 +81,9 @@ public class ServiceDeploymentTestCase {
         final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
         final DeploymentManagerImpl deploymentManager = setupDeploymentManger(serviceContainer);
         setupProcessors(serviceContainer);
-        deploymentManager.deploy(initializeDeployment());
+        final DeploymentResult result = deploymentManager.deploy(initializeDeployment()).getDeploymentResult();
+        assertNotNull(result);
+        assertEquals(DeploymentResult.Result.SUCCESS, result.getResult());
 
         final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
         assertNotNull(testServiceController);
@@ -101,7 +107,13 @@ public class ServiceDeploymentTestCase {
         };
 
         final BatchBuilder builder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+            @Override
+            public void run() {
+                latch.countDown();
+            }
+        });
         builder.addListener(listener);
 
         builder.addService(CHAIN_SERVICE_NAME, new DeploymentChainService(deploymentChain));
@@ -111,14 +123,25 @@ public class ServiceDeploymentTestCase {
         deploymentManagerServiceBuilder.addDependency(CHAIN_SERVICE_NAME);
         deploymentManagerServiceBuilder.addDependency(DEPLOYMENT_MODULE_LOADER_SERVICE_NAME);
         builder.install();
-        listener.waitForCompletion();
+        listener.finishBatch();
+        latch.await(1L, TimeUnit.SECONDS);
+        if(!listener.finished())
+            fail("Did not install deployment manager within 1 second.");
+
+        if(!ServiceController.State.UP.equals(serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState()))
+            Thread.sleep(100L);
         assertEquals(ServiceController.State.UP, serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState());
         return deploymentManager;
     }
 
     private void setupProcessors(final ServiceContainer serviceContainer) throws Exception {
         final BatchBuilder builder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+            public void run() {
+                latch.countDown();
+            }
+        });
         builder.addListener(listener);
 
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
@@ -129,7 +152,10 @@ public class ServiceDeploymentTestCase {
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "deployment"), new ServiceDeploymentProcessor(), ServiceDeploymentProcessor.PRIORITY);
 
         builder.install();
-        listener.waitForCompletion();
+        listener.finishBatch();
+        latch.await(1L, TimeUnit.SECONDS);
+        if(!listener.finished())
+            fail("Did not install processors within 1 seconds");
     }
 
     private <T extends DeploymentUnitProcessor> DeploymentUnitProcessorService<T> addProcessor(final BatchBuilder builder, final ServiceName serviceName, final T deploymentUnitProcessor, final long priority) {

@@ -22,19 +22,22 @@
 
 package org.jboss.as.deployment.unit;
 
-import org.jboss.as.deployment.DeploymentServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.msc.value.Values;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test to verify the DeploymentChainProcessorInjector can correctly add a DeploymentUnitProcessor to a DeploymentChain 
@@ -49,7 +52,12 @@ public class DeploymentChainProcessorInjectorTestCase {
     public void testInject() throws Exception {
         final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+            public void run() {
+                latch.countDown();
+            }
+        });
         batchBuilder.addListener(listener);
 
         final ServiceName chainServiceName = ServiceName.of("deployment", "chain");
@@ -61,7 +69,11 @@ public class DeploymentChainProcessorInjectorTestCase {
             .addDependency(chainServiceName).toInjector(new DeploymentChainProcessorInjector(deploymentUnitProcessorService, 100L));
 
         batchBuilder.install();
-        listener.waitForCompletion();
+        listener.finishBatch();
+        latch.await(1L, TimeUnit.SECONDS);
+        if(!listener.finished())
+            fail("Did not install batch within 1 second.");
+
         assertNotNull(serviceContainer.getService(processorServiceName));
 
         final ServiceController<?> serviceController = serviceContainer.getService(chainServiceName);

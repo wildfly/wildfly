@@ -43,7 +43,6 @@ import java.net.URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 /**
  * Test to verify the DeploymentManager correctly installs the deployment service.
@@ -90,11 +89,19 @@ public class DeploymentManagerTestCase {
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/deploymentOne"));
 
-        deploymentManager.deploy(virtualFile);
+        final DeploymentResult.Future resultFuture = deploymentManager.deploy(virtualFile);
+        final DeploymentResult deploymentResult = resultFuture.getDeploymentResult();
+        assertNotNull(deploymentResult);
+        assertEquals(DeploymentResult.Result.SUCCESS, deploymentResult.getResult());
 
         // Verify the DeploymentService is correctly setup
         final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getName()));
         assertNotNull(serviceController);
+
+        // TODO:  REMOVE ME... There seems to be an issue with the State not be UP before the started listener is fired.
+        if(ServiceController.State.UP != serviceController.getState()) {
+            Thread.sleep(100);
+        }
         assertEquals(ServiceController.State.UP, serviceController.getState());
 
         // Verify the mount service is setup
@@ -105,14 +112,13 @@ public class DeploymentManagerTestCase {
     }
 
     @Test
-    public void testDeploymentException() throws Exception {
+    public void testDeploymentFailure() throws Exception {
         final VirtualFile virtualFile = VFS.getChild("/test/bogus");
 
-        try {
-            deploymentManager.deploy(virtualFile);
-            fail("Should have thrown a DeploymentException");
-        } catch(DeploymentException expected) {
-        }
+        final DeploymentResult result = deploymentManager.deploy(virtualFile).getDeploymentResult();
+        assertNotNull(result);
+        assertEquals(DeploymentResult.Result.FAILURE, result.getResult());
+        assertNotNull(result.getDeploymentException());
     }
 
     private URL getResource(final String path) {

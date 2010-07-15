@@ -55,7 +55,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -98,24 +100,22 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         return this;
     }
 
-    /**
-     * Deploy a virtual file as a deployment.
-     *
-     * @param deploymentRoots The roots to deploy
-     */
-    public final void deploy(final VirtualFile... deploymentRoots) throws DeploymentException {
-        // Phase 1
-        final List<Deployment> deployments = deployDeploymentServices(deploymentRoots);
-        // Phase 2
-        executeDeploymentProcessors(deployments);
-        // Phase 3
-        executeDeploymentItems(deployments);
+    @Override
+    public final DeploymentResult.Future deploy(final VirtualFile... deploymentRoots) throws DeploymentException {
+        final DeploymentResultImpl.FutureImpl future = new DeploymentResultImpl.FutureImpl();
+        deployDeploymentServices(future, deploymentRoots);
+        return future;
     }
 
-    /**
+    @Override
+    public DeploymentResult deployAndWait(VirtualFile... roots) throws DeploymentException {
+        return deploy(roots).getDeploymentResult();
+    }
+
+    /*
      * Phase 1 - Initialize Deployment - Mount and deployment service batch
-     */
-    private List<Deployment> deployDeploymentServices(final VirtualFile... deploymentRoots) throws DeploymentException {
+    */
+    private void deployDeploymentServices(final DeploymentResultImpl.FutureImpl future, final VirtualFile... deploymentRoots) {
         final List<Deployment> deployments = new ArrayList<Deployment>(deploymentRoots.length);
 
         // Setup batch
@@ -123,7 +123,26 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
         // Setup deployment listener
-        final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener();
+        final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
+            @Override
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime) {
+                if(serviceFailures.size() > 0) {
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException("Failed to execute deployments.  Not all services started cleanly."), serviceFailures, elapsedTime));
+                    return;
+                }
+                try {
+                    executeDeploymentProcessors(deployments);
+                } catch(DeploymentException e) {
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime));
+                    return;
+                }
+                try {
+                    executeDeploymentItems(future, deployments, elapsedTime);
+                } catch(DeploymentException e) {
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime));
+                }
+            }
+        });
         batchBuilder.addListener(deploymentServiceListener);
         try {
             for(VirtualFile deploymentRoot : deploymentRoots) {
@@ -156,13 +175,12 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
             }
             // Install the batch.
             batchBuilder.install();
-            deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
+            deploymentServiceListener.finishBatch();
         } catch(DeploymentException e) {
-            throw e;
+            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), 0L));
         } catch(Throwable t) {
-            throw new DeploymentException(t);
+            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException(t), Collections.<ServiceName, StartException>emptyMap(), 0L));
         }
-        return deployments;
     }
 
     /**
@@ -196,13 +214,24 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
     /**
      * Phase 3 - Create the module and execute the deployment items
      */
-    private void executeDeploymentItems(final List<Deployment> deployments) throws DeploymentException {
+    private void executeDeploymentItems(final DeploymentResultImpl.FutureImpl future, final List<Deployment> deployments, final long currentElapsedTime) throws DeploymentException {
         // Setup batch
         final ServiceContainer serviceContainer = this.serviceContainer;
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
         // Setup deployment listener
-        final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener();
+        final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
+            @Override
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime) {
+                DeploymentResult.Result result = DeploymentResult.Result.SUCCESS;
+                DeploymentException deploymentException = null;
+                if(serviceFailures.size() > 0) {
+                    result = DeploymentResult.Result.FAILURE;
+                    deploymentException = new DeploymentException("Failed to execute deployments.  Not all services started cleanly.");
+                }
+                future.setDeploymentResult(new DeploymentResultImpl(result, deploymentException, serviceFailures, elapsedTime + currentElapsedTime));
+            }
+        });
         batchBuilder.addListener(deploymentServiceListener);
 
         for(Deployment deployment : deployments) {
@@ -217,7 +246,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
                 try {
                     module = deploymentModuleLoader.loadModule(moduleConfig.getIdentifier());
                 } catch(ModuleLoadException e) {
-                    throw new DeploymentException("Faild to load deployment module.  The module spec was likely not added to the deployment module loader", e);
+                    throw new DeploymentException("Failed to load deployment module.  The module spec was likely not added to the deployment module loader", e);
                 }
             }
 
@@ -251,7 +280,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         // Install the batch.
         try {
             batchBuilder.install();
-            deploymentServiceListener.waitForCompletion(); // Waiting for now.  This should not block at this point long term...
+            deploymentServiceListener.finishBatch();
         } catch(ServiceRegistryException e) {
             throw new DeploymentException(e);
         }

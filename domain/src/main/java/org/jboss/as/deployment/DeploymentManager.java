@@ -34,8 +34,17 @@ public interface DeploymentManager {
      * Deploy virtual file roots
      *
      * @param roots The roots to deploy
+     * @return a deployment result future to allow future result retrieval.
      */
-    void deploy(final VirtualFile... roots) throws DeploymentException ;
+    DeploymentResult.Future deploy(final VirtualFile... roots) throws DeploymentException;
+
+    /**
+     * Deploy virtual file roots and wait for the result to be available before returning.
+     *
+     * @param roots The roots to deploy
+     * @return a deployment result
+     */
+    DeploymentResult deployAndWait(final VirtualFile... roots) throws DeploymentException;
 
     /**
      * Undeploy virtual file roots

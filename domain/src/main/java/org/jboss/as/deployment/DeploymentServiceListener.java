@@ -24,56 +24,30 @@ package org.jboss.as.deployment;
 
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.TimingServiceListener;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Service listener used by deployment to allow a process to wait for a set of deployment services to be fully installed.
- * A call to {@code DeploymentServiceListener.waitForCompletion} will cause the current thread to wait until all services
- * are started or have failed to start.  It will throw an exception if any exceptions are thrown starting the services. 
+ * Service listener used by deployment to collect the result of all the services being started.
  *
  * @author John E. Bailey
  */
 public class DeploymentServiceListener implements ServiceListener {
-    public static final long DEPLOYMENT_TIMEOUT_IN_SECONDS;
-    static {
-        DEPLOYMENT_TIMEOUT_IN_SECONDS = AccessController.doPrivileged(new PrivilegedAction<Long>() {
-            public Long run() {
-                return Long.parseLong(System.getProperty("org.jboss.as.deployment.DeploymentTimeout", "30"));
+
+    private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
+    private final TimingServiceListener delegateListener;
+
+    public DeploymentServiceListener(final Callback callback) {
+        delegateListener = new TimingServiceListener(new Runnable() {
+            @Override
+            public void run() {
+                callback.run(serviceFailures, delegateListener.getElapsedTime());
             }
-        }).longValue();
-    }
-
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private final TimingServiceListener delegateListener = new TimingServiceListener(new Runnable() {
-        @Override
-        public void run() {
-            latch.countDown();
-        }
-    });
-    private List<StartException> startExceptions = new ArrayList<StartException>();
-
-    public void waitForCompletion() throws DeploymentException {
-        delegateListener.finishBatch();
-        try {
-            latch.await(DEPLOYMENT_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
-        } catch(Exception e) {
-            throw new DeploymentException("Failed to install deployment batch", e);
-        }
-        final boolean finished = delegateListener.finished();
-        if(!finished) {
-            throw new DeploymentException("Failed to execute deployment within timeout.");
-        }
-        if(finished && !startExceptions.isEmpty()) {
-            throw new DeploymentException("Deployment failed to start " + startExceptions, startExceptions.get(0));
-        }
+        });
     }
 
     @Override
@@ -93,9 +67,9 @@ public class DeploymentServiceListener implements ServiceListener {
 
     @Override
     public void serviceFailed(ServiceController serviceController, StartException reason) {
-        startExceptions.add(reason);
+        final ServiceName serviceName = serviceController.getName();
+        serviceFailures.put(serviceName, reason);
         delegateListener.serviceFailed(serviceController, reason);
-        latch.countDown(); // Short-circuit 
     }
 
     @Override
@@ -111,5 +85,13 @@ public class DeploymentServiceListener implements ServiceListener {
     @Override
     public void serviceRemoved(ServiceController serviceController) {
         delegateListener.serviceRemoved(serviceController);
+    }
+
+    public void finishBatch() {
+        delegateListener.finishBatch();
+    }
+
+    public static interface Callback {
+        void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime);
     }
 }
