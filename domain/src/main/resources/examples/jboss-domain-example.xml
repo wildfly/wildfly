@@ -55,6 +55,8 @@
                 </virtual-server>
            </web-container>
        </web-containers>
+       <naming:naming-service bootstrap-socket-binding="jndi" bootstrap-executor="someThreadPool" 
+            remoting-connector="someConnector"/>
     </profile>
 
     <profile name="something2">
@@ -118,6 +120,7 @@
 
     <socket-binding-groups>
          <socket-binding-group name="standard-sockets" default-interface="external">
+            <socket-binding name="jndi" port="1099"/>
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
