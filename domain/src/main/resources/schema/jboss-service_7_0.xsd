@@ -45,6 +45,8 @@
             <xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="annotation" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="code" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="constructor">
@@ -112,7 +114,7 @@
     </xs:complexType>
 
     <xs:complexType name="parameter">
-        <xs:attribute name="clsss" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
     </xs:complexType>
 
     <!-- Root elements -->

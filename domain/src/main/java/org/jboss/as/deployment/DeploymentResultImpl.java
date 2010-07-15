@@ -37,12 +37,14 @@ public class DeploymentResultImpl implements DeploymentResult {
     private final DeploymentException deploymentException;
     private final Map<ServiceName, StartException> serviceFailures;
     private final long elapsedTime;
+    private final int numServices;
 
-    public DeploymentResultImpl(final Result result, final DeploymentException deploymentException, final Map<ServiceName, StartException> serviceFailures, final long elapsedTime) {
+    public DeploymentResultImpl(Result result, DeploymentException deploymentException, Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numServices) {
         this.result = result;
         this.deploymentException = deploymentException;
         this.serviceFailures = serviceFailures;
         this.elapsedTime = elapsedTime;
+        this.numServices = numServices;
     }
 
     @Override
@@ -63,6 +65,11 @@ public class DeploymentResultImpl implements DeploymentResult {
     @Override
     public long getElapsedTime() {
         return elapsedTime;
+    }
+
+    @Override
+    public int getNumberOfServicesDeployed() {
+        return numServices;
     }
 
     /**

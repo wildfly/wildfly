@@ -37,9 +37,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.net.URL;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -49,7 +46,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author John E. Bailey
  */
-public class DeploymentManagerTestCase {
+public class DeploymentManagerTestCase extends AbstractDeploymentTest {
 
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain = new DeploymentChainImpl("test.chain");
@@ -87,7 +84,7 @@ public class DeploymentManagerTestCase {
 
     @Test
     public void testDeployVirtualFile() throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource("/test/deploymentOne"));
+        final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceDeployment.jar"));
 
         final DeploymentResult.Future resultFuture = deploymentManager.deploy(virtualFile);
         final DeploymentResult deploymentResult = resultFuture.getDeploymentResult();
@@ -119,15 +116,5 @@ public class DeploymentManagerTestCase {
         assertNotNull(result);
         assertEquals(DeploymentResult.Result.FAILURE, result.getResult());
         assertNotNull(result.getDeploymentException());
-    }
-
-    private URL getResource(final String path) {
-        return DeploymentManagerTestCase.class.getResource(path);
-    }
-
-    private <T> T getPrivateFieldValue(final Object target, final String fieldName, final Class<T> fieldType) throws Exception {
-        final Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return (T) field.get(target);
     }
 }

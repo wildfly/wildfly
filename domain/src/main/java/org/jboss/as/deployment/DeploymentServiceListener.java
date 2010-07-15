@@ -45,7 +45,7 @@ public class DeploymentServiceListener implements ServiceListener {
         delegateListener = new TimingServiceListener(new Runnable() {
             @Override
             public void run() {
-                callback.run(serviceFailures, delegateListener.getElapsedTime());
+                callback.run(serviceFailures, delegateListener.getElapsedTime(), delegateListener.getTotalCount());
             }
         });
     }
@@ -87,11 +87,15 @@ public class DeploymentServiceListener implements ServiceListener {
         delegateListener.serviceRemoved(serviceController);
     }
 
+    public int getTotalCount() {
+        return delegateListener.getTotalCount();
+    }
+
     public void finishBatch() {
         delegateListener.finishBatch();
     }
 
     public static interface Callback {
-        void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime);
+        void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices);
     }
 }

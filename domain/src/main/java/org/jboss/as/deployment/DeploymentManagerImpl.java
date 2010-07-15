@@ -112,7 +112,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         return deploy(roots).getDeploymentResult();
     }
 
-    /*
+    /**
      * Phase 1 - Initialize Deployment - Mount and deployment service batch
     */
     private void deployDeploymentServices(final DeploymentResultImpl.FutureImpl future, final VirtualFile... deploymentRoots) {
@@ -125,21 +125,21 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         // Setup deployment listener
         final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
             @Override
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime) {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numServices) {
                 if(serviceFailures.size() > 0) {
-                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException("Failed to execute deployments.  Not all services started cleanly."), serviceFailures, elapsedTime));
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException("Failed to execute deployments.  Not all services started cleanly."), serviceFailures, elapsedTime, numServices));
                     return;
                 }
                 try {
                     executeDeploymentProcessors(deployments);
                 } catch(DeploymentException e) {
-                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime));
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime, numServices));
                     return;
                 }
                 try {
-                    executeDeploymentItems(future, deployments, elapsedTime);
+                    executeDeploymentItems(future, deployments, elapsedTime, numServices);
                 } catch(DeploymentException e) {
-                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime));
+                    future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), elapsedTime, numServices));
                 }
             }
         });
@@ -177,9 +177,9 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
             batchBuilder.install();
             deploymentServiceListener.finishBatch();
         } catch(DeploymentException e) {
-            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), 0L));
+            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, e, Collections.<ServiceName, StartException>emptyMap(), 0L, 0));
         } catch(Throwable t) {
-            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException(t), Collections.<ServiceName, StartException>emptyMap(), 0L));
+            future.setDeploymentResult(new DeploymentResultImpl(DeploymentResult.Result.FAILURE, new DeploymentException(t), Collections.<ServiceName, StartException>emptyMap(), 0L, 0));
         }
     }
 
@@ -214,7 +214,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
     /**
      * Phase 3 - Create the module and execute the deployment items
      */
-    private void executeDeploymentItems(final DeploymentResultImpl.FutureImpl future, final List<Deployment> deployments, final long currentElapsedTime) throws DeploymentException {
+    private void executeDeploymentItems(final DeploymentResultImpl.FutureImpl future, final List<Deployment> deployments, final long currentElapsedTime, final int currentNumServices) throws DeploymentException {
         // Setup batch
         final ServiceContainer serviceContainer = this.serviceContainer;
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
@@ -222,14 +222,14 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         // Setup deployment listener
         final DeploymentServiceListener deploymentServiceListener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
             @Override
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime) {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numServices) {
                 DeploymentResult.Result result = DeploymentResult.Result.SUCCESS;
                 DeploymentException deploymentException = null;
                 if(serviceFailures.size() > 0) {
                     result = DeploymentResult.Result.FAILURE;
                     deploymentException = new DeploymentException("Failed to execute deployments.  Not all services started cleanly.");
                 }
-                future.setDeploymentResult(new DeploymentResultImpl(result, deploymentException, serviceFailures, elapsedTime + currentElapsedTime));
+                future.setDeploymentResult(new DeploymentResultImpl(result, deploymentException, serviceFailures, elapsedTime + currentElapsedTime, numServices + currentNumServices));
             }
         });
         batchBuilder.addListener(deploymentServiceListener);

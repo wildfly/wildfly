@@ -28,8 +28,10 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.processor.ModuleConfgProcessor;
 import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
 import org.jboss.as.deployment.processor.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.processor.ParsedServiceDeploymentProcessor;
 import org.jboss.as.deployment.processor.ServiceDeploymentParsingProcessor;
 import org.jboss.as.deployment.processor.ServiceDeploymentProcessor;
+import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
 import org.jboss.as.deployment.test.TestServiceDeployment;
@@ -46,18 +48,13 @@ import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -67,10 +64,10 @@ import static org.junit.Assert.fail;
 
 /**
  * Test case to do some basic Service deployment functionality checking.
- * 
+ *
  * @author John E. Bailey
  */
-public class ServiceDeploymentTestCase {
+public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
     private static final ServiceName DEPLOYMENT_MANAGER_NAME = ServiceName.JBOSS.append("deployment", "manager");
     private static final ServiceName CHAIN_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain", "service");
     private static final ServiceName DEPLOYMENT_MODULE_LOADER_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "module", "loader");
@@ -79,11 +76,11 @@ public class ServiceDeploymentTestCase {
     public void testServiceDeployment() throws Exception {
         Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
         final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
-        final DeploymentManagerImpl deploymentManager = setupDeploymentManger(serviceContainer);
+        final DeploymentManager deploymentManager = setupDeploymentManger(serviceContainer);
         setupProcessors(serviceContainer);
-        final DeploymentResult result = deploymentManager.deploy(initializeDeployment()).getDeploymentResult();
-        assertNotNull(result);
-        assertEquals(DeploymentResult.Result.SUCCESS, result.getResult());
+        final DeploymentResult result = deploymentManager.deploy(initializeDeployment("/test/serviceDeployment.jar")).getDeploymentResult();
+
+        assertDeploymentSuccess(result);
 
         final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
         assertNotNull(testServiceController);
@@ -91,7 +88,42 @@ public class ServiceDeploymentTestCase {
         serviceContainer.shutdown();
     }
 
-    private DeploymentManagerImpl setupDeploymentManger(final ServiceContainer serviceContainer) throws Exception {
+    @Test
+    public void testParsedDeployment() throws Exception {
+        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
+        final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
+        final DeploymentManager deploymentManager = setupDeploymentManger(serviceContainer);
+        setupProcessors(serviceContainer);
+        final DeploymentResult result = deploymentManager.deploy(initializeDeployment("/test/serviceXmlDeployment.jar")).getDeploymentResult();
+        assertDeploymentSuccess(result);
+
+        final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
+        assertNotNull(testServiceController);
+        assertEquals(ServiceController.State.UP, testServiceController.getState());
+        final LegacyService legacyService = (LegacyService)testServiceController.getValue();
+        assertNotNull(legacyService);
+        assertEquals("Test Value", legacyService.getSomethingElse());
+
+        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME.append("second"));
+        assertNotNull(testServiceControllerTwo);
+        assertEquals(ServiceController.State.UP, testServiceControllerTwo.getState());
+        final LegacyService legacyServiceTwo = (LegacyService)testServiceControllerTwo.getValue();
+        assertNotNull(legacyServiceTwo);
+        assertEquals(legacyService, legacyServiceTwo.getOther());
+        assertEquals("Test Value - more value", legacyServiceTwo.getSomethingElse());
+
+        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME.append("third"));
+        assertNotNull(testServiceControllerThree);
+        assertEquals(ServiceController.State.UP, testServiceControllerThree.getState());
+        final LegacyService legacyServiceThree = (LegacyService)testServiceControllerThree.getValue();
+        assertNotNull(legacyServiceThree);
+        assertEquals(legacyService, legacyServiceThree.getOther());
+        assertEquals("Another test value", legacyServiceThree.getSomethingElse());
+
+        serviceContainer.shutdown();
+    }
+
+    private DeploymentManager setupDeploymentManger(final ServiceContainer serviceContainer) throws Exception {
         final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
         final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
         final DeploymentManagerImpl deploymentManager = new DeploymentManagerImpl(serviceContainer) {
@@ -125,10 +157,10 @@ public class ServiceDeploymentTestCase {
         builder.install();
         listener.finishBatch();
         latch.await(1L, TimeUnit.SECONDS);
-        if(!listener.finished())
+        if (!listener.finished())
             fail("Did not install deployment manager within 1 second.");
 
-        if(!ServiceController.State.UP.equals(serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState()))
+        if (!ServiceController.State.UP.equals(serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState()))
             Thread.sleep(100L);
         assertEquals(ServiceController.State.UP, serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState());
         return deploymentManager;
@@ -150,65 +182,41 @@ public class ServiceDeploymentTestCase {
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "deployment"), new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "parser"), new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "deployment"), new ServiceDeploymentProcessor(), ServiceDeploymentProcessor.PRIORITY);
+        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "parsed", "deployment"), new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
 
         builder.install();
         listener.finishBatch();
         latch.await(1L, TimeUnit.SECONDS);
-        if(!listener.finished())
+        if (!listener.finished())
             fail("Did not install processors within 1 seconds");
     }
 
     private <T extends DeploymentUnitProcessor> DeploymentUnitProcessorService<T> addProcessor(final BatchBuilder builder, final ServiceName serviceName, final T deploymentUnitProcessor, final long priority) {
         final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
         builder.addService(serviceName, deploymentUnitProcessorService)
-            .addDependency(CHAIN_SERVICE_NAME).toInjector(new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+                .addDependency(CHAIN_SERVICE_NAME).toInjector(new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
         return deploymentUnitProcessorService;
     }
 
-    private VirtualFile initializeDeployment() throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource("/test/deploymentOne"));
-        copyResource("/org/jboss/as/deployment/test/TestServiceDeployment.class", "/test/deploymentOne", "org/jboss/as/deployment/test");
+    private VirtualFile initializeDeployment(final String path) throws Exception {
+        final VirtualFile virtualFile = VFS.getChild(getResource(path));
+        copyResource("/org/jboss/as/deployment/test/TestServiceDeployment.class", path, "org/jboss/as/deployment/test");
+        copyResource("/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
     }
 
-    protected URL getResource(final String path) throws Exception {
-        return ServiceDeploymentTestCase.class.getResource(path);
-    }
-
-    protected File getResourceFile(final String path) throws Exception {
-        return new File(getResource(path).toURI());
-    }
-
-    protected void copyResource(final String inputResource, final String outputBase, final String outputPath) throws Exception {
-        final File resource = getResourceFile(inputResource);
-        final File outputDirectory = new File(getResourceFile(outputBase), outputPath);
-
-        if(!resource.exists())
-            throw new IllegalArgumentException("Resource does not exist");
-        if(outputDirectory.exists() && outputDirectory.isFile())
-            throw new IllegalArgumentException("OutputDirectory must be a directory");
-        if(!outputDirectory.exists()) {
-            if(!outputDirectory.mkdirs())
-                throw new RuntimeException("Failed to create output directory");
-        }
-        final File outputFile = new File(outputDirectory, resource.getName());
-        final InputStream in = new FileInputStream(resource);
-        try {
-            final OutputStream out = new FileOutputStream(outputFile);
-            try {
-                final byte[] b = new byte[8192];
-                int c;
-                while((c = in.read(b)) != -1) {
-                    out.write(b, 0, c);
-                }
-                out.close();
-                in.close();
-            } finally {
-                VFSUtils.safeClose(out);
+    private void assertDeploymentSuccess(DeploymentResult result) {
+        assertNotNull(result);
+        if(result.getDeploymentException() != null) {
+            result.getDeploymentException().printStackTrace();
+            for(Map.Entry<ServiceName, StartException> entry : result.getServiceFailures().entrySet()) {
+                System.out.println("Service [" + entry.getKey() +"] failed to start.");
+                entry.getValue().printStackTrace();
             }
-        } finally {
-            VFSUtils.safeClose(in);
+            fail("Deployment failed");
         }
+        assertEquals(DeploymentResult.Result.SUCCESS, result.getResult());
     }
+
 
 }

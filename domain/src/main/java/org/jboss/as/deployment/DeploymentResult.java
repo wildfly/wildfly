@@ -65,6 +65,13 @@ public interface DeploymentResult {
     long getElapsedTime();
 
     /**
+     * Return the number of services deployed.
+     * 
+     * @return the number of services deployed. 
+     */
+    int getNumberOfServicesDeployed();
+
+    /**
      * Future used to allow a deployment result to be retrieved at a later time.
      */
     interface Future {

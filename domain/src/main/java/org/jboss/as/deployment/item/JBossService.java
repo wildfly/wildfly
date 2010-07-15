@@ -26,7 +26,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ConstructedValue;
+import org.jboss.msc.value.CachedValue;
+import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
 
@@ -36,21 +37,19 @@ import java.lang.reflect.Method;
  * @author John E. Bailey
  */
 public class JBossService<T> implements Service<T> {
-    private final ConstructedValue<T> constructedValue;
-    private T value;
+    private final Value<T> jbossServiceValue;
 
-    public JBossService(final ConstructedValue<T> constructedValue) {
-        this.constructedValue = constructedValue;
+    public JBossService(final Value<T> jbossServiceValue) {
+        this.jbossServiceValue = new CachedValue<T>(jbossServiceValue);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        value = constructedValue.getValue();
-
+        final T service = getValue();
         // Handle Start
         try {
-            Method startMethod = value.getClass().getMethod("start");
-            startMethod.invoke(value);
+            Method startMethod = service.getClass().getMethod("start");
+            startMethod.invoke(service);
         } catch(NoSuchMethodException e) {
             // Log warning ???
         } catch(Exception e) {
@@ -60,10 +59,11 @@ public class JBossService<T> implements Service<T> {
 
     @Override
     public void stop(StopContext context) {
+        final T service = getValue();
         // Handle Stop
         try {
-            Method startMethod = value.getClass().getMethod("stop");
-            startMethod.invoke(value);
+            Method startMethod = service.getClass().getMethod("stop");
+            startMethod.invoke(service);
         } catch(Exception e) {
             // Log warning ???
         }
@@ -71,6 +71,6 @@ public class JBossService<T> implements Service<T> {
 
     @Override
     public T getValue() throws IllegalStateException {
-        return value;
+        return jbossServiceValue.getValue();
     }
 }

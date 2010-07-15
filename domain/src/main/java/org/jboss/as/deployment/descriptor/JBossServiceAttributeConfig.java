@@ -31,6 +31,7 @@ public class JBossServiceAttributeConfig {
     private String name;
     private boolean replace;
     private boolean trim;
+    private String value;
 
     private ValueFactory valueFactory;
     private Inject inject;
@@ -41,6 +42,14 @@ public class JBossServiceAttributeConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public boolean isReplace() {
@@ -106,15 +115,15 @@ public class JBossServiceAttributeConfig {
     }
 
     public static class ValueFactoryParameter {
-        private String className;
+        private String type;
         private String value;
 
-        public String getClassName() {
-            return className;
+        public String getType() {
+            return type;
         }
 
-        public void setClassName(String className) {
-            this.className = className;
+        public void setType(String type) {
+            this.type = type;
         }
 
         public String getValue() {
