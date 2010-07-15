@@ -22,27 +22,25 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0">
+  targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  >
  
-  <!-- Include the common definitions  -->
-  <xs:include schemaLocation="jboss-domain-common.xsd"/>
-
   <xs:complexType name="mod-cluster-configType">
     <xs:sequence>
       <xs:element ref="load-metric" minOccurs="0" maxOccurs="1"/>
       <xs:element ref="proxy-conf" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
-    <xs:attribute name="name" use="required"/>
   </xs:complexType>
 
   <xs:element name="proxy-conf">
     <xs:complexType>
     <xs:sequence>
       <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
-      <xs:element name="advertiseSocket" type="socketType" />
-      <xs:element name="proxy-conf-attlist" type="proxy-conf-attlistType" />
+      <xs:element name="advertiseSocket" type="socketType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="proxy-conf-attlist" type="proxy-conf-attlistType" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
-    <xs:attribute name="name" use="required"/>
     </xs:complexType>
   </xs:element>
 

@@ -104,7 +104,8 @@
          <socket-group name="standard-sockets" default-interface="external">
             <socket name="http" port="8080"/>
             <socket name="https" port="8447"/>
-           <socket name="remoting" port="4447"/>
+            <socket name="remoting" port="4447"/>
+            <socket name="mod_cluster" multicast-address="224.0.1.105" multicast-port="23364" />
          </socket-group>
          <socket-group name="standard-clustered-sockets" extends="standard-sockets">
             <socket name="cluster-udp" interface="internal" multicast-port="55200"/>
@@ -113,6 +114,10 @@
             <socket name="ha-jndi-discovery" multicast-port="1102"/>
          </socket-group>
     </socket-groups>
+
+    <mod-cluster-config>
+      <proxy-conf/>
+    </mod-cluster-config>
 
     <containers>
         <web-containers>
