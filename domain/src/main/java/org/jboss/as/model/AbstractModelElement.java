@@ -26,7 +26,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
@@ -46,6 +48,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     private static final long serialVersionUID = 66064050420378211L;
 
     private final Location location;
+    private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
 
     /**
      * Construct a new instance.
@@ -153,6 +156,15 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param other the other element
      */
     protected abstract void appendDifference(Collection<AbstractModelUpdate<E>> target, E other);
+
+    /**
+     * Get the mutable set of child elements.
+     *
+     * @return the set
+     */
+    protected final Set<AbstractModelElement<?>> getChildren() {
+        return children;
+    }
 
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
         @SuppressWarnings("unchecked")
