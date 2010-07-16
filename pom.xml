@@ -58,7 +58,6 @@
         <module>server</module>
         <module>domain-controller</module>
         <module>process-manager</module>
-        <module>logging</module>
         <module>remoting</module>
         <module>threads</module>
         <module>build</module>
