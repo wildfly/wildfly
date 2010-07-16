@@ -56,6 +56,16 @@
                 the bean name of the created thread factory.  The optional "priority" attribute may be used to specify
                 the thread priority of created threads.  The optional "group-name" attribute specifies the name of a the
                 thread group to create for this thread factory.
+
+                The "thread-name-pattern" is the template used to create names for threads.  The following patterns
+                may be used:
+
+                 %% - emit a percent sign
+                 %t - emit the per-factory thread sequence number
+                 %g - emit the global thread sequence number
+                 %f - emit the factory sequence number
+                 %i - emit the thread ID
+                 %G - emit the thread group name
             ]]>
             </xs:documentation>
         </xs:annotation>
