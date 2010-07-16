@@ -50,7 +50,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     /**
      * The parent name for all Remoting connectors, "jboss.remoting.connector".
      */
-    public static final ServiceName JBOSS_REMOTING_CONNECTOR = RemotingContainerElement.JBOSS_REMOTING.append("connector");
+    public static final ServiceName JBOSS_REMOTING_CONNECTOR = RemotingSubsystemElement.JBOSS_REMOTING.append("connector");
 
     private final String name;
     private String socketBinding;
@@ -135,7 +135,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         final ServiceName connectorName = JBOSS_REMOTING_CONNECTOR.append(name);
         final BatchServiceBuilder<ChannelListener<ConnectedStreamChannel<InetSocketAddress>>> serviceBuilder = batchBuilder.addService(connectorName, connectorService);
         serviceBuilder.addDependency(connectorName.append("auth-provider")).toInjector(connectorService.getAuthenticationProviderInjector());
-        serviceBuilder.addDependency(RemotingContainerElement.JBOSS_REMOTING_ENDPOINT).toInjector(connectorService.getEndpointInjector());
+        serviceBuilder.addDependency(RemotingSubsystemElement.JBOSS_REMOTING_ENDPOINT).toInjector(connectorService.getEndpointInjector());
         serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
 
         // todo: create XNIO connector service from socket-binding, with dependency on connectorName
