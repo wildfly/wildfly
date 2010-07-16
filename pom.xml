@@ -56,6 +56,7 @@
         <module>domain-controller</module>
         <module>process-manager</module>
         <module>remoting</module>
+        <module>threads</module>
         <module>build</module>
     </modules>
 

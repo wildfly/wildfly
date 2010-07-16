@@ -158,6 +158,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
         
+        <module-def group="org.jboss.as" artifact="jboss-as-threads">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
         </module-def>
