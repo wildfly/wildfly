@@ -22,9 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="jboss-as-server-manager" group="org.jboss.as">
-
-    <main-class name="org.jboss.as.server.manager.Main"/>
+<module xmlns="urn:jboss:module:1.0" name="jboss-as-threads" group="org.jboss.as">
 
     <resources>
         <!-- Insert resources here -->
