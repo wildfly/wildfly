@@ -37,18 +37,20 @@
   
   <xs:element name="domain">
     <xs:complexType>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <!-- TODO the domain-configuration concept needs review -->
-        <xs:element name="domain-configuration" type="domain-configurationType"/>
-        <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
-        <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
-        <xs:element name="interfaces" type="named-interfacesType"/>
-        <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
-        <xs:element name="server-groups" type="server-groupsType"/>
-        <xs:element name="security-policy" type="sec:PolicyConfig" />
-        <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
-      </xs:choice>
+      <xs:sequence>
+          <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <!-- TODO the domain-configuration concept needs review -->
+            <xs:element name="domain-configuration" type="domain-configurationType"/>
+            <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
+            <xs:element name="interfaces" type="named-interfacesType"/>
+            <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
+            <xs:element name="server-groups" type="server-groupsType"/>
+            <xs:element name="security-policy" type="sec:PolicyConfig" />
+            <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
+          </xs:choice>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
   

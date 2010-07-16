@@ -28,14 +28,13 @@
                             urn:jboss:security-config:5.0 security-config_5_0.xsd
                             urn:jboss:domain:naming:1.0 jboss-domain-naming.xsd">
 
+    <extension prefix="xx" module="org.foo:blah"/>
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
         <!-- The URI for bootstraping a domain server -->
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
-
-    <extension prefix="xx" module="org.foo:blah"/>
 
     <profile name="something">
         <subsystem name="ejb"/>
