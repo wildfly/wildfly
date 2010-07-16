@@ -36,6 +36,8 @@
             <![CDATA[
                 The configuration of the Remoting subsystem.
 
+                The "thread-pool" attribute specifies what thread pool to use for Remoting invocations and asynchronous tasks.
+
                 The nested "connector" element(s) define connectors for this subsystem.
             ]]>
             </xs:documentation>
@@ -43,6 +45,7 @@
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="connector" type="connector"/>
         </xs:choice>
+        <xs:attribute name="thread-pool" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="connector">
