@@ -183,7 +183,6 @@
     <xs:sequence>
       <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
-          <xs:element name="subsystem" type="simple-subsystemType"/>
           <!-- FIXME move web-containers to another namespace and remove this -->
           <xs:element ref="web-containers"/>
           <xs:any namespace="##other">
@@ -212,19 +211,6 @@
     <xs:attribute name="profile" use="required">
       <xs:annotation>
         <xs:documentation>Name of the profile to include</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
-  <xs:complexType name="simple-subsystemType">
-    <xs:annotation>
-      <xs:documentation>A subsystem is a specific technology, service or a set of or a functionality
-                        which can be enabled in a profile. A simple subsystem is one
-                        that has no configuration its name.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the subsystem</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
