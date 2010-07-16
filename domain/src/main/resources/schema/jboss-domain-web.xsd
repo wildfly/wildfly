@@ -76,29 +76,79 @@
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="1" ref="default"/>
         <xs:element minOccurs="0" maxOccurs="1" ref="jsp"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="boolean" default="false"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="cgi" type="boolean" default="false"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="ssi"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="cgi"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="default">
     <xs:complexType>
-      <xs:sequence>
-   <!--  FIXME more properties ? -->
-        <xs:element minOccurs="0" maxOccurs="1" name="listings" type="boolean" default="false"/>
-      </xs:sequence>
+      <xs:attributeGroup ref="default-servlet-attlist"/>
     </xs:complexType>
   </xs:element>
+  <xs:attributeGroup name="default-servlet-attlist">
+    <xs:attribute name="listings" default="true" type="boolean"/>
+    <xs:attribute name="sendfile" default="49152"/>
+    <xs:attribute name="file-encoding"/>
+    <xs:attribute name="read-only" default="true" type="boolean"/>
+    <xs:attribute name="webdav" default="false" type="boolean"/>
+    <xs:attribute name="secret"/>
+    <xs:attribute name="max-depth" default="3"/>
+  </xs:attributeGroup>
 
   <xs:element name="jsp">
     <xs:complexType>
-      <xs:sequence>
-   <!--  FIXME more properties ? -->
-        <xs:element minOccurs="0" maxOccurs="1" name="development" type="boolean" default="false"/>
-      </xs:sequence>
+      <xs:attributeGroup ref="jsp-servlet-attlist"/>
     </xs:complexType>
   </xs:element>
+  <xs:attributeGroup name="jsp-servlet-attlist">
+    <xs:attribute name="development" default="false" type="boolean"/>
+    <xs:attribute name="keep-generated" default="true" type="boolean"/>
+    <xs:attribute name="trim-spaces" default="false" type="boolean"/>
+    <xs:attribute name="tag-pooling" default="true" type="boolean"/>
+    <xs:attribute name="mapped-file" default="true" type="boolean"/>
+    <xs:attribute name="check-interval" default="0"/>
+    <xs:attribute name="modification-test-interval" default="4"/>
+    <xs:attribute name="recompile-on-fail" default="false" type="boolean"/>
+    <xs:attribute name="smap" default="true" type="boolean"/>
+    <xs:attribute name="dump-smap" default="false" type="boolean"/>
+    <xs:attribute name="generate-strings-as-char-arrays" default="false" type="boolean"/>
+    <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="boolean"/>
+    <xs:attribute name="scratch-dir"/>
+    <xs:attribute name="source-vm" default="1.5"/>
+    <xs:attribute name="target-vm" default="1.5"/>
+    <xs:attribute name="java-encoding" default="UTF8"/>
+    <xs:attribute name="x-powered-by" default="true" type="boolean"/>
+    <xs:attribute name="display-source-fragment" default="true" type="boolean"/>
+  </xs:attributeGroup>
+
+  <xs:element name="cgi">
+    <xs:complexType>
+      <xs:attributeGroup ref="cgi-servlet-attlist"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="cgi-servlet-attlist">
+    <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="cgi-path-prefix"/>
+    <xs:attribute name="pass-shell-environment" default="false" type="boolean"/>
+    <xs:attribute name="cgi-executable" default="perl"/>
+    <xs:attribute name="parameter-encoding"/>
+  </xs:attributeGroup>
+
+  <xs:element name="ssi">
+    <xs:complexType>
+      <xs:attributeGroup ref="ssi-servlet-attlist"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="ssi-servlet-attlist">
+    <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="webapp-relative" default="false" type="boolean"/>
+    <xs:attribute name="expires"/>
+    <xs:attribute name="buffered" default="false" type="boolean"/>
+    <xs:attribute name="input-encoding"/>
+    <xs:attribute name="output-encoding" default="UTF-8"/>
+  </xs:attributeGroup>
 
   <xs:element name="connector">
     <xs:complexType>

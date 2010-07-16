@@ -119,10 +119,8 @@
             <web-container name="jboss.web">
                 <config>
                     <servlets>
-                        <default>
-                            <listings>true</listings>
-                        </default>
-                        <ssi>true</ssi>
+                        <default listings="true" />
+                        <ssi/>
                     </servlets>
                 </config>
                 
