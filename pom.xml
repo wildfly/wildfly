@@ -43,18 +43,13 @@
     <packaging>pom</packaging>
 
     <properties>
-        
-        <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.min.version>3.0-beta-1</maven.min.version>
-        
-        <!-- Dependency versions. Please keep alphabetical -->
-        <version.junit>4.6</version.junit>
-              
     </properties>
 
     <modules>
+        <module>bom</module>
         <module>domain</module>
         <module>server-manager</module>
         <module>server</module>
@@ -72,6 +67,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.1</version>
                     <configuration>
                         <showDeprecation>true</showDeprecation>
                         <showWarnings>true</showWarnings>
@@ -80,8 +76,8 @@
 
                 <!-- Attach sources -->
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
+                    <version>2.1.1</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -98,287 +94,13 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <!-- Modules in this project -->
-
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain</artifactId>
-                <version>${project.version}</version>
+                <artifactId>jboss-as-bom</artifactId>
+                <version>7.0.0.Beta1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-domain-controller</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-remoting</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-process-manager</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-server-manager</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <!-- External Dependencies -->
-
-            <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.enterprise</groupId>
-                <artifactId>cdi-api</artifactId>
-                <version>1.0-SP1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>jsf-api</artifactId>
-                <version>2.0.2-FCS</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.jws</groupId>
-                <artifactId>jsr181-api</artifactId>
-                <version>1.0-MR1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
-                <version>1.4.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>1.0.0.GA</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>jsr311-api</artifactId>
-                <version>1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.xml</groupId>
-                <artifactId>jaxrpc-api</artifactId>
-                <version>1.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-vfs</artifactId>
-                <version>3.0.0.CR5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>staxmapper</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>3.0.0.Beta3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logmanager</groupId>
-                <artifactId>jboss-logmanager</artifactId>
-                <version>1.2.0.CR3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.marshalling</groupId>
-                <artifactId>jboss-marshalling</artifactId>
-                <version>1.3.0.CR3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.marshalling</groupId>
-                <artifactId>jboss-marshalling-river</artifactId>
-                <version>1.3.0.CR3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.msc</groupId>
-                <artifactId>jboss-msc</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.modules</groupId>
-                <artifactId>jboss-modules</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.remoting3</groupId>
-                <artifactId>jboss-remoting</artifactId>
-                <version>3.1.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.slf4j</groupId>
-                <artifactId>slf4j-jboss-logmanager</artifactId>
-                <version>1.0.0.CR2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.annotation</groupId>
-                <artifactId>jboss-annotations-api_1.1_spec</artifactId>
-                <version>1.0.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-                <version>1.0.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.el</groupId>
-                <artifactId>jboss-el-api_2.2_spec</artifactId>
-                <version>1.0.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.enterprise.deploy</groupId>
-                <artifactId>jboss-jad-api_1.2_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.interceptor</groupId>
-                <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.jms</groupId>
-                <artifactId>jboss-jms-api_1.1_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.resource</groupId>
-                <artifactId>jboss-connector-api_1.5_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-                <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.security.jacc</groupId>
-                <artifactId>jboss-jacc-api_1.4_spec</artifactId>
-                <version>1.0.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                <version>1.0.0.Beta2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-                <artifactId>jboss-jsp-api_2.2_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.xml.registry</groupId>
-                <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.xml.soap</groupId>
-                <artifactId>jboss-saaj-api_1.3_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.xml.ws</groupId>
-                <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
-                <version>1.0.0.Beta1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.stdio</groupId>
-                <artifactId>jboss-stdio</artifactId>
-                <version>1.0.0.CR3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.xnio</groupId>
-                <artifactId>xnio-api</artifactId>
-                <version>2.1.0.CR2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.xnio</groupId>
-                <artifactId>xnio-nio</artifactId>
-                <version>2.1.0.CR2</version>
-            </dependency>
-      
-            <dependency>
-               <groupId>junit</groupId>
-               <artifactId>junit</artifactId>
-               <version>${version.junit}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.5.8</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
