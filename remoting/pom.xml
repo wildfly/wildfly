@@ -36,7 +36,7 @@
     <artifactId>jboss-as-remoting</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Remoting</name>
+    <name>JBoss Application Server: Remoting Subsystem</name>
 
     <dependencies>
         <dependency>
