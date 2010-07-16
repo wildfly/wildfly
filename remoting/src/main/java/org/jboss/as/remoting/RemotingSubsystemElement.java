@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
-import org.jboss.as.model.AbstractContainerElement;
+import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
@@ -49,7 +49,7 @@ import javax.xml.stream.XMLStreamException;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemotingSubsystemElement extends AbstractContainerElement<RemotingSubsystemElement> {
+public final class RemotingSubsystemElement extends AbstractSubsystemElement<RemotingSubsystemElement> {
 
     private static final long serialVersionUID = 8225457441023207312L;
 
