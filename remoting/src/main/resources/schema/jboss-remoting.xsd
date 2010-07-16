@@ -54,6 +54,8 @@
             <![CDATA[
                 The configuration of a Remoting connector.
 
+                The "name" attribute specifies the unique name of this connector.
+
                 The "socket-binding" attribute specifies the name (or names) of the socket binding(s) to attach to.
 
                 The optional nested "sasl" element contains the SASL authentication configuration for this connector.
@@ -70,6 +72,7 @@
             <xs:element name="properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="socket-binding" type="name-list" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="sasl">
