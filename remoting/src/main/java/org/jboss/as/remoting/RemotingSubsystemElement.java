@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
-import org.jboss.as.model.AbstractContainerElement;
+import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
@@ -45,11 +45,11 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * A Remoting container definition.
+ * A Remoting subsystem definition.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemotingContainerElement extends AbstractContainerElement<RemotingContainerElement> {
+public final class RemotingSubsystemElement extends AbstractSubsystemElement<RemotingSubsystemElement> {
 
     private static final long serialVersionUID = 8225457441023207312L;
 
@@ -73,7 +73,7 @@ public final class RemotingContainerElement extends AbstractContainerElement<Rem
      * @param location the declaration location of this element
      * @param threadPoolName
      */
-    public RemotingContainerElement(final Location location, final String threadPoolName) {
+    public RemotingSubsystemElement(final Location location, final String threadPoolName) {
         super(location);
         if (threadPoolName == null) {
             throw new IllegalArgumentException("threadPoolName is null");
@@ -87,17 +87,17 @@ public final class RemotingContainerElement extends AbstractContainerElement<Rem
     }
 
     /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<RemotingContainerElement>> target, final RemotingContainerElement other) {
-        calculateDifference(target, connectors, other.connectors, new DifferenceHandler<String, ConnectorElement, RemotingContainerElement>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<RemotingContainerElement>> target, final String name, final ConnectorElement newElement) {
+    protected void appendDifference(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final RemotingSubsystemElement other) {
+        calculateDifference(target, connectors, other.connectors, new DifferenceHandler<String, ConnectorElement, RemotingSubsystemElement>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement newElement) {
                 target.add(new AddConnectorUpdate(newElement.clone()));
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<RemotingContainerElement>> target, final String name, final ConnectorElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement oldElement) {
                 target.add(new RemoveConnectorUpdate(name));
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<RemotingContainerElement>> target, final String name, final ConnectorElement oldElement, final ConnectorElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement oldElement, final ConnectorElement newElement) {
                 target.add(new RemoveConnectorUpdate(name));
                 target.add(new AddConnectorUpdate(newElement.clone()));
             }
@@ -105,8 +105,8 @@ public final class RemotingContainerElement extends AbstractContainerElement<Rem
     }
 
     /** {@inheritDoc} */
-    protected Class<RemotingContainerElement> getElementClass() {
-        return RemotingContainerElement.class;
+    protected Class<RemotingSubsystemElement> getElementClass() {
+        return RemotingSubsystemElement.class;
     }
 
     private static final QName ELEMENT_NAME = new QName("urn:jboss:as:remoting:1.0", "remoting-container");
