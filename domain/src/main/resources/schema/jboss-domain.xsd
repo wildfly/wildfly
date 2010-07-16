@@ -46,9 +46,8 @@
         <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
         <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
-        <!-- TODO this should be named-interfacesType once it is fixed -->
-        <xs:element name="interfaces" type="specified-interfacesType"/>
-        <xs:element name="socket-groups" type="socket-groupsType"/>
+        <xs:element name="interfaces" type="named-interfacesType"/>
+        <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
         <xs:element name="server-groups" type="server-groupsType"/>
         <xs:element name="security-policy" type="sec:PolicyConfig" />
         <xs:element name="mod-cluster-config" type="mod-cluster-configType" />
@@ -60,7 +59,7 @@
           </xs:complexType>
                                                           
         </xs:element>
-        <xs:element name="system-properties" type="propertiesType"/>
+        <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -73,13 +72,13 @@
 
   <xs:complexType name="server-groupType">
      <xs:sequence>
-        <xs:element name="jvm" type="java-configType" minOccurs="0"/>
-        <xs:element name="socket-group" type="socket-group-refType" minOccurs="0"/>
+        <xs:element name="jvm" type="jvmType" minOccurs="0"/>
+        <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
             
         <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
 
         <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
-        <xs:element name="system-properties" minOccurs="0" type="propertiesType"/>
+        <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
      </xs:sequence>
      <xs:attribute name="group-name" type="xs:ID">
         <xs:annotation>
@@ -226,21 +225,21 @@
     </xs:attribute>
   </xs:complexType>
 
-   <xs:complexType name="socket-groupsType">
+   <xs:complexType name="socket-binding-groupsType">
     <xs:annotation>
       <xs:documentation>Contains a list of socket groups</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="socket-group" type="socket-groupType" maxOccurs="unbounded"/>
+      <xs:element name="socket-binding-group" type="socket-binding-groupType" maxOccurs="unbounded"/>
     </xs:sequence>
    </xs:complexType>
 
-   <xs:complexType name="socket-groupType">
+   <xs:complexType name="socket-binding-groupType">
     <xs:annotation>
       <xs:documentation>Contains a list of socket configurations</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="socket" type="socketType" maxOccurs="unbounded"/>
+      <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="extends" type="xs:string" use="optional">
@@ -258,6 +257,55 @@
     </xs:attribute>
    </xs:complexType>
    
+   <xs:complexType name="socket-bindingType">
+    <xs:annotation>
+      <xs:documentation>Configuration information for a socket.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of the interface to which the socket should be bound, or, for multicast
+            sockets, the interface on which it should listen. This should
+            be one of the declared interfaces.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation>
+            Number of the port to which the socket should be bound.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>
+            Whether the port value should remain fixed even if numerically offsets
+            are applied to the other sockets in the socket group..
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-address" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Multicast address on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Port on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
+
     <!-- resources related definitions -->
     <xs:complexType name="resourcesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -345,7 +393,7 @@
 
     <xs:complexType name="resource-commonType">
         <xs:sequence minOccurs="0" maxOccurs="1">
-            <xs:element name="properties" type="propertiesType"/>
+            <xs:element name="properties" type="propertiesWithRequiredValueType"/>
         </xs:sequence>
     </xs:complexType>
 

@@ -58,7 +58,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" ref="ssl" />
-        <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+        <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="http-connector-attlist"/>
     </xs:complexType>
@@ -95,7 +95,7 @@
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
         <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
-        <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+        <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
