@@ -21,12 +21,12 @@
   -->
 
 <domain xmlns="urn:jboss:domain:1.0"
-        xmlns:sec="urn:jboss:security-config:5.0"
-        xmlns:naming="urn:jboss:domain:naming:1.0"
+        xmlns:remoting="urn:jboss:domain:remoting:1.0"
+        xmlns:threads="urn:jboss:domain:threads:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
-                            urn:jboss:security-config:5.0 security-config_5_0.xsd
-                            urn:jboss:domain:naming:1.0 jboss-domain-naming.xsd">
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
     <extension prefix="xx" module="org.foo:blah"/>
 
@@ -55,8 +55,15 @@
 
     <profile name="something2">
         <include profile="something"/>
-        <naming:naming-service bootstrap-socket-binding="jndi" bootstrap-executor="someThreadPool" 
-             remoting-connector="someConnector"/>
+        <threads:subsystem>
+            <threads:queueless-thread-pool-executor name="remoting">
+                <threads:max-threads count="10" per-cpu="20"/>
+                <threads:keepalive-time timne="10" unit="s"/>
+            </threads:queueless-thread-pool-executor>
+        </threads:subsystem>
+        <remoting:subsystem thread-pool="remoting-pool">
+            <remoting:connector name="default-connector" socket-binding="remoting"/>
+        </remoting:subsystem>
     </profile>
 
     <deployments>

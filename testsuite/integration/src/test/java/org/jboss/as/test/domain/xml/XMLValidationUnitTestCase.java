@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.domain.xml;
+package org.jboss.as.test.domain.xml;
 
 import java.io.IOException;
 import java.net.URL;
@@ -94,7 +94,7 @@ public class XMLValidationUnitTestCase extends TestCase
 
    private URL getXmlUrl(String xmlName)
    {
-      return getResourceUrl("examples/" + xmlName);
+      return getResourceUrl("xml/examples/" + xmlName);
    }
 
    private URL getXsdUrl(String xsdName)
@@ -105,7 +105,7 @@ public class XMLValidationUnitTestCase extends TestCase
    private URL getResourceUrl(String resourceName)
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
-      assertNotNull(url);
+      assertNotNull(resourceName + " not found", url);
       return url;
    }
    
