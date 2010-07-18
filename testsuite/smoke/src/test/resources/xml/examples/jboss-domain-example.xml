@@ -58,7 +58,7 @@
         <threads:subsystem>
             <threads:queueless-thread-pool-executor name="remoting">
                 <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time timne="10" unit="s"/>
+                <threads:keepalive-time time="10" unit="s"/>
             </threads:queueless-thread-pool-executor>
         </threads:subsystem>
         <remoting:subsystem thread-pool="remoting-pool">
