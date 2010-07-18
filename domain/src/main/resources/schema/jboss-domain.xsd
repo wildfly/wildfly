@@ -199,8 +199,6 @@
         <xs:documentation>Name of the profile</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="extends" type="xs:string" use="optional">
-    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="profile-includeType">
