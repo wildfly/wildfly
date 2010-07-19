@@ -37,22 +37,30 @@
   <xs:element name="proxy-conf">
     <xs:complexType>
     <xs:sequence>
-      <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
-      <xs:element name="advertiseSocket" type="socketType" minOccurs="0" maxOccurs="1" />
-      <xs:element name="proxy-conf-attlist" type="proxy-conf-attlistType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="httpd-conf" type="httpd-conf-attlistType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="nodes-conf" type="nodes-conf-attlistType" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="proxy-conf-attlistType">
-    <xs:attribute name="proxyList" />
-    <xs:attribute name="proxyURL" />
-    <xs:attribute name="excludedContexts" default="ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console" />
-    <xs:attribute name="autoEnableContexts" default="true" />
-    <xs:attribute name="stopContextTimeout" default="10" />
-    <xs:attribute name="socketTimeout" />
+  <!-- mod_cluster parameters that correspond to httpd directive -->
+  <xs:complexType name="httpd-conf-attlistType">
+    <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
+    <xs:sequence>
+      <xs:element name="advertise-socket" type="socketType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="proxy-list" />
+    <xs:attribute name="proxy-url" />
     <xs:attribute name="advertise" />
-    <xs:attribute name="advertiseSecurityKey" />
+    <xs:attribute name="advertise-security-key" />
+  </xs:complexType>
+
+  <!-- mod_cluster parameters that describe node behaviour -->
+  <xs:complexType name="nodes-conf-attlistType">
+    <xs:attribute name="excluded-contexts" default="ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console" />
+    <xs:attribute name="auto-enable-contexts" default="true" />
+    <xs:attribute name="stop-context-timeout" default="10" />
+    <xs:attribute name="socket-timeout" />
   </xs:complexType>
   
   <!-- Set of possible loadmetrics -->
