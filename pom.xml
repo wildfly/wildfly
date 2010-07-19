@@ -99,6 +99,7 @@
         <module>process-manager</module>
         <module>remoting</module>
         <module>threads</module>
+        <module>logging</module>
         <module>build</module>
     </modules>
 
@@ -157,13 +158,19 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-remoting</artifactId>
+                <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-process-manager</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-remoting</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

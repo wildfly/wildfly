@@ -142,6 +142,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
 
+        <module-def group="org.jboss.as" artifact="jboss-as-logging">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="jboss-as-process-manager">
             <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
         </module-def>
