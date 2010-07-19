@@ -22,38 +22,30 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * An update which removes a connector from the remoting container.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement> {
+public final class ServiceDeploymentItem implements DeploymentItem {
 
-    private static final long serialVersionUID = -8965990593053845956L;
+    private static final long serialVersionUID = -8726019571447659525L;
 
-    private final String name;
+    private final String serviceGroup;
+    private final String serviceName;
+    private final ServiceName serviceListener;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param name the name of the connector to remove
-     */
-    public RemoveConnectorUpdate(final String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
-        this.name = name;
+    public ServiceDeploymentItem(final String serviceGroup, final String serviceName, final ServiceName serviceListener) {
+        this.serviceGroup = serviceGroup;
+        this.serviceName = serviceName;
+        this.serviceListener = serviceListener;
     }
 
-    /** {@inheritDoc} */
-    protected Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
-    }
-
-    /** {@inheritDoc} */
-    protected AbstractModelUpdate<RemotingSubsystemElement> applyUpdate(final RemotingSubsystemElement element) {
-        return new AddConnectorUpdate(element.removeConnector(name).clone());
+    public void install(final DeploymentItemContext context) {
+        final BatchBuilder builder = context.getBatchBuilder();
+        
     }
 }

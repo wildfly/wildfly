@@ -29,11 +29,11 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 
 /**
- * The base class of all container elements.
+ * The base class of all subsystem elements.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractContainerElement<E extends AbstractContainerElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
+public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
 
     private static final long serialVersionUID = 899219830157478004L;
 
@@ -42,7 +42,7 @@ public abstract class AbstractContainerElement<E extends AbstractContainerElemen
      *
      * @param location the declaration location of this element
      */
-    protected AbstractContainerElement(final Location location) {
+    protected AbstractSubsystemElement(final Location location) {
         super(location);
     }
 
