@@ -101,6 +101,7 @@
         <module>threads</module>
         <module>logging</module>
         <module>build</module>
+        <module>testsuite</module>
     </modules>
 
     <build>

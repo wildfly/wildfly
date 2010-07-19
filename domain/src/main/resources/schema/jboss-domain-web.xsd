@@ -29,7 +29,8 @@
 
     <!-- Include the common definitions  -->
     <xs:include schemaLocation="jboss-domain-common.xsd"/>
-
+   
+   <xs:element name="web-containers" type="web-containersType"/>
    <xs:complexType name="web-containersType">
        <xs:sequence>
            <xs:element name="web-container" type="web-containerType" minOccurs="1" maxOccurs="unbounded" />
