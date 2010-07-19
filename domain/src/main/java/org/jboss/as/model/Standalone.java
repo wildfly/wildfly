@@ -55,7 +55,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      * @param location the declaration location of this standalone element
      */
     protected Standalone(final Location location) {
-        super(location);
+        super(location, Domain.NAMESPACE);
     }
 
     /** {@inheritDoc} */

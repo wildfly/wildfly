@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -34,8 +35,8 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     private final String fileName;
     private final byte[] sha1Hash;
 
-    protected DeploymentUnitElement(final String fileName, final byte[] sha1Hash) {
-        super(null);
+    protected DeploymentUnitElement(final Location location, final String fileName, final byte[] sha1Hash) {
+        super(location);
         this.fileName = fileName;
         this.sha1Hash = sha1Hash;
     }

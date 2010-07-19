@@ -20,53 +20,53 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.remoting;
 
-import java.util.Collection;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Host extends AbstractModel<Host> {
+public enum Attribute {
+    UNKNOWN(null),
+    /* Remoting 1.0 attributes, in alpha order */
+    NAME("name"),
+    SOCKET_BINDING("socket-binding"),
+    THREAD_POOL_NAME("thread-pool-name"),
+    ;
+    private final String name;
 
-    private static final long serialVersionUID = 7667892965813702351L;
+    Attribute(final String name) {
+        this.name = name;
+    }
 
     /**
-     * Construct a new instance.
+     * Get the local name of this element.
      *
-     * @param location the declaration location of the host element
+     * @return the local name
      */
-    public Host(final Location location) {
-        super(location, Domain.NAMESPACE);
+    public String getLocalName() {
+        return name;
     }
 
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return new QName(Domain.NAMESPACE, "host");
+    private static final Map<String, Attribute> MAP;
+
+    static {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
     }
 
-    /** {@inheritDoc} */
-    public long elementHash() {
-        return 0;
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
     }
 
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
-        
-    }
-
-    /** {@inheritDoc} */
-    protected Class<Host> getElementClass() {
-        return Host.class;
-    }
-
-    /** {@inheritDoc} */
-    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEndElement();
+    public String toString() {
+        return getLocalName();
     }
 }

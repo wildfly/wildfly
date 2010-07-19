@@ -23,7 +23,10 @@
 package org.jboss.as.remoting;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
@@ -38,6 +41,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.services.ThreadPoolExecutorService;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 
@@ -66,7 +70,13 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     private final SortedMap<String, ConnectorElement> connectors = new TreeMap<String, ConnectorElement>();
 
     private String threadPoolName;
-    
+
+    public static final String NAMESPACE_1_0 = "urn:jboss:domain:remoting:1.0";
+
+    public static final String NAMESPACE = NAMESPACE_1_0;
+
+    public static final Set<String> NAMESPACES = Collections.singleton(NAMESPACE);
+
     /**
      * Construct a new instance.
      *
@@ -74,11 +84,71 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
      * @param threadPoolName
      */
     public RemotingSubsystemElement(final Location location, final String threadPoolName) {
-        super(location);
+        super(location, NAMESPACE);
         if (threadPoolName == null) {
             throw new IllegalArgumentException("threadPoolName is null");
         }
         this.threadPoolName = threadPoolName;
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which the subsystem element should be read
+     */
+    public RemotingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String threadPoolName = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.THREAD_POOL_NAME);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                reader.handleAttribute(this, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case THREAD_POOL_NAME: {
+                        threadPoolName = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+                required.remove(attribute);
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        this.threadPoolName = threadPoolName;
+        // Handle elements
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    // should mean we're done, so ignore it.
+                    break;
+                }
+                case START_ELEMENT: {
+                    if (RemotingSubsystemElement.NAMESPACES.contains(reader.getNamespaceURI())) {
+                        final Element element = Element.forName(reader.getLocalName());
+                        switch (element) {
+                            case CONNECTOR: {
+                                final ConnectorElement connector = new ConnectorElement(reader);
+                                connectors.put(connector.getName(), connector);
+                                break;
+                            }
+                            // todo: auth provider, properties.
+                            default: throw unexpectedElement(reader);
+                        }
+                    } else {
+                        throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw new IllegalStateException();
+            }
+        }
     }
 
     /** {@inheritDoc} */

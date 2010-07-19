@@ -68,7 +68,7 @@ public final class Domain extends AbstractModel<Domain> {
      * @param location the declaration location of the domain element
      */
     public Domain(final Location location) {
-        super(location);
+        super(location, NAMESPACE);
     }
 
     /** {@inheritDoc} */

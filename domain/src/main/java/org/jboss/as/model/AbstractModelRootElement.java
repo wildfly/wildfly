@@ -23,8 +23,10 @@
 package org.jboss.as.model;
 
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * A root element in the model.  A root element has a fixed name.
@@ -33,13 +35,22 @@ import javax.xml.namespace.QName;
  */
 public abstract class AbstractModelRootElement<E extends AbstractModelRootElement<E>> extends AbstractModelElement<E> {
 
+    private final String namespace;
+
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of this model root element
+     * @param namespace
      */
-    protected AbstractModelRootElement(final Location location) {
+    protected AbstractModelRootElement(final Location location, final String namespace) {
         super(location);
+        this.namespace = namespace;
+    }
+
+    protected AbstractModelRootElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        namespace = reader.getNamespaceURI();
     }
 
     /**
@@ -48,4 +59,13 @@ public abstract class AbstractModelRootElement<E extends AbstractModelRootElemen
      * @return the name
      */
     protected abstract QName getElementName();
+
+    /**
+     * Get the namespace that this root element was created in.
+     *
+     * @return the namespace
+     */
+    public final String getNamespace() {
+        return namespace;
+    }
 }

@@ -27,6 +27,8 @@ import java.util.Locale;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.Options;
@@ -51,8 +53,13 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
     private Boolean reuseSession;
     private Boolean serverAuth;
 
-    public SaslElement() {
-        super(null);
+    public SaslElement(final Location location) {
+        super(location);
+    }
+
+    public SaslElement(final XMLExtendedStreamReader reader) {
+        super(reader);
+        
     }
 
     /** {@inheritDoc} */

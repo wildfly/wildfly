@@ -25,6 +25,8 @@ package org.jboss.as.remoting;
 import java.util.Collection;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.Options;
@@ -45,8 +47,12 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
     private Boolean noPlainText;
     private Boolean passCredentials;
 
-    public PolicyElement() {
-        super(null);
+    public PolicyElement(final Location location) {
+        super(location);
+    }
+
+    public PolicyElement(final XMLExtendedStreamReader reader) {
+        super(reader);
     }
 
     public long elementHash() {

@@ -51,9 +51,10 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
      * Construct a new instance.
      *
      * @param location the declaration location of this model
+     * @param namespace the namespace in which the root element was created
      */
-    protected AbstractModel(final Location location) {
-        super(location);
+    protected AbstractModel(final Location location, final String namespace) {
+        super(location, namespace);
     }
 
     /**
