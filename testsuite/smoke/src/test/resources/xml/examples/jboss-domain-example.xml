@@ -40,17 +40,26 @@
         <!-- FIXME move web-containers to another namespace -->
         <web-containers>
             <web-container name="jboss.web">
+                <config>
+                    <servlets>
+                        <default listings="true" />
+                        <ssi/>
+                    </servlets>
+                </config>
+                
                 <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
                                 default-virtual-server="localhost">
                     <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-                </http-connector>
-    
-                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
+                </connector>
+
+                <virtual-server name="localhost">
                     <access-log/>
+                    <connector>httpsConnector</connector>
+                    <host>localhost</host>
                 </virtual-server>
            </web-container>
-       </web-containers>
+        </web-containers>
     </profile>
 
     <profile name="something2">

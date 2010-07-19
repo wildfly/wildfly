@@ -37,7 +37,11 @@ public enum Element {
     // Domain 1.0 elements in alpha order
     DOMAIN("domain"),
     DEPLOYMENT("deployment"),
+    DEPLOYMENTS("deployments"),
 
+    INCLUDE("include"),
+    PROFILE("profile"),
+    
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),
 

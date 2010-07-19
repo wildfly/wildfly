@@ -37,6 +37,7 @@ public enum Attribute {
     // domain 1.0 attributes in alpha order
     NAME("name"),
 
+    PROFILE("profile"),
 
     ;
 

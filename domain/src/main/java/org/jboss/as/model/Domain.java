@@ -59,6 +59,7 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
+    private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
 
     private final PropertiesElement systemProperties = new PropertiesElement(null);
 
@@ -77,6 +78,7 @@ public final class Domain extends AbstractModel<Domain> {
         hash = calculateElementHashOf(extensions.values(), hash);
         hash = calculateElementHashOf(serverGroups.values(), hash);
         hash = calculateElementHashOf(deployments.values(), hash);
+        hash = calculateElementHashOf(profiles.values(), hash);
         hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
@@ -85,11 +87,11 @@ public final class Domain extends AbstractModel<Domain> {
     protected void appendDifference(final Collection<AbstractModelUpdate<Domain>> target, final Domain other) {
         calculateDifference(target, extensions, other.extensions, new DifferenceHandler<String, ExtensionElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement newElement) {
-
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement oldElement) {
-
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement oldElement, final ExtensionElement newElement) {
@@ -100,10 +102,12 @@ public final class Domain extends AbstractModel<Domain> {
         calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
                 // todo add-server-group operation
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
                 // todo remove-server-group operation
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
@@ -114,14 +118,33 @@ public final class Domain extends AbstractModel<Domain> {
         calculateDifference(target, deployments, other.deployments, new DifferenceHandler<String, DeploymentUnitElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement newElement) {
                 // todo deploy
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement oldElement) {
                 // todo undeploy
+                throw new UnsupportedOperationException("implement me");
             }
 
             public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
                 // todo redeploy...? or maybe just modify stuff
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        calculateDifference(target, profiles, other.profiles, new DifferenceHandler<String, ProfileElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
+                // todo add-profile
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement oldElement) {
+                // todo remove-profile
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement oldElement, final ProfileElement newElement) {
+                // todo change profile
+                throw new UnsupportedOperationException("implement me");
             }
         });
         // todo enclosing diff item
@@ -144,17 +167,34 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeStartElement("extension");
             element.writeContent(streamWriter);
         }
+        // TODO the schema is unordered after the extensions, but here we are imposing order
+        
+        if (! profiles.isEmpty()) {
+            for (ProfileElement element : profiles.values()) {
+                streamWriter.writeStartElement(Element.PROFILE.getLocalName());
+                element.writeContent(streamWriter);
+            }
+        }
         if (systemProperties.size() > 0) {
             streamWriter.writeStartElement("system-properties");
             systemProperties.writeContent(streamWriter);
         }
-        if (! serverGroups.isEmpty()) for (ServerGroupElement element : serverGroups.values()) {
-            streamWriter.writeStartElement("server-group");
-            element.writeContent(streamWriter);
+        if (! serverGroups.isEmpty()) {
+            streamWriter.writeStartElement(Element.SERVER_GROUPS.getLocalName());
+            for (ServerGroupElement element : serverGroups.values()) {
+        
+                streamWriter.writeStartElement(Element.SERVER_GROUP.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
-        if (! deployments.isEmpty()) for (DeploymentUnitElement element : deployments.values()) {
-            streamWriter.writeStartElement("deployment");
-            element.writeContent(streamWriter);
+        if (! deployments.isEmpty()) {
+            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (DeploymentUnitElement element : deployments.values()) {        
+                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
         streamWriter.writeEndElement();
     }
