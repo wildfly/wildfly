@@ -40,6 +40,7 @@
         </xs:annotation>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="logger" type="loggerType"/>
+            <xs:element name="root-logger" type="rootLoggerType"/>
             <xs:element name="console-handler" type="consoleHandlerType"/>
             <xs:element name="file-handler" type="fileHandlerType"/>
             <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
