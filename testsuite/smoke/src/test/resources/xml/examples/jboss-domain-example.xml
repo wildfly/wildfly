@@ -21,8 +21,12 @@
   -->
 
 <domain xmlns="urn:jboss:domain:1.0"
+        xmlns:remoting="urn:jboss:domain:remoting:1.0"
+        xmlns:threads="urn:jboss:domain:threads:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
     <extension prefix="xx" module="org.foo:blah"/>
 
@@ -58,10 +62,6 @@
         </web-containers>
     </profile>
 
-    <!-- An example of bringing in subsytems that use other namespaces. This
-         won't validate in this module because the foreign schemas are located in
-         other modules and are not visible when this module's testsuite runs.
-         The testsuite/smoke module includes an equivalent file
     <profile name="something2">
         <include profile="something"/>
         <threads:subsystem>
@@ -74,7 +74,6 @@
             <remoting:connector name="default-connector" socket-binding="remoting"/>
         </remoting:subsystem>
     </profile>
-    -->
 
     <deployments>
         <deployment name="my-app.ear" sha1="xxx"/>

@@ -33,21 +33,14 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-testsuite-benchmark</artifactId>
+    <artifactId>jboss-as-testsuite-smoke</artifactId>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Test Suite: Benchmark Tests</name>
+    <name>JBoss Application Server: Test Suite: Smoke Tests</name>
     
-    <profiles>
-        <!-- Enable the benchmark-tests profile to execute this module's tests -->
-        <profile>
-            <id>benchmark-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipExecUnitTests>false</skipExecUnitTests>
-            </properties>
-        </profile>
-    </profiles>  
+    <properties>
+        <!-- This part of the testuite we want to execute by default. -->
+        <skipExecUnitTests>false</skipExecUnitTests>
+    </properties>
+
 </project>
