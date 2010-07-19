@@ -83,7 +83,7 @@
   <!-- <load-metric-server-side history="9" decayFactor="2" /> -->
   <xs:complexType name="load-metric-server-sideType">
     <xs:attribute name="history" default="9" />
-    <xs:attribute name="decayFactor" default="2"/>
+    <xs:attribute name="decay-factor" default="2"/>
   </xs:complexType>
 
   <!-- <load-metric-web-container-side method="name" capacity="512" /> -->
