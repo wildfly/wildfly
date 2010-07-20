@@ -38,73 +38,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public final class DomainParser implements XMLElementReader<ParseResult<Domain>>, XMLStreamConstants {
 
+    /** {@inheritDoc} */
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Domain> value) throws XMLStreamException {
-        // read attributes first
-        // no required attributes
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            if (reader.getAttributeNamespace(i) != null) {
-                reader.handleAttribute(value, i);
-            } else {
-                switch (Attribute.forName(reader.getAttributeLocalName(i))) {
-                    default: throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        // construct our new domain!
-        final Domain domain = new Domain(null);
-        // next, elements
-        while (reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case END_ELEMENT: {
-                    // should mean we're done, so ignore it.
-                    break;
-                }
-                case START_ELEMENT: {
-                    if (Domain.NAMESPACES.contains(reader.getNamespaceURI())) {
-                        switch (Element.forName(reader.getLocalName())) {
-                            case SERVER_GROUPS: {
-                                readServerGroupsElement(reader, domain);
-                                break;
-                            }
-                            default: throw unexpectedElement(reader);
-                        }
-                    } else {
-                        // handle foreign root elements
-                        reader.handleAny(domain);
-                    }
-                    break;
-                }
-                default: throw new IllegalStateException();
-            }
-        }
-
-        // return the result
-        value.setResult(domain);
-    }
-
-    private void readServerGroupsElement(final XMLExtendedStreamReader reader, final Domain domain) throws XMLStreamException {
-        // read attributes first
-        // no required attributes
-        // todo - simple lists as model elements?
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            if (reader.getAttributeNamespace(i) != null) {
-                reader.handleAttribute(domain, i);
-            } else {
-                switch (Attribute.forName(reader.getAttributeLocalName(i))) {
-                    default: throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-
-    }
-
-    private static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
-        return new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
-    }
-
-    private static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int i) {
-        return new XMLStreamException("Unexpected attribute '" + reader.getAttributeName(i) + "' encountered", reader.getLocation());
+        value.setResult(new Domain(reader));
     }
 }

@@ -24,15 +24,18 @@ package org.jboss.as.remoting;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.ChannelListener;
 import org.jboss.xnio.OptionMap;
@@ -58,8 +61,8 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     private AbstractAuthenticationProviderElement<?> authenticationProvider;
     private PropertiesElement connectorProperties;
 
-    public ConnectorElement(final String name, final String socketBinding) {
-        super(null);
+    public ConnectorElement(final Location location, final String name, final String socketBinding) {
+        super(location);
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -68,6 +71,70 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
             throw new IllegalArgumentException("socketBinding is null");
         }
         this.socketBinding = socketBinding;
+    }
+
+    public ConnectorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String name = null;
+        String socketBinding = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case SOCKET_BINDING: {
+                        socketBinding = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+                required.remove(attribute);
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        assert name != null;
+        assert socketBinding != null;
+        this.name = name;
+        this.socketBinding = socketBinding;
+        // Handle nested elements.
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext()) {
+            if (reader.nextTag() == START_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case REMOTING_1_0: {
+                        final Element element = Element.forName(reader.getLocalName());
+                        if (visited.contains(element)) {
+                            throw unexpectedElement(reader);
+                        }
+                        visited.add(element);
+                        switch (element) {
+                            case SASL: {
+                                saslElement = new SaslElement(reader);
+                                break;
+                            }
+                            case PROPERTIES: {
+                                connectorProperties = new PropertiesElement(reader);
+                                break;
+                            }
+                            default: throw unexpectedElement(reader);
+                        }
+                        break;
+                    }
+                    default: throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */

@@ -22,39 +22,54 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelRootElement;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * An element which defines an authentication provider for a Remoting connector.
+ * An enumeration of the supported Remoting subsystem namespaces.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
+public enum Namespace {
+    // must be first
+    UNKNOWN(null),
 
-    private static final long serialVersionUID = -3738115019035803045L;
+    REMOTING_1_0("urn:jboss:domain:remoting:1.0")
+    ;
 
     /**
-     * Construct a new instance.
-     *
-     * @param location the location at which this element was declared
-     * @param elementName the element name
+     * The current namespace version.
      */
-    protected AbstractAuthenticationProviderElement(final Location location, final QName elementName) {
-        super(location, elementName);
+    public static final Namespace CURRENT = REMOTING_1_0;
+
+    private final String name;
+
+    Namespace(final String name) {
+        this.name = name;
     }
 
     /**
-     * Construct a new instance.
+     * Get the URI of this namespace.
      *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
+     * @return the URI
      */
-    protected AbstractAuthenticationProviderElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+    public String getUriString() {
+        return name;
+    }
+
+    private static final Map<String, Namespace> MAP;
+
+    static {
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) map.put(name, namespace);
+        }
+        MAP = map;
+    }
+
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
+        return element == null ? UNKNOWN : element;
     }
 }

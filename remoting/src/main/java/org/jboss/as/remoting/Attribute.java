@@ -22,39 +22,52 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelRootElement;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * An element which defines an authentication provider for a Remoting connector.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
+public enum Attribute {
+    UNKNOWN(null),
+    /* Remoting 1.0 attributes, in alpha order */
+    NAME("name"),
+    SOCKET_BINDING("socket-binding"),
+    THREAD_POOL_NAME("thread-pool-name"),
+    VALUE("value"),
+    ;
+    private final String name;
 
-    private static final long serialVersionUID = -3738115019035803045L;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param location the location at which this element was declared
-     * @param elementName the element name
-     */
-    protected AbstractAuthenticationProviderElement(final Location location, final QName elementName) {
-        super(location, elementName);
+    Attribute(final String name) {
+        this.name = name;
     }
 
     /**
-     * Construct a new instance.
+     * Get the local name of this element.
      *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
+     * @return the local name
      */
-    protected AbstractAuthenticationProviderElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+    public String getLocalName() {
+        return name;
+    }
+
+    private static final Map<String, Attribute> MAP;
+
+    static {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
+
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
+    }
+
+    public String toString() {
+        return getLocalName();
     }
 }
