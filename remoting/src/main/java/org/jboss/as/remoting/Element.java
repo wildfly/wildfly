@@ -32,8 +32,6 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
-
-
     // Remoting 1.0 elements in alpha order
     AUTHENTICATION_PROVIDER("authentication-provider"),
     CONNECTOR("connector"),
@@ -51,6 +49,7 @@ public enum Element {
     SASL("sasl"),
     SERVER_AUTH("server-auth"),
     STRENGTH("strength"),
+    SUBSYSTEM("subsystem"),
     ;
 
     private final String name;
