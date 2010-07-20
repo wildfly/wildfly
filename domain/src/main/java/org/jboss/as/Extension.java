@@ -20,41 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as;
 
-import org.jboss.as.model.AbstractModelRootElement;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
- * An element which defines an authentication provider for a Remoting connector.
+ * An extension.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractAuthenticationProviderElement<E extends AbstractAuthenticationProviderElement<E>> extends AbstractModelRootElement<E> {
-
-    private static final long serialVersionUID = -3738115019035803045L;
+public interface Extension extends ServiceActivator {
 
     /**
-     * Construct a new instance.
+     * Register root element handlers.
      *
-     * @param location the location at which this element was declared
-     * @param elementName the element name
+     * @param mapper the mapper
      */
-    protected AbstractAuthenticationProviderElement(final Location location, final QName elementName) {
-        super(location, elementName);
-    }
+    void registerElementHandlers(XMLMapper mapper);
 
     /**
-     * Construct a new instance.
+     * Activate the base services associated with this extension.  These services are installed
+     * in the first phases of container startup.
      *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
+     * @param container the container
+     * @param batchBuilder the batch builder
      */
-    protected AbstractAuthenticationProviderElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-    }
+    void activate(ServiceContainer container, BatchBuilder batchBuilder);
 }

@@ -274,8 +274,13 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @throws XMLStreamException if an error occurs
      */
     protected static void consumeRemainder(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        if (reader.hasNext() && reader.nextTag() == START_ELEMENT) {
-            throw unexpectedElement(reader);
+        while (reader.hasNext()) {
+            final int t = reader.nextTag();
+            switch (t) {
+                case END_ELEMENT: return;
+                case START_ELEMENT: throw unexpectedElement(reader);
+                default: throw new IllegalStateException();
+            }
         }
     }
 

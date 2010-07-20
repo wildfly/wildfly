@@ -59,46 +59,44 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
         }
         // Handle nested elements.
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext()) {
-            if (reader.nextTag() == START_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case REMOTING_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        if (visited.contains(element)) {
-                            throw unexpectedElement(reader);
-                        }
-                        visited.add(element);
-                        switch (element) {
-                            case FORWARD_SECRECY: {
-                                forwardSecrecy = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case NO_ACTIVE: {
-                                noActive = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case NO_ANONYMOUS: {
-                                noAnonymous = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case NO_DICTIONARY: {
-                                noDictionary = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case NO_PLAINTEXT: {
-                                noPlainText = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case PASS_CREDENTIALS: {
-                                passCredentials = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            default: throw unexpectedElement(reader);
-                        }
-                        break;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw unexpectedElement(reader);
                     }
-                    default: throw unexpectedElement(reader);
+                    visited.add(element);
+                    switch (element) {
+                        case FORWARD_SECRECY: {
+                            forwardSecrecy = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case NO_ACTIVE: {
+                            noActive = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case NO_ANONYMOUS: {
+                            noAnonymous = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case NO_DICTIONARY: {
+                            noDictionary = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case NO_PLAINTEXT: {
+                            noPlainText = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case PASS_CREDENTIALS: {
+                            passCredentials = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
                 }
+                default: throw unexpectedElement(reader);
             }
         }
     }
