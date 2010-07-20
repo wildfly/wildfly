@@ -70,6 +70,28 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         super(reader);
     }
 
+    /**
+     * Assemble a standalone server configuration from the domain/host model.
+     *
+     * @param domain the domain
+     * @param host the host
+     * @param serverName the name of the server to initialize
+     * @return the standalone server model
+     */
+    public Standalone(final Domain domain, final Host host, final String serverName) {
+        super(null, null);
+        if (domain == null) {
+            throw new IllegalArgumentException("domain is null");
+        }
+        if (host == null) {
+            throw new IllegalArgumentException("host is null");
+        }
+        if (serverName == null) {
+            throw new IllegalArgumentException("serverName is null");
+        }
+
+    }
+
     /** {@inheritDoc} */
     public long elementHash() {
         return 0;
@@ -95,28 +117,5 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      * @param batchBuilder the current batch builder
      */
     public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
-    }
-
-    /**
-     * Assemble a standalone server configuration from the domain/host model.
-     *
-     * @param domain the domain
-     * @param host the host
-     * @param serverName the name of the server to initialize
-     * @return the standalone server model
-     */
-    public static Standalone assemble(Domain domain, Host host, String serverName) {
-        if (domain == null) {
-            throw new IllegalArgumentException("domain is null");
-        }
-        if (host == null) {
-            throw new IllegalArgumentException("host is null");
-        }
-        if (serverName == null) {
-            throw new IllegalArgumentException("serverName is null");
-        }
-        final Standalone standalone = new Standalone(null, null);
-
-        return standalone;
     }
 }
