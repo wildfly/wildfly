@@ -122,23 +122,21 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         }
         this.threadPoolName = threadPoolName;
         // Handle elements
-        while (reader.hasNext()) {
-            if (reader.nextTag() == START_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case REMOTING_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        switch (element) {
-                            case CONNECTOR: {
-                                final ConnectorElement connector = new ConnectorElement(reader);
-                                connectors.put(connector.getName(), connector);
-                                break;
-                            }
-                            default: throw unexpectedElement(reader);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case CONNECTOR: {
+                            final ConnectorElement connector = new ConnectorElement(reader);
+                            connectors.put(connector.getName(), connector);
+                            break;
                         }
-                        break;
+                        default: throw unexpectedElement(reader);
                     }
-                    default: throw unexpectedElement(reader);
+                    break;
                 }
+                default: throw unexpectedElement(reader);
             }
         }
     }

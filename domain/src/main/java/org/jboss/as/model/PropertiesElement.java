@@ -63,19 +63,17 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        while (reader.hasNext()) {
-            if (reader.nextTag() == START_ELEMENT) {
-                final String namespace = reader.getNamespaceURI();
-                if (myNamespace == null ? namespace != null : ! myNamespace.equals(namespace)) {
-                    // wrong namespace
-                    throw unexpectedElement(reader);
-                }
-                if (reader.getLocalName().equals("property")) {
-                    // maybe a little less efficient but really, really simple
-                    addProperty(reader.getAttributeValue(null, "name"), reader.getAttributeValue(null, "value"));
-                } else {
-                    throw unexpectedElement(reader);
-                }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final String namespace = reader.getNamespaceURI();
+            if (myNamespace == null ? namespace != null : ! myNamespace.equals(namespace)) {
+                // wrong namespace
+                throw unexpectedElement(reader);
+            }
+            if (reader.getLocalName().equals("property")) {
+                // maybe a little less efficient but really, really simple
+                addProperty(reader.getAttributeValue(null, "name"), reader.getAttributeValue(null, "value"));
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }

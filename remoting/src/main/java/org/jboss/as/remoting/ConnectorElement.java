@@ -58,7 +58,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     private final String name;
     private String socketBinding;
     private SaslElement saslElement;
-    private AbstractAuthenticationProviderElement<?> authenticationProvider;
+    private String authenticationProvider;
     private PropertiesElement connectorProperties;
 
     public ConnectorElement(final Location location, final String name, final String socketBinding) {
@@ -109,30 +109,32 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         this.socketBinding = socketBinding;
         // Handle nested elements.
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext()) {
-            if (reader.nextTag() == START_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case REMOTING_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        if (visited.contains(element)) {
-                            throw unexpectedElement(reader);
-                        }
-                        visited.add(element);
-                        switch (element) {
-                            case SASL: {
-                                saslElement = new SaslElement(reader);
-                                break;
-                            }
-                            case PROPERTIES: {
-                                connectorProperties = new PropertiesElement(reader);
-                                break;
-                            }
-                            default: throw unexpectedElement(reader);
-                        }
-                        break;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw unexpectedElement(reader);
                     }
-                    default: throw unexpectedElement(reader);
+                    visited.add(element);
+                    switch (element) {
+                        case SASL: {
+                            saslElement = new SaslElement(reader);
+                            break;
+                        }
+                        case PROPERTIES: {
+                            connectorProperties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case AUTHENTICATION_PROVIDER: {
+                            authenticationProvider = readStringAttributeElement(reader, "name");
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
                 }
+                default: throw unexpectedElement(reader);
             }
         }
     }

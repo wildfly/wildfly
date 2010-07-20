@@ -67,53 +67,50 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
         }
         // Nested elements
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext()) {
-            if (reader.nextTag() == START_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case REMOTING_1_0: {
-                        final Element element = Element.forName(reader.getLocalName());
-                        if (visited.contains(element)) {
-                            throw unexpectedElement(reader);
-                        }
-                        visited.add(element);
-                        switch (element) {
-                            case INCLUDE_MECHANISMS: {
-                                includeMechanisms = readArrayAttributeElement(reader, "value", String.class);
-                                break;
-                            }
-                            case POLICY: {
-                                policy = new PolicyElement(reader);
-                                break;
-                            }
-                            case PROPERTIES: {
-                                properties = new PropertiesElement(reader);
-                                break;
-                            }
-                            case QOP: {
-                                qop = readArrayAttributeElement(reader, "value", SaslQop.class);
-                                break;
-                            }
-                            case REUSE_SESSION: {
-                                reuseSession = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case SERVER_AUTH: {
-                                serverAuth = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
-                                break;
-                            }
-                            case STRENGTH: {
-                                strength = readArrayAttributeElement(reader, "value", SaslStrength.class);
-                                break;
-                            }
-                            default: throw unexpectedElement(reader);
-                        }
-                        break;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw unexpectedElement(reader);
                     }
-                    default: throw unexpectedElement(reader);
+                    visited.add(element);
+                    switch (element) {
+                        case INCLUDE_MECHANISMS: {
+                            includeMechanisms = readArrayAttributeElement(reader, "value", String.class);
+                            break;
+                        }
+                        case POLICY: {
+                            policy = new PolicyElement(reader);
+                            break;
+                        }
+                        case PROPERTIES: {
+                            properties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case QOP: {
+                            qop = readArrayAttributeElement(reader, "value", SaslQop.class);
+                            break;
+                        }
+                        case REUSE_SESSION: {
+                            reuseSession = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case SERVER_AUTH: {
+                            serverAuth = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case STRENGTH: {
+                            strength = readArrayAttributeElement(reader, "value", SaslStrength.class);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
                 }
+                default: throw unexpectedElement(reader);
             }
         }
-
     }
 
     /** {@inheritDoc} */
