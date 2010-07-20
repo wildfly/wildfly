@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.msc.service.Location;
@@ -51,8 +52,55 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
         super(location);
     }
 
-    public PolicyElement(final XMLExtendedStreamReader reader) {
+    public PolicyElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        // Handle nested elements.
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext()) {
+            if (reader.nextTag() == START_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case REMOTING_1_0: {
+                        final Element element = Element.forName(reader.getLocalName());
+                        if (visited.contains(element)) {
+                            throw unexpectedElement(reader);
+                        }
+                        visited.add(element);
+                        switch (element) {
+                            case FORWARD_SECRECY: {
+                                forwardSecrecy = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            case NO_ACTIVE: {
+                                noActive = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            case NO_ANONYMOUS: {
+                                noAnonymous = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            case NO_DICTIONARY: {
+                                noDictionary = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            case NO_PLAINTEXT: {
+                                noPlainText = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            case PASS_CREDENTIALS: {
+                                passCredentials = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                                break;
+                            }
+                            default: throw unexpectedElement(reader);
+                        }
+                        break;
+                    }
+                    default: throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     public long elementHash() {

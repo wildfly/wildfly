@@ -22,52 +22,35 @@
 
 package org.jboss.as.remoting;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.as.model.ParseResult;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
+ * The root element parser for the Remoting subsystem.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum Attribute {
-    UNKNOWN(null),
-    /* Remoting 1.0 attributes, in alpha order */
-    NAME("name"),
-    SOCKET_BINDING("socket-binding"),
-    THREAD_POOL_NAME("thread-pool-name"),
-    VALUE("value"),
-    ;
-    private final String name;
+public final class RemotingSubsystemParser implements XMLElementReader<ParseResult<? super RemotingSubsystemElement>> {
 
-    Attribute(final String name) {
-        this.name = name;
+    private RemotingSubsystemParser() {
     }
+
+    private static final RemotingSubsystemParser INSTANCE = new RemotingSubsystemParser();
 
     /**
-     * Get the local name of this element.
+     * Get the instance.
      *
-     * @return the local name
+     * @return the instance
      */
-    public String getLocalName() {
-        return name;
+    public static RemotingSubsystemParser getInstance() {
+        return INSTANCE;
     }
 
-    private static final Map<String, Attribute> MAP;
-
-    static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
-        }
-        MAP = map;
-    }
-
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
-    }
-
-    public String toString() {
-        return getLocalName();
+    /** {@inheritDoc} */
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<? super RemotingSubsystemElement> result) throws XMLStreamException {
+        result.setResult(new RemotingSubsystemElement(reader));
     }
 }

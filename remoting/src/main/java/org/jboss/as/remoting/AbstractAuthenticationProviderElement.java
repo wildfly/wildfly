@@ -26,6 +26,7 @@ import org.jboss.as.model.AbstractModelRootElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -41,10 +42,10 @@ public abstract class AbstractAuthenticationProviderElement<E extends AbstractAu
      * Construct a new instance.
      *
      * @param location the location at which this element was declared
-     * @param namespace
+     * @param elementName the element name
      */
-    protected AbstractAuthenticationProviderElement(final Location location, final String namespace) {
-        super(location, namespace);
+    protected AbstractAuthenticationProviderElement(final Location location, final QName elementName) {
+        super(location, elementName);
     }
 
     /**

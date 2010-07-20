@@ -32,9 +32,24 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
+
+
     // Remoting 1.0 elements in alpha order
     CONNECTOR("connector"),
+    FORWARD_SECRECY("forward-secrecy"),
+    INCLUDE_MECHANISMS("include-mechanisms"),
+    NO_ACTIVE("no-active"),
+    NO_ANONYMOUS("no-anonymous"),
+    NO_DICTIONARY("no-dictionary"),
+    NO_PLAINTEXT("no-plaintext"),
+    PASS_CREDENTIALS("pass-credentials"),
+    POLICY("policy"),
+    PROPERTIES("properties"),
+    QOP("qop"),
+    REUSE_SESSION("reuse-session"),
     SASL("sasl"),
+    SERVER_AUTH("server-auth"),
+    STRENGTH("strength"),
     ;
 
     private final String name;

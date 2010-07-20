@@ -81,10 +81,11 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
      * Construct a new instance.
      *
      * @param location the declaration location of this element
-     * @param threadPoolName
+     * @param threadPoolName the name of the thread pool for the remoting subsystem
+     * @param elementName the name of the subsystem element
      */
-    public RemotingSubsystemElement(final Location location, final String threadPoolName) {
-        super(location, NAMESPACE);
+    public RemotingSubsystemElement(final Location location, final String threadPoolName, final QName elementName) {
+        super(location, elementName);
         if (threadPoolName == null) {
             throw new IllegalArgumentException("threadPoolName is null");
         }
@@ -100,12 +101,11 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         super(reader);
         // Handle attributes
         String threadPoolName = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.THREAD_POOL_NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                reader.handleAttribute(this, i);
+                throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -115,22 +115,17 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
                     }
                     default: throw unexpectedAttribute(reader, i);
                 }
-                required.remove(attribute);
             }
         }
-        if (! required.isEmpty()) {
-            throw missingRequired(reader, required);
+        if (threadPoolName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL_NAME));
         }
         this.threadPoolName = threadPoolName;
         // Handle elements
         while (reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case END_ELEMENT: {
-                    // should mean we're done, so ignore it.
-                    break;
-                }
-                case START_ELEMENT: {
-                    if (RemotingSubsystemElement.NAMESPACES.contains(reader.getNamespaceURI())) {
+            if (reader.nextTag() == START_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case REMOTING_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         switch (element) {
                             case CONNECTOR: {
@@ -138,15 +133,12 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
                                 connectors.put(connector.getName(), connector);
                                 break;
                             }
-                            // todo: auth provider, properties.
                             default: throw unexpectedElement(reader);
                         }
-                    } else {
-                        throw unexpectedElement(reader);
+                        break;
                     }
-                    break;
+                    default: throw unexpectedElement(reader);
                 }
-                default: throw new IllegalStateException();
             }
         }
     }
@@ -179,13 +171,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         return RemotingSubsystemElement.class;
     }
 
-    private static final QName ELEMENT_NAME = new QName("urn:jboss:as:remoting:1.0", "remoting-container");
-
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return ELEMENT_NAME;
-    }
-
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         for (ConnectorElement element : connectors.values()) {
@@ -214,6 +199,15 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
+    }
+
+    /**
+     * Get the name of the thread pool configured for this subsystem.
+     *
+     * @return the thread pool name
+     */
+    public String getThreadPoolName() {
+        return threadPoolName;
     }
 
     String addConnector(final ConnectorElement element) {

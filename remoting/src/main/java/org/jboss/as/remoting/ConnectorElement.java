@@ -83,7 +83,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                reader.handleAttribute(this, i);
+                throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -110,13 +110,9 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         // Handle nested elements.
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case END_ELEMENT: {
-                    // should mean we're done, so ignore it.
-                    break;
-                }
-                case START_ELEMENT: {
-                    if (RemotingSubsystemElement.NAMESPACES.contains(reader.getNamespaceURI())) {
+            if (reader.nextTag() == START_ELEMENT) {
+                switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case REMOTING_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (visited.contains(element)) {
                             throw unexpectedElement(reader);
@@ -127,15 +123,16 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
                                 saslElement = new SaslElement(reader);
                                 break;
                             }
-                            // todo: auth provider, properties.
+                            case PROPERTIES: {
+                                connectorProperties = new PropertiesElement(reader);
+                                break;
+                            }
                             default: throw unexpectedElement(reader);
                         }
-                    } else {
-                        throw unexpectedElement(reader);
+                        break;
                     }
-                    break;
+                    default: throw unexpectedElement(reader);
                 }
-                default: throw new IllegalStateException();
             }
         }
     }

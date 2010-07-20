@@ -24,6 +24,7 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
@@ -40,14 +41,20 @@ public final class Host extends AbstractModel<Host> {
      * Construct a new instance.
      *
      * @param location the declaration location of the host element
+     * @param elementName the name of this host element
      */
-    public Host(final Location location) {
-        super(location, Domain.NAMESPACE);
+    public Host(final Location location, final QName elementName) {
+        super(location, elementName);
     }
 
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return new QName(Domain.NAMESPACE, "host");
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @throws XMLStreamException if an error occurs
+     */
+    public Host(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
     }
 
     /** {@inheritDoc} */

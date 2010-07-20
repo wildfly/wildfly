@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -40,10 +41,43 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private transient final SortedMap<String, String> properties = new TreeMap<String, String>();
+    private final SortedMap<String, String> properties = new TreeMap<String, String>();
 
+    /**
+     * Construct a new instance.
+     *
+     * @param location the location at which this element was declared
+     */
     public PropertiesElement(final Location location) {
         super(location);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to construct this element.
+     */
+    public PropertiesElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        final String myNamespace = reader.getNamespaceURI();
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        while (reader.hasNext()) {
+            if (reader.nextTag() == START_ELEMENT) {
+                final String namespace = reader.getNamespaceURI();
+                if (myNamespace == null ? namespace != null : ! myNamespace.equals(namespace)) {
+                    // wrong namespace
+                    throw unexpectedElement(reader);
+                }
+                if (reader.getLocalName().equals("property")) {
+                    // maybe a little less efficient but really, really simple
+                    addProperty(reader.getAttributeValue(null, "name"), reader.getAttributeValue(null, "value"));
+                } else {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */

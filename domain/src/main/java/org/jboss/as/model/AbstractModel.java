@@ -29,6 +29,10 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.marshalling.FieldSetter;
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * A controlled object model which is related to an XML representation.  Such an object model can be serialized to
@@ -51,10 +55,20 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
      * Construct a new instance.
      *
      * @param location the declaration location of this model
-     * @param namespace the namespace in which the root element was created
+     * @param elementName the root element name
      */
-    protected AbstractModel(final Location location, final String namespace) {
-        super(location, namespace);
+    protected AbstractModel(final Location location, final QName elementName) {
+        super(location, elementName);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @throws XMLStreamException if an error occurs
+     */
+    protected AbstractModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
     }
 
     /**

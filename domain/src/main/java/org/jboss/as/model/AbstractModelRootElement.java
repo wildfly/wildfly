@@ -35,22 +35,29 @@ import javax.xml.stream.XMLStreamException;
  */
 public abstract class AbstractModelRootElement<E extends AbstractModelRootElement<E>> extends AbstractModelElement<E> {
 
-    private final String namespace;
+    private final QName elementName;
 
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of this model root element
-     * @param namespace
+     * @param elementName the element name
      */
-    protected AbstractModelRootElement(final Location location, final String namespace) {
+    protected AbstractModelRootElement(final Location location, final QName elementName) {
         super(location);
-        this.namespace = namespace;
+        this.elementName = elementName;
     }
 
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @throws XMLStreamException if an error occurs
+     */
     protected AbstractModelRootElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        namespace = reader.getNamespaceURI();
+        assert reader.getEventType() == START_ELEMENT;
+        elementName = reader.getName();
     }
 
     /**
@@ -58,14 +65,7 @@ public abstract class AbstractModelRootElement<E extends AbstractModelRootElemen
      *
      * @return the name
      */
-    protected abstract QName getElementName();
-
-    /**
-     * Get the namespace that this root element was created in.
-     *
-     * @return the namespace
-     */
-    public final String getNamespace() {
-        return namespace;
+    public final QName getElementName() {
+        return elementName;
     }
 }

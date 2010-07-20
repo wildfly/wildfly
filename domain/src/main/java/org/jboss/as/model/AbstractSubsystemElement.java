@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -44,10 +45,10 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
      * Construct a new instance.
      *
      * @param location the declaration location of this element
-     * @param namespace the namespace of the subsystem element
+     * @param elementName the element name
      */
-    protected AbstractSubsystemElement(final Location location, final String namespace) {
-        super(location, namespace);
+    protected AbstractSubsystemElement(final Location location, final QName elementName) {
+        super(location, elementName);
     }
 
     /**
