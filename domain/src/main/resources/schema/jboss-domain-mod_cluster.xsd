@@ -48,6 +48,7 @@
     <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
     <xs:sequence>
       <xs:element name="advertise-socket" type="socketType" minOccurs="0" maxOccurs="1" />
+      <xs:element minOccurs="0" ref="ssl" />
     </xs:sequence>
     <xs:attribute name="proxy-list" />
     <xs:attribute name="proxy-url" />

@@ -119,6 +119,7 @@
       <proxy-conf>
         <httpd-conf proxy-list="localhost:6666">
           <advertise-socket name="mod_cluster" />
+          <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
         </httpd-conf>
         <nodes-conf/>
       </proxy-conf>
