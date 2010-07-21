@@ -23,16 +23,15 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The JBoss AS Domain state.  An instance of this class represents the complete running state of the domain.
@@ -43,23 +42,9 @@ public final class Domain extends AbstractModel<Domain> {
 
     private static final long serialVersionUID = 5516070442013067881L;
 
-    /**
-     * The namespace of version 1.0 of the domain model.
-     */
-    public static final String NAMESPACE_1_0 = "urn:jboss:domain:1.0";
-    /**
-     * The default namespace.
-     */
-    public static final String NAMESPACE = NAMESPACE_1_0;
-
-    /**
-     * The set of recognized domain namespaces.
-     */
-    public static final Set<String> NAMESPACES = Collections.singleton(NAMESPACE_1_0);
-
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
-    private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
+    private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
 
     private PropertiesElement systemProperties;
@@ -82,6 +67,56 @@ public final class Domain extends AbstractModel<Domain> {
      */
     public Domain(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // Handle attributes
+        requireNoAttributes(reader);
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case EXTENSION: {
+                            final ExtensionElement extension = new ExtensionElement(reader);
+                            if (extensions.containsKey(extension.getModule())) {
+                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
+                            }
+                            extensions.put(extension.getModule(), extension);
+                            // load the extension so it can register handlers
+                            // TODO do this in ExtensionElement itself?
+                            registerExtensionHandlers(extension);
+                            break;
+                        }
+                        case PROFILE: {
+                            final ProfileElement profile = new ProfileElement(reader);
+                            if (profiles.containsKey(profile.getName())) {
+                                throw new XMLStreamException("Profile " + profile.getName() + " already declared", reader.getLocation());
+                            }
+                            profiles.put(profile.getName(), profile);
+                            break;
+                        }
+                        case DEPLOYMENTS: {
+                            parseDeployments(reader);
+                            break;
+                        }
+                        case SERVER_GROUPS: {
+                            parseServerGroups(reader);
+                            break;
+                        }
+                        case SYSTEM_PROPERTIES: {
+                            final PropertiesElement properties = new PropertiesElement(reader);
+                            if (this.systemProperties == null) {
+                                this.systemProperties = properties;
+                            }
+                            // else FIXME deal with multiple sets
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -127,18 +162,18 @@ public final class Domain extends AbstractModel<Domain> {
                 oldElement.appendDifference(null, newElement);
             }
         });
-        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<String, DeploymentUnitElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement newElement) {
+        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
                 // todo deploy
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
                 // todo undeploy
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
                 // todo redeploy...? or maybe just modify stuff
                 throw new UnsupportedOperationException("implement me");
             }
@@ -204,5 +239,53 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeEndElement();
         }
         streamWriter.writeEndElement();
+    }
+    
+    private void registerExtensionHandlers(ExtensionElement extension) {
+        // FIXME register
+        throw new UnsupportedOperationException("implement me");
+    }
+    
+    private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case DEPLOYMENT: {
+                            final DeploymentUnitElement deployment = new DeploymentUnitElement(reader);
+                            if (deployments.containsKey(deployment.getKey())) {
+                                throw new XMLStreamException("Deployment " + deployment.getName() + 
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                        " already declared", reader.getLocation());
+                            }
+                            deployments.put(deployment.getKey(), deployment);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }        
+    }
+    
+    private void parseServerGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SERVER_GROUP: {
+                            final ServerGroupElement serverGroup = new ServerGroupElement(reader);
+                            serverGroups.put(serverGroup.getName(), serverGroup);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }        
     }
 }

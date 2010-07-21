@@ -23,10 +23,13 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A model extension element.
@@ -52,6 +55,51 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         this.prefix = prefix;
         this.module = module;
     }
+    
+    public ExtensionElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String prefix = null;
+        String module = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PREFIX: {
+                        prefix = value;
+                        break;
+                    }
+                    case MODULE: {
+                        module = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (prefix == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.PREFIX));
+        }
+        if (module == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.MODULE));
+        }
+        this.prefix = prefix;
+        this.module = module;
+        // Handle elements
+        requireNoContent(reader);
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getModule() {
+        return module;
+    }
 
     /** {@inheritDoc} */
     public long elementHash() {
@@ -74,8 +122,8 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         final String prefix = this.prefix;
-        if (prefix != null) streamWriter.writeAttribute("prefix", prefix);
-        streamWriter.writeAttribute("module", module);
+        if (prefix != null) streamWriter.writeAttribute(Attribute.PREFIX.getLocalName(), prefix);
+        streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), module);
         streamWriter.writeEndElement();
     }
 }

@@ -23,7 +23,10 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -60,6 +63,43 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         }
         this.deploymentName = deploymentName;
         this.deploymentHash = deploymentHash;
+    }
+    
+    public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String fileName = null;
+        String sha1Hash = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        fileName = value;
+                        break;
+                    }
+                    case SHA1: {
+                        sha1Hash = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (fileName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (sha1Hash == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
+        }
+        this.deploymentName = fileName;
+        this.deploymentHash = sha1Hash.getBytes();
+        // Handle elements
+        requireNoContent(reader);
     }
 
     /** {@inheritDoc} */

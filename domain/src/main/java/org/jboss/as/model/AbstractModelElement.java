@@ -195,6 +195,18 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
     }
+    
+    protected static void requireNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+    }
+    
+    protected static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            throw unexpectedElement(reader);
+        }
+    }
 
     /**
      * Read an element which contains only a single boolean attribute.

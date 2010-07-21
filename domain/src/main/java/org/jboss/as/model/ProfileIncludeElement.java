@@ -4,10 +4,12 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -26,6 +28,38 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
         if (profile != null)
             throw new IllegalArgumentException("profile is null");
         this.profile = profile;
+    }
+    
+    public ProfileIncludeElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String profile = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PROFILE: {
+                        profile = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (profile == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.PROFILE));
+        }
+        this.profile = profile;
+        // Handle elements
+        requireNoContent(reader);
+    }
+    
+    public String getProfile() {
+        return profile;
     }
 
     @Override

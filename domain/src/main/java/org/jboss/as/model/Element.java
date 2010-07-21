@@ -38,13 +38,22 @@ public enum Element {
     DOMAIN("domain"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
+    
+    EXTENSION("extension"),
 
     INCLUDE("include"),
+    
+    JVM("jvm"),
+    
     PROFILE("profile"),
     
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),
-
+    
+    SOCKET_BINDING_GROUP("socket-binding-group"),
+    SOCKET_BINDING_GROUPS("socket-binding-groups"),
+    SYSTEM_PROPERTIES("system-properties"),
+    
     ;
 
     private final String name;
