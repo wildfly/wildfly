@@ -151,7 +151,7 @@
     </system-properties>
 
     <server-groups>
-        <server-group group-name="main-server-group" profile="something">
+        <server-group name="main-server-group" profile="something">
 
            <jvm name="icedtea1">
               <heap size="512m" max-size="1024m"/>

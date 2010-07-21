@@ -70,7 +70,7 @@
         <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
         <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
      </xs:sequence>
-     <xs:attribute name="group-name" type="xs:ID">
+     <xs:attribute name="name" type="xs:string">
         <xs:annotation>
            <xs:documentation>
               The name of the server group
@@ -97,6 +97,7 @@
 
   <xs:complexType name="deploymentType">
     <xs:annotation>
+      <!--  TODO the following documentation is out of date -->
       <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
                         any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
                         which can be enabled or disabled on a domain level.
@@ -114,11 +115,13 @@
         <xs:documentation>The checksum of the deployment</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <!--  TODO this makes no sense if this type is used at the server-group level -->
     <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>Whether the deployment is allowed.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <!--  TODO clarify what a value of 'false' means -->
     <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
