@@ -48,9 +48,10 @@
                 </config>
                 
                 <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
                                 default-virtual-server="localhost">
                     <ssl name="jbossweb"/>
+                    <socket name="https"/>
                 </connector>
 
                 <virtual-server name="localhost">

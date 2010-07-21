@@ -146,16 +146,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="socket" type="socketType" minOccurs="0" maxOccurs="1" />
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="web-connector-attlist"/>
     </xs:complexType>
   </xs:element>
-  <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
   <xs:attributeGroup name="web-connector-attlist">
     <xs:attribute name="name" use="required"/>
-    <xs:attribute name="address" use="required"/>
-    <xs:attribute name="port" use="required"/>
     <xs:attribute name="native" default="true" type="boolean"/>
     <xs:attribute name="protocol"/>
     <xs:attribute name="scheme"/>
