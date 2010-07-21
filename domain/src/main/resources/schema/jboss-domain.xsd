@@ -25,31 +25,25 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns="urn:jboss:domain:1.0"
   targetNamespace="urn:jboss:domain:1.0"
-  xmlns:sec="urn:jboss:security-config:5.0"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
 >
 
   <!-- Include the web schema definitions for reuse -->
   <xs:include schemaLocation="jboss-domain-web.xsd"/>
-  <!-- Import the security schema definitions for reuse -->
-  <xs:import namespace="urn:jboss:security-config:5.0"  schemaLocation="security-config_5_0.xsd"/>
   
   <xs:element name="domain">
     <xs:complexType>
       <xs:sequence>
-          <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <!-- TODO the domain-configuration concept needs review -->
-            <xs:element name="domain-configuration" type="domain-configurationType"/>
-            <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0"/>
-            <xs:element name="interfaces" type="named-interfacesType"/>
-            <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
-            <xs:element name="server-groups" type="server-groupsType"/>
-            <xs:element name="security-policy" type="sec:PolicyConfig" />
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
-          </xs:choice>
+          <xs:element name="extensions" type="domain-extensionsType" minOccurs="0" maxOccurs="1" />
+          <!-- TODO the domain-configuration concept needs review -->
+          <xs:element name="domain-configuration" type="domain-configurationType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="profiles" type="profilesType"  minOccurs="0" maxOccurs="1" />
+          <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="deployments" type="domain-deploymentsType"  minOccurs="0" maxOccurs="1" />
+          <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -172,6 +166,15 @@
       <xs:documentation>The URI for bootstraping a domain server</xs:documentation>
     </xs:annotation>
   </xs:element>
+
+  <xs:complexType name="domain-extensionsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of extension modules.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="extension" type="domain-extensionType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
   
   <xs:complexType name="domain-extensionType">
     <xs:annotation>
@@ -192,6 +195,15 @@
       </xs:annotation>
     </xs:attribute>
     
+  </xs:complexType>
+
+  <xs:complexType name="profilesType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of profiles available for use in the domain</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="profile" type="profileType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="profileType">

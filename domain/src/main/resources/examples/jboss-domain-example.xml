@@ -24,7 +24,10 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd">
 
-    <extension prefix="xx" module="org.foo:blah"/>
+    <extensions>
+        <extension prefix="xx" module="org.foo:blah"/>
+    </extensions>
+    
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
@@ -32,55 +35,51 @@
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
 
-    <profile name="something">
-        <!-- FIXME move web-containers to another namespace -->
-        <web-containers>
-            <web-container name="jboss.web">
-                <config>
-                    <servlets>
-                        <default listings="true" />
-                        <ssi/>
-                    </servlets>
-                </config>
-                
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-                </connector>
-
-                <virtual-server name="localhost">
-                    <access-log/>
-                    <connector>httpsConnector</connector>
-                    <host>localhost</host>
-                </virtual-server>
-           </web-container>
-        </web-containers>
-    </profile>
-
-    <!-- An example of bringing in subsytems that use other namespaces. This
-         won't validate in this module because the foreign schemas are located in
-         other modules and are not visible when this module's testsuite runs.
-         The testsuite/smoke module includes an equivalent file
-    <profile name="something2">
-        <include profile="something"/>
-        <threads:subsystem>
-            <threads:queueless-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="s"/>
-            </threads:queueless-thread-pool-executor>
-        </threads:subsystem>
-        <remoting:subsystem thread-pool="remoting-pool">
-            <remoting:connector name="default-connector" socket-binding="remoting"/>
-        </remoting:subsystem>
-    </profile>
-    -->
-
-    <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
-    </deployments>
+    <profiles>
+        <profile name="something">
+            <!-- FIXME move web-containers to another namespace -->
+            <web-containers>
+                <web-container name="jboss.web">
+                    <config>
+                        <servlets>
+                            <default listings="true" />
+                            <ssi/>
+                        </servlets>
+                    </config>
+                    
+                    <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                    <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                    default-virtual-server="localhost">
+                        <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+                    </connector>
+    
+                    <virtual-server name="localhost">
+                        <access-log/>
+                        <connector>httpsConnector</connector>
+                        <host>localhost</host>
+                    </virtual-server>
+               </web-container>
+            </web-containers>
+        </profile>
+    
+        <!-- An example of bringing in subsytems that use other namespaces. This
+             won't validate in this module because the foreign schemas are located in
+             other modules and are not visible when this module's testsuite runs.
+             The testsuite/smoke module includes an equivalent file
+        <profile name="something2">
+            <include profile="something"/>
+            <threads:subsystem>
+                <threads:queueless-thread-pool-executor name="remoting">
+                    <threads:max-threads count="10" per-cpu="20"/>
+                    <threads:keepalive-time time="10" unit="s"/>
+                </threads:queueless-thread-pool-executor>
+            </threads:subsystem>
+            <remoting:subsystem thread-pool="remoting-pool">
+                <remoting:connector name="default-connector" socket-binding="remoting"/>
+            </remoting:subsystem>
+        </profile>
+        -->
+    </profiles>
 
     <!--  
          Named interfaces that can be referenced elsewhere. Different
@@ -149,6 +148,12 @@
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
+
+    <deployments>
+        <deployment name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
+    </deployments>
 
     <server-groups>
         <server-group name="main-server-group" profile="something">
