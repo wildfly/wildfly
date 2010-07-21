@@ -23,7 +23,6 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -40,63 +39,32 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
 
     private static final long serialVersionUID = -90177370272205647L;
 
-    private final String prefix;
     private final String module;
 
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of this element
-     * @param prefix the extension prefix, if any
-     * @param module the module identifier of the subsystem
+     * @param module the module identifier of the extension
      */
-    public ExtensionElement(final Location location, final String prefix, final String module) {
+    public ExtensionElement(final Location location, final String module) {
         super(location);
-        this.prefix = prefix;
         this.module = module;
     }
     
     public ExtensionElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
-        String prefix = null;
-        String module = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case PREFIX: {
-                        prefix = value;
-                        break;
-                    }
-                    case MODULE: {
-                        module = value;
-                        break;
-                    }
-                    default: throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (prefix == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.PREFIX));
-        }
-        if (module == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.MODULE));
-        }
-        this.prefix = prefix;
-        this.module = module;
+        this.module = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
         // Handle elements
         requireNoContent(reader);
     }
 
-    public String getPrefix() {
-        return prefix;
-    }
-
+    /**
+     * Gets the module identifier of the extension
+     * 
+     * @return the module identifier
+     */
     public String getModule() {
         return module;
     }
@@ -104,8 +72,7 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
     /** {@inheritDoc} */
     public long elementHash() {
         final String module = this.module;
-        final String prefix = this.prefix;
-        long hc = (prefix == null ? 0 : prefix.hashCode() & 0xFFFFFFFFL << 32L) | module.hashCode() & 0xFFFFFFFF;
+        long hc = module.hashCode() & 0xFFFFFFFF;
         return hc;
     }
 
@@ -121,8 +88,6 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        final String prefix = this.prefix;
-        if (prefix != null) streamWriter.writeAttribute(Attribute.PREFIX.getLocalName(), prefix);
         streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), module);
         streamWriter.writeEndElement();
     }

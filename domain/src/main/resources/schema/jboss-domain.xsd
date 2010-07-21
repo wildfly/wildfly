@@ -180,18 +180,9 @@
     <xs:annotation>
       <xs:documentation>An extension module that adds extensions to the domain</xs:documentation>
     </xs:annotation>
-    <xs:attribute name="prefix" use="optional">
-      <xs:annotation>
-        <xs:documentation>A prefix that if applied to a subsystem name identifies
-         that subsystem as being associated with this extension module. Used to
-         provide a namespace for subsystem names so unrelated extension modules
-         that happen to use the same subsystem names can be used.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="module" use="required" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the module, in group:artifiact format; e.g. org.foo:widget</xs:documentation>
+        <xs:documentation>The name of the module, in group:artifact format; e.g. org.foo:widget</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     

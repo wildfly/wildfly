@@ -29,7 +29,7 @@
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
     <extensions>
-        <extension prefix="xx" module="org.foo:blah"/>
+        <extension module="org.foo:blah"/>
     </extensions>
 
     <!-- The domain manager/server bootstrap configuration -->
