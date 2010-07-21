@@ -197,6 +197,17 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     }
 
     /**
+     * Get an exception reporting that an element of a given type and name has already been declared in this scope.
+     *
+     * @param reader the stream reader
+     * @param name the name that was redeclared
+     * @return the exception
+     */
+    protected static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
+        return new XMLStreamException("An element of this type named '" + name + "' has already been declared", reader.getLocation());
+    }
+
+    /**
      * Read an element which contains only a single boolean attribute.
      *
      * @param reader the reader
@@ -206,11 +217,9 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     protected static boolean readBooleanAttributeElement(final XMLExtendedStreamReader reader, final String attributeName) throws XMLStreamException {
         requireSingleAttribute(reader, attributeName);
-        try {
-            return Boolean.parseBoolean(reader.getAttributeValue(0));
-        } finally {
-            consumeRemainder(reader);
-        }
+        final boolean value = Boolean.parseBoolean(reader.getAttributeValue(0));
+        consumeRemainder(reader);
+        return value;
     }
 
     /**
@@ -223,11 +232,9 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     protected static String readStringAttributeElement(final XMLExtendedStreamReader reader, final String attributeName) throws XMLStreamException {
         requireSingleAttribute(reader, attributeName);
-        try {
-            return reader.getAttributeValue(0);
-        } finally {
-            consumeRemainder(reader);
-        }
+        final String value = reader.getAttributeValue(0);
+        consumeRemainder(reader);
+        return value;
     }
 
     /**
@@ -243,12 +250,10 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     @SuppressWarnings({ "unchecked" })
     protected static <T> List<T> readListAttributeElement(final XMLExtendedStreamReader reader, final String attributeName, final Class<T> type) throws XMLStreamException {
         requireSingleAttribute(reader, attributeName);
-        try {
-            // todo: fix this when this method signature is corrected
-            return (List<T>) reader.getListAttributeValue(0, type);
-        } finally {
-            consumeRemainder(reader);
-        }
+        // todo: fix this when this method signature is corrected
+        final List<T> value = (List<T>) reader.getListAttributeValue(0, type);
+        consumeRemainder(reader);
+        return value;
     }
 
     /**
