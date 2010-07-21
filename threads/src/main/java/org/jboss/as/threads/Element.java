@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,24 +32,21 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
-    // Remoting 1.0 elements in alpha order
-    AUTHENTICATION_PROVIDER("authentication-provider"),
-    CONNECTOR("connector"),
-    FORWARD_SECRECY("forward-secrecy"),
-    INCLUDE_MECHANISMS("include-mechanisms"),
-    NO_ACTIVE("no-active"),
-    NO_ANONYMOUS("no-anonymous"),
-    NO_DICTIONARY("no-dictionary"),
-    NO_PLAINTEXT("no-plaintext"),
-    PASS_CREDENTIALS("pass-credentials"),
-    POLICY("policy"),
+    // Threads 1.0 elements in alpha order
+    BOUNDED_QUEUE_THREAD_POOL_EXECUTOR("bounded-queue-thread-pool-executor"),
+    CORE_THREADS("core-threads"),
+    HANDOFF_EXECUTOR("handoff-executor"),
+    KEEPALIVE_TIME("keepalive-time"),
+    MAX_THREADS("max-threads"),
     PROPERTIES("properties"),
-    QOP("qop"),
-    REUSE_SESSION("reuse-session"),
-    SASL("sasl"),
-    SERVER_AUTH("server-auth"),
-    STRENGTH("strength"),
+    PROPERTY("property"),
+    QUEUE_LENGTH("queue-length"),
+    QUEUELESS_THREAD_POOL_EXECUTOR("queueless-thread-pool-executor"),
+    SCHEDULED_THREAD_POOL_EXECUTOR("scheduled-thread-pool-executor"),
     SUBSYSTEM("subsystem"),
+    THREAD_FACTORY("thread-factory"),
+    THREAD_FACTORY_EXECUTOR("thread-factory-executor"),
+    UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR("unbounded-queue-thread-pool-executor"),
     ;
 
     private final String name;
@@ -82,4 +79,5 @@ public enum Element {
         final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
+
 }

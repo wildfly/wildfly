@@ -20,66 +20,56 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The namespaces supported by the threads extension.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum Element {
+public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    // Remoting 1.0 elements in alpha order
-    AUTHENTICATION_PROVIDER("authentication-provider"),
-    CONNECTOR("connector"),
-    FORWARD_SECRECY("forward-secrecy"),
-    INCLUDE_MECHANISMS("include-mechanisms"),
-    NO_ACTIVE("no-active"),
-    NO_ANONYMOUS("no-anonymous"),
-    NO_DICTIONARY("no-dictionary"),
-    NO_PLAINTEXT("no-plaintext"),
-    PASS_CREDENTIALS("pass-credentials"),
-    POLICY("policy"),
-    PROPERTIES("properties"),
-    QOP("qop"),
-    REUSE_SESSION("reuse-session"),
-    SASL("sasl"),
-    SERVER_AUTH("server-auth"),
-    STRENGTH("strength"),
-    SUBSYSTEM("subsystem"),
+    THREADS_1_0("urn:jboss:domain:threads:1.0")
     ;
+
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = THREADS_1_0;
 
     private final String name;
 
-    Element(final String name) {
+    Namespace(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the local name of this element.
+     * Get the URI of this namespace.
      *
-     * @return the local name
+     * @return the URI
      */
-    public String getLocalName() {
+    public String getUriString() {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
+    private static final Map<String, Namespace> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) map.put(name, namespace);
         }
         MAP = map;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }
 }
