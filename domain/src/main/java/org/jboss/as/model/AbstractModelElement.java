@@ -196,12 +196,26 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
     }
     
+    /**
+     * Checks that the current element has no attributes, throwing an {@link XMLStreamException}
+     * if one is found.
+     *
+     * @param reader the reader
+     * @throws XMLStreamException if an error occurs
+     */
     protected static void requireNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
     }
     
+    /**
+     * Consumes the remainder of the current element, throwing an {@link XMLStreamException}
+     * if it contains any child elements.
+     *
+     * @param reader the reader
+     * @throws XMLStreamException if an error occurs
+     */
     protected static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             throw unexpectedElement(reader);
@@ -221,7 +235,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         try {
             return Boolean.parseBoolean(reader.getAttributeValue(0));
         } finally {
-            consumeRemainder(reader);
+            requireNoContent(reader);
         }
     }
 
@@ -238,7 +252,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         try {
             return reader.getAttributeValue(0);
         } finally {
-            consumeRemainder(reader);
+            requireNoContent(reader);
         }
     }
 
@@ -259,7 +273,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             // todo: fix this when this method signature is corrected
             return (List<T>) reader.getListAttributeValue(0, type);
         } finally {
-            consumeRemainder(reader);
+            requireNoContent(reader);
         }
     }
 
@@ -277,23 +291,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     protected static <T> T[] readArrayAttributeElement(final XMLExtendedStreamReader reader, final String attributeName, final Class<T> type) throws XMLStreamException {
         final List<T> list = readListAttributeElement(reader, attributeName, type);
         return list.toArray((T[]) Array.newInstance(type, list.size()));
-    }
-
-    /**
-     * Consume the remainder of this element.
-     *
-     * @param reader the reader
-     * @throws XMLStreamException if an error occurs
-     */
-    protected static void consumeRemainder(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext()) {
-            final int t = reader.nextTag();
-            switch (t) {
-                case END_ELEMENT: return;
-                case START_ELEMENT: throw unexpectedElement(reader);
-                default: throw new IllegalStateException();
-            }
-        }
     }
 
     /**
