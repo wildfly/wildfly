@@ -39,9 +39,8 @@ import javax.xml.stream.XMLStreamException;
 public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> {
     private static final long serialVersionUID = -7282640684801436543L;
 
-    private final String deploymentName;
-    private final byte[] deploymentHash;
-    // todo: deployment overrides
+    private final DeploymentUnitKey key;
+    private final boolean start;
 
     /**
      * Construct a new instance.
@@ -50,7 +49,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash) {
+    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start) {
         super(location);
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
@@ -61,8 +60,8 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (deploymentHash.length != 20) {
             throw new IllegalArgumentException("deploymentHash is not a valid length");
         }
-        this.deploymentName = deploymentName;
-        this.deploymentHash = deploymentHash;
+        this.key = new DeploymentUnitKey(deploymentName, deploymentHash);
+        this.start = start;
     }
     
     public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -70,6 +69,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         // Handle attributes
         String fileName = null;
         String sha1Hash = null;
+        String start = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -86,6 +86,10 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                         sha1Hash = value;
                         break;
                     }
+                    case START: {
+                        start = value;
+                        break;
+                    }
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
@@ -96,16 +100,27 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.deploymentName = fileName;
-        this.deploymentHash = sha1Hash.getBytes();
+        this.key = new DeploymentUnitKey(fileName, sha1Hash.getBytes());
+        this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
         requireNoContent(reader);
     }
 
+    public String getName() {
+        return key.getName();
+    }
+
+    public byte[] getSha1Hash() {
+        return key.getSha1Hash();
+    }
+
+    public boolean isStart() {
+        return start;
+    }
+
     /** {@inheritDoc} */
     public long elementHash() {
-        final byte[] hash = deploymentHash;
-        return deploymentName.hashCode() & 0xFFFFFFFFL ^ calculateElementHashOf(hash);
+        return key.elementHash();
     }
 
     /** {@inheritDoc} */

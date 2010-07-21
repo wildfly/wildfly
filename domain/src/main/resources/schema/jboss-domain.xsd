@@ -43,7 +43,7 @@
             <!-- TODO the domain-configuration concept needs review -->
             <xs:element name="domain-configuration" type="domain-configurationType"/>
             <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
+            <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0"/>
             <xs:element name="interfaces" type="named-interfacesType"/>
             <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
             <xs:element name="server-groups" type="server-groupsType"/>
@@ -65,7 +65,7 @@
         <xs:element name="jvm" type="jvmType" minOccurs="0"/>
         <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
             
-        <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
+        <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
 
         <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
         <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
@@ -86,24 +86,18 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="domainDeploymentsType">
+  <xs:complexType name="mapped-deploymentsType">
     <xs:annotation>
-      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+      <xs:documentation>Contains a list of deployments that have been mapped to a server-group.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+      <xs:element name="deployment" type="mapped-deploymentType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="deploymentType">
+  
+  <xs:complexType name="mapped-deploymentType">    
     <xs:annotation>
-      <!--  TODO the following documentation is out of date -->
-      <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
-                        any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
-                        which can be enabled or disabled on a domain level.
-
-                        If a certain deployment (or a set of) is not relevant for a specific server-group
-                        this deployment (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+      <xs:documentation>A deployment that has been mapped to a server group.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" use="required">
       <xs:annotation>
@@ -115,18 +109,39 @@
         <xs:documentation>The checksum of the deployment</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <!--  TODO this makes no sense if this type is used at the server-group level -->
-    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the deployment is allowed.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <!--  TODO clarify what a value of 'false' means -->
     <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="domain-deploymentsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="deploymentType">
+    <xs:annotation>
+        <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
+                        any kind of standard archive such as RAR or JBoss-specific deployment),
+                        which can be enabled or disabled on a domain level.
+        </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+        <xs:extension base="mapped-deploymentType">
+            <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+              <xs:annotation>
+                <xs:documentation>Whether the deployment is allowed.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+        </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
 <!-- TODO this is not used anywhere yet -->

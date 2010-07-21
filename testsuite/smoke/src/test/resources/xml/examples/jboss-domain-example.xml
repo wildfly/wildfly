@@ -78,7 +78,7 @@
     <deployments>
         <deployment name="my-app.ear" sha1="xxx"/>
         <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" start="false"/>
+        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
     </deployments>
 
     <!--  
