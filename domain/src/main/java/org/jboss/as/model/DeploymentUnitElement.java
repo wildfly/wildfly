@@ -31,13 +31,18 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 
+/**
+ * A deployment that is known to the domain.
+ * 
+ * @author Brian Stansberry
+ */
 public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
 
     private static final long serialVersionUID = 5335163070198512362L;
 
     private final DeploymentUnitKey key;
-    private final boolean allowed;
-    private final boolean start;
+    private boolean allowed;
+    private boolean start;
 
     public DeploymentUnitElement(final Location location, final String fileName, 
             final byte[] sha1Hash, final boolean allowed, final boolean start) {
@@ -96,31 +101,83 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         requireNoContent(reader);
     }
     
+    /**
+     * Gets the identifier of this deployment that's suitable for use as a map key.
+     * @return the key
+     */
     public DeploymentUnitKey getKey() {
         return key;
     }
-
+    
+    /**
+     * Gets the name of the deployment.
+     * 
+     * @return the name
+     */
     public String getName() {
         return key.getName();
     }
 
+    /**
+     * Gets a defensive copy of the sha1 hash of the deployment.
+     * 
+     * @return the hash
+     */
     public byte[] getSha1Hash() {
         return key.getSha1Hash();
     }
 
-    public boolean isAllowed() {
-        return allowed;
-    }
-
+    /**
+     * Gets whether the deployment should be started upon server start.
+     * 
+     * @return <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
     public boolean isStart() {
         return start;
     }
+    
+    /**
+     * Sets whether the deployments should be started upon server start.
+     * @param start <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    void setStart(boolean start) {
+        this.start = start;
+    }
+
+    /**
+     * Gets whether the deployment can be mapped to a server group; i.e. made
+     * available to servers.
+     * 
+     * @return <code>true</code> if the deployment can be mapped; <code>false</code>
+     *         if not.
+     */
+    public boolean isAllowed() {
+        return allowed;
+    }
+    
+    /**
+     * Sets whether the deployment can be mapped to a server group; i.e. made
+     * available to servers.
+     * 
+     * @param allowed <code>true</code> if the deployment can be mapped; <code>false</code>
+     *         if not.
+     */
+    void setAllowed(boolean allowed) {
+        this.allowed = allowed;
+    }
 
     public long elementHash() {
-        return key.elementHash();
+        long hash = key.elementHash();
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowed).hashCode() & 0xffffffffL;
+        return hash;
     }
 
     protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     protected Class<DeploymentUnitElement> getElementClass() {
@@ -128,7 +185,8 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     }
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        key.writeContent(streamWriter);
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
         streamWriter.writeEndElement();
     }
 }

@@ -40,7 +40,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     private static final long serialVersionUID = -7282640684801436543L;
 
     private final DeploymentUnitKey key;
-    private final boolean start;
+    private boolean start;
 
     /**
      * Construct a new instance.
@@ -100,31 +100,68 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.key = new DeploymentUnitKey(fileName, sha1Hash.getBytes());
+        this.key = new DeploymentUnitKey(fileName, hexStringToByteArray(sha1Hash));
         this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
         requireNoContent(reader);
     }
+    
+    /**
+     * Gets the identifier of this deployment that's suitable for use as a map key.
+     * @return the key
+     */
+    public DeploymentUnitKey getKey() {
+        return key;
+    }
 
+    /**
+     * Gets the name of the deployment.
+     * 
+     * @return the name
+     */
     public String getName() {
         return key.getName();
     }
 
+    /**
+     * Gets a defensive copy of the sha1 hash of the deployment.
+     * 
+     * @return the hash
+     */
     public byte[] getSha1Hash() {
         return key.getSha1Hash();
     }
 
+    /**
+     * Gets whether the deployment should be started upon server start.
+     * 
+     * @return <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
     public boolean isStart() {
         return start;
+    }
+    
+    /**
+     * Sets whether the deployments should be started upon server start.
+     * @param start <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    void setStart(boolean start) {
+        this.start = start;
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
-        return key.elementHash();
+        long hash = key.elementHash();
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
+        return hash;
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupDeploymentElement>> target, final ServerGroupDeploymentElement other) {
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
@@ -134,5 +171,8 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
+        if (!this.start) streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
     }
 }

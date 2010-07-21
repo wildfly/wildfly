@@ -43,7 +43,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     private final String name;
     private final String profile;
-    private final Map<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
+    private final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
 
     /**
      * Construct a new instance.
@@ -165,10 +165,13 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                     switch (element) {
                         case DEPLOYMENT: {
                             final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
-                            // FIXME what's the key?
-                            //deploymentMappings.put(deployment., deployment);
-                            throw new UnsupportedOperationException("determine a key for ServerGroupDeploymentElement");
-                            //break;
+                            if (deploymentMappings.containsKey(deployment.getKey())) {
+                                throw new XMLStreamException("Deployment " + deployment.getName() + 
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                        " already declared", reader.getLocation());
+                            }
+                            deploymentMappings.put(deployment.getKey(), deployment);
+                            break;
                         }
                         default: throw unexpectedElement(reader);
                     }
