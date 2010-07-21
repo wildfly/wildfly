@@ -50,7 +50,7 @@
                 <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
                 <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
                                 default-virtual-server="localhost">
-                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+                    <ssl name="jbossweb"/>
                 </connector>
 
                 <virtual-server name="localhost">
@@ -143,6 +143,10 @@
             <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
          </socket-binding-group>
     </socket-binding-groups>
+
+    <ssls>
+         <ssl name="jbossweb" password="changeit" cipher-suite="SSLv2+SSLv3"/>
+    </ssls>
 
     <system-properties>
         <property name="prop1" value="value1"/>

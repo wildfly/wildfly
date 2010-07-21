@@ -145,7 +145,7 @@
   <xs:element name="connector">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="ssl" />
+        <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="web-connector-attlist"/>
@@ -166,17 +166,6 @@
     <xs:attribute name="enabled" default="true" type="boolean"/>
     <xs:attribute name="executor" type="xs:IDREF" />     
   </xs:attributeGroup>
-
-<!--
-  <xs:element name="ssl">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="SSLConf" type="SSLConfType" />
-      </xs:sequence>
-      <xs:attribute name="name" use="required"/>
-    </xs:complexType>
-  </xs:element>
- -->
 
   <xs:element name="virtual-server">
     <xs:complexType>

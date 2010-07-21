@@ -49,6 +49,7 @@
             <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
             <xs:element name="interfaces" type="named-interfacesType"/>
             <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
+            <xs:element name="ssls" type="sslsType"/>
             <xs:element name="server-groups" type="server-groupsType"/>
             <xs:element name="security-policy" type="sec:PolicyConfig" />
             <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
@@ -297,6 +298,16 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+   </xs:complexType>
+
+   <!-- SSL related definitions -->
+   <xs:complexType name="sslsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of SSL definition</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ssl" type="sslType" maxOccurs="unbounded"/>
+    </xs:sequence>
    </xs:complexType>
 
     <!-- resources related definitions -->
