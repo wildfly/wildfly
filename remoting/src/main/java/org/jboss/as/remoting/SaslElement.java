@@ -23,10 +23,13 @@
 package org.jboss.as.remoting;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Locale;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.Options;
@@ -47,12 +50,67 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
     private PolicyElement policy;
     private String[] includeMechanisms;
     private SaslQop[] qop;
-    private SaslStrength strength;
+    private SaslStrength[] strength;
     private Boolean reuseSession;
     private Boolean serverAuth;
 
-    public SaslElement() {
-        super(null);
+    public SaslElement(final Location location) {
+        super(location);
+    }
+
+    public SaslElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // No attributes
+        final int count = reader.getAttributeCount();
+        if (count > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        // Nested elements
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw unexpectedElement(reader);
+                    }
+                    visited.add(element);
+                    switch (element) {
+                        case INCLUDE_MECHANISMS: {
+                            includeMechanisms = readArrayAttributeElement(reader, "value", String.class);
+                            break;
+                        }
+                        case POLICY: {
+                            policy = new PolicyElement(reader);
+                            break;
+                        }
+                        case PROPERTIES: {
+                            properties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case QOP: {
+                            qop = readArrayAttributeElement(reader, "value", SaslQop.class);
+                            break;
+                        }
+                        case REUSE_SESSION: {
+                            reuseSession = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case SERVER_AUTH: {
+                            serverAuth = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            break;
+                        }
+                        case STRENGTH: {
+                            strength = readArrayAttributeElement(reader, "value", SaslStrength.class);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -62,7 +120,7 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
         if (policy != null) hash = Long.rotateLeft(hash, 1) ^ policy.elementHash();
         if (includeMechanisms != null) hash = calculateElementHashOf(includeMechanisms, hash);
         if (qop != null) hash = calculateElementHashOf(qop, hash);
-        if (strength != null) hash = Long.rotateLeft(hash, 1) ^ (long)strength.ordinal();
+        if (strength != null) hash = calculateElementHashOf(strength, hash);
         if (reuseSession != null) hash = Long.rotateLeft(hash, 1) ^ reuseSession.hashCode();
         if (serverAuth != null) hash = Long.rotateLeft(hash, 1) ^ serverAuth.hashCode();
         return hash;
@@ -127,7 +185,8 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
             builder.set(Options.SASL_QOP, Sequence.of(qop));
         }
         if (strength != null) {
-            builder.set(Options.SASL_STRENGTH, strength);
+            // todo - fix this in XNIO
+//            builder.set(Options.SASL_STRENGTH, Sequence.of(strength));
         }
         if (reuseSession != null) {
             builder.set(Options.SASL_REUSE, reuseSession);

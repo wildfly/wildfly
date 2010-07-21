@@ -27,13 +27,17 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 /**
- * The base class of all container elements.
+ * The base class of all subsystem elements.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractContainerElement<E extends AbstractContainerElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
+public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
 
     private static final long serialVersionUID = 899219830157478004L;
 
@@ -41,9 +45,19 @@ public abstract class AbstractContainerElement<E extends AbstractContainerElemen
      * Construct a new instance.
      *
      * @param location the declaration location of this element
+     * @param elementName the element name
      */
-    protected AbstractContainerElement(final Location location) {
-        super(location);
+    protected AbstractSubsystemElement(final Location location, final QName elementName) {
+        super(location, elementName);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which the element content should be read
+     */
+    protected AbstractSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
     }
 
     /**

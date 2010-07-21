@@ -33,18 +33,61 @@
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
 
-    <extension prefix="xx" module="org.foo:blah"/>
-
     <profile name="something">
-        <subsystem name="ejb"/>
-        <subsystem name="war"/>
-        <subsystem name="jms"/>
-        <subsystem name="xx:fancy"/>
+        <!-- FIXME move web-containers to another namespace -->
+        <web-containers>
+            <web-container name="jboss.web">
+                <config>
+                    <servlets>
+                        <default listings="true" />
+                        <ssi/>
+                    </servlets>
+                </config>
+                
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+                </connector>
+
+                <virtual-server name="localhost">
+                    <access-log/>
+                    <connector>httpsConnector</connector>
+                    <host>localhost</host>
+                </virtual-server>
+           </web-container>
+        </web-containers>
+
+        <!-- mod_cluster for all the web containers defined? -->
+        <mod-cluster-config>
+          <proxy-conf>
+            <httpd-conf proxy-list="localhost:6666">
+              <advertise-socket name="mod_cluster" />
+              <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+            </httpd-conf>
+            <nodes-conf/>
+          </proxy-conf>
+        </mod-cluster-config>
+
     </profile>
 
-    <profile name="something2" extends="something">
-        <subsystem name="additional"/>
+    <!-- An example of bringing in subsytems that use other namespaces. This
+         won't validate in this module because the foreign schemas are located in
+         other modules and are not visible when this module's testsuite runs.
+         The testsuite/smoke module includes an equivalent file
+    <profile name="something2">
+        <include profile="something"/>
+        <threads:subsystem>
+            <threads:queueless-thread-pool-executor name="remoting">
+                <threads:max-threads count="10" per-cpu="20"/>
+                <threads:keepalive-time time="10" unit="s"/>
+            </threads:queueless-thread-pool-executor>
+        </threads:subsystem>
+        <remoting:subsystem thread-pool="remoting-pool">
+            <remoting:connector name="default-connector" socket-binding="remoting"/>
+        </remoting:subsystem>
     </profile>
+    -->
 
     <deployments>
         <deployment name="my-app.ear" sha1="xxx"/>
@@ -114,32 +157,6 @@
             <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
          </socket-binding-group>
     </socket-binding-groups>
-
-    <mod-cluster-config>
-      <proxy-conf>
-        <httpd-conf proxy-list="localhost:6666">
-          <advertise-socket name="mod_cluster" />
-          <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-        </httpd-conf>
-        <nodes-conf/>
-      </proxy-conf>
-    </mod-cluster-config>
-
-    <containers>
-        <web-containers>
-            <web-container name="jboss.web">
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-                </http-connector>
-
-                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
-                    <access-log/>
-                </virtual-server>
-           </web-container>
-        </web-containers>
-    </containers>
 
     <system-properties>
         <property name="prop1" value="value1"/>

@@ -37,4 +37,17 @@
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Stress Tests</name>
+    
+    <profiles>
+        <!-- Enable the stress-tests profile to execute this module's tests -->
+        <profile>
+            <id>stress-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipExecUnitTests>false</skipExecUnitTests>
+            </properties>
+        </profile>
+    </profiles>  
 </project>

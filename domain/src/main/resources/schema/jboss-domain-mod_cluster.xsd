@@ -26,7 +26,9 @@
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
   >
- 
+
+  <xs:element name="mod-cluster-config" type="mod-cluster-configType"/>
+
   <xs:complexType name="mod-cluster-configType">
     <xs:sequence>
       <xs:element ref="load-metric" minOccurs="0" maxOccurs="1"/>

@@ -28,6 +28,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
@@ -60,15 +61,26 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
 
-    private final PropertiesElement systemProperties = new PropertiesElement(null);
+    private PropertiesElement systemProperties;
 
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of the domain element
+     * @param elementName the element name of this domain element
      */
-    public Domain(final Location location) {
-        super(location);
+    public Domain(final Location location, final QName elementName) {
+        super(location, elementName);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @throws XMLStreamException if an error occurs
+     */
+    public Domain(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
     }
 
     /** {@inheritDoc} */
@@ -77,7 +89,7 @@ public final class Domain extends AbstractModel<Domain> {
         hash = calculateElementHashOf(extensions.values(), hash);
         hash = calculateElementHashOf(serverGroups.values(), hash);
         hash = calculateElementHashOf(deployments.values(), hash);
-        hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
+        if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
 
@@ -131,11 +143,6 @@ public final class Domain extends AbstractModel<Domain> {
     /** {@inheritDoc} */
     protected Class<Domain> getElementClass() {
         return Domain.class;
-    }
-
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return new QName(NAMESPACE, "domain");
     }
 
     /** {@inheritDoc} */

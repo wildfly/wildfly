@@ -26,7 +26,13 @@
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
 >
- 
+
+    <!-- Include the common definitions  -->
+    <!-- Just for testing...
+    <xs:include schemaLocation="jboss-domain-common.xsd"/>
+      -->
+   
+   <xs:element name="web-containers" type="web-containersType"/>
    <xs:complexType name="web-containersType">
        <xs:sequence>
            <xs:element name="web-container" type="web-containerType" minOccurs="1" maxOccurs="unbounded" />
@@ -37,35 +43,117 @@
    <xs:complexType name="web-containerType">
    <!--  FIXME classloading delegation and package filtering ? -->
       <xs:sequence>
-          <xs:element maxOccurs="unbounded" ref="http-connector"/>
+          <xs:element minOccurs="0" maxOccurs="1" ref="config"/>
+          <xs:element maxOccurs="unbounded" ref="connector"/>
           <xs:element maxOccurs="unbounded" ref="virtual-server"/>
           <xs:element name="web-jar" minOccurs="0" maxOccurs="unbounded" type="xs:string">
               <xs:annotation>
                   <xs:documentation>JARs which may contain shared TLDs or SCIs</xs:documentation>
               </xs:annotation>
           </xs:element>
-          <xs:element name="web-xml" minOccurs="0" maxOccurs="1" type="xs:string" 
-            default="${jboss.server.home.dir}/conf/web.xml">
-              <xs:annotation>
-                  <xs:documentation>Path to shared web.xml</xs:documentation>
-              </xs:annotation>
-          </xs:element>
       </xs:sequence>
       <xs:attribute name="name" use="required"/>
   </xs:complexType>
 
-  <xs:element name="http-connector">
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" ref="filters"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="servlets"/>
+        <xs:element name="mime-mapping" minOccurs="0" maxOccurs="unbounded" type="propertiesWithRequiredValueType" />
+        <xs:element name="welcome-file" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="filters">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-filterType"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="servlets">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="default" type="default-servletType"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="jsp" type="jsp-servletType"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-servletType"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="cgi" type="cgi-servletType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="default-servletType">
+    <xs:attribute name="listings" default="true" type="boolean"/>
+    <xs:attribute name="sendfile" default="49152"/>
+    <xs:attribute name="file-encoding"/>
+    <xs:attribute name="read-only" default="true" type="boolean"/>
+    <xs:attribute name="webdav" default="false" type="boolean"/>
+    <xs:attribute name="secret"/>
+    <xs:attribute name="max-depth" default="3"/>
+  </xs:complexType>
+
+  <xs:complexType name="jsp-servletType">
+    <xs:attribute name="development" default="false" type="boolean"/>
+    <xs:attribute name="keep-generated" default="true" type="boolean"/>
+    <xs:attribute name="trim-spaces" default="false" type="boolean"/>
+    <xs:attribute name="tag-pooling" default="true" type="boolean"/>
+    <xs:attribute name="mapped-file" default="true" type="boolean"/>
+    <xs:attribute name="check-interval" default="0"/>
+    <xs:attribute name="modification-test-interval" default="4"/>
+    <xs:attribute name="recompile-on-fail" default="false" type="boolean"/>
+    <xs:attribute name="smap" default="true" type="boolean"/>
+    <xs:attribute name="dump-smap" default="false" type="boolean"/>
+    <xs:attribute name="generate-strings-as-char-arrays" default="false" type="boolean"/>
+    <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="boolean"/>
+    <xs:attribute name="scratch-dir"/>
+    <xs:attribute name="source-vm" default="1.5"/>
+    <xs:attribute name="target-vm" default="1.5"/>
+    <xs:attribute name="java-encoding" default="UTF8"/>
+    <xs:attribute name="x-powered-by" default="true" type="boolean"/>
+    <xs:attribute name="display-source-fragment" default="true" type="boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="cgi-servletType">
+    <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="cgi-path-prefix"/>
+    <xs:attribute name="pass-shell-environment" default="false" type="boolean"/>
+    <xs:attribute name="cgi-executable" default="perl"/>
+    <xs:attribute name="parameter-encoding"/>
+  </xs:complexType>
+
+  <xs:complexType name="ssi-servletType">
+    <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="webapp-relative" default="false" type="boolean"/>
+    <xs:attribute name="expires"/>
+    <xs:attribute name="buffered" default="false" type="boolean"/>
+    <xs:attribute name="input-encoding"/>
+    <xs:attribute name="output-encoding" default="UTF-8"/>
+  </xs:complexType>
+
+  <xs:complexType name="ssi-filterType">
+    <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="webapp-relative" default="false" type="boolean"/>
+    <xs:attribute name="expires"/>
+    <xs:attribute name="content-type-regex"/>
+  </xs:complexType>
+
+  <xs:element name="connector">
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" ref="ssl" />
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
-      <xs:attributeGroup ref="http-connector-attlist"/>
+      <xs:attributeGroup ref="web-connector-attlist"/>
     </xs:complexType>
   </xs:element>
   <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-  <xs:attributeGroup name="http-connector-attlist">
-    <xs:attribute name="id" use="required"/>
+  <xs:attributeGroup name="web-connector-attlist">
+    <xs:attribute name="name" use="required"/>
     <xs:attribute name="address" use="required"/>
     <xs:attribute name="port" use="required"/>
     <xs:attribute name="native" default="true" type="boolean"/>
@@ -94,6 +182,12 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
+        <xs:element name="connector" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="host" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+                <xs:documentation>Vhost aliases</xs:documentation>
+            </xs:annotation>
+        </xs:element>
         <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
@@ -101,18 +195,12 @@
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="virtual-server-attlist">
-    <xs:attribute name="id" use="required"> 
+    <xs:attribute name="name" use="required"> 
         <xs:annotation>
-            <xs:documentation>Reference to vhost name</xs:documentation>
+            <xs:documentation>Main vhost name</xs:documentation>
         </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="http-connectors"/>
     <xs:attribute name="default-web-module" default="ROOT.war" />
-    <xs:attribute name="hosts" use="required">
-        <xs:annotation>
-            <xs:documentation>Reference to vhost aliases</xs:documentation>
-        </xs:annotation>
-    </xs:attribute>
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">
