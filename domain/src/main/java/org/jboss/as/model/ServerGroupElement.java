@@ -124,10 +124,20 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         }
     }
 
+    /**
+     * Gets the name of the server group.
+     * 
+     * @return the name. Will not be <code>null</code>
+     */
     public String getName() {
         return name;
     }
     
+    /**
+     * Gets the name of the profile the server group will run.
+     * 
+     * @return the profile name. Will not be <code>null</code>
+     */
     public String getProfile() {
         return profile;
     }
@@ -135,6 +145,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
+        cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
         for (ServerGroupDeploymentElement deployment : deploymentMappings.values()) {
             cksum = Long.rotateLeft(cksum, 1) ^ deployment.elementHash();
         }
@@ -143,6 +154,8 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupElement>> target, final ServerGroupElement other) {
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
@@ -153,7 +166,17 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        // todo write content
+        streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
+
+        if (! deploymentMappings.isEmpty()) {
+            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (ServerGroupDeploymentElement element : deploymentMappings.values()) {
+                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+
         streamWriter.writeEndElement();
     }
     
