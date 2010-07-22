@@ -25,7 +25,7 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
 
     public ProfileIncludeElement(Location location, final String profile) {
         super(location);
-        if (profile != null)
+        if (profile == null)
             throw new IllegalArgumentException("profile is null");
         this.profile = profile;
     }
@@ -58,6 +58,11 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
         requireNoContent(reader);
     }
     
+    /**
+     * Gets the name of the included profile.
+     * 
+     * @return the profile name. Will not be <code>null</code>
+     */
     public String getProfile() {
         return profile;
     }
@@ -80,9 +85,7 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        final String profile = this.profile;
-        if (profile != null)
-            streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
+        streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
         streamWriter.writeEndElement();
     }
 
