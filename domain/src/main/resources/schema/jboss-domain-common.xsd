@@ -370,7 +370,6 @@
     <xs:attribute name="session-cache-size" default="0"/>
     <xs:attribute name="session-timeout" default="86400"/>
   </xs:complexType>
-  </xs:element>
   
   <xs:simpleType name="SSlProtocolType">
     <xs:restriction base="xs:token">
