@@ -257,7 +257,130 @@
                 </xs:documentation>
             </xs:annotation>            
     </xs:complexType>
-    
+
+<!-- general socket definition -->
+   <xs:complexType name="socketType">
+    <xs:annotation>
+      <xs:documentation>Configuration information for a socket.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="interface" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Name of the interface to which the socket should be bound, or, for multicast
+            sockets, the interface on which it should listen. This should
+            be one of the declared interfaces.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation>
+            Number of the port to which the socket should be bound.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>
+            Whether the port value should remain fixed even if numerically offsets
+            are applied to the other sockets in the socket group..
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-address" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Multicast address on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+            Port on which the socket should receive multicast
+            traffic. If unspecified, the socket will not be configured
+            to receive multicast.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
+
+<!-- general SSL definitions -->
+  <xs:complexType name="sslType">
+    <xs:annotation>
+      <xs:documentation>Configuration information for one SSL configuration.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="key-alias" default="jboss"/>
+    <xs:attribute name="password">
+      <xs:annotation>
+        <xs:documentation>Password for both trustore and keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="certificate-key-file" default="${user.home}/.keystore">
+      <xs:annotation>
+        <xs:documentation>
+          When using JSSE that could be the only file, with OpenSSL there several files
+          Additionally we should have a logic to find the type of the file (PEM, PKCS12 or JKS) before using it.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cipher-suite" default="ALL">
+      <xs:annotation>
+        <xs:documentation>
+          comma separated list of encryption ciphers the configuration is allowed to use, that MUST NOT be
+          the JVM default in of JSSE as contains weak ciphers.
+          that is SSLCipherSuite when using OpenSSL (APR).
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protocol" default="ALL" type="SSlProtocolType"/>
+    <xs:attribute name="verify-client" default="none">
+      <xs:annotation>
+        <xs:documentation>
+          that is OpenSSL SSLVerifyClient (optional,require,optionalNoCA,none) and clientAuth (true=require/false=none)
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verify-depth" default="10"/>
+    <xs:attribute name="certificate-file">
+      <xs:annotation>
+        <xs:documentation>
+          Only in the OpenSSL (JSSE keystore contains both key and certificate).
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ca-certificate-file">
+      <xs:annotation>
+        <xs:documentation>
+          The file containing the CA certificates, truststoreFile in JSSE, note the password it same as the keystore password.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ca-revocation-url">
+      <xs:annotation>
+        <xs:documentation>
+          A file or URL to get the revocation list. (actually: crlFile is JSSE and SSLCARevocationFile in OpenSSL)
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="session-cache-size" default="0"/>
+    <xs:attribute name="session-timeout" default="86400"/>
+  </xs:complexType>
+  
+  <xs:simpleType name="SSlProtocolType">
+    <xs:restriction base="xs:token">
+        <xs:enumeration value="SSLv2"/>
+        <xs:enumeration value="SSLv3"/>
+        <xs:enumeration value="TLSv1"/>
+        <xs:enumeration value="SSLv2+SSLv3"/>
+        <xs:enumeration value="ALL"/>
+    </xs:restriction>
+  </xs:simpleType>
+<!-- Common definitions -->
     <xs:complexType name="jvmType">
         <xs:all minOccurs="0" maxOccurs="1">
             <xs:element name="heap" type="heapType" minOccurs="0"/>

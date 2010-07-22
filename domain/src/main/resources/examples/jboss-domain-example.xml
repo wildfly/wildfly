@@ -21,8 +21,10 @@
   -->
 
 <domain xmlns="urn:jboss:domain:1.0"
+        xmlns:sec="urn:jboss:security-config:5.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
+                            urn:jboss:security-config:5.0 security-config_5_0.xsd">
 
     <extensions>
         <extension module="org.foo:blah"/>
@@ -48,9 +50,10 @@
                     </config>
                     
                     <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                    <connector name="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
+                    <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
                                     default-virtual-server="localhost">
-                        <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
+                        <ssl name="jbossweb"/>
+                        <socket name="https"/>
                     </connector>
     
                     <virtual-server name="localhost">
@@ -60,8 +63,19 @@
                     </virtual-server>
                </web-container>
             </web-containers>
+
+            <!-- mod_cluster for all the web containers defined? -->
+            <mod-cluster-config>
+               <proxy-conf>
+                 <httpd-conf proxy-list="localhost:6666">
+                   <advertise-socket name="mod_cluster" />
+                   <ssl name="mod_cluster" />
+                 </httpd-conf>
+                 <nodes-conf/>
+               </proxy-conf>
+            </mod-cluster-config>
         </profile>
-    
+
         <!-- An example of bringing in subsytems that use other namespaces. This
              won't validate in this module because the foreign schemas are located in
              other modules and are not visible when this module's testsuite runs.
@@ -131,10 +145,10 @@
 
     <socket-binding-groups>
          <socket-binding-group name="standard-sockets" default-interface="external">
-            <socket-binding name="jndi" port="1099"/>
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
+            <socket-binding name="mod_cluster" multicast-address="224.0.1.105" multicast-port="23364" />
          </socket-binding-group>
          <socket-binding-group name="standard-clustered-sockets" extends="standard-sockets">
             <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
@@ -143,6 +157,11 @@
             <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
          </socket-binding-group>
     </socket-binding-groups>
+
+    <ssls>
+         <ssl name="jbossweb" password="changeit" cipher-suite="SSLv2+SSLv3"/>
+         <ssl name="mod-cluster" password="changeit" key-alias="mod-cluster" cipher-suite="SSLv2+SSLv3"/>
+    </ssls>
 
     <system-properties>
         <property name="prop1" value="value1"/>
