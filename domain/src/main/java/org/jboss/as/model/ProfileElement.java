@@ -25,8 +25,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
 
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
-    @SuppressWarnings("unchecked")
-    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement>> subsystems = new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement>>();
+    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
 
     public ProfileElement(final Location location, final String name) {
         super(location);
@@ -90,6 +89,11 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
         }
     }
     
+    /**
+     * Gets the name of the profile
+     * 
+     * @return the profile name
+     */
     public String getName() {
         return name;
     }
@@ -121,25 +125,25 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
                 target,
                 subsystems,
                 other.subsystems,
-                new DifferenceHandler<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement>, ProfileElement>() {
+                new DifferenceHandler<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>, ProfileElement>() {
                     public void handleAdd(final Collection<AbstractModelUpdate<ProfileElement>> target,
                             final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement> newElement) {
+                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> newElement) {
                         // todo add-subsystem operation
                         throw new UnsupportedOperationException("implement me");
                     }
 
                     public void handleRemove(final Collection<AbstractModelUpdate<ProfileElement>> target,
                             final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement> oldElement) {
+                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> oldElement) {
                         // todo remove-subsystem operation
                         throw new UnsupportedOperationException("implement me");
                     }
 
                     public void handleChange(final Collection<AbstractModelUpdate<ProfileElement>> target,
                             final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement> oldElement,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement> newElement) {
+                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> oldElement,
+                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> newElement) {
                         // todo update-subsystem operation
                         throw new UnsupportedOperationException("implement me");
                     }
@@ -169,7 +173,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
             }
         }
         if (!subsystems.isEmpty()) {
-            for (AbstractSubsystemElement<? extends AbstractSubsystemElement> subsystem : subsystems.values()) {
+            for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
                 QName qname = subsystem.getElementName();
                 streamWriter.writeStartElement(qname.getNamespaceURI(), qname.getLocalPart());
                 subsystem.writeContent(streamWriter);
