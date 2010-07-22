@@ -35,6 +35,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public abstract class AbstractModelRootElement<E extends AbstractModelRootElement<E>> extends AbstractModelElement<E> {
 
+    private static final long serialVersionUID = 4437364388860496256L;
+    
     private final QName elementName;
 
     /**

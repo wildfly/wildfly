@@ -23,10 +23,12 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A model extension element.
@@ -37,27 +39,40 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
 
     private static final long serialVersionUID = -90177370272205647L;
 
-    private final String prefix;
     private final String module;
 
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of this element
-     * @param prefix the extension prefix, if any
-     * @param module the module identifier of the subsystem
+     * @param module the module identifier of the extension
      */
-    public ExtensionElement(final Location location, final String prefix, final String module) {
+    public ExtensionElement(final Location location, final String module) {
         super(location);
-        this.prefix = prefix;
         this.module = module;
+    }
+    
+    public ExtensionElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        this.module = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
+        // Handle elements
+        requireNoContent(reader);
+    }
+
+    /**
+     * Gets the module identifier of the extension
+     * 
+     * @return the module identifier
+     */
+    public String getModule() {
+        return module;
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
         final String module = this.module;
-        final String prefix = this.prefix;
-        long hc = (prefix == null ? 0 : prefix.hashCode() & 0xFFFFFFFFL << 32L) | module.hashCode() & 0xFFFFFFFF;
+        long hc = module.hashCode() & 0xFFFFFFFF;
         return hc;
     }
 
@@ -73,9 +88,7 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        final String prefix = this.prefix;
-        if (prefix != null) streamWriter.writeAttribute("prefix", prefix);
-        streamWriter.writeAttribute("module", module);
+        streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), module);
         streamWriter.writeEndElement();
     }
 }

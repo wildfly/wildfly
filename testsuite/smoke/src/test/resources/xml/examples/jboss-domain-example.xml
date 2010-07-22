@@ -28,7 +28,9 @@
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
-    <extension prefix="xx" module="org.foo:blah"/>
+    <extensions>
+        <extension module="org.foo:blah"/>
+    </extensions>
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
@@ -36,51 +38,47 @@
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
 
-    <profile name="something">
-        <!-- FIXME move web-containers to another namespace -->
-        <web-containers>
-            <web-container name="jboss.web">
-                <config>
-                    <servlets>
-                        <default listings="true" />
-                        <ssi/>
-                    </servlets>
-                </config>
-                
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl name="jbossweb"/>
-                    <socket name="https"/>
-                </connector>
-
-                <virtual-server name="localhost">
-                    <access-log/>
-                    <connector>httpsConnector</connector>
-                    <host>localhost</host>
-                </virtual-server>
-           </web-container>
-        </web-containers>
-    </profile>
-
-    <profile name="something2">
-        <include profile="something"/>
-        <threads:subsystem>
-            <threads:queueless-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="s"/>
-            </threads:queueless-thread-pool-executor>
-        </threads:subsystem>
-        <remoting:subsystem thread-pool="remoting-pool">
-            <remoting:connector name="default-connector" socket-binding="remoting"/>
-        </remoting:subsystem>
-    </profile>
-
-    <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" start="false"/>
-    </deployments>
+    <profiles>
+        <profile name="something">
+            <!-- FIXME move web-containers to another namespace -->
+            <web-containers>
+                <web-container name="jboss.web">
+                    <config>
+                        <servlets>
+                            <default listings="true" />
+                            <ssi/>
+                        </servlets>
+                    </config>
+                    
+                    <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                    <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
+                                    default-virtual-server="localhost">
+                        <ssl name="jbossweb"/>
+                        <socket name="https"/>
+                    </connector>
+    
+                    <virtual-server name="localhost">
+                        <access-log/>
+                        <connector>httpsConnector</connector>
+                        <host>localhost</host>
+                    </virtual-server>
+               </web-container>
+            </web-containers>
+        </profile>
+    
+        <profile name="something2">
+            <include profile="something"/>
+            <threads:subsystem>
+                <threads:queueless-thread-pool-executor name="remoting">
+                    <threads:max-threads count="10" per-cpu="20"/>
+                    <threads:keepalive-time time="10" unit="s"/>
+                </threads:queueless-thread-pool-executor>
+            </threads:subsystem>
+            <remoting:subsystem thread-pool="remoting-pool">
+                <remoting:connector name="default-connector" socket-binding="remoting"/>
+            </remoting:subsystem>
+        </profile>
+    </profiles>
 
     <!--  
          Named interfaces that can be referenced elsewhere. Different
@@ -153,9 +151,15 @@
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
+    
+    <deployments>
+        <deployment name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
+    </deployments>
 
     <server-groups>
-        <server-group group-name="main-server-group" profile="something">
+        <server-group name="main-server-group" profile="something">
 
            <jvm name="icedtea1">
               <heap size="512m" max-size="1024m"/>

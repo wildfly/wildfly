@@ -20,40 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the possible XML attributes in the domain schema, by name.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum Attribute {
-    // always first
+public enum Element {
+    // must be first
     UNKNOWN(null),
 
-    // domain 1.0 attributes in alpha order
-    ALLOWED("allowed"),
-    
-    NAME("name"),
-
-    MODULE("module"),
-    
-    PREFIX("prefix"),
-    
-    PROFILE("profile"),
-
-    SHA1("sha1"),
-    
-    START("start"),
-    
+    // Threads 1.0 elements in alpha order
+    BOUNDED_QUEUE_THREAD_POOL_EXECUTOR("bounded-queue-thread-pool-executor"),
+    CORE_THREADS("core-threads"),
+    HANDOFF_EXECUTOR("handoff-executor"),
+    KEEPALIVE_TIME("keepalive-time"),
+    MAX_THREADS("max-threads"),
+    PROPERTIES("properties"),
+    PROPERTY("property"),
+    QUEUE_LENGTH("queue-length"),
+    QUEUELESS_THREAD_POOL_EXECUTOR("queueless-thread-pool-executor"),
+    SCHEDULED_THREAD_POOL_EXECUTOR("scheduled-thread-pool-executor"),
+    SUBSYSTEM("subsystem"),
+    THREAD_FACTORY("thread-factory"),
+    THREAD_FACTORY_EXECUTOR("thread-factory-executor"),
+    UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR("unbounded-queue-thread-pool-executor"),
     ;
 
     private final String name;
 
-    Attribute(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 
@@ -66,19 +64,20 @@ public enum Attribute {
         return name;
     }
 
-    private static final Map<String, Attribute> MAP;
+    private static final Map<String, Element> MAP;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);
         }
         MAP = map;
     }
 
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
+
 }

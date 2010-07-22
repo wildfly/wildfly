@@ -25,7 +25,6 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns="urn:jboss:domain:1.0"
   targetNamespace="urn:jboss:domain:1.0"
-  xmlns:sec="urn:jboss:security-config:5.0"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
 >
@@ -35,25 +34,19 @@
   <xs:include schemaLocation="jboss-domain-web.xsd"/>
   <xs:include schemaLocation="jboss-domain-mod_cluster.xsd"/>
 
-  <!-- Import the security schema definitions for reuse -->
-  <xs:import namespace="urn:jboss:security-config:5.0"  schemaLocation="security-config_5_0.xsd"/>
-  
   <xs:element name="domain">
     <xs:complexType>
       <xs:sequence>
-          <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="domain-extensionType"/>
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <!-- TODO the domain-configuration concept needs review -->
-            <xs:element name="domain-configuration" type="domain-configurationType"/>
-            <xs:element name="profile" type="profileType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
-            <xs:element name="interfaces" type="named-interfacesType"/>
-            <xs:element name="socket-binding-groups" type="socket-binding-groupsType"/>
-            <xs:element name="ssls" type="sslsType"/>
-            <xs:element name="server-groups" type="server-groupsType"/>
-            <xs:element name="security-policy" type="sec:PolicyConfig" />
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType"/>
-          </xs:choice>
+          <xs:element name="extensions" type="domain-extensionsType" minOccurs="0" maxOccurs="1" />
+          <!-- TODO the domain-configuration concept needs review -->
+          <xs:element name="domain-configuration" type="domain-configurationType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="profiles" type="profilesType"  minOccurs="0" maxOccurs="1" />
+          <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="ssls" type="sslsType"/>
+          <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="deployments" type="domain-deploymentsType"  minOccurs="0" maxOccurs="1" />
+          <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -69,12 +62,12 @@
         <xs:element name="jvm" type="jvmType" minOccurs="0"/>
         <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
             
-        <xs:element name="deployments" type="domainDeploymentsType" minOccurs="0"/>
+        <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
 
         <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
         <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
      </xs:sequence>
-     <xs:attribute name="group-name" type="xs:ID">
+     <xs:attribute name="name" type="xs:string">
         <xs:annotation>
            <xs:documentation>
               The name of the server group
@@ -90,23 +83,18 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="domainDeploymentsType">
+  <xs:complexType name="mapped-deploymentsType">
     <xs:annotation>
-      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+      <xs:documentation>Contains a list of deployments that have been mapped to a server-group.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+      <xs:element name="deployment" type="mapped-deploymentType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="deploymentType">
+  
+  <xs:complexType name="mapped-deploymentType">    
     <xs:annotation>
-      <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
-                        any kind of standard archive such as RAR or JBoss-specific deployment descriptor such as -aop.xml, -jboss-beans.xml, etc),
-                        which can be enabled or disabled on a domain level.
-
-                        If a certain deployment (or a set of) is not relevant for a specific server-group
-                        this deployment (or a set of) can be disabled for this server-group in the server-group configuration.</xs:documentation>
+      <xs:documentation>A deployment that has been mapped to a server group.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" use="required">
       <xs:annotation>
@@ -118,16 +106,39 @@
         <xs:documentation>The checksum of the deployment</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the deployment is allowed.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <!--  TODO clarify what a value of 'false' means -->
     <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="domain-deploymentsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="deploymentType">
+    <xs:annotation>
+        <xs:documentation>Deployment represents anything that can be deployed (i.g. an application such as EJB-JAR, WAR, EAR,
+                        any kind of standard archive such as RAR or JBoss-specific deployment),
+                        which can be enabled or disabled on a domain level.
+        </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+        <xs:extension base="mapped-deploymentType">
+            <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+              <xs:annotation>
+                <xs:documentation>Whether the deployment is allowed.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+        </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
 <!-- TODO this is not used anywhere yet -->
@@ -158,26 +169,35 @@
       <xs:documentation>The URI for bootstraping a domain server</xs:documentation>
     </xs:annotation>
   </xs:element>
+
+  <xs:complexType name="domain-extensionsType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of extension modules.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="extension" type="domain-extensionType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
   
   <xs:complexType name="domain-extensionType">
     <xs:annotation>
       <xs:documentation>An extension module that adds extensions to the domain</xs:documentation>
     </xs:annotation>
-    <xs:attribute name="prefix" use="optional">
-      <xs:annotation>
-        <xs:documentation>A prefix that if applied to a subsystem name identifies
-         that subsystem as being associated with this extension module. Used to
-         provide a namespace for subsystem names so unrelated extension modules
-         that happen to use the same subsystem names can be used.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="module" use="required" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The name of the module, in group:artifiact format; e.g. org.foo:widget</xs:documentation>
+        <xs:documentation>The name of the module, in group:artifact format; e.g. org.foo:widget</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     
+  </xs:complexType>
+
+  <xs:complexType name="profilesType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of profiles available for use in the domain</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="profile" type="profileType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="profileType">

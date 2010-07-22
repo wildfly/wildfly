@@ -26,6 +26,10 @@
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
                             urn:jboss:security-config:5.0 security-config_5_0.xsd">
 
+    <extensions>
+        <extension module="org.foo:blah"/>
+    </extensions>
+    
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
@@ -33,68 +37,62 @@
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
 
-    <profile name="something">
-        <!-- FIXME move web-containers to another namespace -->
-        <web-containers>
-            <web-container name="jboss.web">
-                <config>
-                    <servlets>
-                        <default listings="true" />
-                        <ssi/>
-                    </servlets>
-                </config>
-                
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl name="jbossweb"/>
-                    <socket name="https"/>
-                </connector>
+    <profiles>
+        <profile name="something">
+            <!-- FIXME move web-containers to another namespace -->
+            <web-containers>
+                <web-container name="jboss.web">
+                    <config>
+                        <servlets>
+                            <default listings="true" />
+                            <ssi/>
+                        </servlets>
+                    </config>
+                    
+                    <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                    <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
+                                    default-virtual-server="localhost">
+                        <ssl name="jbossweb"/>
+                        <socket name="https"/>
+                    </connector>
+    
+                    <virtual-server name="localhost">
+                        <access-log/>
+                        <connector>httpsConnector</connector>
+                        <host>localhost</host>
+                    </virtual-server>
+               </web-container>
+            </web-containers>
 
-                <virtual-server name="localhost">
-                    <access-log/>
-                    <connector>httpsConnector</connector>
-                    <host>localhost</host>
-                </virtual-server>
-           </web-container>
-        </web-containers>
+            <!-- mod_cluster for all the web containers defined? -->
+            <mod-cluster-config>
+               <proxy-conf>
+                 <httpd-conf proxy-list="localhost:6666">
+                   <advertise-socket name="mod_cluster" />
+                   <ssl name="mod_cluster" />
+                 </httpd-conf>
+                 <nodes-conf/>
+               </proxy-conf>
+            </mod-cluster-config>
 
-        <!-- mod_cluster for all the web containers defined? -->
-        <mod-cluster-config>
-          <proxy-conf>
-            <httpd-conf proxy-list="localhost:6666">
-              <advertise-socket name="mod_cluster" />
-              <ssl name="mod_cluster" />
-            </httpd-conf>
-            <nodes-conf/>
-          </proxy-conf>
-        </mod-cluster-config>
-
-    </profile>
-
-    <!-- An example of bringing in subsytems that use other namespaces. This
-         won't validate in this module because the foreign schemas are located in
-         other modules and are not visible when this module's testsuite runs.
-         The testsuite/smoke module includes an equivalent file
-    <profile name="something2">
-        <include profile="something"/>
-        <threads:subsystem>
-            <threads:queueless-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="s"/>
-            </threads:queueless-thread-pool-executor>
-        </threads:subsystem>
-        <remoting:subsystem thread-pool="remoting-pool">
-            <remoting:connector name="default-connector" socket-binding="remoting"/>
-        </remoting:subsystem>
-    </profile>
-    -->
-
-    <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" start="false"/>
-    </deployments>
+        <!-- An example of bringing in subsytems that use other namespaces. This
+             won't validate in this module because the foreign schemas are located in
+             other modules and are not visible when this module's testsuite runs.
+             The testsuite/smoke module includes an equivalent file
+        <profile name="something2">
+            <include profile="something"/>
+            <threads:subsystem>
+                <threads:queueless-thread-pool-executor name="remoting">
+                    <threads:max-threads count="10" per-cpu="20"/>
+                    <threads:keepalive-time time="10" unit="s"/>
+                </threads:queueless-thread-pool-executor>
+            </threads:subsystem>
+            <remoting:subsystem thread-pool="remoting-pool">
+                <remoting:connector name="default-connector" socket-binding="remoting"/>
+            </remoting:subsystem>
+        </profile>
+        -->
+    </profiles>
 
     <!--  
          Named interfaces that can be referenced elsewhere. Different
@@ -169,8 +167,14 @@
         <property name="prop2" value="value2"/>
     </system-properties>
 
+    <deployments>
+        <deployment name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
+    </deployments>
+
     <server-groups>
-        <server-group group-name="main-server-group" profile="something">
+        <server-group name="main-server-group" profile="something">
 
            <jvm name="icedtea1">
               <heap size="512m" max-size="1024m"/>

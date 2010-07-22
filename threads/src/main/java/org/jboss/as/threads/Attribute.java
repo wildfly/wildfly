@@ -20,37 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the possible XML attributes in the domain schema, by name.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum Attribute {
-    // always first
     UNKNOWN(null),
-
-    // domain 1.0 attributes in alpha order
-    ALLOWED("allowed"),
-    
+    /* Threads 1.0 attributes, in alpha order */
+    ALLOW_CORE_TIMEOUT("allow-core-timeout"),
+    BLOCKING("blocking"),
+    COUNT("count"),
+    GROUP_NAME("group-name"),
     NAME("name"),
-
-    MODULE("module"),
-    
-    PREFIX("prefix"),
-    
-    PROFILE("profile"),
-
-    SHA1("sha1"),
-    
-    START("start"),
-    
+    THREAD_NAME_PATTERN("thread-name-pattern"),
+    TIME("time"),
+    PER_CPU("per-cpu"),
+    PRIORITY("priority"),
+    UNIT("unit"),
     ;
-
     private final String name;
 
     Attribute(final String name) {
@@ -58,7 +49,7 @@ public enum Attribute {
     }
 
     /**
-     * Get the local name of this element.
+     * Get the local name of this attribute.
      *
      * @return the local name
      */
@@ -80,5 +71,9 @@ public enum Attribute {
     public static Attribute forName(String localName) {
         final Attribute element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
+    }
+
+    public String toString() {
+        return getLocalName();
     }
 }

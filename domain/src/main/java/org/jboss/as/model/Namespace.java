@@ -26,59 +26,50 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the possible XML attributes in the domain schema, by name.
+ * An enumeration of the supported domain model namespaces.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public enum Attribute {
-    // always first
+public enum Namespace {
+    // must be first
     UNKNOWN(null),
 
-    // domain 1.0 attributes in alpha order
-    ALLOWED("allowed"),
-    
-    NAME("name"),
-
-    MODULE("module"),
-    
-    PREFIX("prefix"),
-    
-    PROFILE("profile"),
-
-    SHA1("sha1"),
-    
-    START("start"),
-    
+    DOMAIN_1_0("urn:jboss:domain:1.0")
     ;
+
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = DOMAIN_1_0;
 
     private final String name;
 
-    Attribute(final String name) {
+    Namespace(final String name) {
         this.name = name;
     }
 
     /**
-     * Get the local name of this element.
+     * Get the URI of this namespace.
      *
-     * @return the local name
+     * @return the URI
      */
-    public String getLocalName() {
+    public String getUriString() {
         return name;
     }
 
-    private static final Map<String, Attribute> MAP;
+    private static final Map<String, Namespace> MAP;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) map.put(name, namespace);
         }
         MAP = map;
     }
 
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }
 }
