@@ -147,9 +147,16 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" $JAVA_OPTS \
-         -Djava.endorsed.dirs=\"$JBOSS_ENDORSED_DIRS\" \
-         -classpath \"$JBOSS_CLASSPATH\" \
-         org.jboss.Main "$@" "&"
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -mp \"$JBOSS_HOME/modules\" \
+         -logmodule "org.jboss.logmanager:jboss-logmanager" \
+         org.jboss.as:jboss-as-process-manager \
+         \"$JAVA\" $JAVA_OPTS \
+         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         -mp \"$JBOSS_HOME/modules\" \
+         -logmodule "org.jboss.logmanager:jboss-logmanager" \
+         org.jboss.as:jboss-as-server-manager \
+         "$@" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
       trap "kill -HUP  $JBOSS_PID" HUP
