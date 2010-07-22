@@ -214,21 +214,14 @@ public final class ProcessManagerSlave {
             if (shutdown.getAndSet(true)) {
                 return;
             }
-            EXITER.start();
+            final Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    System.exit(0);
+                }
+            });
+            thread.setName("Exit thread");
+            thread.start();
         }
-    }
-
-    private static final Thread EXITER;
-
-    static {
-        final Thread thread = new Thread(new Runnable() {
-            public void run() {
-                System.exit(0);
-            }
-        });
-        thread.setName("Exit thread");
-        thread.setDaemon(true);
-        EXITER = thread;
     }
 
     public interface Handler {
