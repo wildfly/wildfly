@@ -75,23 +75,12 @@ public final class Domain extends AbstractModel<Domain> {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case EXTENSION: {
-                            final ExtensionElement extension = new ExtensionElement(reader);
-                            if (extensions.containsKey(extension.getModule())) {
-                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
-                            }
-                            extensions.put(extension.getModule(), extension);
-                            // load the extension so it can register handlers
-                            // TODO do this in ExtensionElement itself?
-                            registerExtensionHandlers(extension);
+                        case EXTENSIONS: {
+                            parseExtensions(reader);
                             break;
                         }
-                        case PROFILE: {
-                            final ProfileElement profile = new ProfileElement(reader);
-                            if (profiles.containsKey(profile.getName())) {
-                                throw new XMLStreamException("Profile " + profile.getName() + " already declared", reader.getLocation());
-                            }
-                            profiles.put(profile.getName(), profile);
+                        case PROFILES: {
+                            parseProfiles(reader);
                             break;
                         }
                         case DEPLOYMENTS: {
@@ -107,7 +96,6 @@ public final class Domain extends AbstractModel<Domain> {
                             if (this.systemProperties == null) {
                                 this.systemProperties = properties;
                             }
-                            // else FIXME deal with multiple sets
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -244,6 +232,54 @@ public final class Domain extends AbstractModel<Domain> {
     private void registerExtensionHandlers(ExtensionElement extension) {
         // FIXME register
         throw new UnsupportedOperationException("implement me");
+    }
+    
+    private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case EXTENSION: {
+                            final ExtensionElement extension = new ExtensionElement(reader);
+                            if (extensions.containsKey(extension.getModule())) {
+                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
+                            }
+                            extensions.put(extension.getModule(), extension);
+                            // load the extension so it can register handlers
+                            // TODO do this in ExtensionElement itself?
+                            registerExtensionHandlers(extension);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
+    private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case PROFILE: {
+                            final ProfileElement profile = new ProfileElement(reader);
+                            if (profiles.containsKey(profile.getName())) {
+                                throw new XMLStreamException("Profile " + profile.getName() + " already declared", reader.getLocation());
+                            }
+                            profiles.put(profile.getName(), profile);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }        
+    
     }
     
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {

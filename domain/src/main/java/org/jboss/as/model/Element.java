@@ -40,16 +40,17 @@ public enum Element {
     DEPLOYMENTS("deployments"),
     
     EXTENSION("extension"),
-
+    EXTENSIONS("extensions"),
+    
     INCLUDE("include"),
     
     JVM("jvm"),
     
     PROFILE("profile"),
+    PROFILES("profiles"),
     
     SERVER_GROUP("server-group"),
-    SERVER_GROUPS("server-groups"),
-    
+    SERVER_GROUPS("server-groups"),    
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SYSTEM_PROPERTIES("system-properties"),
