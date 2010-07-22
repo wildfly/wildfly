@@ -193,22 +193,38 @@ public final class Domain extends AbstractModel<Domain> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        if (! extensions.isEmpty()) for (ExtensionElement element : extensions.values()) {
-            streamWriter.writeStartElement("extension");
-            element.writeContent(streamWriter);
+        if (! extensions.isEmpty()) {
+            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+            for (ExtensionElement element : extensions.values()) {        
+                streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
-        // TODO the schema is unordered after the extensions, but here we are imposing order
         
         if (! profiles.isEmpty()) {
+            streamWriter.writeStartElement(Element.PROFILES.getLocalName());
             for (ProfileElement element : profiles.values()) {
                 streamWriter.writeStartElement(Element.PROFILE.getLocalName());
                 element.writeContent(streamWriter);
             }
+            streamWriter.writeEndElement();
         }
+        
         if (systemProperties.size() > 0) {
             streamWriter.writeStartElement("system-properties");
             systemProperties.writeContent(streamWriter);
         }
+        
+        if (! deployments.isEmpty()) {
+            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (DeploymentUnitElement element : deployments.values()) {        
+                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
         if (! serverGroups.isEmpty()) {
             streamWriter.writeStartElement(Element.SERVER_GROUPS.getLocalName());
             for (ServerGroupElement element : serverGroups.values()) {
@@ -218,14 +234,8 @@ public final class Domain extends AbstractModel<Domain> {
             }
             streamWriter.writeEndElement();
         }
-        if (! deployments.isEmpty()) {
-            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-            for (DeploymentUnitElement element : deployments.values()) {        
-                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }
+        
+        // close domain
         streamWriter.writeEndElement();
     }
     
