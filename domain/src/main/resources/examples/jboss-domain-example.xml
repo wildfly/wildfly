@@ -74,6 +74,7 @@
                  <nodes-conf/>
                </proxy-conf>
             </mod-cluster-config>
+        </profile>
 
         <!-- An example of bringing in subsytems that use other namespaces. This
              won't validate in this module because the foreign schemas are located in
