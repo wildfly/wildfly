@@ -23,12 +23,17 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -37,6 +42,8 @@ public final class Host extends AbstractModel<Host> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
+    private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
+    
     /**
      * Construct a new instance.
      *
@@ -55,16 +62,37 @@ public final class Host extends AbstractModel<Host> {
      */
     public Host(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // Handle attributes
+        requireNoAttributes(reader);
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACES: {
+                            parseInterfaces(reader);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
+        
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
-        return 0;
+        return calculateElementHashOf(interfaces.values(), 17l);
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
-        
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
@@ -74,6 +102,38 @@ public final class Host extends AbstractModel<Host> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+
+        
+        if (! interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            for (InterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
         streamWriter.writeEndElement();
+    }
+    
+    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACE: {
+                            final ServerInterfaceElement interfaceEl = new ServerInterfaceElement(reader);
+                            if (interfaces.containsKey(interfaceEl.getName())) {
+                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
+                            }
+                            interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
     }
 }

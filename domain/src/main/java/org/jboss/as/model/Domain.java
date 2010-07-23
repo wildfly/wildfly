@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -46,6 +47,7 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
+    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
 
     private PropertiesElement systemProperties;
 
@@ -81,6 +83,10 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         case PROFILES: {
                             parseProfiles(reader);
+                            break;
+                        }
+                        case INTERFACES: {
+                            parseInterfaces(reader);
                             break;
                         }
                         case DEPLOYMENTS: {
@@ -211,6 +217,17 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeEndElement();
         }
         
+        if (! interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            for (InterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
+        // TODO socket-binding-groups
+        
         if (systemProperties.size() > 0) {
             streamWriter.writeStartElement("system-properties");
             systemProperties.writeContent(streamWriter);
@@ -290,6 +307,28 @@ public final class Domain extends AbstractModel<Domain> {
             }
         }        
     
+    }
+    
+    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACE: {
+                            final InterfaceElement interfaceEl = new InterfaceElement(reader);
+                            if (interfaces.containsKey(interfaceEl.getName())) {
+                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
+                            }
+                            interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
     }
     
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {

@@ -46,6 +46,8 @@ public enum Element {
     
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
+    INTERFACES("interfaces"),
+    INTERFACE("interface"),
     
     JVM("jvm"),
 
@@ -63,6 +65,8 @@ public enum Element {
     PROFILES("profiles"),
     PUBLIC_ADDRESS("public-address"),
     
+    SERVER("server"),
+    SERVERS("servers"),
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),    
     SITE_LOCAL_ADDRESS("site-local-address"),

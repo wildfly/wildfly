@@ -35,13 +35,13 @@
     <xs:element name="host" type="host-configType"/>
 
     <xs:complexType name="host-configType">
-        <xs:all>
+        <xs:sequence>
+            <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
             <xs:element name="domain-controller" type="locationType" minOccurs="1"/>
-            <xs:element name="servers" type="serversType" minOccurs="0"/>
             <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
             <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
-            <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-        </xs:all>
+            <xs:element name="servers" type="serversType" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="locationType">
