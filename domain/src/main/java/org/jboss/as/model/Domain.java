@@ -29,8 +29,9 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.Extension;
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Location;
@@ -51,7 +52,8 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-
+    private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
+    
     private PropertiesElement systemProperties;
 
     /**
@@ -105,10 +107,10 @@ public final class Domain extends AbstractModel<Domain> {
                             break;
                         }
                         case SYSTEM_PROPERTIES: {
-                            final PropertiesElement properties = new PropertiesElement(reader);
-                            if (this.systemProperties == null) {
-                                this.systemProperties = properties;
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
+                            this.systemProperties = new PropertiesElement(reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -254,9 +256,16 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeEndElement();
         }
         
-        // TODO socket-binding-groups
+        if (!bindingGroups.isEmpty()) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
+            for (SocketBindingGroupElement element : bindingGroups.values()) {
+                streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }        
         
-        if (systemProperties.size() > 0) {
+        if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement("system-properties");
             systemProperties.writeContent(streamWriter);
         }
@@ -373,8 +382,13 @@ public final class Domain extends AbstractModel<Domain> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SOCKET_BINDING_GROUP: {
-                            throw new UnsupportedOperationException("implement me");
-                            //break;
+                            SocketBindingGroupElement group = new SocketBindingGroupElement(reader);
+                            if (bindingGroups.containsKey(group.getName())) {
+                                throw new XMLStreamException("socket-binding-group with name " + 
+                                        group.getName() + " already declared", reader.getLocation());
+                            }
+                            bindingGroups.put(group.getName(), group);
+                            break;
                         }
                         default: throw unexpectedElement(reader);
                     }
