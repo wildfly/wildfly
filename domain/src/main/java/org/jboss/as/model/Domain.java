@@ -140,38 +140,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new IllegalStateException();
             }
         });
-        calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
-                // todo add-server-group operation
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
-                // todo remove-server-group operation
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
-                // todo update-server-group operation
-                oldElement.appendDifference(null, newElement);
-            }
-        });
-        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
-                // todo deploy
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
-                // todo undeploy
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
-                // todo redeploy...? or maybe just modify stuff
-                throw new UnsupportedOperationException("implement me");
-            }
-        });
+        
         calculateDifference(target, profiles, other.profiles, new DifferenceHandler<String, ProfileElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
                 // todo add-profile
@@ -188,8 +157,60 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
+        
+        calculateDifference(target, interfaces, other.interfaces, new DifferenceHandler<String, InterfaceElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement newElement) {
+                // todo add-interface
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement) {
+                // todo remove-interface
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement, final InterfaceElement newElement) {
+                // todo change interface
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
+        
+        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
+                // todo deploy
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
+                // todo undeploy
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
+                // todo redeploy...? or maybe just modify stuff
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
+        calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
+                // todo add-server-group operation
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
+                // todo remove-server-group operation
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
+                // todo update-server-group operation
+                oldElement.appendDifference(null, newElement);
+            }
+        });
     }
 
     /** {@inheritDoc} */
