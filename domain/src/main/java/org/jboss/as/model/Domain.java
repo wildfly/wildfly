@@ -29,13 +29,10 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-<<<<<<< Updated upstream:domain/src/main/java/org/jboss/as/model/Domain.java
 import org.jboss.as.model.socket.InterfaceElement;
-=======
 import org.jboss.as.Extension;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
->>>>>>> Stashed changes:domain/src/main/java/org/jboss/as/model/Domain.java
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
