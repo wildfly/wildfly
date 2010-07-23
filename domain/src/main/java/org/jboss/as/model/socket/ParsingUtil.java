@@ -58,40 +58,19 @@ class ParsingUtil {
     public static AbstractInterfaceCriteriaElement<?> parseSimpleInterfaceCriteria(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
         AbstractInterfaceCriteriaElement<?> result = null;
         switch (element) {
-            case LOOPBACK: {
-                result = new LoopbackCriteriaElement(reader);
-                break;
-            }
-            case MULTICAST: {
-                result = new MulticastCriteriaElement(reader);
-                break;
-            }
-            case POINT_TO_POINT: {
-                result = new PointToPointCriteriaElement(reader);
-                break;
-            }
-            case UP: {
-                result = new UpCriteriaElement(reader);
-                break;
-            }
+            case LINK_LOCAL_ADDRESS:
+            case LOOPBACK:
+            case MULTICAST:
+            case POINT_TO_POINT:
+            case PUBLIC_ADDRESS:
+            case SITE_LOCAL_ADDRESS:
+            case UP:
             case VIRTUAL: {
-                result = new VirtualCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element);
                 break;
             }
             case NIC: {
                 result = new NicCriteriaElement(reader);
-                break;
-            }
-            case PUBLIC_ADDRESS: {
-                result = new PublicAddressCriteriaElement(reader);
-                break;
-            }
-            case SITE_LOCAL_ADDRESS: {
-                result = new SiteLocalAddressCriteriaElement(reader);
-                break;
-            }
-            case LINK_LOCAL_ADDRESS: {
-                result = new LinkLocalAddressCriteriaElement(reader);
                 break;
             }
             case NIC_MATCH: {
