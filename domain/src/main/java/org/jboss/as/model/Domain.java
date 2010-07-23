@@ -126,6 +126,8 @@ public final class Domain extends AbstractModel<Domain> {
         hash = calculateElementHashOf(serverGroups.values(), hash);
         hash = calculateElementHashOf(deployments.values(), hash);
         hash = calculateElementHashOf(profiles.values(), hash);
+        hash = calculateElementHashOf(interfaces.values(), hash);
+        hash = calculateElementHashOf(bindingGroups.values(), hash);
         if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
