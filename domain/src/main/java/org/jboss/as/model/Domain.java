@@ -183,6 +183,23 @@ public final class Domain extends AbstractModel<Domain> {
             }
         });
         
+        calculateDifference(target, bindingGroups, other.bindingGroups, new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement newElement) {
+                // todo add binding group
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement) {
+                // todo remove binding group
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement, final SocketBindingGroupElement newElement) {
+                // todo change binding group
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
         
@@ -265,7 +282,7 @@ public final class Domain extends AbstractModel<Domain> {
         }        
         
         if (systemProperties != null && systemProperties.size() > 0) {
-            streamWriter.writeStartElement("system-properties");
+            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
         
