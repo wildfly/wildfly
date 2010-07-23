@@ -119,7 +119,8 @@
                 <xs:element name="virtual" type="interface-virtualType"/>
                 <xs:element name="up" type="interface-upType"/>
                 <xs:element name="public-address" type="public-addressType"/>
-                <xs:element name="private-address" type="private-addressType"/>
+                <xs:element name="link-local-address" type="link-local-addressType"/>
+                <xs:element name="site-local-address" type="site-local-addressType"/>
                 <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
                 <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
                 <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/> 
@@ -182,7 +183,8 @@
             <xs:element name="virtual" type="interface-virtualType"/>
             <xs:element name="up" type="interface-upType"/>
             <xs:element name="public-address" type="public-addressType"/>
-            <xs:element name="private-address" type="private-addressType"/> 
+            <xs:element name="link-local-address" type="link-local-addressType"/>
+            <xs:element name="site-local-address" type="site-local-addressType"/> 
             <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
             <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
             <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/>
@@ -248,12 +250,22 @@
             </xs:annotation>            
     </xs:complexType>
 
-    <xs:complexType name="private-addressType">
+    <xs:complexType name="site-local-addressType">
             <xs:annotation>
                 <xs:documentation>
                     Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it has a publicly
-                    routable address.
+                    for an interface should be whether or not an address associated
+                    with it is site-local.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="link-local-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that part of the selection criteria
+                    for an interface should be whether or not an address associated
+                    with it is link-local.
                 </xs:documentation>
             </xs:annotation>            
     </xs:complexType>
