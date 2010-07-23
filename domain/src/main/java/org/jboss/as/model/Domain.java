@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -46,6 +47,7 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
+    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
 
     private PropertiesElement systemProperties;
 
@@ -81,6 +83,10 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         case PROFILES: {
                             parseProfiles(reader);
+                            break;
+                        }
+                        case INTERFACES: {
+                            parseInterfaces(reader);
                             break;
                         }
                         case DEPLOYMENTS: {
@@ -134,38 +140,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new IllegalStateException();
             }
         });
-        calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
-                // todo add-server-group operation
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
-                // todo remove-server-group operation
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
-                // todo update-server-group operation
-                oldElement.appendDifference(null, newElement);
-            }
-        });
-        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
-                // todo deploy
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
-                // todo undeploy
-                throw new UnsupportedOperationException("implement me");
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
-                // todo redeploy...? or maybe just modify stuff
-                throw new UnsupportedOperationException("implement me");
-            }
-        });
+        
         calculateDifference(target, profiles, other.profiles, new DifferenceHandler<String, ProfileElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
                 // todo add-profile
@@ -182,8 +157,60 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
+        
+        calculateDifference(target, interfaces, other.interfaces, new DifferenceHandler<String, InterfaceElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement newElement) {
+                // todo add-interface
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement) {
+                // todo remove-interface
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement, final InterfaceElement newElement) {
+                // todo change interface
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
+        
+        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
+                // todo deploy
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
+                // todo undeploy
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
+                // todo redeploy...? or maybe just modify stuff
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
+        calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
+                // todo add-server-group operation
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
+                // todo remove-server-group operation
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
+                // todo update-server-group operation
+                oldElement.appendDifference(null, newElement);
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -210,6 +237,17 @@ public final class Domain extends AbstractModel<Domain> {
             }
             streamWriter.writeEndElement();
         }
+        
+        if (! interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            for (InterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
+        // TODO socket-binding-groups
         
         if (systemProperties.size() > 0) {
             streamWriter.writeStartElement("system-properties");
@@ -292,6 +330,28 @@ public final class Domain extends AbstractModel<Domain> {
     
     }
     
+    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACE: {
+                            final InterfaceElement interfaceEl = new InterfaceElement(reader);
+                            if (interfaces.containsKey(interfaceEl.getName())) {
+                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
+                            }
+                            interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -324,6 +384,9 @@ public final class Domain extends AbstractModel<Domain> {
                     switch (element) {
                         case SERVER_GROUP: {
                             final ServerGroupElement serverGroup = new ServerGroupElement(reader);
+                            if (serverGroups.containsKey(serverGroup.getName())) {
+                                throw new XMLStreamException("Server group " + serverGroup.getName() + " already declared", reader.getLocation());
+                            }
                             serverGroups.put(serverGroup.getName(), serverGroup);
                             break;
                         }
