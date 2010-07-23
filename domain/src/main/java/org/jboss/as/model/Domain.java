@@ -29,7 +29,13 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+<<<<<<< Updated upstream:domain/src/main/java/org/jboss/as/model/Domain.java
 import org.jboss.as.model.socket.InterfaceElement;
+=======
+import org.jboss.as.Extension;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
+>>>>>>> Stashed changes:domain/src/main/java/org/jboss/as/model/Domain.java
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -277,9 +283,16 @@ public final class Domain extends AbstractModel<Domain> {
         streamWriter.writeEndElement();
     }
     
-    private void registerExtensionHandlers(ExtensionElement extension) {
-        // FIXME register
-        throw new UnsupportedOperationException("implement me");
+    private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final String module = extensionElement.getModule();
+        try {
+            for (Extension extension : Module.loadService(module, Extension.class)) {
+                // todo - as soon as we can get a mapper from a reader...
+//                extension.registerElementHandlers(reader.getMapper());
+            }
+        } catch (ModuleLoadException e) {
+            throw new XMLStreamException("Failed to load module", e);
+        }
     }
     
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -296,7 +309,7 @@ public final class Domain extends AbstractModel<Domain> {
                             extensions.put(extension.getModule(), extension);
                             // load the extension so it can register handlers
                             // TODO do this in ExtensionElement itself?
-                            registerExtensionHandlers(extension);
+                            registerExtensionHandlers(extension, reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
