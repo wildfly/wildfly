@@ -43,6 +43,8 @@ public final class Host extends AbstractModel<Host> {
     private static final long serialVersionUID = 7667892965813702351L;
 
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
+
+    private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     
     /**
      * Construct a new instance.
@@ -72,6 +74,10 @@ public final class Host extends AbstractModel<Host> {
                     switch (element) {
                         case INTERFACES: {
                             parseInterfaces(reader);
+                            break;
+                        }
+                        case SERVERS: {
+                            parseServers(reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -127,6 +133,29 @@ public final class Host extends AbstractModel<Host> {
                                 throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
                             }
                             interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+
+    
+    private void parseServers(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SERVER: {
+                            final ServerElement server = new ServerElement(reader);
+                            if (servers.containsKey(server.getName())) {
+                                throw new XMLStreamException("Interface " + server.getName() + " already declared", reader.getLocation());
+                            }
+                            servers.put(server.getName(), server);
                             break;
                         }
                         default: throw unexpectedElement(reader);

@@ -37,6 +37,8 @@ public enum Attribute {
     // domain 1.0 attributes in alpha order
     ALLOWED("allowed"),
     
+    GROUP("group"),
+    
     NAME("name"),
 
     MODULE("module"),
