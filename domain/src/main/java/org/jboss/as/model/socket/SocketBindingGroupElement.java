@@ -111,6 +111,25 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             }
         }
     }
+    
+    /**
+     * Gets the name of the socket binding group.
+     * 
+     * @return the group name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the name of the default interface to use for socket bindings
+     * that do not declare an interface.
+     * 
+     * @return the interface name
+     */
+    public String getDefaultInterface() {
+        return defaultInterface;
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
