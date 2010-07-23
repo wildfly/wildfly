@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -44,7 +46,8 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     private final String name;
     private final String profile;
     private final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
-
+    private SocketBindingGroupRefElement bindingGroup;
+    
     /**
      * Construct a new instance.
      *
@@ -102,9 +105,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                             //break;
                         }
                         case SOCKET_BINDING_GROUP: {
-                            // FIXME implement socket-binding-group
-                            throw new UnsupportedOperationException("implement socket-binding-group");
-                            //break;
+                            if (bindingGroup != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            bindingGroup = new SocketBindingGroupRefElement(reader);
+                            break;
                         }
                         case DEPLOYMENTS: {
                             parseDeployments(reader);
@@ -166,6 +171,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
 
+        if (bindingGroup != null) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            bindingGroup.writeContent(streamWriter);
+        }
+        
         if (! deploymentMappings.isEmpty()) {
             streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (ServerGroupDeploymentElement element : deploymentMappings.values()) {

@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -48,6 +49,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private final String serverGroup;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private boolean start;
+    private SocketBindingGroupRefElement bindingGroup;
     
     /**
      * Construct a new instance.
@@ -114,6 +116,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                     switch (element) {
                         case INTERFACES: {
                             parseInterfaces(reader);
+                            break;
+                        }
+                        case SOCKET_BINDING_GROUP: {
+                            if (bindingGroup != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            bindingGroup = new SocketBindingGroupRefElement(reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -193,6 +202,11 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                 element.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
+        }
+
+        if (bindingGroup != null) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            bindingGroup.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }

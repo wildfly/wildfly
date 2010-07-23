@@ -135,7 +135,8 @@
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
          </socket-binding-group>
-         <socket-binding-group name="standard-clustered-sockets" extends="standard-sockets">
+         <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
+            <include socket-binding-group="standard-sockets"/>
             <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
             <socket-binding name="cluster-failure-detection" interface="internal" port="54200"/>
             <socket-binding name="ha-jndi" port="1100"/>

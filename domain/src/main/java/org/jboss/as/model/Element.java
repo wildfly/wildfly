@@ -70,6 +70,7 @@ public enum Element {
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),    
     SITE_LOCAL_ADDRESS("site-local-address"),
+    SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SUBNET_MATCH("subnet-match"),

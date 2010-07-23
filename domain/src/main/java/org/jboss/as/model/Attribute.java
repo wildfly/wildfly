@@ -36,21 +36,23 @@ public enum Attribute {
 
     // domain 1.0 attributes in alpha order
     ALLOWED("allowed"),
-    
-    GROUP("group"),
-    
+    DEFAULT_INTERFACE("default-interface"),   
+    FIXED_PORT("fixed-port"),    
+    GROUP("group"),    
+    INTERFACE("interface"),    
     NAME("name"),
-
     MODULE("module"),
-    
+    MULTICAST_ADDRESS("multicast-address"),
+    MULTICAST_PORT("multicast-port"),
     PATTERN("pattern"),
+    PORT("port"),
+    PORT_OFFSET("port-offset"),
     PREFIX("prefix"),    
     PROFILE("profile"),
-
+    REF("ref"),
     SHA1("sha1"),
-    
+    SOCKET_BINDING_GROUP("socket-binding-group"),
     START("start"),
-    
     VALUE("value"),
     
     ;
