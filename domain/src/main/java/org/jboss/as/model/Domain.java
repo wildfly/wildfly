@@ -384,6 +384,9 @@ public final class Domain extends AbstractModel<Domain> {
                     switch (element) {
                         case SERVER_GROUP: {
                             final ServerGroupElement serverGroup = new ServerGroupElement(reader);
+                            if (serverGroups.containsKey(serverGroup.getName())) {
+                                throw new XMLStreamException("Server group " + serverGroup.getName() + " already declared", reader.getLocation());
+                            }
                             serverGroups.put(serverGroup.getName(), serverGroup);
                             break;
                         }

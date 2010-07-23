@@ -146,9 +146,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
-        for (ServerGroupDeploymentElement deployment : deploymentMappings.values()) {
-            cksum = Long.rotateLeft(cksum, 1) ^ deployment.elementHash();
-        }
+        cksum = calculateElementHashOf(deploymentMappings.values(), cksum);
         return cksum;
     }
 
