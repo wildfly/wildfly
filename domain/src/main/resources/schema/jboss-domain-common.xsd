@@ -152,7 +152,7 @@
     </xs:complexType>
     
     <xs:complexType name="nic-matchType">
-        <xs:attribute name="value" type="xs:string" use="required">
+        <xs:attribute name="pattern" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     A regular expression against which the names of the network

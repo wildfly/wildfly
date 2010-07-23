@@ -128,7 +128,7 @@
             <public-address/>
             -->
             <nic name="eth0"/>
-            <nic-match value="eth[0-9]+"/>
+            <nic-match pattern="eth[0-9]+"/>
             <!-- The 'any' element means the included criteria are not exclusive -->
             <any>
                 <subnet-match value="10.0.0.0/8"/>

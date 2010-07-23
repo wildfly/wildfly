@@ -35,6 +35,8 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain 1.0 elements in alpha order
+    ANY("any"),
+    
     DOMAIN("domain"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
@@ -43,18 +45,34 @@ public enum Element {
     EXTENSIONS("extensions"),
     
     INCLUDE("include"),
+    INET_ADDRESS("inet-address"),
     
     JVM("jvm"),
+
+    LINK_LOCAL_ADDRESS("link-local-address"),
+    LOOPBACK("loopback"),
     
+    MULTICAST("multicast"),
+    
+    NIC("nic"),
+    NIC_MATCH("nic-match"),
+    NOT("not"),
+    
+    POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),
+    PUBLIC_ADDRESS("public-address"),
     
     SERVER_GROUP("server-group"),
     SERVER_GROUPS("server-groups"),    
+    SITE_LOCAL_ADDRESS("site-local-address"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
+    SUBNET_MATCH("subnet-match"),
     SYSTEM_PROPERTIES("system-properties"),
     
+    UP("up"),
+    VIRTUAL("virtual"),
     ;
 
     private final String name;

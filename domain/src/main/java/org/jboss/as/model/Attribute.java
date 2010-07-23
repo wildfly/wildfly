@@ -41,13 +41,15 @@ public enum Attribute {
 
     MODULE("module"),
     
-    PREFIX("prefix"),
-    
+    PATTERN("pattern"),
+    PREFIX("prefix"),    
     PROFILE("profile"),
 
     SHA1("sha1"),
     
     START("start"),
+    
+    VALUE("value"),
     
     ;
 
