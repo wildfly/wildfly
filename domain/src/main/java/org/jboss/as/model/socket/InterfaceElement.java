@@ -98,16 +98,12 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
                             address = readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
                             break;
                         }
-                        case ANY: {
+                        case ANY:
+                        case NOT:{
                             requireNoAddress(reader, element);
-                            AnyCriteriaElement criteria = new AnyCriteriaElement(reader);
+                            CompoundCriteriaElement criteria = new CompoundCriteriaElement(reader, element == Element.ANY);
                             interfaceCriteria.put(criteria.getElement(), criteria);
                             break;
-                        }
-                        case NOT: {
-                            requireNoAddress(reader, element);
-                            NotCriteriaElement criteria = new NotCriteriaElement(reader);
-                            interfaceCriteria.put(criteria.getElement(), criteria);
                         }
                         default: {
                             requireNoAddress(reader, element);
