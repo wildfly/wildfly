@@ -92,6 +92,10 @@ public final class Domain extends AbstractModel<Domain> {
                             parseInterfaces(reader);
                             break;
                         }
+                        case SOCKET_BINDING_GROUPS: {
+                            parseSocketBindingGroups(reader);
+                            break;
+                        }
                         case DEPLOYMENTS: {
                             parseDeployments(reader);
                             break;
@@ -353,6 +357,24 @@ public final class Domain extends AbstractModel<Domain> {
                             }
                             interfaces.put(interfaceEl.getName(), interfaceEl);
                             break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
+    private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SOCKET_BINDING_GROUP: {
+                            throw new UnsupportedOperationException("implement me");
+                            //break;
                         }
                         default: throw unexpectedElement(reader);
                     }
