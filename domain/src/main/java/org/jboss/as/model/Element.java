@@ -53,6 +53,7 @@ public enum Element {
     INTERFACE("interface"),
     
     JVM("jvm"),
+    JVMS("jvms"),
 
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOOPBACK("loopback"),
