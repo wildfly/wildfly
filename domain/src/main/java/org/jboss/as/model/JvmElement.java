@@ -102,6 +102,36 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             }
         }
     }
+    
+    
+
+    public String getJavaHome() {
+        return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
+    }
+
+    public String getHeapSize() {
+        return heapSize;
+    }
+
+    public void setHeapSize(String heapSize) {
+        this.heapSize = heapSize;
+    }
+
+    public String getMaxHeap() {
+        return maxHeap;
+    }
+
+    public void setMaxHeap(String maxHeap) {
+        this.maxHeap = maxHeap;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)

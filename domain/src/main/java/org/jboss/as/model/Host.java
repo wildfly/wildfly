@@ -45,6 +45,7 @@ public final class Host extends AbstractModel<Host> {
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
 
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
+    private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
     
     /**
      * Construct a new instance.
@@ -74,6 +75,10 @@ public final class Host extends AbstractModel<Host> {
                     switch (element) {
                         case INTERFACES: {
                             parseInterfaces(reader);
+                            break;
+                        }
+                        case JVMS: {
+                            parseJvms(reader);
                             break;
                         }
                         case SERVERS: {
@@ -118,6 +123,16 @@ public final class Host extends AbstractModel<Host> {
             }
             streamWriter.writeEndElement();
         }
+        
+        if (! jvms.isEmpty()) {
+            streamWriter.writeStartElement(Element.JVMS.getLocalName());
+            for (JvmElement element : jvms.values()) {
+                streamWriter.writeStartElement(Element.JVM.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
         streamWriter.writeEndElement();
     }
     
@@ -133,6 +148,28 @@ public final class Host extends AbstractModel<Host> {
                                 throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
                             }
                             interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
+    private void parseJvms(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case JVM: {
+                            final JvmElement jvm = new JvmElement(reader);
+                            if (jvms.containsKey(jvm.getName())) {
+                                throw new XMLStreamException("JVM " + jvm.getName() + " already declared", reader.getLocation());
+                            }
+                            jvms.put(jvm.getName(), jvm);
                             break;
                         }
                         default: throw unexpectedElement(reader);

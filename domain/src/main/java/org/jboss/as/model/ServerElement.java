@@ -50,7 +50,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private boolean start;
     private SocketBindingGroupRefElement bindingGroup;
-    
+    private JvmElement jvm;
     /**
      * Construct a new instance.
      *
@@ -118,6 +118,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                             parseInterfaces(reader);
                             break;
                         }
+                        case JVM: {
+                            if (jvm != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            jvm = new JvmElement(reader);
+                            break;
+                        }
                         case SOCKET_BINDING_GROUP: {
                             if (bindingGroup != null) {
                                 throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
@@ -176,7 +183,12 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(interfaces.values(), cksum);
+        if (interfaces != null) {
+            cksum = calculateElementHashOf(interfaces.values(), cksum);
+        }
+        if (jvm != null) {
+            cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
+        }
         return cksum;
     }
 
@@ -202,6 +214,11 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                 element.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
+        }
+        
+        if (jvm != null) {
+            streamWriter.writeStartElement(Element.JVM.getLocalName());
+            jvm.writeContent(streamWriter);
         }
 
         if (bindingGroup != null) {
