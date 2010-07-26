@@ -22,77 +22,122 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.TimingServiceListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * Service listener used by deployment to collect the result of all the services being started.
  *
  * @author John E. Bailey
  */
-public class DeploymentServiceListener implements ServiceListener {
-
+public class DeploymentServiceListener extends AbstractServiceListener<Object>{
+    private volatile int batchCount;
+    private volatile int totalServices;
+    private final AtomicBoolean deploymentFinished = new AtomicBoolean();
+    private final AtomicBoolean batchInProgress = new AtomicBoolean();
+    private final long start = System.currentTimeMillis();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
-    private final TimingServiceListener delegateListener;
+    private final Callback deploymentCallback;
+    private Runnable batchCompletionTask;
 
-    public DeploymentServiceListener(final Callback callback) {
-        delegateListener = new TimingServiceListener(new Runnable() {
-            @Override
-            public void run() {
-                callback.run(serviceFailures, delegateListener.getElapsedTime(), delegateListener.getTotalCount());
-            }
-        });
+    private static final AtomicIntegerFieldUpdater<DeploymentServiceListener> countUpdater = AtomicIntegerFieldUpdater.newUpdater(DeploymentServiceListener.class, "batchCount");
+
+    private static final AtomicIntegerFieldUpdater<DeploymentServiceListener> totalServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(DeploymentServiceListener.class, "totalServices");
+
+    public DeploymentServiceListener(final Callback deploymentFinishCallback) {
+        this.deploymentCallback = deploymentFinishCallback;
     }
 
-    @Override
-    public void listenerAdded(ServiceController serviceController) {
-        delegateListener.listenerAdded(serviceController);
+    /** {@inheritDoc} */
+    public void listenerAdded(final ServiceController<? extends Object> serviceController) {
+        countUpdater.incrementAndGet(this);
+        totalServicesUpdater.incrementAndGet(this);
     }
 
-    @Override
-    public void serviceStarting(ServiceController serviceController) {
-        delegateListener.serviceStarting(serviceController);
+    /** {@inheritDoc} */
+    public void serviceStarted(final ServiceController<? extends Object> serviceController) {
+        if (countUpdater.decrementAndGet(this) == 0) {
+            batchComplete();
+        }
+        serviceController.removeListener(this);
     }
 
-    @Override
-    public void serviceStarted(ServiceController serviceController) {
-        delegateListener.serviceStarted(serviceController);
-    }
-
-    @Override
-    public void serviceFailed(ServiceController serviceController, StartException reason) {
+    /** {@inheritDoc} */
+    public void serviceFailed(ServiceController<? extends Object> serviceController, StartException reason) {
         final ServiceName serviceName = serviceController.getName();
         serviceFailures.put(serviceName, reason);
-        delegateListener.serviceFailed(serviceController, reason);
+        if (countUpdater.decrementAndGet(this) == 0) {
+            batchComplete();
+        }
+        serviceController.removeListener(this);
     }
 
-    @Override
-    public void serviceStopping(ServiceController serviceController) {
-        delegateListener.serviceStopping(serviceController);
+    /**
+     * Set the listener up to support a new batch.
+     *
+     * @throws DeploymentException if any problems occur while starting the batch.
+     */
+    public void startBatch() throws DeploymentException {
+        startBatch(null);
     }
 
-    @Override
-    public void serviceStopped(ServiceController serviceController) {
-        delegateListener.serviceStopped(serviceController);
+    /**
+     * * Set the listener up to support a new batch with a finish task to be run when the batch of services completes.
+     *
+     * @param batchCompletionTask A task to execute when all services are started.
+     * @throws DeploymentException if any problems occur while starting the batch.
+     */
+    public void startBatch(final Runnable batchCompletionTask) throws DeploymentException {
+        if(deploymentFinished.get()) {
+            throw new DeploymentException("Deployment has already been marked as finished.");
+        }
+        if(batchInProgress.compareAndSet(false, true) && countUpdater.compareAndSet(this, 0, 1)) {
+            this.batchCompletionTask = batchCompletionTask;
+        } else {
+            throw new DeploymentException("Batch is already in progress");
+        }
     }
 
-    @Override
-    public void serviceRemoved(ServiceController serviceController) {
-        delegateListener.serviceRemoved(serviceController);
-    }
-
-    public int getTotalCount() {
-        return delegateListener.getTotalCount();
-    }
-
+    /**
+     * Call when all services in this group have been added.
+     */
     public void finishBatch() {
-        delegateListener.finishBatch();
+        if (countUpdater.decrementAndGet(this) == 0) {
+            batchComplete();
+        }
+    }
+
+    private void batchComplete() {
+        if(batchInProgress.compareAndSet(true, false)) {
+            if(batchCompletionTask != null)
+                batchCompletionTask.run();
+            if(!batchInProgress.get() && deploymentFinished.get()) {
+                deploymentComplete();
+            }
+        }
+    }
+
+    /**
+     * Mark the current deployment as finished.  
+     */
+    public void finishDeployment() {
+        if (deploymentFinished.compareAndSet(false, true) && !batchInProgress.get()) {
+            deploymentComplete();
+        }
+    }
+
+    private void deploymentComplete() {
+        final long end = System.currentTimeMillis();
+        if(deploymentCallback != null) {
+            deploymentCallback.run(serviceFailures, end - start, totalServices);
+        }
     }
 
     public static interface Callback {

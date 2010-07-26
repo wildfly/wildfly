@@ -79,7 +79,6 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         final DeploymentManager deploymentManager = setupDeploymentManger(serviceContainer);
         setupProcessors(serviceContainer);
         final DeploymentResult result = deploymentManager.deploy(initializeDeployment("/test/serviceDeployment.jar")).getDeploymentResult();
-
         assertDeploymentSuccess(result);
 
         final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
