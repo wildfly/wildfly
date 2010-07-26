@@ -26,6 +26,10 @@
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
                             urn:jboss:security-config:5.0 security-config_5_0.xsd">
 
+    <extensions>
+        <extension module="org.foo:blah"/>
+    </extensions>
+    
 
     <!-- The domain manager/server bootstrap configuration -->
     <domain-configuration>
@@ -33,24 +37,63 @@
         <bootstrapURI>http://bootstrap.uri</bootstrapURI>
     </domain-configuration>
 
-    <extension prefix="xx" module="org.foo:blah"/>
+    <profiles>
+        <profile name="something">
+            <!-- FIXME move web-containers to another namespace -->
+            <web-containers>
+                <web-container name="jboss.web">
+                    <config>
+                        <servlets>
+                            <default listings="true" />
+                            <ssi/>
+                        </servlets>
+                    </config>
+                    
+                    <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                    <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
+                                    default-virtual-server="localhost">
+                        <ssl name="jbossweb"/>
+                        <socket name="https"/>
+                    </connector>
+    
+                    <virtual-server name="localhost">
+                        <access-log/>
+                        <connector>httpsConnector</connector>
+                        <host>localhost</host>
+                    </virtual-server>
+               </web-container>
+            </web-containers>
 
-    <profile name="something">
-        <subsystem name="ejb"/>
-        <subsystem name="war"/>
-        <subsystem name="jms"/>
-        <subsystem name="xx:fancy"/>
-    </profile>
+            <!-- mod_cluster for all the web containers defined? -->
+            <mod-cluster-config>
+               <proxy-conf>
+                 <httpd-conf proxy-list="localhost:6666">
+                   <advertise-socket name="mod_cluster" />
+                   <ssl name="mod_cluster" />
+                 </httpd-conf>
+                 <nodes-conf/>
+               </proxy-conf>
+            </mod-cluster-config>
+        </profile>
 
-    <profile name="something2" extends="something">
-        <subsystem name="additional"/>
-    </profile>
-
-    <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" start="false"/>
-    </deployments>
+        <!-- An example of bringing in subsytems that use other namespaces. This
+             won't validate in this module because the foreign schemas are located in
+             other modules and are not visible when this module's testsuite runs.
+             The testsuite/smoke module includes an equivalent file
+        <profile name="something2">
+            <include profile="something"/>
+            <threads:subsystem>
+                <threads:queueless-thread-pool-executor name="remoting">
+                    <threads:max-threads count="10" per-cpu="20"/>
+                    <threads:keepalive-time time="10" unit="s"/>
+                </threads:queueless-thread-pool-executor>
+            </threads:subsystem>
+            <remoting:subsystem thread-pool="remoting-pool">
+                <remoting:connector name="default-connector" socket-binding="remoting"/>
+            </remoting:subsystem>
+        </profile>
+        -->
+    </profiles>
 
     <!--  
          Named interfaces that can be referenced elsewhere. Different
@@ -79,13 +122,13 @@
             <point-to-point/>
             <multicast/>
             <up/>
-            <private-address/>
+            <site-local-address/>
 
             <!-- Alternatively... 
             <public-address/>
             -->
             <nic name="eth0"/>
-            <nic-match value="eth[0-9]+"/>
+            <nic-match pattern="eth[0-9]+"/>
             <!-- The 'any' element means the included criteria are not exclusive -->
             <any>
                 <subnet-match value="10.0.0.0/8"/>
@@ -105,8 +148,10 @@
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
+            <socket-binding name="mod_cluster" multicast-address="224.0.1.105" multicast-port="23364" />
          </socket-binding-group>
-         <socket-binding-group name="standard-clustered-sockets" extends="standard-sockets">
+         <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
+            <include socket-binding-group="standard-sockets"/>
             <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
             <socket-binding name="cluster-failure-detection" interface="internal" port="54200"/>
             <socket-binding name="ha-jndi" port="1100"/>
@@ -114,29 +159,24 @@
          </socket-binding-group>
     </socket-binding-groups>
 
-    <containers>
-        <web-containers>
-            <web-container name="jboss.web">
-                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                <http-connector id="httpsConnector" address="10.0.0.5" port="8443" protocol="tls" scheme="https" secure="true" 
-                                default-virtual-server="localhost">
-                    <ssl password="changeit" cipher-suite="SSLv2+SSLv3"/>
-                </http-connector>
-
-                <virtual-server id="localhost" http-connectors="httpsConnector" hosts="localhost">
-                    <access-log/>
-                </virtual-server>
-           </web-container>
-        </web-containers>
-    </containers>
+    <ssls>
+         <ssl name="jbossweb" password="changeit" cipher-suite="SSLv2+SSLv3"/>
+         <ssl name="mod-cluster" password="changeit" key-alias="mod-cluster" cipher-suite="SSLv2+SSLv3"/>
+    </ssls>
 
     <system-properties>
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
 
+    <deployments>
+        <deployment name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
+    </deployments>
+
     <server-groups>
-        <server-group group-name="main-server-group" profile="something">
+        <server-group name="main-server-group" profile="something">
 
            <jvm name="icedtea1">
               <heap size="512m" max-size="1024m"/>

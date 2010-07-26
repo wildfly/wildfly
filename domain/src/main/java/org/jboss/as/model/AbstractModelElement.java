@@ -23,15 +23,22 @@
 package org.jboss.as.model;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -41,11 +48,12 @@ import javax.xml.stream.XMLStreamException;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter {
+public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter, XMLStreamConstants {
 
     private static final long serialVersionUID = 66064050420378211L;
 
     private final Location location;
+    private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
 
     /**
      * Construct a new instance.
@@ -55,6 +63,16 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     protected AbstractModelElement(final Location location) {
         assert getClass() == getElementClass();
         this.location = location;
+    }
+
+    /**
+     * Construct a new instance initialized from the given XML stream.
+     *
+     * @param reader the stream reader
+     */
+    protected AbstractModelElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final javax.xml.stream.Location xmlLocation = reader.getLocation();
+        location = new Location("<unknown-TODO>", xmlLocation.getLineNumber(), xmlLocation.getColumnNumber(), null);
     }
 
     /**
@@ -136,6 +154,197 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return builder.toString();
     }
+    
+    /**
+     * Convert a hex string into a byte[].
+     * 
+     * @param s the string
+     * @return the bytes
+     */
+    protected static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len >> 1];
+        for (int i = 0, j = 0; j < len; i++) {
+            int x = Character.digit(s.charAt(j), 16) << 4;
+            j++;
+            x = x | Character.digit(s.charAt(j), 16);
+            j++;
+            data[i] = (byte) (x & 0xFF);
+        }
+        return data;
+    }
+
+
+    /**
+     * Get an exception reporting an unexpected XML element.
+     *
+     * @param reader the stream reader
+     * @return the exception
+     */
+    protected static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
+        return new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
+    }
+
+    /**
+     * Get an exception reporting an unexpected XML attribute.
+     *
+     * @param reader the stream reader
+     * @param index the element index
+     * @return the exception
+     */
+    protected static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
+        return new XMLStreamException("Unexpected attribute '" + reader.getAttributeName(index) + "' encountered", reader.getLocation());
+    }
+
+    /**
+     * Get an exception reporting a missing, required XML attribute.
+     *
+     * @param reader the stream reader
+     * @param required a set of enums whose toString method returns the attribute name
+     * @return the exception
+     */
+    protected static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final Set<?> required) {
+        final StringBuilder b = new StringBuilder();
+        Iterator<?> iterator = required.iterator();
+        while (iterator.hasNext()) {
+            final Object o = iterator.next();
+            b.append(o.toString());
+            if (iterator.hasNext()) {
+                b.append(", ");
+            }
+        }
+        return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
+    }
+    
+    /**
+     * Checks that the current element has no attributes, throwing an {@link XMLStreamException}
+     * if one is found.
+     *
+     * @param reader the reader
+     * @throws XMLStreamException if an error occurs
+     */
+    protected static void requireNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+    }
+    
+    /**
+     * Consumes the remainder of the current element, throwing an {@link XMLStreamException}
+     * if it contains any child elements.
+     *
+     * @param reader the reader
+     * @throws XMLStreamException if an error occurs
+     */
+    protected static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            throw unexpectedElement(reader);
+        }
+    }
+
+    /**
+     * Get an exception reporting that an element of a given type and name has already been declared in this scope.
+     *
+     * @param reader the stream reader
+     * @param name the name that was redeclared
+     * @return the exception
+     */
+    protected static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
+        return new XMLStreamException("An element of this type named '" + name + "' has already been declared", reader.getLocation());
+    }
+
+    /**
+     * Read an element which contains only a single boolean attribute.
+     *
+     * @param reader the reader
+     * @param attributeName the attribute name, usually "value"
+     * @return the boolean value
+     * @throws XMLStreamException if an error occurs or if the element does not
+     *            contain the specified attribute, contains other attributes,
+     *            or contains child elements.
+     */
+    protected static boolean readBooleanAttributeElement(final XMLExtendedStreamReader reader, final String attributeName) throws XMLStreamException {
+        requireSingleAttribute(reader, attributeName);
+        final boolean value = Boolean.parseBoolean(reader.getAttributeValue(0));
+        requireNoContent(reader);
+        return value;
+    }
+
+    /**
+     * Read an element which contains only a single string attribute.
+     *
+     * @param reader the reader
+     * @param attributeName the attribute name, usually "value" or "name"
+     * @return the string value
+     * @throws XMLStreamException if an error occurs or if the element does not
+     *            contain the specified attribute, contains other attributes,
+     *            or contains child elements.
+     */
+    protected static String readStringAttributeElement(final XMLExtendedStreamReader reader, final String attributeName) throws XMLStreamException {
+        requireSingleAttribute(reader, attributeName);
+        final String value = reader.getAttributeValue(0);
+        requireNoContent(reader);
+        return value;
+    }
+
+    /**
+     * Read an element which contains only a single list attribute of a given type.
+     *
+     * @param reader the reader
+     * @param attributeName the attribute name, usually "value"
+     * @param type the value type class
+     * @param <T> the value type
+     * @return the value list
+     * @throws XMLStreamException if an error occurs or if the element does not
+     *            contain the specified attribute, contains other attributes,
+     *            or contains child elements.
+     */
+    @SuppressWarnings({ "unchecked" })
+    protected static <T> List<T> readListAttributeElement(final XMLExtendedStreamReader reader, final String attributeName, final Class<T> type) throws XMLStreamException {
+        requireSingleAttribute(reader, attributeName);
+        // todo: fix this when this method signature is corrected
+        final List<T> value = (List<T>) reader.getListAttributeValue(0, type);
+        requireNoContent(reader);
+        return value;
+    }
+
+    /**
+     * Read an element which contains only a single list attribute of a given type, returning it as an array.
+     *
+     * @param reader the reader
+     * @param attributeName the attribute name, usually "value"
+     * @param type the value type class
+     * @param <T> the value type
+     * @return the value list as an array
+     * @throws XMLStreamException if an error occurs or if the element does not
+     *            contain the specified attribute, contains other attributes,
+     *            or contains child elements.
+     */
+    @SuppressWarnings({ "unchecked" })
+    protected static <T> T[] readArrayAttributeElement(final XMLExtendedStreamReader reader, final String attributeName, final Class<T> type) throws XMLStreamException {
+        final List<T> list = readListAttributeElement(reader, attributeName, type);
+        return list.toArray((T[]) Array.newInstance(type, list.size()));
+    }
+
+    /**
+     * Require that the current element have only a single attribute with the given name.
+     *
+     * @param reader the reader
+     * @param attributeName the attribute name
+     * @throws XMLStreamException if an error occurs
+     */
+    private static void requireSingleAttribute(final XMLExtendedStreamReader reader, final String attributeName) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        if (count == 0) {
+            throw missingRequired(reader, Collections.singleton(attributeName));
+        }
+        if (reader.getAttributeNamespace(0) != null || ! attributeName.equals(reader.getAttributeLocalName(0))) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        if (count > 1) {
+            throw unexpectedAttribute(reader, 1);
+        }
+    }
 
     /**
      * Calculate a hash of this model element's complete contents.  This value is used to verify the state of the model
@@ -153,6 +362,15 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param other the other element
      */
     protected abstract void appendDifference(Collection<AbstractModelUpdate<E>> target, E other);
+
+    /**
+     * Get the mutable set of child elements.
+     *
+     * @return the set
+     */
+    protected final Set<AbstractModelElement<?>> getChildren() {
+        return children;
+    }
 
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
         @SuppressWarnings("unchecked")

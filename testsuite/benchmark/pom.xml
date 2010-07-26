@@ -37,4 +37,17 @@
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Benchmark Tests</name>
+    
+    <profiles>
+        <!-- Enable the benchmark-tests profile to execute this module's tests -->
+        <profile>
+            <id>benchmark-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipExecUnitTests>false</skipExecUnitTests>
+            </properties>
+        </profile>
+    </profiles>  
 </project>

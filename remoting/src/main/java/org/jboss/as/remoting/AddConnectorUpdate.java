@@ -29,7 +29,7 @@ import org.jboss.as.model.AbstractModelUpdate;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingContainerElement> {
+public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement> {
 
     private static final long serialVersionUID = -2278776744412864865L;
 
@@ -45,12 +45,12 @@ public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingContai
     }
 
     /** {@inheritDoc} */
-    protected Class<RemotingContainerElement> getModelElementType() {
-        return RemotingContainerElement.class;
+    protected Class<RemotingSubsystemElement> getModelElementType() {
+        return RemotingSubsystemElement.class;
     }
 
     /** {@inheritDoc} */
-    protected AbstractModelUpdate<RemotingContainerElement> applyUpdate(final RemotingContainerElement element) {
+    protected AbstractModelUpdate<RemotingSubsystemElement> applyUpdate(final RemotingSubsystemElement element) {
         return new RemoveConnectorUpdate(element.addConnector(newElement.clone()));
     }
 }

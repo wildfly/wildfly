@@ -20,45 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.threads;
 
-import java.util.Collection;
+import org.jboss.as.Extension;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLMapper;
+
+import javax.xml.namespace.QName;
 
 /**
- * The base class of all container elements.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractContainerElement<E extends AbstractContainerElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
+public final class ThreadsExtension implements Extension {
 
-    private static final long serialVersionUID = 899219830157478004L;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param location the declaration location of this element
-     */
-    protected AbstractContainerElement(final Location location) {
-        super(location);
+    public void registerElementHandlers(final XMLMapper mapper) {
+        mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), Element.SUBSYSTEM.getLocalName()), ThreadsParser.getInstance());
     }
 
-    /**
-     * Activate this container within a service container.
-     *
-     * @param container the container
-     * @param batchBuilder the current batch builder
-     */
-    public abstract void activate(final ServiceContainer container, final BatchBuilder batchBuilder);
-
-    /**
-     * Get the collection of all socket bindings referenced by this container.  Used to validate
-     * the domain model.
-     *
-     * @return the collection of socket bindings
-     */
-    public abstract Collection<String> getReferencedSocketBindings();
+    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    }
 }
