@@ -22,8 +22,14 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.chain.DeploymentChain;
+import org.jboss.as.deployment.chain.DeploymentChainImpl;
+import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProvider;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.processor.ModuleConfgProcessor;
 import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
@@ -35,21 +41,19 @@ import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
 import org.jboss.as.deployment.test.TestServiceDeployment;
-import org.jboss.as.deployment.unit.DeploymentChain;
-import org.jboss.as.deployment.unit.DeploymentChainImpl;
-import org.jboss.as.deployment.unit.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.unit.DeploymentChainService;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoaderSelector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.TimingServiceListener;
+import org.jboss.msc.value.Values;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Test;
@@ -125,17 +129,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
     private DeploymentManager setupDeploymentManger(final ServiceContainer serviceContainer) throws Exception {
         final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
         final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
-        final DeploymentManagerImpl deploymentManager = new DeploymentManagerImpl(serviceContainer) {
-            @Override
-            protected DeploymentChain determineDeploymentChain(VirtualFile deploymentRoo) {
-                return deploymentChain;
-            }
-
-            @Override
-            protected DeploymentModuleLoader determineDeploymentModuleLoader(VirtualFile deploymentRoo) {
-                return deploymentModuleLoader;
-            }
-        };
+        final DeploymentManagerImpl deploymentManager = new DeploymentManagerImpl(serviceContainer);
 
         final BatchBuilder builder = serviceContainer.batchBuilder();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -147,8 +141,27 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         });
         builder.addListener(listener);
 
-        builder.addService(CHAIN_SERVICE_NAME, new DeploymentChainService(deploymentChain));
-        builder.addService(DEPLOYMENT_MODULE_LOADER_SERVICE_NAME, new PassthroughService(deploymentModuleLoader));
+        builder.addService(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider());
+        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
+        builder.addService(CHAIN_SERVICE_NAME, deploymentChainService)
+            .addDependency(DeploymentChainProvider.SERVICE_NAME).toInjector(
+                new DeploymentChainProvider.SelectorInjector(deploymentChainService,
+                        Values.immediateValue(new DeploymentChainProvider.Selector() {
+                            public boolean supports(VirtualFile root) {
+                                return true;
+                            }
+                }), 0));
+
+        builder.addService(DeploymentModuleLoaderProvider.SERVICE_NAME, new DeploymentModuleLoaderProvider());
+        final Service<DeploymentModuleLoader> deploymentModuleLoaderService = new PassthroughService(deploymentModuleLoader);
+        builder.addService(DEPLOYMENT_MODULE_LOADER_SERVICE_NAME, deploymentModuleLoaderService)
+            .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME).toInjector(
+                new DeploymentModuleLoaderProvider.SelectorInjector(deploymentModuleLoaderService,
+                        Values.immediateValue(new DeploymentModuleLoaderProvider.Selector() {
+                            public boolean supports(VirtualFile root) {
+                                return true;
+                            }
+                }), 0));
 
         final BatchServiceBuilder deploymentManagerServiceBuilder = builder.addService(DEPLOYMENT_MANAGER_NAME, deploymentManager);
         deploymentManagerServiceBuilder.addDependency(CHAIN_SERVICE_NAME);

@@ -20,41 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.chain;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+import org.jboss.msc.translate.TranslationException;
+import org.jboss.msc.translate.Translator;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Service responsible for wrapping a deployment chain to support life-cycle management and injection.
- *
+ * Translator used to get a deployment chain from the deployment chain provider.
+ * 
  * @author John E. Bailey
  */
-public class DeploymentChainService implements Service<DeploymentChain> {
-    private final Value<DeploymentChain> deploymentChainValue;
+public class DeploymentChainProviderTranslator implements Translator<DeploymentChainProvider, DeploymentChain> {
+    private final VirtualFile virtualFile;
 
-    public DeploymentChainService(final Value<DeploymentChain> deploymentChainValue) {
-        this.deploymentChainValue = deploymentChainValue;
-    }
-
-    public DeploymentChainService(DeploymentChain deploymentChain) {
-        this(Values.immediateValue(deploymentChain));
+    public DeploymentChainProviderTranslator(VirtualFile virtualFile) {
+        this.virtualFile = virtualFile;
     }
 
     @Override
-    public void start(final StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(final StopContext context) {
-    }
-
-    @Override
-    public DeploymentChain getValue() throws IllegalStateException {
-        return deploymentChainValue.getValue();
+    public DeploymentChain translate(DeploymentChainProvider provider) throws TranslationException {
+        return provider.determineDeploymentChain(virtualFile);
     }
 }

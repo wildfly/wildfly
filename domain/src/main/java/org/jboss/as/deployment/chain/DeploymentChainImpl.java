@@ -20,7 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.chain;
+
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -44,12 +48,11 @@ public class DeploymentChainImpl implements DeploymentChain {
         return name;
     }
 
-
     /**
      * Process the deployment unit using the chain of DeploymentUnitProcessor instances.
      *
      * @param context the deployment unit context
-     * @throws DeploymentUnitProcessingException
+     * @throws org.jboss.as.deployment.unit.DeploymentUnitProcessingException
      *          if an error occurs during processing
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {

@@ -20,36 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.module;
+
+import org.jboss.msc.translate.TranslationException;
+import org.jboss.msc.translate.Translator;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
+ * Translator used to get a deployment module loader from the deployment module loader provider.
  *
  * @author John E. Bailey
  */
-public interface DeploymentChain extends DeploymentUnitProcessor {
-    /**
-     * Get the name of the deployment chain.  Ex. "deployment.chain.war"
-     *
-     * @return the name
-     */
-    String geName();
+public class DeploymentModuleLoaderProviderTranslator implements Translator<DeploymentModuleLoaderProvider, DeploymentModuleLoader> {
+    private final VirtualFile virtualFile;
 
-    /**
-     * Add a new DeploymentUnitProcessor to the chain with a specified priority.
-     *
-     * @param processor The processor to add
-     * @param priority The priority of this processor in the chain
-     */
-    void addProcessor(DeploymentUnitProcessor processor, long priority);
+    public DeploymentModuleLoaderProviderTranslator(VirtualFile virtualFile) {
+        this.virtualFile = virtualFile;
+    }
 
-    /**
-     * Remove a DeploymentUnitProcessor from the chain at a specific priority.
-     * The priority is required for removal to not restrict processor instance to
-     * a single location int the chain. 
-     *
-     * @param processor The processor to removed
-     * @param priority The priority location to remove the processor from
-     */
-    void removeProcessor(DeploymentUnitProcessor processor, long priority);
+    @Override
+    public DeploymentModuleLoader translate(DeploymentModuleLoaderProvider provider) throws TranslationException {
+        return provider.determineDeploymentModuleLoader(virtualFile);
+    }
 }

@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.chain;
 
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.Value;

@@ -20,36 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.chain;
 
-import org.jboss.vfs.VirtualFile;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 /**
- * (TEMPORARY) Deployment manager used to kick off a deployment for a virtual file root.
- * 
+ * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
+ *
  * @author John E. Bailey
  */
-public interface DeploymentManager {
+public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
-     * Deploy virtual file roots as a single unit of work.
+     * Get the name of the deployment chain.  Ex. "deployment.chain.war"
      *
-     * @param roots The roots to deploy
-     * @return a deployment result future to allow future result retrieval.
+     * @return the name
      */
-    DeploymentResult.Future deploy(final VirtualFile... roots) throws DeploymentException;
+    String geName();
 
     /**
-     * Deploy virtual file roots and wait for the result to be available before returning.
+     * Add a new DeploymentUnitProcessor to the chain with a specified priority.
      *
-     * @param roots The roots to deploy
-     * @return a deployment result
+     * @param processor The processor to add
+     * @param priority The priority of this processor in the chain
      */
-    DeploymentResult deployAndWait(final VirtualFile... roots) throws DeploymentException;
+    void addProcessor(DeploymentUnitProcessor processor, long priority);
 
     /**
-     * Undeploy virtual file roots
+     * Remove a DeploymentUnitProcessor from the chain at a specific priority.
+     * The priority is required for removal to not restrict processor instance to
+     * a single location int the chain. 
      *
-     * @param roots The roots to undeploy
+     * @param processor The processor to removed
+     * @param priority The priority location to remove the processor from
      */
-    void undeploy(final VirtualFile... roots) throws DeploymentException ;
+    void removeProcessor(DeploymentUnitProcessor processor, long priority);
 }

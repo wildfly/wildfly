@@ -22,20 +22,27 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.chain.DeploymentChain;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.chain.DeploymentChainProviderTranslator;
 import org.jboss.as.deployment.item.DeploymentItem;
 import org.jboss.as.deployment.item.DeploymentItemContext;
 import org.jboss.as.deployment.item.DeploymentItemContextImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProvider;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProviderTranslator;
 import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.unit.DeploymentChain;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.inject.PropertyInjector;
+import org.jboss.msc.inject.TranslatingInjector;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -46,6 +53,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.services.VFSMountService;
+import org.jboss.msc.value.Values;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -58,8 +66,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
@@ -74,7 +80,6 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
     private final ServiceContainer serviceContainer;
-    private final ConcurrentMap<VirtualFile, Deployment> deploymentMap = new ConcurrentHashMap<VirtualFile, Deployment>();
     private TempFileProvider tempFileProvider;
 
     public DeploymentManagerImpl(final ServiceContainer serviceContainer) {
@@ -156,14 +161,23 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
 
                 // Setup deployment service
                 final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-                batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName))
-                    .setInitialMode(ServiceController.Mode.IMMEDIATE)
-                    .addDependency(mountServiceName);
+                final DeploymentService deploymentService = new DeploymentService(deploymentName);
+                final BatchServiceBuilder deploymentServiceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService)
+                    .setInitialMode(ServiceController.Mode.IMMEDIATE);
+                deploymentServiceBuilder.addDependency(mountServiceName);
+                deploymentServiceBuilder.addDependency(DeploymentChainProvider.SERVICE_NAME)
+                    .toInjector(new TranslatingInjector<DeploymentChainProvider, DeploymentChain>(
+                            new DeploymentChainProviderTranslator(deploymentRoot),
+                            new PropertyInjector(DeploymentService.DEPLOYMENT_CHAIN_PROPERTY, Values.immediateValue(deploymentService)))
+                    );
+                deploymentServiceBuilder.addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME)
+                    .toInjector(new TranslatingInjector<DeploymentModuleLoaderProvider, DeploymentModuleLoader>(
+                            new DeploymentModuleLoaderProviderTranslator(deploymentRoot),
+                            new PropertyInjector(DeploymentService.MODULE_LOADER_PROPERTY, Values.immediateValue(deploymentService)))
+                    );
 
-                final Deployment deployment = new Deployment(deploymentName, deploymentRoot, deploymentServiceName, deploymentUnitContext);
-                // Register the deployment
-                if(deploymentMap.putIfAbsent(deploymentRoot, deployment) != null)
-                    throw new DeploymentException("Deployment already exists for deployment root: " + deploymentRoot);
+
+                final Deployment deployment = new Deployment(deploymentName, deploymentRoot, deploymentServiceName, deploymentService, deploymentUnitContext);
                 deployments.add(deployment);
             }
 
@@ -202,10 +216,10 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
             final VirtualFile deploymentRoot = deployment.deploymentRoot;
 
             // Determine which deployment chain to use for this deployment
-            final DeploymentChain deploymentChain = determineDeploymentChain(deploymentRoot);
+            final DeploymentChain deploymentChain = deployment.deploymentService.getDeploymentChain();
 
             // Determine which deployment module loader to use for this deployment
-            final DeploymentModuleLoader deploymentModuleLoader = determineDeploymentModuleLoader(deploymentRoot);
+            final DeploymentModuleLoader deploymentModuleLoader = deployment.deploymentService.getModuleLoader();
             DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.set(deploymentModuleLoader);
 
             final DeploymentUnitContext deploymentUnitContext = deployment.deploymentUnitContext;
@@ -239,7 +253,7 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
 
             // Setup deployment module
             // Determine which deployment module loader to use for this deployment
-            final DeploymentModuleLoader deploymentModuleLoader = determineDeploymentModuleLoader(deployment.deploymentRoot);
+            final DeploymentModuleLoader deploymentModuleLoader = deployment.deploymentService.getModuleLoader();
             Module module = null;
             final ModuleConfig moduleConfig = deploymentUnitContext.getAttachment(ModuleConfig.ATTACHMENT_KEY);
             if(moduleConfig != null) {
@@ -290,13 +304,11 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
     @Override
     public void undeploy(VirtualFile... deploymentRoots) throws DeploymentException {
         final ServiceContainer serviceContainer = this.serviceContainer;
-        final ConcurrentMap<VirtualFile, Deployment> deploymentMap = this.deploymentMap;
         final List<ServiceController<?>> serviceControllers = new ArrayList<ServiceController<?>>(deploymentRoots.length);
         for(VirtualFile deploymentRoot : deploymentRoots) {
-            final Deployment deployment = deploymentMap.remove(deploymentRoot);
-            if(deployment == null)
-                continue; // Maybe should be an exceptions
-            final ServiceController<?> serviceController = serviceContainer.getService(deployment.deploymentServiceName);
+            final String deploymentName = deploymentRoot.getName();
+            final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
+            final ServiceController<?> serviceController = serviceContainer.getService(deploymentServiceName);
             if(serviceController == null)
                 throw new DeploymentException("Failed to undeploy " + deploymentRoot + ". Deployment service does not exist.");
             serviceControllers.add(serviceController);
@@ -327,24 +339,18 @@ public class DeploymentManagerImpl implements DeploymentManager, Service<Deploym
         });
     }
 
-    protected DeploymentChain determineDeploymentChain(final VirtualFile deploymentRoot) {
-        return null; // TODO:  Determine the chain
-    }
-
-    protected DeploymentModuleLoader determineDeploymentModuleLoader(final VirtualFile deploymentRoot) {
-        return null; // TODO:  Determine the loader
-    }
-
     private static final class Deployment {
         private final String name;
         private final VirtualFile deploymentRoot;
         private final ServiceName deploymentServiceName;
+        private final DeploymentService deploymentService;
         private final DeploymentUnitContextImpl deploymentUnitContext;
 
-        private Deployment(String name, VirtualFile deploymentRoot, ServiceName deploymentServiceName, DeploymentUnitContextImpl deploymentUnitContext) {
+        private Deployment(String name, VirtualFile deploymentRoot, ServiceName deploymentServiceName, final DeploymentService deploymentService, DeploymentUnitContextImpl deploymentUnitContext) {
             this.name = name;
             this.deploymentRoot = deploymentRoot;
             this.deploymentServiceName = deploymentServiceName;
+            this.deploymentService = deploymentService;
             this.deploymentUnitContext = deploymentUnitContext;
         }
     }

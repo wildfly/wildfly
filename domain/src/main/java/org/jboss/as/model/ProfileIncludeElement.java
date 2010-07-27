@@ -3,14 +3,13 @@
  */
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A element identifying a profile that should be included in another profile.

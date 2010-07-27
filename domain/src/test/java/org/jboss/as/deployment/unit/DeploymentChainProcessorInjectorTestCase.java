@@ -22,6 +22,10 @@
 
 package org.jboss.as.deployment.unit;
 
+import org.jboss.as.deployment.chain.DeploymentChain;
+import org.jboss.as.deployment.chain.DeploymentChainImpl;
+import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
