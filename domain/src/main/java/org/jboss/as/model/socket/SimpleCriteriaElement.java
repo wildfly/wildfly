@@ -3,9 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
@@ -24,6 +22,7 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
 
     private static final long serialVersionUID = -649277969243521207L;
 
+    
     /**
      * Creates a new LoopbackCriteriaElement by parsing an xml stream
      * 
@@ -32,52 +31,21 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
      * 
      * @throws XMLStreamException if an error occurs
      */
-    public SimpleCriteriaElement(XMLExtendedStreamReader reader, Element type) throws XMLStreamException {
-        super(reader, type);
-        switch (type) {
-            case LINK_LOCAL_ADDRESS:
-            case LOOPBACK:
-            case MULTICAST:
-            case POINT_TO_POINT:
-            case PUBLIC_ADDRESS:
-            case SITE_LOCAL_ADDRESS:
-            case UP:
-            case VIRTUAL:
-                // ok
-                break;
-            default:
-                throw new IllegalArgumentException(type.getLocalName() + " is not a valid simple criteria type");
+    public SimpleCriteriaElement(XMLExtendedStreamReader reader, Element type, InterfaceCriteria criteria) throws XMLStreamException {
+        super(reader, type, criteria);
+        if (criteria == null) {
+            throw new IllegalArgumentException("criteria is null");
         }
     }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.socket.InterfaceCriteria#matches(java.net.NetworkInterface)
+    
+    /** 
+     * {@inheritDoc}
+     * 
+     * This implementation checks that there are no attributes and no child elements.
      */
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-
-        switch (getElement()) {
-            case LINK_LOCAL_ADDRESS:
-                return address.isLinkLocalAddress();
-            case LOOPBACK:
-                return networkInterface.isLoopback();
-            case MULTICAST:
-                return networkInterface.supportsMulticast();
-            case POINT_TO_POINT:
-                return networkInterface.isPointToPoint();
-            case PUBLIC_ADDRESS:
-                return !address.isSiteLocalAddress() && !address.isLinkLocalAddress() && !address.isAnyLocalAddress();
-            case SITE_LOCAL_ADDRESS:
-                return address.isSiteLocalAddress();
-            case UP:
-                return networkInterface.isUp();
-            case VIRTUAL:
-                return networkInterface.isVirtual();
-            default:
-                // Constructor should prevent this
-                throw new IllegalStateException(getElement().getLocalName() + " is not a valid simple criteria type");
-        }
-        
+    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
+        requireNoAttributes(reader);
+        requireNoContent(reader);
     }
 
     @Override

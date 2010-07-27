@@ -4,8 +4,6 @@
 package org.jboss.as.model.socket;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,8 +17,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Indicates that a network interface must have a {@link NetworkInterface#getName() name}
- * that matches a given regular expression in order to match the criteria.
+ * Indicates that an address must fit on a particular subnet to match the criteria.
  * 
  * @author Brian Stansberry
  */
@@ -40,6 +37,7 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
      */
     public SubnetMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.SUBNET_MATCH);
+        setInterfaceCriteria(new SubnetMatchInterfaceCriteria(network, mask));
     }
 
     @Override
@@ -87,22 +85,6 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
         this.mask = mask;
         // Handle elements
         requireNoContent(reader);
-    }
-
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        byte[] addr = address.getAddress();
-        if (addr.length != network.length) {
-            // different address type TODO translate?
-            return false;
-        }
-        int last = addr.length - mask;
-        for (int i = 0; i < last; i++) {
-            if (addr[i] != network[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

@@ -18,14 +18,18 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Brian Stansberry
  */
 public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfaceCriteriaElement<T>> 
-    extends AbstractModelElement<T> implements InterfaceCriteria {
+    extends AbstractModelElement<T> {
 
     private static final long serialVersionUID = 396313309912557378L;
     
     private final Element element;
+    private InterfaceCriteria interfaceCriteria;
     
     /**
-     * Creates a new AbstractInterfaceCriteriaElement by parsing an xml stream
+     * Creates a new AbstractInterfaceCriteriaElement by parsing an xml stream.
+     * Subclasses using this constructor are responsible for calling 
+     * {@link #setInterfaceCriteria(InterfaceCriteria)} before returning from
+     * their constructor.
      * 
      * @param reader stream reader used to read the xml
      * @param element the element being read
@@ -39,17 +43,51 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
         this.element = element;
         processXmlStream(reader);
     }
+    
+    /**
+     * Creates a new AbstractInterfaceCriteriaElement by parsing an xml stream
+     * 
+     * @param reader stream reader used to read the xml
+     * @param element the element being read
+     * @param interfaceCriteria the criteria to use to check whether an network 
+     *         interface and address is acceptable for use by an interface
+     * 
+     * @throws XMLStreamException if an error occurs
+     */
+    protected AbstractInterfaceCriteriaElement(XMLExtendedStreamReader reader, final Element element, final InterfaceCriteria interfaceCriteria) throws XMLStreamException {
+        this(reader, element);
+        setInterfaceCriteria(interfaceCriteria);
+    }
 
     /**
-     * Hook for subclasses to process the xml stream during object construction. This
-     * default implementation checks that there are no attributes and no child elements.
+     * Hook for subclasses to process the xml stream during object construction.
      * 
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
      */
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
-        requireNoAttributes(reader);
-        requireNoContent(reader);
+    protected abstract void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException;
+    
+    /**
+     * Gets the InterfaceCriteria associated with this element.
+     * 
+     * @return the criteria. May be <code>null</code> if this method is invoked
+     *                  before any subclass constructor has completed; otherwise
+     *                  will not be <code>null</code>
+     */
+    InterfaceCriteria getInterfaceCriteria() {
+        return interfaceCriteria;
+    }
+    
+    /**
+     * Sets the InterfaceCriteria associated with this element.
+     * 
+     * @param the criteria. Cannot be <code>null</code>
+     */
+    protected final void setInterfaceCriteria(InterfaceCriteria criteria) {
+        if (criteria == null) {
+            throw new IllegalArgumentException("criteria is null");
+        }
+        this.interfaceCriteria = criteria;
     }
     
     /**
