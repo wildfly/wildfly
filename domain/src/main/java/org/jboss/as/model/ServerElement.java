@@ -24,7 +24,10 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -51,6 +54,8 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private boolean start;
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
+    private PropertiesElement systemProperties;
+    
     /**
      * Construct a new instance.
      *
@@ -132,6 +137,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                             bindingGroup = new SocketBindingGroupRefElement(reader);
                             break;
                         }
+                        case SYSTEM_PROPERTIES: {
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            this.systemProperties = new PropertiesElement(reader);
+                            break;
+                        }
                         default: throw unexpectedElement(reader);
                     }
                     break;
@@ -169,6 +181,37 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public String getName() {
         return name;
     }
+    
+    /**
+     * Gets the default jvm configuration for servers in this group. This can
+     * be overridden at the {@link ServerElement#getJvm() server level}.
+     *     
+     * @return the jvm configuration, or <code>null</code> if there is none
+     */
+    public JvmElement getJvm() {
+        return jvm;
+    }
+    
+    /**
+     * Gets the default jvm configuration for servers in this group.
+     *     
+     * param jvm the jvm configuration. May be <code>null</code>
+     */
+    void setJvm(JvmElement jvm) {
+        this.jvm = jvm;
+    }
+    
+    public Set<ServerInterfaceElement> getInterfaces() {
+        Set<ServerInterfaceElement> intfs = new LinkedHashSet<ServerInterfaceElement>();
+        for (Map.Entry<String, ServerInterfaceElement> entry : interfaces.entrySet()) {
+            intfs.add(entry.getValue());
+        }
+        return Collections.unmodifiableSet(intfs);
+    }
+    
+    public SocketBindingGroupRefElement getSocketBindingGroup() {
+        return bindingGroup;
+    }
 
     /**
      * Gets the name of the server's server group.
@@ -178,13 +221,27 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public String getServerGroup() {
         return serverGroup;
     }
+    
+    /**
+     * Gets any system properties defined at the server level. These properties
+     * can extend and override any properties declared at the 
+     * {@link Domain#getSystemProperties() domain level}, the 
+     * {@link ServerGroupElement server group level} or the
+     * {@link ServerElement#getSystemProperties() server level}.
+     * 
+     * @return the system properties, or <code>null</code> if there are none
+     */
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
+    }
 
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
-        if (interfaces != null) {
-            cksum = calculateElementHashOf(interfaces.values(), cksum);
+        cksum = calculateElementHashOf(interfaces.values(), cksum);
+        if (bindingGroup != null) {
+            cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
         }
         if (jvm != null) {
             cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
@@ -206,6 +263,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
+        // TODO re-evaluate the element order in the xsd; make sure this is correct
         
         if (! interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
@@ -215,15 +273,21 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             }
             streamWriter.writeEndElement();
         }
-        
-        if (jvm != null) {
-            streamWriter.writeStartElement(Element.JVM.getLocalName());
-            jvm.writeContent(streamWriter);
-        }
 
         if (bindingGroup != null) {
             streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             bindingGroup.writeContent(streamWriter);
+        }
+
+        if (systemProperties != null) {
+            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
+            systemProperties.writeContent(streamWriter);
+            streamWriter.writeEndElement();
+        }
+        
+        if (jvm != null) {
+            streamWriter.writeStartElement(Element.JVM.getLocalName());
+            jvm.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }
