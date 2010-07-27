@@ -3,11 +3,10 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -40,6 +39,14 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
      */
     public CompoundCriteriaElement(XMLExtendedStreamReader reader, boolean isAny) throws XMLStreamException {
         super(reader, isAny ? Element.ANY : Element.NOT);
+        
+        Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>(interfaceCriteria.size());
+        for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria.values()) {
+            criteria.add(element.getInterfaceCriteria());
+        }
+        
+        InterfaceCriteria ours = isAny ? new AnyInterfaceCriteria(criteria) : new NotInterfaceCriteria(criteria);
+        setInterfaceCriteria(ours);
     }
 
     @Override
@@ -60,33 +67,6 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
         }
         if (interfaceCriteria.isEmpty()) {
             throw ParsingUtil.missingCriteria(reader, ParsingUtil.SIMPLE_CRITERIA_STRING);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.socket.InterfaceCriteria#matches(java.net.NetworkInterface)
-     */
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        switch (getElement()) {
-            case ANY: {
-                for (InterfaceCriteria criteria : interfaceCriteria.values()) {
-                    if (criteria.isAcceptable(networkInterface, address))
-                        return true;
-                }   
-                return false;
-            } 
-            case NOT: {
-                for (InterfaceCriteria criteria : interfaceCriteria.values()) {
-                    if (criteria.isAcceptable(networkInterface, address))
-                        return false;
-                }            
-                return true;
-            }
-            default: {
-                // Constructor should prevent this
-                throw new IllegalStateException(getElement().getLocalName() + " is not a valid simple criteria type");
-            }
         }
     }
 

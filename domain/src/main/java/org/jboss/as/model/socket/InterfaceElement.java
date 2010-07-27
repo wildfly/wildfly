@@ -206,8 +206,8 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
         @Override
         public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
             
-            for (InterfaceCriteria criteria : interfaceCriteria.values()) {
-                if (! criteria.isAcceptable(networkInterface, address))
+            for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria.values()) {
+                if (! criteria.getInterfaceCriteria().isAcceptable(networkInterface, address))
                     return false;
             }
             return true;

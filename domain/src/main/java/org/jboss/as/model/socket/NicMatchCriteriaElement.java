@@ -3,9 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
@@ -39,6 +37,7 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
      */
     public NicMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC_MATCH);
+        setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
     }
 
     @Override
@@ -72,11 +71,6 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
         this.pattern = pattern;
         // Handle elements
         requireNoContent(reader);
-    }
-
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        return pattern.matcher(networkInterface.getName()).matches();
     }
 
     @Override
