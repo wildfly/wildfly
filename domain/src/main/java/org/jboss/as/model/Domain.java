@@ -23,7 +23,12 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.namespace.QName;
@@ -32,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupIncludeElement;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Location;
@@ -59,7 +65,7 @@ public final class Domain extends AbstractModel<Domain> {
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the domain element
+     * @param location the declaration location of the element
      * @param elementName the element name of this domain element
      */
     public Domain(final Location location, final QName elementName) {
@@ -120,6 +126,89 @@ public final class Domain extends AbstractModel<Domain> {
                 default: throw unexpectedElement(reader);
             }
         }
+    }
+    
+    /**
+     * Gets the extension modules available for use in this domain.
+     * 
+     * @return the extensions. May be empty but will not be <code>null</code>
+     */
+    public Set<ExtensionElement> getExtensions() {
+        return Collections.unmodifiableSet(new HashSet<ExtensionElement>(extensions.values()));
+    }
+    
+    /**
+     * Gets the named interfaces available for use in this domain.
+     * 
+     * @return the interfaces. May be empty but will not be <code>null</code>
+     */
+    public Set<InterfaceElement> getInterfaces() {
+        Set<InterfaceElement> intfs = new LinkedHashSet<InterfaceElement>();
+        for (Map.Entry<String, InterfaceElement> entry : interfaces.entrySet()) {
+            intfs.add(entry.getValue());
+        }
+        return Collections.unmodifiableSet(intfs);
+    }
+    
+    /**
+     * Gets the domain-level configuration for a particular interface. Note that 
+     * this configuration can be overridden at the {@link ServerGroupElement server group}
+     * {@link Host host} or {@link ServerElement server} levels.
+     * 
+     * @param name the name of the interface
+     * @return the interface configuration, or <code>null</code> if no interface
+     *         named <code>name</code> is configured
+     */
+    public InterfaceElement getInterface(String name) {
+        return interfaces.get(name);
+    }
+    
+    /**
+     * Gets the configuration for a given profile.
+     * 
+     * @param name the name of the profile
+     * @return the profile configuration, or <code>null</code> if no profile
+     *         named <code>name</code> is configured
+     */
+    public ProfileElement getProfile(String name) {
+        return profiles.get(name);
+    }
+    
+    /**
+     * Gets the socket binding group configuration for the group with the given 
+     * <code>name</code>.
+     * 
+     * @param name the name of the socket binding group
+     * @return the socket binding group configuration, or <code>null</code> if 
+     *         no socket binding named <code>name</code> is configured
+     */
+    public SocketBindingGroupElement getSocketBindingGroup(String name) {
+        return bindingGroups.get(name);
+    }
+    
+    /**
+     * Gets the server group configuration for the group with the given 
+     * <code>name</code>.
+     * 
+     * @param name the name of the server group
+     * @return the server group configuration, or <code>null</code> if no server
+     *         group named <code>name</code> is configured
+     */
+    public ServerGroupElement getServerGroup(String name) {
+        return serverGroups.get(name);
+    }
+    
+    /**
+     * Gets any system properties defined at the domain level. These properties
+     * may be extended or overridden by any properties declared at the
+     * {@link ServerGroupElement#getSystemProperties() server group level}, the
+     * {@link Host#getSystemProperties() host level} or the 
+     * {@link ServerElement#getSystemProperties() server level}.
+     * 
+     * @return the system properties, or <code>null</code> if there are none
+     */
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
     }
 
     /** {@inheritDoc} */
@@ -316,8 +405,9 @@ public final class Domain extends AbstractModel<Domain> {
         final String module = extensionElement.getModule();
         try {
             for (Extension extension : Module.loadService(module, Extension.class)) {
-                // todo - as soon as we can get a mapper from a reader...
+                // FIXME - as soon as we can get a mapper from a reader...
 //                extension.registerElementHandlers(reader.getMapper());
+                throw new UnsupportedOperationException("implement registerExtensionHandlers");
             }
         } catch (ModuleLoadException e) {
             throw new XMLStreamException("Failed to load module", e);
@@ -350,13 +440,27 @@ public final class Domain extends AbstractModel<Domain> {
     }
     
     private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
+        
+        RefResolver<String, ProfileElement> resolver = new RefResolver<String, ProfileElement>() {
+
+           private static final long serialVersionUID = 8976121114197265586L;
+
+            @Override
+            public ProfileElement resolveRef(String ref) {
+                if (ref == null)
+                    throw new IllegalArgumentException("ref is null");
+                return profiles.get(ref);
+            }
+            
+        };
+        
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case PROFILE: {
-                            final ProfileElement profile = new ProfileElement(reader);
+                            final ProfileElement profile = new ProfileElement(reader, resolver);
                             if (profiles.containsKey(profile.getName())) {
                                 throw new XMLStreamException("Profile " + profile.getName() + " already declared", reader.getLocation());
                             }
@@ -369,7 +473,22 @@ public final class Domain extends AbstractModel<Domain> {
                 default: throw unexpectedElement(reader);
             }
         }        
-    
+        // Validate included profiles
+        // We do this after creating the profiles instead of in the ProfileElement
+        // constructor itself because even if we required the user to declare the included
+        // profile before the includee, if we ended up resorting the content and then
+        // marshalling it, we might break things
+        for (ProfileElement profile : profiles.values()) {
+            for (ProfileIncludeElement include : profile.getIncludedProfiles()) {
+                ProfileElement included = profiles.get(include.getProfile());
+                if (included == null) {
+                    Location loc = include.getLocation();
+                    throw new XMLStreamException("ParseError at [row,col]:[" + 
+                            loc.getLineNumber() + "," + loc.getColumnNumber() + 
+                            " Message: Included profile " + include.getProfile() + " not found");
+                }
+            }
+        }
     }
     
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -395,15 +514,40 @@ public final class Domain extends AbstractModel<Domain> {
     }
     
     private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
+        RefResolver<String, SocketBindingGroupElement> groupResolver = new RefResolver<String, SocketBindingGroupElement>() {
+
+            private static final long serialVersionUID = 8976121114197265586L;
+
+             @Override
+             public SocketBindingGroupElement resolveRef(String ref) {
+                 if (ref == null)
+                     throw new IllegalArgumentException("ref is null");
+                 return bindingGroups.get(ref);
+             }
+             
+        };
+        RefResolver<String, InterfaceElement> intfResolver = new RefResolver<String, InterfaceElement>() {
+
+            private static final long serialVersionUID = 8976121114197265586L;
+
+             @Override
+             public InterfaceElement resolveRef(String ref) {
+                 if (ref == null)
+                     throw new IllegalArgumentException("ref is null");
+                 return interfaces.get(ref);
+             }
+             
+        };
+        
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SOCKET_BINDING_GROUP: {
-                            SocketBindingGroupElement group = new SocketBindingGroupElement(reader);
+                            SocketBindingGroupElement group = new SocketBindingGroupElement(reader, intfResolver, groupResolver);
                             if (bindingGroups.containsKey(group.getName())) {
-                                throw new XMLStreamException("socket-binding-group with name " + 
+                                throw new XMLStreamException(element.getLocalName() + " with name " + 
                                         group.getName() + " already declared", reader.getLocation());
                             }
                             bindingGroups.put(group.getName(), group);
@@ -414,7 +558,27 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }         
+        // Validate included groups
+        // We do this after creating the groups instead of in the SocketBindingGroupElement
+        // constructor itself because even if we required the user to declare the included
+        // group before the includee, if we ended up resorting the content and then
+        // marshalling it, we might break things
+        for (SocketBindingGroupElement group : bindingGroups.values()) {
+            for (SocketBindingGroupIncludeElement include : group.getIncludedSocketBindingGroups()) {
+                SocketBindingGroupElement included = bindingGroups.get(include.getGroupName());
+                if (included == null) {
+                    Location loc = include.getLocation();
+                    // TODO 
+                    // 1) this isn't the exact correct location (probably c'est la vie
+                    // 2) better to create a javax.xml.stream.Location and let
+                    throw new XMLStreamException("ParseError at [row,col]:[" + 
+                            loc.getLineNumber() + "," + loc.getColumnNumber() + 
+                            " Message: Included " + Element.SOCKET_BINDING_GROUP.getLocalName() + 
+                            " " + include.getGroupName() + " not found");
+                }
+            }
+        } 
     }
     
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -462,4 +626,5 @@ public final class Domain extends AbstractModel<Domain> {
             }
         }        
     }
+    
 }

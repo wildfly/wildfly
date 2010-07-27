@@ -5,7 +5,9 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.namespace.QName;
@@ -26,15 +28,42 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
     private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
-
-    public ProfileElement(final Location location, final String name) {
+    private final RefResolver<String, ProfileElement> includedProfileResolver;
+    
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of the element
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     *           to included profiles. Should not be used in the constructor
+     *           itself as referenced profiles may not have been created yet.
+     *           Cannot be <code>null</code>
+     */
+    public ProfileElement(final Location location, final String name, final RefResolver<String, ProfileElement> includedProfileResolver) {
         super(location);
         if (name != null) throw new IllegalArgumentException("name is null");
         this.name = name;
+        this.includedProfileResolver = includedProfileResolver;
     }
     
-    public ProfileElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     *           to included profiles. Should not be used in the constructor
+     *           itself as referenced profiles may not have been parsed yet.
+     *           Cannot be <code>null</code>
+     * @throws XMLStreamException if an error occurs
+     */
+    public ProfileElement(XMLExtendedStreamReader reader, final RefResolver<String, ProfileElement> includedProfileResolver) throws XMLStreamException {
         super(reader);
+
+        if (includedProfileResolver == null)
+            throw new IllegalArgumentException("includedProfileResolver is null");
+        
+        this.includedProfileResolver = includedProfileResolver;
+        
         // Handle attributes
         String name = null;
         final int count = reader.getAttributeCount();
@@ -148,6 +177,10 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
                         throw new UnsupportedOperationException("implement me");
                     }
                 });
+    }
+    
+    public Set<ProfileIncludeElement> getIncludedProfiles() {
+        return Collections.unmodifiableSet(new HashSet<ProfileIncludeElement>(includedProfiles.values()));
     }
 
     @Override
