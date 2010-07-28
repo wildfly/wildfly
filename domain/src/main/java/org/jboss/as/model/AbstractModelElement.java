@@ -22,6 +22,13 @@
 
 package org.jboss.as.model;
 
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLContentWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -33,13 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLContentWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.

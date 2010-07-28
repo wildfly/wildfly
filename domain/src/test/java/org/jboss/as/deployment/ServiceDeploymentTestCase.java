@@ -27,8 +27,6 @@ import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.processor.ModuleConfgProcessor;
 import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
@@ -41,10 +39,9 @@ import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
 import org.jboss.as.deployment.test.TestServiceDeployment;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
+import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoaderSelector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -53,6 +50,7 @@ import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.msc.value.Values;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
@@ -69,16 +67,15 @@ import static org.junit.Assert.fail;
  * @author John E. Bailey
  */
 public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
-    private static final ServiceName DEPLOYMENT_MANAGER_NAME = ServiceName.JBOSS.append("deployment", "manager");
     private static final ServiceName CHAIN_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain", "service");
+
+    private ServiceContainer serviceContainer;
 
     @Test
     public void testServiceDeployment() throws Exception {
-        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
-        final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
-        final DeploymentManager deploymentManager = setupDeploymentManger(serviceContainer);
-        setupProcessors(serviceContainer);
-        final DeploymentResult result = deploymentManager.deploy(initializeDeployment("/test/serviceDeployment.jar")).getDeploymentResult();
+        final VirtualFile deploymentFile = initializeDeployment("/test/serviceDeployment.jar");
+
+        final DeploymentResult result = new DeploymentUnitElement(null, deploymentFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
         assertDeploymentSuccess(result);
 
         final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
@@ -89,11 +86,9 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
     @Test
     public void testParsedDeployment() throws Exception {
-        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
-        final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
-        final DeploymentManager deploymentManager = setupDeploymentManger(serviceContainer);
-        setupProcessors(serviceContainer);
-        final DeploymentResult result = deploymentManager.deploy(initializeDeployment("/test/serviceXmlDeployment.jar")).getDeploymentResult();
+
+        final VirtualFile deploymentFile = initializeDeployment("/test/serviceXmlDeployment.jar");
+        final DeploymentResult result = new DeploymentUnitElement(null, deploymentFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
         assertDeploymentSuccess(result);
 
         final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
@@ -122,10 +117,11 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         serviceContainer.shutdown();
     }
 
-    private DeploymentManager setupDeploymentManger(final ServiceContainer serviceContainer) throws Exception {
+    @Before
+    public void setup() throws Exception {
+        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
+        serviceContainer = ServiceContainer.Factory.create();
         final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
-        final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
-        final DeploymentManagerImpl deploymentManager = new DeploymentManagerImpl(serviceContainer);
 
         final BatchBuilder builder = serviceContainer.batchBuilder();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -149,20 +145,13 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
                             }
                 }), 0));
 
-
-        final BatchServiceBuilder deploymentManagerServiceBuilder = builder.addService(DEPLOYMENT_MANAGER_NAME, deploymentManager);
-        deploymentManagerServiceBuilder.addDependency(CHAIN_SERVICE_NAME);
-        deploymentManagerServiceBuilder.addDependency(DeploymentModuleLoaderImpl.SERVICE_NAME);
         builder.install();
         listener.finishBatch();
         latch.await(1L, TimeUnit.SECONDS);
         if (!listener.finished())
             fail("Did not install deployment manager within 1 second.");
 
-        if (!ServiceController.State.UP.equals(serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState()))
-            Thread.sleep(100L);
-        assertEquals(ServiceController.State.UP, serviceContainer.getService(DEPLOYMENT_MANAGER_NAME).getState());
-        return deploymentManager;
+        setupProcessors(serviceContainer);
     }
 
     private void setupProcessors(final ServiceContainer serviceContainer) throws Exception {

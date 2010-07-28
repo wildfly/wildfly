@@ -26,6 +26,7 @@ import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.chain.DeploymentChainService;
+import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -42,24 +43,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * Test to verify the DeploymentManager correctly installs the deployment service.
+ * Test to verify the DeploymentUnitElement correctly installs the deployment service.
  *
  * @author John E. Bailey
  */
-public class DeploymentManagerTestCase extends AbstractDeploymentTest {
+public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain = new DeploymentChainImpl("test.chain");
-    private DeploymentManagerImpl deploymentManager;
 
     @Before
-    public void setupDeploymentManager() throws Exception {
+    public void setup() throws Exception {
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
         new DeploymentActivator().activate(serviceContainer, batchBuilder);
-
-        deploymentManager = new DeploymentManagerImpl(serviceContainer);
 
         final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
@@ -83,24 +81,20 @@ public class DeploymentManagerTestCase extends AbstractDeploymentTest {
     @Test
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceDeployment.jar"));
-
-        final DeploymentResult.Future resultFuture = deploymentManager.deploy(virtualFile);
+        final String expectedDeploymentName = virtualFile.getPathName() + ":";
+        final DeploymentResult.Future resultFuture = new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(serviceContainer);
         final DeploymentResult deploymentResult = resultFuture.getDeploymentResult();
         assertNotNull(deploymentResult);
         assertEquals(DeploymentResult.Result.SUCCESS, deploymentResult.getResult());
 
         // Verify the DeploymentService is correctly setup
-        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(virtualFile.getName()));
+        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(expectedDeploymentName));
         assertNotNull(serviceController);
 
-        // TODO:  REMOVE ME... There seems to be an issue with the State not be UP before the started listener is fired.
-        if(ServiceController.State.UP != serviceController.getState()) {
-            Thread.sleep(100);
-        }
         assertEquals(ServiceController.State.UP, serviceController.getState());
 
         // Verify the mount service is setup
-        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(virtualFile.getName()));
+        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(expectedDeploymentName));
         assertNotNull(mountServiceController);
         assertEquals(ServiceController.State.UP, mountServiceController.getState());
         assertNull(mountServiceController.getValue());
@@ -110,7 +104,7 @@ public class DeploymentManagerTestCase extends AbstractDeploymentTest {
     public void testDeploymentFailure() throws Exception {
         final VirtualFile virtualFile = VFS.getChild("/test/bogus");
 
-        final DeploymentResult result = deploymentManager.deploy(virtualFile).getDeploymentResult();
+        final DeploymentResult result = new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
         assertNotNull(result);
         assertEquals(DeploymentResult.Result.FAILURE, result.getResult());
         assertNotNull(result.getDeploymentException());
