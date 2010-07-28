@@ -26,12 +26,7 @@ import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProvider;
-import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,19 +50,18 @@ public class DeploymentManagerTestCase extends AbstractDeploymentTest {
 
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain = new DeploymentChainImpl("test.chain");
-    private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(null);
     private DeploymentManagerImpl deploymentManager;
 
     @Before
     public void setupDeploymentManager() throws Exception {
         serviceContainer = ServiceContainer.Factory.create();
-        final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
-        final ServiceName moduleLoaderServiceName = ServiceName.JBOSS.append("deployment", "module", "loader");
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+
+        new DeploymentActivator().activate(serviceContainer, batchBuilder);
 
         deploymentManager = new DeploymentManagerImpl(serviceContainer);
 
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        batchBuilder.addService(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider());
+        final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
         batchBuilder.addService(chainServiceName, deploymentChainService)
             .addDependency(DeploymentChainProvider.SERVICE_NAME).toInjector(
@@ -78,16 +72,6 @@ public class DeploymentManagerTestCase extends AbstractDeploymentTest {
                             }
                 }), 0));
 
-        batchBuilder.addService(DeploymentModuleLoaderProvider.SERVICE_NAME, new DeploymentModuleLoaderProvider());
-        final Service<DeploymentModuleLoader> deploymentModuleLoaderService = new PassthroughService(deploymentModuleLoader);
-        batchBuilder.addService(moduleLoaderServiceName, deploymentModuleLoaderService)
-            .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME).toInjector(
-                new DeploymentModuleLoaderProvider.SelectorInjector(deploymentModuleLoaderService,
-                        Values.immediateValue(new DeploymentModuleLoaderProvider.Selector() {
-                            public boolean supports(VirtualFile root) {
-                                return true;
-                            }
-                }), 0));
         batchBuilder.install();
     }
 
