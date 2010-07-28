@@ -3,9 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
@@ -36,16 +34,12 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
      */
     public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC);
+        setInterfaceCriteria(new NicInterfaceCriteria(name));
     }
 
     @Override
     protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
         this.name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-    }
-
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        return name.equals(networkInterface.getName());
     }
 
     @Override

@@ -3,11 +3,10 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -24,7 +23,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class AnyCriteriaElement extends AbstractInterfaceCriteriaElement<AnyCriteriaElement> {
+public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<CompoundCriteriaElement> {
 
     private static final long serialVersionUID = -649277969243521207L;
 
@@ -34,10 +33,20 @@ public class AnyCriteriaElement extends AbstractInterfaceCriteriaElement<AnyCrit
      * Creates a new AnyCriteriaElement by parsing an xml stream
      * 
      * @param reader stream reader used to read the xml
+     * @param isAny true if this type {@link Element#ANY}, false if it is {@link Element#NOT}.
+     * 
      * @throws XMLStreamException if an error occurs
      */
-    public AnyCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader, Element.ANY);
+    public CompoundCriteriaElement(XMLExtendedStreamReader reader, boolean isAny) throws XMLStreamException {
+        super(reader, isAny ? Element.ANY : Element.NOT);
+        
+        Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>(interfaceCriteria.size());
+        for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria.values()) {
+            criteria.add(element.getInterfaceCriteria());
+        }
+        
+        InterfaceCriteria ours = isAny ? new AnyInterfaceCriteria(criteria) : new NotInterfaceCriteria(criteria);
+        setInterfaceCriteria(ours);
     }
 
     @Override
@@ -61,18 +70,6 @@ public class AnyCriteriaElement extends AbstractInterfaceCriteriaElement<AnyCrit
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.socket.InterfaceCriteria#matches(java.net.NetworkInterface)
-     */
-    @Override
-    public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        for (InterfaceCriteria criteria : interfaceCriteria.values()) {
-            if (criteria.isAcceptable(networkInterface, address))
-                return true;
-        }            
-        return false;
-    }
-
     @Override
     public long elementHash() {
         return calculateElementHashOf(interfaceCriteria.values(), 17l);
@@ -89,14 +86,14 @@ public class AnyCriteriaElement extends AbstractInterfaceCriteriaElement<AnyCrit
     }
 
     @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<AnyCriteriaElement>> target, AnyCriteriaElement other) {
+    protected void appendDifference(Collection<AbstractModelUpdate<CompoundCriteriaElement>> target, CompoundCriteriaElement other) {
         // FIXME implement appendDifference
         throw new UnsupportedOperationException("implement me");
     }
 
     @Override
-    protected Class<AnyCriteriaElement> getElementClass() {
-        return AnyCriteriaElement.class;
+    protected Class<CompoundCriteriaElement> getElementClass() {
+        return CompoundCriteriaElement.class;
     }
     
     

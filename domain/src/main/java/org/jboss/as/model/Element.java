@@ -41,8 +41,11 @@ public enum Element {
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
     
+    ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
+    
+    HEAP("heap"),
     
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
@@ -50,6 +53,7 @@ public enum Element {
     INTERFACE("interface"),
     
     JVM("jvm"),
+    JVMS("jvms"),
 
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOOPBACK("loopback"),
@@ -63,6 +67,7 @@ public enum Element {
     POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),
+    PROPERTY("property"),
     PUBLIC_ADDRESS("public-address"),
     
     SERVER("server"),
@@ -77,6 +82,7 @@ public enum Element {
     SYSTEM_PROPERTIES("system-properties"),
     
     UP("up"),
+    VARIABLE("variable"),
     VIRTUAL("virtual"),
     ;
 

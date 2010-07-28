@@ -58,40 +58,40 @@ class ParsingUtil {
     public static AbstractInterfaceCriteriaElement<?> parseSimpleInterfaceCriteria(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
         AbstractInterfaceCriteriaElement<?> result = null;
         switch (element) {
+            case LINK_LOCAL_ADDRESS: {
+                result = new SimpleCriteriaElement(reader, element, LinkLocalInterfaceCriteria.INSTANCE);
+                break;
+            }
             case LOOPBACK: {
-                result = new LoopbackCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element, LoopbackInterfaceCriteria.INSTANCE);
                 break;
             }
             case MULTICAST: {
-                result = new MulticastCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element, SupportsMulticastInterfaceCriteria.INSTANCE);
                 break;
             }
             case POINT_TO_POINT: {
-                result = new PointToPointCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element, PointToPointInterfaceCriteria.INSTANCE);
+                break;
+            }
+            case PUBLIC_ADDRESS: {
+                result = new SimpleCriteriaElement(reader, element, PublicAddressInterfaceCriteria.INSTANCE);
+                break;
+            }
+            case SITE_LOCAL_ADDRESS: {
+                result = new SimpleCriteriaElement(reader, element, SiteLocalInterfaceCriteria.INSTANCE);
                 break;
             }
             case UP: {
-                result = new UpCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element, UpInterfaceCriteria.INSTANCE);
                 break;
             }
             case VIRTUAL: {
-                result = new VirtualCriteriaElement(reader);
+                result = new SimpleCriteriaElement(reader, element, VirtualInterfaceCriteria.INSTANCE);
                 break;
             }
             case NIC: {
                 result = new NicCriteriaElement(reader);
-                break;
-            }
-            case PUBLIC_ADDRESS: {
-                result = new PublicAddressCriteriaElement(reader);
-                break;
-            }
-            case SITE_LOCAL_ADDRESS: {
-                result = new SiteLocalAddressCriteriaElement(reader);
-                break;
-            }
-            case LINK_LOCAL_ADDRESS: {
-                result = new LinkLocalAddressCriteriaElement(reader);
                 break;
             }
             case NIC_MATCH: {

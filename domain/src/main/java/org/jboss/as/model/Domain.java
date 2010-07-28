@@ -29,7 +29,11 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -48,7 +52,8 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-
+    private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
+    
     private PropertiesElement systemProperties;
 
     /**
@@ -102,10 +107,10 @@ public final class Domain extends AbstractModel<Domain> {
                             break;
                         }
                         case SYSTEM_PROPERTIES: {
-                            final PropertiesElement properties = new PropertiesElement(reader);
-                            if (this.systemProperties == null) {
-                                this.systemProperties = properties;
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
+                            this.systemProperties = new PropertiesElement(reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -124,6 +129,8 @@ public final class Domain extends AbstractModel<Domain> {
         hash = calculateElementHashOf(serverGroups.values(), hash);
         hash = calculateElementHashOf(deployments.values(), hash);
         hash = calculateElementHashOf(profiles.values(), hash);
+        hash = calculateElementHashOf(interfaces.values(), hash);
+        hash = calculateElementHashOf(bindingGroups.values(), hash);
         if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
         return hash;
     }
@@ -175,6 +182,23 @@ public final class Domain extends AbstractModel<Domain> {
 
             public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement, final InterfaceElement newElement) {
                 // todo change interface
+                throw new UnsupportedOperationException("implement me");
+            }
+        });
+        
+        calculateDifference(target, bindingGroups, other.bindingGroups, new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement newElement) {
+                // todo add binding group
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement) {
+                // todo remove binding group
+                throw new UnsupportedOperationException("implement me");
+            }
+
+            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement, final SocketBindingGroupElement newElement) {
+                // todo change binding group
                 throw new UnsupportedOperationException("implement me");
             }
         });
@@ -251,10 +275,17 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeEndElement();
         }
         
-        // TODO socket-binding-groups
+        if (!bindingGroups.isEmpty()) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
+            for (SocketBindingGroupElement element : bindingGroups.values()) {
+                streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }        
         
-        if (systemProperties.size() > 0) {
-            streamWriter.writeStartElement("system-properties");
+        if (systemProperties != null && systemProperties.size() > 0) {
+            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
         
@@ -281,9 +312,16 @@ public final class Domain extends AbstractModel<Domain> {
         streamWriter.writeEndElement();
     }
     
-    private void registerExtensionHandlers(ExtensionElement extension) {
-        // FIXME register
-        throw new UnsupportedOperationException("implement me");
+    private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final String module = extensionElement.getModule();
+        try {
+            for (Extension extension : Module.loadService(module, Extension.class)) {
+                // todo - as soon as we can get a mapper from a reader...
+//                extension.registerElementHandlers(reader.getMapper());
+            }
+        } catch (ModuleLoadException e) {
+            throw new XMLStreamException("Failed to load module", e);
+        }
     }
     
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -300,7 +338,7 @@ public final class Domain extends AbstractModel<Domain> {
                             extensions.put(extension.getModule(), extension);
                             // load the extension so it can register handlers
                             // TODO do this in ExtensionElement itself?
-                            registerExtensionHandlers(extension);
+                            registerExtensionHandlers(extension, reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -363,8 +401,13 @@ public final class Domain extends AbstractModel<Domain> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SOCKET_BINDING_GROUP: {
-                            throw new UnsupportedOperationException("implement me");
-                            //break;
+                            SocketBindingGroupElement group = new SocketBindingGroupElement(reader);
+                            if (bindingGroups.containsKey(group.getName())) {
+                                throw new XMLStreamException("socket-binding-group with name " + 
+                                        group.getName() + " already declared", reader.getLocation());
+                            }
+                            bindingGroups.put(group.getName(), group);
+                            break;
                         }
                         default: throw unexpectedElement(reader);
                     }
