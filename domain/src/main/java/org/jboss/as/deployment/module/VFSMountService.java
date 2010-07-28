@@ -22,10 +22,12 @@
 
 package org.jboss.as.deployment.module;
 
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -34,7 +36,6 @@ import org.jboss.vfs.VirtualFile;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 /**
  * A service which mounts an archive on the VFS.
@@ -42,28 +43,13 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class VFSMountService implements Service<Void> {
-
-    public static final Method TEMP_FILE_PROVIDER_SETTER;
-    static {
-        try {
-            TEMP_FILE_PROVIDER_SETTER = VFSMountService.class.getMethod("setTempFileProvider", TempFileProvider.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // Configuration properties
     private String path;
-    private TempFileProvider tempFileProvider;
     private boolean exploded;
+    private InjectedValue<TempFileProvider> tempFileProviderValue = new InjectedValue<TempFileProvider>();
+    
     // Service state
     private volatile Closeable handle;
-
-    /**
-     * Construct a new instance.
-     */
-    public VFSMountService() {
-    }
 
     /**
      * Construct a new instance.
@@ -87,8 +73,8 @@ public final class VFSMountService implements Service<Void> {
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
+        final TempFileProvider tempFileProvider = tempFileProviderValue.getValue();
         if(tempFileProvider == null) throw new StartException("A TempFileProvider is required");
-        if(path == null) throw new StartException("A path to mount is required");
         try {
             final VirtualFile virtualFile = VFS.getChild(path);
             final File file = virtualFile.getPhysicalFile();
@@ -117,15 +103,8 @@ public final class VFSMountService implements Service<Void> {
         return null;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public Injector<TempFileProvider> getTempFileProviderInjector() {
+        return tempFileProviderValue;
     }
 
-    public void setTempFileProvider(TempFileProvider tempFileProvider) {
-        this.tempFileProvider = tempFileProvider;
-    }
-
-    public void setExploded(boolean exploded) {
-        this.exploded = exploded;
-    }
 }

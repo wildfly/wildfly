@@ -25,16 +25,13 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.logging.Logger;
-import org.jboss.msc.reflect.Property;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.CachedValue;
-import org.jboss.msc.value.LookupPropertyValue;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
@@ -46,13 +43,9 @@ public class DeploymentService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
-    private static final Value<Class<?>> CLASS_VALUE = Values.<Class<?>>immediateValue((Class<?>)DeploymentService.class);
-    public static final Value<Property> DEPLOYMENT_CHAIN_PROPERTY = new CachedValue<Property>(new LookupPropertyValue(CLASS_VALUE, "deploymentChain"));
-    public static final Value<Property> MODULE_LOADER_PROPERTY = new CachedValue<Property>(new LookupPropertyValue(CLASS_VALUE, "moduleLoader"));
-
     private final String deploymentName;
-    private DeploymentChain deploymentChain;
-    private DeploymentModuleLoader moduleLoader;
+    private InjectedValue<DeploymentChain> deploymentChain = new InjectedValue<DeploymentChain>();
+    private InjectedValue<DeploymentModuleLoader> moduleLoader = new InjectedValue<DeploymentModuleLoader>();
 
     public DeploymentService(String deploymentName) {
         this.deploymentName = deploymentName;
@@ -76,18 +69,18 @@ public class DeploymentService implements Service<Void> {
     }
 
     public DeploymentChain getDeploymentChain() {
+        return deploymentChain.getValue();
+    }
+
+    public Injector<DeploymentChain> getDeploymentChainInjector() {
         return deploymentChain;
     }
 
-    public void setDeploymentChain(DeploymentChain deploymentChain) {
-        this.deploymentChain = deploymentChain;
-    }
-
     public DeploymentModuleLoader getModuleLoader() {
-        return moduleLoader;
+        return moduleLoader.getValue();
     }
 
-    public void setModuleLoader(DeploymentModuleLoader moduleLoader) {
-        this.moduleLoader = moduleLoader;
+    public Injector<DeploymentModuleLoader> getModuleLoaderInjector() {
+        return moduleLoader;
     }
 }

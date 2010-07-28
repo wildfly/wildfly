@@ -52,8 +52,8 @@ public class DeploymentActivator implements ServiceActivator {
         final Service<DeploymentModuleLoader> deploymentModuleLoaderService = new DeploymentModuleLoaderService(deploymentModuleLoader);
         batchBuilder.addService(DeploymentModuleLoaderImpl.SERVICE_NAME, deploymentModuleLoaderService)
             .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME).toInjector(
-                new DeploymentModuleLoaderProvider.SelectorInjector(deploymentModuleLoaderService,
-                        Values.immediateValue(new DeploymentModuleLoaderProvider.Selector() {
+                new DeploymentModuleLoaderProvider.SelectorInjector<DeploymentModuleLoaderProvider.Selector>(deploymentModuleLoaderService,
+                        Values.<DeploymentModuleLoaderProvider.Selector>immediateValue(new DeploymentModuleLoaderProvider.Selector() {
                             public boolean supports(VirtualFile root) {
                                 return true;
                             }
