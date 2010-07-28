@@ -30,7 +30,7 @@ import java.util.Arrays;
  * 
  * @author Brian Stansberry
  */
-public class \DeploymentUnitKey  implements Serializable {
+public class DeploymentUnitKey  implements Serializable {
     
     private static final long serialVersionUID = 8171593872559737006L;
     private final String name;
