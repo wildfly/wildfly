@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.item;
 
+import org.jboss.as.deployment.service.ServiceDeployment;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 

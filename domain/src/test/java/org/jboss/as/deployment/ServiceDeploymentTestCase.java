@@ -25,19 +25,11 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
-import org.jboss.as.deployment.processor.ModuleConfgProcessor;
-import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
-import org.jboss.as.deployment.processor.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.ParsedServiceDeploymentProcessor;
-import org.jboss.as.deployment.processor.ServiceDeploymentParsingProcessor;
-import org.jboss.as.deployment.processor.ServiceDeploymentProcessor;
+import org.jboss.as.deployment.service.ServiceDeploymentActivator;
 import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
 import org.jboss.as.deployment.test.TestServiceDeployment;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.modules.Module;
@@ -47,7 +39,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.TimingServiceListener;
-import org.jboss.msc.value.Values;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Before;
@@ -67,7 +58,6 @@ import static org.junit.Assert.fail;
  * @author John E. Bailey
  */
 public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
-    private static final ServiceName CHAIN_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain", "service");
 
     private ServiceContainer serviceContainer;
 
@@ -134,56 +124,18 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         builder.addListener(listener);
 
         new DeploymentActivator().activate(serviceContainer, builder);
+        new ServiceDeploymentActivator().activate(serviceContainer, builder);
 
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
-        builder.addService(CHAIN_SERVICE_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProvider.SERVICE_NAME).toInjector(
-                new DeploymentChainProvider.SelectorInjector(deploymentChainService,
-                        Values.immediateValue(new DeploymentChainProvider.Selector() {
-                            public boolean supports(VirtualFile root) {
-                                return true;
-                            }
-                }), 0));
+        final DeploymentUnitProcessorService<TestModuleDependencyProcessor> deploymentUnitProcessorService = new DeploymentUnitProcessorService<TestModuleDependencyProcessor>(new TestModuleDependencyProcessor());
+        builder.addService(ServiceName.JBOSS.append("deployment", "processor", "module", "dependency", "test"), deploymentUnitProcessorService)
+            .addDependency(ServiceDeploymentActivator.SERVICE_DEPLOYMENT_CHAIN_NAME)
+                .toInjector(new DeploymentChainProcessorInjector<TestModuleDependencyProcessor>(deploymentUnitProcessorService, TestModuleDependencyProcessor.PRIORITY));
 
         builder.install();
         listener.finishBatch();
         latch.await(1L, TimeUnit.SECONDS);
         if (!listener.finished())
-            fail("Did not install deployment manager within 1 second.");
-
-        setupProcessors(serviceContainer);
-    }
-
-    private void setupProcessors(final ServiceContainer serviceContainer) throws Exception {
-        final BatchBuilder builder = serviceContainer.batchBuilder();
-        final CountDownLatch latch = new CountDownLatch(1);
-        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
-            public void run() {
-                latch.countDown();
-            }
-        });
-        builder.addListener(listener);
-
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "dependency", "test"), new TestModuleDependencyProcessor(), TestModuleDependencyProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "config"), new ModuleConfgProcessor(), ModuleConfgProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "module", "deployment"), new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "parser"), new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "deployment"), new ServiceDeploymentProcessor(), ServiceDeploymentProcessor.PRIORITY);
-        addProcessor(builder, ServiceName.JBOSS.append("deployment", "processor", "service", "parsed", "deployment"), new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
-
-        builder.install();
-        listener.finishBatch();
-        latch.await(1L, TimeUnit.SECONDS);
-        if (!listener.finished())
-            fail("Did not install processors within 1 seconds");
-    }
-
-    private <T extends DeploymentUnitProcessor> DeploymentUnitProcessorService<T> addProcessor(final BatchBuilder builder, final ServiceName serviceName, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        builder.addService(serviceName, deploymentUnitProcessorService)
-                .addDependency(CHAIN_SERVICE_NAME).toInjector(new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
-        return deploymentUnitProcessorService;
+            fail("Did not install service deployment components within 1 second.");
     }
 
     private VirtualFile initializeDeployment(final String path) throws Exception {

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.service;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;

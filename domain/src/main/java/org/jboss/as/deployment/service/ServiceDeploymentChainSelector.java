@@ -20,21 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.service;
 
-import org.jboss.as.deployment.service.ServiceDeployment;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.vfs.VirtualFile;
 
 /**
+ * Deployment chain selector which determines whether the service deployment chain should handle this deployment.
+ *
  * @author John E. Bailey
  */
-public class TestServiceDeployment implements ServiceDeployment {
-    public static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+public class ServiceDeploymentChainSelector implements DeploymentChainProvider.Selector {
+    private static final String SERVICE_ARCHIVE_EXTENSION = ".sar";
+    private static final String SERVICE_LOADER_PATH = "META-INF/services/" + ServiceDeployment.class.getName();
+    private static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
 
     @Override
-    public void install(BatchBuilder batchBuilder) {
-        batchBuilder.addService(TEST_SERVICE_NAME, Service.NULL);
+    public boolean supports(final VirtualFile virtualFile) {
+        return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_LOADER_PATH).exists() || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
     }
 }

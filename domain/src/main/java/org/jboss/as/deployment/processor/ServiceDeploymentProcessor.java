@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.ServiceDeployment;
+import org.jboss.as.deployment.service.ServiceDeployment;
 import org.jboss.as.deployment.item.ServiceDeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;

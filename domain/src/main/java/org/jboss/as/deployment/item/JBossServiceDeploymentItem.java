@@ -26,6 +26,7 @@ import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.deployment.service.JBossService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
