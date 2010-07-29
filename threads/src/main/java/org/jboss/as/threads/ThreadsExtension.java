@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 
 import org.jboss.as.Extension;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -38,6 +39,6 @@ public final class ThreadsExtension implements Extension {
         mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), Element.SUBSYSTEM.getLocalName()), ThreadsParser.getInstance());
     }
 
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
     }
 }

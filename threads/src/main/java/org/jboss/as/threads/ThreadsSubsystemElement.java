@@ -22,19 +22,18 @@
 
 package org.jboss.as.threads;
 
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -123,9 +122,9 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         }
     }
 
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
         for (ThreadFactoryElement element : threadFactories.values()) {
-            element.activate(container, batchBuilder);
+            element.activate(context);
         }
 
     }

@@ -34,6 +34,8 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -122,14 +124,13 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
             }
         });
         builder.addListener(listener);
-
-        new DeploymentActivator().activate(serviceContainer, builder);
-        new ServiceDeploymentActivator().activate(serviceContainer, builder);
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(builder);
+        new DeploymentActivator().activate(serviceActivatorContext);
+        new ServiceDeploymentActivator().activate(serviceActivatorContext);
 
         final DeploymentUnitProcessorService<TestModuleDependencyProcessor> deploymentUnitProcessorService = new DeploymentUnitProcessorService<TestModuleDependencyProcessor>(new TestModuleDependencyProcessor());
         builder.addService(ServiceName.JBOSS.append("deployment", "processor", "module", "dependency", "test"), deploymentUnitProcessorService)
-            .addDependency(ServiceDeploymentActivator.SERVICE_DEPLOYMENT_CHAIN_NAME)
-                .toInjector(new DeploymentChainProcessorInjector<TestModuleDependencyProcessor>(deploymentUnitProcessorService, TestModuleDependencyProcessor.PRIORITY));
+            .addDependency(ServiceDeploymentActivator.SERVICE_DEPLOYMENT_CHAIN_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<TestModuleDependencyProcessor>(deploymentUnitProcessorService, TestModuleDependencyProcessor.PRIORITY));
 
         builder.install();
         listener.finishBatch();

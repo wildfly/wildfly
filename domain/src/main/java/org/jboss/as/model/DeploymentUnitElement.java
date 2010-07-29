@@ -56,6 +56,7 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
@@ -244,7 +245,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
             final VFSMountService vfsMountService = new VFSMountService(deploymentRoot.getPathName());
             batchBuilder.addService(mountServiceName, vfsMountService)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .addDependency(TempFileProviderService.SERVICE_NAME).toInjector(vfsMountService.getTempFileProviderInjector());
+                .addDependency(TempFileProviderService.SERVICE_NAME, TempFileProvider.class, vfsMountService.getTempFileProviderInjector());
 
             // Setup deployment service
             final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
@@ -252,16 +253,16 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
             final BatchServiceBuilder deploymentServiceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService)
                 .setInitialMode(start ? ServiceController.Mode.IMMEDIATE : ServiceController.Mode.NEVER);
             deploymentServiceBuilder.addDependency(mountServiceName);
-            deploymentServiceBuilder.addDependency(DeploymentChainProvider.SERVICE_NAME)
-                .toInjector(new TranslatingInjector<DeploymentChainProvider, DeploymentChain>(
+            deploymentServiceBuilder.addDependency(DeploymentChainProvider.SERVICE_NAME, DeploymentChainProvider.class,
+                new TranslatingInjector<DeploymentChainProvider, DeploymentChain>(
                     new DeploymentChainProviderTranslator(deploymentRoot),
                     deploymentService.getDeploymentChainInjector())
-                );
-            deploymentServiceBuilder.addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME)
-                .toInjector(new TranslatingInjector<DeploymentModuleLoaderProvider, DeploymentModuleLoader>(
+            );
+            deploymentServiceBuilder.addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME, DeploymentModuleLoaderProvider.class,
+                new TranslatingInjector<DeploymentModuleLoaderProvider, DeploymentModuleLoader>(
                     new DeploymentModuleLoaderProviderTranslator(deploymentRoot),
                     deploymentService.getModuleLoaderInjector())
-                );
+            );
 
             // Setup the listener for a new batch
             deploymentServiceListener.startBatch(new Runnable() {

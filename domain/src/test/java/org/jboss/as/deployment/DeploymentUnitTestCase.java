@@ -28,6 +28,7 @@ import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -57,14 +58,14 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
-        new DeploymentActivator().activate(serviceContainer, batchBuilder);
+        new DeploymentActivator().activate(new ServiceActivatorContextImpl(batchBuilder));
 
         final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
         batchBuilder.addService(chainServiceName, deploymentChainService)
-            .addDependency(DeploymentChainProvider.SERVICE_NAME).toInjector(
+            .addDependency(DeploymentChainProvider.SERVICE_NAME,
                 new DeploymentChainProvider.SelectorInjector(deploymentChainService,
-                        Values.immediateValue(new DeploymentChainProvider.Selector() {
+                        Values.<DeploymentChainProvider.Selector>immediateValue(new DeploymentChainProvider.Selector() {
                             public boolean supports(VirtualFile root) {
                                 return true;
                             }

@@ -68,9 +68,9 @@ public class DeploymentChainProcessorInjectorTestCase {
         batchBuilder.addService(chainServiceName, new DeploymentChainService(Values.immediateValue((DeploymentChain)new DeploymentChainImpl("test.chain"))));
 
         final ServiceName processorServiceName = ServiceName.of("deployment", "processor");
-        final DeploymentUnitProcessorService deploymentUnitProcessorService = new DeploymentUnitProcessorService(Values.immediateValue(new MockProcessor()));
+        final DeploymentUnitProcessorService<MockProcessor> deploymentUnitProcessorService = new DeploymentUnitProcessorService<MockProcessor>(Values.immediateValue(new MockProcessor()));
         batchBuilder.addService(processorServiceName, deploymentUnitProcessorService)
-            .addDependency(chainServiceName).toInjector(new DeploymentChainProcessorInjector(deploymentUnitProcessorService, 100L));
+            .addDependency(chainServiceName, DeploymentChain.class, new DeploymentChainProcessorInjector<MockProcessor>(deploymentUnitProcessorService, 100L));
 
         batchBuilder.install();
         listener.finishBatch();

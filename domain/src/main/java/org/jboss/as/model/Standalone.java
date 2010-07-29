@@ -22,18 +22,17 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -113,9 +112,8 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     /**
      * Activate the standalone server.  Starts up all the services and deployments in this server.
      *
-     * @param container the container
-     * @param batchBuilder the current batch builder
+     * @param context the service activator context
      */
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
     }
 }

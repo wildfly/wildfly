@@ -22,15 +22,14 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
 
 /**
  * The base class of all subsystem elements.
@@ -63,10 +62,9 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
     /**
      * Activate this container within a service container.
      *
-     * @param container the container
-     * @param batchBuilder the current batch builder
+     * @param context the service activation context
      */
-    public abstract void activate(final ServiceContainer container, final BatchBuilder batchBuilder);
+    public abstract void activate(final ServiceActivatorContext context);
 
     /**
      * Get the collection of all socket bindings referenced by this container.  Used to validate

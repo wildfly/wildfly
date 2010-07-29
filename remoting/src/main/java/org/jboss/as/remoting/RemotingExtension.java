@@ -23,8 +23,7 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.Extension;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.namespace.QName;
@@ -42,7 +41,7 @@ public final class RemotingExtension implements Extension {
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
         // no actions needed
     }
 }

@@ -32,7 +32,7 @@ import org.jboss.modules.ModuleLoaderSelector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.value.Values;
 import org.jboss.vfs.VirtualFile;
 
@@ -42,8 +42,13 @@ import org.jboss.vfs.VirtualFile;
  * @author John E. Bailey
  */
 public class DeploymentActivator implements ServiceActivator {
-    @Override
-    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+    /**
+     * Activate the deployment services
+     *
+     * @param context The service activator context
+     */
+    public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
         batchBuilder.addService(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider());
         batchBuilder.addService(DeploymentModuleLoaderProvider.SERVICE_NAME, new DeploymentModuleLoaderProvider());
 
@@ -51,7 +56,8 @@ public class DeploymentActivator implements ServiceActivator {
         final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
         final Service<DeploymentModuleLoader> deploymentModuleLoaderService = new DeploymentModuleLoaderService(deploymentModuleLoader);
         batchBuilder.addService(DeploymentModuleLoaderImpl.SERVICE_NAME, deploymentModuleLoaderService)
-            .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME).toInjector(
+            .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME,
+                DeploymentModuleLoaderProvider.class,
                 new DeploymentModuleLoaderProvider.SelectorInjector<DeploymentModuleLoaderProvider.Selector>(deploymentModuleLoaderService,
                         Values.<DeploymentModuleLoaderProvider.Selector>immediateValue(new DeploymentModuleLoaderProvider.Selector() {
                             public boolean supports(VirtualFile root) {

@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.service;
 
+import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
@@ -36,7 +37,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
 
@@ -50,12 +51,16 @@ public class ServiceDeploymentActivator implements ServiceActivator {
     public static final ServiceName SERVICE_DEPLOYMENT_CHAIN_NAME = ServiceName.JBOSS.append("service", "deployment", "chain");
     public static final long SERVICE_DEPLOYMENT_CHAIN_PRIORITY = 100000L;
 
-    @Override
-    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+    /**
+     * Activate the services required for service deployments.
+     * 
+     * @param context The service activator context
+     */
+    public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
         final DeploymentChainService deploymentChainService = new DeploymentChainService(new DeploymentChainImpl("deployment.chain.service"));
         batchBuilder.addService(SERVICE_DEPLOYMENT_CHAIN_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProvider.SERVICE_NAME)
-                .toInjector(new DeploymentChainProvider.SelectorInjector(deploymentChainService, Values.immediateValue(new ServiceDeploymentChainSelector()), SERVICE_DEPLOYMENT_CHAIN_PRIORITY));
+            .addDependency(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider.SelectorInjector(deploymentChainService, Values.immediateValue(new ServiceDeploymentChainSelector()), SERVICE_DEPLOYMENT_CHAIN_PRIORITY));
 
         final ServiceName processorNameBase = ServiceName.JBOSS.append("deployment", "processor");
         addProcessor(batchBuilder, processorNameBase.append("module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
@@ -69,7 +74,6 @@ public class ServiceDeploymentActivator implements ServiceActivator {
     private <T extends DeploymentUnitProcessor> void addProcessor(final BatchBuilder builder, final ServiceName serviceName, final T deploymentUnitProcessor, final long priority) {
         final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
         builder.addService(serviceName, deploymentUnitProcessorService)
-            .addDependency(SERVICE_DEPLOYMENT_CHAIN_NAME)
-                .toInjector(new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+            .addDependency(SERVICE_DEPLOYMENT_CHAIN_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }
