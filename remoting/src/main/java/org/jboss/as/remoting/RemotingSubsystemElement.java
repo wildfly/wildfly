@@ -35,7 +35,6 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
@@ -45,6 +44,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
+
+import static org.jboss.as.threads.AbstractExecutorElement.*;
 
 /**
  * A Remoting subsystem definition.
@@ -191,7 +192,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         final EndpointService endpointService = new EndpointService();
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
-        serviceBuilder.addDependency(ServiceName.of(ThreadPoolExecutorService.JBOSS_THREADS_EXECUTOR.append(threadPoolName)), Executor.class, executorInjector);
+        serviceBuilder.addDependency(ServiceName.of(JBOSS_THREAD_EXECUTOR.append(threadPoolName)), Executor.class, executorInjector);
         serviceBuilder.setLocation(getLocation());
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map
