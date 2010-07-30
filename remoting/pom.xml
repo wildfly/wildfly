@@ -59,5 +59,9 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-threads</artifactId>
+        </dependency>
     </dependencies>
 </project>
