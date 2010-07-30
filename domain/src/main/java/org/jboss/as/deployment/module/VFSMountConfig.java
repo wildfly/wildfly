@@ -20,21 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.service.ServiceDeployment;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.deployment.AttachmentKey;
+
+import java.io.Serializable;
 
 /**
+ * Mount configuration attachment to control mounting semantics. 
+ *
  * @author John E. Bailey
  */
-public class TestServiceDeployment implements ServiceDeployment {
-    public static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+public class VFSMountConfig implements Serializable {
+    private static final long serialVersionUID = 4090634336529594421L;
+    public static final AttachmentKey<VFSMountConfig> ATTACHMENT_KEY = new AttachmentKey<VFSMountConfig>(VFSMountConfig.class);
 
-    @Override
-    public void install(BatchBuilder batchBuilder) {
-        batchBuilder.addService(TEST_SERVICE_NAME, Service.NULL);
+    private final boolean expanded;
+
+    public VFSMountConfig(boolean expanded) {
+        this.expanded = expanded;
+    }
+
+    /**
+     * Should the vfs mount be expanded
+     *
+     * @return true if it should be expanded false if not.
+     */
+    public boolean isExpanded() {
+        return expanded;
     }
 }

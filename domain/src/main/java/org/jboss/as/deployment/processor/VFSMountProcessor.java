@@ -23,32 +23,31 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.service.ServiceDeployment;
-import org.jboss.as.deployment.item.ServiceDeploymentItem;
+import org.jboss.as.deployment.item.VFSMountDeploymentItem;
+import org.jboss.as.deployment.module.VFSMountConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.vfs.VirtualFile;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * DeploymentUnitProcessor that detects ServiceDeployment instances for a deployment and creates the appropriate
- * DeploymentItem instances to execute the deployments.
+ * Deployment unit processor responsible for adding a deployment item to install a VFS mount service.
  *
  * @author John E. Bailey
  */
-public class ServiceDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
+public class VFSMountProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.MOUNT.plus(100L);
 
-    @Override
+    /**
+     * Create a VFS mount deployment item for the attached deployment root.
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException if any problems occur
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        if(deploymentRoot == null || !deploymentRoot.exists() || deploymentRoot.isFile())
-            return;
-
-        final VirtualFile serviceLoaderConfig = deploymentRoot.getChild("META-INF/services").getChild(ServiceDeployment.class.getName());
-        if(serviceLoaderConfig.exists())
-            context.addDeploymentItem(new ServiceDeploymentItem());
+        final VFSMountConfig mountConfig = context.getAttachment(VFSMountConfig.ATTACHMENT_KEY);
+        boolean expanded = mountConfig != null ? mountConfig.isExpanded() : false;
+        context.addDeploymentItem(new VFSMountDeploymentItem(context.getName(), getVirtualFileAttachment(context), expanded));
     }
 }

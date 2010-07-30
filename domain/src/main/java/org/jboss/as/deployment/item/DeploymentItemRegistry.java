@@ -20,22 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.deployment.item;
 
-import org.jboss.msc.service.BatchBuilder;
-import java.io.Serializable;
+import org.jboss.as.model.DeploymentUnitKey;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Deployment interface allowing deployments to provide custom deployment items to install services.
- * These are intended to be loaded via a ServiceLoader from the deployment. 
- *
+ * Temporary registry to hold onto deployment items used for deployments.
+ * 
  * @author John E. Bailey
  */
-public interface ServiceDeployment extends Serializable {
-    /**
-     * Install services into the provided batch builder.
-     *
-     * @param batchBuilder the batch
-     */
-    void install(BatchBuilder batchBuilder);
+public class DeploymentItemRegistry {
+
+    private static final Map<DeploymentUnitKey, List<DeploymentItem>> cache = new HashMap<DeploymentUnitKey, List<DeploymentItem>>();
+
+    public static void registerDeploymentItems(final DeploymentUnitKey key, List<DeploymentItem> deploymentItems) {
+        cache.put(key, deploymentItems);
+        // TODD: Serialize items
+    }
+
+    public static List<DeploymentItem> getDeploymentItems(final DeploymentUnitKey key) {
+        List<DeploymentItem> items = cache.get(key);
+        if(items != null)
+            return items;
+        return null; // TODO: Read serialized items
+    }
 }

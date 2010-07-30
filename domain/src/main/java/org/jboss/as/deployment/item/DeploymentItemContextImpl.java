@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.item;
 
-import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 
 /**
@@ -31,21 +30,14 @@ import org.jboss.msc.service.BatchBuilder;
  * @author John E. Bailey
  */
 public class DeploymentItemContextImpl implements DeploymentItemContext {
-    private final Module module;
     private final BatchBuilder batchBuilder;
 
-    public DeploymentItemContextImpl(Module module, BatchBuilder batchBuilder) {
-        this.module = module;
+    public DeploymentItemContextImpl(BatchBuilder batchBuilder) {
         this.batchBuilder = batchBuilder;
     }
 
     @Override
     public BatchBuilder getBatchBuilder() {
         return batchBuilder;
-    }
-
-    @Override
-    public Module getModule() {
-        return module;
     }
 }

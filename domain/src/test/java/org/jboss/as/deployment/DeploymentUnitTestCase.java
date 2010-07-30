@@ -25,23 +25,27 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.model.DeploymentUnitElement;
+import org.jboss.as.model.Domain;
+import org.jboss.as.model.DomainDeploymentUnitUpdate;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Values;
+import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test to verify the DeploymentUnitElement correctly installs the deployment service.
@@ -60,16 +64,12 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
         new DeploymentActivator().activate(new ServiceActivatorContextImpl(batchBuilder));
 
-        final ServiceName chainServiceName = ServiceName.JBOSS.append("deployment", "chain");
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChain);
-        batchBuilder.addService(chainServiceName, deploymentChainService)
-            .addDependency(DeploymentChainProvider.SERVICE_NAME,
-                new DeploymentChainProvider.SelectorInjector(deploymentChainService,
-                        Values.<DeploymentChainProvider.Selector>immediateValue(new DeploymentChainProvider.Selector() {
-                            public boolean supports(VirtualFile root) {
-                                return true;
-                            }
-                }), 0));
+        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
+            new DeploymentChainProvider.Selector() {
+                public boolean supports(VirtualFile root) {
+                    return true;
+                }
+            }, 0);
 
         batchBuilder.install();
     }
@@ -81,33 +81,40 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
     @Test
     public void testDeployVirtualFile() throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceDeployment.jar"));
+        final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceXmlDeployment.jar"));
         final String expectedDeploymentName = virtualFile.getPathName() + ":";
-        final DeploymentResult.Future resultFuture = new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(serviceContainer);
-        final DeploymentResult deploymentResult = resultFuture.getDeploymentResult();
-        assertNotNull(deploymentResult);
-        assertEquals(DeploymentResult.Result.SUCCESS, deploymentResult.getResult());
+
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+            @Override
+            public void run() {
+                latch.countDown();
+            }
+        });
+        batchBuilder.addListener(listener);
+
+        final DomainDeploymentUnitUpdate update = new DomainDeploymentUnitUpdate(virtualFile.getPathName(), new byte[0]);
+        executeUpdate(update);
+
+        new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+
+        batchBuilder.install();
+        listener.finishBatch();
+        latch.await(1L, TimeUnit.SECONDS);
+        if (!listener.finished())
+            fail("Did not install deployment within 1 second.");
 
         // Verify the DeploymentService is correctly setup
         final ServiceController<?> serviceController = serviceContainer.getService(DeploymentService.SERVICE_NAME.append(expectedDeploymentName));
         assertNotNull(serviceController);
 
         assertEquals(ServiceController.State.UP, serviceController.getState());
-
-        // Verify the mount service is setup
-        ServiceController<?> mountServiceController = serviceContainer.getService(ServiceName.JBOSS.append("mounts").append(expectedDeploymentName));
-        assertNotNull(mountServiceController);
-        assertEquals(ServiceController.State.UP, mountServiceController.getState());
-        assertNull(mountServiceController.getValue());
     }
 
-    @Test
-    public void testDeploymentFailure() throws Exception {
-        final VirtualFile virtualFile = VFS.getChild("/test/bogus");
-
-        final DeploymentResult result = new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
-        assertNotNull(result);
-        assertEquals(DeploymentResult.Result.FAILURE, result.getResult());
-        assertNotNull(result.getDeploymentException());
+    private void executeUpdate(DomainDeploymentUnitUpdate update) throws Exception {
+        final Method method = DomainDeploymentUnitUpdate.class.getDeclaredMethod("applyUpdate", Domain.class);
+        method.setAccessible(true);
+        method.invoke(update, (Domain)null);
     }
 }

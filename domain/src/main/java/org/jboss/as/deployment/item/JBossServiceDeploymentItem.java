@@ -26,6 +26,7 @@ import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.deployment.module.DeploymentModuleService;
 import org.jboss.as.deployment.service.JBossService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -60,17 +61,19 @@ import java.util.List;
  */
 public class JBossServiceDeploymentItem implements DeploymentItem {
     private static final Logger logger = Logger.getLogger("org.jboss.as.deployment.service");
+    private final String deploymentName;
     private final JBossServiceConfig serviceConfig;
 
-    public JBossServiceDeploymentItem(JBossServiceConfig serviceConfig) {
+    public JBossServiceDeploymentItem(final String deploymentName, final JBossServiceConfig serviceConfig) {
+        this.deploymentName = deploymentName;
         this.serviceConfig = serviceConfig;
     }
 
     @Override
     public void install(DeploymentItemContext context) {
-        final Module module = context.getModule();
-        final ClassLoader classLoader = module.getClassLoader();
-        final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
+        final JBossService<Object> jBossService = new JBossService<Object>();
+
+        final Value<ClassLoader> classLoaderValue = jBossService.getDeploymentClassLoaderValue();
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         final String codeName = serviceConfig.getCode();
@@ -91,10 +94,12 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
 
         final Value<Constructor> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
         final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, constructorArguments));
-        final JBossService<?> jBossService = new JBossService<Object>(constructedValue);
+        jBossService.setServiceValue(constructedValue);
 
         final String serviceName = serviceConfig.getName();
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(convert(serviceName), jBossService);
+        serviceBuilder.addDependency(DeploymentModuleService.SERVICE_NAME.append(deploymentName), Module.class, jBossService.getDeploymentModuleInjector());
+
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
         if(dependencyConfigs != null) {
             for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {

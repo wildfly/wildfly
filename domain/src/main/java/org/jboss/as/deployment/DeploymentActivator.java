@@ -49,7 +49,7 @@ public class DeploymentActivator implements ServiceActivator {
      */
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        batchBuilder.addService(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider());
+        batchBuilder.addService(DeploymentChainProvider.SERVICE_NAME, DeploymentChainProvider.INSTANCE);
         batchBuilder.addService(DeploymentModuleLoaderProvider.SERVICE_NAME, new DeploymentModuleLoaderProvider());
 
         // Setup default deployment module loader

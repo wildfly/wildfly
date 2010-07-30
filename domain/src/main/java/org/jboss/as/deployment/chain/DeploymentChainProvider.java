@@ -44,7 +44,11 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain", "provider");
 
+    public static final DeploymentChainProvider INSTANCE = new DeploymentChainProvider();
+
     private final Set<OrderedChainSelector> selectors = new TreeSet<OrderedChainSelector>();
+
+    private DeploymentChainProvider() {}
 
     @Override
     public void start(StartContext context) throws StartException {

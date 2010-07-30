@@ -25,11 +25,13 @@ package org.jboss.as.deployment.module;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.io.IOException;
 
@@ -42,10 +44,9 @@ public class DeploymentModuleService implements Service<Module> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment","module");
 
     private final ModuleConfig moduleConfig;
-    private final DeploymentModuleLoader deploymentModuleLoader;
+    private InjectedValue<DeploymentModuleLoader> deploymentModuleLoader = new InjectedValue<DeploymentModuleLoader>();
 
-    public DeploymentModuleService(DeploymentModuleLoader deploymentModuleLoader, ModuleConfig moduleConfig) {
-        this.deploymentModuleLoader = deploymentModuleLoader;
+    public DeploymentModuleService(final ModuleConfig moduleConfig) {
         this.moduleConfig = moduleConfig;
     }
 
@@ -67,20 +68,27 @@ public class DeploymentModuleService implements Service<Module> {
                 .setOptional(dependency.isOptional());
         }
         final ModuleSpec moduleSpec = specBuilder.create();
+        final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
         deploymentModuleLoader.addModuleSpec(moduleSpec);
     }
 
     @Override
     public void stop(StopContext context) {
+        final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
         deploymentModuleLoader.removeModule(moduleConfig.getIdentifier());
     }
 
     @Override
     public Module getValue() throws IllegalStateException {
         try {
+            final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
             return deploymentModuleLoader.loadModule(moduleConfig.getIdentifier());
         } catch(ModuleLoadException e) {
             throw new IllegalStateException("Unable to load module value for module " + moduleConfig.getIdentifier());
         }
+    }
+
+    public Injector<DeploymentModuleLoader> getDeploymentModuleLoaderInjector() {
+        return deploymentModuleLoader;
     }
 }

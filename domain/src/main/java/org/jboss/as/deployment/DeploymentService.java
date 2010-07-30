@@ -22,16 +22,12 @@
 
 package org.jboss.as.deployment;
 
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
@@ -44,8 +40,6 @@ public class DeploymentService implements Service<Void> {
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
     private final String deploymentName;
-    private InjectedValue<DeploymentChain> deploymentChain = new InjectedValue<DeploymentChain>();
-    private InjectedValue<DeploymentModuleLoader> moduleLoader = new InjectedValue<DeploymentModuleLoader>();
 
     public DeploymentService(String deploymentName) {
         this.deploymentName = deploymentName;
@@ -66,21 +60,5 @@ public class DeploymentService implements Service<Void> {
 
     public String getDeploymentName() {
         return deploymentName;
-    }
-
-    public DeploymentChain getDeploymentChain() {
-        return deploymentChain.getValue();
-    }
-
-    public Injector<DeploymentChain> getDeploymentChainInjector() {
-        return deploymentChain;
-    }
-
-    public DeploymentModuleLoader getModuleLoader() {
-        return moduleLoader.getValue();
-    }
-
-    public Injector<DeploymentModuleLoader> getModuleLoaderInjector() {
-        return moduleLoader;
     }
 }

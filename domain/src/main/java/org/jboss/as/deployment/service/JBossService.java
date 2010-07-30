@@ -22,11 +22,13 @@
 
 package org.jboss.as.deployment.service;
 
+import org.jboss.modules.Module;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.CachedValue;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
@@ -37,11 +39,15 @@ import java.lang.reflect.Method;
  * @author John E. Bailey
  */
 public class JBossService<T> implements Service<T> {
-    private final Value<T> jbossServiceValue;
+    private Value<T> serviceValue;
 
-    public JBossService(final Value<T> jbossServiceValue) {
-        this.jbossServiceValue = new CachedValue<T>(jbossServiceValue);
-    }
+    private final InjectedValue<Module> deploymentModule = new InjectedValue<Module>();
+    private final Value<ClassLoader> deploymentClassLoaderValue = new Value<ClassLoader>() {
+            @Override
+            public ClassLoader getValue() throws IllegalStateException {
+                return deploymentModule.getValue().getClassLoader();
+            }
+        };
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -71,6 +77,18 @@ public class JBossService<T> implements Service<T> {
 
     @Override
     public T getValue() throws IllegalStateException {
-        return jbossServiceValue.getValue();
+        return serviceValue.getValue();
+    }
+
+    public void setServiceValue(Value<T> serviceValue) {
+        this.serviceValue = serviceValue;
+    }
+
+    public Injector<Module> getDeploymentModuleInjector() {
+        return deploymentModule;
+    }
+
+    public Value<ClassLoader> getDeploymentClassLoaderValue() {
+        return deploymentClassLoaderValue;
     }
 }

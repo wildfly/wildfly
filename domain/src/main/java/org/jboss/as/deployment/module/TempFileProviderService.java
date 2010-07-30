@@ -35,40 +35,45 @@ import java.util.concurrent.Executors;
 
 /**
  * Service responsible for managing the life-cycle of a TempFileProvider.
- * 
+ *
  * @author John E. Bailey
  */
 public class TempFileProviderService implements Service<TempFileProvider> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("TempFileProvider");
-    
-    private TempFileProvider tempFileProvider;
-    private int poolSize = 2;
-    
-    /** {@inheritDoc} */
+
+    private static TempFileProvider PROVIDER;
+    private static final Object LOCK = new Object();
+
+    /**
+     * {@inheritDoc}
+     */
     public void start(StartContext context) throws StartException {
-        try {
-            tempFileProvider = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(poolSize));
-        } catch (IOException e) {
-            throw new StartException("Failed to initialize the temp file provider", e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void stop(StopContext context) {
-        VFSUtils.safeClose(tempFileProvider);
-    }
-
-    /** {@inheritDoc} */
-    public TempFileProvider getValue() throws IllegalStateException {
-        return tempFileProvider;
     }
 
     /**
-     * Set the pool size to use for the TempFileProvider.
-     * 
-     * @param poolSize
+     * {@inheritDoc}
      */
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
+    public void stop(StopContext context) {
+        VFSUtils.safeClose(PROVIDER);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public TempFileProvider getValue() throws IllegalStateException {
+        return provider();
+    }
+
+    public static TempFileProvider provider() {
+        synchronized(LOCK) {
+            if (PROVIDER == null) {
+                try {
+                    PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create temp file provider");
+                }
+            }
+        }
+        return PROVIDER;
     }
 }

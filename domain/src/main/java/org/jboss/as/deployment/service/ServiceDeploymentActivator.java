@@ -32,7 +32,7 @@ import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
 import org.jboss.as.deployment.processor.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.ParsedServiceDeploymentProcessor;
 import org.jboss.as.deployment.processor.ServiceDeploymentParsingProcessor;
-import org.jboss.as.deployment.processor.ServiceDeploymentProcessor;
+import org.jboss.as.deployment.processor.VFSMountProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.msc.service.BatchBuilder;
@@ -63,11 +63,11 @@ public class ServiceDeploymentActivator implements ServiceActivator {
             .addDependency(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider.SelectorInjector(deploymentChainService, Values.immediateValue(new ServiceDeploymentChainSelector()), SERVICE_DEPLOYMENT_CHAIN_PRIORITY));
 
         final ServiceName processorNameBase = ServiceName.JBOSS.append("deployment", "processor");
+        addProcessor(batchBuilder, processorNameBase.append("mount"), new VFSMountProcessor(), VFSMountProcessor.PRIORITY);
         addProcessor(batchBuilder, processorNameBase.append("module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         addProcessor(batchBuilder, processorNameBase.append("module", "config"), new ModuleConfgProcessor(), ModuleConfgProcessor.PRIORITY);
         addProcessor(batchBuilder, processorNameBase.append("module", "deployment"), new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
         addProcessor(batchBuilder, processorNameBase.append("service", "parser"), new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("service", "deployment"), new ServiceDeploymentProcessor(), ServiceDeploymentProcessor.PRIORITY);
         addProcessor(batchBuilder, processorNameBase.append("service", "parsed", "deployment"), new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
     }
 

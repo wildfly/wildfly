@@ -52,7 +52,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
 
         for(final JBossServiceConfig serviceConfig : serviceConfigs) {
-            context.addDeploymentItem(new JBossServiceDeploymentItem(serviceConfig));
+            context.addDeploymentItem(new JBossServiceDeploymentItem(context.getName(), serviceConfig));
         }
     }
 }

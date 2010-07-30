@@ -23,49 +23,33 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
+import org.jboss.as.deployment.item.DeploymentModuleItem;
 import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.module.VFSResourceLoader;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.modules.ModuleSpec;
 
-import java.io.IOException;
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * DeploymentUnitProcessor capable creating a module spec from a ModuleConfig attachment.
+ * Processor responsible for creating a deployment item that installs the DeploymentModuleService for managing the deployment
+ * module. 
  *
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
-    @Override
+
+    /**
+     * Create a deployment module item from the attached module config. 
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
         if(moduleConfig == null)
             return;
-
-        final DeploymentModuleLoader deploymentModuleLoader = DeploymentModuleLoaderSelector.CURRENT_MODULE_LOADER.get();
-        if(deploymentModuleLoader == null)
-            return;
-
-        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
-        for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
-            try {
-                specBuilder.addRoot(resource.getRootName(), new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot()));
-            } catch(IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName() + "]", e, null);
-            }
-        }
-        final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
-        for(ModuleConfig.Dependency dependency : dependencies) {
-            specBuilder.addDependency(dependency.getIdentifier())
-                .setExport(dependency.isExport())
-                .setOptional(dependency.isOptional());
-        }
-        final ModuleSpec moduleSpec = specBuilder.create();
-        deploymentModuleLoader.addModuleSpec(moduleSpec);
+        context.addDeploymentItem(new DeploymentModuleItem(context.getName(), moduleConfig, getVirtualFileAttachment(context)));
     }
 }

@@ -28,23 +28,25 @@ package org.jboss.as.deployment;
  * @author John E. Bailey
  */
 public enum DeploymentPhases {
-    MOUNT(0L),
-    PARSE_DESCRIPTORS(1000000L),
-    MODULARIZE(2000000L),
+    VALIDATE(0L),
+    MOUNT(1000000L),
+    PARSE_DESCRIPTORS(2000000L),
+    MODULARIZE(3000000L),
     //...
-    INSTALL_SERVICES(10000000L);
+    INSTALL_SERVICES(10000000L),
+    CLEANUP(20000000L);
 
-    private final long order;
+    private final long priority;
 
-    private DeploymentPhases(long order) {
-        this.order = order;
+    private DeploymentPhases(long priority) {
+        this.priority = priority;
     }
 
     public long plus(final long offset) {
-        return order + offset;
+        return priority + offset;
     }
 
-    public long getOrder() {
-        return order;
+    public long getPriority() {
+        return priority;
     }
 }

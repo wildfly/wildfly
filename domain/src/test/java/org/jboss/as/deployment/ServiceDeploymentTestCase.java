@@ -29,9 +29,10 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.service.ServiceDeploymentActivator;
 import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
-import org.jboss.as.deployment.test.TestServiceDeployment;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.DeploymentUnitElement;
+import org.jboss.as.model.Domain;
+import org.jboss.as.model.DomainDeploymentUnitUpdate;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -46,9 +47,11 @@ import org.jboss.vfs.VirtualFile;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,36 +64,48 @@ import static org.junit.Assert.fail;
  */
 public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
+    private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+
     private ServiceContainer serviceContainer;
 
     @Test
-    public void testServiceDeployment() throws Exception {
-        final VirtualFile deploymentFile = initializeDeployment("/test/serviceDeployment.jar");
-
-        final DeploymentResult result = new DeploymentUnitElement(null, deploymentFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
-        assertDeploymentSuccess(result);
-
-        final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
-        assertNotNull(testServiceController);
-        assertEquals(ServiceController.State.UP, testServiceController.getState());
-        serviceContainer.shutdown();
-    }
-
-    @Test
     public void testParsedDeployment() throws Exception {
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean completed = new AtomicBoolean(false);
+        final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
+                latch.countDown();
+                completed.set(true);
+                if(serviceFailures.size() > 0)
+                    fail("Service failures: " + serviceFailures);
+            }
+        });
+        batchBuilder.addListener(listener);
 
         final VirtualFile deploymentFile = initializeDeployment("/test/serviceXmlDeployment.jar");
-        final DeploymentResult result = new DeploymentUnitElement(null, deploymentFile.getPathName(), new byte[0], true, true).activate(serviceContainer).getDeploymentResult();
-        assertDeploymentSuccess(result);
+        final DomainDeploymentUnitUpdate update = new DomainDeploymentUnitUpdate(deploymentFile.getPathName(), new byte[0]);
+        executeUpdate(update);
 
-        final ServiceController<?> testServiceController = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME);
+        listener.startBatch();
+
+        new DeploymentUnitElement(null, deploymentFile.getPathName(), new byte[0], true, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+
+        batchBuilder.install();
+        listener.finishBatch();
+        listener.finishDeployment();
+        latch.await(10L, TimeUnit.SECONDS);
+        if(!completed.get())
+            fail("Services were not installed within a second");
+
+        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME);
         assertNotNull(testServiceController);
         assertEquals(ServiceController.State.UP, testServiceController.getState());
         final LegacyService legacyService = (LegacyService)testServiceController.getValue();
         assertNotNull(legacyService);
         assertEquals("Test Value", legacyService.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME.append("second"));
+        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_SERVICE_NAME.append("second"));
         assertNotNull(testServiceControllerTwo);
         assertEquals(ServiceController.State.UP, testServiceControllerTwo.getState());
         final LegacyService legacyServiceTwo = (LegacyService)testServiceControllerTwo.getValue();
@@ -98,7 +113,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         assertEquals(legacyService, legacyServiceTwo.getOther());
         assertEquals("Test Value - more value", legacyServiceTwo.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TestServiceDeployment.TEST_SERVICE_NAME.append("third"));
+        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_SERVICE_NAME.append("third"));
         assertNotNull(testServiceControllerThree);
         assertEquals(ServiceController.State.UP, testServiceControllerThree.getState());
         final LegacyService legacyServiceThree = (LegacyService)testServiceControllerThree.getValue();
@@ -141,23 +156,13 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource(path));
-        copyResource("/org/jboss/as/deployment/test/TestServiceDeployment.class", path, "org/jboss/as/deployment/test");
         copyResource("/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
     }
 
-    private void assertDeploymentSuccess(DeploymentResult result) {
-        assertNotNull(result);
-        if(result.getDeploymentException() != null) {
-            result.getDeploymentException().printStackTrace();
-            for(Map.Entry<ServiceName, StartException> entry : result.getServiceFailures().entrySet()) {
-                System.out.println("Service [" + entry.getKey() +"] failed to start.");
-                entry.getValue().printStackTrace();
-            }
-            fail("Deployment failed");
-        }
-        assertEquals(DeploymentResult.Result.SUCCESS, result.getResult());
+    private void executeUpdate(DomainDeploymentUnitUpdate update) throws Exception {
+        final Method method = DomainDeploymentUnitUpdate.class.getDeclaredMethod("applyUpdate", Domain.class);
+        method.setAccessible(true);
+        method.invoke(update, (Domain)null);
     }
-
-
 }

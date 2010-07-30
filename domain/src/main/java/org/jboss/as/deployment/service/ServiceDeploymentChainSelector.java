@@ -32,11 +32,10 @@ import org.jboss.vfs.VirtualFile;
  */
 public class ServiceDeploymentChainSelector implements DeploymentChainProvider.Selector {
     private static final String SERVICE_ARCHIVE_EXTENSION = ".sar";
-    private static final String SERVICE_LOADER_PATH = "META-INF/services/" + ServiceDeployment.class.getName();
     private static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
 
     @Override
     public boolean supports(final VirtualFile virtualFile) {
-        return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_LOADER_PATH).exists() || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
+        return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
     }
 }
