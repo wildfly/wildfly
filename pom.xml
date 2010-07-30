@@ -63,8 +63,7 @@
         <version.org.jboss.staxmapper>1.0.0.Beta1</version.org.jboss.staxmapper>
         <version.org.jboss.logging>3.0.0.Beta3</version.org.jboss.logging>
         <version.org.jboss.logmanager>1.2.0.CR4</version.org.jboss.logmanager>
-        <version.org.jboss.marshalling.jboss-marshalling>1.3.0.CR3</version.org.jboss.marshalling.jboss-marshalling>
-        <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.CR3</version.org.jboss.marshalling.jboss-marshalling-river>
+        <version.org.jboss.marshalling.jboss-marshalling>1.3.0.CR4</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta1</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta1</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.naming.jnpserver>5.0.5.Final</version.org.jboss.naming.jnpserver>
@@ -306,7 +305,7 @@
             <dependency>
                 <groupId>org.jboss.marshalling</groupId>
                 <artifactId>jboss-marshalling-river</artifactId>
-                <version>${version.org.jboss.marshalling.jboss-marshalling-river}</version>
+                <version>${version.org.jboss.marshalling.jboss-marshalling}</version>
             </dependency>
 
             <dependency>
