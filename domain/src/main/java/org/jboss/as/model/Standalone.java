@@ -29,6 +29,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
@@ -47,20 +48,48 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
 
-    private final PropertiesElement systemProperties = new PropertiesElement(null);
+    private PropertiesElement systemProperties;
 
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of this standalone element
+     * @param elementName the element name of this standalone element
      */
-    protected Standalone(final Location location) {
-        super(location);
+    protected Standalone(final Location location, final QName elementName) {
+        super(location, elementName);
     }
 
-    /** {@inheritDoc} */
-    protected QName getElementName() {
-        return new QName(Domain.NAMESPACE, "standalone");
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @throws XMLStreamException if an error occurs
+     */
+    public Standalone(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+    }
+
+    /**
+     * Assemble a standalone server configuration from the domain/host model.
+     *
+     * @param domain the domain
+     * @param host the host
+     * @param serverName the name of the server to initialize
+     * @return the standalone server model
+     */
+    public Standalone(final Domain domain, final Host host, final String serverName) {
+        super(null, null);
+        if (domain == null) {
+            throw new IllegalArgumentException("domain is null");
+        }
+        if (host == null) {
+            throw new IllegalArgumentException("host is null");
+        }
+        if (serverName == null) {
+            throw new IllegalArgumentException("serverName is null");
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -88,28 +117,5 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      * @param batchBuilder the current batch builder
      */
     public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
-    }
-
-    /**
-     * Assemble a standalone server configuration from the domain/host model.
-     *
-     * @param domain the domain
-     * @param host the host
-     * @param serverName the name of the server to initialize
-     * @return the standalone server model
-     */
-    public static Standalone assemble(Domain domain, Host host, String serverName) {
-        if (domain == null) {
-            throw new IllegalArgumentException("domain is null");
-        }
-        if (host == null) {
-            throw new IllegalArgumentException("host is null");
-        }
-        if (serverName == null) {
-            throw new IllegalArgumentException("serverName is null");
-        }
-        final Standalone standalone = new Standalone(null);
-
-        return standalone;
     }
 }

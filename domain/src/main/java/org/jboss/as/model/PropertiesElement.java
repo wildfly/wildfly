@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -40,10 +41,59 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private transient final SortedMap<String, String> properties = new TreeMap<String, String>();
-
-    public PropertiesElement(final Location location) {
+    private final SortedMap<String, String> properties = new TreeMap<String, String>(); 
+    private final Element propertyType;
+    private final boolean allowNullValue;
+    
+    /**
+     * Construct a new instance.
+     *
+     * @param location the location at which this element was declared
+     */
+    public PropertiesElement(final Location location, final Element propertyType, final boolean allowNullValue) {
         super(location);
+        this.propertyType = propertyType;
+        this.allowNullValue = allowNullValue;
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to construct this element.
+     */
+    public PropertiesElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        this(reader, Element.PROPERTY, true);
+    }
+    
+    public PropertiesElement(final XMLExtendedStreamReader reader, final Element propertyType, boolean allowNullValue) throws XMLStreamException {
+        super(reader);
+        this.propertyType = propertyType;
+        this.allowNullValue = allowNullValue;
+        final String myNamespace = reader.getNamespaceURI();
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final String namespace = reader.getNamespaceURI();
+            if (myNamespace == null ? namespace != null : ! myNamespace.equals(namespace)) {
+                // wrong namespace
+                throw unexpectedElement(reader);
+            }
+            if (reader.getLocalName().equals(propertyType.getLocalName())) {
+                // maybe a little less efficient but really, really simple
+                String name = reader.getAttributeValue(null, Attribute.NAME.getLocalName());
+                if (properties.containsKey(name)) {
+                    throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
+                }
+                String value = reader.getAttributeValue(null, Attribute.VALUE.getLocalName());
+                if (value == null && !allowNullValue) {
+                    throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
+                }
+                properties.put(name, value);
+            } else {
+                throw unexpectedElement(reader);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -81,16 +131,19 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
-            streamWriter.writeEmptyElement("property");
-            streamWriter.writeAttribute("name", entry.getKey());
-            streamWriter.writeAttribute("value", entry.getValue());
+            streamWriter.writeEmptyElement(propertyType.getLocalName());
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), entry.getKey());
+            streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue());
         }
         streamWriter.writeEndElement();
     }
 
     void addProperty(final String name, final String value) {
         if (properties.containsKey(name)) {
-            throw new IllegalArgumentException("Property already exists");
+            throw new IllegalArgumentException("Property " + name + " already exists");
+        }
+        if (value == null && !allowNullValue) {
+            throw new IllegalArgumentException("Value for property " + name + " is null");
         }
         properties.put(name, value);
     }
@@ -98,7 +151,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     String removeProperty(final String name) {
         final String old = properties.remove(name);
         if (old == null) {
-            throw new IllegalArgumentException("Property does not exist");
+            throw new IllegalArgumentException("Property " + name + " does not exist");
         }
         return old;
     }

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  >
+
+  <xs:element name="mod-cluster-config" type="mod-cluster-configType"/>
+
+  <xs:complexType name="mod-cluster-configType">
+    <xs:sequence>
+      <xs:element ref="load-metric" minOccurs="0" maxOccurs="1"/>
+      <xs:element ref="proxy-conf" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="proxy-conf">
+    <xs:complexType>
+    <xs:sequence>
+      <xs:element name="httpd-conf" type="httpd-conf-attlistType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="nodes-conf" type="nodes-conf-attlistType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- mod_cluster parameters that correspond to httpd directive -->
+  <xs:complexType name="httpd-conf-attlistType">
+    <!-- Get the actual advertiseGroupAddress / advertisePort from advertiseSocket -->
+    <xs:sequence>
+      <xs:element name="advertise-socket" type="socketType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="proxy-list" />
+    <xs:attribute name="proxy-url" />
+    <xs:attribute name="advertise" />
+    <xs:attribute name="advertise-security-key" />
+  </xs:complexType>
+
+  <!-- mod_cluster parameters that describe node behaviour -->
+  <xs:complexType name="nodes-conf-attlistType">
+    <xs:attribute name="excluded-contexts" default="ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console" />
+    <xs:attribute name="auto-enable-contexts" default="true" />
+    <xs:attribute name="stop-context-timeout" default="10" />
+    <xs:attribute name="socket-timeout" />
+  </xs:complexType>
+  
+  <!-- Set of possible loadmetrics -->
+  <xs:element name="load-metric">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="load-metric-simple" type="load-metric-simpleType"/>
+        <xs:element name="load-metric-server-side" type="load-metric-server-sideType"/>
+        <xs:element name="load-metric-web-container-side" type="load-metric-web-container-sideType"/>
+        <xs:element name="load-metric-other" type="load-metric-otherType"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element> 
+
+  <!-- <load-metric-simple factor="1" /> -->
+  <xs:complexType name="load-metric-simpleType">
+    <xs:attribute name="factor" default="1" />
+  </xs:complexType>
+
+  <!-- <load-metric-server-side history="9" decayFactor="2" /> -->
+  <xs:complexType name="load-metric-server-sideType">
+    <xs:attribute name="history" default="9" />
+    <xs:attribute name="decay-factor" default="2"/>
+  </xs:complexType>
+
+  <!-- <load-metric-web-container-side method="name" capacity="512" /> -->
+  <!-- name be one of ActiveSessionsLoadMetric, BusyConnectorsLoadMetric, ReceiveTrafficLoadMetric, SendTrafficLoadMetric or RequestCountLoadMetric -->
+  <xs:complexType name="load-metric-web-container-sideType">
+    <xs:attribute name="name" default="ActiveSessionsLoadMetric" />
+    <xs:attribute name="capacity" default="512"/>
+  </xs:complexType>
+
+  <!-- <load-metric-other method="name"/> -->
+  <!-- name be one of AverageSystemLoadMetric, SystemMemoryUsageLoadMetric, HeapMemoryUsageLoadMetric or ConnectionPoolUsageLoadMetric -->
+  <xs:complexType name="load-metric-otherType">
+    <xs:attribute name="name" default="ConnectionPoolUsageLoadMetric" />
+  </xs:complexType>
+
+</xs:schema>

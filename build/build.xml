@@ -20,11 +20,19 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project name="module-repository" basedir="." default="build-repo">
+<project name="module-repository" basedir="." default="modules">
 
     <import file="lib.xml"/>
 
-    <target name="build-repo" depends="clean-target">
+    <target name="bin">
+        <copy todir="target">
+            <fileset dir="src">
+                <include name="bin/**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
 
@@ -142,6 +150,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
 
+        <module-def group="org.jboss.as" artifact="jboss-as-logging">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="jboss-as-process-manager">
             <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
         </module-def>
@@ -158,6 +170,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
         
+        <module-def group="org.jboss.as" artifact="jboss-as-threads">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
         </module-def>
@@ -210,5 +226,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="build-repo"/>
+    <target name="all" depends="clean-target, modules, bin"/>
 </project>

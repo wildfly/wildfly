@@ -23,7 +23,10 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -36,9 +39,8 @@ import javax.xml.stream.XMLStreamException;
 public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> {
     private static final long serialVersionUID = -7282640684801436543L;
 
-    private final String deploymentName;
-    private final byte[] deploymentHash;
-    // todo: deployment overrides
+    private final DeploymentUnitKey key;
+    private boolean start;
 
     /**
      * Construct a new instance.
@@ -47,7 +49,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash) {
+    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start) {
         super(location);
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
@@ -58,18 +60,108 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (deploymentHash.length != 20) {
             throw new IllegalArgumentException("deploymentHash is not a valid length");
         }
-        this.deploymentName = deploymentName;
-        this.deploymentHash = deploymentHash;
+        this.key = new DeploymentUnitKey(deploymentName, deploymentHash);
+        this.start = start;
+    }
+    
+    public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String fileName = null;
+        String sha1Hash = null;
+        String start = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        fileName = value;
+                        break;
+                    }
+                    case SHA1: {
+                        sha1Hash = value;
+                        break;
+                    }
+                    case START: {
+                        start = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (fileName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (sha1Hash == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
+        }
+        this.key = new DeploymentUnitKey(fileName, hexStringToByteArray(sha1Hash));
+        this.start = start == null ? true : Boolean.valueOf(start);
+        // Handle elements
+        requireNoContent(reader);
+    }
+    
+    /**
+     * Gets the identifier of this deployment that's suitable for use as a map key.
+     * @return the key
+     */
+    public DeploymentUnitKey getKey() {
+        return key;
+    }
+
+    /**
+     * Gets the name of the deployment.
+     * 
+     * @return the name
+     */
+    public String getName() {
+        return key.getName();
+    }
+
+    /**
+     * Gets a defensive copy of the sha1 hash of the deployment.
+     * 
+     * @return the hash
+     */
+    public byte[] getSha1Hash() {
+        return key.getSha1Hash();
+    }
+
+    /**
+     * Gets whether the deployment should be started upon server start.
+     * 
+     * @return <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    public boolean isStart() {
+        return start;
+    }
+    
+    /**
+     * Sets whether the deployments should be started upon server start.
+     * @param start <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    void setStart(boolean start) {
+        this.start = start;
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
-        final byte[] hash = deploymentHash;
-        return deploymentName.hashCode() & 0xFFFFFFFFL ^ calculateElementHashOf(hash);
+        long hash = key.elementHash();
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
+        return hash;
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupDeploymentElement>> target, final ServerGroupDeploymentElement other) {
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
@@ -79,5 +171,8 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
+        if (!this.start) streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
     }
 }

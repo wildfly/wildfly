@@ -23,36 +23,161 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
+
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 
+/**
+ * A deployment that is known to the domain.
+ * 
+ * @author Brian Stansberry
+ */
 public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
 
     private static final long serialVersionUID = 5335163070198512362L;
 
-    private final String fileName;
-    private final byte[] sha1Hash;
+    private final DeploymentUnitKey key;
+    private boolean allowed;
+    private boolean start;
 
-    protected DeploymentUnitElement(final String fileName, final byte[] sha1Hash) {
-        super(null);
-        this.fileName = fileName;
-        this.sha1Hash = sha1Hash;
+    public DeploymentUnitElement(final Location location, final String fileName, 
+            final byte[] sha1Hash, final boolean allowed, final boolean start) {
+        super(location);
+        this.key = new DeploymentUnitKey(fileName, sha1Hash);
+        this.allowed = allowed;
+        this.start = start;
+    }
+    
+    public DeploymentUnitElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        // Handle attributes
+        String fileName = null;
+        String sha1Hash = null;
+        String allowed = null;
+        String start = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        fileName = value;
+                        break;
+                    }
+                    case SHA1: {
+                        sha1Hash = value;
+                        break;
+                    }
+                    case ALLOWED: {
+                        allowed = value;
+                        break;
+                    }
+                    case START: {
+                        start = value;
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (fileName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (sha1Hash == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
+        }
+        this.key = new DeploymentUnitKey(fileName, sha1Hash.getBytes());
+        this.allowed = allowed == null ? true : Boolean.valueOf(allowed);
+        this.start = start == null ? true : Boolean.valueOf(start);
+        
+        // Handle elements
+        requireNoContent(reader);
+    }
+    
+    /**
+     * Gets the identifier of this deployment that's suitable for use as a map key.
+     * @return the key
+     */
+    public DeploymentUnitKey getKey() {
+        return key;
+    }
+    
+    /**
+     * Gets the name of the deployment.
+     * 
+     * @return the name
+     */
+    public String getName() {
+        return key.getName();
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
+    /**
+     * Gets a defensive copy of the sha1 hash of the deployment.
+     * 
+     * @return the hash
+     */
     public byte[] getSha1Hash() {
-        return sha1Hash.clone();
+        return key.getSha1Hash();
+    }
+
+    /**
+     * Gets whether the deployment should be started upon server start.
+     * 
+     * @return <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    public boolean isStart() {
+        return start;
+    }
+    
+    /**
+     * Sets whether the deployments should be started upon server start.
+     * @param start <code>true</code> if the deployment should be started; <code>false</code>
+     *         if not.
+     */
+    void setStart(boolean start) {
+        this.start = start;
+    }
+
+    /**
+     * Gets whether the deployment can be mapped to a server group; i.e. made
+     * available to servers.
+     * 
+     * @return <code>true</code> if the deployment can be mapped; <code>false</code>
+     *         if not.
+     */
+    public boolean isAllowed() {
+        return allowed;
+    }
+    
+    /**
+     * Sets whether the deployment can be mapped to a server group; i.e. made
+     * available to servers.
+     * 
+     * @param allowed <code>true</code> if the deployment can be mapped; <code>false</code>
+     *         if not.
+     */
+    void setAllowed(boolean allowed) {
+        this.allowed = allowed;
     }
 
     public long elementHash() {
-        return fileName.hashCode() & 0xffffffffL ^ calculateElementHashOf(sha1Hash);
+        long hash = key.elementHash();
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
+        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowed).hashCode() & 0xffffffffL;
+        return hash;
     }
 
     protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
+        // FIXME implement appendDifference
+        throw new UnsupportedOperationException("implement me");
     }
 
     protected Class<DeploymentUnitElement> getElementClass() {
@@ -60,8 +185,8 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     }
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute("name", fileName);
-        streamWriter.writeAttribute("sha1", bytesToHexString(sha1Hash));
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
         streamWriter.writeEndElement();
     }
 }
