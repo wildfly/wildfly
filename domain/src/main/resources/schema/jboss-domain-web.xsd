@@ -72,6 +72,7 @@
         <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-filterType"/>
         <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
         <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="expires" type="expires-filterType"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -140,6 +141,12 @@
     <xs:attribute name="webapp-relative" default="false" type="boolean"/>
     <xs:attribute name="expires"/>
     <xs:attribute name="content-type-regex"/>
+  </xs:complexType>
+
+  <xs:complexType name="expires-filterType">
+    <xs:attribute name="by-type"/>
+    <xs:attribute name="default"/>
+    <xs:attribute name="excluded-response-status-codes"/>
   </xs:complexType>
 
   <xs:element name="connector">
