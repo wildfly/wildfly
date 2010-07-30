@@ -37,16 +37,16 @@ import org.jboss.as.process.ProcessManagerSlave;
  */
 public final class ServerMaker {
     
-    private final ServerManagerBootstrapConfig bootstrapConfig;
+    private final String workingDirectory;
     private final ProcessManagerSlave processManagerSlave;
     private final MessageHandler messageHandler;
     
-    public ServerMaker(ServerManagerBootstrapConfig bootstrapConfig, 
+    public ServerMaker(String workingDirectory, 
             ProcessManagerSlave processManagerSlave, MessageHandler messageHandler) {
-        if (bootstrapConfig == null) {
-            throw new IllegalArgumentException("bootstrapConfig is null");
+        if (workingDirectory == null) {
+            throw new IllegalArgumentException("workingDirectory is null");
         }
-        this.bootstrapConfig = bootstrapConfig;
+        this.workingDirectory = workingDirectory;
         if (processManagerSlave == null) {
             throw new IllegalArgumentException("processManagerSlave is null");
         }
@@ -91,7 +91,6 @@ public final class ServerMaker {
         String serverName = serverConfig.getServerName();
         List<String> command = getServerLaunchCommand(serverConfig.getJvm());
         Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
-        String workingDirectory = getServerWorkingDirectory();
         processManagerSlave.addProcess(serverName, command, env, workingDirectory);
         
         ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverName, processManagerSlave);
@@ -116,8 +115,5 @@ public final class ServerMaker {
         }
         return env;
     }
-
-    private String getServerWorkingDirectory() {
-         return bootstrapConfig.getHomeDir().getAbsolutePath();
-    }
+    
 }

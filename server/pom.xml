@@ -62,7 +62,6 @@
         <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
-            <version>1.0.0.CR3</version>
         </dependency>
     </dependencies>
 

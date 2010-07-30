@@ -27,7 +27,7 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class ServerManager {
 
-    private final ServerManagerBootstrapConfig bootstrapConfig;    
+    private final ServerManagerEnvironment bootstrapConfig;    
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
@@ -39,7 +39,7 @@ public class ServerManager {
 //    private final Lock domainLock = new ReentrantLock();
     private final Map<String, Server> servers = new HashMap<String, Server>();
     
-    public ServerManager(ServerManagerBootstrapConfig bootstrapConfig) {
+    public ServerManager(ServerManagerEnvironment bootstrapConfig) {
         if (bootstrapConfig == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
@@ -88,7 +88,7 @@ public class ServerManager {
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
-        ServerMaker serverMaker = new ServerMaker(bootstrapConfig, processManagerSlave, messageHandler);
+        ServerMaker serverMaker = new ServerMaker(bootstrapConfig.getHomeDir().getAbsolutePath(), processManagerSlave, messageHandler);
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {

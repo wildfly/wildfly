@@ -24,11 +24,20 @@ package org.jboss.as.server.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
+
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
 
 /**
  * The main-class entry point for the server manager process.
@@ -60,9 +69,23 @@ public final class Main {
      *            the command-line arguments
      */
     public static void main(String[] args) {
+        
+        // Grab copies of our streams.
+        final InputStream in = System.in;
+        final PrintStream out = System.out;
+        final PrintStream err = System.err;
+
+        // Install JBoss Stdio to avoid any nasty crosstalk.
+        StdioContext.install();
+        final StdioContext context = StdioContext.create(
+            new NullInputStream(),
+            new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
+            new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
+        );
+        StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
         Main main = new Main();
-        main.boot(args);
+        main.boot(args, in, out, err);
     }
 
     Properties props = new Properties(System.getProperties());
@@ -70,11 +93,11 @@ public final class Main {
     private Main() {
     }
 
-    private void boot(String[] args) {
+    private void boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
 
         ServerManager sm = null;
         try {
-            ServerManagerBootstrapConfig config = processCommandLine(args);
+            ServerManagerEnvironment config = determinEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return;
@@ -110,7 +133,7 @@ public final class Main {
         }
     }
 
-    private ServerManagerBootstrapConfig processCommandLine(String[] args) {
+    private ServerManagerEnvironment determinEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
 
@@ -181,7 +204,7 @@ public final class Main {
             }
         }
 
-        return new ServerManagerBootstrapConfig(props, pmAddress, pmPort);
+        return new ServerManagerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {
