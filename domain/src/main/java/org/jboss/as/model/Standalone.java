@@ -194,6 +194,24 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         this.jvm = new JvmElement(groupVM, hostVM, serverVM);
     }
 
+    /**
+     * Gets the name of the server.
+     * 
+     * @return the name. Will not be <code>null</code>
+     */
+    public String getServerName() {
+        return serverName;
+    }    
+    
+    /**
+     * Gets the jvm configuration for this server.
+     * 
+     * @return the jvm configuration. Will not be <code>null</code>
+     */
+    public JvmElement getJvm() {
+        return jvm;
+    }
+
     /** {@inheritDoc} */
     public long elementHash() {
         // FIXME implement elementHash

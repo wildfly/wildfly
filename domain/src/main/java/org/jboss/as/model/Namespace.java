@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,12 @@ public enum Namespace {
         return name;
     }
 
+    /**
+     * Set of all namespaces, excluding the special {@link #UNKNOWN} and
+     * {@link #CURRENT} values.
+     */
+    public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(Namespace.CURRENT, Namespace.UNKNOWN));
+    
     private static final Map<String, Namespace> MAP;
 
     static {

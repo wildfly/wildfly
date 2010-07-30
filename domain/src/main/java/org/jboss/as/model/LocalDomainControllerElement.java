@@ -24,10 +24,7 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -44,24 +41,23 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public final class ServerElement extends AbstractModelElement<ServerElement> {
+public final class LocalDomainControllerElement extends AbstractModelElement<LocalDomainControllerElement> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
+    public static final String DEFAULT_NAME = "DomainController";
+    
     private final String name;
     private final String serverGroup;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
-    private boolean start;
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
-    private PropertiesElement systemProperties;
-    
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of the host element
      */
-    public ServerElement(final Location location, final String name, final String serverGroup) {
+    public LocalDomainControllerElement(final Location location, final String name, final String serverGroup) {
         super(location);
         this.name = name;
         this.serverGroup = serverGroup;
@@ -73,12 +69,11 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
      * @param reader the reader from which to build this element
      * @throws XMLStreamException if an error occurs
      */
-    public ServerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public LocalDomainControllerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
         String name = null;
         String group = null;
-        Boolean start = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -95,23 +90,15 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                         group = value;
                         break;
                     }
-                    case START: {
-                        start = Boolean.valueOf(value);
-                        break;
-                    }
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
         }
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
         if (group == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
         }
-        this.name = name;
+        this.name = name == null ? DEFAULT_NAME : name;
         this.serverGroup = group;
-        this.start = start == null ? true : start.booleanValue();
         
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -137,13 +124,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                             bindingGroup = new SocketBindingGroupRefElement(reader);
                             break;
                         }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
                         default: throw unexpectedElement(reader);
                     }
                     break;
@@ -152,25 +132,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             }
         }
         
-    }
-    
-    
-    /** 
-     * Gets whether this server should be started.
-     * 
-     * @return <code>true</code> if the server should be started, <code>false</code> if not
-     */
-    public boolean isStart() {
-        return start;
-    }
-
-    /** 
-     * Sets whether this server should be started.
-     * 
-     * @param start <code>true</code> if the server should be started, <code>false</code> if not
-     */
-    void setStart(boolean start) {
-        this.start = start;
     }
 
     /**
@@ -181,37 +142,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public String getName() {
         return name;
     }
-    
-    /**
-     * Gets the default jvm configuration for servers in this group. This can
-     * be overridden at the {@link ServerElement#getJvm() server level}.
-     *     
-     * @return the jvm configuration, or <code>null</code> if there is none
-     */
-    public JvmElement getJvm() {
-        return jvm;
-    }
-    
-    /**
-     * Gets the default jvm configuration for servers in this group.
-     *     
-     * param jvm the jvm configuration. May be <code>null</code>
-     */
-    void setJvm(JvmElement jvm) {
-        this.jvm = jvm;
-    }
-    
-    public Set<ServerInterfaceElement> getInterfaces() {
-        Set<ServerInterfaceElement> intfs = new LinkedHashSet<ServerInterfaceElement>();
-        for (Map.Entry<String, ServerInterfaceElement> entry : interfaces.entrySet()) {
-            intfs.add(entry.getValue());
-        }
-        return Collections.unmodifiableSet(intfs);
-    }
-    
-    public SocketBindingGroupRefElement getSocketBindingGroup() {
-        return bindingGroup;
-    }
 
     /**
      * Gets the name of the server's server group.
@@ -221,27 +151,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public String getServerGroup() {
         return serverGroup;
     }
-    
-    /**
-     * Gets any system properties defined at the server level. These properties
-     * can extend and override any properties declared at the 
-     * {@link Domain#getSystemProperties() domain level}, the 
-     * {@link ServerGroupElement server group level} or the
-     * {@link ServerElement#getSystemProperties() server level}.
-     * 
-     * @return the system properties, or <code>null</code> if there are none
-     */
-    public PropertiesElement getSystemProperties() {
-        return systemProperties;
-    }
 
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(interfaces.values(), cksum);
-        if (bindingGroup != null) {
-            cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
+        if (interfaces != null) {
+            cksum = calculateElementHashOf(interfaces.values(), cksum);
         }
         if (jvm != null) {
             cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
@@ -250,26 +166,21 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     }
 
     /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ServerElement>> target, final ServerElement other) {
+    protected void appendDifference(final Collection<AbstractModelUpdate<LocalDomainControllerElement>> target, final LocalDomainControllerElement other) {
         // FIXME implement appendDifference
         throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
-    protected Class<ServerElement> getElementClass() {
-        return ServerElement.class;
+    protected Class<LocalDomainControllerElement> getElementClass() {
+        return LocalDomainControllerElement.class;
     }
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-
-        // TODO re-evaluate the element order in the xsd; make sure this is correct
-
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.GROUP.getLocalName(), serverGroup);
-        if (!start) {
-            streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
-        }
+
         
         if (! interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
@@ -279,21 +190,15 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             }
             streamWriter.writeEndElement();
         }
-
-        if (bindingGroup != null) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            bindingGroup.writeContent(streamWriter);
-        }
-
-        if (systemProperties != null) {
-            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
-            systemProperties.writeContent(streamWriter);
-            streamWriter.writeEndElement();
-        }
         
         if (jvm != null) {
             streamWriter.writeStartElement(Element.JVM.getLocalName());
             jvm.writeContent(streamWriter);
+        }
+
+        if (bindingGroup != null) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            bindingGroup.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }

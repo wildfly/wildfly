@@ -52,6 +52,8 @@ public final class Host extends AbstractModel<Host> {
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
+    private LocalDomainControllerElement localDomainController;
+    
     
     private PropertiesElement systemProperties;
     
@@ -90,6 +92,10 @@ public final class Host extends AbstractModel<Host> {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
                             this.systemProperties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case DOMAIN_CONTROLLER: {
+                            parseDomainController(reader);
                             break;
                         }
                         case INTERFACES: {
@@ -153,6 +159,15 @@ public final class Host extends AbstractModel<Host> {
         return Collections.unmodifiableSet(new HashSet<ServerInterfaceElement>(interfaces.values()));
     }
     
+   /**
+    * Gets the server-specific configurations for the servers associated with this host.
+    * 
+    * @return the servers. May be empty but will not be <code>null</code>
+    */
+    public Set<ServerElement> getServers() {
+        return Collections.unmodifiableSet(new HashSet<ServerElement>(servers.values()));
+    }
+    
     /**
      * Gets the server configuration for the server with the given 
      * <code>name</code>.
@@ -178,6 +193,10 @@ public final class Host extends AbstractModel<Host> {
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
+    
+    public LocalDomainControllerElement getLocalDomainControllerElement() {
+        return localDomainController;
+    }
 
     /** {@inheritDoc} */
     public long elementHash() {
@@ -186,6 +205,8 @@ public final class Host extends AbstractModel<Host> {
         cksum = calculateElementHashOf(jvms.values(), cksum);
         cksum = calculateElementHashOf(servers.values(), cksum);
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
+        if (localDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ localDomainController.elementHash();
+        // else FIXME remote domain controller
         return cksum;
     }
 
@@ -219,6 +240,14 @@ public final class Host extends AbstractModel<Host> {
             systemProperties.writeContent(streamWriter);
             streamWriter.writeEndElement();
         }
+
+        streamWriter.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
+        if (localDomainController != null) {
+            streamWriter.writeStartElement(Element.LOCAL.getLocalName());
+            localDomainController.writeContent(streamWriter);
+        }
+        // FIXME remote domain controller
+        streamWriter.writeEndElement();
         
         if (! interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
@@ -249,6 +278,29 @@ public final class Host extends AbstractModel<Host> {
         }
         
         streamWriter.writeEndElement();
+    }
+
+    private void parseDomainController(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case LOCAL: {
+                            if (localDomainController != null) {
+                                throw new XMLStreamException("Child " + element.getLocalName() + 
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() + 
+                                        " already declared", reader.getLocation());
+                            }
+                            this.localDomainController = new LocalDomainControllerElement(reader);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
     }
     
     private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {

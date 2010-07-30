@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * 
+ * FIME reliable transmission support (JBAS-8262)
+ * 
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessManagerSlave {
@@ -214,17 +217,29 @@ public final class ProcessManagerSlave {
             if (shutdown.getAndSet(true)) {
                 return;
             }
-            final Thread thread = new Thread(new Runnable() {
-                public void run() {
-                    System.exit(0);
-                }
-            });
-            thread.setName("Exit thread");
-            thread.start();
+            
+            try{
+                ProcessManagerSlave.this.handler.shutdown();
+            }
+            catch (Throwable t) {
+                t.printStackTrace(System.err);
+            }
+            finally {            
+                final Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        System.exit(0);
+                    }
+                });
+                thread.setName("Exit thread");
+                thread.start();
+            }
         }
     }
 
     public interface Handler {
+        // FIXME make this binary or add a binary variant
         void handleMessage(String sourceProcessName, List<String> message);
+        
+        void shutdown();
     }
 }

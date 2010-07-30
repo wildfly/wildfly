@@ -137,6 +137,8 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager:jboss-logmanager" \
          org.jboss.as:jboss-as-process-manager \
+         ServerManager \
+         "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
@@ -151,6 +153,8 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager:jboss-logmanager" \
          org.jboss.as:jboss-as-process-manager \
+         ServerManager \
+         "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \

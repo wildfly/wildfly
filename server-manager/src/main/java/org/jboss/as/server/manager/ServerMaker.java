@@ -23,45 +23,101 @@
 package org.jboss.as.server.manager;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.PropertiesElement;
+import org.jboss.as.model.Standalone;
+import org.jboss.as.process.ProcessManagerSlave;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerMaker {
-    public Server makeServer() throws IOException {
-        final List<String> args = new ArrayList<String>();
-        if (false) {
-            // Example: run at high priority on *NIX
-            args.add("/usr/bin/nice");
-            args.add("-n");
-            args.add("-10");
+    
+    private final ServerManagerBootstrapConfig bootstrapConfig;
+    private final ProcessManagerSlave processManagerSlave;
+    private final MessageHandler messageHandler;
+    
+    public ServerMaker(ServerManagerBootstrapConfig bootstrapConfig, 
+            ProcessManagerSlave processManagerSlave, MessageHandler messageHandler) {
+        if (bootstrapConfig == null) {
+            throw new IllegalArgumentException("bootstrapConfig is null");
         }
-        if (false) {
-            // Example: run only on processors 1-4 on Linux
-            args.add("/usr/bin/taskset");
-            args.add("0x0000000F");
+        this.bootstrapConfig = bootstrapConfig;
+        if (processManagerSlave == null) {
+            throw new IllegalArgumentException("processManagerSlave is null");
         }
-        args.add("/home/david/local/jdk/home/bin/java");
-        args.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-        args.add("-jar");
-        args.add("jboss-modules.jar");
-        args.add("-mp");
-        args.add("modules");
-        args.add("org.jboss.as:server");
-        ProcessBuilder builder = new ProcessBuilder(args);
-        builder.redirectErrorStream(false);
-        final Process process = builder.start();
+        this.processManagerSlave = processManagerSlave;
+        if (messageHandler == null) {
+            throw new IllegalArgumentException("messageHandler is null");
+        }
+        this.messageHandler = messageHandler;
+    }
+    
+    public Server makeServer(Standalone serverConfig) throws IOException {
+//        final List<String> args = new ArrayList<String>();
+//        if (false) {
+//            // Example: run at high priority on *NIX
+//            args.add("/usr/bin/nice");
+//            args.add("-n");
+//            args.add("-10");
+//        }
+//        if (false) {
+//            // Example: run only on processors 1-4 on Linux
+//            args.add("/usr/bin/taskset");
+//            args.add("0x0000000F");
+//        }
+//        args.add("/home/david/local/jdk/home/bin/java");
+//        args.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+//        args.add("-jar");
+//        args.add("jboss-modules.jar");
+//        args.add("-mp");
+//        args.add("modules");
+//        args.add("org.jboss.as:server");
+//        ProcessBuilder builder = new ProcessBuilder(args);
+//        builder.redirectErrorStream(false);
+//        final Process process = builder.start();
+//
+//        // Read errors from here, pass to logger
+//        final InputStream errorStream = process.getErrorStream();
+//        // Read commands and responses from here
+//        final InputStream inputStream = process.getInputStream();
+//        // Write commands and responses to here
+//        final OutputStream outputStream = process.getOutputStream();
+        
+        String serverName = serverConfig.getServerName();
+        List<String> command = getServerLaunchCommand(serverConfig.getJvm());
+        Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
+        String workingDirectory = getServerWorkingDirectory();
+        processManagerSlave.addProcess(serverName, command, env, workingDirectory);
+        
+        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverName, processManagerSlave);
+        Server server = new Server(commHandler);
+//        messageHandler.registerServer(serverConfig.getServerName(), server);
+        return server;
+    }
 
-        // Read errors from here, pass to logger
-        final InputStream errorStream = process.getErrorStream();
-        // Read commands and responses from here
-        final InputStream inputStream = process.getInputStream();
-        // Write commands and responses to here
-        final OutputStream outputStream = process.getOutputStream();
-        return new Server(errorStream, inputStream, outputStream);
+    private List<String> getServerLaunchCommand(JvmElement jvm) {
+        // FIXME implement getServerLaunchCommand
+        throw new UnsupportedOperationException("implement me");
+    }
+
+    private Map<String, String> getServerLaunchEnvironment(JvmElement jvm) {
+        Map<String, String> env = null;
+        PropertiesElement pe = jvm.getEnvironmentVariables();
+        if (pe != null) {
+            env = pe.getProperties();
+        }
+        else {
+            env = Collections.emptyMap();
+        }
+        return env;
+    }
+
+    private String getServerWorkingDirectory() {
+         return bootstrapConfig.getHomeDir().getAbsolutePath();
     }
 }

@@ -23,7 +23,8 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -124,14 +125,17 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     /** {@inheritDoc} */
     public long elementHash() {
         long total = 0;
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            total = Long.rotateLeft(total, 1) ^ ((long)entry.getKey().hashCode() << 32L | entry.getValue().hashCode() & 0xffffffffL);
+        synchronized (properties) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                total = Long.rotateLeft(total, 1) ^ ((long)entry.getKey().hashCode() << 32L | entry.getValue().hashCode() & 0xffffffffL);
+            }
         }
         return total;
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<PropertiesElement>> target, final PropertiesElement other) {
+        // TODO not thread safe
         calculateDifference(target, properties, other.properties, new DifferenceHandler<String, String, PropertiesElement>() {
             public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String newElement) {
                 target.add(new PropertyAdd(name, newElement));
@@ -155,34 +159,42 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            streamWriter.writeEmptyElement(propertyType.getLocalName());
-            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), entry.getKey());
-            streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue());
+        synchronized (properties) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                streamWriter.writeEmptyElement(propertyType.getLocalName());
+                streamWriter.writeAttribute(Attribute.NAME.getLocalName(), entry.getKey());
+                streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue());
+            }
         }
         streamWriter.writeEndElement();
     }
 
     void addProperty(final String name, final String value) {
-        if (properties.containsKey(name)) {
-            throw new IllegalArgumentException("Property " + name + " already exists");
+        synchronized (properties) {
+            if (properties.containsKey(name)) {
+                throw new IllegalArgumentException("Property " + name + " already exists");
+            }
+            if (value == null && !allowNullValue) {
+                throw new IllegalArgumentException("Value for property " + name + " is null");
+            }
+            properties.put(name, value);
         }
-        if (value == null && !allowNullValue) {
-            throw new IllegalArgumentException("Value for property " + name + " is null");
-        }
-        properties.put(name, value);
     }
 
     String removeProperty(final String name) {
-        final String old = properties.remove(name);
-        if (old == null) {
-            throw new IllegalArgumentException("Property " + name + " does not exist");
+        synchronized (properties) {
+            final String old = properties.remove(name);
+            if (old == null) {
+                throw new IllegalArgumentException("Property " + name + " does not exist");
+            }
+            return old;
         }
-        return old;
     }
 
     public int size() {
-        return properties.size();
+        synchronized (properties) {
+            return properties.size();
+        }
     }
 
     /**
@@ -192,10 +204,25 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      * @return the value, or {@code null} if the property does not exist
      */
     public String getProperty(final String name) {
-        return properties.get(name);
+        synchronized (properties) {
+            return properties.get(name);
+        }
     }
     
+    /**
+     * Gets the names of the properties.
+     * 
+     * @return the names. Will not return <code>null</code>
+     */
     public Set<String> getPropertyNames() {
-        return Collections.unmodifiableSet(properties.keySet());
+        synchronized (properties) {
+            return new HashSet<String>(properties.keySet());
+        }
+    }
+    
+    public Map<String, String> getProperties() {
+        synchronized (properties) {
+            return new HashMap<String, String>(properties);
+        }
     }
 }

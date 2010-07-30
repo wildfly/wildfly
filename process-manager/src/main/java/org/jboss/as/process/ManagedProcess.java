@@ -123,6 +123,9 @@ final class ManagedProcess {
         }
 
         public void run() {
+            
+            // FIXME reliable transmission support (JBAS-8262)
+            
             final InputStream inputStream = this.inputStream;
             final StringBuilder b = new StringBuilder();
             try {
@@ -223,6 +226,7 @@ final class ManagedProcess {
                                 break;
                             }
                             case SEND: {
+                                // FIXME make this binary or add a binary variant
                                 if (status != Status.MORE) {
                                     break;
                                 }
@@ -237,6 +241,7 @@ final class ManagedProcess {
                                 break;
                             }
                             case BROADCAST: {
+                                // FIXME make this binary or add a binary variant
                                 final List<String> msg = new ArrayList<String>(0);
                                 while (status == Status.MORE) {
                                     status = StreamUtils.readWord(inputStream, b);
