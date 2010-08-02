@@ -22,12 +22,14 @@
 
 package org.jboss.as.deployment.descriptor;
 
+import java.io.Serializable;
+
 /**
  * Configuration for a service coming from a JBoss service XML definition.
  *
  * @author John E. Bailey
  */
-public class JBossServiceConfig {
+public class JBossServiceConfig implements Serializable {
     private String name;
     private String code;
     private String[] aliases;

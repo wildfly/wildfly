@@ -23,7 +23,17 @@
 package org.jboss.as.deployment.item;
 
 import org.jboss.as.model.DeploymentUnitKey;
+import org.jboss.marshalling.ClassTable;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassTable;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +46,36 @@ import java.util.Map;
 public class DeploymentItemRegistry {
 
     private static final Map<DeploymentUnitKey, List<DeploymentItem>> cache = new HashMap<DeploymentUnitKey, List<DeploymentItem>>();
+    private static MarshallerFactory marshallerFactory;
+    private static final MarshallingConfiguration marshallingConfiguration;
+
+    private static ClassTable classTable;
+    static {
+        marshallingConfiguration= new MarshallingConfiguration();
+        try {
+            marshallerFactory = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+            marshallingConfiguration.setClassTable(ModularClassTable.getInstance());
+        } catch (ModuleLoadException e) {
+            marshallerFactory = Marshalling.getMarshallerFactory("river");
+        }
+    }
 
     public static void registerDeploymentItems(final DeploymentUnitKey key, List<DeploymentItem> deploymentItems) {
         cache.put(key, deploymentItems);
-        // TODD: Serialize items
+        try {
+            final Marshaller marshaller = marshallerFactory.createMarshaller(marshallingConfiguration);
+            // TODO:  Create file output
+            final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            marshaller.start(Marshalling.createByteOutput(byteArrayOutputStream));
+
+            marshaller.writeInt(deploymentItems.size());
+            for(DeploymentItem deploymentItem : deploymentItems) {
+                marshaller.writeObject(deploymentItem);
+            }
+            marshaller.finish();
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static List<DeploymentItem> getDeploymentItems(final DeploymentUnitKey key) {

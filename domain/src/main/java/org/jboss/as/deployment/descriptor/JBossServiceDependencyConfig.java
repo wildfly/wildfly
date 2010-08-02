@@ -22,12 +22,16 @@
 
 package org.jboss.as.deployment.descriptor;
 
+import java.io.Serializable;
+
 /**
  * Configuration for a service dependency.
  *
  * @author John E. Bailey
  */
-public class JBossServiceDependencyConfig {
+public class JBossServiceDependencyConfig implements Serializable {
+    private static final long serialVersionUID = 7058092116435789802L;
+    
     private String dependencyName;
     private JBossServiceConfig serviceConfig;
     private String proxyType;

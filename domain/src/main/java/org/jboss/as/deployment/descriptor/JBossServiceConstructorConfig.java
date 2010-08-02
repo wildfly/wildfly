@@ -22,12 +22,16 @@
 
 package org.jboss.as.deployment.descriptor;
 
+import java.io.Serializable;
+
 /**
  * Configuration object for a JBoss service constructor.
  * 
  * @author John E. Bailey
  */
-public class JBossServiceConstructorConfig {
+public class JBossServiceConstructorConfig  implements Serializable {
+    private static final long serialVersionUID = -4307592928958905408L;
+
     public static final Argument[] EMPTY_ARGS = {};
     private Argument[] arguments = EMPTY_ARGS;
 
@@ -39,7 +43,9 @@ public class JBossServiceConstructorConfig {
         this.arguments = arguments;
     }
 
-    public static class Argument {
+    public static class Argument implements Serializable {
+        private static final long serialVersionUID = 7644229980407045584L;
+
         private final String value;
         private final String type;
 
