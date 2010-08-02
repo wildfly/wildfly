@@ -19,14 +19,14 @@ public final class ProcessManagerSlaveFactory {
         return INSTANCE;
     }
     
-    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment bootstrapConfig, Host host, MessageHandler handler) {
+    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment environment, Host host, MessageHandler handler) {
         
         // TODO JBAS-8259 -- possible socket-based communication
         // use bootstrapConfig to detect if PM wants that; use Host to
         // determine what socket to use
         
         // For now, keep it simple
-        return new ProcessManagerSlave(bootstrapConfig.getStdin(), bootstrapConfig.getStdout(), handler);
+        return new ProcessManagerSlave(environment.getStdin(), environment.getStdout(), handler);
     }
     
     private ProcessManagerSlaveFactory() {}
