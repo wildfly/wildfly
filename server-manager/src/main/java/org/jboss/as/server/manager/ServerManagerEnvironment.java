@@ -5,7 +5,6 @@ package org.jboss.as.server.manager;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Properties;
@@ -197,30 +196,54 @@ public class ServerManagerEnvironment {
         
     }
     
-    
-
+    /**
+     * Gets the original System.in for this process. This should only
+     * be used for communication with the process manager that spawned this process.
+     * 
+     * @return stdin
+     */
     public InputStream getStdin() {
         return stdin;
     }
 
-
-
+    /**
+     * Gets the original System.out for this process. This should only
+     * be used for communication with the process manager that spawned this process.
+     * 
+     * @return stdout
+     */
     public PrintStream getStdout() {
         return stdout;
     }
 
-
-
+    /**
+     * Gets the original System.err for this process. This should only
+     * be used for communication with the process manager that spawned this process.
+     * 
+     * @return stderr
+     */
     public PrintStream getStderr() {
         return stderr;
     }
 
-
-
+    /**
+     * Gets the address, if any, the process manager passed to this process
+     * to use in communicating with it.
+     * 
+     * @return the process manager's address, or <code>null</code> if
+     *         none was provided
+     */
     public InetAddress getProcessManagerAddress() {
         return processManagerAddress;
     }
 
+    /**
+     * Gets the port number, if any, the process manager passed to this process
+     * to use in communicating with it.
+     * 
+     * @return the process manager's port, or <code>null</code> if
+     *         none was provided
+     */
     public Integer getProcessManagerPort() {
         return processManagerPort;
     }
@@ -261,8 +284,6 @@ public class ServerManagerEnvironment {
         // FIXME implement findLocalhost
         throw new UnsupportedOperationException("implement me");
     }
-    
-
 
     /**
      * Get a File from configuration.
