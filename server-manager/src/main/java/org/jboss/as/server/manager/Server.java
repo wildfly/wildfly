@@ -22,6 +22,14 @@
 
 package org.jboss.as.server.manager;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Arrays;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.Checksum;
+
 import org.jboss.as.model.Standalone;
 
 /**
@@ -87,13 +95,39 @@ public final class Server {
         this.communicationHandler = communicationHandler;
     }
 
-    public void start(Standalone serverConf) {
-        // FIXME implement start
-        throw new UnsupportedOperationException("implement me");        
+    public void start(Standalone serverConf) throws IOException {
+        
+        ServerCommand command = new ServerCommand("START", new Object[] {serverConf}, new Class<?>[]{Standalone.class});
+        sendCommand(command);
     }
 
-    public void stop() {
-        // TODO anything to do here?   
+    public void stop() throws IOException {
+        
+        sendCommand(new ServerCommand("STOP")); 
+    }
+    
+    private void sendCommand(ServerCommand command) throws IOException {
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        Checksum chksum = new Adler32();
+        CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(cos);
+            oos.writeObject(command);
+            oos.close();
+            oos = null;
+            communicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
+        }
+        finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                }
+                catch (IOException ignored) {}
+            }
+        }
+        
     }
 
 //    private static String readCommand(final InputStream in) throws IOException {
