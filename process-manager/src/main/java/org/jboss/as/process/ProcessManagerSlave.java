@@ -148,6 +148,21 @@ public final class ProcessManagerSlave {
         output.flush();
     }
 
+    public void sendMessage(final String processName, final byte[] message, final long checksum) throws IOException {
+        if (processName == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.SEND_BYTES).append('\0');
+        b.append(processName).append(0);
+        StreamUtils.writeString(output, b);
+        output.write(message.length);
+        output.write(message);
+        StreamUtils.writeLong(output, checksum);
+        StreamUtils.writeChar(output, '\n');
+        output.flush();
+    }
+
     public void broadcastMessage(final List<String> message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST);
@@ -156,6 +171,17 @@ public final class ProcessManagerSlave {
         }
         b.append('\n');
         StreamUtils.writeString(output, b);
+        output.flush();
+    }
+
+    public void broadcastMessage(final byte[] message, final long checksum) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.BROADCAST_BYTES).append('\0');
+        StreamUtils.writeString(output, b);
+        output.write(message.length);
+        output.write(message);
+        StreamUtils.writeLong(output, checksum);
+        StreamUtils.writeChar(output, '\n');
         output.flush();
     }
 
@@ -237,7 +263,9 @@ public final class ProcessManagerSlave {
     }
 
     public interface Handler {
-        // FIXME make this binary or add a binary variant
+        
+        void handleMessage(String sourceProcessName, byte[] message);
+        
         void handleMessage(String sourceProcessName, List<String> message);
         
         void shutdown();

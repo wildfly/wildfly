@@ -92,7 +92,10 @@ public final class ServerMaker {
         List<String> command = getServerLaunchCommand(serverConfig.getJvm());
         Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
         processManagerSlave.addProcess(serverName, command, env, workingDirectory);
+        processManagerSlave.startProcess(serverName);
         
+        // TODO JBAS-8260 If serverConfig specified that server will work with
+        // ServerManager over sockets, create a socket-based ServerCommunicationHandler
         ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverName, processManagerSlave);
         Server server = new Server(commHandler);
 //        messageHandler.registerServer(serverConfig.getServerName(), server);

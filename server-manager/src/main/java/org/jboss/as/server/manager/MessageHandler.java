@@ -24,6 +24,12 @@ class MessageHandler implements Handler {
         }
         this.serverManager = serverManager;
     }
+
+    @Override
+    public void handleMessage(String sourceProcessName, byte[] message) {
+        // FIXME implement handleMessage
+        throw new UnsupportedOperationException("implement me");
+    }
     
     /* (non-Javadoc)
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)

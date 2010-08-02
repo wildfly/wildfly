@@ -31,8 +31,11 @@ enum Command {
     STOP,
     REMOVE,
     SEND,
+    SEND_BYTES,
     BROADCAST,
+    BROADCAST_BYTES,
     SHUTDOWN,
     MSG,
+    MSG_BYTES,
     ;
 }

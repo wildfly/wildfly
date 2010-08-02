@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.process.StreamUtils.CheckedBytes;
 import org.jboss.logging.Logger;
 import org.jboss.logging.NDC;
 
@@ -112,6 +114,14 @@ final class ManagedProcess {
         }
         b.append('\n');
         StreamUtils.writeString(commandStream, b);
+    }
+    
+    void send(final byte[] msg, long chksum) throws IOException {
+        StreamUtils.writeString(commandStream, "MSG_BYTES0");
+        commandStream.write(msg.length);
+        commandStream.write(msg);
+        StreamUtils.writeLong(commandStream, chksum);
+        StreamUtils.writeChar(commandStream, '\n');
     }
 
     private final class OutputStreamHandler implements Runnable {
@@ -226,7 +236,6 @@ final class ManagedProcess {
                                 break;
                             }
                             case SEND: {
-                                // FIXME make this binary or add a binary variant
                                 if (status != Status.MORE) {
                                     break;
                                 }
@@ -240,14 +249,43 @@ final class ManagedProcess {
                                 master.sendMessage(name, msg);
                                 break;
                             }
+                            case SEND_BYTES: {
+                                if (status != Status.MORE) {
+                                    break;
+                                }
+                                status = StreamUtils.readWord(inputStream, b);
+                                if (status == Status.MORE) {
+                                    final String name = b.toString();
+                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
+                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                        // FIXME deal with invalid checksum
+                                    }
+                                    master.sendMessage(name, cb.getBytes(), cb.getExpectedChecksum());
+                                }
+                                break;
+                            }
                             case BROADCAST: {
-                                // FIXME make this binary or add a binary variant
                                 final List<String> msg = new ArrayList<String>(0);
                                 while (status == Status.MORE) {
                                     status = StreamUtils.readWord(inputStream, b);
                                     msg.add(b.toString());
                                 }
                                 master.broadcastMessage(msg);
+                                break;
+                            }
+                            case BROADCAST_BYTES: {
+                                if (status != Status.MORE) {
+                                    break;
+                                }
+                                status = StreamUtils.readWord(inputStream, b);
+                                if (status == Status.MORE) {
+                                    final String name = b.toString();
+                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
+                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                        // FIXME deal with invalid checksum
+                                    }
+                                    master.broadcastMessage(cb.getBytes(), cb.getExpectedChecksum());
+                                }
                                 break;
                             }
                         }

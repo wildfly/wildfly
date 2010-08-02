@@ -134,6 +134,10 @@ public final class ProcessManagerMaster {
             }
         }
     }
+    
+    void sendMessage(final String name, final byte[] msg, long chksum) {
+        
+    }
 
     void broadcastMessage(final List<String> msg) {
         final Map<String, ManagedProcess> processes = this.processes;
@@ -152,5 +156,25 @@ public final class ProcessManagerMaster {
                 }
             }
         }
+    }
+    
+    void broadcastMessage(final byte[] msg, long chksum) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            for (ManagedProcess process : processes.values()) {
+                synchronized (process) {
+                    if (! process.isStart()) {
+                        // ignore
+                        return;
+                    }
+                    try {
+                        process.send(msg, chksum);
+                    } catch (IOException e) {
+                        // todo log it
+                    }
+                }
+            }
+        }
+        
     }
 }

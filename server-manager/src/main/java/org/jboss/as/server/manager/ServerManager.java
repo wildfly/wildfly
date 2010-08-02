@@ -27,7 +27,7 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class ServerManager {
 
-    private final ServerManagerEnvironment bootstrapConfig;    
+    private final ServerManagerEnvironment environment;    
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
@@ -39,12 +39,12 @@ public class ServerManager {
 //    private final Lock domainLock = new ReentrantLock();
     private final Map<String, Server> servers = new HashMap<String, Server>();
     
-    public ServerManager(ServerManagerEnvironment bootstrapConfig) {
-        if (bootstrapConfig == null) {
+    public ServerManager(ServerManagerEnvironment environment) {
+        if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
-        this.bootstrapConfig = bootstrapConfig;
-        this.hostXML = new File(bootstrapConfig.getDomainConfigurationDir(), "host.xml");
+        this.environment = environment;
+        this.hostXML = new File(environment.getDomainConfigurationDir(), "host.xml");
         this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
         this.messageHandler = new MessageHandler(this);
     }
@@ -72,15 +72,6 @@ public class ServerManager {
         
         // DC does not know about this host. Inform it of our existence
         registerWithDomainController();
-        
-        // FIXME temporary expedient to keep this process alive
-    }
-
-    private void launchProcessManagerSlave() {
-        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(bootstrapConfig, hostConfig, messageHandler);
-        Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
-        t.setDaemon(true);
-        t.start();
     }
     
     public void startServers() {
@@ -88,7 +79,7 @@ public class ServerManager {
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
-        ServerMaker serverMaker = new ServerMaker(bootstrapConfig.getHomeDir().getAbsolutePath(), processManagerSlave, messageHandler);
+        ServerMaker serverMaker = new ServerMaker(environment.getHomeDir().getAbsolutePath(), processManagerSlave, messageHandler);
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
@@ -123,6 +114,13 @@ public class ServerManager {
         }
         
         // FIXME stop any local DomainController, stop other internal SM services
+    }
+
+    private void launchProcessManagerSlave() {
+        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, hostConfig, messageHandler);
+        Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
+        t.setDaemon(true);
+        t.start();
     }
     
     private void registerWithDomainController() {
@@ -164,7 +162,7 @@ public class ServerManager {
     
     private Domain parseDomain() {
         
-        File domainXML = new File(bootstrapConfig.getDomainConfigurationDir(), "domain.xml");
+        File domainXML = new File(environment.getDomainConfigurationDir(), "domain.xml");
         if (!domainXML.exists()) {
             throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
         }

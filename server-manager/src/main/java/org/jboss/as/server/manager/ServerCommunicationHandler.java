@@ -15,4 +15,6 @@ import java.util.List;
 public interface ServerCommunicationHandler {
 
     void sendMessage(List<String> message) throws IOException;
+    
+    void sendMessage(byte[] msg, long checksum) throws IOException;
 }
