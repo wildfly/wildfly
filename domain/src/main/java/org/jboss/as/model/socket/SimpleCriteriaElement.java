@@ -22,12 +22,12 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
 
     private static final long serialVersionUID = -649277969243521207L;
 
-    
     /**
      * Creates a new LoopbackCriteriaElement by parsing an xml stream
      * 
      * @param reader stream reader used to read the xml
      * @param type the specific type of this element
+     * @param criteria criteria to use to validate network interfaces and addresses
      * 
      * @throws XMLStreamException if an error occurs
      */

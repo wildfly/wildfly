@@ -163,6 +163,19 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
         }
         return new OverallInterfaceCriteria();
     }
+    
+    /**
+     * Gets whether this element is configured with necessary information needed
+     * to determine an IP address for the interface; either via a directly
+     * specified {@link #getAddress() address} or via at least one address
+     * selection criteria.
+     * 
+     * @return <code>true</code> if the necessary information is available, <code>false</code>
+     *         otherwise
+     */
+    public boolean isFullySpecified() {
+        return address != null || interfaceCriteria.size() > 0;
+    }
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<InterfaceElement>> target, InterfaceElement other) {

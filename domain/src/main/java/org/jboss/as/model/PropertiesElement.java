@@ -23,14 +23,17 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * An element representing a list of properties (name/value pairs).
@@ -92,6 +95,28 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                 properties.put(name, value);
             } else {
                 throw unexpectedElement(reader);
+            }
+        }
+    }
+    
+    public PropertiesElement(final Element propertyType, boolean allowNullValue, PropertiesElement ... toCombine) {
+        // FIXME -- hack Location
+        super(new Location("N/A", 0, 0, null));
+        this.allowNullValue = allowNullValue;
+        this.propertyType = propertyType;
+        if (toCombine != null) {
+            for (PropertiesElement pe : toCombine) {
+                if (pe == null)
+                    continue;
+                for (String name : pe.getPropertyNames()) {
+                    String val = pe.getProperty(name);
+                    if (!allowNullValue && val == null) {
+                        throw new IllegalStateException("Property " + name + " has a null value");
+                    }
+                    else {
+                        properties.put(name, val);
+                    }
+                }
             }
         }
     }
@@ -168,5 +193,9 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      */
     public String getProperty(final String name) {
         return properties.get(name);
+    }
+    
+    public Set<String> getPropertyNames() {
+        return Collections.unmodifiableSet(properties.keySet());
     }
 }
