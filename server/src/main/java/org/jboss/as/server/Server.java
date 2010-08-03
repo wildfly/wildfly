@@ -27,21 +27,24 @@ package org.jboss.as.server;
 
 import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.TimingServiceListener;
 
 
 /**
  * An actual JBoss Application Server instance.
  * 
  * @author Brian Stansberry
+ * @author John E. Bailey
  */
 public class Server {
-
+    private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final ServerEnvironment environment;
     private ProcessManagerSlave processManagerSlave;
-    private final ServerMessageHandler messageHandler = new ServerMessageHandler(this);
+    private final MessageHandler messageHandler = new MessageHandler(this);
     private Standalone config;
     private ServiceContainer serviceContainer;
 
@@ -58,18 +61,26 @@ public class Server {
 
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+            @Override
+            public void run() {
+                logger.infof("JBossAS started...."); // TODO: Get access to service status ex.  [%d services in %d seconds]", listener.getTotalCount(), listener.getElapsedTime());
+            }
+        });
+        batchBuilder.addListener(listener);
 
         config.activate(serviceContainer, batchBuilder);
 
         try {
             batchBuilder.install();
+            listener.finishBatch();
         } catch (ServiceRegistryException e) {
             throw new ServerStartException("Failed to install service batch", e);
         }
     }
 
     private void launchProcessManagerSlave() {
-        this.processManagerSlave = new ProcessManagerSlave(environment.getStdin(), environment.getStdout(), messageHandler);
+        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, messageHandler);
         Thread t = new Thread(this.processManagerSlave.getController(), "Server Process");
         t.setDaemon(true);
         t.start();
