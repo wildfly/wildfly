@@ -140,10 +140,11 @@ public class ServerManagerEnvironment {
             this.processManagerAddress = null;
         }
         
-        // Must have HOME_DIR
-        this.homeDir = getFileFromProperty(HOME_DIR);
-        if (homeDir == null)
-           throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
+        File home = getFileFromProperty(HOME_DIR);
+        if (home == null) {
+           home = new File(System.getProperty("user.dir"));
+        }
+        this.homeDir = home;
         System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
         
         File tmp = getFileFromProperty(MODULES_DIR);

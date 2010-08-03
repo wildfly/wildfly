@@ -79,7 +79,7 @@ public class ServerManager {
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
-        ServerMaker serverMaker = new ServerMaker(environment.getHomeDir().getAbsolutePath(), processManagerSlave, messageHandler);
+        ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler);
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {

@@ -211,6 +211,15 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     public JvmElement getJvm() {
         return jvm;
     }
+    
+    /**
+     * Gets any system properties defined for this server.
+     * 
+     * @return the system properties, or <code>null</code> if there are none
+     */
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
+    }
 
     /** {@inheritDoc} */
     public long elementHash() {

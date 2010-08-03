@@ -97,7 +97,7 @@ public final class Main {
 
         ServerManager sm = null;
         try {
-            ServerManagerEnvironment config = determinEnvironment(args, stdin, stdout, stderr);
+            ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return;
@@ -133,7 +133,7 @@ public final class Main {
         }
     }
 
-    private ServerManagerEnvironment determinEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private ServerManagerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
 
