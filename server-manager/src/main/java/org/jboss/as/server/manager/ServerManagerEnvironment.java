@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.util.Properties;
 
 /**
- * A ServerManagerConfig.
+ * Encapsulates the runtime environment for a {@link ServerManager}.
  * 
  * @author Brian Stansberry
  */
@@ -102,7 +102,8 @@ public class ServerManagerEnvironment {
     private final PrintStream stdout;
     private final PrintStream stderr;
     
-    public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, InetAddress processManagerAddress, Integer processManagerPort) {
+    public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
+            InetAddress processManagerAddress, Integer processManagerPort) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
