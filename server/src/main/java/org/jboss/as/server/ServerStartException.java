@@ -20,38 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * 
- */
 package org.jboss.as.server;
 
-import org.jboss.as.process.ProcessManagerSlave;
-
 /**
- * A ProcessManagerSlaveFactory.
- * 
- * @author Brian Stansberry
+ * @author John E. Bailey
  */
-public final class ProcessManagerSlaveFactory {
+public class ServerStartException extends Exception {
+    public ServerStartException(String message) {
+        super(message);
+    }
 
-    private static final ProcessManagerSlaveFactory INSTANCE = new ProcessManagerSlaveFactory();
-    
-    public static ProcessManagerSlaveFactory getInstance() {
-        return INSTANCE;
+    public ServerStartException(String message, Throwable cause) {
+        super(message, cause);
     }
-    
-    public ProcessManagerSlave getProcessManagerSlave(ServerEnvironment environment, MessageHandler handler) {
-        
-        // TODO JBAS-8259 -- possible socket-based communication
-        // use environment to detect if PM wants that; use Standalone to
-        // determine what socket to use
-        
-        // Problem: during primordial bootstrap we have no Standalone
-        // Have ServerManager pass our address/port via command line?
-        
-        // For now, keep it simple
-        return new ProcessManagerSlave(environment.getStdin(), environment.getStdout(), handler);
+
+    public ServerStartException(Throwable cause) {
+        super(cause);
     }
-    
-    private ProcessManagerSlaveFactory() {}
 }

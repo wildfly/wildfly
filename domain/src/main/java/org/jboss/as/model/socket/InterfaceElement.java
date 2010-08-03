@@ -3,6 +3,18 @@
  */
 package org.jboss.as.model.socket;
 
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.Attribute;
+import org.jboss.as.model.Element;
+import org.jboss.as.model.Namespace;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -10,16 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.Attribute;
-import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A named interface definition, with an optional specification of what address
@@ -29,7 +31,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
+public class InterfaceElement extends AbstractModelElement<InterfaceElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -5256526713311518506L;
 
@@ -213,7 +215,12 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
 
         streamWriter.writeEndElement();
     }
-    
+
+    @Override
+    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+        throw new UnsupportedOperationException("Impl me");
+    }
+
     private class OverallInterfaceCriteria implements InterfaceCriteria {
 
         @Override

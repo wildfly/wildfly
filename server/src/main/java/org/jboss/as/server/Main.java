@@ -22,6 +22,13 @@
 
 package org.jboss.as.server;
 
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,13 +38,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
-
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.stdio.LoggingOutputStream;
-import org.jboss.stdio.NullInputStream;
-import org.jboss.stdio.SimpleStdioContextSelector;
-import org.jboss.stdio.StdioContext;
 
 /**
  * The main-class entry point for server instances.
@@ -53,7 +53,6 @@ public final class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        
         // Grab copies of our streams.
         final InputStream in = System.in;
         final PrintStream out = System.out;
@@ -78,7 +77,6 @@ public final class Main {
     }
 
     private void boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-
         Server server = null;
         try {
             ServerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
@@ -93,16 +91,14 @@ public final class Main {
     }
 
     private void abort(Throwable t) {
+        if (t != null) {
+            t.printStackTrace(System.err);
+        }
         try {
             // Inform the process manager that we are shutting down on purpose
             // so it doesn't try to respawn us
             // FIXME implement shutdown()
             throw new UnsupportedOperationException("implement me");
-            
-//            if (t != null) {
-//                t.printStackTrace(System.err);
-//            }
-            
         } finally {
             System.exit(1);
         }
