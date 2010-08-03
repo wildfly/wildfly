@@ -22,21 +22,23 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> {
+public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> implements ServiceActivator {
     private static final long serialVersionUID = -7282640684801436543L;
 
     private final DeploymentUnitKey key;
@@ -174,5 +176,10 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
         streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
         if (!this.start) streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
+    }
+
+    @Override
+    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+        throw new UnsupportedOperationException("Impl me");
     }
 }
