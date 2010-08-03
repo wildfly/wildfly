@@ -25,9 +25,14 @@
  */
 package org.jboss.as.server;
 
-import java.util.List;
-
+import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.server.manager.ServerCommand;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.List;
 
 /**
  * A MessageHandler.
@@ -47,10 +52,41 @@ class MessageHandler implements Handler {
 
     @Override
     public void handleMessage(String sourceProcessName, byte[] message) {
-        // FIXME implement handleMessage
-        throw new UnsupportedOperationException("implement me");
+        final ServerCommand serverCommand;
+        try {
+            serverCommand = readServerCommand(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read server command", e);
+        }
+
+        if(serverCommand == null)
+            throw new RuntimeException("Server command is null");
+
+        if("START".equals(serverCommand.getCommand())) {
+            final Standalone standalone = (Standalone)serverCommand.getArgs()[0];
+            try {
+                server.start(standalone);
+            } catch (ServerStartException e) {
+                throw new RuntimeException("Failed to start server", e);
+            }
+        } else if("STOP".equals(serverCommand.getCommand())) {
+            server.stop();
+        }
     }
-    
+
+    private ServerCommand readServerCommand(byte[] message) throws IOException, ClassNotFoundException {
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
+        ObjectInputStream objectInputStream = null;
+        try {
+            objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            final ServerCommand serverCommand = (ServerCommand)objectInputStream.readObject();
+            return serverCommand;
+        } finally {
+            if(objectInputStream != null)
+                objectInputStream.close();
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
      */
