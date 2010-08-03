@@ -83,17 +83,8 @@ public final class Main {
     }
 
     private static void boot(final String[] args) {
-        if(args.length < 3) throw new IllegalArgumentException("Server bootstrap requires config root, server group  and server name");
-
-        final File configRoot = new File(args[0]);
-        if(!configRoot.exists()) throw new IllegalArgumentException("Invalid config root.  Directory does not exist");
-
-        final String serverGroup = args[1];
-        final String serverName = args[2];
-
-//        final Server server = initializeServerConfig(configRoot, serverGroup, serverName);
-
-        // Do something real with the Server config..
+        
+        // TODO create a ServerEnvironment, construct a Server
     }
 
 //    private static Server initializeServerConfig(final File configRoot, final String serverGroup, final String serverName) {
