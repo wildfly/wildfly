@@ -27,19 +27,21 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.
@@ -344,6 +346,35 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         if (count > 1) {
             throw unexpectedAttribute(reader, 1);
         }
+    }
+    
+    protected static Map<String, NamespaceAttribute> readNamespaces(final XMLExtendedStreamReader reader) {
+        int count = reader.getNamespaceCount();
+        Map<String, NamespaceAttribute> result = new HashMap<String, NamespaceAttribute>();
+        for (int i = 0; i < count; i++) {
+            String prefix = reader.getNamespacePrefix(i);
+            String uri = reader.getNamespaceURI(i);
+            result.put(uri, new NamespaceAttribute(prefix, uri));
+        }
+        return result;
+    }
+    
+    protected static String readSchemaLocation(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        if (count == 0) {
+            return null;
+        }
+        String loc = null;
+        for (int i = 0; i < count; i++) {
+            if ("http://www.w3.org/2001/XMLSchema-instance".equals(reader.getAttributeNamespace(i)) 
+                    && "schemaLocation".equals(reader.getAttributeLocalName(i))) {
+                loc = reader.getAttributeValue(i);
+            }
+            else{
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        return loc;
     }
 
     /**

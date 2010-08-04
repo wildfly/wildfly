@@ -48,6 +48,8 @@ public final class Host extends AbstractModel<Host> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
+    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
+    private final String schemaLocation;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
@@ -65,6 +67,7 @@ public final class Host extends AbstractModel<Host> {
      */
     public Host(final Location location, final QName elementName) {
         super(location, elementName);
+        this.schemaLocation = null;
     }
 
     /**
@@ -75,8 +78,10 @@ public final class Host extends AbstractModel<Host> {
      */
     public Host(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // Handle namespaces
+        namespaces.putAll(readNamespaces(reader));
         // Handle attributes
-        requireNoAttributes(reader);
+        schemaLocation = readSchemaLocation(reader);
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -206,6 +211,8 @@ public final class Host extends AbstractModel<Host> {
         cksum = calculateElementHashOf(servers.values(), cksum);
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
         if (localDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ localDomainController.elementHash();
+        cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         // else FIXME remote domain controller
         return cksum;
     }
@@ -223,6 +230,19 @@ public final class Host extends AbstractModel<Host> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        
+        for (NamespaceAttribute namespace : namespaces.values()) {
+            if (namespace.isDefaultNamespaceDeclaration()) {
+                // for now I assume this is handled externally
+                continue;
+            }
+            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+        }
+        
+        if (schemaLocation != null) {
+            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
+            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
+        }
         
         // TODO re-evaluate the element order in the xsd; make sure this is correct
         
@@ -297,6 +317,7 @@ public final class Host extends AbstractModel<Host> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -335,6 +356,7 @@ public final class Host extends AbstractModel<Host> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -357,6 +379,7 @@ public final class Host extends AbstractModel<Host> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -379,6 +402,7 @@ public final class Host extends AbstractModel<Host> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -402,6 +426,7 @@ public final class Host extends AbstractModel<Host> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
