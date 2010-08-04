@@ -118,8 +118,18 @@ public final class Main {
         // We are now past the point where a failure should result in a
         // shutdown() call; i.e. the ServerManager should be running and
         // capable of handling external input
-        
-        sm.startServers();
+        try {
+            sm.startServers();
+            stderr.println("started servers");
+        }
+        catch (RuntimeException e) {
+            e.printStackTrace(stderr);
+            throw e;
+        }
+        catch (Error e) {
+            e.printStackTrace(stderr);
+            throw e;
+        }
     }
 
     private void abort(Throwable t) {

@@ -91,7 +91,7 @@ public class ServerManager {
                     server.start(serverConf);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
-                    e.printStackTrace();
+                    e.printStackTrace(environment.getStderr());
                 }
             }
         }

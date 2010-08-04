@@ -59,6 +59,14 @@ final class ManagedProcess {
         this.command = command;
         this.env = env;
         this.workingDirectory = workingDirectory;
+        StringBuilder sb = new StringBuilder(processName);
+        sb.append(' ');
+        for (String cmd : command) {
+            sb.append(cmd);
+            sb.append(' ');
+        }
+        sb.append(workingDirectory);
+        System.err.println(sb.toString());
     }
 
     void start() throws IOException {
@@ -142,11 +150,13 @@ final class ManagedProcess {
             try {
                 for (;;) {
                     Status status = StreamUtils.readWord(inputStream, b);
+                    System.err.println("Status is " + status);
                     if (status == Status.END_OF_STREAM) {
                         // no more input
                         return;
                     }
                     try {
+                        System.err.println("Received command " + b.toString());
                         final Command command = Command.valueOf(b.toString());
                         OUT: switch (command) {
                             case ADD: {
@@ -172,6 +182,7 @@ final class ManagedProcess {
                                 try {
                                     size = Integer.parseInt(sizeString, 10);
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final List<String> execCmd = new ArrayList<String>();
@@ -187,10 +198,12 @@ final class ManagedProcess {
                                     break;
                                 }
                                 final String mapSizeString = b.toString();
-                                final int mapSize;
+                                final int mapSize, lastEntry;
                                 try {
                                     mapSize = Integer.parseInt(mapSizeString, 10);
+                                    lastEntry = mapSize - 1;
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final Map<String, String> env = new HashMap<String, String>();
@@ -201,10 +214,12 @@ final class ManagedProcess {
                                     }
                                     final String key = b.toString();
                                     status = StreamUtils.readWord(inputStream, b);
-                                    if (status != Status.MORE) {
-                                        break OUT;
+                                    if (status == Status.MORE || (i == lastEntry && status == Status.END_OF_LINE)) {
+                                        env.put(key, b.toString());
                                     }
-                                    env.put(key, b.toString());
+                                    else {
+                                        break OUT;
+                                    }                                    
                                 }
                                 master.addProcess(name, execCmd, env, workingDirectory);
                                 break;
@@ -292,11 +307,13 @@ final class ManagedProcess {
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
+                        e.printStackTrace(System.err);
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(inputStream);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // exception caught, shut down channel and exit
+                e.printStackTrace(System.err);
             } finally {
                 safeClose(inputStream);
                 for (;;) try {

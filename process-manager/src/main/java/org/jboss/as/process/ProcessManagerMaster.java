@@ -55,6 +55,7 @@ public final class ProcessManagerMaster {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             if (processes.containsKey(processName)) {
+                System.err.println("already have process " + processName);
                 // ignore
                 return;
             }
