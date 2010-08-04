@@ -215,6 +215,7 @@ public final class ServerMaker {
         sb.append(ServerManagerEnvironment.HOME_DIR);
         sb.append('=');
         sb.append(getPropertyValue(ServerManagerEnvironment.HOME_DIR, jvmProps, sysProps, environment.getHomeDir().getAbsolutePath()));
+        command.add(sb.toString());
         
         String key = "jboss.server.base.dir";  // TODO fragile! common constant between server-manager and server modules
         sb = new StringBuilder("-D");
@@ -222,17 +223,19 @@ public final class ServerMaker {
         sb.append('=');
         File serverBaseDir = new File(environment.getDomainServersDir(), serverConfig.getServerName());
         sb.append(getPropertyValue(key, jvmProps, sysProps, serverBaseDir.getAbsolutePath()));
+        command.add(sb.toString());
         
         // TODO fragile! common constants between server-manager and server modules
         String[] keys = {"jboss.server.config.dir", "jboss.server.config.dir", 
                 "jboss.server.data.dir", "jboss.server.log.dir", "jboss.server.temp.dir"};
-        for (String propkey : keys)
-        if (sysProps.containsKey(propkey)) {
-            
-            sb = new StringBuilder("-D");
-            sb.append(propkey);
-            sb.append('=');
-            sb.append(sysProps.get(propkey));
+        for (String propkey : keys) {
+            if (sysProps.containsKey(propkey)) {                
+                sb = new StringBuilder("-D");
+                sb.append(propkey);
+                sb.append('=');
+                sb.append(sysProps.get(propkey));
+                command.add(sb.toString());
+            }
         }
         
     }
