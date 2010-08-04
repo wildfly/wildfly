@@ -23,10 +23,13 @@
 package org.jboss.as.process;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.process.ManagedProcess.StopProcessListener;
 
 /**
  * Process manager main entry point.  The thin process manager process is implemented here.
@@ -37,7 +40,7 @@ public final class ProcessManagerMaster {
 
     private static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
     
-    private ProcessManagerMaster() {
+    ProcessManagerMaster() {
     }
 
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
@@ -53,6 +56,11 @@ public final class ProcessManagerMaster {
     }
 
     void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {
+        addProcess(processName, command, env, workingDirectory, RespawnPolicy.DefaultRespawnPolicy.INSTANCE);
+    }
+
+    void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, RespawnPolicy respawnPolicy) {
+        
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             if (processes.containsKey(processName)) {
@@ -60,7 +68,7 @@ public final class ProcessManagerMaster {
                 // ignore
                 return;
             }
-            final ManagedProcess process = new ManagedProcess(this, processName, command, env, workingDirectory);
+            final ManagedProcess process = new ManagedProcess(this, processName, command, env, workingDirectory, respawnPolicy);
             processes.put(processName, process);
         }
     }
@@ -107,7 +115,7 @@ public final class ProcessManagerMaster {
             }
             synchronized (process) {
                 if (process.isStart()) {
-                    // ignore
+                    System.err.println("Ignoring remove request for running process " + processName);
                     return;
                 }
                 processes.remove(processName);
@@ -147,7 +155,6 @@ public final class ProcessManagerMaster {
             }
             synchronized (process) {
                 if (! process.isStart()) {
-                    System.err.println(recipient + " is not started; cannot send command");
                     // ignore
                     return;
                 }
@@ -167,8 +174,8 @@ public final class ProcessManagerMaster {
             for (ManagedProcess process : processes.values()) {
                 synchronized (process) {
                     if (! process.isStart()) {
-                        // ignore
-                        return;
+                        // ignore and go on with the other processes
+                        continue;
                     }
                     try {
                         process.send(sender, msg);
@@ -186,8 +193,8 @@ public final class ProcessManagerMaster {
             for (ManagedProcess process : processes.values()) {
                 synchronized (process) {
                     if (! process.isStart()) {
-                        // ignore
-                        return;
+                        // ignore and go on with the other processes
+                        continue;
                     }
                     try {
                         process.send(sender, msg, chksum);
@@ -197,6 +204,33 @@ public final class ProcessManagerMaster {
                 }
             }
         }
+    }
+    
+    void registerStopProcessListener(String name, StopProcessListener listener) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            ManagedProcess process = processes.get(name);
+            if (process == null)
+                return;
+            process.registerStopProcessListener(listener);
+        }
+    }
+    
+    List<String> getProcessNames(boolean onlyStarted) {
+        final Map<String, ManagedProcess> processes = this.processes;
         
+        synchronized (processes) {
+            if (onlyStarted) {
+                List<String> started = new ArrayList<String>();
+                for (Map.Entry<String, ManagedProcess> entry : processes.entrySet()) {
+                    if (entry.getValue().isStart()) {
+                        started.add(entry.getKey());
+                    }
+                }
+                return started;
+            }
+            else
+                return new ArrayList<String>(processes.keySet());
+        }
     }
 }
