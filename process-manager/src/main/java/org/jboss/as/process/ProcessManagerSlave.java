@@ -154,7 +154,7 @@ public final class ProcessManagerSlave {
         }
         final StringBuilder b = new StringBuilder();
         b.append(Command.SEND_BYTES).append('\0');
-        b.append(processName).append(0);
+        b.append(processName).append('\0');
         StreamUtils.writeString(output, b);
         output.write(message.length);
         output.write(message);
