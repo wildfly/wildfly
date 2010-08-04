@@ -62,6 +62,7 @@ final class ManagedProcess {
     }
 
     void start() throws IOException {
+        System.out.println("Starting " + processName);
         synchronized (this) {
             if (start) {
                 return;

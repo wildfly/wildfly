@@ -119,7 +119,6 @@ public class ServerManager {
     private void launchProcessManagerSlave() {
         this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, hostConfig, messageHandler);
         Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
-        t.setDaemon(true);
         t.start();
     }
     

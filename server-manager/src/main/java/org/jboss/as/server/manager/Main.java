@@ -84,7 +84,9 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
+        err.println("stdio set");
         Main main = new Main();
+        err.println("booting");
         main.boot(args, in, out, err);
     }
 
@@ -99,6 +101,7 @@ public final class Main {
         try {
             ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
+                stderr.println("no config");
                 abort(null);
                 return;
             } else {
@@ -106,6 +109,8 @@ public final class Main {
                 sm.start();
             }
         } catch (Throwable t) {
+            stderr.println("aborting");
+            t.printStackTrace(stderr);
             abort(t);
             return;
         }
@@ -121,7 +126,8 @@ public final class Main {
         try {
             // Inform the process manager that we are shutting down on purpose
             // so it doesn't try to respawn us
-            // FIXME implement shutdown()
+
+            // FIXME implement abort()
             throw new UnsupportedOperationException("implement me");
             
 //            if (t != null) {
@@ -140,6 +146,7 @@ public final class Main {
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
+            stderr.println(arg);
             try {
                 if ("-version".equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());

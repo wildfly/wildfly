@@ -181,6 +181,10 @@
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
+        
+        <module-def group="org.jboss.marshalling" artifact="jboss-marshalling">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
+        </module-def>
 
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
@@ -192,12 +196,20 @@
             <maven-resource group="org.jboss.naming" artifact="jnpserver"/>
         </module-def>
         
+        <module-def group="org.jboss.remoting3" artifact="jboss-remoting">
+            <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
+        </module-def>
+        
         <module-def group="org.jboss.threads" artifact="jboss-threads">
             <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
         </module-def>
 
         <module-def group="org.jboss.stdio" artifact="jboss-stdio">
             <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        </module-def>
+
+        <module-def group="org.jboss.xnio" artifact="xnio-api">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-vfs">

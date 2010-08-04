@@ -136,6 +136,8 @@ public final class ServerMaker {
         command.add("jboss-modules.jar");
         command.add("-mp");
         command.add("modules");
+        command.add("-logmodule");
+        command.add("org.jboss.logmanager:jboss-logmanager");
         command.add("org.jboss.as:server");
         
         appendArgsToMain(serverConfig, sysProps, command);
