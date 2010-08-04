@@ -68,6 +68,11 @@ public class XSDValidationUnitTestCase extends TestCase
       validateXsd("test-jboss-domain-mod_cluster.xsd");
    }
 
+   public void testJBoss70() throws Exception
+   {
+      validateXsd("jboss_7_0.xsd");
+   }
+
    private void validateXsd(String xsdName) throws SAXException
    {
       URL jbossDomain = getXsdUrl(xsdName);
