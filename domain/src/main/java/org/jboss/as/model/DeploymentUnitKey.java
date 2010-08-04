@@ -11,7 +11,7 @@ import java.util.Arrays;
  * 
  * @author Brian Stansberry
  */
-public class DeploymentUnitKey  implements Serializable {
+public class DeploymentUnitKey implements Serializable, Comparable<DeploymentUnitKey> {
     
     private static final long serialVersionUID = 8171593872559737006L;
     private final String name;
@@ -92,6 +92,27 @@ public class DeploymentUnitKey  implements Serializable {
      */
     long elementHash() {
         return name.hashCode() & 0xffffffffL ^ AbstractModelElement.calculateElementHashOf(sha1Hash);
+    }
+
+    @Override
+    public int compareTo(DeploymentUnitKey o) {
+        
+        if (sha1Hash.length < o.sha1Hash.length) {
+            return -1;
+        }
+        else if (sha1Hash.length > o.sha1Hash.length) {
+            return 1;
+        }
+        
+        for (int i = 0; i < sha1Hash.length; i++) {
+            if (sha1Hash[i] < o.sha1Hash[i]) {
+                return -1;
+            }
+            else if (sha1Hash[i] > o.sha1Hash[i]) {
+                return 1;
+            }
+        }
+        return name.compareTo(o.name);
     }
     
 }
