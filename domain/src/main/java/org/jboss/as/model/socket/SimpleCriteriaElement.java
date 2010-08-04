@@ -36,14 +36,6 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
         if (criteria == null) {
             throw new IllegalArgumentException("criteria is null");
         }
-    }
-    
-    /** 
-     * {@inheritDoc}
-     * 
-     * This implementation checks that there are no attributes and no child elements.
-     */
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
         requireNoAttributes(reader);
         requireNoContent(reader);
     }

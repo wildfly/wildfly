@@ -34,12 +34,10 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
      */
     public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC);
-        setInterfaceCriteria(new NicInterfaceCriteria(name));
-    }
-
-    @Override
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
+        
         this.name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+        
+        setInterfaceCriteria(new NicInterfaceCriteria(name));
     }
 
     @Override
