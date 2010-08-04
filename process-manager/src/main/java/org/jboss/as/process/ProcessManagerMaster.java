@@ -114,10 +114,10 @@ public final class ProcessManagerMaster {
         }
     }
 
-    void sendMessage(final String name, final List<String> msg) {
+    void sendMessage(final String sender, final String recipient, final List<String> msg) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
-            final ManagedProcess process = processes.get(name);
+            final ManagedProcess process = processes.get(recipient);
             if (process == null) {
                 // ignore
                 return;
@@ -128,7 +128,7 @@ public final class ProcessManagerMaster {
                     return;
                 }
                 try {
-                    process.send(msg);
+                    process.send(sender, msg);
                 } catch (IOException e) {
                     // todo log it
                 }
@@ -136,11 +136,31 @@ public final class ProcessManagerMaster {
         }
     }
     
-    void sendMessage(final String name, final byte[] msg, long chksum) {
+    void sendMessage(final String sender, final String recipient, final byte[] msg, long chksum) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            final ManagedProcess process = processes.get(recipient);
+            if (process == null) {
+                // ignore
+                return;
+            }
+            synchronized (process) {
+                if (! process.isStart()) {
+                    System.err.println(recipient + " is not started; cannot send command");
+                    // ignore
+                    return;
+                }
+                try {
+                    process.send(sender, msg, chksum);
+                } catch (IOException e) {
+                    // todo log it
+                }
+            }
+        }
         
     }
 
-    void broadcastMessage(final List<String> msg) {
+    void broadcastMessage(final String sender, final List<String> msg) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             for (ManagedProcess process : processes.values()) {
@@ -150,7 +170,7 @@ public final class ProcessManagerMaster {
                         return;
                     }
                     try {
-                        process.send(msg);
+                        process.send(sender, msg);
                     } catch (IOException e) {
                         // todo log it
                     }
@@ -159,7 +179,7 @@ public final class ProcessManagerMaster {
         }
     }
     
-    void broadcastMessage(final byte[] msg, long chksum) {
+    void broadcastMessage(final String sender, final byte[] msg, final long chksum) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             for (ManagedProcess process : processes.values()) {
@@ -169,7 +189,7 @@ public final class ProcessManagerMaster {
                         return;
                     }
                     try {
-                        process.send(msg, chksum);
+                        process.send(sender, msg, chksum);
                     } catch (IOException e) {
                         // todo log it
                     }
