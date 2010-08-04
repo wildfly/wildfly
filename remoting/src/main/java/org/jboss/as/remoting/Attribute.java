@@ -33,7 +33,7 @@ public enum Attribute {
     /* Remoting 1.0 attributes, in alpha order */
     NAME("name"),
     SOCKET_BINDING("socket-binding"),
-    THREAD_POOL_NAME("thread-pool-name"),
+    THREAD_POOL("thread-pool"),
     VALUE("value"),
     ;
     private final String name;

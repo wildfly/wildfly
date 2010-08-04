@@ -24,7 +24,6 @@ package org.jboss.as.remoting;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
@@ -39,7 +38,6 @@ import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.services.ThreadPoolExecutorService;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -47,6 +45,8 @@ import org.jboss.xnio.OptionMap;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+
+import static org.jboss.as.threads.AbstractExecutorElement.*;
 
 /**
  * A Remoting subsystem definition.
@@ -109,7 +109,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
-                    case THREAD_POOL_NAME: {
+                    case THREAD_POOL: {
                         threadPoolName = value;
                         break;
                     }
@@ -118,7 +118,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             }
         }
         if (threadPoolName == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL_NAME));
+            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL));
         }
         this.threadPoolName = threadPoolName;
         // Handle elements
@@ -192,7 +192,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         final EndpointService endpointService = new EndpointService();
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
-        serviceBuilder.addDependency(ServiceName.of(ThreadPoolExecutorService.JBOSS_THREADS_EXECUTOR.append(threadPoolName))).toInjector(executorInjector);
+        serviceBuilder.addDependency(ServiceName.of(JBOSS_THREAD_EXECUTOR.append(threadPoolName))).toInjector(executorInjector);
         serviceBuilder.setLocation(getLocation());
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map

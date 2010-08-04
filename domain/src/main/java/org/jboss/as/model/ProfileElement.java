@@ -30,7 +30,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
-    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
+    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = 
+        new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(QNameComparator.getInstance());
     private final RefResolver<String, ProfileElement> includedProfileResolver;
     
     /**

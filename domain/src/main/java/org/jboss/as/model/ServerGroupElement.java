@@ -104,9 +104,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case JVM: {
-                            // FIXME implement jvm
-                            throw new UnsupportedOperationException("implement jvm");
-                            //break;
+                            if (jvm != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            jvm = new JvmElement(reader);
+                            break;
                         }
                         case SOCKET_BINDING_GROUP: {
                             if (bindingGroup != null) {
@@ -231,6 +233,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         cksum = calculateElementHashOf(deploymentMappings.values(), cksum);
         if (bindingGroup != null) cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
+        if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         return cksum;
     }
 
@@ -296,6 +299,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
