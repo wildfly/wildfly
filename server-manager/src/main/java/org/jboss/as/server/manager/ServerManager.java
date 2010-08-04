@@ -173,7 +173,7 @@ public class ServerManager {
             XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
             ParseResult<Domain> parseResult = new ParseResult<Domain>();
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
+            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
             return parseResult.getResult();
         } catch (RuntimeException e) {
             throw e;
