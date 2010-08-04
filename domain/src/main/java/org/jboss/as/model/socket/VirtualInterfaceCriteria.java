@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class VirtualInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -2714634628678015738L;
+    
     public static final VirtualInterfaceCriteria INSTANCE = new VirtualInterfaceCriteria();
     
     private VirtualInterfaceCriteria() {}

@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
  */
 public class NicMatchInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 6456168020697683203L;
+    
     private final Pattern pattern;
     
     /**

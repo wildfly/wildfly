@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -12,7 +13,7 @@ import java.net.SocketException;
  * 
  * @author Brian Stansberry
  */
-public interface InterfaceCriteria {
+public interface InterfaceCriteria extends Serializable {
 
     /**
      * Gets whether the given network interface and address are acceptable for 

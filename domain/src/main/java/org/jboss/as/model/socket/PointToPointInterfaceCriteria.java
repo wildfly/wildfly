@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class PointToPointInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -3434237413172720854L;
+    
     public static final PointToPointInterfaceCriteria INSTANCE = new PointToPointInterfaceCriteria();
     
     private PointToPointInterfaceCriteria() {}

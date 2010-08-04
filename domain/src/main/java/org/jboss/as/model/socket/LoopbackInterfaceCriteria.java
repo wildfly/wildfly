@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class LoopbackInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 1922501758657303593L;
+    
     public static final LoopbackInterfaceCriteria INSTANCE = new LoopbackInterfaceCriteria();
     
     private LoopbackInterfaceCriteria() {}

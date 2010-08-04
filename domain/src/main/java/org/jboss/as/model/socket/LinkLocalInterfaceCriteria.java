@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class LinkLocalInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 353271734087683239L;
+    
     public static final LinkLocalInterfaceCriteria INSTANCE = new LinkLocalInterfaceCriteria();
     
     private LinkLocalInterfaceCriteria() {}

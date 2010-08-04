@@ -16,6 +16,8 @@ import java.net.SocketException;
 public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
 
 
+    private static final long serialVersionUID = 149404752878332750L;
+    
     private byte[] network;
     private int mask;
     

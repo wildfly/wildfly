@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class UpInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -5298203789711808552L;
+    
     public static final UpInterfaceCriteria INSTANCE = new UpInterfaceCriteria();
     
     private UpInterfaceCriteria() {}

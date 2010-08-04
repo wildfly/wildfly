@@ -223,6 +223,8 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {
 
+        private static final long serialVersionUID = 2784447904647077246L;
+
         @Override
         public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
             

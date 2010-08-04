@@ -17,6 +17,8 @@ import java.net.SocketException;
  */
 public class PublicAddressInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 8151472860427215473L;
+    
     public static final PublicAddressInterfaceCriteria INSTANCE = new PublicAddressInterfaceCriteria();
     
     private PublicAddressInterfaceCriteria() {}

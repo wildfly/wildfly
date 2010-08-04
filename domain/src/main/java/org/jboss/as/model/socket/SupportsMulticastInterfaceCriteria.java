@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class SupportsMulticastInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 2594955197396893923L;
+    
     public static final SupportsMulticastInterfaceCriteria INSTANCE = new SupportsMulticastInterfaceCriteria();
     
     private SupportsMulticastInterfaceCriteria() {}
