@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.ObjectStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -37,6 +38,8 @@ public class PublicAddressInterfaceCriteria implements InterfaceCriteria {
         return !address.isSiteLocalAddress() && !address.isLinkLocalAddress() && !address.isAnyLocalAddress();
     }
     
-    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 
 }

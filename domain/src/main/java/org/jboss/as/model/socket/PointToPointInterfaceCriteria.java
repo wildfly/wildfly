@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.ObjectStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -31,6 +32,10 @@ public class PointToPointInterfaceCriteria implements InterfaceCriteria {
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
         
         return networkInterface.isPointToPoint();
+    }
+    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
     }
 
 }
