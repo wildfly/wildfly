@@ -92,6 +92,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: {
                     throw unexpectedElement(reader);
