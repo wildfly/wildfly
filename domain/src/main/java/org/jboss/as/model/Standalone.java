@@ -265,11 +265,17 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
                 throw new RuntimeException("Failed activate subsystem: " + extensionEntry.getKey(), e);
             }
         }
+
+        // Activate profile
+        profile.activate(container, batchBuilder);
+
         // Activate Interfaces
         final Map<String, InterfaceElement> interfaces = this.interfaces;
         for(InterfaceElement interfaceElement : interfaces.values()) {
             interfaceElement.activate(container, batchBuilder);
         }
+
+        // TODO: Activate Socket Bindings
 
         // Activate deployments
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;

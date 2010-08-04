@@ -3,26 +3,29 @@
  */
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * An element representing the set of subsystems that make up a server profile.
  * 
  * @author Brian Stansberry
  */
-public class ProfileElement extends AbstractModelElement<ProfileElement> {
+public class ProfileElement extends AbstractModelElement<ProfileElement> implements ServiceActivator {
     private static final long serialVersionUID = -7412521588206707920L;
 
     private final String name;
@@ -215,4 +218,12 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
         streamWriter.writeEndElement();
     }
 
+    @Override
+    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+        // Activate sub-systems
+        final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
+        for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
+            subsystem.activate(container, batchBuilder);            
+        }
+    }
 }

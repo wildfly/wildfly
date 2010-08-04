@@ -3,13 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
@@ -18,6 +11,12 @@ import org.jboss.as.model.RefResolver;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Binding configuration for a named socket.
@@ -257,7 +256,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * Sets the multicast port (if any) on which this socket should listen
      * for multicast traffic
      * 
-     * @param the multicast port
+     * @param multicastPort the multicast port
      */
     void setMulticastPort(int multicastPort) {
         if (multicastPort < 1 || multicastPort >= 65536)
