@@ -1,5 +1,7 @@
 package org.jboss.as.model;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Comparator;
 
 import javax.xml.namespace.QName;
@@ -9,8 +11,10 @@ import javax.xml.namespace.QName;
  * 
  * @author Brian Stansberry
  */
-public class QNameComparator implements Comparator<QName> {
+public class QNameComparator implements Comparator<QName>, Serializable {
 
+    private static final long serialVersionUID = -4438373076800825294L;
+    
     private static final QNameComparator INSTANCE = new QNameComparator();
     
     public static QNameComparator getInstance() {
@@ -40,6 +44,10 @@ public class QNameComparator implements Comparator<QName> {
             result = o1.getPrefix().compareTo(o2.getPrefix());
         }
         return result;
+    }
+    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
     }
 
 }

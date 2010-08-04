@@ -3,14 +3,18 @@
  */
 package org.jboss.as.model;
 
+import java.io.Serializable;
+
 
 /**
  * Encapsulates a namespace declaration.
  * 
  * @author Brian Stansberry
  */
-public class NamespaceAttribute {
+public class NamespaceAttribute implements Serializable {
 
+    private static final long serialVersionUID = 5356431350251733240L;
+    
     private final String prefix;
     private final String uri;
     
