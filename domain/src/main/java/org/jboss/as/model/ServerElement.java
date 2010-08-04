@@ -314,6 +314,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }

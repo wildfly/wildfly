@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,29 +74,55 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
         super(reader);
         this.propertyType = propertyType;
         this.allowNullValue = allowNullValue;
-        final String myNamespace = reader.getNamespaceURI();
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
+        // Handle attributes
+        requireNoAttributes(reader);
+        // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final String namespace = reader.getNamespaceURI();
-            if (myNamespace == null ? namespace != null : ! myNamespace.equals(namespace)) {
-                // wrong namespace
-                throw unexpectedElement(reader);
-            }
-            if (reader.getLocalName().equals(propertyType.getLocalName())) {
-                // maybe a little less efficient but really, really simple
-                String name = reader.getAttributeValue(null, Attribute.NAME.getLocalName());
-                if (properties.containsKey(name)) {
-                    throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());                    
+                    if (element == propertyType) {
+                        // Handle attributes
+                        String name = null;
+                        String value = null;
+                        int count = reader.getAttributeCount();
+                        for (int i = 0; i < count; i++) {
+                            final String attrValue = reader.getAttributeValue(i);
+                            if (reader.getAttributeNamespace(i) != null) {
+                                throw unexpectedAttribute(reader, i);
+                            } else {
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case NAME: {
+                                        name = attrValue;
+                                        if (properties.containsKey(name)) {
+                                            throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
+                                        }
+                                        break;
+                                    }
+                                    case VALUE: {
+                                        value = attrValue;
+                                        if (value == null && !allowNullValue) {
+                                            throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
+                                        }
+                                        break;
+                                    }
+                                    default: throw unexpectedAttribute(reader, i);
+                                }
+                            }
+                            if (name == null) {
+                                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+                            }
+                            properties.put(name, value);
+                        }
+                        // Handle elements
+                        requireNoContent(reader);
+                    } else {
+                        throw unexpectedElement(reader);
+                    }
+                    break;
                 }
-                String value = reader.getAttributeValue(null, Attribute.VALUE.getLocalName());
-                if (value == null && !allowNullValue) {
-                    throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
-                }
-                properties.put(name, value);
-            } else {
-                throw unexpectedElement(reader);
+                default: throw unexpectedElement(reader);
             }
         }
     }
