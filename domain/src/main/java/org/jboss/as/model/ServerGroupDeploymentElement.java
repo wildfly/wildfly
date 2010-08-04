@@ -70,7 +70,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         super(reader);
         // Handle attributes
         String fileName = null;
-        String sha1Hash = null;
+        byte[] sha1Hash = null;
         String start = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -85,7 +85,15 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                         break;
                     }
                     case SHA1: {
-                        sha1Hash = value;
+                        try {
+                            sha1Hash = hexStringToByteArray(value);
+                        }
+                        catch (Exception e) {
+                           throw new XMLStreamException("Value " + value + 
+                                   " for attribute " + attribute.getLocalName() + 
+                                   " does not represent a properly hex-encoded SHA1 hash", 
+                                   reader.getLocation(), e);
+                        }
                         break;
                     }
                     case START: {
@@ -102,7 +110,8 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.key = new DeploymentUnitKey(fileName, hexStringToByteArray(sha1Hash));
+        
+        this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
         requireNoContent(reader);
