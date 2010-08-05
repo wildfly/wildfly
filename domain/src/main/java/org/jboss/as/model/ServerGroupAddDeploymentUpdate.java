@@ -40,25 +40,25 @@ import java.util.List;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 /**
- * Update used when adding a deployment unit to the domain.
+ * Update used when adding a deployment unit to a server group.
  *
  * @author John E. Bailey
  */
-public class DomainDeploymentUnitUpdate extends AbstractModelUpdate<Domain> {
+public class ServerGroupAddDeploymentUpdate extends AbstractModelUpdate<ServerGroupElement> {
 
     private final DeploymentUnitKey key;
 
-    public DomainDeploymentUnitUpdate(final String fileName, final byte[] sha1Hash) {
+    public ServerGroupAddDeploymentUpdate(final String fileName, final byte[] sha1Hash) {
         this.key = new DeploymentUnitKey(fileName, sha1Hash);
     }
 
     @Override
-    protected Class<Domain> getModelElementType() {
-        return Domain.class;
+    protected Class<ServerGroupElement> getModelElementType() {
+        return ServerGroupElement.class;
     }
 
     @Override
-    protected AbstractModelUpdate<Domain> applyUpdate(Domain domain) {
+    protected AbstractModelUpdate<ServerGroupElement> applyUpdate(ServerGroupElement serverGroup) {
         final DeploymentUnitKey key = this.key;
 
         final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(key.getName()));
@@ -97,7 +97,7 @@ public class DomainDeploymentUnitUpdate extends AbstractModelUpdate<Domain> {
         } finally {
             VFSUtils.safeClose(handle);
         }
-        return this;
+        return null; // TODO: return a deployment removal update
     }
 
     private String getFullyQualifiedDeploymentPath(final String fileName) {

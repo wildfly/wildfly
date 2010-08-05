@@ -188,30 +188,6 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
 
     @Override
     public void activate(ServiceActivatorContext serviceActivatorContext) {
-        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
-
-        // Create deployment service
-        final String deploymentName = key.getName() + ":" + key.getSha1HashAsHexString();
-        final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-        batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName));
-
-
-        // Create a sub-batch for this deployment
-        final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
-
-        // Setup a batch level dependency on deployment service
-        deploymentSubBatch.addDependency(deploymentServiceName);
-
-        // Construct an item context
-        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(deploymentSubBatch);
-
-        // Process all the deployment items with the item context
-        final Collection<DeploymentItem> deploymentItems = DeploymentItemRegistry.getDeploymentItems(key);
-        if(deploymentItems == null)
-            throw new RuntimeException("Failed to find deployment items for deployment: " + key);
-        for(DeploymentItem deploymentItem : deploymentItems) {
-            deploymentItem.install(deploymentItemContext);
-        }
     }
 
     public long elementHash() {

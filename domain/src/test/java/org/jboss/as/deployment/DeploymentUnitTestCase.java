@@ -25,9 +25,11 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.model.DeploymentUnitElement;
-import org.jboss.as.model.Domain;
-import org.jboss.as.model.DomainDeploymentUnitUpdate;
+import org.jboss.as.deployment.item.DeploymentItemRegistry;
+import org.jboss.as.model.DeploymentUnitKey;
+import org.jboss.as.model.ServerGroupAddDeploymentUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.ServerGroupElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -57,6 +59,8 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
     private ServiceContainer serviceContainer;
     private final DeploymentChain deploymentChain = new DeploymentChainImpl("test.chain");
 
+    private static final byte[] BLANK_SHA1 = new byte[20];
+
     @Before
     public void setup() throws Exception {
         serviceContainer = ServiceContainer.Factory.create();
@@ -82,7 +86,8 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
     @Test
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceXmlDeployment.jar"));
-        final String expectedDeploymentName = virtualFile.getPathName() + ":";
+        final DeploymentUnitKey expectedKey = new DeploymentUnitKey(virtualFile.getPathName(), BLANK_SHA1);
+        final String expectedDeploymentName =  expectedKey.getName() + ":" + expectedKey.getSha1HashAsHexString();
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -94,10 +99,10 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         });
         batchBuilder.addListener(listener);
 
-        final DomainDeploymentUnitUpdate update = new DomainDeploymentUnitUpdate(virtualFile.getPathName(), new byte[0]);
+        final ServerGroupAddDeploymentUpdate update = new ServerGroupAddDeploymentUpdate(virtualFile.getPathName(), BLANK_SHA1);
         executeUpdate(update);
 
-        new DeploymentUnitElement(null, virtualFile.getPathName(), new byte[0], true, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+        new ServerGroupDeploymentElement(null, virtualFile.getPathName(), BLANK_SHA1, true,  DeploymentItemRegistry.getDeploymentItems(new DeploymentUnitKey(virtualFile.getPathName(), BLANK_SHA1))).activate(new ServiceActivatorContextImpl(batchBuilder));
 
         batchBuilder.install();
         listener.finishBatch();
@@ -112,9 +117,9 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         assertEquals(ServiceController.State.UP, serviceController.getState());
     }
 
-    private void executeUpdate(DomainDeploymentUnitUpdate update) throws Exception {
-        final Method method = DomainDeploymentUnitUpdate.class.getDeclaredMethod("applyUpdate", Domain.class);
+    private void executeUpdate(ServerGroupAddDeploymentUpdate update) throws Exception {
+        final Method method = ServerGroupAddDeploymentUpdate.class.getDeclaredMethod("applyUpdate", ServerGroupElement.class);
         method.setAccessible(true);
-        method.invoke(update, (Domain)null);
+        method.invoke(update, (ServerGroupElement)null);
     }
 }
