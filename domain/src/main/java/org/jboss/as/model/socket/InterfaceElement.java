@@ -8,6 +8,7 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
@@ -34,6 +35,7 @@ import java.util.TreeMap;
 public class InterfaceElement extends AbstractModelElement<InterfaceElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -5256526713311518506L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.socket");
 
     private final String name;
     private String address;
@@ -218,7 +220,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
     @Override
     public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
-        throw new UnsupportedOperationException("Impl me");
+        log.info("Activating interface element:" + name);
     }
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {

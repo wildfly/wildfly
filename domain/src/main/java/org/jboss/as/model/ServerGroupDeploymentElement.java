@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
@@ -40,6 +41,7 @@ import java.util.Collections;
  */
 public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> implements ServiceActivator {
     private static final long serialVersionUID = -7282640684801436543L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.model");
 
     private final DeploymentUnitKey key;
     private boolean start;
@@ -189,6 +191,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     @Override
     public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
-        throw new UnsupportedOperationException("Impl me");
+        log.info("Activating server group deployment: " + getName());
     }
 }

@@ -58,11 +58,11 @@ class MessageHandler implements Handler {
         ServerMessage serverMessage = null;
         try {
             serverMessage = readServerMessage(message);
-        } catch (Exception e) {
-            log.warn("Failed to read server message", e);
+            // TODO: actually handle this....
+            log.info("Received message from server " + sourceProcessName + ": " + serverMessage.getMessage());
+        } catch (Throwable t) {
+            log.warn("Failed to read server message", t);
         }
-        // TODO: actually handle this....
-        log.info("Received message from server " + sourceProcessName + ": " + serverMessage.getMessage());
     }
     
     /* (non-Javadoc)

@@ -30,7 +30,6 @@ import org.jboss.as.server.manager.ServerMessage;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.TimingServiceListener;
 
 import java.io.ByteArrayOutputStream;
@@ -74,19 +73,18 @@ public class Server {
             @Override
             public void run() {
                 logger.info("Server started");
-                sendMessage("STATED");
+                sendMessage("STARTED");
             }
         });
         batchBuilder.addListener(listener);
 
-        config.activate(serviceContainer, batchBuilder);
-
         try {
+            config.activate(serviceContainer, batchBuilder);
             batchBuilder.install();
             listener.finishBatch();
-        } catch (ServiceRegistryException e) {
+        } catch (Throwable t) {
             sendMessage("START FAILED");
-            throw new ServerStartException("Failed to install service batch", e);
+            throw new ServerStartException("Failed to start server", t);
         }
     }
 
@@ -126,7 +124,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to send message to Server Manager [" + message + "]", e);
+            logger.error("Failed to send message to Server Manager [" + message + "]", e);
         }
     }
 }

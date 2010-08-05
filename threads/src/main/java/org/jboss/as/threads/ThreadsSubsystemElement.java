@@ -22,11 +22,9 @@
 
 package org.jboss.as.threads;
 
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceContainer;
@@ -35,6 +33,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,6 +43,7 @@ import javax.xml.stream.XMLStreamException;
 public final class ThreadsSubsystemElement extends AbstractSubsystemElement<ThreadsSubsystemElement> {
 
     private static final long serialVersionUID = -8577568464935736902L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     private final NavigableMap<String, ThreadFactoryElement> threadFactories = new TreeMap<String, ThreadFactoryElement>();
     private final NavigableMap<String, ScheduledThreadPoolExecutorElement> scheduledExecutors = new TreeMap<String, ScheduledThreadPoolExecutorElement>();
@@ -124,10 +126,10 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     }
 
     public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+        log.info("Activating Threading Subsystem");
         for (ThreadFactoryElement element : threadFactories.values()) {
             element.activate(container, batchBuilder);
         }
-
     }
 
     public Collection<String> getReferencedSocketBindings() {
