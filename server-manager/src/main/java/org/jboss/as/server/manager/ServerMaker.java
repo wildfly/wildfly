@@ -40,6 +40,11 @@ import java.util.Map;
  */
 public final class ServerMaker {
     
+    /**
+     * Prefix applied to a server's name to create it's process name.
+     */
+    static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
+    
     private final ProcessManagerSlave processManagerSlave;
     private final MessageHandler messageHandler;
     private final ServerManagerEnvironment environment;
@@ -95,15 +100,15 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
         
-        String serverName = serverConfig.getServerName();
+        String serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
         List<String> command = getServerLaunchCommand(serverConfig);
         Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
-        processManagerSlave.addProcess(serverName, command, env, environment.getHomeDir().getAbsolutePath());
-        processManagerSlave.startProcess(serverName);
+        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
+        processManagerSlave.startProcess(serverProcessName);
         
         // TODO JBAS-8260 If serverConfig specified that server will work with
         // ServerManager over sockets, create a socket-based ServerCommunicationHandler
-        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverName, processManagerSlave);
+        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
         Server server = new Server(commHandler);
 //        messageHandler.registerServer(serverConfig.getServerName(), server);
         return server;
@@ -250,7 +255,7 @@ public final class ServerMaker {
     }
 
     /**
-     * Equivalent to default JAVA_OPTS in < AS 6 run.conf file
+     * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
      * 
      * TODO externalize this somewhere if doing this at all is the right thing
      * 
