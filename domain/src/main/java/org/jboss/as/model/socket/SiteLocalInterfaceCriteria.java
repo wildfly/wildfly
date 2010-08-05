@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.ObjectStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -15,6 +16,8 @@ import java.net.SocketException;
  */
 public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 8701772756289369451L;
+    
     public static final SiteLocalInterfaceCriteria INSTANCE = new SiteLocalInterfaceCriteria();
     
     private SiteLocalInterfaceCriteria() {}
@@ -31,6 +34,8 @@ public class SiteLocalInterfaceCriteria implements InterfaceCriteria {
         return address.isSiteLocalAddress();
     }
     
-    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 
 }

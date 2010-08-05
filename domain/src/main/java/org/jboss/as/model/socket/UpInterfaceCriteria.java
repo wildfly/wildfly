@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.ObjectStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -15,6 +16,8 @@ import java.net.SocketException;
  */
 public class UpInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -5298203789711808552L;
+    
     public static final UpInterfaceCriteria INSTANCE = new UpInterfaceCriteria();
     
     private UpInterfaceCriteria() {}
@@ -29,6 +32,10 @@ public class UpInterfaceCriteria implements InterfaceCriteria {
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
         
         return networkInterface.isUp();
+    }
+    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
     }
 
 }

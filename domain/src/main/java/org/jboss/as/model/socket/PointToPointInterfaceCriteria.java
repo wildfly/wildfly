@@ -3,6 +3,7 @@
  */
 package org.jboss.as.model.socket;
 
+import java.io.ObjectStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -15,6 +16,8 @@ import java.net.SocketException;
  */
 public class PointToPointInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -3434237413172720854L;
+    
     public static final PointToPointInterfaceCriteria INSTANCE = new PointToPointInterfaceCriteria();
     
     private PointToPointInterfaceCriteria() {}
@@ -29,6 +32,10 @@ public class PointToPointInterfaceCriteria implements InterfaceCriteria {
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
         
         return networkInterface.isPointToPoint();
+    }
+    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
     }
 
 }

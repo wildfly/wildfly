@@ -53,6 +53,8 @@ public final class Domain extends AbstractModel<Domain> {
 
     private static final long serialVersionUID = 5516070442013067881L;
 
+    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
+    private final String schemaLocation;
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
@@ -70,6 +72,7 @@ public final class Domain extends AbstractModel<Domain> {
      */
     public Domain(final Location location, final QName elementName) {
         super(location, elementName);
+        this.schemaLocation = null;
     }
 
     /**
@@ -80,8 +83,10 @@ public final class Domain extends AbstractModel<Domain> {
      */
     public Domain(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // Handle namespaces
+        namespaces.putAll(readNamespaces(reader));
         // Handle attributes
-        requireNoAttributes(reader);
+        schemaLocation = readSchemaLocation(reader);
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -221,6 +226,8 @@ public final class Domain extends AbstractModel<Domain> {
         hash = calculateElementHashOf(interfaces.values(), hash);
         hash = calculateElementHashOf(bindingGroups.values(), hash);
         if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
+        hash = Long.rotateLeft(hash, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        if (schemaLocation != null) hash = Long.rotateLeft(hash, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         return hash;
     }
 
@@ -337,6 +344,20 @@ public final class Domain extends AbstractModel<Domain> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        
+        for (NamespaceAttribute namespace : namespaces.values()) {
+            if (namespace.isDefaultNamespaceDeclaration()) {
+                // for now I assume this is handled externally
+                continue;
+            }
+            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+        }
+        
+        if (schemaLocation != null) {
+            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
+            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
+        }
+        
         if (! extensions.isEmpty()) {
             streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
             for (ExtensionElement element : extensions.values()) {        
@@ -433,6 +454,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -469,6 +491,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -507,6 +530,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -555,6 +579,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -599,6 +624,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }
@@ -621,6 +647,7 @@ public final class Domain extends AbstractModel<Domain> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }

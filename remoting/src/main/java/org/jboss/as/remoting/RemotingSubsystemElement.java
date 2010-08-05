@@ -109,7 +109,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
-                    case THREAD_POOL_NAME: {
+                    case THREAD_POOL: {
                         threadPoolName = value;
                         break;
                     }
@@ -118,7 +118,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             }
         }
         if (threadPoolName == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL_NAME));
+            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL));
         }
         this.threadPoolName = threadPoolName;
         // Handle elements

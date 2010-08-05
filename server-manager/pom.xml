@@ -48,4 +48,27 @@
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>staxmapper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-process-manager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.stdio</groupId>
+            <artifactId>jboss-stdio</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

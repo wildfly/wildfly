@@ -66,6 +66,10 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             }
         }
         if (name == null) {
+            // FIXME and fix xsd. A name is only required at domain and host
+            // level (i.e. when wrapped in <jvms/>). At server-group and server
+            // levels it can be unnamed, in which case configuration from
+            // domain and host levels aren't mixed in. OR make name required in xsd always
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         this.name = name;

@@ -22,17 +22,22 @@
 
 package org.jboss.as.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Properties;
 
 /**
  * The main-class entry point for server instances.
@@ -42,16 +47,12 @@ import org.jboss.logmanager.Logger;
  */
 public final class Main {
 
-    private Main() {
-    }
-
     /**
      * The main method.
      *
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        
         // Grab copies of our streams.
         final InputStream in = System.in;
         final PrintStream out = System.out;
@@ -66,50 +67,127 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        boot(args);
+        Main main = new Main();
+        main.boot(args, in, out, err);
+    }
 
-        out.println("200 Server Ready");
+    Properties props = new Properties(System.getProperties());
+
+    private Main() {
+    }
+
+    private void boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        Server server = null;
         try {
-            for (;;) {
-                final String command = readCommand(in);
-                if (command == null) break;
-                out.println("000 Got command: " + command);
+            ServerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
+            if (config == null) {
+                abort(null);
+            } else {
+                server = new Server(config);
             }
-        } catch (IOException e) {
-            e.printStackTrace(err);
+        } catch (Throwable t) {
+            abort(t);
+        }
+    }
+
+    private void abort(Throwable t) {
+        if (t != null) {
+            t.printStackTrace(System.err);
+        }
+        try {
+            // Inform the process manager that we are shutting down on purpose
+            // so it doesn't try to respawn us
+            // FIXME implement shutdown()
+            throw new UnsupportedOperationException("implement me");
+        } finally {
             System.exit(1);
         }
-        System.exit(0);
+    }
+    
+    private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        Integer pmPort = null;
+        InetAddress pmAddress = null;
+
+        final int argsLength = args.length;
+        for (int i = 0; i < argsLength; i++) {
+            final String arg = args[i];
+            try {
+                if ("-properties".equals(arg) || "-P".equals(arg)) {
+                    // Set system properties from url/file
+                    URL url = null;
+                    try {
+                        url = makeURL(args[++i]);
+                        Properties props = System.getProperties();
+                        props.load(url.openConnection().getInputStream());
+                    } catch (MalformedURLException e) {
+                        System.err.printf("Malformed URL provided for option %s\n", arg);
+                        return null;
+                    } catch (IOException e) {
+                        System.err.printf("Unable to load properties from URL %s\n", url);
+                        return null;
+                    }
+                } else if ("-interprocess-port".equals(arg)) {
+                    try {
+                        pmPort = Integer.valueOf(args[++i]);
+                    } catch (NumberFormatException e) {
+                        System.err.printf("Value for -interprocess-port is not an Integer -- %s\n", args[i]);
+                        return null;
+                    }
+                } else if ("-interprocess-address".equals(arg)) {
+                    try {
+                        pmAddress = InetAddress.getByName(args[++i]);
+                    } catch (UnknownHostException e) {
+                        System.err.printf("Value for -interprocess-address is not a known host -- %s\n", args[i]);
+                        return null;
+                    }
+                } else if (arg.startsWith("-D")) {
+
+                    // set a system property
+                    String name, value;
+                    int idx = arg.indexOf("=");
+                    if (idx == -1) {
+                        name = arg.substring(2);
+                        value = "true";
+                    } else {
+                        name = arg.substring(2, idx);
+                        value = arg.substring(idx + 1, arg.length());
+                    }
+                    System.setProperty(name, value);
+                } else {
+                    System.err.printf("Invalid option '%s'\n", arg);
+                    return null;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                System.err.printf("Argument expected for option %s\n", arg);
+                return null;
+            }
+        }
+
+        return new ServerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort);
     }
 
-    private static void boot(final String[] args) {
-        if(args.length < 3) throw new IllegalArgumentException("Server bootstrap requires config root, server group  and server name");
+    private URL makeURL(String urlspec) throws MalformedURLException {
+        urlspec = urlspec.trim();
 
-        final File configRoot = new File(args[0]);
-        if(!configRoot.exists()) throw new IllegalArgumentException("Invalid config root.  Directory does not exist");
+        URL url;
 
-        final String serverGroup = args[1];
-        final String serverName = args[2];
-
-//        final Server server = initializeServerConfig(configRoot, serverGroup, serverName);
-
-        // Do something real with the Server config..
-    }
-
-//    private static Server initializeServerConfig(final File configRoot, final String serverGroup, final String serverName) {
-//        // Read serialized config and apply changes from log
-//        return null;
-//    }
-
-    private static String readCommand(final InputStream in) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        int c;
-        while ((c = in.read()) != -1 && c != '\n') {
-            b.append((char) (c & 0xff));
+        try {
+            url = new URL(urlspec);
+            if (url.getProtocol().equals("file")) {
+                // make sure the file is absolute & canonical file url
+                File file = new File(url.getFile()).getCanonicalFile();
+                url = file.toURI().toURL();
+            }
+        } catch (Exception e) {
+            // make sure we have a absolute & canonical file url
+            try {
+                File file = new File(urlspec).getCanonicalFile();
+                url = file.toURI().toURL();
+            } catch (Exception n) {
+                throw new MalformedURLException(n.toString());
+            }
         }
-        if (b.length() == 0 && c == -1) {
-            return null;
-        }
-        return b.toString();
+
+        return url;
     }
 }

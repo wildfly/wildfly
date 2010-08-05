@@ -22,27 +22,30 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
+import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -195,6 +198,14 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         this.jvm = new JvmElement(groupVM, hostVM, serverVM);
     }
 
+    /**
+     * Gets the name of the server.
+     * 
+     * @return the name. Will not be <code>null</code>
+     */
+    public String getServerName() {
+        return serverName;
+    }    
     public Collection<InterfaceElement> getInterfaces() {
 		return Collections.unmodifiableCollection(interfaces.values());
 	}
@@ -206,7 +217,24 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     public int getPortOffset() {
 		return portOffset;
 	}
+    /**
+     * Gets the jvm configuration for this server.
+     * 
+     * @return the jvm configuration. Will not be <code>null</code>
+     */
+    public JvmElement getJvm() {
+        return jvm;
+    }
     
+    /**
+     * Gets any system properties defined for this server.
+     * 
+     * @return the system properties, or <code>null</code> if there are none
+     */
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
+    }
+
     public SocketBindingGroupElement getSocketBindings() {
 		return socketBindings;
 	}
@@ -239,5 +267,35 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      * @param batchBuilder the current batch builder
      */
     public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+        // Activate extensions
+        final Map<String, ExtensionElement> extensions = this.extensions;
+        for(Map.Entry<String, ExtensionElement> extensionEntry : extensions.entrySet()) {
+            final ExtensionElement extensionElement = extensionEntry.getValue();
+            final String moduleSpec = extensionElement.getModule();
+            try {
+                for (Extension extension : Module.loadService(moduleSpec, Extension.class)) {
+                    extension.activate(container, batchBuilder);
+                }
+            } catch(ModuleLoadException e) {
+                throw new RuntimeException("Failed activate subsystem: " + extensionEntry.getKey(), e);
+            }
+        }
+
+        // Activate profile
+        profile.activate(container, batchBuilder);
+
+        // Activate Interfaces
+        final Map<String, InterfaceElement> interfaces = this.interfaces;
+        for(InterfaceElement interfaceElement : interfaces.values()) {
+            interfaceElement.activate(container, batchBuilder);
+        }
+
+        // TODO: Activate Socket Bindings
+
+        // Activate deployments
+        final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
+        for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
+            deploymentElement.activate(container, batchBuilder);
+        }
     }
 }

@@ -47,10 +47,8 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
         
         InterfaceCriteria ours = isAny ? new AnyInterfaceCriteria(criteria) : new NotInterfaceCriteria(criteria);
         setInterfaceCriteria(ours);
-    }
+        
 
-    @Override
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
         // Handle attributes
         requireNoAttributes(reader);
         // Handle elements
@@ -58,8 +56,8 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    AbstractInterfaceCriteriaElement<?> criteria = ParsingUtil.parseSimpleInterfaceCriteria(reader, element);
-                    interfaceCriteria.put(criteria.getElement(), criteria);
+                    AbstractInterfaceCriteriaElement<?> aice = ParsingUtil.parseSimpleInterfaceCriteria(reader, element);
+                    interfaceCriteria.put(aice.getElement(), aice);
                     break;
                 }
                 default: throw unexpectedElement(reader);

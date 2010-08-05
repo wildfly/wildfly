@@ -22,24 +22,27 @@
 
 package org.jboss.as.model;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.
@@ -51,8 +54,9 @@ import javax.xml.stream.XMLStreamException;
 public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter, XMLStreamConstants {
 
     private static final long serialVersionUID = 66064050420378211L;
-
-    private final Location location;
+    
+    // FIXME make non-transient and final when MSC-16 is fixed
+    private transient Location location;
     private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
 
     /**
@@ -345,6 +349,35 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             throw unexpectedAttribute(reader, 1);
         }
     }
+    
+    protected static Map<String, NamespaceAttribute> readNamespaces(final XMLExtendedStreamReader reader) {
+        int count = reader.getNamespaceCount();
+        Map<String, NamespaceAttribute> result = new HashMap<String, NamespaceAttribute>();
+        for (int i = 0; i < count; i++) {
+            String prefix = reader.getNamespacePrefix(i);
+            String uri = reader.getNamespaceURI(i);
+            result.put(uri, new NamespaceAttribute(prefix, uri));
+        }
+        return result;
+    }
+    
+    protected static String readSchemaLocation(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        if (count == 0) {
+            return null;
+        }
+        String loc = null;
+        for (int i = 0; i < count; i++) {
+            if ("http://www.w3.org/2001/XMLSchema-instance".equals(reader.getAttributeNamespace(i)) 
+                    && "schemaLocation".equals(reader.getAttributeLocalName(i))) {
+                loc = reader.getAttributeValue(i);
+            }
+            else{
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        return loc;
+    }
 
     /**
      * Calculate a hash of this model element's complete contents.  This value is used to verify the state of the model
@@ -559,5 +592,30 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     public final int hashCode() {
         return super.hashCode();
+    }
+    
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        // FIXME remove when MSC-16 is fixed
+        out.defaultWriteObject();
+        if (location != null) {
+            out.writeBoolean(true);
+            out.writeUTF(location.getFileName());
+            out.writeInt(location.getLineNumber());
+            out.writeInt(location.getColumnNumber());
+        }
+        else {
+            out.writeBoolean(false);
+        }
+    }
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+        // FIXME remove when MSC-16 is fixed
+        in.defaultReadObject();
+        boolean hasLoc = in.readBoolean();
+        if (hasLoc) {
+            String file = in.readUTF();
+            int line = in.readInt();
+            int col = in.readInt();
+            location = new Location(file, line, col, null);
+        }
     }
 }

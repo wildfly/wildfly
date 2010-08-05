@@ -24,12 +24,13 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain-host.xsd">
 
-    <domain-controller
-            location="http://somehost.example.com/domain-controller"
-            callback-location="http://dakldjskal"
-            outbound-interface="public"
-            callback-outbound-interface="public"
+    <domain-controller>
+       <remote location="http://somehost.example.com/domain-controller"
+               callback-location="http://dakldjskal"
+               outbound-interface="public"
+               callback-outbound-interface="public"
             />
+    </domain-controller>
 
     <interfaces>
         <interface name="public3">

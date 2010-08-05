@@ -37,11 +37,7 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
      */
     public NicMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC_MATCH);
-        setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
-    }
-
-    @Override
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
+        
         // Handle attributes
         Pattern pattern = null;
         final int count = reader.getAttributeCount();
@@ -71,6 +67,9 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
         this.pattern = pattern;
         // Handle elements
         requireNoContent(reader);
+        
+
+        setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
     }
 
     @Override

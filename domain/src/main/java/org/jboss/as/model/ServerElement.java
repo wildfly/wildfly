@@ -119,7 +119,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case INTERFACES: {
+                        case INTERFACE_SPECS: {
                             parseInterfaces(reader);
                             break;
                         }
@@ -264,9 +264,15 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         // TODO re-evaluate the element order in the xsd; make sure this is correct
+
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
+        streamWriter.writeAttribute(Attribute.GROUP.getLocalName(), serverGroup);
+        if (!start) {
+            streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
+        }
         
         if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
             for (InterfaceElement element : interfaces.values()) {
                 streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                 element.writeContent(streamWriter);
@@ -308,6 +314,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }

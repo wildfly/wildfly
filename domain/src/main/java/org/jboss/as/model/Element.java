@@ -38,6 +38,7 @@ public enum Element {
     ANY("any"),
     
     DOMAIN("domain"),
+    DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
     
@@ -46,16 +47,19 @@ public enum Element {
     EXTENSIONS("extensions"),
     
     HEAP("heap"),
+    HOST("host"),
     
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
-    INTERFACES("interfaces"),
     INTERFACE("interface"),
+    INTERFACE_SPECS("interface-specs"),
+    INTERFACES("interfaces"),
     
     JVM("jvm"),
     JVMS("jvms"),
 
     LINK_LOCAL_ADDRESS("link-local-address"),
+    LOCAL("local"),
     LOOPBACK("loopback"),
     
     MULTICAST("multicast"),
@@ -69,6 +73,8 @@ public enum Element {
     PROFILES("profiles"),
     PROPERTY("property"),
     PUBLIC_ADDRESS("public-address"),
+    
+    REMOTE("remote"),
     
     SERVER("server"),
     SERVERS("servers"),

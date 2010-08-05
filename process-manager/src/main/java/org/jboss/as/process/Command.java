@@ -25,14 +25,17 @@ package org.jboss.as.process;
 /**
 * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
 */
-enum Command {
+public enum Command {
     ADD,
     START,
     STOP,
     REMOVE,
     SEND,
+    SEND_BYTES,
     BROADCAST,
+    BROADCAST_BYTES,
     SHUTDOWN,
     MSG,
+    MSG_BYTES,
     ;
 }
