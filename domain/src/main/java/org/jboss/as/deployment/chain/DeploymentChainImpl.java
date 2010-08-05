@@ -44,7 +44,7 @@ public class DeploymentChainImpl implements DeploymentChain {
     }
 
     @Override
-    public String geName() {
+    public String getName() {
         return name;
     }
 

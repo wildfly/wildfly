@@ -35,7 +35,7 @@ public interface DeploymentChain extends DeploymentUnitProcessor {
      *
      * @return the name
      */
-    String geName();
+    String getName();
 
     /**
      * Add a new DeploymentUnitProcessor to the chain with a specified priority.
