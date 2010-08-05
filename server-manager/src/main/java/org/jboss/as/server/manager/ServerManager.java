@@ -18,6 +18,7 @@ import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -26,7 +27,9 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Brian Stansberry
  */
 public class ServerManager {
-
+    
+    private static final Logger log = Logger.getLogger("org.jboss.server.manager");
+    
     private final ServerManagerEnvironment environment;    
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
@@ -83,6 +86,7 @@ public class ServerManager {
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
+                log.info("Starting server " + serverEl.getName());
                 Standalone serverConf = new Standalone(domainConfig, hostConfig, serverEl.getName());
                 
                 try {
@@ -91,9 +95,10 @@ public class ServerManager {
                     server.start(serverConf);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
-                    e.printStackTrace(environment.getStderr());
+                    log.error("Failed to start server " + serverEl.getName(), e);
                 }
             }
+            else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
 //        }
 //        finally {
