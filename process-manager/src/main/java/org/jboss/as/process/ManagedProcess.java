@@ -138,8 +138,8 @@ final class ManagedProcess {
         b.append(sender);
         b.append('\0');
         StreamUtils.writeString(commandStream, b.toString());
-        commandStream.write(msg.length);
-        commandStream.write(msg);
+        StreamUtils.writeInt(commandStream, msg.length);
+        commandStream.write(msg, 0, msg.length);
         StreamUtils.writeLong(commandStream, chksum);
         StreamUtils.writeChar(commandStream, '\n');
         commandStream.flush();

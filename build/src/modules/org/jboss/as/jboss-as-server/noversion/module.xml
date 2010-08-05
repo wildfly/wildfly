@@ -36,7 +36,11 @@
         <module group="org.jboss.logmanager" name="jboss-logmanager"/>
         <module group="org.jboss.stdio" name="jboss-stdio"/>
         <module group="org.jboss.as" name="jboss-as-domain"/>
+        <module group="org.jboss.as" name="jboss-as-logging"/>
         <module group="org.jboss.as" name="jboss-as-process-manager"/>
+        <module group="org.jboss.as" name="jboss-as-remoting"/>
         <module group="org.jboss.as" name="jboss-as-server-manager"/>
+        <module group="org.jboss.as" name="jboss-as-threads"/>
+        <module group="system" name="system"/>
     </dependencies>
 </module>
