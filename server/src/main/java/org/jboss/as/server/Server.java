@@ -79,7 +79,6 @@ public class Server {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
                 if(serviceFailures.isEmpty()) {
                     logger.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
-                    new Exception().printStackTrace();
                     sendMessage("STARTED");
                 } else {
                     sendMessage("START FAILED");

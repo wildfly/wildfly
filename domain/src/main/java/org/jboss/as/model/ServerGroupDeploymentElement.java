@@ -207,8 +207,10 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         log.info("Activating server group deployment: " + deploymentName);
 
         final Collection<DeploymentItem> deploymentItems = this.deploymentItems;
-        if (deploymentItems == null)
+        if (deploymentItems == null) {
             log.warnf("No deployment items found for deployment: %s", deploymentName);
+            return;
+        }
 
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
