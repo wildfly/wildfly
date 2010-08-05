@@ -21,29 +21,36 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
 import org.jboss.as.model.Standalone;
-import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.as.server.manager.ServerMessage;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.TimingServiceListener;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.Checksum;
+
 
 /**
  * An actual JBoss Application Server instance.
- * 
+ *
  * @author Brian Stansberry
  * @author John E. Bailey
  */
 public class Server {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final ServerEnvironment environment;
-    private ProcessManagerSlave processManagerSlave;
+    private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
     private Standalone config;
     private ServiceContainer serviceContainer;
@@ -53,18 +60,21 @@ public class Server {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
         this.environment = environment;
-        launchProcessManagerSlave();
+        launchCommunicationHandler();
+        sendMessage("AVAILABLE");
+        logger.info("Server Available to start");
     }
-    
+
     public void start(Standalone config) throws ServerStartException {
         this.config = config;
-
+        logger.info("Starting server with config: " + config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
             @Override
             public void run() {
-                logger.infof("JBossAS started...."); // TODO: Get access to service status ex.  [%d services in %d seconds]", listener.getTotalCount(), listener.getElapsedTime());
+                logger.info("Server started");
+                sendMessage("STATED");
             }
         });
         batchBuilder.addListener(listener);
@@ -75,17 +85,48 @@ public class Server {
             batchBuilder.install();
             listener.finishBatch();
         } catch (ServiceRegistryException e) {
+            sendMessage("START FAILED");
             throw new ServerStartException("Failed to install service batch", e);
         }
     }
 
-    private void launchProcessManagerSlave() {
-        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, messageHandler);
-        Thread t = new Thread(this.processManagerSlave.getController(), "Server Process");
+    public void stop() {
+        serviceContainer.shutdown();
+        sendMessage("STOPPED");
+    }
+
+    private void launchCommunicationHandler() {
+        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getProcessManagerSlave(environment, messageHandler);
+        Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");
         t.start();
     }
-    
-    public void stop() {
-        // FIXME implement start
+
+    private void sendMessage(final String message) {
+        try {
+            final ServerMessage serverMessage = new ServerMessage(message);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+            Checksum chksum = new Adler32();
+            CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(cos);
+                oos.writeObject(serverMessage);
+                oos.close();
+                oos = null;
+                serverCommunicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
+            }
+            finally {
+                if (oos != null) {
+                    try {
+                        oos.close();
+                    }
+                    catch (IOException ignored) {
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to send message to Server Manager [" + message + "]", e);
+        }
     }
 }

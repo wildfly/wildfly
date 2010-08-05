@@ -32,12 +32,12 @@ import java.util.zip.Adler32;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class StreamUtils {
+public final class StreamUtils {
 
     private StreamUtils() {
     }
 
-    static Status readWord(final InputStream input, final StringBuilder dest) throws IOException {
+    public static Status readWord(final InputStream input, final StringBuilder dest) throws IOException {
         dest.setLength(0);
         int c;
         for (;;) {
@@ -53,7 +53,7 @@ final class StreamUtils {
 
     private static final String INVALID_BYTE = "Invalid byte";
 
-    static int readChar(final InputStream input) throws IOException {
+    public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
         if (a < 0) {
             throw new EOFException();
@@ -90,7 +90,7 @@ final class StreamUtils {
         }
     }
 
-    static void readToEol(final InputStream input) throws IOException {
+    public static void readToEol(final InputStream input) throws IOException {
         for (;;) {
             switch (input.read()) {
                 case -1: return;
@@ -99,11 +99,11 @@ final class StreamUtils {
         }
     }
     
-    static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
+    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
         return new CheckedBytes(input);
     }
     
-    static int readInt(final InputStream in) throws IOException {
+    public static int readInt(final InputStream in) throws IOException {
         int ch1 = in.read();
         int ch2 = in.read();
         int ch3 = in.read();
@@ -113,7 +113,7 @@ final class StreamUtils {
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
     }
     
-    static void readFully(final InputStream in, byte b[], int off, int len) throws IOException {
+    public static void readFully(final InputStream in, byte b[], int off, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;
@@ -125,7 +125,7 @@ final class StreamUtils {
         }
     }
     
-    static long readLong(final InputStream in) throws IOException {
+    public static long readLong(final InputStream in) throws IOException {
         byte[] bytes = new byte[8];
         readFully(in, bytes, 0, 8);
         return (((long)bytes[0] << 56) +
@@ -138,11 +138,11 @@ final class StreamUtils {
                 ((bytes[7] & 255) <<  0));
     }
 
-    static void writeString(final OutputStream output, final Object o) throws IOException {
+    public static void writeString(final OutputStream output, final Object o) throws IOException {
         writeString(output, o.toString());
     }
 
-    static void writeString(final OutputStream output, final String s) throws IOException {
+    public static void writeString(final OutputStream output, final String s) throws IOException {
         final int length = s.length();
 
         int strIdx = 0;
@@ -151,7 +151,7 @@ final class StreamUtils {
         }
     }
     
-    static void writeChar(final OutputStream output, final char c) throws IOException {
+    public static void writeChar(final OutputStream output, final char c) throws IOException {
 
         if (c >= 0x20 && c <= 0x7f) {
             output.write((byte)c);
@@ -165,14 +165,14 @@ final class StreamUtils {
         }
     }
     
-    static void writeInt(final OutputStream out, final int v) throws IOException {
+    public static void writeInt(final OutputStream out, final int v) throws IOException {
         out.write((v >>> 24) & 0xFF);
         out.write((v >>> 16) & 0xFF);
         out.write((v >>>  8) & 0xFF);
         out.write((v >>>  0) & 0xFF);
     }
     
-    static void writeLong(final OutputStream out, final long v) throws IOException {
+    public static void writeLong(final OutputStream out, final long v) throws IOException {
         for(int i = 0; i < 8; i++) {
             out.write((byte)((v >> (8 * i)) & 0xff));
           }

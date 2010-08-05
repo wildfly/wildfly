@@ -22,15 +22,14 @@
 
 package org.jboss.as.server.manager;
 
+import org.jboss.as.model.Standalone;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
-
-import org.jboss.as.model.Standalone;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
@@ -97,13 +96,13 @@ public final class Server {
 
     public void start(Standalone serverConf) throws IOException {
         
-        ServerCommand command = new ServerCommand("START", new Object[] {serverConf}, new Class<?>[]{Standalone.class});
+        ServerCommand command = new ServerCommand(ServerCommand.Command.START, new Object[] {serverConf}, new Class<?>[]{Standalone.class});
         sendCommand(command);
     }
 
     public void stop() throws IOException {
         
-        sendCommand(new ServerCommand("STOP")); 
+        sendCommand(new ServerCommand(ServerCommand.Command.START)); 
     }
     
     private void sendCommand(ServerCommand command) throws IOException {

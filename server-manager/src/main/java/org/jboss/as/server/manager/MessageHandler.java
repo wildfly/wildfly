@@ -25,9 +25,13 @@
  */
 package org.jboss.as.server.manager;
 
-import java.util.List;
-
 import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.logging.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.List;
 
 /**
  * A MessageHandler.
@@ -35,6 +39,8 @@ import org.jboss.as.process.ProcessManagerSlave.Handler;
  * @author Brian Stansberry
  */
 class MessageHandler implements Handler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.server.manager");
 
     private final ServerManager serverManager;
 //    private final Map<String, Server> servers = new ConcurrentHashMap<String, Server>();
@@ -49,8 +55,14 @@ class MessageHandler implements Handler {
 
     @Override
     public void handleMessage(String sourceProcessName, byte[] message) {
-        // FIXME implement handleMessage
-        throw new UnsupportedOperationException("implement me");
+        ServerMessage serverMessage = null;
+        try {
+            serverMessage = readServerMessage(message);
+        } catch (Exception e) {
+            log.warn("Failed to read server message", e);
+        }
+        // TODO: actually handle this....
+        log.info("Received message from server " + sourceProcessName + ": " + serverMessage.getMessage());
     }
     
     /* (non-Javadoc)
@@ -58,13 +70,26 @@ class MessageHandler implements Handler {
      */
     @Override
     public void handleMessage(String sourceProcessName, List<String> message) {
-        // FIXME implement handleMessage
-        throw new UnsupportedOperationException("implement me");
+        log.info("Received message from server " + sourceProcessName + ":" + message);
+        // TODO: actually handle this....
     }
 
     @Override
     public void shutdown() {
         serverManager.stop();        
+    }
+
+    private ServerMessage readServerMessage(byte[] message) throws IOException, ClassNotFoundException {
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
+        ObjectInputStream objectInputStream = null;
+        try {
+            objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            final ServerMessage serverMessage = (ServerMessage)objectInputStream.readObject();
+            return serverMessage;
+        } finally {
+            if(objectInputStream != null)
+                objectInputStream.close();
+        }
     }
     
 //    public void registerServer(String serverName, Server server) {

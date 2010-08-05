@@ -26,8 +26,8 @@
 package org.jboss.as.server;
 
 import org.jboss.as.model.Standalone;
-import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.server.manager.ServerCommand;
+import org.jboss.logging.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,11 +38,12 @@ import java.util.List;
  * A MessageHandler.
  * 
  * @author Brian Stansberry
+ * @author John E. Bailey
  */
-class MessageHandler implements Handler {
-
+class MessageHandler implements ServerCommunicationHandler.Handler {
+    private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final Server server;
-    
+
     MessageHandler(Server server) {
         if (server == null) {
             throw new IllegalArgumentException("server is null");
@@ -51,7 +52,7 @@ class MessageHandler implements Handler {
     }
 
     @Override
-    public void handleMessage(String sourceProcessName, byte[] message) {
+    public void handleMessage(byte[] message) {
         final ServerCommand serverCommand;
         try {
             serverCommand = readServerCommand(message);
@@ -62,15 +63,18 @@ class MessageHandler implements Handler {
         if(serverCommand == null)
             throw new RuntimeException("Server command is null");
 
-        if("START".equals(serverCommand.getCommand())) {
-            final Standalone standalone = (Standalone)serverCommand.getArgs()[0];
-            try {
-                server.start(standalone);
-            } catch (ServerStartException e) {
-                throw new RuntimeException("Failed to start server", e);
-            }
-        } else if("STOP".equals(serverCommand.getCommand())) {
-            server.stop();
+        switch(serverCommand.getCommand()) {
+            case START:
+                final Standalone standalone = (Standalone)serverCommand.getArgs()[0];
+                try {
+                    server.start(standalone);
+                } catch (ServerStartException e) {
+                    logger.error("Failed to start server", e);
+                }
+                break;
+            case STOP:
+                server.stop();
+                break;
         }
     }
 
@@ -91,9 +95,8 @@ class MessageHandler implements Handler {
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
      */
     @Override
-    public void handleMessage(String sourceProcessName, List<String> message) {
-        // FIXME implement handleMessage
-        throw new UnsupportedOperationException("implement me");
+    public void handleMessage(List<String> message) {
+        logger.info("Message received: " + message);
     }
 
     @Override

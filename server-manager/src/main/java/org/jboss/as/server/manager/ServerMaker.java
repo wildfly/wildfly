@@ -22,6 +22,11 @@
 
 package org.jboss.as.server.manager;
 
+import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.PropertiesElement;
+import org.jboss.as.model.Standalone;
+import org.jboss.as.process.ProcessManagerSlave;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,11 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jboss.as.model.JvmElement;
-import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.Standalone;
-import org.jboss.as.process.ProcessManagerSlave;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -132,6 +132,7 @@ public final class ServerMaker {
         Map<String, String> sysProps = appendJavaOptions(jvm, command);
         
         command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+        command.add("-Dorg.jboss.boot.log.file=" + serverConfig.getServerName() + "/boot.log");
         command.add("-jar");
         command.add("jboss-modules.jar");
         command.add("-mp");

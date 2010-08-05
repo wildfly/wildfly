@@ -25,33 +25,22 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.process.ProcessManagerSlave;
-
 /**
- * A ProcessManagerSlaveFactory.
+ * A ServerCommunicationHandlerFactory.
  * 
- * @author Brian Stansberry
+ * @author John E. Bailey
  */
-public final class ProcessManagerSlaveFactory {
+public final class ServerCommunicationHandlerFactory {
 
-    private static final ProcessManagerSlaveFactory INSTANCE = new ProcessManagerSlaveFactory();
+    private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
     
-    public static ProcessManagerSlaveFactory getInstance() {
+    public static ServerCommunicationHandlerFactory getInstance() {
         return INSTANCE;
     }
     
-    public ProcessManagerSlave getProcessManagerSlave(ServerEnvironment environment, MessageHandler handler) {
-        
-        // TODO JBAS-8259 -- possible socket-based communication
-        // use environment to detect if PM wants that; use Standalone to
-        // determine what socket to use
-        
-        // Problem: during primordial bootstrap we have no Standalone
-        // Have ServerManager pass our address/port via command line?
-        
-        // For now, keep it simple
-        return new ProcessManagerSlave(environment.getStdin(), environment.getStdout(), handler);
+    public ServerCommunicationHandler getProcessManagerSlave(ServerEnvironment environment, MessageHandler handler) {
+        return new ServerCommunicationHandler(environment.getStdin(), environment.getStdout(), handler);
     }
     
-    private ProcessManagerSlaveFactory() {}
+    private ServerCommunicationHandlerFactory() {}
 }
