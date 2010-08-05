@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -41,6 +42,7 @@ import java.util.TreeMap;
 public final class ThreadsSubsystemElement extends AbstractSubsystemElement<ThreadsSubsystemElement> {
 
     private static final long serialVersionUID = -8577568464935736902L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     private final NavigableMap<String, ThreadFactoryElement> threadFactories = new TreeMap<String, ThreadFactoryElement>();
     private final NavigableMap<String, ScheduledThreadPoolExecutorElement> scheduledExecutors = new TreeMap<String, ScheduledThreadPoolExecutorElement>();
@@ -123,10 +125,10 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     }
 
     public void activate(final ServiceActivatorContext context) {
+        log.info("Activating Threading Subsystem");
         for (ThreadFactoryElement element : threadFactories.values()) {
             element.activate(context);
         }
-
     }
 
     public Collection<String> getReferencedSocketBindings() {

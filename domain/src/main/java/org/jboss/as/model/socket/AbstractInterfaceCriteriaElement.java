@@ -41,7 +41,6 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
         if (element == null)
             throw new IllegalArgumentException("element is null");
         this.element = element;
-        processXmlStream(reader);
     }
     
     /**
@@ -58,14 +57,6 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
         this(reader, element);
         setInterfaceCriteria(interfaceCriteria);
     }
-
-    /**
-     * Hook for subclasses to process the xml stream during object construction.
-     * 
-     * @param reader stream reader used to read the xml
-     * @throws XMLStreamException if an error occurs
-     */
-    protected abstract void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException;
     
     /**
      * Gets the InterfaceCriteria associated with this element.

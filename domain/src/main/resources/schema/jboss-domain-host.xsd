@@ -37,14 +37,44 @@
     <xs:complexType name="host-configType">
         <xs:sequence>
             <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-            <xs:element name="domain-controller" type="locationType" minOccurs="1"/>
+            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
+            <xs:element name="domain-controller" type="domain-controllerType" minOccurs="1"/>
             <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
             <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
             <xs:element name="servers" type="serversType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
+    
+    <xs:complexType name="domain-controllerType">
+        <xs:choice>
+            <xs:element name="local"  type="domain-controller-localType"/>
+            <xs:element name="remote" type="domain-controller-remoteType"/>
+        </xs:choice>
+    </xs:complexType>
 
-    <xs:complexType name="locationType">
+    <xs:complexType name="domain-controller-localType">
+         <!-- FIXME this is a total ripoff of serverType to make it easy
+              to initially test booting a server by having the DC act as such.
+              We need a proper description of what a DC is
+          -->
+         <xs:all>
+            <xs:element name="priority" type="priorityType" minOccurs="0"/>
+            <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
+
+            <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
+            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
+
+            <xs:element name="loggers" type="loggersType" minOccurs="0"/>
+            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="jvmType" />
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="optional" default="DomainController"/>
+        <xs:attribute name="group" type="xs:string" use="required"/>
+
+    </xs:complexType>
+
+    <xs:complexType name="domain-controller-remoteType">
+        <!--  TODO need different discovery mechanisms -->
         <xs:attribute name="location" type="xs:anyURI" use="required"/>
         <!-- the interface to bind to for outbound connections to the given location -->
         <xs:attribute name="bind-interface" type="xs:string" use="optional"/>

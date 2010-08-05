@@ -30,6 +30,19 @@
                 <include name="bin/**"/>
             </fileset>
         </copy>
+        <chmod perm="+x">
+            <fileset dir="target/bin">
+                <include name="**/*.sh"/>
+            </fileset>
+        </chmod>
+    </target>
+
+    <target name="domain">
+        <copy todir="target">
+            <fileset dir="src">
+                <include name="domain/**"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="modules">
@@ -181,6 +194,10 @@
         <module-def group="org.jboss.logmanager" artifact="jboss-logmanager">
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
+        
+        <module-def group="org.jboss.marshalling" artifact="jboss-marshalling">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
+        </module-def>
 
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
@@ -192,12 +209,20 @@
             <maven-resource group="org.jboss.naming" artifact="jnpserver"/>
         </module-def>
         
+        <module-def group="org.jboss.remoting3" artifact="jboss-remoting">
+            <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
+        </module-def>
+        
         <module-def group="org.jboss.threads" artifact="jboss-threads">
             <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
         </module-def>
 
         <module-def group="org.jboss.stdio" artifact="jboss-stdio">
             <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        </module-def>
+
+        <module-def group="org.jboss.xnio" artifact="xnio-api">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
         </module-def>
 
         <module-def group="org.jboss" artifact="jboss-vfs">
@@ -226,5 +251,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, bin"/>
+    <target name="all" depends="clean-target, modules, bin, domain"/>
 </project>

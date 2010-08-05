@@ -15,6 +15,8 @@ import java.net.SocketException;
  */
 public class NicInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = 6905500001319165842L;
+    
     private final String name;
     
     /**

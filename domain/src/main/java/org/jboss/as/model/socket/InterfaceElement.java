@@ -3,6 +3,18 @@
  */
 package org.jboss.as.model.socket;
 
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.Attribute;
+import org.jboss.as.model.Element;
+import org.jboss.as.model.Namespace;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -10,16 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.Attribute;
-import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A named interface definition, with an optional specification of what address
@@ -29,9 +31,10 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
+public class InterfaceElement extends AbstractModelElement<InterfaceElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -5256526713311518506L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.socket");
 
     private final String name;
     private String address;
@@ -163,6 +166,19 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
         }
         return new OverallInterfaceCriteria();
     }
+    
+    /**
+     * Gets whether this element is configured with necessary information needed
+     * to determine an IP address for the interface; either via a directly
+     * specified {@link #getAddress() address} or via at least one address
+     * selection criteria.
+     * 
+     * @return <code>true</code> if the necessary information is available, <code>false</code>
+     *         otherwise
+     */
+    public boolean isFullySpecified() {
+        return address != null || interfaceCriteria.size() > 0;
+    }
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<InterfaceElement>> target, InterfaceElement other) {
@@ -200,8 +216,15 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
 
         streamWriter.writeEndElement();
     }
-    
+
+    @Override
+    public void activate(ServiceActivatorContext context) {
+        log.info("Activating interface element:" + name);
+    }
+
     private class OverallInterfaceCriteria implements InterfaceCriteria {
+
+        private static final long serialVersionUID = 2784447904647077246L;
 
         @Override
         public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {

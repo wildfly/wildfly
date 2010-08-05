@@ -66,7 +66,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         super(reader);
         // Handle attributes
         String fileName = null;
-        String sha1Hash = null;
+        byte[] sha1Hash = null;
         String allowed = null;
         String start = null;
         final int count = reader.getAttributeCount();
@@ -82,7 +82,15 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                         break;
                     }
                     case SHA1: {
-                        sha1Hash = value;
+                        try {
+                            sha1Hash = hexStringToByteArray(value);
+                        }
+                        catch (Exception e) {
+                           throw new XMLStreamException("Value " + value + 
+                                   " for attribute " + attribute.getLocalName() + 
+                                   " does not represent a properly hex-encoded SHA1 hash", 
+                                   reader.getLocation(), e);
+                        }
                         break;
                     }
                     case ALLOWED: {
@@ -103,7 +111,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.key = new DeploymentUnitKey(fileName, sha1Hash.getBytes());
+        this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.allowed = allowed == null ? true : Boolean.valueOf(allowed);
         this.start = start == null ? true : Boolean.valueOf(start);
         

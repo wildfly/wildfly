@@ -52,17 +52,22 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-process-manager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server-manager</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
-            <version>1.2.0.CR2</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
-            <version>1.0.0.CR3</version>
         </dependency>
     </dependencies>
 

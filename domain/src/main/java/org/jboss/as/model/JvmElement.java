@@ -66,6 +66,10 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             }
         }
         if (name == null) {
+            // FIXME and fix xsd. A name is only required at domain and host
+            // level (i.e. when wrapped in <jvms/>). At server-group and server
+            // levels it can be unnamed, in which case configuration from
+            // domain and host levels aren't mixed in. OR make name required in xsd always
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         this.name = name;
@@ -103,13 +107,47 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         }
     }
     
+    public JvmElement(JvmElement ... toCombine) {
+        // FIXME -- hack Location
+        super(new Location("N/A", 0, 0, null));
+        
+        this.name = toCombine[0].getName();
+        
+        for (JvmElement element : toCombine) {
+            if (! this.name.equals(element.getName())) {
+                throw new IllegalArgumentException("Jvm " + element.getName() + " has a different name from the other jvm elements; all must have the same name");
+            }
+            if (element.getJavaHome() != null) {
+                this.javaHome = element.getJavaHome();
+            }
+            if (element.getHeapSize() != null) {
+                this.heapSize = element.getHeapSize();
+            }
+            if (element.getMaxHeap() != null) {
+                this.maxHeap = element.getMaxHeap();
+            }
+        }
+        
+        PropertiesElement[] combinedEnv = new PropertiesElement[toCombine.length];
+        for (int i = 0; i < toCombine.length; i++) {
+            combinedEnv[i] = toCombine[i].getEnvironmentVariables();
+        }
+        this.environmentVariables = new PropertiesElement(Element.ENVIRONMENT_VARIABLES, true, combinedEnv);
+        
+        PropertiesElement[] combinedSysp = new PropertiesElement[toCombine.length];
+        for (int i = 0; i < toCombine.length; i++) {
+            combinedSysp[i] = toCombine[i].getSystemProperties();
+        }
+        this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, combinedSysp);
+    }
+    
     
 
     public String getJavaHome() {
         return javaHome;
     }
 
-    public void setJavaHome(String javaHome) {
+    void setJavaHome(String javaHome) {
         this.javaHome = javaHome;
     }
 
@@ -117,7 +155,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return heapSize;
     }
 
-    public void setHeapSize(String heapSize) {
+    void setHeapSize(String heapSize) {
         this.heapSize = heapSize;
     }
 
@@ -125,12 +163,20 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return maxHeap;
     }
 
-    public void setMaxHeap(String maxHeap) {
+    void setMaxHeap(String maxHeap) {
         this.maxHeap = maxHeap;
     }
 
     public String getName() {
         return name;
+    }
+    
+    public PropertiesElement getEnvironmentVariables() {
+        return environmentVariables;
+    }
+    
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
     }
 
     /* (non-Javadoc)

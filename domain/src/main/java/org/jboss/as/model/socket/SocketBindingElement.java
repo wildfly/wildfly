@@ -3,19 +3,20 @@
  */
 package org.jboss.as.model.socket;
 
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.Attribute;
+import org.jboss.as.model.Element;
+import org.jboss.as.model.RefResolver;
+import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.Attribute;
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Binding configuration for a named socket.
@@ -27,6 +28,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private static final long serialVersionUID = 6868487634991345679L;
 
     private final String name;
+    private final RefResolver<String, InterfaceElement> interfaceResolver;
     private String interfaceName;
     private int port;
     private boolean fixedPort;
@@ -34,19 +36,39 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private int multicastPort;
     
     /**
-     * @param location
+     * Construct a new instance.
+     *
+     * @param location the declaration location of the element
+     * @param name the name of the group. Cannot be <code>null</code>
+     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     *           to interfaces. May be used safely in the constructor
+     *           itself. Cannot be <code>null</code>
      */
-    public SocketBindingElement(Location location, final String name) {
+    public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver) {
         super(location);
         this.name = name;
+        
+        if (interfaceResolver == null)
+            throw new IllegalArgumentException("interfaceResolver is null");
+        this.interfaceResolver = interfaceResolver;
     }
 
     /**
-     * @param reader
-     * @throws XMLStreamException
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     *           to interfaces. May be used safely in the constructor
+     *           itself. Cannot be <code>null</code>
+     * @throws XMLStreamException if an error occurs
      */
-    public SocketBindingElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver) throws XMLStreamException {
         super(reader);
+        
+        if (interfaceResolver == null)
+            throw new IllegalArgumentException("interfaceResolver is null");
+        this.interfaceResolver = interfaceResolver;
+        
         // Handle attributes
         String name = null;
         String intf = null;
@@ -67,6 +89,11 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
                         break;
                     }
                     case INTERFACE: {
+                        if (this.interfaceResolver.resolveRef(value) == null) {
+                            throw new XMLStreamException("Unknown interface " + value + 
+                                    " " + attribute.getLocalName() + " must be declared in element " + 
+                                    Element.INTERFACES.getLocalName(), reader.getLocation());
+                        }
                         intf = value;
                         break;
                     }
@@ -229,7 +256,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * Sets the multicast port (if any) on which this socket should listen
      * for multicast traffic
      * 
-     * @param the multicast port
+     * @param multicastPort the multicast port
      */
     void setMulticastPort(int multicastPort) {
         if (multicastPort < 1 || multicastPort >= 65536)

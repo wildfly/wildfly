@@ -24,15 +24,17 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * A server group within a {@link Domain}.
@@ -47,6 +49,8 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     private final String profile;
     private final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
     private SocketBindingGroupRefElement bindingGroup;
+    private JvmElement jvm;
+    private PropertiesElement systemProperties;
     
     /**
      * Construct a new instance.
@@ -100,9 +104,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case JVM: {
-                            // FIXME implement jvm
-                            throw new UnsupportedOperationException("implement jvm");
-                            //break;
+                            if (jvm != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            jvm = new JvmElement(reader);
+                            break;
                         }
                         case SOCKET_BINDING_GROUP: {
                             if (bindingGroup != null) {
@@ -116,9 +122,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                             break;
                         }
                         case SYSTEM_PROPERTIES: {
-                            // FIXME implement system-properties
-                            throw new UnsupportedOperationException("implement system-properties");
-                            //break;
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            this.systemProperties = new PropertiesElement(reader);
+                            break;
                         }
                         default: throw unexpectedElement(reader);
                     }
@@ -139,12 +147,83 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
     
     /**
-     * Gets the name of the profile the server group will run.
+     * Gets the name of the profile that servers in the server group will run.
      * 
      * @return the profile name. Will not be <code>null</code>
      */
-    public String getProfile() {
+    public String getProfileName() {
         return profile;
+    }
+    
+    /**
+     * Gets the default jvm configuration for servers in this group. Which jvm to
+     * use can be overridden at the {@link ServerElement#getJvm() server level}.
+     * The details of the configuration of this jvm can be overridden at the
+     * @{link {@link Host#getJvm(String) host level} or at the 
+     * {@link ServerElement#getJvm() server level}.
+     *     
+     * @return the jvm configuration, or <code>null</code> if there is none
+     */
+    public JvmElement getJvm() {
+        return jvm;
+    }
+    
+    /**
+     * Sets the default jvm configuration for servers in this group.
+     *     
+     * param jvm the jvm configuration. May be <code>null</code>
+     */
+    void setJvm(JvmElement jvm) {
+        this.jvm = jvm;
+    }
+    
+    /**
+     * Gets the default
+     * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
+     * assignment for this server group.
+     * 
+     * @return the socket binding group reference, or <code>null</code>
+     */
+    public SocketBindingGroupRefElement getSocketBindingGroup() {
+        return bindingGroup;
+    }
+    
+    /**
+     * Sets the default
+     * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
+     * assignment for this server group.
+     * 
+     * param ref the socket binding group reference, or <code>null</code>
+     */
+    void setSocketBindingGroupRefElement(SocketBindingGroupRefElement ref) {
+        this.bindingGroup = ref;
+    }
+    
+    /**
+     * Gets the deployments mapped to this server group.
+     * 
+     * @return the deployments. May be empty but will not be <code>null</code>
+     */
+    public Set<ServerGroupDeploymentElement> getDeployments() {
+        Set<ServerGroupDeploymentElement> deps = new LinkedHashSet<ServerGroupDeploymentElement>();
+        for (Map.Entry<DeploymentUnitKey, ServerGroupDeploymentElement> entry : deploymentMappings.entrySet()) {
+            deps.add(entry.getValue());
+        }
+        return Collections.unmodifiableSet(deps);
+    }
+    
+    /**
+     * Gets any system properties defined at the server group level for this 
+     * server group. These properties can extend and override any properties
+     * declared at the {@link Domain#getSystemProperties() domain level} and
+     * may in turn be extended or overridden by any properties declared at the
+     * {@link Host#getSystemProperties() host level} or the 
+     * {@link ServerElement#getSystemProperties() server level}.
+     * 
+     * @return the system properties, or <code>null</code> if there are none
+     */
+    public PropertiesElement getSystemProperties() {
+        return systemProperties;
     }
 
     /** {@inheritDoc} */
@@ -152,6 +231,9 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
         cksum = calculateElementHashOf(deploymentMappings.values(), cksum);
+        if (bindingGroup != null) cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
+        if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
+        if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         return cksum;
     }
 
@@ -171,6 +253,12 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
 
+        
+        if (jvm != null) {
+            streamWriter.writeStartElement(Element.JVM.getLocalName());
+            jvm.writeContent(streamWriter);
+        }
+        
         if (bindingGroup != null) {
             streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             bindingGroup.writeContent(streamWriter);
@@ -183,6 +271,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                 element.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
+        }       
+        
+        if (systemProperties != null && systemProperties.size() > 0) {
+            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
+            systemProperties.writeContent(streamWriter);
         }
 
         streamWriter.writeEndElement();
@@ -206,6 +299,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: throw unexpectedElement(reader);
             }

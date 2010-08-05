@@ -22,74 +22,122 @@
 
 package org.jboss.as.server.manager;
 
-import java.io.BufferedReader;
+import org.jboss.as.model.Standalone;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.io.ObjectOutputStream;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.Checksum;
 
 /**
+ * A client proxy for communication between a ServerManager and a managed server.
+ * 
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Server {
-    private static final ThreadFactory FACTORY = Executors.defaultThreadFactory();
-
-    public Server(final InputStream errorStream, final InputStream inputStream, final OutputStream outputStream) {
-        final Thread thread = FACTORY.newThread(new Runnable() {
-            public void run() {
-                try {
-                    final InputStreamReader reader = new InputStreamReader(errorStream);
-                    final BufferedReader bufferedReader = new BufferedReader(reader);
-                    String line;
-                    try {
-                        while ((line = bufferedReader.readLine()) != null) {
-                            System.err.println("Server reported error: " + line.trim());
-                        }
-                    } catch (IOException e) {
-                        // todo log it
-                    }
-                } finally {
-                    try {
-                        errorStream.close();
-                    } catch (IOException e) {
-                        // todo log
-                    }
-                }
-            }
-        });
-        thread.start();
-        FACTORY.newThread(new Runnable() {
-            public void run() {
-                String cmd;
-                try {
-                    while ((cmd = readCommand(inputStream)) != null) {
-                        System.out.println("Got msg: " + cmd);
-                    }
-                } catch (IOException e) {
-                    // todo log it
-                } finally {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        // todo log
-                    }
-                }
-            }
-
-        });
+//    private static final ThreadFactory FACTORY = Executors.defaultThreadFactory();
+    
+    private final ServerCommunicationHandler communicationHandler;
+    
+//    public Server(final InputStream errorStream, final InputStream inputStream, final OutputStream outputStream) {
+//        this.processManagerSlave = null;
+//        final Thread thread = FACTORY.newThread(new Runnable() {
+//            public void run() {
+//                try {
+//                    final InputStreamReader reader = new InputStreamReader(errorStream);
+//                    final BufferedReader bufferedReader = new BufferedReader(reader);
+//                    String line;
+//                    try {
+//                        while ((line = bufferedReader.readLine()) != null) {
+//                            System.err.println("Server reported error: " + line.trim());
+//                        }
+//                    } catch (IOException e) {
+//                        // todo log it
+//                    }
+//                } finally {
+//                    try {
+//                        errorStream.close();
+//                    } catch (IOException e) {
+//                        // todo log
+//                    }
+//                }
+//            }
+//        });
+//        thread.start();
+//        FACTORY.newThread(new Runnable() {
+//            public void run() {
+//                String cmd;
+//                try {
+//                    while ((cmd = readCommand(inputStream)) != null) {
+//                        System.out.println("Got msg: " + cmd);
+//                    }
+//                } catch (IOException e) {
+//                    // todo log it
+//                } finally {
+//                    try {
+//                        inputStream.close();
+//                    } catch (IOException e) {
+//                        // todo log
+//                    }
+//                }
+//            }
+//
+//        });
+//    }
+    
+    public Server(ServerCommunicationHandler communicationHandler) {
+        if (communicationHandler == null) {
+            throw new IllegalArgumentException("communicationHandler is null");
+        }
+        this.communicationHandler = communicationHandler;
     }
 
-    private static String readCommand(final InputStream in) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        int c;
-        while ((c = in.read()) != -1 && c != '\n') {
-            b.append((char) (c & 0xff));
-        }
-        if (b.length() == 0 && c == -1) {
-            return null;
-        }
-        return b.toString();
+    public void start(Standalone serverConf) throws IOException {
+        
+        ServerCommand command = new ServerCommand(ServerCommand.Command.START, new Object[] {serverConf}, new Class<?>[]{Standalone.class});
+        sendCommand(command);
     }
+
+    public void stop() throws IOException {
+        
+        sendCommand(new ServerCommand(ServerCommand.Command.START)); 
+    }
+    
+    private void sendCommand(ServerCommand command) throws IOException {
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        Checksum chksum = new Adler32();
+        CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(cos);
+            oos.writeObject(command);
+            oos.close();
+            oos = null;
+            communicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
+        }
+        finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                }
+                catch (IOException ignored) {}
+            }
+        }
+        
+    }
+
+//    private static String readCommand(final InputStream in) throws IOException {
+//        final StringBuilder b = new StringBuilder();
+//        int c;
+//        while ((c = in.read()) != -1 && c != '\n') {
+//            b.append((char) (c & 0xff));
+//        }
+//        if (b.length() == 0 && c == -1) {
+//            return null;
+//        }
+//        return b.toString();
+//    }
 }

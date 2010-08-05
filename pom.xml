@@ -306,7 +306,7 @@
             <dependency>
                 <groupId>org.jboss.marshalling</groupId>
                 <artifactId>jboss-marshalling-river</artifactId>
-                <version>${version.org.jboss.marshalling.jboss-marshalling-river}</version>
+                <version>${version.org.jboss.marshalling.jboss-marshalling}</version>
             </dependency>
 
             <dependency>

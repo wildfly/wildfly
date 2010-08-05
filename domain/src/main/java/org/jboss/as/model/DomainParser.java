@@ -22,13 +22,13 @@
 
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
@@ -37,6 +37,20 @@ import javax.xml.stream.XMLStreamException;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class DomainParser implements XMLElementReader<ParseResult<Domain>>, XMLStreamConstants {
+
+    private DomainParser() {
+    }
+
+    private static final DomainParser INSTANCE = new DomainParser();
+
+    /**
+     * Get the instance.
+     *
+     * @return the instance
+     */
+    public static DomainParser getInstance() {
+        return INSTANCE;
+    }
 
     /** {@inheritDoc} */
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Domain> value) throws XMLStreamException {

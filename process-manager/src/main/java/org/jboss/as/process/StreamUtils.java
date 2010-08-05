@@ -27,16 +27,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
+import java.util.zip.Adler32;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class StreamUtils {
+public final class StreamUtils {
 
     private StreamUtils() {
     }
 
-    static Status readWord(final InputStream input, final StringBuilder dest) throws IOException {
+    public static Status readWord(final InputStream input, final StringBuilder dest) throws IOException {
         dest.setLength(0);
         int c;
         for (;;) {
@@ -52,7 +53,7 @@ final class StreamUtils {
 
     private static final String INVALID_BYTE = "Invalid byte";
 
-    static int readChar(final InputStream input) throws IOException {
+    public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
         if (a < 0) {
             throw new EOFException();
@@ -89,7 +90,7 @@ final class StreamUtils {
         }
     }
 
-    static void readToEol(final InputStream input) throws IOException {
+    public static void readToEol(final InputStream input) throws IOException {
         for (;;) {
             switch (input.read()) {
                 case -1: return;
@@ -97,27 +98,114 @@ final class StreamUtils {
             }
         }
     }
+    
+    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
+        return new CheckedBytes(input);
+    }
+    
+    public static int readInt(final InputStream in) throws IOException {
+        int ch1 = in.read();
+        int ch2 = in.read();
+        int ch3 = in.read();
+        int ch4 = in.read();
+        if ((ch1 | ch2 | ch3 | ch4) < 0)
+            throw new EOFException();
+        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
+    }
+    
+    public static void readFully(final InputStream in, byte b[], int off, int len) throws IOException {
+        if (len < 0)
+            throw new IndexOutOfBoundsException();
+        int n = 0;
+        while (n < len) {
+            int count = in.read(b, off + n, len - n);
+            if (count < 0)
+            throw new EOFException();
+            n += count;
+        }
+    }
+    
+    public static long readLong(final InputStream in) throws IOException {
+        byte[] bytes = new byte[8];
+        readFully(in, bytes, 0, 8);
+        return (((long)bytes[0] << 56) +
+                ((long)(bytes[1] & 255) << 48) +
+                ((long)(bytes[2] & 255) << 40) +
+                ((long)(bytes[3] & 255) << 32) +
+                ((long)(bytes[4] & 255) << 24) +
+                ((bytes[5] & 255) << 16) +
+                ((bytes[6] & 255) <<  8) +
+                ((bytes[7] & 255) <<  0));
+    }
 
-    static void writeString(final OutputStream output, final Object o) throws IOException {
+    public static void writeString(final OutputStream output, final Object o) throws IOException {
         writeString(output, o.toString());
     }
 
-    static void writeString(final OutputStream output, final String s) throws IOException {
+    public static void writeString(final OutputStream output, final String s) throws IOException {
         final int length = s.length();
 
         int strIdx = 0;
         while (strIdx < length) {
-            final char c = s.charAt(strIdx ++);
-            if (c >= 0x20 && c <= 0x7f) {
-                output.write((byte)c);
-            } else if (c <= 0x07ff) {
-                output.write((byte)(0xc0 | 0x1f & c >> 6));
-                output.write((byte)(0x80 | 0x3f & c));
-            } else {
-                output.write((byte)(0xe0 | 0x0f & c >> 12));
-                output.write((byte)(0x80 | 0x3f & c >> 6));
-                output.write((byte)(0x80 | 0x3f & c));
-            }
+            writeChar(output, s.charAt(strIdx ++));
+        }
+    }
+    
+    public static void writeChar(final OutputStream output, final char c) throws IOException {
+
+        if (c >= 0x20 && c <= 0x7f) {
+            output.write((byte)c);
+        } else if (c <= 0x07ff) {
+            output.write((byte)(0xc0 | 0x1f & c >> 6));
+            output.write((byte)(0x80 | 0x3f & c));
+        } else {
+            output.write((byte)(0xe0 | 0x0f & c >> 12));
+            output.write((byte)(0x80 | 0x3f & c >> 6));
+            output.write((byte)(0x80 | 0x3f & c));
+        }
+    }
+    
+    public static void writeInt(final OutputStream out, final int v) throws IOException {
+        out.write((v >>> 24) & 0xFF);
+        out.write((v >>> 16) & 0xFF);
+        out.write((v >>>  8) & 0xFF);
+        out.write((v >>>  0) & 0xFF);
+    }
+    
+    public static void writeLong(final OutputStream out, final long v) throws IOException {
+        for(int i = 0; i < 8; i++) {
+            out.write((byte)((v >> (8 * i)) & 0xff));
+          }
+    }
+    
+    public static class CheckedBytes {
+         
+        private final int expectedLength;
+        private byte[] bytez;
+        private long checksum;
+        private long expectedChecksum;
+        
+        public int getExpectedLength() {
+            return expectedLength;
+        }
+        public byte[] getBytes() {
+            return bytez;
+        }
+        public long getChecksum() {
+            return checksum;
+        }
+        public long getExpectedChecksum() {
+            return expectedChecksum;
+        }
+        
+        private CheckedBytes(InputStream input) throws IOException {
+            this.expectedLength = readInt(input);
+            this.bytez = new byte[expectedLength];
+            readFully(input, bytez, 0, expectedLength);
+            this.expectedChecksum = readLong(input);
+            Adler32 adler = new Adler32();
+            adler.update(bytez, 0, expectedLength);
+            this.checksum = adler.getValue();
         }
     }
 }

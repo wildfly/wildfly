@@ -29,8 +29,10 @@
     </resources>
 
     <dependencies>
+        <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.as" name="jboss-as-domain"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.remoting3" name="jboss-remoting"/>
+        <module group="system" name="system"/>
     </dependencies>
 </module>

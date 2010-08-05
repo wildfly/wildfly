@@ -26,4 +26,8 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+
+    <dependencies>
+        <module group="system" name="system"/>
+    </dependencies>
 </module>

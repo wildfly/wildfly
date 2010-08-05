@@ -25,7 +25,7 @@ package org.jboss.as.process;
 /**
 * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
 */
-enum Status {
+public enum Status {
     MORE,
     END_OF_LINE,
     END_OF_STREAM;

@@ -33,5 +33,6 @@
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss.logmanager" name="jboss-logmanager"/>
+        <module group="system" name="system"/>
     </dependencies>
 </module>

@@ -36,12 +36,8 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
      * @throws XMLStreamException if an error occurs
      */
     public SubnetMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader, Element.SUBNET_MATCH);
-        setInterfaceCriteria(new SubnetMatchInterfaceCriteria(network, mask));
-    }
+        super(reader, Element.SUBNET_MATCH);        
 
-    @Override
-    protected void processXmlStream(XMLExtendedStreamReader reader) throws XMLStreamException {
         // Handle attributes
         String value = null;
         byte[] net = null;
@@ -84,7 +80,9 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
         this.network = net;
         this.mask = mask;
         // Handle elements
-        requireNoContent(reader);
+        requireNoContent(reader);        
+
+        setInterfaceCriteria(new SubnetMatchInterfaceCriteria(this.network, this.mask));
     }
 
     @Override

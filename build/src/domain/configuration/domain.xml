@@ -1,0 +1,170 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<domain xmlns="urn:jboss:domain:1.0"
+        xmlns:remoting="urn:jboss:domain:remoting:1.0"
+        xmlns:threads="urn:jboss:domain:threads:1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
+
+    <!--<extensions>
+        <extension module="org.foo:blah"/>
+    </extensions>-->
+
+    <!-- The domain manager/server bootstrap configuration
+    <domain-configuration>
+        <bootstrapURI>http://bootstrap.uri</bootstrapURI>
+    </domain-configuration>
+    -->
+
+    <profiles>
+        <profile name="something">
+        <threads:subsystem>
+            <threads:queueless-thread-pool-executor name="remoting">
+                <threads:max-threads count="10" per-cpu="20"/>
+                <threads:keepalive-time time="10" unit="SECONDS"/>
+            </threads:queueless-thread-pool-executor>
+        </threads:subsystem>
+        </profile>
+    
+        <profile name="something2">
+            <include profile="something"/>
+            <remoting:subsystem thread-pool="remoting-pool">
+                <remoting:connector name="default-connector" socket-binding="remoting"/>
+            </remoting:subsystem>
+        </profile>
+    </profiles>
+
+    <!--  
+         Named interfaces that can be referenced elsewhere. Different
+         mechanisms for associating an IP address with the interface
+         are shown.
+    -->
+    <interfaces>
+
+        <interface name="default">
+            <!--  Here we directly state the IP address -->
+            <inet-address value="127.0.0.1"/>
+        </interface>
+        <interface name="external">
+            <!--  
+                Here we name the NIC; the IP address associated with NIC whose
+                byte representation has the lowest
+            -->
+            <nic name="eth1"/>
+        </interface>
+        <interface name="internal">
+            <!-- 
+                Here we provide a set of criteria that are used to narrow the
+                set of IP addresses available on the host to one that is acceptable.
+            -->
+            <not><loopback/></not>
+            <point-to-point/>
+            <multicast/>
+            <up/>
+            <site-local-address/>
+
+            <!-- Alternatively... 
+            <public-address/>
+            -->
+            <nic name="eth0"/>
+            <nic-match pattern="eth[0-9]+"/>
+            <!-- The 'any' element means the included criteria are not exclusive -->
+            <any>
+                <subnet-match value="10.0.0.0/8"/>
+                <subnet-match value="192.168.0.0/16"/>
+            </any>
+        </interface>
+        <!-- 
+             For these next two, no address selection criteria is provided, so 
+             an override at the host or server level is required. 
+        -->
+        <interface name="public3"/>
+        <interface name="public4"/>
+    </interfaces>
+
+    <socket-binding-groups>
+         <socket-binding-group name="standard-sockets" default-interface="external">
+            <socket-binding name="jndi" port="1099"/>
+            <socket-binding name="http" port="8080"/>
+            <socket-binding name="https" port="8447"/>
+            <socket-binding name="remoting" port="4447"/>
+         </socket-binding-group>
+         <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
+            <include socket-binding-group="standard-sockets"/>
+            <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
+            <socket-binding name="cluster-failure-detection" interface="internal" port="54200"/>
+            <socket-binding name="ha-jndi" port="1100"/>
+            <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
+         </socket-binding-group>
+    </socket-binding-groups>
+
+<!--
+    <ssls>
+         <ssl name="jbossweb" password="changeit" cipher-suite="SSLv2+SSLv3"/>
+    </ssls>
+-->
+
+    <system-properties>
+        <property name="prop1" value="value1"/>
+        <property name="prop2" value="value2"/>
+    </system-properties>
+    
+    <deployments>
+        <deployment name="my-app.ear" sha1="965ff5768fa166a04b13"/>
+        <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af"/>
+        <deployment name="my-war.ear" sha1="22cfd207b9b90e0014a4" allowed="false" start="false"/>
+    </deployments>
+
+    <server-groups>
+        <server-group name="main-server-group" profile="something">
+
+           <jvm name="icedtea1">
+              <heap size="512m" max-size="1024m"/>
+           </jvm>
+
+           <socket-binding-group ref="standard-clustered-sockets"/>
+
+<!--       TODO this has to be clarified
+           <cluster default-multicast-address="230.0.0.4">
+             <group-communication-config name="udp">
+                 <udp-tranpsort socket="cluster-udp"/>
+             </group-communication-config>  
+             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
+             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
+           </cluster>
+-->
+            <deployments>
+                <deployment name="my-app.ear" sha1="965ff5768fa166a04b13" start="true"/>
+                <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af" start="false"/>
+            </deployments>
+
+            <system-properties>
+               <property name="prop1" value="value1"/>
+               <property name="prop2" value="value2"/>
+            </system-properties>
+        </server-group>
+    </server-groups>
+
+</domain>

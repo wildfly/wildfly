@@ -17,6 +17,8 @@ import java.util.Set;
  */
 public class NotInterfaceCriteria implements InterfaceCriteria {
 
+    private static final long serialVersionUID = -2037624198837453203L;
+    
     private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
     
     /**
