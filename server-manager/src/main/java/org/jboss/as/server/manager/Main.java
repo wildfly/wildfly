@@ -84,9 +84,7 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        err.println("stdio set");
         Main main = new Main();
-        err.println("booting");
         main.boot(args, in, out, err);
     }
 
@@ -101,7 +99,6 @@ public final class Main {
         try {
             ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
-                stderr.println("no config");
                 abort(null);
                 return;
             } else {
@@ -109,7 +106,6 @@ public final class Main {
                 sm.start();
             }
         } catch (Throwable t) {
-            stderr.println("aborting");
             t.printStackTrace(stderr);
             abort(t);
             return;
@@ -120,7 +116,6 @@ public final class Main {
         // capable of handling external input
         try {
             sm.startServers();
-            stderr.println("started servers");
         }
         catch (RuntimeException e) {
             e.printStackTrace(stderr);

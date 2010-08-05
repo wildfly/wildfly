@@ -59,14 +59,6 @@ final class ManagedProcess {
         this.command = command;
         this.env = env;
         this.workingDirectory = workingDirectory;
-        StringBuilder sb = new StringBuilder(processName);
-        sb.append(' ');
-        for (String cmd : command) {
-            sb.append(cmd);
-            sb.append(' ');
-        }
-        sb.append(workingDirectory);
-        System.err.println(sb.toString());
     }
 
     void start() throws IOException {
@@ -131,7 +123,6 @@ final class ManagedProcess {
     }
     
     void send(final String sender, final byte[] msg, final long chksum) throws IOException {
-        System.err.println("Sending " + msg.length + " bytes from " + sender + " to " + processName);
         final StringBuilder b = new StringBuilder();
         b.append("MSG_BYTES");
         b.append('\0');
@@ -167,7 +158,6 @@ final class ManagedProcess {
                         return;
                     }
                     try {
-                        System.err.println("Received command " + b.toString());
                         final Command command = Command.valueOf(b.toString());
                         OUT: switch (command) {
                             case ADD: {
@@ -278,25 +268,19 @@ final class ManagedProcess {
                             }
                             case SEND_BYTES: {
                                 if (status != Status.MORE) {
-                                    System.err.println("Status after command is " + status);
                                     break;
                                 }
                                 status = StreamUtils.readWord(inputStream, b);
                                 if (status == Status.MORE) {
                                     final String recipient = b.toString();
-                                    System.err.println("Reading CheckedBytes");
                                     CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
 //                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
 //                                        System.err.println("Incorrect checksum");
 //                                        // FIXME deal with invalid checksum
 //                                    }
 //                                    else {
-                                        System.err.println("Asked to send " + cb.getExpectedLength() + " bytes from " + processName + " to " + recipient);
                                         master.sendMessage(processName, recipient, cb.getBytes(), cb.getExpectedChecksum());
 //                                    }
-                                }
-                                else {
-                                    System.err.println("Status after recipient is " + status);
                                 }
                                 break;
                             }
