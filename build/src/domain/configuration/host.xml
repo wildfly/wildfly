@@ -77,7 +77,7 @@
                </jvm-options>-->
             </jvm>
         </server>
-        <server name="server-two" group="main-server-group" start="false">
+        <server name="server-two" group="main-server-group" start="true">
 
             <interface-specs>
                 <!-- public4 address wasn't defined in domain or host so
