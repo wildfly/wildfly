@@ -82,7 +82,7 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
         // Handle elements
         requireNoContent(reader);        
 
-        setInterfaceCriteria(new SubnetMatchInterfaceCriteria(network, mask));
+        setInterfaceCriteria(new SubnetMatchInterfaceCriteria(this.network, this.mask));
     }
 
     @Override

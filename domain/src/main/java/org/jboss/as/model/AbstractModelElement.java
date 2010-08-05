@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -53,8 +54,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter, XMLStreamConstants {
 
     private static final long serialVersionUID = 66064050420378211L;
-
-    private final Location location;
+    
+    // FIXME make non-transient and final when MSC-16 is fixed
+    private transient Location location;
     private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
 
     /**
@@ -590,5 +592,30 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     public final int hashCode() {
         return super.hashCode();
+    }
+    
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        // FIXME remove when MSC-16 is fixed
+        out.defaultWriteObject();
+        if (location != null) {
+            out.writeBoolean(true);
+            out.writeUTF(location.getFileName());
+            out.writeInt(location.getLineNumber());
+            out.writeInt(location.getColumnNumber());
+        }
+        else {
+            out.writeBoolean(false);
+        }
+    }
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+        // FIXME remove when MSC-16 is fixed
+        in.defaultReadObject();
+        boolean hasLoc = in.readBoolean();
+        if (hasLoc) {
+            String file = in.readUTF();
+            int line = in.readInt();
+            int col = in.readInt();
+            location = new Location(file, line, col, null);
+        }
     }
 }

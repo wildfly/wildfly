@@ -165,7 +165,14 @@ final class StreamUtils {
         }
     }
     
-    static void writeLong(final OutputStream out, long v) throws IOException {
+    static void writeInt(final OutputStream out, final int v) throws IOException {
+        out.write((v >>> 24) & 0xFF);
+        out.write((v >>> 16) & 0xFF);
+        out.write((v >>>  8) & 0xFF);
+        out.write((v >>>  0) & 0xFF);
+    }
+    
+    static void writeLong(final OutputStream out, final long v) throws IOException {
         for(int i = 0; i < 8; i++) {
             out.write((byte)((v >> (8 * i)) & 0xff));
           }

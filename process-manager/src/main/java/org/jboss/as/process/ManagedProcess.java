@@ -88,6 +88,7 @@ final class ManagedProcess {
             // todo - error handling in the event that a thread can't start?
             errorThread.start();
             outputThread.start();
+            this.commandStream = process.getOutputStream();
             this.process = process;
             start = true;
         }
@@ -100,6 +101,7 @@ final class ManagedProcess {
             }
             final OutputStream stream = commandStream;
             StreamUtils.writeString(stream, "SHUTDOWN\n");
+            stream.flush();
         }
     }
 
@@ -107,22 +109,31 @@ final class ManagedProcess {
         return start;
     }
 
-    void send(final List<String> msg) throws IOException {
+    void send(final String sender, final List<String> msg) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append("MSG");
+        b.append('\0');
+        b.append(sender);
         for (String s : msg) {
             b.append('\0').append(s);
         }
         b.append('\n');
         StreamUtils.writeString(commandStream, b);
+        commandStream.flush();
     }
     
-    void send(final byte[] msg, long chksum) throws IOException {
-        StreamUtils.writeString(commandStream, "MSG_BYTES0");
-        commandStream.write(msg.length);
-        commandStream.write(msg);
+    void send(final String sender, final byte[] msg, final long chksum) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        b.append("MSG_BYTES");
+        b.append('\0');
+        b.append(sender);
+        b.append('\0');
+        StreamUtils.writeString(commandStream, b.toString());
+        StreamUtils.writeInt(commandStream, msg.length);
+        commandStream.write(msg, 0, msg.length);
         StreamUtils.writeLong(commandStream, chksum);
         StreamUtils.writeChar(commandStream, '\n');
+        commandStream.flush();
     }
 
     private final class OutputStreamHandler implements Runnable {
@@ -172,6 +183,7 @@ final class ManagedProcess {
                                 try {
                                     size = Integer.parseInt(sizeString, 10);
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final List<String> execCmd = new ArrayList<String>();
@@ -187,10 +199,12 @@ final class ManagedProcess {
                                     break;
                                 }
                                 final String mapSizeString = b.toString();
-                                final int mapSize;
+                                final int mapSize, lastEntry;
                                 try {
                                     mapSize = Integer.parseInt(mapSizeString, 10);
+                                    lastEntry = mapSize - 1;
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final Map<String, String> env = new HashMap<String, String>();
@@ -201,10 +215,12 @@ final class ManagedProcess {
                                     }
                                     final String key = b.toString();
                                     status = StreamUtils.readWord(inputStream, b);
-                                    if (status != Status.MORE) {
-                                        break OUT;
+                                    if (status == Status.MORE || (i == lastEntry && status == Status.END_OF_LINE)) {
+                                        env.put(key, b.toString());
                                     }
-                                    env.put(key, b.toString());
+                                    else {
+                                        break OUT;
+                                    }                                    
                                 }
                                 master.addProcess(name, execCmd, env, workingDirectory);
                                 break;
@@ -241,13 +257,13 @@ final class ManagedProcess {
                                     break;
                                 }
                                 status = StreamUtils.readWord(inputStream, b);
-                                final String name = b.toString();
+                                final String recipient = b.toString();
                                 final List<String> msg = new ArrayList<String>(0);
                                 while (status == Status.MORE) {
                                     status = StreamUtils.readWord(inputStream, b);
                                     msg.add(b.toString());
                                 }
-                                master.sendMessage(name, msg);
+                                master.sendMessage(processName, recipient, msg);
                                 break;
                             }
                             case SEND_BYTES: {
@@ -256,12 +272,15 @@ final class ManagedProcess {
                                 }
                                 status = StreamUtils.readWord(inputStream, b);
                                 if (status == Status.MORE) {
-                                    final String name = b.toString();
+                                    final String recipient = b.toString();
                                     CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
-                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
-                                        // FIXME deal with invalid checksum
-                                    }
-                                    master.sendMessage(name, cb.getBytes(), cb.getExpectedChecksum());
+//                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+//                                        System.err.println("Incorrect checksum");
+//                                        // FIXME deal with invalid checksum
+//                                    }
+//                                    else {
+                                        master.sendMessage(processName, recipient, cb.getBytes(), cb.getExpectedChecksum());
+//                                    }
                                 }
                                 break;
                             }
@@ -271,7 +290,7 @@ final class ManagedProcess {
                                     status = StreamUtils.readWord(inputStream, b);
                                     msg.add(b.toString());
                                 }
-                                master.broadcastMessage(msg);
+                                master.broadcastMessage(processName, msg);
                                 break;
                             }
                             case BROADCAST_BYTES: {
@@ -285,18 +304,22 @@ final class ManagedProcess {
                                     if (cb.getChecksum() != cb.getExpectedChecksum()) {
                                         // FIXME deal with invalid checksum
                                     }
-                                    master.broadcastMessage(cb.getBytes(), cb.getExpectedChecksum());
+                                    else {
+                                        master.broadcastMessage(processName, cb.getBytes(), cb.getExpectedChecksum());
+                                    }
                                 }
                                 break;
                             }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
+                        e.printStackTrace(System.err);
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(inputStream);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // exception caught, shut down channel and exit
+                e.printStackTrace(System.err);
             } finally {
                 safeClose(inputStream);
                 for (;;) try {
