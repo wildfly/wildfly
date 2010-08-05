@@ -38,7 +38,7 @@ public final class ServerCommunicationHandlerFactory {
         return INSTANCE;
     }
     
-    public ServerCommunicationHandler getProcessManagerSlave(ServerEnvironment environment, MessageHandler handler) {
+    public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
         return new ServerCommunicationHandler(environment.getStdin(), environment.getStdout(), handler);
     }
     
