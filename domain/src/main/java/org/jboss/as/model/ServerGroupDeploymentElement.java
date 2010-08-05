@@ -22,16 +22,23 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.as.deployment.item.DeploymentItemContextImpl;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
@@ -44,6 +51,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     private final DeploymentUnitKey key;
     private boolean start;
+    private List<DeploymentItem> deploymentItems;
 
     /**
      * Construct a new instance.
@@ -52,7 +60,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start) {
+    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start, final List<DeploymentItem> deploymentItems) {
         super(location);
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
@@ -65,8 +73,9 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         }
         this.key = new DeploymentUnitKey(deploymentName, deploymentHash);
         this.start = start;
+        this.deploymentItems = deploymentItems;
     }
-    
+
     public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
@@ -74,7 +83,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         byte[] sha1Hash = null;
         String start = null;
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for(int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
                 throw unexpectedAttribute(reader, i);
@@ -90,10 +99,10 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                             sha1Hash = hexStringToByteArray(value);
                         }
                         catch (Exception e) {
-                           throw new XMLStreamException("Value " + value + 
-                                   " for attribute " + attribute.getLocalName() + 
-                                   " does not represent a properly hex-encoded SHA1 hash", 
-                                   reader.getLocation(), e);
+                            throw new XMLStreamException("Value " + value +
+                                    " for attribute " + attribute.getLocalName() +
+                                    " does not represent a properly hex-encoded SHA1 hash",
+                                    reader.getLocation(), e);
                         }
                         break;
                     }
@@ -111,15 +120,18 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        
+
         this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
         requireNoContent(reader);
+
+        // TODO:  Read in serialized DIs
     }
-    
+
     /**
      * Gets the identifier of this deployment that's suitable for use as a map key.
+     *
      * @return the key
      */
     public DeploymentUnitKey getKey() {
@@ -128,7 +140,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     /**
      * Gets the name of the deployment.
-     * 
+     *
      * @return the name
      */
     public String getName() {
@@ -137,7 +149,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     /**
      * Gets a defensive copy of the sha1 hash of the deployment.
-     * 
+     *
      * @return the hash
      */
     public byte[] getSha1Hash() {
@@ -146,16 +158,17 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     /**
      * Gets whether the deployment should be started upon server start.
-     * 
+     *
      * @return <code>true</code> if the deployment should be started; <code>false</code>
      *         if not.
      */
     public boolean isStart() {
         return start;
     }
-    
+
     /**
      * Sets whether the deployments should be started upon server start.
+     *
      * @param start <code>true</code> if the deployment should be started; <code>false</code>
      *         if not.
      */
@@ -190,6 +203,33 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     @Override
     public void activate(final ServiceActivatorContext context) {
-        log.info("Activating server group deployment: " + getName());
+        final String deploymentName = key.getName() + ":" + key.getSha1HashAsHexString();
+        log.info("Activating server group deployment: " + deploymentName);
+
+        final Collection<DeploymentItem> deploymentItems = this.deploymentItems;
+        if (deploymentItems == null) {
+            log.warnf("No deployment items found for deployment: %s", deploymentName);
+            return;
+        }
+
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+
+        // Create deployment service
+        final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
+        batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName));
+
+        // Create a sub-batch for this deployment
+        final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
+
+        // Setup a batch level dependency on deployment service
+        deploymentSubBatch.addDependency(deploymentServiceName);
+
+        // Construct an item context
+        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(deploymentSubBatch);
+
+        // Process all the deployment items with the item context
+        for (DeploymentItem deploymentItem : deploymentItems) {
+            deploymentItem.install(deploymentItemContext);
+        }
     }
 }

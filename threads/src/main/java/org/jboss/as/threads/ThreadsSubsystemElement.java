@@ -129,6 +129,14 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         for (ThreadFactoryElement element : threadFactories.values()) {
             element.activate(context);
         }
+
+        for(ScheduledThreadPoolExecutorElement element : scheduledExecutors.values()) {
+            element.activate(context);
+        }
+
+        for(AbstractExecutorElement<?> element : executors.values()) {
+            element.activate(context);
+        }
     }
 
     public Collection<String> getReferencedSocketBindings() {

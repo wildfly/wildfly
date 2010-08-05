@@ -25,6 +25,7 @@
  */
 package org.jboss.as.server;
 
+import org.jboss.as.deployment.DeploymentServiceListener;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.server.manager.ServerMessage;
 import org.jboss.logging.Logger;
@@ -32,11 +33,13 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.TimingServiceListener;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.Map;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
@@ -71,20 +74,32 @@ public class Server {
         logger.info("Starting server with config: " + config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
+        final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
             @Override
-            public void run() {
-                logger.info("Server started");
-                sendMessage("STARTED");
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
+                if(serviceFailures.isEmpty()) {
+                    logger.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
+                    sendMessage("STARTED");
+                } else {
+                    sendMessage("START FAILED");
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed.  Attempted to start %d services in %dms", numberServices, elapsedTime));
+                    buff.append("\nThe following services failed to start:\n");
+                    for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
+                        buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
+                    }
+                    logger.error(buff.toString());
+                }
             }
         });
         batchBuilder.addListener(listener);
 
         try {
+            listener.startBatch();
             final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
             config.activate(serviceActivatorContext);
             batchBuilder.install();
             listener.finishBatch();
+            listener.finishDeployment();
         } catch (Throwable t) {
             sendMessage("START FAILED");
             throw new ServerStartException("Failed to start server", t);
