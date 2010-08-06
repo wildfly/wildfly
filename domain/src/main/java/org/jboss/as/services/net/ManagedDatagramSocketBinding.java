@@ -21,6 +21,7 @@
 */
 package org.jboss.as.services.net;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -54,6 +55,6 @@ class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBind
 			socketBindings.unregisterBinding(this);
 		}
 	}
-	
+
 }
 

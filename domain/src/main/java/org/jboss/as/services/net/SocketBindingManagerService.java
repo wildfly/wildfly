@@ -21,6 +21,7 @@
 */
 package org.jboss.as.services.net;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -31,6 +32,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,8 +131,28 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
-	public void registerBinding(ManagedBinding binding) {
+	public Closeable registerBinding(ManagedBinding binding) {
 		managedBindings.put(binding.getBindAddress(), binding);
+		return binding;
+	}
+
+	public Closeable registerSocket(DatagramSocket socket) {
+		return registerBinding(new WrappedManagedDatagramSocket(socket));
+	}
+	public Closeable registerSocket(ServerSocket socket) {
+		return registerBinding(new WrappedManagedServerSocket(socket));
+	}
+	public Closeable registerSocket(Socket socket) {
+		return registerBinding(new WrappedManagedSocket(socket));
+	}
+	public Closeable registerChannel(DatagramChannel channel) {
+		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
+	}
+	public Closeable registerChannel(ServerSocketChannel channel) {
+		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
+	}
+	public Closeable registerChannel(SocketChannel channel) {
+		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
 	}
 	
 	/**
@@ -137,7 +161,34 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	 * @param binding the managed socket binding
 	 */
 	public void unregisterBinding(ManagedBinding binding) {
-		managedBindings.remove(binding.getBindAddress());
+		unregisterBinding(binding.getBindAddress());
+	}
+	
+	public void unregisterSocket(DatagramSocket socket) {
+		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
+	}
+	public void unregisterSocket(ServerSocket socket) {
+		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());	
+	}
+	public void unregisterSocket(Socket socket) {
+		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());	
+	}
+	public void unregisterChannel(DatagramChannel channel) {
+		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+	}
+	public void unregisterChannel(ServerSocketChannel channel) {
+		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+	}
+	public void unregisterChannel(SocketChannel channel) {
+		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+	}
+
+	Closeable registerBinding(InetSocketAddress address, Closeable closeable) {
+		return registerBinding(new CloseableManagedBinding(address, closeable));
+	}
+	
+	void unregisterBinding(InetSocketAddress address) {
+		managedBindings.remove(address);
 	}
 	
 	class ManagedSocketFactory extends SocketFactory {
@@ -191,6 +242,76 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	        serverSocket.bind(new InetSocketAddress(ifAddress, port), backlog);
 	        return serverSocket;
 	    }
+	}
+	
+	class CloseableManagedBinding implements ManagedBinding {
+		private final InetSocketAddress address;
+		private final Closeable closeable;
+		public CloseableManagedBinding(final InetSocketAddress address, final Closeable closeable) {
+			this.address = address;
+			this.closeable = closeable;
+		}
+		public InetSocketAddress getBindAddress() {
+			return address;
+		}
+		public void close() throws IOException {
+			try {
+				closeable.close();
+			} finally {
+				unregisterBinding(address);
+			}
+		}
+	}
+
+	class WrappedManagedDatagramSocket implements ManagedBinding {
+		private final DatagramSocket socket;
+		public WrappedManagedDatagramSocket(final DatagramSocket socket) {
+			this.socket = socket;
+		}
+		public InetSocketAddress getBindAddress() {
+			return (InetSocketAddress) socket.getLocalSocketAddress();
+		}
+		public void close() throws IOException {
+			try {
+				socket.close();
+			} finally {
+				unregisterBinding(getBindAddress());
+			}
+		}
+	}
+	
+	class WrappedManagedSocket implements ManagedBinding {
+		private final Socket socket;
+		public WrappedManagedSocket(final Socket socket) {
+			this.socket = socket;
+		}
+		public InetSocketAddress getBindAddress() {
+			return (InetSocketAddress) socket.getLocalSocketAddress();
+		}
+		public void close() throws IOException {
+			try {
+				socket.close();
+			} finally {
+				unregisterBinding(getBindAddress());
+			}
+		}
+	}
+
+	class WrappedManagedServerSocket implements ManagedBinding {
+		private final ServerSocket socket;
+		public WrappedManagedServerSocket(final ServerSocket socket) {
+			this.socket = socket;
+		}
+		public InetSocketAddress getBindAddress() {
+			return (InetSocketAddress) socket.getLocalSocketAddress();
+		}
+		public void close() throws IOException {
+			try {
+				socket.close();
+			} finally {
+				unregisterBinding(getBindAddress());
+			}
+		}
 	}
 	
 }

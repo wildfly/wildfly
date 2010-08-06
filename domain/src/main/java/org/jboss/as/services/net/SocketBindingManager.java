@@ -21,11 +21,17 @@
 */
 package org.jboss.as.services.net;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Collection;
 
 import javax.net.ServerSocketFactory;
@@ -61,7 +67,7 @@ public interface SocketBindingManager {
 	 * @return the datagram socket
 	 * @throws SocketException
 	 */
-	DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException ;
+	DatagramSocket createDatagramSocket(final SocketAddress address) throws SocketException ;
 	
 	/**
 	 * Create a multicast socket.
@@ -70,7 +76,7 @@ public interface SocketBindingManager {
 	 * @return the multicast socket 
 	 * @throws IOException
 	 */
-	MulticastSocket createMulticastSocket(SocketAddress address) throws IOException;
+	MulticastSocket createMulticastSocket(final SocketAddress address) throws IOException;
 
 	/**
 	 * Get the server port offset.
@@ -93,7 +99,14 @@ public interface SocketBindingManager {
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
-	void registerBinding(ManagedBinding binding);
+	Closeable registerBinding(final ManagedBinding binding);
+
+	Closeable registerSocket(final Socket socket);
+	Closeable registerSocket(final ServerSocket socket);
+	Closeable registerSocket(final DatagramSocket socket);
+	Closeable registerChannel(final SocketChannel channel);
+	Closeable registerChannel(final ServerSocketChannel channel);
+	Closeable registerChannel(final DatagramChannel channel);
 	
 	/**
 	 * Unregister a socket binding.
@@ -101,6 +114,13 @@ public interface SocketBindingManager {
 	 * @param binding the managed socket binding
 	 */
 	void unregisterBinding(ManagedBinding binding);
-
+	
+	void unregisterSocket(final Socket socket);
+	void unregisterSocket(final ServerSocket socket);
+	void unregisterSocket(final DatagramSocket socket);
+	void unregisterChannel(final SocketChannel channel);
+	void unregisterChannel(final ServerSocketChannel channel);
+	void unregisterChannel(final DatagramChannel channel);
+	
 }
 

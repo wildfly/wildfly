@@ -21,6 +21,8 @@
 */
 package org.jboss.as.services.net;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
@@ -28,7 +30,7 @@ import java.net.InetSocketAddress;
  * 
  * @author Emanuel Muckenhuber
  */
-public interface ManagedBinding {
+public interface ManagedBinding extends Closeable {
 
 	/**
 	 * Get the bind address.
@@ -36,6 +38,11 @@ public interface ManagedBinding {
 	 * @return the bind address.
 	 */
 	InetSocketAddress getBindAddress();
+	
+	/**
+	 * Close and unregister this binding.
+	 */
+	void close() throws IOException;
 	
 }
 
