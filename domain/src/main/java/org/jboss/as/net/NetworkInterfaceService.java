@@ -19,10 +19,9 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.service;
+package org.jboss.as.net;
 
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -42,13 +41,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
 	public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
 	
-	private static final boolean preferIP4Stack;
-	private static final boolean preferIP6Stack;
-	
-	static {
-		preferIP4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
-		preferIP6Stack = Boolean.getBoolean("java.net.preferIPv6Addresses");
-	}
+	private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack"); 
 
 	/** The interface binding. */
 	private NetworkInterfaceBinding binding;
@@ -56,15 +49,15 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 	/** The network interface element. */
 	private final InterfaceElement interfaceElement;
 
-	public NetworkInterfaceService(InterfaceElement element) {
+	public NetworkInterfaceService(final InterfaceElement element) {
 		this.interfaceElement = element;
 	}
 
 	public synchronized void start(StartContext arg0) throws StartException {
 		try {
 			if(interfaceElement.getAddress() != null) {
-				InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
-				NetworkInterface net = NetworkInterface.getByInetAddress(address);
+				final InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
+				final NetworkInterface net = NetworkInterface.getByInetAddress(address);
 				this.binding = new NetworkInterfaceBinding(net, address);
 			} else {
 				this.binding = resolveInterface(interfaceElement);
@@ -83,14 +76,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 	}
 
 	public synchronized NetworkInterfaceBinding getValue() throws IllegalStateException {
-		NetworkInterfaceBinding binding = this.binding;
+		final NetworkInterfaceBinding binding = this.binding;
 		if(binding == null) {
 			throw new IllegalStateException();
 		}
 		return binding;
 	}
 	
-	static NetworkInterfaceBinding resolveInterface(InterfaceElement element) throws SocketException {
+	static NetworkInterfaceBinding resolveInterface(final InterfaceElement element) throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
 		while (networkInterfaces.hasMoreElements()) {
 			final NetworkInterface networkInterface = networkInterfaces.nextElement();
@@ -108,18 +101,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 		return null;
 	}
 	
-	static InetAddress getInterfaceAddress(NetworkInterface networkInterface) {
+	static InetAddress getInterfaceAddress(final NetworkInterface networkInterface) {
 		final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
 		while(interfaceAddresses.hasMoreElements()) {
 			final InetAddress address = interfaceAddresses.nextElement();
 			// prefer IPv4 stack
-			if(preferIP4Stack && address instanceof Inet4Address) {
+			if(preferIPv4Stack && address instanceof Inet4Address) {
 				return address;
-		    // prefer IPv6 stack
-			} else if (preferIP6Stack && address instanceof Inet6Address) {
-				return address;
-			// no preferences
-			} else if (! preferIP4Stack && ! preferIP6Stack) {
+			} else if (! preferIPv4Stack) {
 				return address;
 			}
 		}

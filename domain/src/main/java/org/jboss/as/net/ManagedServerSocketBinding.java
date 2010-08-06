@@ -19,23 +19,47 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.service;
+package org.jboss.as.net;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 
 /**
- * The managed binding.
- * 
  * @author Emanuel Muckenhuber
  */
-public interface ManagedBinding {
+public class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
 
-	/**
-	 * Get the bind address.
-	 * 
-	 * @return the bind address.
-	 */
-	InetSocketAddress getBindAddress();
+	private final SocketBindingManager manager;
+	
+	ManagedServerSocketBinding(final SocketBindingManager manager) throws IOException {
+		this.manager = manager;
+	}
+	
+	public InetSocketAddress getBindAddress() {
+		return InetSocketAddress.class.cast(getLocalPort());
+	}
+
+	public void bind(SocketAddress endpoint, int backlog) throws IOException {
+		super.bind(endpoint, backlog);
+		manager.registerSocket(this);
+	}
+	
+	public Socket accept() throws IOException {
+		final ManagedSocketBinding socket = new ManagedSocketBinding(manager);
+		implAccept(socket);
+		return socket;
+	}
+
+	public void close() throws IOException {
+		try {
+			super.close();
+		} finally {
+			manager.unregisterSocket(this);
+		}
+	}
 	
 }
 
