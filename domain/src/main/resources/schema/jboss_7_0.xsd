@@ -70,9 +70,9 @@
       <xs:sequence>
           <xs:element name="name" type="xs:string"/>
           <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1" />          
-          <xs:element name="profile" type="profileType"/>
+          <xs:element name="profile" type="standalone-profileType"/>
           <xs:element name="interfaces" type="specified-interfacesType"  minOccurs="0" maxOccurs="1"/>
-          <xs:element name="socket-binding-group" type="socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
           <xs:element name="ssls" type="sslsType" minOccurs="0" maxOccurs="1"/>
           <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
           <xs:element name="deployments" type="mapped-deploymentsType"  minOccurs="0" maxOccurs="1"/>
@@ -315,11 +315,11 @@
       <xs:documentation>Contains a list of profiles available for use in the domain</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="profile" type="profileType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="profile" type="domain-profileType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="profileType">
+  <xs:complexType name="domain-profileType">
     <xs:annotation>
       <xs:documentation>Contains a list of subsystems</xs:documentation>
     </xs:annotation>
@@ -354,6 +354,28 @@
     <xs:attribute name="profile" use="required">
       <xs:annotation>
         <xs:documentation>Name of the profile to include</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="standalone-profileType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of subsystems</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:any namespace="##other">
+            <xs:annotation>
+                <xs:documentation>A profile declaration may include configuration
+                elements from other namespaces for the subsystems that make up the profile.
+                </xs:documentation>
+            </xs:annotation>
+          </xs:any>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the profile</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -398,6 +420,24 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+
+   <xs:complexType name="standalone-socket-binding-groupType">
+    <xs:annotation>
+      <xs:documentation>Contains a list of socket configurations</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="default-interface" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+            Name of an interface that should be used as the interface for
+            any sockets that do not explicitly declare one.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+   </xs:complexType>
    
    <xs:complexType name="socket-bindingType">
     <xs:annotation>

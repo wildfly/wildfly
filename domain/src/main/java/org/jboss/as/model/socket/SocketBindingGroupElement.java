@@ -56,7 +56,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * @param includedGroupResolver {@link RefResolver} to use to resolve references 
      *           to included socket binding groups. Should not be used in the constructor
      *           itself as referenced groups may not have been created yet.
-     *           Cannot be <code>null</code>
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      */
     public SocketBindingGroupElement(Location location, final String name, final String defaultInterface, 
             final RefResolver<String, InterfaceElement> interfaceResolver,
@@ -79,8 +81,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         }
         this.defaultInterface = defaultInterface;
         
-        if (includedGroupResolver == null)
-            throw new IllegalArgumentException("includedGroupResolver is null");
         this.includedGroupResolver = includedGroupResolver;
     }
 
@@ -93,7 +93,11 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      *           itself
      * @param includedGroupResolver {@link RefResolver} to use to resolve references 
      *           to included socket binding groups. Should not be used in the constructor
-     *           itself as referenced groups may not have been created yet
+     *           itself as referenced groups may not have been created yet.
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
+     *           
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingGroupElement(XMLExtendedStreamReader reader, 
@@ -105,8 +109,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
         
-        if (includedGroupResolver == null)
-            throw new IllegalArgumentException("includedGroupResolver is null");
         this.includedGroupResolver = includedGroupResolver;
         
         // Handle attributes
@@ -152,6 +154,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case INCLUDE: {
+                            if (includedGroupResolver == null) {
+                                throw unexpectedElement(reader);
+                            }
                             final SocketBindingGroupIncludeElement include = new SocketBindingGroupIncludeElement(reader);
                             if (includedGroups.containsKey(include.getGroupName())) {
                                 throw new XMLStreamException("Included socket-binding-group " + include.getGroupName() + " already declared", reader.getLocation());

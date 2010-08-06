@@ -64,6 +64,7 @@ public enum Element {
     
     MULTICAST("multicast"),
     
+    NAME("name"),
     NIC("nic"),
     NIC_MATCH("nic-match"),
     NOT("not"),
@@ -84,6 +85,8 @@ public enum Element {
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
+    SSL("ssl"),
+    SSLS("ssls"),
     SUBNET_MATCH("subnet-match"),
     SYSTEM_PROPERTIES("system-properties"),
     
