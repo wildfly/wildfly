@@ -24,13 +24,19 @@ package org.jboss.as.threads;
 
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -101,6 +107,31 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
     }
 
     public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        long keepAlive = -1L;
+        final TimeSpec keepaliveTime = getKeepaliveTime();
+        if(keepaliveTime != null)
+            keepAlive = keepaliveTime.getUnit().toNanos(keepaliveTime.getDuration());
+
+        final ScaledCount maxThreads = getMaxThreads();
+        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, blocking, keepAlive);
+        final ServiceName serviceName = JBOSS_THREAD_EXECUTOR.append(getName());
+        final BatchServiceBuilder<ExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
+        final String threadFactory = getThreadFactory();
+        final ServiceName threadFactoryName;
+        if (threadFactory == null) {
+            threadFactoryName = serviceName.append("thread-factory");
+            batchBuilder.addService(threadFactoryName, new ThreadFactoryService());
+        } else {
+            threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
+        }
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
+
+        final String handoffExecutor = getHandoffExecutor();
+        if (handoffExecutor == null) {
+            final ServiceName handoffExecutorName = JBOSS_THREAD_EXECUTOR.append(handoffExecutor);
+            serviceBuilder.addDependency(handoffExecutorName, Executor.class, service.getHandoffExecutorInjector());
+        }
     }
 
     public long elementHash() {

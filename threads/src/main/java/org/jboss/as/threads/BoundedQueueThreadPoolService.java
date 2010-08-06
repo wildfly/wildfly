@@ -29,54 +29,62 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossExecutors;
+import org.jboss.threads.QueueExecutor;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Service responsible for creating, starting and stopping a scheduled thread pool executor.
+ * Service responsible for creating, starting and stopping a thread pool executor with a bounded queue.  
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John E. Bailey
  */
-public final class ScheduledThreadPoolService implements Service<ScheduledExecutorService> {
-
+public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
+    private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<Executor>();
 
-    private ScheduledThreadPoolExecutor executor;
-    private ScheduledExecutorService value;
+    private QueueExecutor executor;
+    private ExecutorService value;
     private StopContext context;
 
+    private final int coreThreads;
     private final int maxThreads;
+    private final int queueLength;
+    private final boolean blocking;
     private final TimeSpec keepAlive;
+    private final boolean allowCoreTimeout;
 
-    public ScheduledThreadPoolService(final int maxThreads, final TimeSpec keepAlive) {
+    public BoundedQueueThreadPoolService(int coreThreads, int maxThreads, int queueLength, boolean blocking, TimeSpec keepAlive, boolean allowCoreTimeout) {
+        this.coreThreads = coreThreads;
         this.maxThreads = maxThreads;
+        this.queueLength = queueLength;
+        this.blocking = blocking;
         this.keepAlive = keepAlive;
+        this.allowCoreTimeout = allowCoreTimeout;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        executor = new ExecutorImpl(0, threadFactoryValue.getValue());
-        executor.setMaximumPoolSize(maxThreads);
-        if(keepAlive != null)
-            executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
-        value = JBossExecutors.protectedScheduledExecutorService(executor);
+        executor = new QueueExecutor(coreThreads, maxThreads, keepAlive.getDuration(), keepAlive.getUnit(), queueLength, threadFactoryValue.getValue(), blocking, handoffExecutorValue.getOptionalValue());
+        executor.setAllowCoreThreadTimeout(allowCoreTimeout);
+        value = JBossExecutors.protectedExecutorService(executor);
     }
 
     public synchronized void stop(final StopContext context) {
-        final ScheduledThreadPoolExecutor executor = this.executor;
+        final QueueExecutor executor = this.executor;
         if (executor == null) {
             throw new IllegalStateException();
         }
         this.context = context;
         context.asynchronous();
         executor.shutdown();
+        // TODO: Add shutdown hook to call context.complete();
         this.executor = null;
         value = null;
     }
 
-    public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
-        final ScheduledExecutorService value = this.value;
+    public synchronized ExecutorService getValue() throws IllegalStateException {
+        final ExecutorService value = this.value;
         if (value == null) {
             throw new IllegalStateException();
         }
@@ -87,18 +95,7 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
         return threadFactoryValue;
     }
 
-    private class ExecutorImpl extends ScheduledThreadPoolExecutor {
-
-        ExecutorImpl(final int corePoolSize, final ThreadFactory threadFactory) {
-            super(corePoolSize, threadFactory);
-        }
-
-        protected void terminated() {
-            synchronized (ScheduledThreadPoolService.this) {
-                super.terminated();
-                context.complete();
-                context = null;
-            }
-        }
+    public Injector<Executor> getHandoffExecutorInjector() {
+        return handoffExecutorValue;
     }
 }

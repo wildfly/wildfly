@@ -34,6 +34,8 @@ public final class TimeSpec implements Serializable {
 
     private static final long serialVersionUID = 5145007669106852119L;
 
+    public static final TimeSpec DEFAULT_KEEPALIVE = new TimeSpec(TimeUnit.SECONDS, 30L);
+
     private final TimeUnit unit;
     private final long duration;
 

@@ -81,6 +81,7 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
                         default: throw unexpectedElement(reader);
                     }
                 }
+                break;
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -120,7 +121,8 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
 
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final ScheduledThreadPoolService service = new ScheduledThreadPoolService();
+        final ScaledCount maxThreads = getMaxThreads();
+        final ScheduledThreadPoolService service = new ScheduledThreadPoolService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, getKeepaliveTime());
         final ServiceName serviceName = JBOSS_THREAD_SCHEDULED_EXECUTOR.append(getName());
         final BatchServiceBuilder<ScheduledExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();
@@ -131,6 +133,6 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         } else {
             threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
         }
-        serviceBuilder.addDependency(JBOSS_THREAD_FACTORY.append(threadFactory), ThreadFactory.class, service.getThreadFactoryInjector());
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 }
