@@ -146,7 +146,7 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
         }
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
         final String handoffExecutor = this.handoffExecutor;
-        if (handoffExecutor == null) {
+        if (handoffExecutor != null) {
             final ServiceName handoffExecutorName = JBOSS_THREAD_EXECUTOR.append(handoffExecutor);
             serviceBuilder.addDependency(handoffExecutorName, Executor.class, service.getHandoffExecutorInjector());
         }
