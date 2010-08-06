@@ -167,7 +167,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                             break;
                         }
                         case SOCKET_BINDING: {
-                            final SocketBindingElement include = new SocketBindingElement(reader, interfaceResolver);
+                            final SocketBindingElement include = new SocketBindingElement(reader, interfaceResolver, this.defaultInterface);
                             if (socketBindings.containsKey(include.getName())) {
                                 throw new XMLStreamException("socket-binding " + include.getName() + " already declared", reader.getLocation());
                             }
