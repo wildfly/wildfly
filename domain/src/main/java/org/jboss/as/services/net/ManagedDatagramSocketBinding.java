@@ -19,23 +19,41 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.net;
+package org.jboss.as.services.net;
 
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
 
 /**
- * The managed binding.
- * 
  * @author Emanuel Muckenhuber
  */
-public interface ManagedBinding {
+class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
 
-	/**
-	 * Get the bind address.
-	 * 
-	 * @return the bind address.
-	 */
-	InetSocketAddress getBindAddress();
+	private final SocketBindingManager socketBindings;
+	
+	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
+		super(address);
+		this.socketBindings = socketBindings;
+	}
+	
+	public InetSocketAddress getBindAddress() {
+		return (InetSocketAddress) getLocalSocketAddress();
+	}
+	
+	public synchronized void bind(SocketAddress addr) throws SocketException {
+		super.bind(addr);
+		socketBindings.registerBinding(this);
+	}
+	
+	public void close() {
+		try {
+			super.close();
+		} finally {
+			socketBindings.unregisterBinding(this);
+		}
+	}
 	
 }
 

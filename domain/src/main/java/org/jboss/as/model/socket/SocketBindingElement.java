@@ -15,7 +15,7 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.RefResolver;
-import org.jboss.as.net.SocketBindingService;
+import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;

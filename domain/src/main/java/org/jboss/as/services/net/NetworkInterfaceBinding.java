@@ -19,43 +19,40 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.net;
+package org.jboss.as.services.net;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
+public final class NetworkInterfaceBinding {
 
-	private final SocketBindingManager socketBindings;
+	private final InetAddress address;
+	private final NetworkInterface networkInterface;
 	
-	ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
-		super(address);
-		this.socketBindings = socketBindings;
+	NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
+		this.address = address;
+		this.networkInterface = networkInterface;
+	}
+
+	/**
+	 * Get the network address.
+	 * 
+	 * @return the network address
+	 */
+	public InetAddress getAddress() {
+		return this.address;
 	}
 	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
+	/**
+	 * Get the network interface.
+	 * 
+	 * @return the network interface
+	 */
+	public NetworkInterface getNetworkInterface() {
+		return this.networkInterface;
 	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		this.socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-		
-	}
-	
+
 }
-

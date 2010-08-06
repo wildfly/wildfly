@@ -18,7 +18,7 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
-import org.jboss.as.net.NetworkInterfaceService;
+import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;

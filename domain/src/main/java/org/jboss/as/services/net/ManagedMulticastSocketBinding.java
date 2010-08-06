@@ -19,39 +19,42 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.net;
+package org.jboss.as.services.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.MulticastSocket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedSocketBinding extends Socket implements ManagedBinding {
+class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
 
 	private final SocketBindingManager socketBindings;
 	
-	ManagedSocketBinding(final SocketBindingManager socketBindings) {
+	ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
+		super(address);
 		this.socketBindings = socketBindings;
 	}
 	
 	public InetSocketAddress getBindAddress() {
-		return InetSocketAddress.class.cast(getLocalAddress());
+		return (InetSocketAddress) getLocalSocketAddress();
 	}
 	
-	public void bind(SocketAddress bindpoint) throws IOException {
-		super.bind(bindpoint);
-		socketBindings.registerBinding(this);
+	public synchronized void bind(SocketAddress addr) throws SocketException {
+		super.bind(addr);
+		this.socketBindings.registerBinding(this);
 	}
-
-	public synchronized void close() throws IOException {
+	
+	public void close() {
 		try {
 			super.close();
 		} finally {
 			socketBindings.unregisterBinding(this);
 		}
+		
 	}
 	
 }

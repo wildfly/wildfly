@@ -19,40 +19,23 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.net;
+package org.jboss.as.services.net;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
+import java.net.InetSocketAddress;
 
 /**
+ * The managed binding.
+ * 
  * @author Emanuel Muckenhuber
  */
-public final class NetworkInterfaceBinding {
-
-	private final InetAddress address;
-	private final NetworkInterface networkInterface;
-	
-	NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
-		this.address = address;
-		this.networkInterface = networkInterface;
-	}
+public interface ManagedBinding {
 
 	/**
-	 * Get the network address.
+	 * Get the bind address.
 	 * 
-	 * @return the network address
+	 * @return the bind address.
 	 */
-	public InetAddress getAddress() {
-		return this.address;
-	}
+	InetSocketAddress getBindAddress();
 	
-	/**
-	 * Get the network interface.
-	 * 
-	 * @return the network interface
-	 */
-	public NetworkInterface getNetworkInterface() {
-		return this.networkInterface;
-	}
-
 }
+
