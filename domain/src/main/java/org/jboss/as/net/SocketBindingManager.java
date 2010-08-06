@@ -23,57 +23,44 @@ package org.jboss.as.net;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
+import org.jboss.msc.service.ServiceName;
+
 /**
  * @author Emanuel Muckenhuber
  */
-public class SocketBindingManager {
-
-	private final int portOffSet;
-	private final SocketFactory socketFactory = new ManagedSocketFactory();
-	private final ServerSocketFactory serverSocketFactory = new ManagedServerSocketFactory();
-
-	private final Map<InetSocketAddress, ManagedBinding> managedBindings = new ConcurrentHashMap<InetSocketAddress, ManagedBinding>();
-
-	public SocketBindingManager(int portOffSet) {
-		this.portOffSet = portOffSet;
-	}
+public interface SocketBindingManager {
 	
-	int getPortOffSet() {
-		return portOffSet;
-	}
+	public static final ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
+	
+	/**
+	 * Get the server port offset.
+	 * TODO move to somewhere else...
+	 * 
+	 * @return the port offset
+	 */
+	int getPortOffset();
 	
 	/**
 	 * Get the managed server socket factory.
 	 * 
 	 * @return the server socket factory
 	 */
-	public ServerSocketFactory getServerSocketFactory() {
-		return serverSocketFactory;
-	}
+	public ServerSocketFactory getServerSocketFactory();
 	
 	/**
 	 * Get the socket factory.
 	 * 
 	 * @return the socket factory
 	 */
-	public SocketFactory getSocketFactory() {
-		return socketFactory;
-	}
+	public SocketFactory getSocketFactory();
 	
 	/**
 	 * Create a datagram socket.
@@ -82,9 +69,7 @@ public class SocketBindingManager {
 	 * @return the datagram socket
 	 * @throws SocketException
 	 */
-	public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException {
-		return new ManagedDatagramSocketBinding(this, address);
-	}
+	public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException ;
 	
 	/**
 	 * Create a multicast socket.
@@ -93,16 +78,12 @@ public class SocketBindingManager {
 	 * @return the multicast socket 
 	 * @throws IOException
 	 */
-	public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
-		return new ManagedMulticastSocketBinding(this, address);
-	}
+	public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException;
 
 	/**
 	 * @return the registered bindings
 	 */
-	public Collection<ManagedBinding> listActiveBindings() {
-		return managedBindings.values();
-	}
+	public Collection<ManagedBinding> listActiveBindings();
 	
 	/**
 	 * Register an active socket binding.
@@ -110,71 +91,14 @@ public class SocketBindingManager {
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
-	public void registerSocket(ManagedBinding binding) {
-		managedBindings.put(binding.getBindAddress(), binding);
-	}
+	public void registerSocket(ManagedBinding binding);
 	
 	/**
 	 * Unregister a socket binding.
 	 * 
 	 * @param binding the managed socket binding
 	 */
-	public void unregisterSocket(ManagedBinding binding) {
-		managedBindings.remove(binding.getBindAddress());
-	}
-	
-	class ManagedSocketFactory extends SocketFactory {
+	public void unregisterSocket(ManagedBinding binding);
 
-		public Socket createSocket() {
-			return new ManagedSocketBinding(SocketBindingManager.this);
-		}
-	
-		public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
-			return createSocket(InetAddress.getByName(host), port);
-		}
-
-		public Socket createSocket(final InetAddress host, final int port) throws IOException {
-			final Socket socket = createSocket();
-			socket.connect(new InetSocketAddress(host, port));
-			return socket;
-		}
-
-		public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException, UnknownHostException {
-			return createSocket(InetAddress.getByName(host), port, localHost, localPort);
-		}
-
-		public Socket createSocket(final InetAddress address, final int port, final InetAddress localAddress, final int localPort) throws IOException {
-	        final Socket socket = createSocket();
-	        socket.bind(new InetSocketAddress(localAddress, localPort));
-	        socket.connect(new InetSocketAddress(address, port));
-	        return socket;
-		}
-	}
-
-	class ManagedServerSocketFactory extends ServerSocketFactory {
-
-	    public ServerSocket createServerSocket() throws IOException {
-	        return new ManagedServerSocketBinding(SocketBindingManager.this);
-	    }
-
-	    public ServerSocket createServerSocket(final int port) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(port));
-	        return serverSocket;
-	    }
-
-	    public ServerSocket createServerSocket(final int port, final int backlog) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(port), backlog);
-	        return serverSocket;
-	    }
-
-	    public ServerSocket createServerSocket(final int port, final int backlog, final InetAddress ifAddress) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(ifAddress, port), backlog);
-	        return serverSocket;
-	    }
-	}
-	
 }
 

@@ -29,13 +29,13 @@ import java.net.SocketException;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
 
-	private final SocketBindingManager manager;
+	private final SocketBindingManager socketBindings;
 	
-	ManagedDatagramSocketBinding(final SocketBindingManager manager, SocketAddress address) throws SocketException {
+	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
 		super(address);
-		this.manager = manager;
+		this.socketBindings = socketBindings;
 	}
 	
 	public InetSocketAddress getBindAddress() {
@@ -44,14 +44,14 @@ public class ManagedDatagramSocketBinding extends DatagramSocket implements Mana
 	
 	public synchronized void bind(SocketAddress addr) throws SocketException {
 		super.bind(addr);
-		manager.registerSocket(this);
+		socketBindings.registerSocket(this);
 	}
 	
 	public void close() {
 		try {
 			super.close();
 		} finally {
-			manager.unregisterSocket(this);
+			socketBindings.unregisterSocket(this);
 		}
 	}
 	

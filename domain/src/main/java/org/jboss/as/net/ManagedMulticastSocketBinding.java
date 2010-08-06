@@ -30,13 +30,13 @@ import java.net.SocketException;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
+class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
 
-	final SocketBindingManager manager;
+	private final SocketBindingManager socketBindings;
 	
-	ManagedMulticastSocketBinding(final SocketBindingManager manager, SocketAddress address) throws IOException {
+	ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
 		super(address);
-		this.manager = manager;
+		this.socketBindings = socketBindings;
 	}
 	
 	public InetSocketAddress getBindAddress() {
@@ -45,14 +45,14 @@ public class ManagedMulticastSocketBinding extends MulticastSocket implements Ma
 	
 	public synchronized void bind(SocketAddress addr) throws SocketException {
 		super.bind(addr);
-		this.manager.registerSocket(this);
+		this.socketBindings.registerSocket(this);
 	}
 	
 	public void close() {
 		try {
 			super.close();
 		} finally {
-			manager.unregisterSocket(this);
+			socketBindings.unregisterSocket(this);
 		}
 		
 	}

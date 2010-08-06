@@ -3,18 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.Attribute;
-import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -22,6 +10,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.Attribute;
+import org.jboss.as.model.Element;
+import org.jboss.as.model.Namespace;
+import org.jboss.as.net.NetworkInterfaceService;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A named interface definition, with an optional specification of what address
@@ -220,6 +223,8 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     @Override
     public void activate(ServiceActivatorContext context) {
         log.info("Activating interface element:" + name);
+        context.getBatchBuilder().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()),
+        		new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
     }
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {

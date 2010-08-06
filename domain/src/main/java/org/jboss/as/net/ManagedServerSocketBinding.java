@@ -30,12 +30,12 @@ import java.net.SocketAddress;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
+class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
 
-	private final SocketBindingManager manager;
+	private final SocketBindingManager socketBindings;
 	
-	ManagedServerSocketBinding(final SocketBindingManager manager) throws IOException {
-		this.manager = manager;
+	ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
+		this.socketBindings = socketBindings;
 	}
 	
 	public InetSocketAddress getBindAddress() {
@@ -44,11 +44,11 @@ public class ManagedServerSocketBinding extends ServerSocket implements ManagedB
 
 	public void bind(SocketAddress endpoint, int backlog) throws IOException {
 		super.bind(endpoint, backlog);
-		manager.registerSocket(this);
+		socketBindings.registerSocket(this);
 	}
 	
 	public Socket accept() throws IOException {
-		final ManagedSocketBinding socket = new ManagedSocketBinding(manager);
+		final ManagedSocketBinding socket = new ManagedSocketBinding(socketBindings);
 		implAccept(socket);
 		return socket;
 	}
@@ -57,7 +57,7 @@ public class ManagedServerSocketBinding extends ServerSocket implements ManagedB
 		try {
 			super.close();
 		} finally {
-			manager.unregisterSocket(this);
+			socketBindings.unregisterSocket(this);
 		}
 	}
 	

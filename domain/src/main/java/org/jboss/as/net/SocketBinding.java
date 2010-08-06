@@ -33,23 +33,35 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
 import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class SocketBinding {
+public class SocketBinding {
 
+	public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
+	
 	private final SocketBindingElement element;
 	private final NetworkInterfaceBinding networkInterface;
 	private final SocketBindingManager socketBindings;
 	
-	public SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
+	SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
 			SocketBindingManager socketBindings) {
 		this.element = element;
 		this.socketBindings = socketBindings;
 		this.networkInterface = networkInterface;
 	}
 
+	/**
+	 * Get the socket binding manager.
+	 * 
+	 * @return the socket binding manger
+	 */
+	public SocketBindingManager getSocketBindings() {
+		return socketBindings;
+	}
+	
 	/**
 	 * Get the socket address.
 	 * 
@@ -58,7 +70,7 @@ public abstract class SocketBinding {
 	public InetSocketAddress getSocketAddress() {
 		int port = element.getPort();
 		if(port > 0 && element.isFixedPort() == false) {
-			port += socketBindings.getPortOffSet();
+			port += socketBindings.getPortOffset();
 		}
 		return new InetSocketAddress(networkInterface.getAddress(), port);
 	}

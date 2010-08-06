@@ -22,23 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.Extension;
-import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.model.socket.SocketBindingElement;
-import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,6 +29,27 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.Extension;
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupRefElement;
+import org.jboss.as.net.SocketBindingManager;
+import org.jboss.as.net.SocketBindingManagerService;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -291,7 +295,12 @@ public final class
             interfaceElement.activate(context);
         }
 
-        // TODO: Activate Socket Bindings
+        // TODO move service binding manager to somewhere else?
+        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
+        		new SocketBindingManagerService(getPortOffset())).setInitialMode(Mode.ON_DEMAND);
+        
+        // Activate socket bindings
+        socketBindings.activate(context);
 
         // Activate deployments
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;

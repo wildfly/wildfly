@@ -21,6 +21,8 @@ import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.RefResolver;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -30,7 +32,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> {
+public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -7389975620327080290L;
 
@@ -219,6 +221,13 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         }
     }
 
+    /** {@inheritDoc} */
+    public void activate(ServiceActivatorContext serviceActivatorContext) {
+    	for(SocketBindingElement element : getAllSocketBindings()) {
+    		element.activate(serviceActivatorContext);
+    	}
+    }
+    
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */

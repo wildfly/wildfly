@@ -29,12 +29,12 @@ import java.net.SocketAddress;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ManagedSocketBinding extends Socket implements ManagedBinding {
+class ManagedSocketBinding extends Socket implements ManagedBinding {
 
-	private final SocketBindingManager manager;
+	private final SocketBindingManager socketBindings;
 	
-	ManagedSocketBinding(final SocketBindingManager manager) {
-		this.manager = manager;
+	ManagedSocketBinding(final SocketBindingManager socketBindings) {
+		this.socketBindings = socketBindings;
 	}
 	
 	public InetSocketAddress getBindAddress() {
@@ -43,14 +43,14 @@ public class ManagedSocketBinding extends Socket implements ManagedBinding {
 	
 	public void bind(SocketAddress bindpoint) throws IOException {
 		super.bind(bindpoint);
-		manager.registerSocket(this);
+		socketBindings.registerSocket(this);
 	}
 
 	public synchronized void close() throws IOException {
 		try {
 			super.close();
 		} finally {
-			manager.unregisterSocket(this);
+			socketBindings.unregisterSocket(this);
 		}
 	}
 	

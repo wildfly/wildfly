@@ -39,12 +39,13 @@ import org.jboss.msc.service.StopContext;
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
 
+	/** The service base name. */
 	public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
 	
 	private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack"); 
 
 	/** The interface binding. */
-	private NetworkInterfaceBinding binding;
+	private NetworkInterfaceBinding interfaceBinding;
 	
 	/** The network interface element. */
 	private final InterfaceElement interfaceElement;
@@ -58,25 +59,25 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 			if(interfaceElement.getAddress() != null) {
 				final InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
 				final NetworkInterface net = NetworkInterface.getByInetAddress(address);
-				this.binding = new NetworkInterfaceBinding(net, address);
+				this.interfaceBinding = new NetworkInterfaceBinding(net, address);
 			} else {
-				this.binding = resolveInterface(interfaceElement);
+				this.interfaceBinding = resolveInterface(interfaceElement);
 			}
 		} catch(Exception e) {
 			throw new StartException(e);
 		}
-		if(this.binding == null) {
+		if(this.interfaceBinding == null) {
 			throw new StartException("failed to resolve interface for " + interfaceElement.getName()
 					+ ", " + interfaceElement.getLocation()); 
 		}
 	}
 
 	public synchronized void stop(StopContext arg0) {
-		this.binding = null;
+		this.interfaceBinding = null;
 	}
 
 	public synchronized NetworkInterfaceBinding getValue() throws IllegalStateException {
-		final NetworkInterfaceBinding binding = this.binding;
+		final NetworkInterfaceBinding binding = this.interfaceBinding;
 		if(binding == null) {
 			throw new IllegalStateException();
 		}
