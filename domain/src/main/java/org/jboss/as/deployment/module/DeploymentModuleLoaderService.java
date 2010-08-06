@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,57 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.module;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ConstructedValue;
-
-import java.lang.reflect.Method;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
- * Service wrapper for legacy JBoss MBean services.
- *
+ * Service used to wrap a deployment module loader as a service.
+ * 
  * @author John E. Bailey
  */
-public class JBossService<T> implements Service<T> {
-    private final ConstructedValue<T> constructedValue;
-    private T value;
+public class DeploymentModuleLoaderService implements Service<DeploymentModuleLoader> {
+    private final Value<DeploymentModuleLoader> deploymentModuleLoaderValue;
 
-    public JBossService(final ConstructedValue<T> constructedValue) {
-        this.constructedValue = constructedValue;
+    public DeploymentModuleLoaderService(Value<DeploymentModuleLoader> deploymentModuleLoaderValue) {
+        this.deploymentModuleLoaderValue = deploymentModuleLoaderValue;
+    }
+
+    public DeploymentModuleLoaderService(DeploymentModuleLoader deploymentModuleLoader) {
+        this.deploymentModuleLoaderValue = Values.immediateValue(deploymentModuleLoader);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        value = constructedValue.getValue();
-
-        // Handle Start
-        try {
-            Method startMethod = value.getClass().getMethod("start");
-            startMethod.invoke(value);
-        } catch(NoSuchMethodException e) {
-            // Log warning ???
-        } catch(Exception e) {
-            throw new StartException("Failed to execute legacy service start", e);
-        }
     }
 
     @Override
     public void stop(StopContext context) {
-        // Handle Stop
-        try {
-            Method startMethod = value.getClass().getMethod("stop");
-            startMethod.invoke(value);
-        } catch(Exception e) {
-            // Log warning ???
-        }
     }
 
     @Override
-    public T getValue() throws IllegalStateException {
-        return value;
+    public DeploymentModuleLoader getValue() throws IllegalStateException {
+        return deploymentModuleLoaderValue.getValue();
     }
 }

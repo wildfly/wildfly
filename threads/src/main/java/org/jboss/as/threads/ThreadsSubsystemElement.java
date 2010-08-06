@@ -25,9 +25,8 @@ package org.jboss.as.threads;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -125,10 +124,10 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         }
     }
 
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
         log.info("Activating Threading Subsystem");
         for (ThreadFactoryElement element : threadFactories.values()) {
-            element.activate(container, batchBuilder);
+            element.activate(context);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,14 @@
 
 package org.jboss.as.deployment.descriptor;
 
+import java.io.Serializable;
+
 /**
  * Configuration for a service coming from a JBoss service XML definition.
  *
  * @author John E. Bailey
  */
-public class JBossServiceConfig {
+public class JBossServiceConfig implements Serializable {
     private String name;
     private String code;
     private String[] aliases;

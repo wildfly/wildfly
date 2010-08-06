@@ -20,22 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.chain;
 
-import org.jboss.msc.service.BatchBuilder;
-import java.io.Serializable;
+import org.jboss.msc.translate.TranslationException;
+import org.jboss.msc.translate.Translator;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment interface allowing deployments to provide custom deployment items to install services.
- * These are intended to be loaded via a ServiceLoader from the deployment. 
- *
+ * Translator used to get a deployment chain from the deployment chain provider.
+ * 
  * @author John E. Bailey
  */
-public interface ServiceDeployment extends Serializable {
-    /**
-     * Install services into the provided batch builder.
-     *
-     * @param batchBuilder the batch
-     */
-    void install(BatchBuilder batchBuilder);
+public class DeploymentChainProviderTranslator implements Translator<DeploymentChainProvider, DeploymentChain> {
+    private final VirtualFile virtualFile;
+
+    public DeploymentChainProviderTranslator(VirtualFile virtualFile) {
+        this.virtualFile = virtualFile;
+    }
+
+    @Override
+    public DeploymentChain translate(DeploymentChainProvider provider) throws TranslationException {
+        return provider.determineDeploymentChain(virtualFile);
+    }
 }

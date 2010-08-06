@@ -23,35 +23,33 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.attachment.Dependencies;
-import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.item.DeploymentModuleItem;
+import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.as.deployment.attachment.Dependencies.getAttachedDependencies;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleDeploymentItem.
+ * Processor responsible for creating a deployment item that installs the DeploymentModuleService for managing the deployment
+ * module. 
  *
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
-    private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
 
-    @Override
+    /**
+     * Create a deployment module item from the attached module config. 
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", context.getName(), "noversion");
-        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};
-        final Dependencies dependenciesAttachment = getAttachedDependencies(context);
-        final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
-        final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
-        context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
+        final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        if(moduleConfig == null)
+            return;
+        context.addDeploymentItem(new DeploymentModuleItem(context.getName(), moduleConfig, getVirtualFileAttachment(context)));
     }
-
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,18 +26,32 @@ import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.deployment.module.DeploymentModuleService;
+import org.jboss.as.deployment.service.JBossService;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.MethodInjector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchInjectionBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.LookupClassValue;
 import org.jboss.msc.value.LookupConstructorValue;
+import org.jboss.msc.value.LookupGetMethodValue;
+import org.jboss.msc.value.LookupMethodValue;
+import org.jboss.msc.value.LookupSetMethodValue;
+import org.jboss.msc.value.MethodValue;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,21 +60,24 @@ import java.util.List;
  * @author John E. Bailey
  */
 public class JBossServiceDeploymentItem implements DeploymentItem {
+    private static final Logger logger = Logger.getLogger("org.jboss.as.deployment.service");
+    private final String deploymentName;
     private final JBossServiceConfig serviceConfig;
 
-    public JBossServiceDeploymentItem(JBossServiceConfig serviceConfig) {
+    public JBossServiceDeploymentItem(final String deploymentName, final JBossServiceConfig serviceConfig) {
+        this.deploymentName = deploymentName;
         this.serviceConfig = serviceConfig;
     }
 
     @Override
     public void install(DeploymentItemContext context) {
-        final Module module = context.getModule();
-        final ClassLoader classLoader = module.getClassLoader();
-        final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
+        final JBossService<Object> jBossService = new JBossService<Object>();
+
+        final Value<ClassLoader> classLoaderValue = jBossService.getDeploymentClassLoaderValue();
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         final String codeName = serviceConfig.getCode();
-        final LookupClassValue classValue = new LookupClassValue(codeName, classLoaderValue);
+        final Value<Class<?>> classValue = cached(new LookupClassValue(codeName, classLoaderValue));
 
         final List<Value<?>> constructorArguments = new ArrayList<Value<?>>();
         final List<Value<Class<?>>> constructorSignature = new ArrayList<Value<Class<?>>>();
@@ -69,25 +86,29 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
         if(constructorConfig != null) {
             final JBossServiceConstructorConfig.Argument[] arguments = constructorConfig.getArguments();
             for(JBossServiceConstructorConfig.Argument argument : arguments) {
-                final Value<?> value = null; // TODO: Do something with argument.getValue()
-                constructorArguments.add(value);
-                constructorSignature.add(new LookupClassValue(argument.getType(), classLoaderValue));
+                final Value<Class<?>> attributeTypeValue = cached(new LookupClassValue(argument.getType(), classLoaderValue));
+                constructorArguments.add(cached(new ArgumentValue(attributeTypeValue, argument.getValue())));
+                constructorSignature.add(attributeTypeValue);
             }
         }
 
-        final LookupConstructorValue constructorValue = new LookupConstructorValue(classValue, constructorSignature);
-        final ConstructedValue constructedValue = new ConstructedValue(constructorValue, constructorArguments);
-        final JBossService<?> jBossService = new JBossService<Object>(constructedValue);
+        final Value<Constructor> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
+        final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, constructorArguments));
+        jBossService.setServiceValue(constructedValue);
 
         final String serviceName = serviceConfig.getName();
-        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ServiceName.of(serviceName), jBossService);
+        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(convert(serviceName), jBossService);
+        serviceBuilder.addDependency(DeploymentModuleService.SERVICE_NAME.append(deploymentName), Module.class, jBossService.getDeploymentModuleInjector());
+
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
         if(dependencyConfigs != null) {
             for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
-                final BatchInjectionBuilder injectionBuilder = serviceBuilder.addDependency(ServiceName.of(dependencyConfig.getDependencyName()));
+                final ServiceName dependencyServiceName = convert(dependencyConfig.getDependencyName());
                 final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
                 if(optionalAttributeName != null) {
-                    injectionBuilder.toProperty(optionalAttributeName);
+                    serviceBuilder.addDependency(dependencyServiceName, getPropertyInjector(classValue, optionalAttributeName, jBossService, Values.injectedValue()));
+                } else {
+                    serviceBuilder.addDependency(dependencyServiceName);
                 }
             }
         }
@@ -99,27 +120,104 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
                 final JBossServiceAttributeConfig.Inject inject = attributeConfig.getInject();
                 final JBossServiceAttributeConfig.ValueFactory valueFactory = attributeConfig.getValueFactory();
                 if(inject != null) {
-                    final BatchInjectionBuilder injectionBuilder = serviceBuilder.addDependency(ServiceName.of(inject.getBeanName()))
-                        .toProperty(attributeName);
                     final String propertyName = inject.getPropertyName();
+                    Value<?> valueToInject = Values.injectedValue();
                     if(propertyName != null) {
-                        injectionBuilder.fromProperty(inject.getPropertyName());
+                        valueToInject = cached(new MethodValue<Object>(new LookupGetMethodValue(classValue, propertyName), valueToInject, Values.<Object>emptyList()));
                     }
+                    serviceBuilder.addDependency(convert(inject.getBeanName()), getPropertyInjector(classValue, attributeName, jBossService, valueToInject));
                 } else if(valueFactory != null) {
                     final String methodName = valueFactory.getMethodName();
                     final JBossServiceAttributeConfig.ValueFactoryParameter[] parameters = valueFactory.getParameters();
                     final List<Value<Class<?>>> paramTypes = new ArrayList<Value<Class<?>>>(parameters.length);
                     final List<Value<?>> paramValues = new ArrayList<Value<?>>(parameters.length);
                     for(JBossServiceAttributeConfig.ValueFactoryParameter parameter : parameters) {
-                        paramTypes.add(new LookupClassValue(parameter.getClassName(), classLoaderValue));
-                        final Value<?> value = null; // TODO: Use parameter.getValue() to get the value
-                        paramValues.add(value);
+                        final Value<Class<?>> attributeTypeValue = cached(new LookupClassValue(parameter.getType(), classLoaderValue));
+                        paramTypes.add(attributeTypeValue);
+                        paramValues.add(cached(new ArgumentValue(attributeTypeValue, parameter.getValue())));
                     }
-                    final BatchInjectionBuilder injectionBuilder = serviceBuilder.addDependency(ServiceName.of(valueFactory.getBeanName()))
-                        .toProperty(attributeName)
-                        .fromMethod(methodName, paramTypes, paramValues);
+                    final Value<?> valueToInject = cached(new MethodValue(new LookupMethodValue(classValue, methodName, paramTypes), Values.injectedValue(), paramValues));
+                    serviceBuilder.addDependency(convert(valueFactory.getBeanName()), getPropertyInjector(classValue, attributeName, jBossService, valueToInject));
+                } else {
+                    serviceBuilder.addInjectionValue(getPropertyInjector(classValue, attributeName, jBossService, Values.injectedValue()), cached(new AttributeValue(classValue, attributeName, attributeConfig.getValue())));
                 }
             }
+        }
+    }
+
+    private Injector<Object> getPropertyInjector(final Value<Class<?>> classValue, final String propertyName, final JBossService<?> jBossService, final Value<?> value) {
+        return new MethodInjector<Object>(cached(new LookupSetMethodValue(classValue, propertyName)), jBossService, null, Collections.singletonList(value));
+    }
+
+    private ServiceName convert(final String name) {
+        if(name == null)
+            throw new IllegalArgumentException("Name must not be null");
+        return ServiceName.of(name.split("\\."));
+    }
+
+    private <T> Value<T> cached(final Value<T> value) {
+        return new CachedValue<T>(value);
+    }
+
+    private static class AttributeValue<T> implements Value<T> {
+        private final Value<Class<?>> targetClassValue;
+        private final String name;
+        private final String value;
+
+        private AttributeValue(Value<Class<?>> targetClassValue, String name, String value) {
+            this.targetClassValue = targetClassValue;
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public T getValue() throws IllegalStateException {
+            Class<?> type = null;
+            final String expectedMethodName = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            final Class<?> targetType = targetClassValue.getValue();
+            final Method[] methods = targetType.getMethods();
+            for(Method method : methods) {
+                if(expectedMethodName.equals(method.getName())) {
+                    final Class<?>[] types = method.getParameterTypes(); 
+                    if(types.length == 1) {
+                        type = types[0];
+                        break;
+                    }
+                }
+            }
+            if(type == null) {
+                logger.warn("Unable to find type for property " + name + " on class " + targetType);
+                return null;
+            }
+            final PropertyEditor editor = PropertyEditorManager.findEditor(type);
+            if(editor == null) {
+                logger.warn("Unable to find PropertyEditor for type " + type);
+                return null;
+            }
+            editor.setAsText(value);
+            return (T)editor.getValue();
+        }
+    }
+
+    private static class ArgumentValue<T> implements Value<T> {
+        private final Value<Class<?>> typeValue;
+        private final String value;
+
+        private ArgumentValue(final Value<Class<?>> typeValue, final String value) {
+            this.typeValue = typeValue;
+            this.value = value;
+        }
+
+        @Override
+        public T getValue() throws IllegalStateException {
+            final Class<?> type = typeValue.getValue();
+            final PropertyEditor editor = PropertyEditorManager.findEditor(type);
+            if(editor == null) {
+                logger.warn("Unable to find PropertyEditor for type " + type);
+                return null;
+            }
+            editor.setAsText(value);
+            return (T)editor.getValue();
         }
     }
 }

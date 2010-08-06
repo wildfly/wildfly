@@ -24,7 +24,7 @@ package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
-import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

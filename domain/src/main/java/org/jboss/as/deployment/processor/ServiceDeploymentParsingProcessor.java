@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptorParser;
@@ -38,7 +37,6 @@ import org.jboss.vfs.VirtualFile;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-
 import java.io.InputStream;
 
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
@@ -49,14 +47,13 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
-    private static final AttachmentKey<JBossServiceXmlDescriptor> DESCRIPTOR_ATTACHMENT_KEY = AttachmentKey.create(JBossServiceXmlDescriptor.class);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(200L);
 
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     public ServiceDeploymentParsingProcessor() {
-        xmlMapper.registerRootElement(new QName("service"), new JBossServiceXmlDescriptorParser());
+        xmlMapper.registerRootElement(new QName("urn:jboss:service:7.0", "server"), new JBossServiceXmlDescriptorParser());
     }
 
     @Override
@@ -84,7 +81,7 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             xmlMapper.parseDocument(result, reader);
             final JBossServiceXmlDescriptor xmlDescriptor = result.getResult();
             if(xmlDescriptor != null)
-                context.putAttachment(DESCRIPTOR_ATTACHMENT_KEY, xmlDescriptor);
+                context.putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", null);
         } catch(Exception e) {

@@ -20,35 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.processor;
+package org.jboss.as.deployment.test;
 
-import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.ServiceDeployment;
-import org.jboss.as.deployment.item.ServiceDeploymentItem;
+import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.modules.ModuleIdentifier;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+import static org.jboss.as.deployment.attachment.Dependencies.addDependency;
 
 /**
- * DeploymentUnitProcessor that detects ServiceDeployment instances for a deployment and creates the appropriate
- * DeploymentItem instances to execute the deployments.
+ * DeploymentUnitProcessor used to add a dependency on SYSTEM to deployment modules.  This simulates what a processor
+ * could do to add deps for a subsystem.  Ex.  A similar processor could be used to add all the EJB3 deps.
  *
  * @author John E. Bailey
  */
-public class ServiceDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
+public class TestModuleDependencyProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = ModuleDependencyProcessor.PRIORITY + 1;
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        if(deploymentRoot == null || !deploymentRoot.exists() || deploymentRoot.isFile())
-            return;
-
-        final VirtualFile serviceLoaderConfig = deploymentRoot.getChild("META-INF/services").getChild(ServiceDeployment.class.getName());
-        if(serviceLoaderConfig.exists())
-            context.addDeploymentItem(new ServiceDeploymentItem());
+        addDependency(context, new ModuleConfig.Dependency(ModuleIdentifier.SYSTEM, true, false, false));
     }
 }

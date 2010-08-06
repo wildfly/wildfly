@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.item;
 
-import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 
 /**
@@ -37,11 +36,4 @@ public interface DeploymentItemContext {
      * @return the batch builder
      */
     BatchBuilder getBatchBuilder();
-
-    /**
-     * The module for this deployment item execution.
-     *
-     * @return the module
-     */
-    Module getModule();
 }

@@ -25,15 +25,12 @@ package org.jboss.as.deployment.descriptor;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -45,20 +42,21 @@ import java.util.Set;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class JBossServiceXmlDescriptorParser implements XMLElementReader<ParseResult<JBossServiceXmlDescriptor>>, XMLStreamConstants {
+    public static final String NAMESPACE = "urn:jboss:service:7.0";
 
     private enum Element {
-        MBEAN(new QName("mbean")),
-        CONSTRUCTOR(new QName("constructor")),
-        ARG(new QName("arg")),
-        ATTRIBUTE(new QName("attribute")),
-        INJECT(new QName("inject")),
-        VALUE_FACTORY(new QName("value-factory")),
-        PARAMETER(new QName("parameter")),
-        DEPENDS(new QName("depends")),
-        DEPENDS_LIST(new QName("depends-list")),
-        DEPENDS_LIST_ELEMENT(new QName("depends-list-element")),
-        ALIAS(new QName("alias")),
-        ANNOTATION(new QName("annotation")),
+        MBEAN(new QName(NAMESPACE, "mbean")),
+        CONSTRUCTOR(new QName(NAMESPACE, "constructor")),
+        ARG(new QName(NAMESPACE, "arg")),
+        ATTRIBUTE(new QName(NAMESPACE, "attribute")),
+        INJECT(new QName(NAMESPACE, "inject")),
+        VALUE_FACTORY(new QName(NAMESPACE, "value-factory")),
+        PARAMETER(new QName(NAMESPACE, "parameter")),
+        DEPENDS(new QName(NAMESPACE, "depends")),
+        DEPENDS_LIST(new QName(NAMESPACE, "depends-list")),
+        DEPENDS_LIST_ELEMENT(new QName(NAMESPACE, "depends-list-element")),
+        ALIAS(new QName(NAMESPACE, "alias")),
+        ANNOTATION(new QName(NAMESPACE, "annotation")),
         UNKNOWN(null);
 
         private final QName qName;
@@ -126,14 +124,13 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
 
         final int count = reader.getAttributeCount();
         for(int i = 0; i < count; i++) {
-            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            final QName attributeName = reader.getAttributeName(i);
+            final Attribute attribute = Attribute.of(attributeName);
             final String attributeValue = reader.getAttributeValue(i);
             switch(attribute) {
                 case MODE:
                     serviceXmlDescriptor.setControllerMode(JBossServiceXmlDescriptor.ControllerMode.of(attributeValue));
                     break;
-                default:
-                    throw unexpectedContent(reader);
             }
         }
 
@@ -322,6 +319,8 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                             break;
                     }
                     break;
+                case CHARACTERS:
+                    attributeConfig.setValue(reader.getText());
             }
         }
         throw unexpectedContent(reader);
@@ -410,7 +409,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             final String attributeValue = reader.getAttributeValue(i);
             switch(attribute) {
                 case CLASS:
-                    parameterConfig.setClassName(attributeValue);
+                    parameterConfig.setType(attributeValue);
                     break;
                 default:
                     throw unexpectedContent(reader);
@@ -564,47 +563,5 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             b.append(' ').append(attribute);
         }
         return new XMLStreamException(b.toString(), location);
-    }
-
-    public static void main(String[] args) throws Exception {
-        final JBossServiceXmlDescriptorParser parser = new JBossServiceXmlDescriptorParser();
-
-        final XMLMapper xmlMapper = XMLMapper.Factory.create();
-        xmlMapper.registerRootElement(new QName("server"), parser);
-        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        String xml ="" +
-            "<server>" +
-            "   <mbean name=\"test\" code=\"testCode\">" +
-            "       <constructor>" +
-            "           <arg type=\"java.lang.String\" value=\"test\"/>" +
-            "       </constructor>" +
-            "       <alias>aliasOne</alias>" +
-            "       <alias>aliasTwo</alias>" +
-            "       <annotation>annotationOne</annotation>" +
-            "       <annotation>annotationTwo</annotation>" +
-            "   </mbean>" +
-            "   <mbean name=\"test2\" code=\"testCode2\">" +
-            "       <attribute name=\"attr1\">" +
-            "           <value-factory bean=\"factory\" method=\"create\">" +
-            "               <parameter class=\"TestClass\">some value</parameter>" +
-            "           </value-factory>" +
-            "       </attribute>" +
-            "       <attribute name=\"attr2\">" +
-            "           <inject bean=\"otherBean\" property=\"otherProp\"/>" +
-            "       </attribute>" +
-            "       <depends optional-attribute-name=\"other\">test</depends>" +
-            "       <depends-list>" +
-            "           <depends-list-element>test2</depends-list-element>" +
-            "           <depends-list-element><mbean name=\"test3\" code=\"otherCode\"/></depends-list-element>" +
-            "       </depends-list>" +
-            "   </mbean>" +
-            "</server>";
-        System.out.println(xml);
-        final XMLStreamReader reader = inputFactory.createXMLStreamReader(new StringReader(xml));
-
-        final ParseResult<JBossServiceXmlDescriptor> jBossServiceXmlDescriptorParseResult = new ParseResult<JBossServiceXmlDescriptor>();
-        xmlMapper.parseDocument(jBossServiceXmlDescriptorParseResult, reader);
-        System.out.println(jBossServiceXmlDescriptorParseResult.getResult().getServiceConfigs());
-        System.out.println(jBossServiceXmlDescriptorParseResult.getResult().getServiceConfigs().get(1).getDependencyConfigs());
     }
 }

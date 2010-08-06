@@ -33,7 +33,7 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -53,7 +53,8 @@ import java.util.TreeMap;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
+public final class
+        Standalone extends AbstractModel<Standalone> implements ServiceActivator {
 
     private static final long serialVersionUID = -7764186426598416630L;
 
@@ -263,10 +264,10 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     /**
      * Activate the standalone server.  Starts up all the services and deployments in this server.
      *
-     * @param container the container
-     * @param batchBuilder the current batch builder
+     * @param context the service activator context
      */
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
         // Activate extensions
         final Map<String, ExtensionElement> extensions = this.extensions;
         for(Map.Entry<String, ExtensionElement> extensionEntry : extensions.entrySet()) {
@@ -274,7 +275,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
             final String moduleSpec = extensionElement.getModule();
             try {
                 for (Extension extension : Module.loadService(moduleSpec, Extension.class)) {
-                    extension.activate(container, batchBuilder);
+                    extension.activate(context);
                 }
             } catch(ModuleLoadException e) {
                 throw new RuntimeException("Failed activate subsystem: " + extensionEntry.getKey(), e);
@@ -282,12 +283,12 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         }
 
         // Activate profile
-        profile.activate(container, batchBuilder);
+        profile.activate(context);
 
         // Activate Interfaces
         final Map<String, InterfaceElement> interfaces = this.interfaces;
         for(InterfaceElement interfaceElement : interfaces.values()) {
-            interfaceElement.activate(container, batchBuilder);
+            interfaceElement.activate(context);
         }
 
         // TODO: Activate Socket Bindings
@@ -295,7 +296,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         // Activate deployments
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
-            deploymentElement.activate(container, batchBuilder);
+            deploymentElement.activate(context);
         }
     }
 }

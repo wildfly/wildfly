@@ -9,9 +9,8 @@ import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -219,7 +218,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     }
 
     @Override
-    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+    public void activate(ServiceActivatorContext context) {
         log.info("Activating interface element:" + name);
     }
 

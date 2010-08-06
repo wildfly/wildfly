@@ -22,9 +22,8 @@
 
 package org.jboss.as;
 
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -45,8 +44,7 @@ public interface Extension extends ServiceActivator {
      * Activate the base services associated with this extension.  These services are installed
      * in the first phases of container startup.
      *
-     * @param container the container
-     * @param batchBuilder the batch builder
+     * @param context the service activation context
      */
-    void activate(ServiceContainer container, BatchBuilder batchBuilder);
+    void activate(final ServiceActivatorContext context);
 }

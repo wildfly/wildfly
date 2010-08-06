@@ -22,15 +22,14 @@
 
 package org.jboss.as.threads;
 
-import java.util.Collection;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -84,7 +83,7 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
         }
     }
 
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
     }
 
     public long elementHash() {

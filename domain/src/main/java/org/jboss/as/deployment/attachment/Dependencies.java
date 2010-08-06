@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.attachment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.descriptor.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 import java.util.ArrayList;

@@ -29,6 +29,8 @@ import org.jboss.as.model.Standalone;
 import org.jboss.as.server.manager.ServerMessage;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.TimingServiceListener;
 
@@ -79,7 +81,8 @@ public class Server {
         batchBuilder.addListener(listener);
 
         try {
-            config.activate(serviceContainer, batchBuilder);
+            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
+            config.activate(serviceActivatorContext);
             batchBuilder.install();
             listener.finishBatch();
         } catch (Throwable t) {

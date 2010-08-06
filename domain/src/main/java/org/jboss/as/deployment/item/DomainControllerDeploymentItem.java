@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.item;
 
 import java.io.Serializable;
-import org.jboss.msc.service.BatchBuilder;
 
 /**
  * A deployment item which installs the domain controller into a server.

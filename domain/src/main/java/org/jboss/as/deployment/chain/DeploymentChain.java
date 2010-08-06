@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.unit;
+package org.jboss.as.deployment.chain;
+
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 /**
  * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
@@ -29,11 +31,27 @@ package org.jboss.as.deployment.unit;
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
-     * Add a new DeploymentUnitProcessor.
+     * Get the name of the deployment chain.  Ex. "deployment.chain.war"
+     *
+     * @return the name
+     */
+    String getName();
+
+    /**
+     * Add a new DeploymentUnitProcessor to the chain with a specified priority.
      *
      * @param processor The processor to add
      * @param priority The priority of this processor in the chain
-     * @return The builder instance for chaining.
      */
     void addProcessor(DeploymentUnitProcessor processor, long priority);
+
+    /**
+     * Remove a DeploymentUnitProcessor from the chain at a specific priority.
+     * The priority is required for removal to not restrict processor instance to
+     * a single location int the chain. 
+     *
+     * @param processor The processor to removed
+     * @param priority The priority location to remove the processor from
+     */
+    void removeProcessor(DeploymentUnitProcessor processor, long priority);
 }

@@ -22,23 +22,33 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-
+import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.item.DeploymentItem;
+import org.jboss.as.deployment.item.DeploymentItemContext;
+import org.jboss.as.deployment.item.DeploymentItemContextImpl;
+import org.jboss.as.deployment.item.DeploymentItemRegistry;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A deployment that is known to the domain.
  * 
  * @author Brian Stansberry
+ * @author John E. Bailey
  */
-public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
+public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> implements ServiceActivator {
 
     private static final long serialVersionUID = 5335163070198512362L;
+    private static final ServiceName MOUNT_SERVICE_NAME = ServiceName.JBOSS.append("mounts");
 
     private final DeploymentUnitKey key;
     private boolean allowed;
@@ -174,6 +184,34 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
      */
     void setAllowed(boolean allowed) {
         this.allowed = allowed;
+    }
+
+    @Override
+    public void activate(ServiceActivatorContext serviceActivatorContext) {
+        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+
+        // Create deployment service
+        final String deploymentName = key.getName() + ":" + key.getSha1HashAsHexString();
+        final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
+        batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName));
+
+
+        // Create a sub-batch for this deployment
+        final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
+
+        // Setup a batch level dependency on deployment service
+        deploymentSubBatch.addDependency(deploymentServiceName);
+
+        // Construct an item context
+        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(deploymentSubBatch);
+
+        // Process all the deployment items with the item context
+        final Collection<DeploymentItem> deploymentItems = DeploymentItemRegistry.getDeploymentItems(key);
+        if(deploymentItems == null)
+            throw new RuntimeException("Failed to find deployment items for deployment: " + key);
+        for(DeploymentItem deploymentItem : deploymentItems) {
+            deploymentItem.install(deploymentItemContext);
+        }
     }
 
     public long elementHash() {

@@ -3,10 +3,9 @@
  */
 package org.jboss.as.model;
 
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -220,11 +219,11 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     }
 
     @Override
-    public void activate(ServiceContainer container, BatchBuilder batchBuilder) {
+    public void activate(final ServiceActivatorContext context) {
         // Activate sub-systems
         final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
         for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
-            subsystem.activate(container, batchBuilder);            
+            subsystem.activate(context);            
         }
     }
 }
