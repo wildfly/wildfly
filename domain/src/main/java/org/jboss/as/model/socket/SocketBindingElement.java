@@ -3,27 +3,31 @@
  */
 package org.jboss.as.model.socket;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.RefResolver;
+import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Binding configuration for a named socket.
  * 
  * @author Brian Stansberry
  */
-public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> {
+public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> implements ServiceActivator {
 
     private static final long serialVersionUID = 6868487634991345679L;
 
@@ -341,4 +345,10 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
         return legal;
     }
 
+    
+    public void activate(ServiceActivatorContext activatorContext) {
+    	// create the binding service
+    	SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
+    }
+    
 }

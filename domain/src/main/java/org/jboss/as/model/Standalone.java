@@ -39,12 +39,15 @@ import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
+import org.jboss.as.services.net.SocketBindingManager;
+import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -56,8 +59,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Brian Stansberry
  * 
  */
-public final class
-        Standalone extends AbstractModel<Standalone> implements ServiceActivator {
+public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
 
     private static final long serialVersionUID = -7764186426598416630L;
 
@@ -304,7 +306,7 @@ public final class
     public String getServerName() {
         return serverName;
     }    
-    
+
     /**
      * Gets the jvm configuration for this server.
      * 
@@ -323,7 +325,7 @@ public final class
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
-
+    
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = serverName.hashCode() &  0xffffffffL;
@@ -445,7 +447,12 @@ public final class
             interfaceElement.activate(context);
         }
 
-        // TODO: Activate Socket Bindings
+        // TODO move service binding manager to somewhere else?
+        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
+        		new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
+        
+        // Activate socket bindings
+        socketBindings.activate(context);
 
         // Activate deployments
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
