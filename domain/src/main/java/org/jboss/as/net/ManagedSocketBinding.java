@@ -43,14 +43,14 @@ class ManagedSocketBinding extends Socket implements ManagedBinding {
 	
 	public void bind(SocketAddress bindpoint) throws IOException {
 		super.bind(bindpoint);
-		socketBindings.registerSocket(this);
+		socketBindings.registerBinding(this);
 	}
 
 	public synchronized void close() throws IOException {
 		try {
 			super.close();
 		} finally {
-			socketBindings.unregisterSocket(this);
+			socketBindings.unregisterBinding(this);
 		}
 	}
 	

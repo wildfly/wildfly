@@ -22,7 +22,10 @@
 package org.jboss.as.net;
 
 import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -59,12 +62,24 @@ public class SocketBindingService implements Service<SocketBinding> {
 		return binding;
 	}
 
-	public InjectedValue<SocketBindingManager> getSocketBindings() {
+	InjectedValue<SocketBindingManager> getSocketBindings() {
 		return socketBindings;
 	}
 	
-	public InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
+	InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
 		return interfaceBinding;
 	}
+	
+	public static void addService(BatchBuilder builder, SocketBindingElement element) {
+    	SocketBindingService service = new SocketBindingService(element);
+    	BatchServiceBuilder<SocketBinding> batch = builder
+    		.addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
+    	batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()), 
+    			NetworkInterfaceBinding.class, service.getInterfaceBinding());
+    	batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
+    			SocketBindingManager.class, service.getSocketBindings());
+    	batch.setInitialMode(Mode.ON_DEMAND);
+	}
+	
 }
 

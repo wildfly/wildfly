@@ -89,7 +89,7 @@ public class SocketBinding {
 	}
 
 	/**
-	 * Creates a bound socket.
+	 * Create and bind a socket.
 	 * 
 	 * @return the socket
 	 * @throws IOException
@@ -101,7 +101,7 @@ public class SocketBinding {
 	}
 	
 	/**
-	 * Creates a bound server socket.
+	 * Create and bind a server socket
 	 * 
 	 * @return the server socket
 	 * @throws IOException
@@ -113,7 +113,7 @@ public class SocketBinding {
 	}
 	
 	/**
-	 * Creates a bound server socket
+	 * Create and bind a server socket.
 	 * 
 	 * @param backlog the backlog
 	 * @return the server socket
@@ -126,7 +126,7 @@ public class SocketBinding {
 	}
 	
 	/**
-	 * Creates a bound datagram socket.
+	 * Create and bind a datagrap socket.
 	 * 
 	 * @return the datagram socket
 	 * @throws SocketException
@@ -136,7 +136,8 @@ public class SocketBinding {
 	}
 	
 	/**
-	 * Create a bound multicast socket.
+	 * Create and bind a multicast socket. This will also join the given
+	 * multicast address. 
 	 * 
 	 * @return the multicast socket
 	 * @throws IOException

@@ -23,7 +23,6 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -211,17 +210,7 @@ public final class
     public String getServerName() {
         return serverName;
     }    
-    public Collection<InterfaceElement> getInterfaces() {
-		return Collections.unmodifiableCollection(interfaces.values());
-	}
 
-    public InterfaceElement getInterface(final String name) {
-    	return interfaces.get(name);
-    }
-    
-    public int getPortOffset() {
-		return portOffset;
-	}
     /**
      * Gets the jvm configuration for this server.
      * 
@@ -239,10 +228,6 @@ public final class
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
-
-    public SocketBindingGroupElement getSocketBindings() {
-		return socketBindings;
-	}
     
     /** {@inheritDoc} */
     public long elementHash() {
@@ -297,7 +282,7 @@ public final class
 
         // TODO move service binding manager to somewhere else?
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-        		new SocketBindingManagerService(getPortOffset())).setInitialMode(Mode.ON_DEMAND);
+        		new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
         
         // Activate socket bindings
         socketBindings.activate(context);

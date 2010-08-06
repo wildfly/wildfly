@@ -45,14 +45,14 @@ class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBi
 	
 	public synchronized void bind(SocketAddress addr) throws SocketException {
 		super.bind(addr);
-		this.socketBindings.registerSocket(this);
+		this.socketBindings.registerBinding(this);
 	}
 	
 	public void close() {
 		try {
 			super.close();
 		} finally {
-			socketBindings.unregisterSocket(this);
+			socketBindings.unregisterBinding(this);
 		}
 		
 	}

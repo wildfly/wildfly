@@ -15,16 +15,10 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.RefResolver;
-import org.jboss.as.net.NetworkInterfaceBinding;
-import org.jboss.as.net.NetworkInterfaceService;
-import org.jboss.as.net.SocketBinding;
-import org.jboss.as.net.SocketBindingManager;
 import org.jboss.as.net.SocketBindingService;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -353,14 +347,8 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
     
     public void activate(ServiceActivatorContext activatorContext) {
-    	SocketBindingService service = new SocketBindingService(this);
-    	BatchServiceBuilder<SocketBinding> batch = activatorContext.getBatchBuilder()
-    		.addService(SocketBinding.JBOSS_BINDING_NAME.append(getName()), service);
-    	batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getInterfaceName()), 
-    			NetworkInterfaceBinding.class, service.getInterfaceBinding());
-    	batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
-    			SocketBindingManager.class, service.getSocketBindings());
-    	batch.setInitialMode(Mode.ON_DEMAND);
+    	// create the binding service
+    	SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
     }
     
 }

@@ -44,7 +44,7 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
 
 	public void bind(SocketAddress endpoint, int backlog) throws IOException {
 		super.bind(endpoint, backlog);
-		socketBindings.registerSocket(this);
+		socketBindings.registerBinding(this);
 	}
 	
 	public Socket accept() throws IOException {
@@ -57,7 +57,7 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
 		try {
 			super.close();
 		} finally {
-			socketBindings.unregisterSocket(this);
+			socketBindings.unregisterBinding(this);
 		}
 	}
 	

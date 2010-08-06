@@ -127,7 +127,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
-	public void registerSocket(ManagedBinding binding) {
+	public void registerBinding(ManagedBinding binding) {
 		managedBindings.put(binding.getBindAddress(), binding);
 	}
 	
@@ -136,7 +136,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	 * 
 	 * @param binding the managed socket binding
 	 */
-	public void unregisterSocket(ManagedBinding binding) {
+	public void unregisterBinding(ManagedBinding binding) {
 		managedBindings.remove(binding.getBindAddress());
 	}
 	

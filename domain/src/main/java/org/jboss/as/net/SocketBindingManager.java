@@ -41,26 +41,18 @@ public interface SocketBindingManager {
 	public static final ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
 	
 	/**
-	 * Get the server port offset.
-	 * TODO move to somewhere else...
-	 * 
-	 * @return the port offset
-	 */
-	int getPortOffset();
-	
-	/**
 	 * Get the managed server socket factory.
 	 * 
 	 * @return the server socket factory
 	 */
-	public ServerSocketFactory getServerSocketFactory();
+	ServerSocketFactory getServerSocketFactory();
 	
 	/**
 	 * Get the socket factory.
 	 * 
 	 * @return the socket factory
 	 */
-	public SocketFactory getSocketFactory();
+	SocketFactory getSocketFactory();
 	
 	/**
 	 * Create a datagram socket.
@@ -69,7 +61,7 @@ public interface SocketBindingManager {
 	 * @return the datagram socket
 	 * @throws SocketException
 	 */
-	public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException ;
+	DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException ;
 	
 	/**
 	 * Create a multicast socket.
@@ -78,12 +70,22 @@ public interface SocketBindingManager {
 	 * @return the multicast socket 
 	 * @throws IOException
 	 */
-	public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException;
+	MulticastSocket createMulticastSocket(SocketAddress address) throws IOException;
 
 	/**
+	 * Get the server port offset.
+	 * TODO move to somewhere else...
+	 * 
+	 * @return the port offset
+	 */
+	int getPortOffset();
+	
+	/**
+	 * List the activate bindings.
+	 * 
 	 * @return the registered bindings
 	 */
-	public Collection<ManagedBinding> listActiveBindings();
+	Collection<ManagedBinding> listActiveBindings();
 	
 	/**
 	 * Register an active socket binding.
@@ -91,14 +93,14 @@ public interface SocketBindingManager {
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
-	public void registerSocket(ManagedBinding binding);
+	void registerBinding(ManagedBinding binding);
 	
 	/**
 	 * Unregister a socket binding.
 	 * 
 	 * @param binding the managed socket binding
 	 */
-	public void unregisterSocket(ManagedBinding binding);
+	void unregisterBinding(ManagedBinding binding);
 
 }
 
