@@ -80,6 +80,7 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: {
                     throw unexpectedElement(reader);
@@ -131,6 +132,6 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         } else {
             threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
         }
-        serviceBuilder.addDependency(JBOSS_THREAD_FACTORY.append(threadFactory), ThreadFactory.class, service.getThreadFactoryInjector());
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 }
