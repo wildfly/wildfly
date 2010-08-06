@@ -146,7 +146,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="ssl" type="sslType" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="socket" type="socketType" minOccurs="0" maxOccurs="1" />
+        <xs:element name="socket" type="socket-refType" minOccurs="0" maxOccurs="1" />
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
       </xs:sequence>
       <xs:attributeGroup ref="web-connector-attlist"/>

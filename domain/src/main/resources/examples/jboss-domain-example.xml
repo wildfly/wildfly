@@ -23,7 +23,7 @@
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:sec="urn:jboss:security-config:5.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain.xsd
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:security-config:5.0 security-config_5_0.xsd">
 
     <extensions>

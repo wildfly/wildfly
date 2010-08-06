@@ -22,7 +22,7 @@
 
 <host xmlns="urn:jboss:domain:1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:1.0 jboss-domain-host.xsd">
+      xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <domain-controller>
        <local group="main-server-group"/>
