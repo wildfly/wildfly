@@ -187,6 +187,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
+        <module-def group="org.jboss" artifact="jandex">
+            <maven-resource group="org.jboss" artifact="jboss-jandex"/>
+        </module-def>
+
         <module-def group="org.jboss.logging" artifact="jboss-logging">
             <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
         </module-def>
