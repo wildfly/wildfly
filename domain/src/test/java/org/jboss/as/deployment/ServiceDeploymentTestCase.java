@@ -78,10 +78,11 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         final AtomicBoolean completed = new AtomicBoolean(false);
         final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
-                latch.countDown();
                 completed.set(true);
                 if(serviceFailures.size() > 0)
                     fail("Service failures: " + serviceFailures);
+                // Ensure we count down the latch when all other tasks are done JBAS-8321
+                latch.countDown();
             }
         });
         batchBuilder.addListener(listener);
