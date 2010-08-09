@@ -47,7 +47,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(200L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
 
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();

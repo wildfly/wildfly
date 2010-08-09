@@ -1,0 +1,81 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.deployment.processor;
+
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.util.SuffixMatchFilter;
+
+import java.io.InputStream;
+import java.util.List;
+
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+
+/**
+ * Deployment unit processor responsible for creating and attaching an annotation index for a deployment unit. 
+ *
+ * @author John E. Bailey
+ */
+public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
+    public static final AttachmentKey<Index> ATTACHMENT_KEY = new AttachmentKey<Index>(Index.class);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(200L);
+
+    /**
+     * Process this deployment for annotations.  This will use an annotation indexer to create an index of all annotations
+     * found in this deployment and attach it to the deployment unit context.
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
+    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(context.getAttachment(ATTACHMENT_KEY) != null)
+            return;
+        
+        final VirtualFile virtualFile = getVirtualFileAttachment(context);
+        final Indexer indexer = new Indexer();
+        try {
+            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class"));
+            for(VirtualFile classFile : classChildren) {
+                InputStream inputStream = null;
+                try {
+                    inputStream = classFile.openStream();
+                    indexer.index(inputStream);
+                } catch(Throwable t) {
+                    VFSUtils.safeClose(inputStream);
+                    throw t;
+                }
+            }
+            final Index index = indexer.complete();
+            context.putAttachment(ATTACHMENT_KEY, index);
+        } catch(Throwable t) {
+            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t, null);
+        }
+    }
+}

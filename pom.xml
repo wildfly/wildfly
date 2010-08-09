@@ -59,6 +59,7 @@
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
         <version.junit>4.6</version.junit>
+        <version.org.jboss.jandex>1.0.0.Beta1</version.org.jboss.jandex>
         <version.org.jboss.jboss-vfs>3.0.0.CR5</version.org.jboss.jboss-vfs>
         <version.org.jboss.staxmapper>1.0.0.Beta1</version.org.jboss.staxmapper>
         <version.org.jboss.logging>3.0.0.Beta3</version.org.jboss.logging>
@@ -271,6 +272,12 @@
                <groupId>junit</groupId>
                <artifactId>junit</artifactId>
                <version>${version.junit}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${version.org.jboss.jandex}</version>
             </dependency>
 
             <dependency>
