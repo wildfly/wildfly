@@ -66,7 +66,7 @@
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.CR4</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.CR4</version.org.jboss.marshalling.jboss-marshalling-river>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta2</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.modules.jboss-modules>1.0.0.Beta2-SNAPSHOT</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.0.0.Beta2</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.naming.jnpserver>5.0.5.Final</version.org.jboss.naming.jnpserver>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
