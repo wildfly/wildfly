@@ -87,7 +87,7 @@
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.stdio.jboss-stdio>1.0.0.CR3</version.org.jboss.stdio.jboss-stdio>
-        <version.org.jboss.threads.jboss-threads>2.0.0.CR4</version.org.jboss.threads.jboss-threads>
+        <version.org.jboss.threads.jboss-threads>2.0.0.CR5</version.org.jboss.threads.jboss-threads>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
