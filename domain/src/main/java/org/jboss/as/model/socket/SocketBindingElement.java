@@ -3,27 +3,31 @@
  */
 package org.jboss.as.model.socket;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.RefResolver;
+import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Binding configuration for a named socket.
  * 
  * @author Brian Stansberry
  */
-public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> {
+public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> implements ServiceActivator {
 
     private static final long serialVersionUID = 6868487634991345679L;
 
@@ -34,6 +38,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private boolean fixedPort;
     private InetAddress multicastAddress;
     private int multicastPort;
+    private final String defaultInterfaceName;
     
     /**
      * Construct a new instance.
@@ -44,13 +49,17 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      *           to interfaces. May be used safely in the constructor
      *           itself. Cannot be <code>null</code>
      */
-    public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver) {
+    public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) {
         super(location);
         this.name = name;
         
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
+        
+        if (defaultInterfaceName == null)
+            throw new IllegalArgumentException("defaultInterfaceName is null");
+        this.defaultInterfaceName = defaultInterfaceName;
     }
 
     /**
@@ -62,12 +71,16 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      *           itself. Cannot be <code>null</code>
      * @throws XMLStreamException if an error occurs
      */
-    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver) throws XMLStreamException {
+    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
         super(reader);
         
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
+        
+        if (defaultInterfaceName == null)
+            throw new IllegalArgumentException("defaultInterfaceName is null");
+        this.defaultInterfaceName = defaultInterfaceName;
         
         // Handle attributes
         String name = null;
@@ -154,12 +167,38 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     }
     
     /**
-     * Gets the name of the interface to use for this socket binding.
+     * Gets the name of the interface to use for this socket binding. This is 
+     * either the {@link #getConfiguredInterfaceName() configured interface name}
+     * or the containing socket binding group's 
+     * {@link #getDefaultInterfaceName() default interface name}. 
+     * 
+     * @return the name. Will not be <code>null</code>
+     */
+    public String getInterfaceName() {
+        return interfaceName == null ? defaultInterfaceName : interfaceName;
+    }
+    
+    /**
+     * Gets the name of the interface specificially configured for use for this 
+     * socket binding, or <code>null</code> if no specific configuration was
+     * supplied and this socket binding should use the 
+     * {@link #getDefaultInterfaceName() socket binding group's default interface}.
      * 
      * @return the name. May be <code>null</code>
      */
-    public String getInterfaceName() {
+    public String getConfiguredInterfaceName() {
         return interfaceName;
+    }
+    
+    /**
+     * Gets the name of the default interface to use for this socket binding if
+     * no specific interface was {@link #getConfiguredInterfaceName() configured}.
+     * This value comes from the enclosing {@link SocketBindingGroupElement}.
+     * 
+     * @return the name. Will not be <code>null</code>
+     */
+    public String getDefaultInterfaceName() {
+        return defaultInterfaceName;
     }
 
     /**
@@ -167,7 +206,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * 
      * @param interfaceName the name. May be <code>null</code>
      */
-    public void setInterfaceName(String interfaceName) {
+    void setConfiguredInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
     }
 
@@ -287,6 +326,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
         if (multicastAddress != null)
             cksum = Long.rotateLeft(cksum, 1) ^ multicastAddress.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ multicastPort & 0xffffffffL;
+        cksum = Long.rotateLeft(cksum, 1) ^ defaultInterfaceName.hashCode() & 0xffffffffL;
         return cksum;
     }
 
@@ -341,4 +381,10 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
         return legal;
     }
 
+    
+    public void activate(ServiceActivatorContext activatorContext) {
+    	// create the binding service
+    	SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
+    }
+    
 }

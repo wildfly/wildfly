@@ -20,27 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * 
- */
-package org.jboss.as.server;
+package org.jboss.as.model;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
- * A ServerCommunicationHandlerFactory.
- * 
- * @author John E. Bailey
+ * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
+ * for {@code &lt;standalone&gt;} root elements.
+ *
+ * @author Brian Stansberry
  */
-public final class ServerCommunicationHandlerFactory {
+public final class StandaloneParser implements XMLElementReader<ParseResult<Standalone>>, XMLStreamConstants {
 
-    private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
-    
-    public static ServerCommunicationHandlerFactory getInstance() {
+    private StandaloneParser() {
+    }
+
+    private static final StandaloneParser INSTANCE = new StandaloneParser();
+
+    /**
+     * Get the instance.
+     *
+     * @return the instance
+     */
+    public static StandaloneParser getInstance() {
         return INSTANCE;
     }
-    
-    public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
-        return new ServerCommunicationHandler(environment.getStdin(), environment.getStdout(), handler);
+
+    /** {@inheritDoc} */
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Standalone> value) throws XMLStreamException {
+        value.setResult(new Standalone(reader));
     }
-    
-    private ServerCommunicationHandlerFactory() {}
 }

@@ -22,41 +22,49 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.Extension;
-import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.model.socket.SocketBindingElement;
-import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.Extension;
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupRefElement;
+import org.jboss.as.services.net.SocketBindingManager;
+import org.jboss.as.services.net.SocketBindingManagerService;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
  * a domain situation, this object model is assembled from the combination of the domain and host configuration.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry
+ * 
  */
-public final class
-        Standalone extends AbstractModel<Standalone> implements ServiceActivator {
+public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
 
     private static final long serialVersionUID = -7764186426598416630L;
 
+    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
+    private final String schemaLocation;
     private final String serverName;
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
@@ -64,6 +72,7 @@ public final class
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
+    /**FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of its JVM */
     private final JvmElement jvm;
     private PropertiesElement systemProperties;
 
@@ -88,8 +97,95 @@ public final class
      */
     public Standalone(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // FIXME implement parsing constructor
-        throw new UnsupportedOperationException("implement me");
+        
+        this.portOffset = 0;
+        this.jvm = null;
+        
+        // Handle namespaces
+        namespaces.putAll(readNamespaces(reader));
+        // Handle attributes
+        schemaLocation = readSchemaLocation(reader);
+        // Handle elements
+        String name = null;
+        ProfileElement profileElement = null;
+        SocketBindingGroupElement bindingGroup = null;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case NAME: {
+                            if (name != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            name = reader.getElementText();
+                            break;
+                        }
+                        case EXTENSIONS: {
+                            parseExtensions(reader);
+                            break;
+                        }
+                        case SYSTEM_PROPERTIES: {
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            this.systemProperties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case INTERFACES: {
+                            parseInterfaces(reader);
+                            break;
+                        }
+                        case PROFILE : {
+                            if (profileElement != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            profileElement = new ProfileElement(reader, null);
+                            break;
+                        }
+                        case DEPLOYMENTS: {
+                            parseDeployments(reader);
+                            break;
+                        }
+                        case SOCKET_BINDING_GROUP: {
+                            if (bindingGroup != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            RefResolver<String, InterfaceElement> intfResolver = new RefResolver<String, InterfaceElement>() {
+
+                                private static final long serialVersionUID = 8976121114197265586L;
+
+                                 @Override
+                                 public InterfaceElement resolveRef(String ref) {
+                                     if (ref == null)
+                                         throw new IllegalArgumentException("ref is null");
+                                     return interfaces.get(ref);
+                                 }
+                                 
+                            };
+                            bindingGroup = new SocketBindingGroupElement(reader, intfResolver, null);
+                            break;
+                        }
+                        case SSLS: {
+                            throw new UnsupportedOperationException("implement parsing of " + element.getLocalName());
+                            //break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(Element.NAME));
+        }
+        this.serverName = name;
+        if (profileElement == null) {
+            throw missingRequired(reader, Collections.singleton(Element.PROFILE));
+        }
+        this.profile = profileElement;
+        this.socketBindings = bindingGroup;
     }
 
     /**
@@ -111,6 +207,8 @@ public final class
         if (serverName == null) {
             throw new IllegalArgumentException("serverName is null");
         }
+        
+        this.schemaLocation = null;
         
         ServerElement server = host.getServer(serverName);
         if (server == null)
@@ -177,6 +275,8 @@ public final class
             // TODO log a WARN about interfaces that aren't referenced via socket bindings
         }
         
+        // FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of it's JVM
+        
         JvmElement serverVM = server.getJvm();
         String serverVMName = serverVM != null ? serverVM.getName() : null;
         
@@ -206,13 +306,14 @@ public final class
     public String getServerName() {
         return serverName;
     }    
-    
+
     /**
      * Gets the jvm configuration for this server.
      * 
      * @return the jvm configuration. Will not be <code>null</code>
      */
     public JvmElement getJvm() {
+        // FIXME this belongs in the ServerManager
         return jvm;
     }
     
@@ -224,11 +325,21 @@ public final class
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
-
+    
     /** {@inheritDoc} */
     public long elementHash() {
-        // FIXME implement elementHash
-        throw new UnsupportedOperationException("implement me");
+        long cksum = serverName.hashCode() &  0xffffffffL;
+        cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
+        cksum = Long.rotateLeft(cksum, 1) ^ portOffset & 0xffffffffL;
+        cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
+        cksum = calculateElementHashOf(deployments.values(), cksum);
+        cksum = calculateElementHashOf(extensions.values(), cksum);
+        cksum = calculateElementHashOf(interfaces.values(), cksum);
+        if (socketBindings != null) cksum = Long.rotateLeft(cksum, 1) ^ socketBindings.elementHash();
+        if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
+        if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
+        return cksum;
     }
 
     /** {@inheritDoc} */
@@ -244,6 +355,66 @@ public final class
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        
+        for (NamespaceAttribute namespace : namespaces.values()) {
+            if (namespace.isDefaultNamespaceDeclaration()) {
+                // for now I assume this is handled externally
+                continue;
+            }
+            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+        }
+        
+        if (schemaLocation != null) {
+            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
+            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
+        }
+        
+        // TODO re-evaluate the element order in the xsd; make sure this is correct
+        streamWriter.writeStartElement(Element.NAME.getLocalName());
+        streamWriter.writeCharacters(serverName);
+        streamWriter.writeEndElement();
+        
+        if (! extensions.isEmpty()) {
+            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+            for (ExtensionElement element : extensions.values()) {        
+                streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
+        streamWriter.writeStartElement(Element.PROFILE.getLocalName());
+        profile.writeContent(streamWriter);
+        
+        if (! interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            for (InterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+        
+        if (socketBindings != null) {
+            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            socketBindings.writeContent(streamWriter);
+        }
+        
+        // FIXME ssls
+        
+        if (systemProperties != null && systemProperties.size() > 0) {
+            streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
+            systemProperties.writeContent(streamWriter);
+        }
+        
+        if (! deployments.isEmpty()) {
+            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+            for (ServerGroupDeploymentElement element : deployments.values()) {
+                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                element.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        } 
     }
 
     /**
@@ -276,12 +447,103 @@ public final class
             interfaceElement.activate(context);
         }
 
-        // TODO: Activate Socket Bindings
+        // TODO move service binding manager to somewhere else?
+        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
+        		new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
+        
+        // Activate socket bindings
+        socketBindings.activate(context);
 
         // Activate deployments
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
             deploymentElement.activate(context);
         }
+    }
+    
+    private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final String module = extensionElement.getModule();
+        try {
+            for (Extension extension : Module.loadService(module, Extension.class)) {
+                // FIXME - as soon as we can get a mapper from a reader...
+//                extension.registerElementHandlers(reader.getMapper());
+                throw new UnsupportedOperationException("implement registerExtensionHandlers");
+            }
+        } catch (ModuleLoadException e) {
+            throw new XMLStreamException("Failed to load module", e);
+        }
+    }
+    
+    private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case EXTENSION: {
+                            final ExtensionElement extension = new ExtensionElement(reader);
+                            if (extensions.containsKey(extension.getModule())) {
+                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
+                            }
+                            extensions.put(extension.getModule(), extension);
+                            // load the extension so it can register handlers
+                            registerExtensionHandlers(extension, reader);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
+    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACE: {
+                            final ServerInterfaceElement interfaceEl = new ServerInterfaceElement(reader);
+                            if (interfaces.containsKey(interfaceEl.getName())) {
+                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
+                            }
+                            interfaces.put(interfaceEl.getName(), interfaceEl);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }    
+    }
+    
+    private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case DEPLOYMENT: {
+                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
+                            if (deployments.containsKey(deployment.getKey())) {
+                                throw new XMLStreamException("Deployment " + deployment.getName() + 
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                        " already declared", reader.getLocation());
+                            }
+                            deployments.put(deployment.getKey(), deployment);
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }        
     }
 }

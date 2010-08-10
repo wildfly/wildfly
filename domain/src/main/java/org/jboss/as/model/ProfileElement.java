@@ -56,15 +56,14 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
      * @param includedProfileResolver {@link RefResolver} to use to resolve references 
      *           to included profiles. Should not be used in the constructor
      *           itself as referenced profiles may not have been parsed yet.
-     *           Cannot be <code>null</code>
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      * @throws XMLStreamException if an error occurs
      */
     public ProfileElement(XMLExtendedStreamReader reader, final RefResolver<String, ProfileElement> includedProfileResolver) throws XMLStreamException {
         super(reader);
 
-        if (includedProfileResolver == null)
-            throw new IllegalArgumentException("includedProfileResolver is null");
-        
         this.includedProfileResolver = includedProfileResolver;
         
         // Handle attributes
@@ -96,6 +95,9 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case INCLUDE: {
+                            if (includedProfileResolver == null) {
+                                throw unexpectedElement(reader);
+                            }
                             final ProfileIncludeElement include = new ProfileIncludeElement(reader);
                             if (includedProfiles.containsKey(include.getProfile())) {
                                 throw new XMLStreamException("Included profile " + include.getProfile() + " already declared", reader.getLocation());

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.StreamUtils.CheckedBytes;
+import org.jboss.logging.Logger;
 
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
@@ -97,8 +98,10 @@ public final class ProcessManagerSlave {
             }
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void startProcess(final String processName) throws IOException {
@@ -109,8 +112,10 @@ public final class ProcessManagerSlave {
         b.append(Command.START).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void stopProcess(final String processName) throws IOException {
@@ -121,8 +126,10 @@ public final class ProcessManagerSlave {
         b.append(Command.STOP).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void removeProcess(final String processName) throws IOException {
@@ -133,8 +140,10 @@ public final class ProcessManagerSlave {
         b.append(Command.REMOVE).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void sendMessage(final String processName, final List<String> message) throws IOException {
@@ -148,8 +157,10 @@ public final class ProcessManagerSlave {
             b.append('\0').append(str);
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void sendMessage(final String recipient, final byte[] message, final long checksum) throws IOException {
@@ -159,12 +170,14 @@ public final class ProcessManagerSlave {
         final StringBuilder b = new StringBuilder();
         b.append(Command.SEND_BYTES).append('\0');
         b.append(recipient).append('\0');
-        StreamUtils.writeString(output, b.toString());
-        StreamUtils.writeInt(output, message.length);
-        output.write(message, 0, message.length);
-        StreamUtils.writeLong(output, checksum);
-        StreamUtils.writeChar(output, '\n');
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
+            output.write(message, 0, message.length);
+            StreamUtils.writeLong(output, checksum);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
     }
 
     public void broadcastMessage(final List<String> message) throws IOException {
@@ -174,19 +187,23 @@ public final class ProcessManagerSlave {
             b.append('\0').append(str);
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void broadcastMessage(final byte[] message, final long checksum) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST_BYTES).append('\0');
-        StreamUtils.writeString(output, b);
-        output.write(message.length);
-        output.write(message);
-        StreamUtils.writeLong(output, checksum);
-        StreamUtils.writeChar(output, '\n');
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.write(message.length);
+            output.write(message);
+            StreamUtils.writeLong(output, checksum);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
     }
 
     private final class Controller implements Runnable {
@@ -237,16 +254,17 @@ public final class ProcessManagerSlave {
                                     final String sourceProcess = b.toString();
                                     if (status == Status.MORE) {
                                         CheckedBytes cb = StreamUtils.readCheckedBytes(input);
-//                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
-//                                            // FIXME deal with invalid checksum
-//                                        }
-//                                        else {
+                                        status = cb.getStatus();
+                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                            // FIXME deal with invalid checksum
+                                        }
+                                        else {
                                             try {
                                                 handler.handleMessage(sourceProcess, cb.getBytes());
                                             } catch (Throwable t) {
                                                 // ignored!
                                             }
-//                                        }
+                                        }
                                     }
                                 }
                                 break;
