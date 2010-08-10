@@ -1,0 +1,66 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<standalone xmlns="urn:jboss:domain:1.0"
+        xmlns:remoting="urn:jboss:domain:remoting:1.0"
+        xmlns:threads="urn:jboss:domain:threads:1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
+
+	<name>Standalone</name>
+ 
+	<profile name="something">
+        <threads:subsystem>
+            <threads:scheduled-thread-pool-executor name="remoting">
+                <threads:max-threads count="10" per-cpu="20"/>
+                <threads:keepalive-time time="10" unit="SECONDS"/>
+            </threads:scheduled-thread-pool-executor>
+        </threads:subsystem>
+	</profile>
+
+    <interfaces>
+        <interface name="default">
+            <inet-address value="127.0.0.1"/>
+        </interface>
+    </interfaces>
+
+	<socket-binding-group name="standard-sockets" default-interface="default">
+	   <socket-binding name="jndi" port="1099"/>
+	   <socket-binding name="http" port="8080"/>
+	   <socket-binding name="https" port="8447"/>
+	   <socket-binding name="remoting" port="4447"/>
+	</socket-binding-group>
+
+    <system-properties>
+        <property name="prop1" value="value1"/>
+        <property name="prop2" value="value2"/>
+    </system-properties>
+
+    <deployments>
+        <deployment name="my-app.ear" sha1="965ff5768fa166a04b13"/>
+        <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af"/>
+        <deployment name="my-war.ear" sha1="22cfd207b9b90e0014a4" start="false"/>
+    </deployments>
+
+</standalone>

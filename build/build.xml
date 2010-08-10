@@ -45,6 +45,14 @@
         </copy>
     </target>
 
+    <target name="server">
+        <copy todir="target">
+            <fileset dir="src">
+                <include name="server/**"/>
+            </fileset>
+        </copy>
+    </target>
+	
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
@@ -251,5 +259,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, bin, domain"/>
+    <target name="all" depends="clean-target, modules, bin, domain, server"/>
 </project>

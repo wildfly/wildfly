@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss.logmanager" name="jboss-logmanager"/>
@@ -39,7 +40,6 @@
         <module group="org.jboss.as" name="jboss-as-logging"/>
         <module group="org.jboss.as" name="jboss-as-process-manager"/>
         <module group="org.jboss.as" name="jboss-as-remoting"/>
-        <module group="org.jboss.as" name="jboss-as-server-manager"/>
         <module group="org.jboss.as" name="jboss-as-threads"/>
         <module group="system" name="system"/>
     </dependencies>

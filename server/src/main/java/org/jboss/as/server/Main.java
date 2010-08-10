@@ -22,13 +22,6 @@
 
 package org.jboss.as.server;
 
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.stdio.LoggingOutputStream;
-import org.jboss.stdio.NullInputStream;
-import org.jboss.stdio.SimpleStdioContextSelector;
-import org.jboss.stdio.StdioContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +31,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
+
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
 
 /**
  * The main-class entry point for server instances.
@@ -77,13 +77,18 @@ public final class Main {
     }
 
     private void boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        Server server = null;
+        AbstractServer server = null;
         try {
             ServerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
             } else {
-                server = new Server(config);
+            	if(config.isStandalone()) {
+            		server = new StandaloneServer(config);
+            		server.start(null);
+            	} else {
+            		server = new Server(config);
+            	}
             }
         } catch (Throwable t) {
             abort(t);
@@ -107,7 +112,7 @@ public final class Main {
     private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
-
+        boolean standalone = false;
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -140,6 +145,8 @@ public final class Main {
                         System.err.printf("Value for -interprocess-address is not a known host -- %s\n", args[i]);
                         return null;
                     }
+                } else if (arg.equals("-standalone")) {
+                	standalone = true;
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -163,7 +170,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort);
+        return new ServerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort, standalone);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

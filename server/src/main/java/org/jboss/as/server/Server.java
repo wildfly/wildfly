@@ -25,17 +25,6 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.deployment.DeploymentServiceListener;
-import org.jboss.as.model.Standalone;
-import org.jboss.as.server.manager.ServerMessage;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -44,6 +33,14 @@ import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
 
+import org.jboss.as.deployment.DeploymentServiceListener;
+import org.jboss.as.deployment.DeploymentServiceListener.Callback;
+import org.jboss.as.model.Standalone;
+import org.jboss.as.server.manager.ServerMessage;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
+
 
 /**
  * An actual JBoss Application Server instance.
@@ -51,31 +48,35 @@ import java.util.zip.Checksum;
  * @author Brian Stansberry
  * @author John E. Bailey
  */
-public class Server {
+public class Server extends AbstractServer {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
-    private final ServerEnvironment environment;
     private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
-    private Standalone config;
-    private ServiceContainer serviceContainer;
 
     public Server(ServerEnvironment environment) {
-        if (environment == null) {
-            throw new IllegalArgumentException("bootstrapConfig is null");
-        }
-        this.environment = environment;
+    	super(environment);
         launchCommunicationHandler();
         sendMessage("AVAILABLE");
         logger.info("Server Available to start");
     }
 
     public void start(Standalone config) throws ServerStartException {
-        this.config = config;
-        logger.info("Starting server with config: " + config.getServerName());
-        serviceContainer = ServiceContainer.Factory.create();
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
-            @Override
+    	try {
+    		super.start(config);
+    	} catch(ServerStartException e) {
+    		sendMessage("START FAILED");
+    		throw e;
+    	}
+    }
+
+    public void stop() {
+        super.stop();
+        sendMessage("STOPPED");
+    }
+
+    Callback createDeploymentCallback() {
+    	return new DeploymentServiceListener.Callback() {
+
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
                 if(serviceFailures.isEmpty()) {
                     logger.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
@@ -90,29 +91,11 @@ public class Server {
                     logger.error(buff.toString());
                 }
             }
-        });
-        batchBuilder.addListener(listener);
-
-        try {
-            listener.startBatch();
-            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
-            config.activate(serviceActivatorContext);
-            batchBuilder.install();
-            listener.finishBatch();
-            listener.finishDeployment();
-        } catch (Throwable t) {
-            sendMessage("START FAILED");
-            throw new ServerStartException("Failed to start server", t);
-        }
+        };
     }
-
-    public void stop() {
-        serviceContainer.shutdown();
-        sendMessage("STOPPED");
-    }
-
+    
     private void launchCommunicationHandler() {
-        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(environment, messageHandler);
+        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
         Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");
         t.start();
     }
