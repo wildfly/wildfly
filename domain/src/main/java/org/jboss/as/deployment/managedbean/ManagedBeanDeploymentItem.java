@@ -31,12 +31,18 @@ import org.jboss.msc.inject.TranslatingInjector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 
+import javax.annotation.ManagedBean;
+import javax.annotation.Resource;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 /**
  * Deployment item responsible for taking managed bean configuration and converting it into service definitions.
  *
  * @author John E. Bailey
  */
 public class ManagedBeanDeploymentItem implements DeploymentItem {
+    private static final long serialVersionUID = 7706399887995664349L;
     private final String deploymentName;
     private final ManagedBeanConfiguration managedBeanConfiguration;
 
@@ -59,11 +65,60 @@ public class ManagedBeanDeploymentItem implements DeploymentItem {
     public void install(final DeploymentItemContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
         final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(managedBeanConfiguration);
-        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ManagedBeanService.SERVICE_NAME.append(deploymentName, managedBeanConfiguration.getType()), managedBeanService);
+
+        final ClassLoader classLoader = getMagicClassLoader();
+        final Class<?> managedBeanClass;
+        try {
+            managedBeanClass = classLoader.loadClass(managedBeanConfiguration.getType());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Failed to load managed bean class", e);
+        }
+        final ManagedBean managedBeanAnnotation = managedBeanClass.getAnnotation(ManagedBean.class);
+        final String name = managedBeanAnnotation.value();
+        managedBeanConfiguration.setName(name);
+
+        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ManagedBeanService.SERVICE_NAME.append(deploymentName, name), managedBeanService);
         serviceBuilder.addDependency(DeploymentModuleService.SERVICE_NAME.append(deploymentName), Module.class, new TranslatingInjector<Module, ClassLoader>(new ModuleClassLoaderTranslator(), managedBeanService.getClassLoaderInjector()));
 
-        // TODO: Process all resource injection configuration and add resource injections
+        for(ResourceInjectionConfiguration resourceInjectionConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
+            final String targetName = resourceInjectionConfiguration.getName();
+            final String contextNameSuffix;
+            final Resource resource;
+            final ResourceInjection<Object> resourceInjection;
+            if(ResourceInjectionConfiguration.TargetType.FIELD.equals(resourceInjectionConfiguration.getTargetType())) {
+                final Field field;
+                try {
+                    field = managedBeanClass.getDeclaredField(targetName);
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException("Failed to get field '" + targetName + "' from class '" + managedBeanClass +"'", e);
+                }
+                resource = field.getAnnotation(Resource.class);
+                contextNameSuffix = field.getName();
+                resourceInjection = new FieldResourceInjection<Object>(targetName);
+            } else {
+                final Method method;
+                try {
+                    method = managedBeanClass.getMethod(targetName);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException("Failed to get method '" + targetName + "' from class '" + managedBeanClass +"'", e);
+                }
+                resource = method.getAnnotation(Resource.class);
+                final String methodName = method.getName();
+                contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+                resourceInjection = new MethodResourceInjection<Object>(targetName, resourceInjectionConfiguration.getInjectedType());
+            }
+            if(!resource.type().equals(Object.class)) {
+                resourceInjectionConfiguration.setInjectedType(resource.type().getName());
+            }
+            final String contextName = !"".equals(resource.name()) ? resource.name() : managedBeanClass.getName() + "/" + contextNameSuffix;
+            serviceBuilder.addDependency(ResourceBinder.MODULE_SERVICE_NAME.append(deploymentName, contextName), resourceInjection.getValueInjector());
+            managedBeanService.addResourceInjection(resourceInjection);
+        }
 
         // TODO: Get naming context and add a ResourceBinder for this managed bean
+    }
+
+    private ClassLoader getMagicClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 }

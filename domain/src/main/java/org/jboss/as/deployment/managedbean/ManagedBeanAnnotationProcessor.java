@@ -119,7 +119,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         for(AnnotationTarget annotationTarget : resourceInjectionTargets) {
             if(annotationTarget instanceof FieldInfo) {
                 final FieldInfo fieldInfo = FieldInfo.class.cast(annotationTarget);
-                resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(fieldInfo.name(), fieldInfo.type().name().toString(), ResourceInjectionConfiguration.TargetType.FIELD));
+                resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(fieldInfo.name(), ResourceInjectionConfiguration.TargetType.FIELD, fieldInfo.type().name().toString()));
             } else if(annotationTarget instanceof MethodInfo) {
                 final MethodInfo methodInfo = MethodInfo.class.cast(annotationTarget);
                 final String methodName = methodInfo.name();
@@ -127,7 +127,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 if(!methodName.startsWith("set") || args.length != 1) {
                     throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo, null);
                 }
-                resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(methodName, args[0].name().toString(), ResourceInjectionConfiguration.TargetType.METHOD));
+                resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(methodName, ResourceInjectionConfiguration.TargetType.METHOD, args[0].name().toString()));
             }
         }
     }

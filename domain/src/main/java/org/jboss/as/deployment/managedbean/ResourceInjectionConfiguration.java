@@ -40,20 +40,19 @@ public class ResourceInjectionConfiguration implements Serializable {
     }
 
     private final String name;
-    private final String injectedType;
+    private String injectedType;
     private final TargetType targetType;
 
     /**
      * Construct an instance.
      *
      * @param name The name of the target
-     * @param injectedType The class type of the object being injected
      * @param targetType The type of target (field or method)
      */
-    public ResourceInjectionConfiguration(String name, String injectedType, TargetType targetType) {
+    public ResourceInjectionConfiguration(final String name, final TargetType targetType, final String injectedType) {
         this.name = name;
-        this.injectedType = injectedType;
         this.targetType = targetType;
+        this.injectedType = injectedType;
     }
 
     /**
@@ -81,5 +80,14 @@ public class ResourceInjectionConfiguration implements Serializable {
      */
     public TargetType getTargetType() {
         return targetType;
+    }
+
+    /**
+     * Set the injected type of the resource.
+     * 
+     * @param injectedType The class type of the object being injected
+     */
+    public void setInjectedType(String injectedType) {
+        this.injectedType = injectedType;
     }
 }

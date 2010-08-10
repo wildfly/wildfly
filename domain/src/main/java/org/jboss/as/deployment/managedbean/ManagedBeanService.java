@@ -47,11 +47,9 @@ public class ManagedBeanService<T> implements Service<T> {
     private final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
     private final InjectedValue<ClassLoader> classLoaderValue = new InjectedValue<ClassLoader>();
     private final ManagedBeanConfiguration managedBeanConfiguration;
-    private ClassLoader classLoader;
     private Class<T> beanClass;
     private String name;
     private Method postConstructMethod;
-
 
     /**
      * Construct with managed bean configuration.
@@ -71,7 +69,7 @@ public class ManagedBeanService<T> implements Service<T> {
      */
     public void start(StartContext context) throws StartException {
         // Do all the classloader stuff first
-        classLoader = classLoaderValue.getValue();
+        final ClassLoader classLoader = classLoaderValue.getValue();
         try {
             beanClass = (Class<T>) classLoader.loadClass(managedBeanConfiguration.getType());
             final ManagedBean managedBeanAnnotation = beanClass.getAnnotation(ManagedBean.class);
@@ -117,7 +115,7 @@ public class ManagedBeanService<T> implements Service<T> {
         }
         // Execute the injections
         for (ResourceInjection resourceInjection : resourceInjections) {
-            resourceInjection.inject();
+            resourceInjection.inject(managedBean);
         }
         // Execute the post construct life-cycle
         if (postConstructMethod != null) {

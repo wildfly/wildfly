@@ -42,6 +42,7 @@ import javax.naming.NamingException;
  */
 public class ResourceBinder<T> implements Service<Object> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("resource", "binder");
+    public static final ServiceName MODULE_SERVICE_NAME = SERVICE_NAME.append("module");
 
     private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
     private final String name;

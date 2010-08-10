@@ -22,40 +22,39 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.msc.inject.FieldInjector;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
+
+import java.lang.reflect.Field;
 
 /**
- * Helper object used to coordinate resource injection.  This class will hold onto an injector and an injected value
- * to apply at injection time.
+ * Resource injection capable of executing the resource injection using a Field instance.
  *
  * @author John E. Bailey
  */
-public abstract class ResourceInjection <T> {
-    private final InjectedValue<T> value = new InjectedValue<T>();
+public class FieldResourceInjection<T> extends ResourceInjection<T> {
+    private final String fieldName;
 
     /**
-     * Run the injection by passing the injected value into the injector.
-     */
-    public void inject(final Object target) {
-        final Injector<T> injector = getInjector(target);
-        injector.inject(value.getValue());
-    }
-
-    /**
-     * Get the value injector.
+     * Construct an instance.
      *
-     * @return An injector
+     * @param fieldName The name of the field on the target.
      */
-    public Injector<T> getValueInjector() {
-        return value;
+    public FieldResourceInjection(String fieldName) {
+        this.fieldName = fieldName;
     }
 
-    /**
-     * Get the injector capable of performing the injection on the provided target.
-     * 
-     * @param target The target object of the injection
-     * @return an injector
-     */
-    protected abstract Injector<T> getInjector(final Object target);
+    /** {@inheritDoc} */
+    protected Injector<T> getInjector(Object target) {
+        final Class<?> targetClass = target.getClass();
+        final Field field;
+        try {
+            field = targetClass.getDeclaredField(fieldName);
+            field.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException("Target object not valid for this resource injections", e);
+        }
+        return new FieldInjector<T>(Values.immediateValue(target), Values.immediateValue(field));  
+    }
 }
