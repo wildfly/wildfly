@@ -19,13 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.deployment.module;
 
-import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.PackageSpec;
+import org.jboss.modules.PathFilter;
+import org.jboss.modules.PathFilters;
 import org.jboss.modules.Resource;
+import org.jboss.modules.ResourceLoader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -50,15 +53,17 @@ import java.util.jar.Manifest;
  *
  * @author John Bailey
  */
-public class VFSResourceLoader extends AbstractResourceLoader {
+public class VFSResourceLoader implements ResourceLoader {
 
     private final ModuleIdentifier moduleIdentifier;
     private final VirtualFile root;
+    private final String rootName;
     private final Manifest manifest;
 
-    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final VirtualFile root) throws IOException {
+    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final VirtualFile root, final String rootName) throws IOException {
         this.moduleIdentifier = moduleIdentifier;
         this.root = root;
+        this.rootName = rootName;
         manifest = VFSUtils.getManifest(root);
     }
 
@@ -118,6 +123,14 @@ public class VFSResourceLoader extends AbstractResourceLoader {
 
     public String getLibrary(final String name) {
         return null;
+    }
+
+    public String getRootName() {
+        return rootName;
+    }
+
+    public PathFilter getExportFilter() {
+        return PathFilters.acceptAll();
     }
 
     public Resource getResource(final String name) {
