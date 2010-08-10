@@ -28,6 +28,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.QueueExecutor;
 
@@ -78,7 +79,12 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
         this.context = context;
         context.asynchronous();
         executor.shutdown();
-        // TODO: Add shutdown hook to call context.complete();
+        executor.addShutdownListener(new EventListener<StopContext>() {
+            public void handleEvent(final StopContext stopContext) {
+                stopContext.complete();
+                BoundedQueueThreadPoolService.this.context = null;
+            }
+        }, context);
         this.executor = null;
         value = null;
     }
