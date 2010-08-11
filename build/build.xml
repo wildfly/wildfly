@@ -26,7 +26,7 @@
 
     <target name="bin">
         <copy todir="target">
-            <fileset dir="src">
+            <fileset dir="src/main/resources">
                 <include name="bin/**"/>
             </fileset>
         </copy>
@@ -39,7 +39,7 @@
 
     <target name="domain">
         <copy todir="target">
-            <fileset dir="src">
+            <fileset dir="src/main/resources">
                 <include name="domain/**"/>
             </fileset>
         </copy>
@@ -47,7 +47,7 @@
 
     <target name="server">
         <copy todir="target">
-            <fileset dir="src">
+            <fileset dir="src/main/resources">
                 <include name="server/**"/>
             </fileset>
         </copy>
