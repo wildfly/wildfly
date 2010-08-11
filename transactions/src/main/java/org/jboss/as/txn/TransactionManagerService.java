@@ -70,7 +70,8 @@ final class TransactionManagerService implements Service<TransactionManager> {
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
-    private volatile com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
+    private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
+    private RecoveryManagerService recoveryManagerService;
 
     public synchronized void start(final StartContext context) throws StartException {
         // Global configuration.
@@ -144,6 +145,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
                 throw new StartException("Transaction manager create failed", e);
             }
             service.start();
+            this.recoveryManagerService = recoveryManagerService;
             value = service;
         } else {
             // IIOP is enabled, so fire up JTS mode.
@@ -179,6 +181,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
             } catch (Exception e) {
                 throw new StartException("Start failed", e);
             }
+            this.recoveryManagerService = recoveryManagerService;
             value = service;
         }
         // todo: JNDI bindings
@@ -187,7 +190,14 @@ final class TransactionManagerService implements Service<TransactionManager> {
     public synchronized void stop(final StopContext context) {
         value.stop();
         value.destroy();
+        try {
+            recoveryManagerService.stop();
+        } catch (Exception e) {
+            // todo log
+        }
+        recoveryManagerService.destroy();
         value = null;
+        recoveryManagerService = null;
     }
 
     public synchronized TransactionManager getValue() throws IllegalStateException {

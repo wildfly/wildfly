@@ -181,8 +181,24 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
         
+        <module-def group="org.jboss.as" artifact="jboss-as-transactions">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="jboss-as-threads">
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def group="org.jboss.integration" artifact="jboss-transaction-spi">
+            <maven-resource group="org.jboss.integration" artifact="jboss-transaction-spi"/>
+        </module-def>
+
+        <module-def group="org.jboss.jbossts" artifact="jbossjts">
+            <maven-resource group="org.jboss.jbossts" artifact="jbossjts"/>
+        </module-def>
+
+        <module-def group="org.jboss.jbossts" artifact="jbossjts-integration">
+            <maven-resource group="org.jboss.jbossts" artifact="jbossjts-integration"/>
         </module-def>
 
         <module-def group="org.jboss.logging" artifact="jboss-logging">
@@ -233,6 +249,10 @@
         
         <module-def group="org.jboss" artifact="staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="jcl-over-slf4j">
+            <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>
         </module-def>
 
         <module-def group="org.slf4j" artifact="slf4j-api">

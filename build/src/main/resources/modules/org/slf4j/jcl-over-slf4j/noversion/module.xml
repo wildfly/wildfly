@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -20,24 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:transactions:1.0"
-            xmlns="urn:jboss:domain:transactions:1.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified"
-            version="1.0">
+<module xmlns="urn:jboss:module:1.0" name="jcl-over-slf4j" group="org.slf4j">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-    <!-- The transaction subsystem root element -->
-    <xs:element name="subsystem" type="subsystem"/>
-
-    <xs:complexType name="subsystem">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                The configuration of the transactions subsystem.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-    </xs:complexType>
-
-</xs:schema>
+    <dependencies>
+        <module group="org.slf4j" name="slf4j-api"/>
+    </dependencies>
+</module>

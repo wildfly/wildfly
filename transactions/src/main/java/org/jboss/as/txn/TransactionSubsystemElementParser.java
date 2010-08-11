@@ -22,21 +22,18 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.as.model.ParseResult;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class TransactionsExtension implements Extension {
+final class TransactionSubsystemElementParser implements XMLElementReader<ParseResult<TransactionsSubsystemElement>> {
 
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:transactions:1.0", "subsystem"), new TransactionSubsystemElementParser());
-    }
-
-    public void activate(final ServiceActivatorContext context) {
+    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final ParseResult<TransactionsSubsystemElement> result) throws XMLStreamException {
+        result.setResult(new TransactionsSubsystemElement(xmlExtendedStreamReader));
     }
 }
