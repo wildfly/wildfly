@@ -37,7 +37,6 @@ import org.jboss.as.deployment.DeploymentServiceListener;
 import org.jboss.as.deployment.DeploymentServiceListener.Callback;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.server.manager.ServerMessage;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -49,17 +48,20 @@ import org.jboss.msc.service.StartException;
  * @author John E. Bailey
  */
 public class Server extends AbstractServer {
-    private static final Logger logger = Logger.getLogger("org.jboss.as.server");
-    private ServerCommunicationHandler serverCommunicationHandler;
+
+	private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
 
     public Server(ServerEnvironment environment) {
     	super(environment);
-        launchCommunicationHandler();
-        sendMessage("AVAILABLE");
-        logger.info("Server Available to start");
     }
 
+    public void start() {
+        launchCommunicationHandler();
+        sendMessage("AVAILABLE");
+        log.info("Server Available to start");    	
+    }
+    
     public void start(Standalone config) throws ServerStartException {
     	try {
     		super.start(config);
@@ -79,16 +81,16 @@ public class Server extends AbstractServer {
 
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
                 if(serviceFailures.isEmpty()) {
-                    logger.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
+                    log.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
                     sendMessage("STARTED");
                 } else {
                     sendMessage("START FAILED");
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed.  Attempted to start %d services in %dms", numberServices, elapsedTime));
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", numberServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
                         buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
                     }
-                    logger.error(buff.toString());
+                    log.error(buff.toString());
                 }
             }
         };
@@ -125,7 +127,7 @@ public class Server extends AbstractServer {
                 }
             }
         } catch (IOException e) {
-            logger.error("Failed to send message to Server Manager [" + message + "]", e);
+            log.error("Failed to send message to Server Manager [" + message + "]", e);
         }
     }
 }

@@ -49,20 +49,46 @@ public abstract class AbstractServer {
 		this.environment = environment;
 	}
 	
+	/**
+	 * Get the server environment.
+	 * 
+	 * @return the server environment
+	 */
 	public ServerEnvironment getEnvironment() {
 		return environment;
 	}
 	
+	/**
+	 * Get the standalone configuration.
+	 * 
+	 * @return the standalone configuration
+	 */
 	public Standalone getConfig() {
+		if(config == null) {
+			throw new IllegalStateException("null configuration");
+		}
 		return config;
 	}
 	
-	public void start(final Standalone config) throws ServerStartException {
+	/**
+	 * Start the server. 
+	 * 
+	 * @throws ServerStartException
+	 */
+	public abstract void start() throws ServerStartException; 
+	
+	/**
+	 * Start the server.
+	 * 
+	 * @param config the server 
+	 * @throws ServerStartException
+	 */
+	void start(final Standalone config) throws ServerStartException {
 		if(config == null)  {
 			throw new IllegalArgumentException("null standalone config");
 		}
 		this.config = config;
-		log.infof("Starting server (%s)", config.getServerName());
+		log.infof("Starting server '%s'", config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final DeploymentServiceListener listener = new DeploymentServiceListener(createDeploymentCallback());
@@ -71,6 +97,7 @@ public abstract class AbstractServer {
         try {
             listener.startBatch();
             final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
+            // Activate
             config.activate(serviceActivatorContext);
             batchBuilder.install();
             listener.finishBatch();
@@ -80,7 +107,12 @@ public abstract class AbstractServer {
         }
 	}
 	
+	/**
+	 * Stop the server.
+	 *
+	 */
 	public void stop() {
+		log.infof("Stopping server '%s'", config.getServerName());
 		final ServiceContainer container = this.serviceContainer;
 		if(container != null) {
 			container.shutdown();

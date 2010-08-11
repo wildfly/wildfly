@@ -85,10 +85,11 @@ public final class Main {
             } else {
             	if(config.isStandalone()) {
             		server = new StandaloneServer(config);
-            		server.start(null);
             	} else {
             		server = new Server(config);
             	}
+            	// Start the server. 
+            	server.start();
             }
         } catch (Throwable t) {
             abort(t);
@@ -146,6 +147,7 @@ public final class Main {
                         return null;
                     }
                 } else if (arg.equals("-standalone")) {
+                	// Start in standalone mode
                 	standalone = true;
                 } else if (arg.startsWith("-D")) {
 

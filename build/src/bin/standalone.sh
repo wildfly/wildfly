@@ -42,7 +42,7 @@ esac
 
 # Read an optional running configuration file
 if [ "x$RUN_CONF" = "x" ]; then
-    RUN_CONF="$DIRNAME/run.conf"
+    RUN_CONF="$DIRNAME/standalone.conf"
 fi
 if [ -r "$RUN_CONF" ]; then
     . "$RUN_CONF"

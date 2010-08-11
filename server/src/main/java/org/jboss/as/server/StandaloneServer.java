@@ -37,38 +37,55 @@ import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
+ * The standalone server. 
+ * 
  * @author Emanuel Muckenhuber
  */
 public class StandaloneServer extends AbstractServer {
 
-	private static final String XML_FILE = "standalone.xml";
+	private static final String STANDALONE_XML = "standalone.xml";
 	private final StandardElementReaderRegistrar extensionRegistrar;
-	
-	private final LifeThread thread = new LifeThread();
 	
 	protected StandaloneServer(ServerEnvironment environment) {
 		super(environment);
 		extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
 	}
 
-	public void start(final Standalone config) throws ServerStartException {
-		final File standalone = new File(getEnvironment().getDomainConfigurationDir(), XML_FILE); 
-		if(! standalone.isFile() || ! standalone.canWrite() ) {
-			throw new ServerStartException(standalone.getAbsolutePath());
+	public void start() throws ServerStartException {
+		final File standalone = new File(getEnvironment().getDomainConfigurationDir(), STANDALONE_XML); 
+		if(! standalone.isFile()) {
+			throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
 		}
-        ParseResult<Standalone> parseResult = new ParseResult<Standalone>();
+		if(! standalone.canWrite() ) {
+			throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writeable.");
+		}
+        final ParseResult<Standalone> parseResult = new ParseResult<Standalone>();
         try {
-            XMLMapper mapper = XMLMapper.Factory.create();
+            final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardStandaloneReaders(mapper);
             mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(standalone))));
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Caught exception during processing of standalone.xml", e);
+            throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
 		
-		super.start(parseResult.getResult());
-		thread.start();
+		start(parseResult.getResult());
+		// TODO remove life thread
+		new Thread() {
+			{
+				setName("Server Life Thread");
+				setDaemon(false);
+				setPriority(MIN_PRIORITY);
+			}
+
+			public void run() {
+				for (;;)
+					try {
+						sleep(1000000L);
+					} catch (InterruptedException ignore) {
+						// 
+					}
+			}
+		}.start();
 	}
 	
 	Callback createDeploymentCallback() {
@@ -86,21 +103,6 @@ public class StandaloneServer extends AbstractServer {
                 }
             }
         };
-	}
-
-	private class LifeThread extends Thread {
-		Object lock = new Object();
-		LifeThread() {
-			super("JBossLifeThread");
-		}
-		public void run() {
-			synchronized (lock) {
-				try {
-					lock.wait();
-				} catch (InterruptedException ignore) {
-				}
-			}
-		}
 	}
 	
 }
