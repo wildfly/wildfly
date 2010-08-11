@@ -59,14 +59,26 @@ public class VFSResourceLoader implements ResourceLoader {
     private final VirtualFile root;
     private final String rootName;
     private final Manifest manifest;
+    private final MountHandle mountHandle;
 
-    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final VirtualFile root, final String rootName) throws IOException {
+    /**
+     * Construct new instance.
+     * 
+     * @param moduleIdentifier The module identifier
+     * @param rootName The module root name
+     * @param root The root virtual file
+     * @param mountHandle The mount handle
+     * @throws IOException
+     */
+    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final String rootName, final VirtualFile root, final MountHandle mountHandle) throws IOException {
         this.moduleIdentifier = moduleIdentifier;
         this.root = root;
         this.rootName = rootName;
+        this.mountHandle = mountHandle;
         manifest = VFSUtils.getManifest(root);
     }
 
+    /** {@inheritDoc} */
     public ClassSpec getClassSpec(final String name) throws IOException {
         final String fileName = name.replace('.', '/') + ".class";
         final VirtualFile file = root.getChild(fileName);
@@ -96,6 +108,7 @@ public class VFSResourceLoader implements ResourceLoader {
         }
     }
 
+    /** {@inheritDoc} */
     public PackageSpec getPackageSpec(final String name) throws IOException {
         final PackageSpec spec = new PackageSpec();
         final Manifest manifest = this.manifest;
@@ -121,18 +134,22 @@ public class VFSResourceLoader implements ResourceLoader {
         return value == null ? mainAttribute == null ? null : mainAttribute.getValue(name) : value;
     }
 
+    /** {@inheritDoc} */
     public String getLibrary(final String name) {
         return null;
     }
 
+    /** {@inheritDoc} */
     public String getRootName() {
         return rootName;
     }
 
+    /** {@inheritDoc} */
     public PathFilter getExportFilter() {
         return PathFilters.acceptAll();
     }
 
+    /** {@inheritDoc} */
     public Resource getResource(final String name) {
         try {
             final VirtualFile file = root.getChild(name);
@@ -146,6 +163,7 @@ public class VFSResourceLoader implements ResourceLoader {
         }
     }
 
+    /** {@inheritDoc} */
     public Collection<String> getPaths() {
         final List<String> index = new ArrayList<String>();
         // First check for an index file

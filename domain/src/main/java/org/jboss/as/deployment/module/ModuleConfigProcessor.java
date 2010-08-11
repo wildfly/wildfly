@@ -52,8 +52,9 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
         if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
             return;
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+        final MountHandle deploymentRootMountHandler = context.getAttachment(MountHandle.ATTACHMENT_KEY);
         final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", deploymentRoot.getName(), "noversion");
-        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};
+        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot, deploymentRootMountHandler)};
         final Dependencies dependenciesAttachment = getAttachedDependencies(context);
         final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
         final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);

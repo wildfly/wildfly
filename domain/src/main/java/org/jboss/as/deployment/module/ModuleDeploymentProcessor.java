@@ -64,7 +64,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
             try {
-                specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot(), resource.getRootName()));
+                specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRootName(), resource.getRoot(), resource.getMountHandle()));
             } catch(IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e, null);
             }
