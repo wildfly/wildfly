@@ -22,17 +22,13 @@
 
 package org.jboss.as.deployment.managedbean;
 
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
-import javax.annotation.ManagedBean;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,49 +40,28 @@ import java.util.List;
  */
 public class ManagedBeanService<T> implements Service<T> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("managed", "bean");
-    private final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
-    private final InjectedValue<ClassLoader> classLoaderValue = new InjectedValue<ClassLoader>();
-    private final ManagedBeanConfiguration managedBeanConfiguration;
-    private Class<T> beanClass;
-    private String name;
-    private Method postConstructMethod;
+    private final List<ResourceInjection<?>> resourceInjections;
+    private final Class<T> beanClass;
+    private final Method postConstructMethod;
+    private final Method preDestroyMethod;
 
     /**
      * Construct with managed bean configuration.
-     * 
-     * @param managedBeanConfiguration The managed bean configuration
+     *
+     * @param beanClass The class of the managed bean
+     * @param postConstructMethod The post construct method
+     * @param preDestroyMethod The pre destroy method
+     * @param resourceInjections The resource injections
      */
-    public ManagedBeanService(final ManagedBeanConfiguration managedBeanConfiguration) {
-        this.managedBeanConfiguration = managedBeanConfiguration;
+    public ManagedBeanService(final Class<T> beanClass, final Method postConstructMethod, Method preDestroyMethod, final List<ResourceInjection<?>> resourceInjections) {
+        this.beanClass = beanClass;
+        this.postConstructMethod = postConstructMethod;
+        this.preDestroyMethod = preDestroyMethod;
+        this.resourceInjections = resourceInjections;
     }
 
-    /**
-     * Start the managed bean.  This will do all the necessary classloading and reflection required to start the managed
-     * bean instances.
-     * 
-     * @param context The service start context
-     * @throws StartException if any problems occur
-     */
+    /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
-        // Do all the classloader stuff first
-        final ClassLoader classLoader = classLoaderValue.getValue();
-        try {
-            beanClass = (Class<T>) classLoader.loadClass(managedBeanConfiguration.getType());
-            final ManagedBean managedBeanAnnotation = beanClass.getAnnotation(ManagedBean.class);
-            if(managedBeanAnnotation == null)
-                throw new StartException("Can not find the @MangedBean annotation for class " + beanClass);
-            name = managedBeanAnnotation.value() != null ? managedBeanAnnotation.value() : beanClass.getName();
-        } catch (ClassNotFoundException e) {
-            throw new StartException("Failed to load managed bean type: " + managedBeanConfiguration.getType(), e);
-        }
-        final String postConstructMethodName = managedBeanConfiguration.getPostConstructMethod();
-        try {
-            if (postConstructMethodName != null) {
-                postConstructMethod = beanClass.getMethod(postConstructMethodName);
-            }
-        } catch (NoSuchMethodException e) {
-            throw new StartException("Failed to get PostConstruct method '" + postConstructMethodName + "' for managed bean type: " + managedBeanConfiguration.getType(), e);
-        }
     }
 
     /** {@inheritDoc} */
@@ -102,10 +77,6 @@ public class ManagedBeanService<T> implements Service<T> {
      * @throws IllegalStateException if no bean class is available
      */
     public T getValue() throws IllegalStateException {
-        if (beanClass == null) {
-            throw new IllegalStateException("No class for MangedBean: " + managedBeanConfiguration.getType());
-        }
-
         // Create instance
         final T managedBean;
         try {
@@ -126,32 +97,5 @@ public class ManagedBeanService<T> implements Service<T> {
             }
         }
         return managedBean;
-    }
-
-    /**
-     * Add a resource injection for this managed bean.
-     * 
-     * @param resourceInjection A resource injection
-     */
-    public void addResourceInjection(final ResourceInjection<?> resourceInjection) {
-        this.resourceInjections.add(resourceInjection);
-    }
-
-    /**
-     * Get the Injector used to inject the classloader into the service.
-     *
-     * @return the injector
-     */
-    public Injector<ClassLoader> getClassLoaderInjector() {
-        return classLoaderValue;
-    }
-
-    /**
-     * Get the name of the managed bean
-     *
-     * @return the managed bean name
-     */
-    public String getName() {
-        return name;
     }
 }

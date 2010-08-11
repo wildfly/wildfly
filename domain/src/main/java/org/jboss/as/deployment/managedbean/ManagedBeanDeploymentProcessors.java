@@ -35,6 +35,8 @@ import javax.annotation.ManagedBean;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Deployment unit processors responsible for adding deployment items for each managed bean configuration.
@@ -45,7 +47,7 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
     public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(200L);
 
     /**
-     * Process the deployment and add a ManagedBeanDeploymentItem for each managed bean configuration for this deployment.
+     * Process the deployment and add a managed bean service for each managed bean configuration in the deployment.
      *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
@@ -62,12 +64,46 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {
-            install(context.getName(), managedBeanConfiguration, batchBuilder, module.getClassLoader());
+            processManagedBean(context.getName(), managedBeanConfiguration, batchBuilder, module.getClassLoader());
         }
     }
 
-    public void install(final String deploymentName, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder, final ClassLoader classLoader) {
-        final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(managedBeanConfiguration);
+    private void processManagedBean(final String deploymentName, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+        final String beanClassName = managedBeanConfiguration.getType();
+        final Class<Object> beanClass;
+        try {
+             beanClass = (Class<Object>) classLoader.loadClass(beanClassName);
+        } catch(ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName, null);
+        }
+        
+        final ManagedBean managedBeanAnnotation = beanClass.getAnnotation(ManagedBean.class);
+        if(managedBeanAnnotation == null)
+            throw new DeploymentUnitProcessingException("Can not find the @MangedBean annotation for class " + beanClass, null);
+        final String name = managedBeanAnnotation.value() != null ? managedBeanAnnotation.value() : beanClass.getName();
+
+        final String postConstructMethodName = managedBeanConfiguration.getPostConstructMethod();
+        Method postConstructMethod = null;
+        try {
+            if (postConstructMethodName != null) {
+                postConstructMethod = beanClass.getMethod(postConstructMethodName);
+            }
+        } catch (NoSuchMethodException e) {
+            throw new DeploymentUnitProcessingException("Failed to get PostConstruct method '" + postConstructMethodName + "' for managed bean type: " + beanClass.getName(), e, null);
+        }
+
+        final String preDestroyMethodName = managedBeanConfiguration.getPreDestroyMethod();
+        Method preDestroyMethod = null;
+        try {
+            if (preDestroyMethodName != null) {
+                preDestroyMethod = beanClass.getMethod(preDestroyMethodName);
+            }
+        } catch (NoSuchMethodException e) {
+            throw new DeploymentUnitProcessingException("Failed to get PreDestroy method '" + preDestroyMethodName + "' for managed bean type: " + beanClass.getName(), e, null);
+        }
+
+        final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
+        final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(beanClass, postConstructMethod, preDestroyMethod, resourceInjections);
 
         final Class<?> managedBeanClass;
         try {
@@ -75,9 +111,6 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Failed to load managed bean class", e);
         }
-        final ManagedBean managedBeanAnnotation = managedBeanClass.getAnnotation(ManagedBean.class);
-        final String name = managedBeanAnnotation.value();
-        managedBeanConfiguration.setName(name);
 
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ManagedBeanService.SERVICE_NAME.append(deploymentName, name), managedBeanService);
 
@@ -113,7 +146,7 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
             }
             final String contextName = !"".equals(resource.name()) ? resource.name() : managedBeanClass.getName() + "/" + contextNameSuffix;
             serviceBuilder.addDependency(ResourceBinder.MODULE_SERVICE_NAME.append(deploymentName, contextName), resourceInjection.getValueInjector());
-            managedBeanService.addResourceInjection(resourceInjection);
+            resourceInjections.add(resourceInjection);
         }
 
         // TODO: Get naming context and add a ResourceBinder for this managed bean
