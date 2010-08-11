@@ -43,14 +43,17 @@ public class ThreadFactoryExecutorService implements Service<ExecutorService> {
     private Executor executor;
     private ExecutorService value;
 
-    private final int maxThreads;
+    private int maxThreads;
+    private boolean blocking;
 
-    public ThreadFactoryExecutorService(int maxThreads) {
+    public ThreadFactoryExecutorService(final int maxThreads, final boolean blocking) {
         this.maxThreads = maxThreads;
+        this.blocking = blocking;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        executor = JBossExecutors.threadFactoryExecutor(threadFactoryValue.getValue(), maxThreads);
+        // TODO: Use org.jboss.threads.ThreadFactoryExecutor when public
+        executor = JBossExecutors.threadFactoryExecutor(threadFactoryValue.getValue(), maxThreads, blocking);
         value = JBossExecutors.protectedExecutorService(executor);
     }
 
@@ -74,5 +77,15 @@ public class ThreadFactoryExecutorService implements Service<ExecutorService> {
 
     public Injector<ThreadFactory> getThreadFactoryInjector() {
         return threadFactoryValue;
+    }
+
+    public synchronized void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+        // TODO: update executor when org.jboss.threads.ThreadFactoryExecutor is public
+    }
+
+    public synchronized void setBlocking(boolean blocking) {
+        this.blocking = blocking;
+        // TODO: update executor when org.jboss.threads.ThreadFactoryExecutor is public
     }
 }

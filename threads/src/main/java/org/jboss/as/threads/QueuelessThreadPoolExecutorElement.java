@@ -114,7 +114,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
             keepAlive = keepaliveTime.getUnit().toNanos(keepaliveTime.getDuration());
 
         final ScaledCount maxThreads = getMaxThreads();
-        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, blocking, keepAlive);
+        final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads.getScaledCount(), blocking, keepAlive);
         final ServiceName serviceName = JBOSS_THREAD_EXECUTOR.append(getName());
         final BatchServiceBuilder<ExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();

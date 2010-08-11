@@ -49,9 +49,9 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
     private ExecutorService value;
     private StopContext context;
 
-    private final int maxThreads;
-    private final boolean blocking;
-    private final long keepAlive;
+    private int maxThreads;
+    private boolean blocking;
+    private long keepAlive;
 
     public QueuelessThreadPoolService(int maxThreads, boolean blocking, long keepAlive) {
         this.maxThreads = maxThreads;
@@ -99,5 +99,29 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     public Injector<Executor> getHandoffExecutorInjector() {
         return handoffExecutorValue;
+    }
+
+    public synchronized void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+        final QueuelessExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setMaxThreads(maxThreads);
+        }
+    }
+
+    public synchronized void setBlocking(boolean blocking) {
+        this.blocking = blocking;
+        final QueuelessExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setBlocking(blocking);
+        }
+    }
+
+    public synchronized void setKeepAlive(long keepAlive) {
+        this.keepAlive = keepAlive;
+        final QueuelessExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setKeepAliveTime(keepAlive);
+        }
     }
 }

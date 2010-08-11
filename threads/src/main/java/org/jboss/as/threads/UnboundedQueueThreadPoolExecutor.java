@@ -91,12 +91,10 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
 
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final ScaledCount maxThreads = getMaxThreads();
-        int maxThreadsValue = maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE;
         TimeSpec keepAlive = getKeepaliveTime();
         if(keepAlive == null)
             keepAlive = TimeSpec.DEFAULT_KEEPALIVE;
-        final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(maxThreadsValue, keepAlive);
+        final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(getMaxThreads().getScaledCount(), keepAlive);
         final ServiceName serviceName = JBOSS_THREAD_EXECUTOR.append(getName());
         final BatchServiceBuilder<ExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();
