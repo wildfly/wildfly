@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss.logmanager" name="jboss-logmanager"/>

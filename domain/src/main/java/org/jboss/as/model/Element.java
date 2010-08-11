@@ -87,6 +87,7 @@ public enum Element {
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
     SSL("ssl"),
     SSLS("ssls"),
+    STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
     SYSTEM_PROPERTIES("system-properties"),
     

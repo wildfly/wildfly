@@ -24,10 +24,16 @@
 
     <import file="lib.xml"/>
 
-    <target name="bin">
+    <target name="copy-files">
         <copy todir="target">
-            <fileset dir="src">
+            <fileset dir="src/main/resources">
                 <include name="bin/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
+                <include name="domain/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
+                <include name="server/**"/>
             </fileset>
         </copy>
         <chmod perm="+x">
@@ -36,15 +42,7 @@
             </fileset>
         </chmod>
     </target>
-
-    <target name="domain">
-        <copy todir="target">
-            <fileset dir="src">
-                <include name="domain/**"/>
-            </fileset>
-        </copy>
-    </target>
-
+	
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
@@ -251,5 +249,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, bin, domain"/>
+    <target name="all" depends="clean-target, modules, copy-files"/>
 </project>
