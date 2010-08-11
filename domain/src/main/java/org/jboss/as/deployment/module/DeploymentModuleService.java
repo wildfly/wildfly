@@ -23,8 +23,10 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.PathFilters;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -56,16 +58,19 @@ public class DeploymentModuleService implements Service<Module> {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
         for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
             try {
-                specBuilder.addRoot(resource.getRootName(), new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot()));
+                specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot(), resource.getRootName()));
             } catch(IOException e) {
                 throw new StartException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
             }
         }
         final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
         for(ModuleConfig.Dependency dependency : dependencies) {
-            specBuilder.addDependency(dependency.getIdentifier())
-                .setExport(dependency.isExport())
-                .setOptional(dependency.isOptional());
+            specBuilder.addModuleDependency(
+                    ModuleDependencySpec.build(dependency.getIdentifier())
+                    .setExportFilter(dependency.isExport() ? PathFilters.acceptAll() : PathFilters.rejectAll())
+                    .setOptional(dependency.isOptional())
+                    .create()
+            );
         }
         final ModuleSpec moduleSpec = specBuilder.create();
         final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();

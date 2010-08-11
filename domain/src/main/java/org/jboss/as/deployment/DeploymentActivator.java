@@ -28,7 +28,6 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProvider;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
 import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.modules.ModuleLoaderSelector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -53,7 +52,7 @@ public class DeploymentActivator implements ServiceActivator {
         batchBuilder.addService(DeploymentModuleLoaderProvider.SERVICE_NAME, new DeploymentModuleLoaderProvider());
 
         // Setup default deployment module loader
-        final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl(ModuleLoaderSelector.DEFAULT.getCurrentLoader());
+        final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl();
         final Service<DeploymentModuleLoader> deploymentModuleLoaderService = new DeploymentModuleLoaderService(deploymentModuleLoader);
         batchBuilder.addService(DeploymentModuleLoaderImpl.SERVICE_NAME, deploymentModuleLoaderService)
             .addDependency(DeploymentModuleLoaderProvider.SERVICE_NAME,
