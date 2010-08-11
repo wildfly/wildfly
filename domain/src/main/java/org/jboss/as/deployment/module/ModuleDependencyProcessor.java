@@ -63,6 +63,8 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             return;
 
         final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
+        if(dependencyString == null)
+            return;
         final String[] dependencyDefs = dependencyString.split(",");
         for(String dependencyDef : dependencyDefs) {
             final String[] dependencyParts = dependencyDef.split(" ");

@@ -20,28 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.modules.ModuleIdentifier;
-
-import static org.jboss.as.deployment.attachment.Dependencies.addDependency;
 
 /**
- * DeploymentUnitProcessor used to add a dependency on SYSTEM to deployment modules.  This simulates what a processor
- * could do to add deps for a subsystem.  Ex.  A similar processor could be used to add all the EJB3 deps.
- *
+ * Deployment unit processor responsible for attaching the default deployment module loader to the context.
  * @author John E. Bailey
  */
-public class TestModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = ModuleDependencyProcessor.PRIORITY + 1;
+public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
 
-    @Override
+    static final AttachmentKey<DeploymentModuleLoader> ATTACHMENT_KEY = new AttachmentKey<DeploymentModuleLoader>(DeploymentModuleLoader.class);
+
+    private final DeploymentModuleLoader deploymentModuleLoader = new DeploymentModuleLoaderImpl();
+
+    /**
+     * If there isn't currently a deployment module loader, attach the default loader.
+     * 
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        addDependency(context, new ModuleConfig.Dependency(ModuleIdentifier.SYSTEM, true, false, false));
+        if(context.getAttachment(ATTACHMENT_KEY) == null)
+            context.putAttachment(ATTACHMENT_KEY, deploymentModuleLoader);
     }
 }

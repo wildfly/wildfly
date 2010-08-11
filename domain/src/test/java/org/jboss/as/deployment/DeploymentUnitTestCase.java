@@ -59,10 +59,9 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
     @Before
     public void setup() throws Exception {
+        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource("/test")).getPathName());
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-
-        new DeploymentActivator().activate(new ServiceActivatorContextImpl(batchBuilder));
 
         DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
             new DeploymentChainProvider.Selector() {
@@ -81,8 +80,8 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
     @Test
     public void testDeployVirtualFile() throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource("/test/serviceXmlDeployment.jar"));
-        final DeploymentUnitKey expectedKey = new DeploymentUnitKey(virtualFile.getPathName(), BLANK_SHA1);
+        final VirtualFile virtualFile = VFS.getChild(getResource("/test/testDeployment"));
+        final DeploymentUnitKey expectedKey = new DeploymentUnitKey(virtualFile.getName(), BLANK_SHA1);
         final String expectedDeploymentName =  expectedKey.getName() + ":" + expectedKey.getSha1HashAsHexString();
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
@@ -95,7 +94,7 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         });
         batchBuilder.addListener(listener);
 
-        new ServerGroupDeploymentElement(null, virtualFile.getPathName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+        new ServerGroupDeploymentElement(null, virtualFile.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
 
         batchBuilder.install();
         listener.finishBatch();

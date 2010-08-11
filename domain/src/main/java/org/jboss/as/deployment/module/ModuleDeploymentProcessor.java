@@ -42,7 +42,7 @@ import java.io.IOException;
  * @author John E. Bailey
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(102L);
     public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = new AttachmentKey<Module>(Module.class);
 
 
@@ -79,7 +79,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             );
         }
         final ModuleSpec moduleSpec = specBuilder.create();
-        final DeploymentModuleLoader deploymentModuleLoader = DeploymentModuleLoader.DEFAULT; // TODO: This should be an attachment
+        final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(DeploymentModuleLoaderProcessor.ATTACHMENT_KEY);
         deploymentModuleLoader.addModuleSpec(moduleSpec);
 
         try {

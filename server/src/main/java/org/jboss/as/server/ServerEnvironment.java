@@ -84,6 +84,15 @@ public class ServerEnvironment {
 
     /**
      * Constant that holds the name of the environment property
+     * for specifying the directory which JBoss will use for
+     * deployments.
+     *
+     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/deployments</tt>.
+     */
+    public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
+
+    /**
+     * Constant that holds the name of the environment property
      * for specifying the server log directory for JBoss.
      *
      * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/<em>log</em></tt>.
@@ -107,6 +116,7 @@ public class ServerEnvironment {
     private final File serverBaseDir;
     private final File serverConfigurationDir;
     private final File serverDataDir;
+    private final File serverDeployDir;
     private final File serverLogDir;
     private final File serverTempDir;
     
@@ -186,6 +196,14 @@ public class ServerEnvironment {
         }
         this.serverDataDir = tmp;
         System.setProperty(SERVER_DATA_DIR, this.serverDataDir.getAbsolutePath());
+
+        tmp = getFileFromProperty(SERVER_DEPLOY_DIR);
+        if (tmp == null) {
+            tmp = new File(this.serverBaseDir, "deployments");
+        }
+        this.serverDeployDir = tmp;
+        System.setProperty(SERVER_DEPLOY_DIR, this.serverDeployDir.getAbsolutePath());
+
         
         tmp = getFileFromProperty(SERVER_LOG_DIR);
         if (tmp == null) {
@@ -274,6 +292,10 @@ public class ServerEnvironment {
 
     public File getDomainDataDir() {
         return serverDataDir;
+    }
+
+    public File getDomainDeployDir() {
+        return serverDeployDir;
     }
 
     public File getDomainLogDir() {

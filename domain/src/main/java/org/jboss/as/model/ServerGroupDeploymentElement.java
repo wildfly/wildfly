@@ -258,6 +258,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     private String getFullyQualifiedDeploymentPath(final String fileName) {
-        return fileName;  // TODO: Need some way to get fully qualified path for this (should be a system prop)
+        return System.getProperty("jboss.server.deploy.dir") + "/" + fileName;
     }
 }

@@ -47,9 +47,4 @@ public abstract class DeploymentModuleLoader extends ModuleLoader {
      * @param moduleIdentifier The module identifier
      */
     public abstract void removeModule(ModuleIdentifier moduleIdentifier);
-
-    /**
-     * Temporary holder for the default module loader.  Should be replaced by an attachement.
-     */
-    public static DeploymentModuleLoader DEFAULT = new DeploymentModuleLoaderImpl();
 }
