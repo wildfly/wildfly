@@ -44,6 +44,8 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
 
     private static final long serialVersionUID = -1052811575815297859L;
 
+    private boolean blocking;
+
     public ThreadFactoryExecutorElement(final Location location, final String name) {
         super(location, name);
     }
@@ -59,6 +61,10 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: break;
+                case BLOCKING: {
+                    blocking = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
                 default: throw unexpectedAttribute(reader, i);
             }
         }
@@ -93,7 +99,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         final ScaledCount maxThreads = getMaxThreads();
-        final ThreadFactoryExecutorService service = new ThreadFactoryExecutorService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE);
+        final ThreadFactoryExecutorService service = new ThreadFactoryExecutorService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, blocking);
         final ServiceName serviceName = JBOSS_THREAD_EXECUTOR.append(getName());
         final BatchServiceBuilder<ExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();
@@ -111,6 +117,10 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
         return super.elementHash();
     }
 
+    public boolean isBlocking() {
+        return blocking;
+    }
+
     protected void appendDifference(final Collection<AbstractModelUpdate<ThreadFactoryExecutorElement>> target, final ThreadFactoryExecutorElement other) {
     }
 
@@ -120,6 +130,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
+        if (blocking) { streamWriter.writeAttribute("blocking", "true"); }
         final ScaledCount maxThreads = getMaxThreads();
         if (maxThreads != null) writeScaledCountElement(streamWriter, maxThreads, "max-threads");
         final String threadFactory = getThreadFactory();

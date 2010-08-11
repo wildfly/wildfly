@@ -25,6 +25,7 @@ package org.jboss.as.model;
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -229,7 +230,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
             final BatchBuilder batchBuilder = context.getBatchBuilder();
             // Create deployment service
             final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-            batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName, deploymentRoot, handle));
+            batchBuilder.addService(deploymentServiceName, new DeploymentService());
 
             // Create a sub-batch for this deployment
             final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
@@ -240,6 +241,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
             // Create the deployment unit context
             final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch);
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
+            deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, new MountHandle(handle));
 
             // Execute the deployment chain
             final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;

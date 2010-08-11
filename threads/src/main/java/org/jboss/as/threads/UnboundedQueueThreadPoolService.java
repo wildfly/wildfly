@@ -48,8 +48,8 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
     private ExecutorService value;
     private StopContext context;
 
-    private final int maxThreads;
-    private final TimeSpec keepAlive;
+    private int maxThreads;
+    private TimeSpec keepAlive;
 
     public UnboundedQueueThreadPoolService(int maxThreads, TimeSpec keepAlive) {
         this.maxThreads = maxThreads;
@@ -89,5 +89,21 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
 
     public Injector<ThreadFactory> getThreadFactoryInjector() {
         return threadFactoryValue;
+    }
+
+    public synchronized void setMaxThreads(final int maxThreads) {
+        this.maxThreads = maxThreads;
+        final JBossThreadPoolExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setMaxThreads(maxThreads);
+        }
+    }
+
+    public synchronized void setKeepAlive(final TimeSpec keepAlive) {
+        this.keepAlive = keepAlive;
+        final JBossThreadPoolExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
+        }
     }
 }

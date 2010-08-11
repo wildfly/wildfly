@@ -103,14 +103,16 @@ public final class ModuleConfig implements Serializable {
 
         private final String rootName;
         private final VirtualFile root;
+        private final MountHandle mountHandle;
 
-        public ResourceRoot(final VirtualFile root) {
-            this(root.getName(), root);
+        public ResourceRoot(final VirtualFile root, final MountHandle mountHandle) {
+            this(root.getName(), root, mountHandle);
         }
 
-        public ResourceRoot(final String rootName, final VirtualFile root) {
+        public ResourceRoot(final String rootName, final VirtualFile root, final MountHandle mountHandle) {
             this.rootName = rootName;
             this.root = root;
+            this.mountHandle = mountHandle;
         }
 
         public String getRootName() {
@@ -119,6 +121,10 @@ public final class ModuleConfig implements Serializable {
 
         public VirtualFile getRoot() {
             return root;
+        }
+
+        public MountHandle getMountHandle() {
+            return mountHandle;
         }
     }
 }

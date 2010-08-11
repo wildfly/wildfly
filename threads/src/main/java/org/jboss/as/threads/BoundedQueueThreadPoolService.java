@@ -49,12 +49,12 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
     private ExecutorService value;
     private StopContext context;
 
-    private final int coreThreads;
-    private final int maxThreads;
-    private final int queueLength;
-    private final boolean blocking;
-    private final TimeSpec keepAlive;
-    private final boolean allowCoreTimeout;
+    private int coreThreads;
+    private int maxThreads;
+    private int queueLength;
+    private boolean blocking;
+    private TimeSpec keepAlive;
+    private boolean allowCoreTimeout;
 
     public BoundedQueueThreadPoolService(int coreThreads, int maxThreads, int queueLength, boolean blocking, TimeSpec keepAlive, boolean allowCoreTimeout) {
         this.coreThreads = coreThreads;
@@ -103,5 +103,50 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
 
     public Injector<Executor> getHandoffExecutorInjector() {
         return handoffExecutorValue;
+    }
+
+    public synchronized void setCoreThreads(int coreThreads) {
+        this.coreThreads = coreThreads;
+        final QueueExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setCoreThreads(coreThreads);
+        }
+    }
+
+    public synchronized void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+        final QueueExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setMaxThreads(maxThreads);
+        }
+    }
+
+    public synchronized void setQueueLength(int queueLength) {
+        this.queueLength = queueLength;
+        // TODO:  update the executor queue
+    }
+
+    public synchronized void setBlocking(boolean blocking) {
+        this.blocking = blocking;
+        final QueueExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setBlocking(blocking);
+        }
+    }
+
+    public synchronized void setKeepAlive(TimeSpec keepAlive) {
+        this.keepAlive = keepAlive;
+        final QueueExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
+        }
+    }
+
+    public synchronized void setAllowCoreTimeout(boolean allowCoreTimeout) {
+        this.allowCoreTimeout = allowCoreTimeout;
+        final QueueExecutor executor = this.executor;
+        if(executor != null) {
+            executor.setAllowCoreThreadTimeout(allowCoreTimeout);
+        }
     }
 }

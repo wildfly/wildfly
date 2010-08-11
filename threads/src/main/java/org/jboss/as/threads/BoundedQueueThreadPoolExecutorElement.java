@@ -123,12 +123,13 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
     }
 
     public void activate(final ServiceActivatorContext context) {final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final ScaledCount coreThreads = this.coreThreads;
-        int coreThreadsValue = coreThreads != null ? coreThreads.getScaledCount() : 0;
         final ScaledCount maxThreads = getMaxThreads();
-        int maxThreadsValue = maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE;
+        int maxThreadsValue = maxThreads.getScaledCount();
         final ScaledCount queueLength = this.queueLength;
-        int queueLengthValue = queueLength != null ? queueLength.getScaledCount() : Integer.MAX_VALUE;
+        int queueLengthValue = queueLength.getScaledCount();
+
+        final ScaledCount coreThreads = this.coreThreads;
+        int coreThreadsValue = coreThreads != null ? coreThreads.getScaledCount() : maxThreadsValue;
 
         TimeSpec keepAlive = getKeepaliveTime();
         if(keepAlive == null)

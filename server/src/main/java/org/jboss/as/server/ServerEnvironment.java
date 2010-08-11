@@ -119,14 +119,15 @@ public class ServerEnvironment {
     private final File serverDeployDir;
     private final File serverLogDir;
     private final File serverTempDir;
-    
+    private final boolean standalone;
     
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
     
     public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
-            InetAddress processManagerAddress, Integer processManagerPort) {
+            InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
+    	this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -306,6 +307,10 @@ public class ServerEnvironment {
         return serverTempDir;
     }
 
+    public boolean isStandalone() {
+		return standalone;
+	}
+    
     private static InetAddress findLocalhost() {
         // FIXME implement findLocalhost
         throw new UnsupportedOperationException("implement me");
