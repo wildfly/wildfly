@@ -29,7 +29,6 @@ package org.jboss.as.deployment;
  */
 public enum DeploymentPhases {
     VALIDATE(0L),
-    MOUNT(1000000L),
     PARSE_DESCRIPTORS(2000000L),
     MODULARIZE(3000000L),
     //...

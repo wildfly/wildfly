@@ -21,6 +21,8 @@ import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.RefResolver;
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -30,7 +32,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> {
+public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -7389975620327080290L;
 
@@ -56,7 +58,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * @param includedGroupResolver {@link RefResolver} to use to resolve references 
      *           to included socket binding groups. Should not be used in the constructor
      *           itself as referenced groups may not have been created yet.
-     *           Cannot be <code>null</code>
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      */
     public SocketBindingGroupElement(Location location, final String name, final String defaultInterface, 
             final RefResolver<String, InterfaceElement> interfaceResolver,
@@ -79,8 +83,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         }
         this.defaultInterface = defaultInterface;
         
-        if (includedGroupResolver == null)
-            throw new IllegalArgumentException("includedGroupResolver is null");
         this.includedGroupResolver = includedGroupResolver;
     }
 
@@ -93,7 +95,11 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      *           itself
      * @param includedGroupResolver {@link RefResolver} to use to resolve references 
      *           to included socket binding groups. Should not be used in the constructor
-     *           itself as referenced groups may not have been created yet
+     *           itself as referenced groups may not have been created yet.
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
+     *           
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingGroupElement(XMLExtendedStreamReader reader, 
@@ -105,8 +111,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
         
-        if (includedGroupResolver == null)
-            throw new IllegalArgumentException("includedGroupResolver is null");
         this.includedGroupResolver = includedGroupResolver;
         
         // Handle attributes
@@ -152,6 +156,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case INCLUDE: {
+                            if (includedGroupResolver == null) {
+                                throw unexpectedElement(reader);
+                            }
                             final SocketBindingGroupIncludeElement include = new SocketBindingGroupIncludeElement(reader);
                             if (includedGroups.containsKey(include.getGroupName())) {
                                 throw new XMLStreamException("Included socket-binding-group " + include.getGroupName() + " already declared", reader.getLocation());
@@ -160,7 +167,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                             break;
                         }
                         case SOCKET_BINDING: {
-                            final SocketBindingElement include = new SocketBindingElement(reader, interfaceResolver);
+                            final SocketBindingElement include = new SocketBindingElement(reader, interfaceResolver, this.defaultInterface);
                             if (socketBindings.containsKey(include.getName())) {
                                 throw new XMLStreamException("socket-binding " + include.getName() + " already declared", reader.getLocation());
                             }
@@ -219,6 +226,13 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         }
     }
 
+    /** {@inheritDoc} */
+    public void activate(ServiceActivatorContext serviceActivatorContext) {
+    	for(SocketBindingElement element : getAllSocketBindings()) {
+    		element.activate(serviceActivatorContext);
+    	}
+    }
+    
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */

@@ -80,8 +80,8 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
-                break;
                 default: {
                     throw unexpectedElement(reader);
                 }

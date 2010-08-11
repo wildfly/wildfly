@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.processor;
+package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.Dependencies;
-import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -39,14 +38,19 @@ import java.util.jar.Manifest;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * DeploymentUnitProcessor that will extract module dependencies from an archive. 
+ * Deployment unit processor that will extract module dependencies from an archive. 
  *
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
-    @Override
+    /**
+     * Process the deployment root for module dependency information.
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final Manifest manifest;
@@ -59,6 +63,8 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             return;
 
         final String dependencyString = manifest.getMainAttributes().getValue("Dependencies");
+        if(dependencyString == null)
+            return;
         final String[] dependencyDefs = dependencyString.split(",");
         for(String dependencyDef : dependencyDefs) {
             final String[] dependencyParts = dependencyDef.split(" ");

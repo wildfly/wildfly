@@ -20,32 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as.model;
 
-import org.jboss.as.deployment.item.DeploymentItem;
-import org.jboss.as.deployment.item.DeploymentItemContext;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceName;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
+ * for {@code &lt;standalone&gt;} root elements.
+ *
+ * @author Brian Stansberry
  */
-public final class ServiceDeploymentItem implements DeploymentItem {
+public final class StandaloneParser implements XMLElementReader<ParseResult<Standalone>>, XMLStreamConstants {
 
-    private static final long serialVersionUID = -8726019571447659525L;
-
-    private final String serviceGroup;
-    private final String serviceName;
-    private final ServiceName serviceListener;
-
-    public ServiceDeploymentItem(final String serviceGroup, final String serviceName, final ServiceName serviceListener) {
-        this.serviceGroup = serviceGroup;
-        this.serviceName = serviceName;
-        this.serviceListener = serviceListener;
+    private StandaloneParser() {
     }
 
-    public void install(final DeploymentItemContext context) {
-        final BatchBuilder builder = context.getBatchBuilder();
-        
+    private static final StandaloneParser INSTANCE = new StandaloneParser();
+
+    /**
+     * Get the instance.
+     *
+     * @return the instance
+     */
+    public static StandaloneParser getInstance() {
+        return INSTANCE;
+    }
+
+    /** {@inheritDoc} */
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Standalone> value) throws XMLStreamException {
+        value.setResult(new Standalone(reader));
     }
 }

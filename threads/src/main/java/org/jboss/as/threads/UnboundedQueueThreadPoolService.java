@@ -28,13 +28,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.JBossThreadPoolExecutor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with an unbounded queue.
@@ -44,7 +44,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class UnboundedQueueThreadPoolService implements Service<ExecutorService> {
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
 
-    private ThreadPoolExecutor executor;
+    private JBossThreadPoolExecutor executor;
     private ExecutorService value;
     private StopContext context;
 
@@ -62,14 +62,19 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
     }
 
     public synchronized void stop(final StopContext context) {
-        final ThreadPoolExecutor executor = this.executor;
+        final JBossThreadPoolExecutor executor = this.executor;
         if (executor == null) {
             throw new IllegalStateException();
         }
         this.context = context;
         context.asynchronous();
         executor.shutdown();
-        // TODO: Add shutdown hook to call context.complete();
+        executor.addShutdownListener(new EventListener<StopContext>() {
+            public void handleEvent(final StopContext stopContext) {
+                stopContext.complete();
+                UnboundedQueueThreadPoolService.this.context = null;
+            }
+        }, context);
         this.executor = null;
         value = null;
     }

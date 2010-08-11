@@ -30,6 +30,7 @@
 
     <dependencies>
         <module group="org.jboss" name="jandex"/>
+        <module group="org.jboss" name="jboss-vfs"/>
         <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss.marshalling" name="jboss-marshalling"/>

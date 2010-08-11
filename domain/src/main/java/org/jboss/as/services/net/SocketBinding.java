@@ -1,0 +1,159 @@
+/*
+* JBoss, Home of Professional Open Source
+* Copyright 2010, Red Hat Inc., and individual contributors as indicated
+* by the @authors tag. See the copyright.txt in the distribution for a
+* full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
+package org.jboss.as.services.net;
+
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
+import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.msc.service.ServiceName;
+
+/**
+ * @author Emanuel Muckenhuber
+ */
+public class SocketBinding {
+
+	public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
+	
+	private final SocketBindingElement element;
+	private final NetworkInterfaceBinding networkInterface;
+	private final SocketBindingManager socketBindings;
+	
+	SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
+			SocketBindingManager socketBindings) {
+		this.element = element;
+		this.socketBindings = socketBindings;
+		this.networkInterface = networkInterface;
+	}
+
+	/**
+	 * Get the socket binding manager.
+	 * 
+	 * @return the socket binding manger
+	 */
+	public SocketBindingManager getSocketBindings() {
+		return socketBindings;
+	}
+	
+	/**
+	 * Get the socket address.
+	 * 
+	 * @return the socket address
+	 */
+	public InetSocketAddress getSocketAddress() {
+		int port = element.getPort();
+		if(port > 0 && element.isFixedPort() == false) {
+			port += socketBindings.getPortOffset();
+		}
+		return new InetSocketAddress(networkInterface.getAddress(), port);
+	}
+
+	/**
+	 * Get the multicast socket address.
+	 * 
+	 * @return
+	 */
+	public InetSocketAddress getMulticastSocketAddress() {
+		if(element.getMulticastAddress() == null) {
+			throw new IllegalStateException("no multicast binding: " + element.getName()
+					+ ", " + element.getLocation());
+		}
+		return new InetSocketAddress(element.getMulticastAddress(), element.getMulticastPort());
+	}
+
+	/**
+	 * Create and bind a socket.
+	 * 
+	 * @return the socket
+	 * @throws IOException
+	 */
+	public Socket createSocket() throws IOException {
+		final Socket socket = getSocketFactory().createSocket();
+		socket.bind(getSocketAddress());
+		return socket;
+	}
+	
+	/**
+	 * Create and bind a server socket
+	 * 
+	 * @return the server socket
+	 * @throws IOException
+	 */
+	public ServerSocket createServerSocket() throws IOException {
+		final ServerSocket socket = getServerSocketFactory().createServerSocket();
+		socket.bind(getSocketAddress());
+		return socket;	
+	}
+	
+	/**
+	 * Create and bind a server socket.
+	 * 
+	 * @param backlog the backlog
+	 * @return the server socket
+	 * @throws IOException
+	 */
+	public ServerSocket createServerSocket(int backlog) throws IOException {
+		final ServerSocket socket = getServerSocketFactory().createServerSocket();
+		socket.bind(getSocketAddress(), backlog);
+		return socket;
+	}
+	
+	/**
+	 * Create and bind a datagrap socket.
+	 * 
+	 * @return the datagram socket
+	 * @throws SocketException
+	 */
+	public DatagramSocket createDatagramSocket() throws SocketException {
+		return new ManagedDatagramSocketBinding(socketBindings, getSocketAddress());
+	}
+	
+	/**
+	 * Create and bind a multicast socket. This will also join the given
+	 * multicast address. 
+	 * 
+	 * @return the multicast socket
+	 * @throws IOException
+	 */
+	public MulticastSocket createMulticastSocket() throws IOException {
+		final MulticastSocket socket = new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
+		socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
+		return socket;
+	}
+
+	SocketFactory getSocketFactory() {
+		return socketBindings.getSocketFactory();
+	}
+	
+	ServerSocketFactory getServerSocketFactory() {
+		return socketBindings.getServerSocketFactory();
+	}
+	
+}

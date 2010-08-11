@@ -112,7 +112,7 @@ public class Server {
     }
 
     private void launchCommunicationHandler() {
-        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getProcessManagerSlave(environment, messageHandler);
+        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(environment, messageHandler);
         Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");
         t.start();
     }

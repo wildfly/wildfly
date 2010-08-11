@@ -23,9 +23,11 @@
 package org.jboss.as.model;
 
 import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.item.DeploymentItem;
-import org.jboss.as.deployment.item.DeploymentItemContext;
-import org.jboss.as.deployment.item.DeploymentItemContextImpl;
+import org.jboss.as.deployment.chain.DeploymentChain;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.module.TempFileProviderService;
+import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
@@ -34,11 +36,17 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
@@ -51,7 +59,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     private final DeploymentUnitKey key;
     private boolean start;
-    private List<DeploymentItem> deploymentItems;
 
     /**
      * Construct a new instance.
@@ -60,7 +67,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start, final List<DeploymentItem> deploymentItems) {
+    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start) {
         super(location);
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
@@ -73,7 +80,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         }
         this.key = new DeploymentUnitKey(deploymentName, deploymentHash);
         this.start = start;
-        this.deploymentItems = deploymentItems;
     }
 
     public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -206,30 +212,52 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         final String deploymentName = key.getName() + ":" + key.getSha1HashAsHexString();
         log.info("Activating server group deployment: " + deploymentName);
 
-        final Collection<DeploymentItem> deploymentItems = this.deploymentItems;
-        if (deploymentItems == null) {
-            log.warnf("No deployment items found for deployment: %s", deploymentName);
-            return;
+        final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(key.getName()));
+        if (!deploymentRoot.exists())
+            throw new RuntimeException("Deployment root does not exist." + deploymentRoot);
+
+        Closeable handle = null;
+        try {
+            // Mount virtual file
+            try {
+                if(deploymentRoot.isFile())
+                    handle = VFS.mountZip(deploymentRoot, deploymentRoot, TempFileProviderService.provider());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to mount deployment archive", e);
+            }
+
+            final BatchBuilder batchBuilder = context.getBatchBuilder();
+            // Create deployment service
+            final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
+            batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName, deploymentRoot, handle));
+
+            // Create a sub-batch for this deployment
+            final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
+
+            // Setup a batch level dependency on deployment service
+            deploymentSubBatch.addDependency(deploymentServiceName);
+
+            // Create the deployment unit context
+            final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch);
+            attachVirtualFile(deploymentUnitContext, deploymentRoot);
+
+            // Execute the deployment chain
+            final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;
+            final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentRoot);
+            if(deploymentChain == null)
+                throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);
+            try {
+                deploymentChain.processDeployment(deploymentUnitContext);
+            } catch (DeploymentUnitProcessingException e) {
+                throw new RuntimeException("Failed to process deployment chain.", e);
+            }
+        } catch(Throwable t) {
+            VFSUtils.safeClose(handle);
+            throw new RuntimeException("Failed to activate deployment unit " + key.getName(), t);
         }
+    }
 
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-
-        // Create deployment service
-        final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-        batchBuilder.addService(deploymentServiceName, new DeploymentService(deploymentName));
-
-        // Create a sub-batch for this deployment
-        final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
-
-        // Setup a batch level dependency on deployment service
-        deploymentSubBatch.addDependency(deploymentServiceName);
-
-        // Construct an item context
-        final DeploymentItemContext deploymentItemContext = new DeploymentItemContextImpl(deploymentSubBatch);
-
-        // Process all the deployment items with the item context
-        for (DeploymentItem deploymentItem : deploymentItems) {
-            deploymentItem.install(deploymentItemContext);
-        }
+    private String getFullyQualifiedDeploymentPath(final String fileName) {
+        return System.getProperty("jboss.server.deploy.dir") + "/" + fileName;
     }
 }

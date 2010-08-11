@@ -35,6 +35,8 @@ import java.util.Map;
  */
 public final class ProcessManagerMaster {
 
+    private static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
+    
     private ProcessManagerMaster() {
     }
 
@@ -42,13 +44,12 @@ public final class ProcessManagerMaster {
 
     public static void main(String[] args) {
         final ProcessManagerMaster master = new ProcessManagerMaster();
-        final String initialProcessName = args[0];
         final String initialWorkingDirectory = args[1];
         final List<String> fullList = Arrays.asList(args);
         final List<String> command = fullList.subList(2, fullList.size());
         // TODO JBAS-8259 -- possible socket-based communication
-        master.addProcess(initialProcessName, command, System.getenv(), initialWorkingDirectory);
-        master.startProcess(initialProcessName);
+        master.addProcess(SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), initialWorkingDirectory);
+        master.startProcess(SERVER_MANAGER_PROCESS_NAME);
     }
 
     void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {

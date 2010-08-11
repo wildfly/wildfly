@@ -22,34 +22,32 @@
 
 package org.jboss.as.deployment.service;
 
-import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
 
 /**
- * Service wrapper for legacy JBoss MBean services.
+ * Service wrapper for legacy JBoss services configured using jboss-service.xml.
  *
  * @author John E. Bailey
  */
 public class JBossService<T> implements Service<T> {
-    private Value<T> serviceValue;
+    private final Value<T> serviceValue;
 
-    private final InjectedValue<Module> deploymentModule = new InjectedValue<Module>();
-    private final Value<ClassLoader> deploymentClassLoaderValue = new Value<ClassLoader>() {
-            @Override
-            public ClassLoader getValue() throws IllegalStateException {
-                return deploymentModule.getValue().getClassLoader();
-            }
-        };
+    /**
+     * Construct new instance.
+     *
+     * @param serviceValue The service value
+     */
+    public JBossService(Value<T> serviceValue) {
+        this.serviceValue = serviceValue;
+    }
 
-    @Override
+    /** {@inheritDoc */
     public void start(StartContext context) throws StartException {
         final T service = getValue();
         // Handle Start
@@ -63,7 +61,7 @@ public class JBossService<T> implements Service<T> {
         }
     }
 
-    @Override
+    /** {@inheritDoc */
     public void stop(StopContext context) {
         final T service = getValue();
         // Handle Stop
@@ -75,20 +73,8 @@ public class JBossService<T> implements Service<T> {
         }
     }
 
-    @Override
+    /** {@inheritDoc */
     public T getValue() throws IllegalStateException {
         return serviceValue.getValue();
-    }
-
-    public void setServiceValue(Value<T> serviceValue) {
-        this.serviceValue = serviceValue;
-    }
-
-    public Injector<Module> getDeploymentModuleInjector() {
-        return deploymentModule;
-    }
-
-    public Value<ClassLoader> getDeploymentClassLoaderValue() {
-        return deploymentClassLoaderValue;
     }
 }

@@ -23,10 +23,7 @@
 package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.SimpleAttachable;
-import org.jboss.as.deployment.item.DeploymentItem;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.msc.service.BatchBuilder;
 
 /**
  * Default implementation for DeploymentUnitContext.
@@ -35,23 +32,26 @@ import java.util.List;
  */
 public class DeploymentUnitContextImpl extends SimpleAttachable implements DeploymentUnitContext {
     private final String name;
-    private final List<DeploymentItem> deploymentItems = new ArrayList<DeploymentItem>();
+    private final BatchBuilder batchBuilder;
 
-    public DeploymentUnitContextImpl(String name) {
+    /**
+     * Construct new instance.
+     * 
+     * @param name The deployment unit name.
+     * @param batchBuilder The batch builder
+     */
+    public DeploymentUnitContextImpl(String name, BatchBuilder batchBuilder) {
         this.name = name;
+        this.batchBuilder = batchBuilder;
     }
 
-    @Override
+    /** {@inheritDoc} */
     public String getName() {
         return name;
     }
 
-    @Override
-    public void addDeploymentItem(DeploymentItem item) {
-        deploymentItems.add(item);
-    }
-
-    public List<DeploymentItem> getDeploymentItems() {
-        return new ArrayList<DeploymentItem>(deploymentItems);        
+    /** {@inheritDoc} */
+    public BatchBuilder getBatchBuilder() {
+        return batchBuilder;
     }
 }

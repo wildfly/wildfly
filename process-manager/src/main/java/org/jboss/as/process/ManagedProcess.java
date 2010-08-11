@@ -48,6 +48,7 @@ final class ManagedProcess {
     private final Map<String, String> env;
     private final String workingDirectory;
     private final long[] startTimeHistory = new long[5];
+    private final Logger log;
 
     private boolean start;
     private OutputStream commandStream;
@@ -59,10 +60,11 @@ final class ManagedProcess {
         this.command = command;
         this.env = env;
         this.workingDirectory = workingDirectory;
+        this.log = Logger.getLogger("org.jboss.process." + processName);
     }
 
     void start() throws IOException {
-        System.out.println("Starting " + processName);
+        log.info("Starting " + processName);
         synchronized (this) {
             if (start) {
                 return;
@@ -154,6 +156,7 @@ final class ManagedProcess {
                 for (;;) {
                     Status status = StreamUtils.readWord(inputStream, b);
                     if (status == Status.END_OF_STREAM) {
+                        log.info("Received end of stream, shutting down");
                         // no more input
                         return;
                     }
@@ -274,13 +277,14 @@ final class ManagedProcess {
                                 if (status == Status.MORE) {
                                     final String recipient = b.toString();
                                     CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
-//                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
-//                                        System.err.println("Incorrect checksum");
-//                                        // FIXME deal with invalid checksum
-//                                    }
-//                                    else {
+                                    status = cb.getStatus();
+                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                        log.error("Incorrect checksum on message for " + recipient);
+                                        // FIXME deal with invalid checksum
+                                    }
+                                    else {
                                         master.sendMessage(processName, recipient, cb.getBytes(), cb.getExpectedChecksum());
-//                                    }
+                                    }
                                 }
                                 break;
                             }
@@ -294,13 +298,9 @@ final class ManagedProcess {
                                 break;
                             }
                             case BROADCAST_BYTES: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
                                 if (status == Status.MORE) {
-                                    final String name = b.toString();
                                     CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
+                                    status = cb.getStatus();
                                     if (cb.getChecksum() != cb.getExpectedChecksum()) {
                                         // FIXME deal with invalid checksum
                                     }
@@ -313,13 +313,14 @@ final class ManagedProcess {
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
-                        e.printStackTrace(System.err);
+                        log.error("Received unknown command", e);
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(inputStream);
+
                 }
             } catch (Exception e) {
                 // exception caught, shut down channel and exit
-                e.printStackTrace(System.err);
+                log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
             } finally {
                 safeClose(inputStream);
                 for (;;) try {

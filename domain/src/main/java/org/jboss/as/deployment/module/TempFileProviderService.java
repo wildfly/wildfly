@@ -41,8 +41,18 @@ import java.util.concurrent.Executors;
 public class TempFileProviderService implements Service<TempFileProvider> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("TempFileProvider");
 
-    private static TempFileProvider PROVIDER;
-    private static final Object LOCK = new Object();
+    private static final TempFileProvider PROVIDER;
+    static
+    {
+       try
+       {
+          PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
+       }
+       catch (final IOException ioe)
+       {
+          throw new RuntimeException("Failed to create temp file provider");
+       }
+    }
 
     /**
      * {@inheritDoc}
@@ -65,15 +75,6 @@ public class TempFileProviderService implements Service<TempFileProvider> {
     }
 
     public static TempFileProvider provider() {
-        synchronized(LOCK) {
-            if (PROVIDER == null) {
-                try {
-                    PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to create temp file provider");
-                }
-            }
-        }
         return PROVIDER;
     }
 }

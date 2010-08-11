@@ -45,15 +45,15 @@ public class XSDValidationUnitTestCase extends TestCase
       validateXsd("jboss-domain-common.xsd");
    }
 
-   public void testDomain() throws Exception
-   {
-      validateXsd("jboss-domain.xsd");
-   }
-
-   public void testHost() throws Exception
-   {
-      validateXsd("jboss-domain-host.xsd");
-   }
+//   public void testDomain() throws Exception
+//   {
+//      validateXsd("jboss-domain.xsd");
+//   }
+//
+//   public void testHost() throws Exception
+//   {
+//      validateXsd("jboss-domain-host.xsd");
+//   }
 
    /*
     * Both of those need jboss-domain-common.xsd but jboss-domain.xsd include both
@@ -66,6 +66,11 @@ public class XSDValidationUnitTestCase extends TestCase
    public void testModCluster() throws Exception
    {
       validateXsd("test-jboss-domain-mod_cluster.xsd");
+   }
+
+   public void testJBoss70() throws Exception
+   {
+      validateXsd("jboss_7_0.xsd");
    }
 
    private void validateXsd(String xsdName) throws SAXException

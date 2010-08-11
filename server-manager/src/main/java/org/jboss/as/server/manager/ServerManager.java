@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 /**
  * 
  */
@@ -18,6 +40,7 @@ import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -26,7 +49,9 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Brian Stansberry
  */
 public class ServerManager {
-
+    
+    private static final Logger log = Logger.getLogger("org.jboss.server.manager");
+    
     private final ServerManagerEnvironment environment;    
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
@@ -83,6 +108,7 @@ public class ServerManager {
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
+                log.info("Starting server " + serverEl.getName());
                 Standalone serverConf = new Standalone(domainConfig, hostConfig, serverEl.getName());
                 
                 try {
@@ -91,9 +117,10 @@ public class ServerManager {
                     server.start(serverConf);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
-                    e.printStackTrace(environment.getStderr());
+                    log.error("Failed to start server " + serverEl.getName(), e);
                 }
             }
+            else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
 //        }
 //        finally {

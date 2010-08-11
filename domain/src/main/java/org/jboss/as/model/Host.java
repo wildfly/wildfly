@@ -350,7 +350,6 @@ public final class Host extends AbstractModel<Host> {
                             }
                             extensions.put(extension.getModule(), extension);
                             // load the extension so it can register handlers
-                            // TODO do this in ExtensionElement itself?
                             registerExtensionHandlers(extension, reader);
                             break;
                         }

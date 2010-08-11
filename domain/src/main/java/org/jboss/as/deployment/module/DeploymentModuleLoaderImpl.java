@@ -25,7 +25,6 @@ package org.jboss.as.deployment.module;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.ServiceName;
 
@@ -40,33 +39,27 @@ import java.util.concurrent.ConcurrentMap;
 public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "module", "loader");
     public static final long SELECTOR_PRIORITY = 100000L;
-    private final ModuleLoader parentLoader;
     private final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = new ConcurrentHashMap<ModuleIdentifier, ModuleSpec>();
 
-    public DeploymentModuleLoaderImpl(ModuleLoader parentLoader) {
-        this.parentLoader = parentLoader;
+    public DeploymentModuleLoaderImpl() {
     }
 
     @Override
     public void addModuleSpec(ModuleSpec moduleSpec) {
-        if(moduleSpecs.putIfAbsent(moduleSpec.getIdentifier(), moduleSpec) != null) {
-            throw new IllegalArgumentException("Module spec has already been added for identifier [" + moduleSpec.getIdentifier() + "]");
+        if(moduleSpecs.putIfAbsent(moduleSpec.getModuleIdentifier(), moduleSpec) != null) {
+            throw new IllegalArgumentException("Module spec has already been added for identifier [" + moduleSpec.getModuleIdentifier() + "]");
         }
     }
 
     @Override
-    protected Module findModule(ModuleIdentifier moduleIdentifier) throws ModuleLoadException {
-        Module module = null;
-        
+    protected Module preloadModule(final ModuleIdentifier identifier) throws ModuleLoadException {
+        return super.preloadModule(identifier);
+    }
+
+    @Override
+    protected ModuleSpec findModule(ModuleIdentifier moduleIdentifier) throws ModuleLoadException {
         final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = this.moduleSpecs;
-        final ModuleSpec moduleSpec = moduleSpecs.get(moduleIdentifier);
-        if(moduleSpec != null) {
-            module = defineModule(moduleSpec);
-        }
-        if(module == null) {
-            module = parentLoader.loadModule(moduleIdentifier); 
-        }
-        return module;
+        return moduleSpecs.get(moduleIdentifier);
     }
 
     @Override

@@ -26,20 +26,16 @@ import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.as.deployment.processor.ModuleConfgProcessor;
-import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
-import org.jboss.as.deployment.processor.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.ParsedServiceDeploymentProcessor;
-import org.jboss.as.deployment.processor.ServiceDeploymentParsingProcessor;
-import org.jboss.as.deployment.processor.VFSMountProcessor;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ModuleConfigProcessor;
+import org.jboss.as.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Values;
 
 /**
  * Service activator which installs the various service required for service deployments.
@@ -57,23 +53,13 @@ public class ServiceDeploymentActivator implements ServiceActivator {
      * @param context The service activator context
      */
     public void activate(final ServiceActivatorContext context) {
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(new DeploymentChainImpl("deployment.chain.service"));
-        batchBuilder.addService(SERVICE_DEPLOYMENT_CHAIN_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProvider.SERVICE_NAME, new DeploymentChainProvider.SelectorInjector(deploymentChainService, Values.immediateValue(new ServiceDeploymentChainSelector()), SERVICE_DEPLOYMENT_CHAIN_PRIORITY));
-
-        final ServiceName processorNameBase = ServiceName.JBOSS.append("deployment", "processor");
-        addProcessor(batchBuilder, processorNameBase.append("mount"), new VFSMountProcessor(), VFSMountProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("module", "dependency"), new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("module", "config"), new ModuleConfgProcessor(), ModuleConfgProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("module", "deployment"), new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("service", "parser"), new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        addProcessor(batchBuilder, processorNameBase.append("service", "parsed", "deployment"), new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
-    }
-
-    private <T extends DeploymentUnitProcessor> void addProcessor(final BatchBuilder builder, final ServiceName serviceName, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        builder.addService(serviceName, deploymentUnitProcessorService)
-            .addDependency(SERVICE_DEPLOYMENT_CHAIN_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new ServiceDeploymentChainSelector(), SERVICE_DEPLOYMENT_CHAIN_PRIORITY);
     }
 }

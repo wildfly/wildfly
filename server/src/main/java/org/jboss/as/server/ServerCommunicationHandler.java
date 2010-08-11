@@ -130,16 +130,18 @@ public class ServerCommunicationHandler {
                                     final String sourceProcess = b.toString();
                                     if (status == Status.MORE) {
                                         StreamUtils.CheckedBytes cb = StreamUtils.readCheckedBytes(input);
-//                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
-//                                            // FIXME deal with invalid checksum
-//                                        }
-//                                        else {
+                                        status = cb.getStatus();
+                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                            logger.error("Incorrect checksum from process " + sourceProcess);
+                                            // FIXME deal with invalid checksum
+                                        }
+                                        else {
                                             try {
                                                 handler.handleMessage(cb.getBytes());
                                             } catch (Throwable t) {
                                                 // ignored!
                                             }
-//                                        }
+                                        }
                                     }
                                 }
                                 break;

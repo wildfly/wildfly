@@ -173,9 +173,14 @@ public final class StreamUtils {
     }
     
     public static void writeLong(final OutputStream out, final long v) throws IOException {
-        for(int i = 0; i < 8; i++) {
-            out.write((byte)((v >> (8 * i)) & 0xff));
-          }
+        out.write((byte) (v >>> 56) & 0xFF);
+        out.write((byte) (v >>> 48) & 0xFF);
+        out.write((byte) (v >>> 40) & 0xFF);
+        out.write((byte) (v >>> 32) & 0xFF);
+        out.write((byte) (v >>> 24) & 0xFF);
+        out.write((byte) (v >>> 16) & 0xFF);
+        out.write((byte) (v >>>  8) & 0xFF);
+        out.write((byte) (v >>>  0) & 0xFF);
     }
     
     public static class CheckedBytes {
@@ -184,6 +189,7 @@ public final class StreamUtils {
         private byte[] bytez;
         private long checksum;
         private long expectedChecksum;
+        private Status status;
         
         public int getExpectedLength() {
             return expectedLength;
@@ -197,6 +203,9 @@ public final class StreamUtils {
         public long getExpectedChecksum() {
             return expectedChecksum;
         }
+        public Status getStatus() {
+            return status;
+        }
         
         private CheckedBytes(InputStream input) throws IOException {
             this.expectedLength = readInt(input);
@@ -206,6 +215,25 @@ public final class StreamUtils {
             Adler32 adler = new Adler32();
             adler.update(bytez, 0, expectedLength);
             this.checksum = adler.getValue();
+            int c = readChar(input);
+
+            switch (c) {
+                case -1: {
+                    status = Status.END_OF_STREAM;
+                    break;
+                }                    
+                case 0:  {
+                    status = Status.MORE;
+                    break;
+                }
+                case '\n': {
+                    status = Status.END_OF_LINE;
+                    break;
+                }
+                default: {
+                    throw new IllegalStateException("unexpected char " + c);
+                }
+            }
         }
     }
 }
