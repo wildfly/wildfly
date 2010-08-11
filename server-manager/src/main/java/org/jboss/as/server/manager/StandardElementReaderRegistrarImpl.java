@@ -30,7 +30,8 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     private static final List<String> EXTENSION_MODULES = Arrays.asList(new String[] {
             "org.jboss.as:jboss-as-logging",
             "org.jboss.as:jboss-as-threads",
-            "org.jboss.as:jboss-as-remoting"
+            "org.jboss.as:jboss-as-remoting",
+            "org.jboss.as:jboss-as-transactions"
     });
     
     

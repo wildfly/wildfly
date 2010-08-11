@@ -23,9 +23,11 @@
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:remoting="urn:jboss:domain:remoting:1.0"
         xmlns:threads="urn:jboss:domain:threads:1.0"
+        xmlns:txn="urn:jboss:domain:transactions:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-transactions.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
     <!--<extensions>
@@ -46,6 +48,7 @@
                 <threads:keepalive-time time="10" unit="SECONDS"/>
             </threads:scheduled-thread-pool-executor>
         </threads:subsystem>
+        <txn:subsystem/>
         </profile>
 
         <profile name="something2">

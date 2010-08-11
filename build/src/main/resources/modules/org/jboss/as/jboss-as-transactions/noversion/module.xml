@@ -33,6 +33,8 @@
         <module group="org.jboss.as" name="jboss-as-domain"/>
         <module group="org.jboss.msc" name="jboss-msc"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
-        <module group="org.jboss.jbossts" name="jboss-jts"/>
+        <module group="org.jboss.jbossts" name="jbossjts"/>
+        <module group="org.jboss.jbossts" name="jbossjts-integration"/>
+        <module group="system" name="system"/>
     </dependencies>
 </module>
