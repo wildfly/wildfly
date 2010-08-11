@@ -33,10 +33,14 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -74,12 +78,13 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         final XATerminatorService xaTerminatorService = new XATerminatorService();
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService);
 
-        final TransactionManagerService transactionManagerService = new TransactionManagerService();
-        builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
+        
 
-        final TransactionManagerService transactionManagerPrivateService = new TransactionManagerService();
-        final BatchServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerPrivateServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER_PRIVATE, transactionManagerPrivateService);
-        transactionManagerPrivateServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), new CastingInjector<ORB>(transactionManagerPrivateService.getOrbInjector(), ORB.class));
+        final TransactionManagerService transactionManagerService = new TransactionManagerService();
+        final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
+        transactionManagerServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector());
+        transactionManagerServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
+        transactionManagerServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, transactionManagerService.getTransactionSynchronizationRegistryInjector());
     }
 
     public Collection<String> getReferencedSocketBindings() {
