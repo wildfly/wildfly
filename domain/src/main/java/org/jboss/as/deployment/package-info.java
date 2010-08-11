@@ -58,6 +58,5 @@
  */
 package org.jboss.as.deployment;
 
-import org.jboss.as.deployment.item.DeploymentItem;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

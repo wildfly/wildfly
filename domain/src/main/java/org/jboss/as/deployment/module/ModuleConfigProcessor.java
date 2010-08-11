@@ -20,36 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.processor;
+package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.item.DeploymentModuleItem;
-import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.deployment.attachment.Dependencies.getAttachedDependencies;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * Processor responsible for creating a deployment item that installs the DeploymentModuleService for managing the deployment
- * module. 
+ * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleConfg attachment.
  *
  * @author John E. Bailey
  */
-public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
+public class ModuleConfigProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
+    private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
 
     /**
-     * Create a deployment module item from the attached module config. 
+     * Process the deployment to create and attach module configuration.
      *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
-        if(moduleConfig == null)
+        if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
             return;
-        context.addDeploymentItem(new DeploymentModuleItem(context.getName(), moduleConfig, getVirtualFileAttachment(context)));
+        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+        final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", deploymentRoot.getName(), "noversion");
+        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot)};
+        final Dependencies dependenciesAttachment = getAttachedDependencies(context);
+        final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
+        final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
+        context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);
     }
+
 }

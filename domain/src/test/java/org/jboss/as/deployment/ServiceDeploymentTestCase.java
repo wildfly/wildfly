@@ -25,16 +25,12 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.item.DeploymentItemRegistry;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.deployment.service.ServiceDeploymentActivator;
 import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.TestModuleDependencyProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
-import org.jboss.as.model.DeploymentUnitKey;
-import org.jboss.as.model.ServerGroupAddDeploymentUpdate;
 import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.as.model.ServerGroupElement;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -49,7 +45,6 @@ import org.jboss.vfs.VirtualFile;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -88,12 +83,10 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         batchBuilder.addListener(listener);
 
         final VirtualFile deploymentFile = initializeDeployment("/test/serviceXmlDeployment.jar");
-        final ServerGroupAddDeploymentUpdate update = new ServerGroupAddDeploymentUpdate(deploymentFile.getPathName(), BLANK_SHA1);
-        executeUpdate(update);
 
         listener.startBatch();
 
-        new ServerGroupDeploymentElement(null, deploymentFile.getPathName(), BLANK_SHA1, true, DeploymentItemRegistry.getDeploymentItems(new DeploymentUnitKey(deploymentFile.getPathName(), BLANK_SHA1))).activate(new ServiceActivatorContextImpl(batchBuilder));
+        new ServerGroupDeploymentElement(null, deploymentFile.getPathName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
 
         batchBuilder.install();
         listener.finishBatch();
@@ -162,11 +155,5 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         final VirtualFile virtualFile = VFS.getChild(getResource(path));
         copyResource("/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
-    }
-
-    private void executeUpdate(ServerGroupAddDeploymentUpdate update) throws Exception {
-        final Method method = ServerGroupAddDeploymentUpdate.class.getDeclaredMethod("applyUpdate", ServerGroupElement.class);
-        method.setAccessible(true);
-        method.invoke(update, (ServerGroupElement)null);
     }
 }

@@ -22,12 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.item.DeploymentItem;
-import org.jboss.as.deployment.item.DeploymentItemContext;
-import org.jboss.as.deployment.item.DeploymentItemContextImpl;
-import org.jboss.as.deployment.item.DeploymentItemRegistry;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;

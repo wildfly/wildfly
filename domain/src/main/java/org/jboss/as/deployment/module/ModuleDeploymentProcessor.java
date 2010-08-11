@@ -22,45 +22,51 @@
 
 package org.jboss.as.deployment.module;
 
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.PathFilters;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import java.io.IOException;
 
 /**
- * Service responsible for managing the life-cycle of a deployment module.
- *  
+ * Processor responsible for creating a module for the deployment and attach it to the deployment. 
+ *
  * @author John E. Bailey
  */
-public class DeploymentModuleService implements Service<Module> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment","module");
+public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
+    public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = new AttachmentKey<Module>(Module.class);
 
-    private final ModuleConfig moduleConfig;
-    private InjectedValue<DeploymentModuleLoader> deploymentModuleLoader = new InjectedValue<DeploymentModuleLoader>();
 
-    public DeploymentModuleService(final ModuleConfig moduleConfig) {
-        this.moduleConfig = moduleConfig;
-    }
+    /**
+     * Create a  module from the attached module config and attache the built module.. 
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
+    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(context.getAttachment(MODULE_ATTACHMENT_KEY) != null)
+            return; // Skip it if someone else attached a module
 
-    @Override
-    public void start(StartContext context) throws StartException {
-        final ModuleConfig moduleConfig = this.moduleConfig;
-        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleConfig.getIdentifier());
+        final ModuleConfig moduleConfig = context.getAttachment(ModuleConfig.ATTACHMENT_KEY);
+        if(moduleConfig == null)
+            return; // Skip it if no module is attached
+
+        final ModuleIdentifier moduleIdentifier = moduleConfig.getIdentifier();
+        final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for(ModuleConfig.ResourceRoot resource : moduleConfig.getResources()) {
             try {
                 specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRoot(), resource.getRootName()));
             } catch(IOException e) {
-                throw new StartException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
+                throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e, null);
             }
         }
         final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
@@ -73,27 +79,14 @@ public class DeploymentModuleService implements Service<Module> {
             );
         }
         final ModuleSpec moduleSpec = specBuilder.create();
-        final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
+        final DeploymentModuleLoader deploymentModuleLoader = DeploymentModuleLoader.DEFAULT; // TODO: This should be an attachment
         deploymentModuleLoader.addModuleSpec(moduleSpec);
-    }
 
-    @Override
-    public void stop(StopContext context) {
-        final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
-        deploymentModuleLoader.removeModule(moduleConfig.getIdentifier());
-    }
-
-    @Override
-    public Module getValue() throws IllegalStateException {
         try {
-            final DeploymentModuleLoader deploymentModuleLoader = this.deploymentModuleLoader.getValue();
-            return deploymentModuleLoader.loadModule(moduleConfig.getIdentifier());
-        } catch(ModuleLoadException e) {
-            throw new IllegalStateException("Unable to load module value for module " + moduleConfig.getIdentifier());
+            final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
+            context.putAttachment(MODULE_ATTACHMENT_KEY, module);
+        } catch (ModuleLoadException e) {
+            throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e, null);
         }
-    }
-
-    public Injector<DeploymentModuleLoader> getDeploymentModuleLoaderInjector() {
-        return deploymentModuleLoader;
     }
 }

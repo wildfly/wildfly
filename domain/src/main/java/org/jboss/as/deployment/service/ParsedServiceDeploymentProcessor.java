@@ -20,14 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.item;
+package org.jboss.as.deployment.service;
 
+import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
-import org.jboss.as.deployment.module.DeploymentModuleService;
-import org.jboss.as.deployment.service.JBossService;
+import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -55,27 +59,42 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  Deployment item responsible for taking a JBossServiceConfig object and creating the necessary services.
- * 
+ * DeploymentUnit processor responsible for taking JBossServiceXmlDescriptor configuration and creating the
+ * corresponding services.
+ *
  * @author John E. Bailey
  */
-public class JBossServiceDeploymentItem implements DeploymentItem {
-    private static final Logger logger = Logger.getLogger("org.jboss.as.deployment.service");
-    private final String deploymentName;
-    private final JBossServiceConfig serviceConfig;
+public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
+    public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
 
-    public JBossServiceDeploymentItem(final String deploymentName, final JBossServiceConfig serviceConfig) {
-        this.deploymentName = deploymentName;
-        this.serviceConfig = serviceConfig;
+    /**
+     * Process a deployment for JbossService confguration.  Will install a {@Code JBossService} for each configured service.
+     * 
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
+    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        final JBossServiceXmlDescriptor serviceXmlDescriptor = context.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
+        if(serviceXmlDescriptor == null)
+            return;
+
+        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        if(module == null)
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName(), null);
+
+        final ClassLoader classLoader = module.getClassLoader();
+        final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
+
+        final JBossServiceXmlDescriptor.ControllerMode controllerMode = serviceXmlDescriptor.getControllerMode();
+        final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        for(final JBossServiceConfig serviceConfig : serviceConfigs) {
+            addService(batchBuilder, serviceConfig, classLoaderValue);
+        }
     }
 
-    @Override
-    public void install(DeploymentItemContext context) {
-        final JBossService<Object> jBossService = new JBossService<Object>();
-
-        final Value<ClassLoader> classLoaderValue = jBossService.getDeploymentClassLoaderValue();
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-
+    private void addService(final BatchBuilder batchBuilder, final JBossServiceConfig serviceConfig, final Value<ClassLoader> classLoaderValue) {
         final String codeName = serviceConfig.getCode();
         final Value<Class<?>> classValue = cached(new LookupClassValue(codeName, classLoaderValue));
 
@@ -94,11 +113,10 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
 
         final Value<Constructor> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
         final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, constructorArguments));
-        jBossService.setServiceValue(constructedValue);
+        final JBossService<Object> jBossService = new JBossService<Object>(constructedValue);
 
         final String serviceName = serviceConfig.getName();
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(convert(serviceName), jBossService);
-        serviceBuilder.addDependency(DeploymentModuleService.SERVICE_NAME.append(deploymentName), Module.class, jBossService.getDeploymentModuleInjector());
 
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
         if(dependencyConfigs != null) {
@@ -178,7 +196,7 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
             final Method[] methods = targetType.getMethods();
             for(Method method : methods) {
                 if(expectedMethodName.equals(method.getName())) {
-                    final Class<?>[] types = method.getParameterTypes(); 
+                    final Class<?>[] types = method.getParameterTypes();
                     if(types.length == 1) {
                         type = types[0];
                         break;
@@ -186,12 +204,12 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
                 }
             }
             if(type == null) {
-                logger.warn("Unable to find type for property " + name + " on class " + targetType);
+                log.warn("Unable to find type for property " + name + " on class " + targetType);
                 return null;
             }
             final PropertyEditor editor = PropertyEditorManager.findEditor(type);
             if(editor == null) {
-                logger.warn("Unable to find PropertyEditor for type " + type);
+                log.warn("Unable to find PropertyEditor for type " + type);
                 return null;
             }
             editor.setAsText(value);
@@ -213,7 +231,7 @@ public class JBossServiceDeploymentItem implements DeploymentItem {
             final Class<?> type = typeValue.getValue();
             final PropertyEditor editor = PropertyEditorManager.findEditor(type);
             if(editor == null) {
-                logger.warn("Unable to find PropertyEditor for type " + type);
+                log.warn("Unable to find PropertyEditor for type " + type);
                 return null;
             }
             editor.setAsText(value);

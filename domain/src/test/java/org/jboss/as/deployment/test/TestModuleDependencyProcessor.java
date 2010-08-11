@@ -23,7 +23,7 @@
 package org.jboss.as.deployment.test;
 
 import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.processor.ModuleDependencyProcessor;
+import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

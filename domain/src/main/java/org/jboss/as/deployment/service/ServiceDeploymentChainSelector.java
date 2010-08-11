@@ -34,7 +34,12 @@ public class ServiceDeploymentChainSelector implements DeploymentChainProvider.S
     private static final String SERVICE_ARCHIVE_EXTENSION = ".sar";
     private static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
 
-    @Override
+    /**
+     * Determine where this deployment is supported by service deployer.
+     *
+     * @param virtualFile The deployment file
+     * @return true if this is s service deployment, and false if not
+     */
     public boolean supports(final VirtualFile virtualFile) {
         return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
     }

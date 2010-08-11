@@ -51,6 +51,11 @@ public class DeploymentServiceListener extends AbstractServiceListener<Object>{
 
     private static final AtomicIntegerFieldUpdater<DeploymentServiceListener> totalServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(DeploymentServiceListener.class, "totalServices");
 
+    /**
+     * Construct new instance with a callback listener.
+     * 
+     * @param deploymentFinishCallback The finish callback
+     */
     public DeploymentServiceListener(final Callback deploymentFinishCallback) {
         this.deploymentCallback = deploymentFinishCallback;
     }

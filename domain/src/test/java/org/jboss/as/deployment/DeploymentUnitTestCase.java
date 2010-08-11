@@ -25,11 +25,8 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.item.DeploymentItemRegistry;
 import org.jboss.as.model.DeploymentUnitKey;
-import org.jboss.as.model.ServerGroupAddDeploymentUpdate;
 import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.as.model.ServerGroupElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -41,7 +38,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -73,7 +69,7 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
                 public boolean supports(VirtualFile root) {
                     return true;
                 }
-            }, 0);
+            }, 1000000000L);
 
         batchBuilder.install();
     }
@@ -99,10 +95,7 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         });
         batchBuilder.addListener(listener);
 
-        final ServerGroupAddDeploymentUpdate update = new ServerGroupAddDeploymentUpdate(virtualFile.getPathName(), BLANK_SHA1);
-        executeUpdate(update);
-
-        new ServerGroupDeploymentElement(null, virtualFile.getPathName(), BLANK_SHA1, true,  DeploymentItemRegistry.getDeploymentItems(new DeploymentUnitKey(virtualFile.getPathName(), BLANK_SHA1))).activate(new ServiceActivatorContextImpl(batchBuilder));
+        new ServerGroupDeploymentElement(null, virtualFile.getPathName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
 
         batchBuilder.install();
         listener.finishBatch();
@@ -115,11 +108,5 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
         assertNotNull(serviceController);
 
         assertEquals(ServiceController.State.UP, serviceController.getState());
-    }
-
-    private void executeUpdate(ServerGroupAddDeploymentUpdate update) throws Exception {
-        final Method method = ServerGroupAddDeploymentUpdate.class.getDeclaredMethod("applyUpdate", ServerGroupElement.class);
-        method.setAccessible(true);
-        method.invoke(update, (ServerGroupElement)null);
     }
 }

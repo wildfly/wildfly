@@ -22,12 +22,19 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
@@ -40,25 +47,52 @@ public class DeploymentService implements Service<Void> {
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
     private final String deploymentName;
+    private final VirtualFile deploymentRoot;
+    private Closeable mountHandle;
 
-    public DeploymentService(String deploymentName) {
+    /**
+     * Create new instance.
+     *
+     * @param deploymentName The deployment name
+     * @param deploymentRoot The deployment root
+     * @param mountHandle The deployment's mount handle
+     */
+    public DeploymentService(final String deploymentName, final VirtualFile deploymentRoot, final Closeable mountHandle) {
         this.deploymentName = deploymentName;
+        this.deploymentRoot = deploymentRoot;
+        this.mountHandle = mountHandle;
     }
 
-    @Override
+    /**
+     * Start the deployment.  This will re-mount the deployment root if service is restarted.
+     *
+     * @param context The start context
+     * @throws StartException if any problems occur
+     */
     public void start(StartContext context) throws StartException {
+        if(mountHandle == null) {
+            // Mount virtual file
+            try {
+                if(deploymentRoot.isFile())
+                    mountHandle = VFS.mountZip(deploymentRoot, deploymentRoot, TempFileProviderService.provider());
+            } catch (IOException e) {
+                throw new StartException("Failed to mount deployment archive", e);
+            }
+        }
     }
 
-    @Override
+    /**
+     * Stop the deployment.  This will close the virtual file mount.
+     * 
+     * @param context The stop context
+     */
     public void stop(StopContext context) {
+        VFSUtils.safeClose(mountHandle);
+        mountHandle = null;
     }
 
-    @Override
+    /** {@inheritDoc} **/
     public Void getValue() throws IllegalStateException {
         return null;
-    }
-
-    public String getDeploymentName() {
-        return deploymentName;
     }
 }

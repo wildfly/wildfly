@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.processor;
+package org.jboss.as.deployment.service;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
@@ -52,11 +52,20 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
+    /**
+     * Construct a new instance.
+     */
     public ServiceDeploymentParsingProcessor() {
         xmlMapper.registerRootElement(new QName("urn:jboss:service:7.0", "server"), new JBossServiceXmlDescriptorParser());
     }
 
-    @Override
+    /**
+     * Process a deployment for jboss-service.xml files. Will parse the xml file and attach an configuration discovered
+     * durring processing. 
+     *
+     * @param context the deployment unit context
+     * @throws DeploymentUnitProcessingException
+     */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
 
