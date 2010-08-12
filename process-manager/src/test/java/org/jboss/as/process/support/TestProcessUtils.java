@@ -1,0 +1,574 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors. 
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.process.support;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * 
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
+ */
+public abstract class TestProcessUtils {
+    private static final int PORT = 8080;
+    private static final int TIMEOUT_MILLISECONDS = 1000;
+
+    static final Map<String, TestCommand> COMMANDS;
+    static {
+        Map<String, TestCommand> map = new HashMap<String, TestCommand>();
+        StartCommand start = new StartCommand();
+        map.put(start.cmd(), start);
+        MessageCommand msg = new MessageCommand();
+        map.put(msg.cmd(), msg);
+        StopCommand stop = new StopCommand();
+        map.put(stop.cmd(), stop);
+        COMMANDS = Collections.unmodifiableMap(map);
+    }
+
+    public static List<String> createCommand(String processName, String classname) {
+        return createCommand(processName, classname, 0, false);
+    }
+
+    public static List<String> createCommand(String processName, String classname,
+            int debugPort, boolean suspend) {
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getJava());
+        cmd.add("-cp");
+        cmd.add(System.getProperty("java.class.path"));
+
+        if (debugPort > 0)
+            cmd.add("-Xrunjdwp:transport=dt_socket,address=" + debugPort
+                    + ",server=y,suspend=" + (suspend ? "y" : "n"));
+
+        cmd.add(classname);
+        cmd.add(processName);
+        return cmd;
+    }
+
+    public static TestStreamManager createStreamManager(TestProcessController controller) {
+        ServerSocketThread serverSocketThread = new ServerSocketThread(
+                controller);
+        serverSocketThread.start();
+        serverSocketThread.waitForStart();
+        return serverSocketThread;
+    }
+
+    public static TestProcessSenderStream createProcessClient(String processName) {
+        return new ClientSocketWriter(processName);
+    }
+
+    private static class ServerSocketThread extends Thread implements TestStreamManager {
+        TestProcessController controller;
+        ServerSocket server;
+        Set<ListenerSocketThread> listenerThreads = new HashSet<ListenerSocketThread>();
+        CountDownLatch latch = new CountDownLatch(1);
+        Map<String, ListenerSocketThread> listenerThreadsByProcessName = new HashMap<String, ListenerSocketThread>();
+
+        Map<String, CountDownLatch> startProcessLatches = new HashMap<String, CountDownLatch>();
+        Map<String, CountDownLatch> stopProcessLatches = new HashMap<String, CountDownLatch>();
+
+        ServerSocketThread(TestProcessController controller) {
+            super("Test Server Socket Thread");
+            this.controller = controller;
+            try {
+                server = new ServerSocket(PORT, 0, InetAddress.getLocalHost());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            System.err.println(this.getName() + " closing server");
+
+            closeServer();
+            synchronized (this) {
+                for (ListenerSocketThread listener : listenerThreads) {
+                    listener.shutdown();
+                    if (listener.getProcessName() != null)
+                        controller.stopProcess(listener.getProcessName());
+                }
+                    
+                for (ListenerSocketThread listener : listenerThreadsByProcessName.values()) {
+                    listener.shutdown();
+                    if (listener.getProcessName() != null)
+                        controller.stopProcess(listener.getProcessName());
+                }
+                listenerThreadsByProcessName.clear();
+            }
+        }
+        
+        @Override
+        public TestProcessListenerStream getProcessListener(String name, long timeoutMillis) {
+            long cutoff = System.currentTimeMillis() + timeoutMillis;
+            
+            TestProcessListenerStream stream = null;
+            do {
+                synchronized (this) {
+                    stream = listenerThreadsByProcessName.get(name);
+                }
+                if (stream == null) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ignore) {
+                    }
+                }
+            }while (stream == null && System.currentTimeMillis() < cutoff);
+            
+            return stream;
+        }
+
+        @Override
+        public TestProcessListenerStream createProcessListener(String name) {
+            CountDownLatch processLatch = null;
+            synchronized (this) {
+                ListenerSocketThread thread = listenerThreadsByProcessName
+                        .get(name);
+                if (thread != null)
+                    return thread;
+
+                processLatch = new CountDownLatch(1);
+                startProcessLatches.put(name, processLatch);
+            }
+
+            try {
+                System.err.println("Starting " + name + " " + processLatch);
+                controller.startProcess(name);
+                processLatch.await(TIMEOUT_MILLISECONDS, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            System.err.println("Started " + name);
+            synchronized (this) {
+                ListenerSocketThread thread = listenerThreadsByProcessName
+                        .get(name);
+                if (thread == null)
+                    throw new IllegalStateException("No process called " + name);
+                return thread;
+            }
+        }
+        
+        public void detachProcessListener(String name) {
+            synchronized (this) {
+                listenerThreadsByProcessName.remove(name);
+            }
+        }
+
+        void processStarted(String name, ListenerSocketThread thread) {
+            System.err.println("Start received for " + name + " " + startProcessLatches);
+            synchronized (this) {
+                countdownLatch(startProcessLatches, name);
+                listenerThreadsByProcessName.put(name, thread);
+            }
+        }
+
+        @Override
+        public void stopProcessListener(String name) {
+            CountDownLatch processLatch = null;
+            synchronized (this) {
+                ListenerSocketThread thread = listenerThreadsByProcessName
+                        .get(name);
+                if (thread == null)
+                    return;
+
+                processLatch = new CountDownLatch(1);
+                stopProcessLatches.put(name, processLatch);
+                controller.stopProcess(name);
+                System.err.println("Stopping " + name + " "
+                        + stopProcessLatches);
+            }
+
+            try {
+                processLatch.await(TIMEOUT_MILLISECONDS, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.err.println("Stopped " + name);
+        }
+
+        void processStopped(String name, ListenerSocketThread thread) {
+            System.err.println("Stop received for " + name + " "  + stopProcessLatches);
+            synchronized (this) {
+                countdownLatch(stopProcessLatches, name);
+                listenerThreadsByProcessName.remove(name);
+            }
+        }
+
+        void countdownLatch(Map<String, CountDownLatch> latches, String processName) {
+            CountDownLatch processLatch = latches.remove(processName);
+            if (processLatch != null) {
+                processLatch.countDown();
+            }
+        }
+        
+        void waitForStart() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                latch.countDown();
+                System.err.println("Server listening");
+                while (true) {
+                    ListenerSocketThread t = new ListenerSocketThread(this,
+                            server.accept());
+                    t.start();
+                    synchronized (this) {
+                        listenerThreads.add(t);
+                    }
+                }
+            } catch (SocketException e) {
+                System.err.println(this.getName() + " server socket closed");
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                closeServer();
+            }
+        }
+
+        private synchronized void closeServer() {
+            try {
+                if (!server.isClosed())
+                    server.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        void removeThread(ListenerSocketThread listener) {
+            synchronized (this) {
+                listenerThreads.remove(listener);
+            }
+        }
+    }
+
+    private static class ListenerSocketThread extends Thread implements TestProcessListenerStream {
+        String processName;
+        ServerSocketThread serverSocketThread;
+        Socket socket;
+        BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+
+        public ListenerSocketThread(ServerSocketThread serverSocketThread,
+                Socket socket) {
+            super("Test Listener Socket Thread");
+            this.serverSocketThread = serverSocketThread;
+            this.socket = socket;
+        }
+
+        public void shutdown() {
+            closeSocket(socket);
+        }
+
+        @Override
+        public String getProcessName() {
+            return processName;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.err.println("Listener started");
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                        socket.getInputStream()));
+                boolean done = false;
+                while (!done) {
+                    String line = in.readLine();
+
+                    System.err.println(processName + " listener got data " + line);
+
+                    if (line != null)
+                        TestCommand.receive(this, line.trim());
+                    else
+                        done = true;
+                }
+            } catch (SocketException e) {
+                System.err.println(this.getName() + " socket closed");
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                serverSocketThread.removeThread(this);
+                closeSocket(socket);
+            }
+        }
+
+        void processStarted(String processName) {
+            // TODO Check we don't get started twice
+            serverSocketThread.processStarted(processName, this);
+            this.processName = processName;
+        }
+
+        void processStopped(String processName) {
+            serverSocketThread.processStopped(processName, this);
+        }
+
+        @Override
+        public String readMessage() {
+            return readMessage(TIMEOUT_MILLISECONDS);
+        }
+
+        @Override
+        public String readMessage(long timeoutMs) {
+            try {
+                return messages.poll(timeoutMs, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        void messageReceived(String msg) {
+            messages.add(msg);
+        }
+    }
+
+    public static class ClientSocketWriter implements TestProcessSenderStream {
+        final String processName;
+        final Socket socket;
+        final PrintWriter socketOutput;
+
+        public ClientSocketWriter(String processName) {
+            this.processName = processName;
+            try {
+                socket = new Socket(InetAddress.getLocalHost(), 8080);
+                socketOutput = new PrintWriter(socket.getOutputStream(), true);
+                socketOutput.println(new StartCommand(processName));
+            } catch (Exception e) {
+                shutdown();
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        public synchronized void shutdown() {
+            if (socketOutput != null) {
+                try {
+                    socketOutput.println(new StopCommand(processName).formatCommandForSend());
+                    socketOutput.close();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            closeSocket(socket);
+        }
+
+        public void writeData(String msg) {
+            try {
+                socketOutput.println(new MessageCommand(processName, msg).formatCommandForSend());
+            } catch (Exception e) {
+                shutdown();
+            }
+        }
+    }
+
+    static void closeSocket(Socket socket) {
+        try {
+            if (!socket.isClosed())
+                socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String getJava() {
+        return System.getProperty("java.home") + File.separator + "bin"
+                + File.separator + "java";
+    }
+
+
+    private static abstract class TestCommand {
+        String processName;
+
+        TestCommand() {
+        }
+
+        TestCommand(String processName) {
+            this.processName = processName;
+        }
+
+        static void receive(ListenerSocketThread listener, String cmdString) throws IOException {
+            String[] elements = cmdString.split(":");
+            if (elements.length < 2)
+                throw new IllegalArgumentException("'" + cmdString
+                        + "' could not be parsed into a command");
+
+            TestCommand cmd = COMMANDS.get(elements[0]);
+            if (cmd == null)
+                throw new IllegalArgumentException("'" + cmdString
+                        + "' is not a known command: " + cmdString);
+
+            elements = Arrays.copyOfRange(elements, 1, elements.length);
+            cmd.receive(listener, elements);
+        }
+
+        abstract String cmd();
+
+        abstract void receive(ListenerSocketThread listener, String[] cmdData) throws IOException;
+
+        public String formatCommandForSend() {
+            return cmd() + ":" + processName;
+        }
+        
+        public String toString() {
+            return cmd() + ":" + processName;
+        }
+        
+    }
+
+    private static class StartCommand extends TestCommand {
+        StartCommand() {
+        }
+
+        StartCommand(String processName) {
+            super(processName);
+        }
+
+        @Override
+        String cmd() {
+            return "START";
+        }
+
+        @Override
+        void receive(ListenerSocketThread listener, String[] cmdData) {
+            if (cmdData.length != 1)
+                throw new IllegalArgumentException("Invalid START data "
+                        + Arrays.toString(cmdData));
+            listener.processStarted(cmdData[0]);
+        }
+    }
+
+    private static class StopCommand extends TestCommand {
+        StopCommand() {
+        }
+
+        StopCommand(String processName) {
+            super(processName);
+        }
+
+        @Override
+        String cmd() {
+            return "STOP";
+        }
+
+        @Override
+        void receive(ListenerSocketThread listener, String[] cmdData) {
+            if (cmdData.length != 1)
+                throw new IllegalArgumentException("Invalid START data "
+                        + Arrays.toString(cmdData));
+            listener.processStopped(cmdData[0]);
+        }
+    }
+
+    private static class MessageCommand extends TestCommand {
+        String command;
+
+        MessageCommand() {
+        }
+
+        public MessageCommand(String processName, String command) {
+            super(processName);
+            this.command = command;
+        }
+
+        @Override
+        String cmd() {
+            return "MSG";
+        }
+
+        @Override
+        void receive(ListenerSocketThread listener, String[] cmdData) {
+            if (cmdData.length != 2)
+                throw new IllegalArgumentException("Invalid MSG data "
+                        + Arrays.toString(cmdData));
+            listener.messageReceived(cmdData[1]);
+        }
+
+        @Override
+        public String formatCommandForSend() {
+            return super.toString() + ":" + command;
+        }
+        
+        @Override
+        public String toString() {
+            return cmd() + ":" + processName + ":" + command;
+        }
+    }
+
+    public interface TestStreamManager {
+        void shutdown();
+
+        TestProcessListenerStream createProcessListener(String name);
+
+        TestProcessListenerStream getProcessListener(String name, long timeoutMillis);
+
+        void stopProcessListener(String name);
+        
+        void detachProcessListener(String name);
+    }
+
+    public interface TestProcessListenerStream {
+        String getProcessName();
+        
+        String readMessage();
+
+        String readMessage(long timeoutMs);
+
+        void shutdown();
+    }
+
+    public interface TestProcessSenderStream {
+        void shutdown();
+
+        void writeData(String msg);
+    }
+
+    public interface TestProcessController {
+        void startProcess(String processName);
+
+        void stopProcess(String processName);
+    }
+
+}
