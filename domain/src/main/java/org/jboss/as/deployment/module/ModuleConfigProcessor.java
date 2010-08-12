@@ -23,14 +23,13 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.as.deployment.attachment.Dependencies.getAttachedDependencies;
+import static org.jboss.as.deployment.module.ModuleDependencies.getAttachedDependencies;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
@@ -55,7 +54,7 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
         final MountHandle deploymentRootMountHandler = context.getAttachment(MountHandle.ATTACHMENT_KEY);
         final ModuleIdentifier moduleIdentifier = new ModuleIdentifier("org.jboss.deployments", deploymentRoot.getName(), "noversion");
         final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot, deploymentRootMountHandler)};
-        final Dependencies dependenciesAttachment = getAttachedDependencies(context);
+        final ModuleDependencies dependenciesAttachment = getAttachedDependencies(context);
         final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
         final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
         context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);

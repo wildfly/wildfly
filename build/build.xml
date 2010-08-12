@@ -186,7 +186,7 @@
         </module-def>
 
         <module-def group="org.jboss" artifact="jandex">
-            <maven-resource group="org.jboss" artifact="jboss-jandex"/>
+            <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
 
         <module-def group="org.jboss.logging" artifact="jboss-logging">

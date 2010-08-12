@@ -82,7 +82,7 @@ public class DeploymentUnitTestCase extends AbstractDeploymentTest {
     public void testDeployVirtualFile() throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource("/test/testDeployment"));
         final DeploymentUnitKey expectedKey = new DeploymentUnitKey(virtualFile.getName(), BLANK_SHA1);
-        final String expectedDeploymentName =  expectedKey.getName() + ":" + expectedKey.getSha1HashAsHexString();
+        final String expectedDeploymentName =  expectedKey.getName() + '_' + expectedKey.getSha1HashAsHexString();
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final CountDownLatch latch = new CountDownLatch(1);

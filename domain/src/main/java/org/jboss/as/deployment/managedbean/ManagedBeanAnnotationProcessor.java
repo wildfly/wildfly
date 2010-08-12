@@ -64,8 +64,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        ManagedBeanConfigurations managedBeanConfigurations = context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
-        if(managedBeanConfigurations != null) {
+        if(context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) != null) {
             return; // Skip if the configurations already exist
         }
         final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
@@ -78,7 +77,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             return; // Skip if there are no ManagedBean instances
         }
 
-        managedBeanConfigurations = new ManagedBeanConfigurations();
+        final ManagedBeanConfigurations managedBeanConfigurations = new ManagedBeanConfigurations();
         context.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
 
         for (AnnotationTarget target : targets) {
@@ -114,6 +113,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final List<AnnotationTarget> resourceInjectionTargets = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
         if(resourceInjectionTargets == null) {
             managedBeanConfiguration.setResourceInjectionConfigurations(Collections.<ResourceInjectionConfiguration>emptyList());
+            return;
         }
         final List<ResourceInjectionConfiguration> resourceInjectionConfigurations = new ArrayList<ResourceInjectionConfiguration>(resourceInjectionTargets.size());
         for(AnnotationTarget annotationTarget : resourceInjectionTargets) {

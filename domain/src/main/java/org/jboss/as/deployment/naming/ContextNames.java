@@ -20,33 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.naming;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Deployment phase constants used to establish general rules for ordering deployment processors.
- * 
+ * Common names used for deploying naming related services at different scopes.   
+ *
  * @author John E. Bailey
  */
-public enum DeploymentPhases {
-    VALIDATE(0L),
-    PARSE_DESCRIPTORS(2000000L),
-    MODULE_DEPENDENCIES(3000000L),
-    MODULARIZE(4000000L),
-    //...
-    INSTALL_SERVICES(10000000L),
-    CLEANUP(20000000L);
-
-    private final long priority;
-
-    private DeploymentPhases(long priority) {
-        this.priority = priority;
-    }
-
-    public long plus(final long offset) {
-        return priority + offset;
-    }
-
-    public long getPriority() {
-        return priority;
-    }
+public class ContextNames {
+    public static final ServiceName NAMING = ServiceName.JBOSS.append("naming");
+    public static final ServiceName APPLICATION = NAMING.append("application");
+    public static final ServiceName MODULE = NAMING.append("module");
+    public static final ServiceName COMPONENT = NAMING.append("component");
 }

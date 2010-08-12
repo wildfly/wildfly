@@ -31,6 +31,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
 import java.io.InputStream;
@@ -61,8 +62,9 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
         final VirtualFile virtualFile = getVirtualFileAttachment(context);
         final Indexer indexer = new Indexer();
         try {
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class"));
+            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
             for(VirtualFile classFile : classChildren) {
+                System.out.println("Adding class to index: " + classFile);
                 InputStream inputStream = null;
                 try {
                     inputStream = classFile.openStream();

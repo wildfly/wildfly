@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.attachment;
+package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 import java.util.ArrayList;
@@ -35,8 +34,8 @@ import java.util.Set;
  *
  * @author John E. Bailey
  */
-public class Dependencies {
-    public static final AttachmentKey<Dependencies> KEY = AttachmentKey.create(Dependencies.class);
+public class ModuleDependencies {
+    public static final AttachmentKey<ModuleDependencies> KEY = AttachmentKey.create(ModuleDependencies.class);
 
     private final Set<ModuleConfig.Dependency> dependencies = new HashSet<ModuleConfig.Dependency>();
 
@@ -47,15 +46,15 @@ public class Dependencies {
      * @param dependency The dependency to add
      */
     public static void addDependency(final DeploymentUnitContext context, final ModuleConfig.Dependency dependency) {
-        Dependencies dependencies = context.getAttachment(KEY);
+        ModuleDependencies dependencies = context.getAttachment(KEY);
         if(dependencies == null) {
-            dependencies = new Dependencies();
+            dependencies = new ModuleDependencies();
             context.putAttachment(KEY, dependencies);
         }
         dependencies.dependencies.add(dependency);
     }
 
-    public static Dependencies getAttachedDependencies(DeploymentUnitContext context) {
+    public static ModuleDependencies getAttachedDependencies(DeploymentUnitContext context) {
         return context.getAttachment(KEY);
     }
 

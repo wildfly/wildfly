@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -43,7 +42,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(100L);
 
     /**
      * Process the deployment root for module dependency information.
@@ -76,7 +75,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "export");
             ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
-            Dependencies.addDependency(context, dependency);
+            ModuleDependencies.addDependency(context, dependency);
         }
     }
 

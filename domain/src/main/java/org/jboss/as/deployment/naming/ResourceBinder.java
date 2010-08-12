@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.naming;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -41,8 +41,9 @@ import javax.naming.NamingException;
  * @author John E. Bailey
  */
 public class ResourceBinder<T> implements Service<Object> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("resource", "binder");
-    public static final ServiceName MODULE_SERVICE_NAME = SERVICE_NAME.append("module");
+    public static final ServiceName APPLICATION_BINDER = ContextNames.APPLICATION.append("binder");
+    public static final ServiceName MODULE_BINDER = ContextNames.MODULE.append("binder");
+    public static final ServiceName COMPONENT_BINDER = ContextNames.COMPONENT.append("binder");
 
     private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
     private final String name;
