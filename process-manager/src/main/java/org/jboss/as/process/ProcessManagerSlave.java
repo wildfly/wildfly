@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.StreamUtils.CheckedBytes;
-import org.jboss.logging.Logger;
 
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
@@ -197,8 +196,8 @@ public final class ProcessManagerSlave {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST_BYTES).append('\0');
         synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.write(message.length);
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
             output.write(message);
             StreamUtils.writeLong(output, checksum);
             StreamUtils.writeChar(output, '\n');

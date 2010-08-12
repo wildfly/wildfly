@@ -56,7 +56,7 @@ public final class StreamUtils {
     public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
         if (a < 0) {
-            throw new EOFException();
+            return -1;
         } else if (a == 0) {
             return -1;
         } else if (a < 0x80) {
@@ -183,6 +183,16 @@ public final class StreamUtils {
         out.write((byte) (v >>>  0) & 0xFF);
     }
     
+    public static long calculateChecksum(byte[] bytes) {
+        return calculateChecksum(bytes, bytes.length);
+    }
+    
+    public static long calculateChecksum(byte[] bytes, int expectedLength) {
+        Adler32 adler = new Adler32();
+        adler.update(bytes, 0, expectedLength);
+        return adler.getValue();
+    }
+    
     public static class CheckedBytes {
          
         private final int expectedLength;
@@ -214,7 +224,7 @@ public final class StreamUtils {
             this.expectedChecksum = readLong(input);
             Adler32 adler = new Adler32();
             adler.update(bytez, 0, expectedLength);
-            this.checksum = adler.getValue();
+            this.checksum = calculateChecksum(bytez, expectedLength);
             int c = readChar(input);
 
             switch (c) {
