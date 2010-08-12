@@ -69,7 +69,6 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
         } else {
             countUpdater.incrementAndGet(this);
         }
-        log.infof("Added %s: %d, %d, %d", serviceController.getName(), totalServices, onDemandServices, count);
     }
 
     /** {@inheritDoc} */
@@ -79,7 +78,6 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
             batchComplete();
         }
         serviceController.removeListener(this);
-        log.infof("Started %s: %d, %d",serviceController.getName(), startedServices, count);
     }
 
     /** {@inheritDoc} */
@@ -90,8 +88,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
             batchComplete();
         }
         serviceController.removeListener(this);
-        log.infof("Failed %s: %d", serviceController.getName(), count);
-    }
+    }   
 
     /**
      * Call when all services in this group have been added.
