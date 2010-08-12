@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.server;
 
-import org.jboss.as.deployment.DeploymentServiceListener;
 import org.jboss.as.model.Standalone;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
@@ -91,17 +91,15 @@ public abstract class AbstractServer {
 		log.infof("Starting server '%s'", config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener(createDeploymentCallback());
+        final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
         batchBuilder.addListener(listener);
 
         try {
-            listener.startBatch();
             final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
             // Activate
             config.activate(serviceActivatorContext);
             batchBuilder.install();
             listener.finishBatch();
-            listener.finishDeployment();
         } catch (Throwable t) {
             throw new ServerStartException("Failed to start server", t);
         }
@@ -121,7 +119,7 @@ public abstract class AbstractServer {
 		this.serviceContainer = null;
 	}
 	
-	abstract DeploymentServiceListener.Callback createDeploymentCallback();
+	abstract ServerStartupListener.Callback createListenerCallback();
 	
 }
 

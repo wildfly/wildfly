@@ -31,6 +31,7 @@ import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
@@ -62,7 +63,8 @@ import java.util.TreeMap;
 public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
 
     private static final long serialVersionUID = -7764186426598416630L;
-
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
+    
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
     private final String serverName;
@@ -458,7 +460,12 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         new ServiceDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
-            deploymentElement.activate(context);
+            try {
+                deploymentElement.activate(context);
+            } catch(Throwable t) {
+                // TODO: Rollback deployments services added before failure?
+                log.error("Failed to activate deployment " + deploymentElement.getName(), t);
+            }
         }
     }
     
