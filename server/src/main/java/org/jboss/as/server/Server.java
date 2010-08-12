@@ -25,6 +25,11 @@
  */
 package org.jboss.as.server;
 
+import org.jboss.as.model.Standalone;
+import org.jboss.as.server.manager.ServerMessage;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -32,13 +37,6 @@ import java.util.Map;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
-
-import org.jboss.as.deployment.DeploymentServiceListener;
-import org.jboss.as.deployment.DeploymentServiceListener.Callback;
-import org.jboss.as.model.Standalone;
-import org.jboss.as.server.manager.ServerMessage;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 
 
 /**
@@ -76,16 +74,15 @@ public class Server extends AbstractServer {
         sendMessage("STOPPED");
     }
 
-    Callback createDeploymentCallback() {
-    	return new DeploymentServiceListener.Callback() {
-
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
+    ServerStartupListener.Callback createListenerCallback() {
+    	return new ServerStartupListener.Callback() {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
+                    log.infof("JBoss AS started - Installed %d and started %d services in %dms.", totalServices, startedServices, elapsedTime);
                     sendMessage("STARTED");
                 } else {
                     sendMessage("START FAILED");
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", numberServices, elapsedTime));
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
                         buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
