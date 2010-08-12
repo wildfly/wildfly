@@ -1,40 +1,37 @@
 /*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.server;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.Map;
-
-import javax.xml.stream.XMLInputFactory;
-
-import org.jboss.as.deployment.DeploymentServiceListener;
-import org.jboss.as.deployment.DeploymentServiceListener.Callback;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.Standalone;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
+
+import javax.xml.stream.XMLInputFactory;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Map;
 
 /**
  * The standalone server. 
@@ -88,13 +85,13 @@ public class StandaloneServer extends AbstractServer {
 		}.start();
 	}
 	
-	Callback createDeploymentCallback() {
-		return new DeploymentServiceListener.Callback() {
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
+	ServerStartupListener.Callback createListenerCallback() {
+		return new ServerStartupListener.Callback() {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
+                    log.infof("JBoss AS started - Installed %d and started %d services in %dms.", totalServices, startedServices, elapsedTime);
                 } else {
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed.  Attempted to start %d services in %dms", numberServices, elapsedTime));
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
                         buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
