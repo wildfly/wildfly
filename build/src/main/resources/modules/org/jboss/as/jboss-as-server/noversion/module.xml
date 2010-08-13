@@ -42,6 +42,7 @@
         <module group="org.jboss.as" name="jboss-as-remoting"/>
         <module group="org.jboss.as" name="jboss-as-server-manager"/>
         <module group="org.jboss.as" name="jboss-as-threads"/>
+        <module group="org.jboss.as" name="jboss-as-transactions"/>
         <module group="system" name="system"/>
     </dependencies>
 </module>
