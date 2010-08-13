@@ -54,8 +54,7 @@
         <profile>
             <id>tools</id>
             <activation>
-                <file><exists>${java.home}/../lib/tools.jar</exists>
-            </file>
+                <file><exists>${java.home}/../lib/tools.jar</exists></file>
             </activation>
             <dependencies>
                 <dependency>
