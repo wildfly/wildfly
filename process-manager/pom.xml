@@ -38,6 +38,10 @@
 
     <name>JBoss Application Server: Process Manager</name>
 
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.logging</groupId>
