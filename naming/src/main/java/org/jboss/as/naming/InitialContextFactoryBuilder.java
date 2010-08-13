@@ -50,7 +50,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
      */
     public InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
         final String factoryClassName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
-        if(factoryClassName == null) {
+        if(factoryClassName == null || NamingContextFactory.class.getName().equals(factoryClassName)) {
             return DEFAULT_FACTORY;
         }
         final ClassLoader classLoader = getContextClassLoader();
