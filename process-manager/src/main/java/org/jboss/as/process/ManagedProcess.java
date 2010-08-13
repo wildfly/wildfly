@@ -342,8 +342,10 @@ final class ManagedProcess {
 
             } finally {
                 safeClose(inputStream);
+                int exitCode = 0;
                 for (;;) try {
-                    invokeStopProcessListeners(process.waitFor());
+                    exitCode = process.waitFor();
+                    invokeStopProcessListeners(exitCode);
                     break;
                 } catch (InterruptedException e) {
                 }
@@ -351,7 +353,8 @@ final class ManagedProcess {
                 boolean respawn = false;
                 synchronized (ManagedProcess.this) {
                     start = false;
-                    respawn = !stopped;
+                    if (exitCode != 0)
+                        respawn = !stopped;
                 }
                 if (respawn)
                     respawn();
@@ -470,5 +473,5 @@ final class ManagedProcess {
     
     interface StopProcessListener{
         void processStopped(int exitCode);
-    }
+    }    
 }
