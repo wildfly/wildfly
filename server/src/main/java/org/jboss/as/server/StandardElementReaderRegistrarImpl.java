@@ -25,11 +25,6 @@
  */
 package org.jboss.as.server;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-
 import org.jboss.as.Extension;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
@@ -37,6 +32,10 @@ import org.jboss.as.model.StandaloneParser;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
+
+import javax.xml.namespace.QName;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A {@link StandardElementReaderRegistrar} that uses a static list of extensions.
@@ -52,7 +51,8 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
             "org.jboss.as:jboss-as-logging",
             "org.jboss.as:jboss-as-threads",
             "org.jboss.as:jboss-as-remoting",
-            "org.jboss.as:jboss-as-transactions"
+            "org.jboss.as:jboss-as-transactions",
+            "org.jboss.as:jboss-as-naming"
     });
     
     
