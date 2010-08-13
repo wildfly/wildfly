@@ -138,7 +138,6 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager:jboss-logmanager" \
          org.jboss.as:jboss-as-process-manager \
-         ServerManager \
          "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/logs/server-manager/boot.log \

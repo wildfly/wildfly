@@ -47,9 +47,9 @@ public final class ProcessManagerMaster {
 
     public static void main(String[] args) {
         final ProcessManagerMaster master = new ProcessManagerMaster();
-        final String initialWorkingDirectory = args[1];
+        final String initialWorkingDirectory = args[0];
         final List<String> fullList = Arrays.asList(args);
-        final List<String> command = fullList.subList(2, fullList.size());
+        final List<String> command = fullList.subList(1, fullList.size());
         // TODO JBAS-8259 -- possible socket-based communication
         master.addProcess(SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), initialWorkingDirectory);
         master.startProcess(SERVER_MANAGER_PROCESS_NAME);
