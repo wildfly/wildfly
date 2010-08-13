@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.0" name="api" group="javax">
 
     <dependencies>
-        <module group="system" name="system">
+        <module group="system" name="system" export="true">
             <exports>
                 <include path="javax/**"/>
                 <exclude path="javax/activation/**"/>
