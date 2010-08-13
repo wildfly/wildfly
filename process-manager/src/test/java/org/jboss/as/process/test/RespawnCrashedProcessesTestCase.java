@@ -38,7 +38,6 @@ import org.jboss.as.process.support.LoggingTestRunner;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runner.Runner;
 
 import sun.jvmstat.monitor.MonitoredHost;
 import sun.jvmstat.monitor.MonitoredVm;
@@ -55,7 +54,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
     @Test
     public void testRespawnExitedProcess() throws Exception {
-        addProcess("Main", CrashingProcess.class);
+        addProcess("Main", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
@@ -71,6 +70,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         listener = getTestProcessListener("Main", 1000);
         assertNotNull(listener);
         assertFalse(id.equals(getProcessId("Main", CrashingProcess.class)));
+        assertTrue(id != getProcessId("Main", CrashingProcess.class));
         
         stopTestProcessListenerAndWait(listener);
         removeProcess("Main");
@@ -78,7 +78,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
     
     @Test
     public void testRespawnKilledProcess() throws Exception {
-        addProcess("KillMe", CrashingProcess.class);
+        addProcess("KillMe", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("KillMe");
        
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("KillMe");
@@ -96,6 +96,34 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         
         stopTestProcessListenerAndWait(listener);
         removeProcess("KillMe");
+    }
+    
+    @Test
+    public void testDontRespawnProcessShutdownViaPM() throws Exception {
+        addProcess("Main", CrashingProcess.class, new TestRespawnPolicy());
+        TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
+        
+        stopTestProcessListenerAndWait(listener);
+        
+        //Check the process has not been respawned
+        assertNull(getTestProcessListener("Main", 1000));
+    }
+    
+    @Test
+    public void testDontRespawnProcessWithExitCode0() throws Exception {
+        addProcess("Main", CrashingProcess.class, new TestRespawnPolicy());
+        TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
+        
+        ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
+        
+        detachTestProcessListener("Main");
+        sendMessage("Test", "Main", lazyList("Exit0"));
+        assertEquals("Main-Exit0", listener.readMessage());
+        assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
+        assertEquals(0, stopLatch.getExitCode());
+        
+        //Check the process has not been respawned
+        assertNull(getTestProcessListener("Main", 1000));
     }
     
     @Test
