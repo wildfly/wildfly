@@ -48,6 +48,13 @@
            <artifactId>junit</artifactId>
            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>system</groupId>
+            <artifactId>jdk-tools</artifactId>
+            <version>jdk</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
+        </dependency>
     </dependencies>
     
 </project>

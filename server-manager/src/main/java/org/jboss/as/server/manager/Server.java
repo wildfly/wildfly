@@ -22,14 +22,21 @@
 
 package org.jboss.as.server.manager;
 
+import java.io.Closeable;
 import org.jboss.as.model.Standalone;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.Checksum;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassTable;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
@@ -104,29 +111,44 @@ public final class Server {
         
         sendCommand(new ServerCommand(ServerCommand.Command.START)); 
     }
-    
+
+    private static final MarshallerFactory MARSHALLER_FACTORY;
+    private static final MarshallingConfiguration CONFIG;
+
+    static {
+        try {
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException(e);
+        }
+        final MarshallingConfiguration config = new MarshallingConfiguration();
+        config.setClassTable(ModularClassTable.getInstance());
+        CONFIG = config;
+    }
+
     private void sendCommand(ServerCommand command) throws IOException {
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-        Checksum chksum = new Adler32();
-        CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
-        ObjectOutputStream oos = null;
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        final Checksum chksum = new Adler32();
+        final CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
+        final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
         try {
-            oos = new ObjectOutputStream(cos);
-            oos.writeObject(command);
-            oos.close();
-            oos = null;
+            marshaller.start(Marshalling.createByteOutput(cos));
+            marshaller.writeObject(command);
+            marshaller.finish();
+            marshaller.close();
             communicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
+        } finally {
+            safeClose(marshaller);
         }
-        finally {
-            if (oos != null) {
-                try {
-                    oos.close();
-                }
-                catch (IOException ignored) {}
-            }
+    }
+
+    private static void safeClose(final Closeable closeable) {
+        if (closeable != null) try {
+            closeable.close();
+        } catch (Throwable ignored) {
+            // todo: log me
         }
-        
     }
 
 //    private static String readCommand(final InputStream in) throws IOException {

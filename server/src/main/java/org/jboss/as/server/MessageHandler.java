@@ -25,14 +25,21 @@
  */
 package org.jboss.as.server;
 
+import java.io.Closeable;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.server.manager.ServerCommand;
 import org.jboss.logging.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassTable;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * A MessageHandler.
@@ -80,14 +87,23 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
 
     private ServerCommand readServerCommand(byte[] message) throws IOException, ClassNotFoundException {
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
-        ObjectInputStream objectInputStream = null;
+        final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
         try {
-            objectInputStream = new ObjectInputStream(byteArrayInputStream);
-            final ServerCommand serverCommand = (ServerCommand)objectInputStream.readObject();
+            unmarshaller.start(Marshalling.createByteInput(byteArrayInputStream));
+            final ServerCommand serverCommand = unmarshaller.readObject(ServerCommand.class);
+            unmarshaller.finish();
+            unmarshaller.close();
             return serverCommand;
         } finally {
-            if(objectInputStream != null)
-                objectInputStream.close();
+            safeClose(unmarshaller);
+        }
+    }
+
+    private static void safeClose(final Closeable closeable) {
+        if (closeable != null) try {
+            closeable.close();
+        } catch (Throwable ignored) {
+            // todo: log me
         }
     }
 
@@ -104,4 +120,17 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         server.stop();        
     }
 
+    private static final MarshallerFactory MARSHALLER_FACTORY;
+    private static final MarshallingConfiguration CONFIG;
+
+    static {
+        try {
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException(e);
+        }
+        final MarshallingConfiguration config = new MarshallingConfiguration();
+        config.setClassTable(ModularClassTable.getInstance());
+        CONFIG = config;
+    }
 }
