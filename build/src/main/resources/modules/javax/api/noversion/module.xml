@@ -27,7 +27,6 @@
     <dependencies>
         <module group="system" name="system">
             <exports>
-                <exclude path="**"/>
                 <include path="javax/**"/>
                 <exclude path="javax/activation/**"/>
                 <exclude path="javax/annotation/**"/>
