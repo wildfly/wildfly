@@ -57,7 +57,7 @@ public final class Main {
         System.out.println("    -help                           Display this message and exit");
         System.out.println("    -interprocess-address <address> address of socket on which this process should listen for communication from child processes");
         System.out.println("    -interprocess-port <port>       port of socket on which this process should listen for communication from child processes");
-        System.out.println("    -P, <url>                       Load system properties from the given url");
+        System.out.println("    -P  <url>                       Load system properties from the given url");
         System.out.println("    -properties <url>               Load system properties from the given url");
         System.out.println("    -version                        Print version and exit\n");
     }
