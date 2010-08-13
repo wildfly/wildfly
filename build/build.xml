@@ -265,6 +265,9 @@
 
         <module-def group="org.slf4j" artifact="slf4j-api">
             <maven-resource group="org.slf4j" artifact="slf4j-api"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="slf4j-impl">
             <maven-resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager"/>
         </module-def>
     </target>
