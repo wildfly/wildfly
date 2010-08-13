@@ -331,7 +331,7 @@ final class ManagedProcess {
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
-                        log.error("Received unknown command", e);
+                        log.error("Received unknown command: " + b.toString());
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(inputStream);
 

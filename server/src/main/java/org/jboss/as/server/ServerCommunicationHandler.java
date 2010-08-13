@@ -117,7 +117,7 @@ public class ServerCommunicationHandler {
                                         try {
                                             handler.handleMessage(msg);
                                         } catch (Throwable t) {
-                                            // ignored!
+                                            logger.error("Caught exception handling message from " + sourceProcess, t);
                                         }
                                     }
                                     // else it was end of stream, so only a partial was received
@@ -139,16 +139,17 @@ public class ServerCommunicationHandler {
                                             try {
                                                 handler.handleMessage(cb.getBytes());
                                             } catch (Throwable t) {
-                                                // ignored!
+                                                logger.error("Caught exception handling message from " + sourceProcess, t);
                                             }
                                         }
-                                    }
+                                    }                                    
                                 }
                                 break;
                             }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
+                        logger.error("Received unknown command: " + b.toString());
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(input);
                 }

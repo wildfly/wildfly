@@ -109,6 +109,7 @@
         <module>threads</module>
         <module>logging</module>
         <module>transactions</module>
+        <module>naming</module>
         <module>build</module>
         <module>testsuite</module>
     </modules>
@@ -169,6 +170,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
