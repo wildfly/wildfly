@@ -217,6 +217,10 @@
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
         </module-def>
 
+        <module-def group="org.jboss.marshalling" artifact="jboss-marshalling-river">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
+        </module-def>
+
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
         <module-def group="org.jboss.msc" artifact="jboss-msc">
