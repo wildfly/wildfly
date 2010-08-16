@@ -28,6 +28,6 @@
     </resources>
 
     <dependencies>
-        <module group="org.jboss.logmanager" name="jboss-logmanager"/>
+        <module group="org.slf4j" name="slf4j-impl"/>
     </dependencies>
 </module>

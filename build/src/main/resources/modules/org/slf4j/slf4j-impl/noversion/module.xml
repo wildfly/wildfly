@@ -22,24 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="api" group="javax">
+<module xmlns="urn:jboss:module:1.0" name="slf4j-impl" group="org.slf4j">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
     <dependencies>
-        <module group="system" name="system" export="true">
-            <exports>
-                <include path="javax/**"/>
-                <exclude path="javax/activation/**"/>
-                <exclude path="javax/annotation/**"/>
-                <exclude path="javax/jws/**"/>
-                <exclude path="javax/transaction/**"/>
-                <exclude path="javax/xml/bind/**"/>
-                <exclude path="javax/xml/soap/**"/>
-                <exclude path="javax/xml/ws/**"/>
-                <include path="org/ietf/**"/>
-                <include path="org/omg/**"/>
-                <include path="org/w3c/**"/>
-                <include path="org/xml/**"/>
-            </exports>
-        </module>
+        <module group="org.slf4j" name="slf4j-api"/>
+        <module group="org.jboss.logmanager" name="jboss-logmanager"/>
     </dependencies>
 </module>

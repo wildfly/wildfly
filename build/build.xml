@@ -217,6 +217,10 @@
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
         </module-def>
 
+        <module-def group="org.jboss.marshalling" artifact="jboss-marshalling-river">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
+        </module-def>
+
         <module-def group="org.jboss.modules" artifact="jboss-modules"/>
 
         <module-def group="org.jboss.msc" artifact="jboss-msc">
@@ -261,6 +265,9 @@
 
         <module-def group="org.slf4j" artifact="slf4j-api">
             <maven-resource group="org.slf4j" artifact="slf4j-api"/>
+        </module-def>
+
+        <module-def group="org.slf4j" artifact="slf4j-impl">
             <maven-resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager"/>
         </module-def>
     </target>
