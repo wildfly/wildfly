@@ -78,7 +78,6 @@ public abstract class AbstractProcessManagerTest {
 
     @After
     public void afterTest() {
-        System.err.println("*Test - afterTest()");
         if (testManager != null)
             testManager.shutdown();
         if (master != null)
