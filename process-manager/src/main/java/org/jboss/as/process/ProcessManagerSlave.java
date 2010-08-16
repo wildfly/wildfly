@@ -22,9 +22,13 @@
 
 package org.jboss.as.process;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,24 +45,71 @@ import org.jboss.as.process.StreamUtils.CheckedBytes;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessManagerSlave {
+    
+    private final Handler handler;
     private final InputStream input;
     private final OutputStream output;
-    private final Handler handler;
+    private final Socket socket;
     private final Runnable controller = new Controller();
 
-    public ProcessManagerSlave(InputStream input, OutputStream output, Handler handler) {
-        if (input == null) {
-            throw new IllegalArgumentException("input is null");
+    public ProcessManagerSlave(String processName, InetAddress addr, Integer port, Handler handler) {
+        //TODO Duplicate code - ServerCommunicationHandler
+        if (processName == null) {
+            throw new IllegalArgumentException("processName is null");
         }
-        if (output == null) {
-            throw new IllegalArgumentException("output is null");
+        if (addr == null) {
+            throw new IllegalArgumentException("addr is null");
+        }
+        if (port == null) {
+            throw new IllegalArgumentException("port is null");
         }
         if (handler == null) {
             throw new IllegalArgumentException("handler is null");
         }
-        this.input = input;
-        this.output = output;
-        this.handler = handler;
+
+        try {
+            this.socket = new Socket(addr, port);
+            this.input = new BufferedInputStream(socket.getInputStream());
+            this.output = new BufferedOutputStream(socket.getOutputStream());
+            this.handler = handler;
+            
+            System.err.printf("%s connected to port %d\n", processName, socket.getLocalPort());
+            
+            //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
+            StringBuilder sb = new StringBuilder(256);
+            sb.append("STARTED");
+            sb.append('\0');
+            sb.append(processName);
+            sb.append('\n');
+            synchronized (output) {
+                StreamUtils.writeString(output, sb.toString());
+                output.flush();
+            }
+        } catch (IOException e) {
+            if (this.socket != null) {
+                closeSocket();
+            }
+            throw new RuntimeException(e);
+        }
+        //Duplicate code - ServerCommunicationHandler - END 
+    }
+    
+    private void closeSocket() {
+        try {
+            socket.shutdownOutput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.shutdownInput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Runnable getController() {
@@ -292,6 +343,10 @@ public final class ProcessManagerSlave {
                 t.printStackTrace(System.err);
             }
             finally {            
+                if (socket != null) {
+                    closeSocket();
+                }
+
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
                         System.exit(0);
@@ -300,7 +355,9 @@ public final class ProcessManagerSlave {
                 thread.setName("Exit thread");
                 thread.start();
             }
+            
         }
+        
     }
 
     public interface Handler {

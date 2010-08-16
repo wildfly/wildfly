@@ -220,6 +220,5 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
                 return -1;
             }
         }
-        
     }
 }

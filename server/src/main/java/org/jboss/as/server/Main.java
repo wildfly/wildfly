@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
@@ -113,12 +114,13 @@ public final class Main {
     private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
+        String procName = null;
         boolean standalone = false;
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             try {
-                if ("-properties".equals(arg) || "-P".equals(arg)) {
+                if (CommandLineConstants.PROPERTIES.equals(arg) || "-P".equals(arg)) {
                     // Set system properties from url/file
                     URL url = null;
                     try {
@@ -132,21 +134,24 @@ public final class Main {
                         System.err.printf("Unable to load properties from URL %s\n", url);
                         return null;
                     }
-                } else if ("-interprocess-port".equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PORT.equals(arg)) {
                     try {
                         pmPort = Integer.valueOf(args[++i]);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for -interprocess-port is not an Integer -- %s\n", args[i]);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
                         return null;
                     }
-                } else if ("-interprocess-address".equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_ADDRESS.equals(arg)) {
                     try {
                         pmAddress = InetAddress.getByName(args[++i]);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for -interprocess-address is not a known host -- %s\n", args[i]);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_ADDRESS, args[i]);
                         return null;
                     }
-                } else if (arg.equals("-standalone")) {
+                } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
+                    procName = args[++i];
+                    
+                }else if (arg.equals(CommandLineConstants.STANDALONE)) {
                 	// Start in standalone mode
                 	standalone = true;
                 } else if (arg.startsWith("-D")) {
@@ -172,7 +177,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort, standalone);
+        return new ServerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort, standalone);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

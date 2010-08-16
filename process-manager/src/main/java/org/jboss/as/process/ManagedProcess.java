@@ -22,6 +22,9 @@
 
 package org.jboss.as.process;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +58,7 @@ final class ManagedProcess {
 
     private boolean stopped;
     private boolean start;
-    private OutputStream commandStream;
+    private final DelegatingSocketOutputStream commandStream = new DelegatingSocketOutputStream();
     private Process process;
     private List<StopProcessListener> stopProcessListeners;
     private int respawnCount;
@@ -73,6 +77,17 @@ final class ManagedProcess {
         return processName;
     }
 
+    synchronized void setSocket(Socket socket) throws IOException{
+        log.info("Initializing socket for " + processName);
+        commandStream.setSocketOutputStream(socket.getOutputStream());
+        
+        final OutputStreamHandler outputStreamHandler = new OutputStreamHandler(new BufferedInputStream(socket.getInputStream()));
+        final Thread outputThread = new Thread(outputStreamHandler);
+        outputThread.setName("Process " + processName + " socket reader thread");
+        // todo - error handling in the event that a thread can't start?
+        outputThread.start();
+    }
+    
     void start() throws IOException {
         log.info("Starting " + processName);
         start(false);
@@ -98,13 +113,8 @@ final class ManagedProcess {
             final ErrorStreamHandler errorStreamHandler = new ErrorStreamHandler(processName, process.getErrorStream());
             final Thread errorThread = new Thread(errorStreamHandler);
             errorThread.setName("Process " + processName + " stderr thread");
-            final OutputStreamHandler outputStreamHandler = new OutputStreamHandler(process.getInputStream());
-            final Thread outputThread = new Thread(outputStreamHandler);
-            outputThread.setName("Process " + processName + " stdout thread");
             // todo - error handling in the event that a thread can't start?
             errorThread.start();
-            outputThread.start();
-            this.commandStream = process.getOutputStream();
             this.process = process;
             start = true;
             stopped = false;
@@ -166,8 +176,7 @@ final class ManagedProcess {
 
         public void run() {
             
-            // FIXME reliable transmission support (JBAS-8262)
-            
+            // FIXME reliable transmission support (JBAS-8262)            
             final InputStream inputStream = this.inputStream;
             final StringBuilder b = new StringBuilder();
             try {
@@ -175,6 +184,7 @@ final class ManagedProcess {
                     Status status = StreamUtils.readWord(inputStream, b);
                     if (status == Status.END_OF_STREAM) {
                         log.info("Received end of stream, shutting down");
+                        commandStream.closeSocketOutputStream();
                         // no more input
                         return;
                     }
@@ -368,7 +378,7 @@ final class ManagedProcess {
                     return;
                 wait = respawnPolicy.getTimeOutMs(++respawnCount);
                 if (wait < 0){
-                    System.err.println(processName + " has crashed " + respawnCount + " times, stopping it");
+                    log.info(processName + " has crashed " + respawnCount + " times, stopping it");
                     try {
                         stop();
                     } catch (IOException e) {
@@ -442,7 +452,88 @@ final class ManagedProcess {
                 NDC.pop();
             }
         }
+    }
+    
+    /**
+     * OutputStream to buffer commands to a process until the socket has been initialized 
+     * 
+     */
+    private class DelegatingSocketOutputStream extends OutputStream {
+        private List<byte[]> bufferedBytes = new ArrayList<byte[]>(0);
+        private volatile OutputStream current;
+        private volatile ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+        private volatile OutputStream realOut;
+        
+        @Override
+        public void write(int b) throws IOException {
+            if (current == null) {
+                synchronized (this) {
+                    if (current == null) {
+                        if (realOut == null) {
+                            bytesOut = new ByteArrayOutputStream();
+                            current = bytesOut;
+                        }else {
+                            current = realOut;
+                        }
+                    }
+                    
+                }
+            }
+            current.write(b);
+        }
+        
+        @Override
+        public void flush() throws IOException {
+            OutputStream curr = null;
+            synchronized (this) {
+                curr = current;
+                if (bytesOut != null) {
+                    if (bufferedBytes == null)
+                         bufferedBytes = new ArrayList<byte[]>();
+                    bufferedBytes.add(bytesOut.toByteArray());
+                    bytesOut = null;
+                    current = null;
+                }
+            }
+            if (curr != null)
+                curr.flush();
+        }
+        
+        void setSocketOutputStream(OutputStream out) throws IOException {
+            synchronized (this) {
+                if (realOut != null) {
+                    throw new IllegalStateException("There is already a socket output stream for " + processName);
+                }
+                realOut = new BufferedOutputStream(out);
+                current = realOut;
+                if (bufferedBytes != null) {
+                    for (byte[] buf : bufferedBytes) {
+                        current.write(buf);
+                        current.flush();
+                    }
+                }
+                if (bytesOut != null) {
+                    byte[] bytes = bytesOut.toByteArray();
+                    realOut.write(bytes);
+                    out.flush();
+                }
 
+                safeClose(bytesOut);
+                bytesOut = null;
+                bufferedBytes.clear();
+            }
+        }
+        
+        void closeSocketOutputStream() {
+            synchronized (this) {
+                if (realOut == null) {
+                    throw new IllegalStateException("The socket output stream was already closed " + processName);
+                }
+                safeClose(realOut);
+                realOut = null;
+                current = null;
+            }
+        }
     }
 
     private static void safeClose(final Closeable closeable) {

@@ -29,14 +29,14 @@ import java.util.List;
  * @version $Revision: 1.1 $
  */
 public class ReceivingProcess extends AbstractProcess {
-    protected ReceivingProcess(String processName) {
-        super(processName);
+    protected ReceivingProcess(String processName, int port) {
+        super(processName, port);
     }
 
     public static void main(String[] args) {
         if (args.length < 1)
             System.exit(-1);
-        ReceivingProcess process = new ReceivingProcess(args[0]);
+        ReceivingProcess process = new ReceivingProcess(args[0], getPort(args));
         process.startSlave();
     }
 
