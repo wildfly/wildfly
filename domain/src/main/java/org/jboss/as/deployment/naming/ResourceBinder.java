@@ -66,7 +66,7 @@ public class ResourceBinder<T> implements Service<Object> {
      * @param context The start context
      * @throws StartException If the entty can not be bound
      */
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         final Context namingContext = namingContextValue.getValue();
         try {
             namingContext.rebind(name, value.getValue());
@@ -80,7 +80,7 @@ public class ResourceBinder<T> implements Service<Object> {
      *
      * @param context The stop context
      */
-    public void stop(StopContext context) {
+    public synchronized void stop(StopContext context) {
         final Context namingContext = namingContextValue.getValue();
         try {
             namingContext.unbind(name);
@@ -95,7 +95,7 @@ public class ResourceBinder<T> implements Service<Object> {
      * @return The value of the named entry
      * @throws IllegalStateException
      */
-    public Object getValue() throws IllegalStateException {
+    public synchronized Object getValue() throws IllegalStateException {
         final Context namingContext = namingContextValue.getValue();
         try {
             return namingContext.lookup(name);

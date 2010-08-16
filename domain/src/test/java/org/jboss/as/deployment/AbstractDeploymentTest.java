@@ -22,66 +22,97 @@
 
 package org.jboss.as.deployment;
 
-import org.jboss.vfs.VFSUtils;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
+import org.jboss.as.model.DeploymentUnitKey;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+import org.junit.After;
+import org.junit.Before;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.jboss.as.deployment.TestUtils.getResource;
+import static org.junit.Assert.fail;
 
 /**
  * Abstract test base for deployment tests.
- * 
+ *
  * @author John E. Bailey
  */
-public class AbstractDeploymentTest {
+public abstract class AbstractDeploymentTest {
+    protected static final byte[] BLANK_SHA1 = new byte[20];
+    
+    protected ServiceContainer serviceContainer;
 
-    protected URL getResource(final String path) throws Exception {
-        return ServiceDeploymentTestCase.class.getResource(path);
-    }
+    @Before
+    public void setup() throws Exception {
+        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractDeploymentTest.class, "/test")).getPathName());
+        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
 
-    protected File getResourceFile(final String path) throws Exception {
-        return new File(getResource(path).toURI());
-    }
-
-    protected void copyResource(final String inputResource, final String outputBase, final String outputPath) throws Exception {
-        final File resource = getResourceFile(inputResource);
-        final File outputDirectory = new File(getResourceFile(outputBase), outputPath);
-
-        if (!resource.exists())
-            throw new IllegalArgumentException("Resource does not exist");
-        if (outputDirectory.exists() && outputDirectory.isFile())
-            throw new IllegalArgumentException("OutputDirectory must be a directory");
-        if (!outputDirectory.exists()) {
-            if (!outputDirectory.mkdirs())
-                throw new RuntimeException("Failed to create output directory");
-        }
-        final File outputFile = new File(outputDirectory, resource.getName());
-        final InputStream in = new FileInputStream(resource);
-        try {
-            final OutputStream out = new FileOutputStream(outputFile);
-            try {
-                final byte[] b = new byte[8192];
-                int c;
-                while ((c = in.read(b)) != -1) {
-                    out.write(b, 0, c);
-                }
-                out.close();
-                in.close();
-            } finally {
-                VFSUtils.safeClose(out);
+        serviceContainer = ServiceContainer.Factory.create();
+        
+        runWithLatchedBatch(new BatchedWork() {
+            @Override
+            public void execute(BatchBuilder batchBuilder) throws Exception {
+                setupServices(batchBuilder);
             }
-        } finally {
-            VFSUtils.safeClose(in);
-        }
+        });
     }
 
-    protected <T> T getPrivateFieldValue(final Object target, final String fieldName, final Class<T> fieldType) throws Exception {
-        final Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return (T) field.get(target);
+    protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
+    }
+
+    @After
+    public void shutdown() {
+        serviceContainer.shutdown();
+    }
+
+    protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
+        runWithLatchedBatch(new BatchedWork() {
+            public void execute(BatchBuilder batchBuilder) throws Exception {
+                new ServerGroupDeploymentElement(null, deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+            }
+        });
+    }
+
+    protected String getDeploymentName(VirtualFile deploymentRoot) {
+        final DeploymentUnitKey expectedKey = new DeploymentUnitKey(deploymentRoot.getName(), BLANK_SHA1);
+        final String expectedDeploymentName =  expectedKey.getName().replace('.', '_') + '_' + expectedKey.getSha1HashAsHexString();
+        return expectedDeploymentName;
+    }
+
+    protected void runWithLatchedBatch(final BatchedWork work) throws Exception {
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean completed = new AtomicBoolean(false);
+        final TestServiceListener listener = new TestServiceListener(new Runnable() {
+            public void run() {
+                completed.set(true);
+                latch.countDown();
+            }
+        });
+        batchBuilder.addListener(listener);
+        // Run the work
+        work.execute(batchBuilder);
+
+        batchBuilder.install();
+        listener.finishBatch();
+        latch.await(5L, TimeUnit.SECONDS);
+        if (!completed.get())
+            fail("Did not install deployment within 5 seconds.");
+    }
+
+    protected static interface BatchedWork {
+        void execute(final BatchBuilder batchBuilder) throws Exception;
     }
 }

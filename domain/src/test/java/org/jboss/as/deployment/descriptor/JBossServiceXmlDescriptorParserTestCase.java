@@ -22,7 +22,7 @@
 
 package org.jboss.as.deployment.descriptor;
 
-import org.jboss.as.deployment.AbstractDeploymentTest;
+import org.jboss.as.deployment.TestUtils;
 import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
@@ -37,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
+import static org.jboss.as.deployment.TestUtils.getResourceFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -46,7 +47,7 @@ import static org.junit.Assert.assertNull;
  * 
  * @author John E. Bailey
  */
-public class JBossServiceXmlDescriptorParserTestCase extends AbstractDeploymentTest {
+public class JBossServiceXmlDescriptorParserTestCase {
 
     private JBossServiceXmlDescriptorParser parser;
     private XMLMapper xmlMapper;
@@ -62,7 +63,7 @@ public class JBossServiceXmlDescriptorParserTestCase extends AbstractDeploymentT
 
     @Test
     public void testParse() throws Exception {
-        final File testXmlFile = getResourceFile("/test/serviceXmlDeployment.jar/META-INF/jboss-service.xml");
+        final File testXmlFile = getResourceFile(JBossServiceXmlDescriptorParserTestCase.class, "/test/serviceXmlDeployment.jar/META-INF/jboss-service.xml");
         final ParseResult<JBossServiceXmlDescriptor> jBossServiceXmlDescriptorParseResult = new ParseResult<JBossServiceXmlDescriptor>(); 
         InputStream inputStream = null;
         try {

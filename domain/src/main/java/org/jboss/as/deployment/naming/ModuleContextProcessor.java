@@ -50,8 +50,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         final ServiceName moduleContextServiceName = ContextNames.MODULE.append(context.getName());
         final ContextService contextService = new ContextService(context.getName());
         batchBuilder.addService(moduleContextServiceName, contextService)
-            .setInitialMode(ServiceController.Mode.ON_DEMAND)
-            .addDependency(ContextNames.GLOBAL, Context.class, contextService.getParentContextInjector());
-        // TODO: This will need to change when applications scoping becomes available.
+            .addDependency(ContextNames.JAVA, Context.class, contextService.getParentContextInjector());
+        // TODO: This will need to change when application scoping becomes available.
     }
 }

@@ -61,11 +61,17 @@ public class ManagedBeanService<T> implements Service<T> {
     }
 
     /** {@inheritDoc} */
-    public void start(StartContext context) throws StartException {
+    public synchronized  void start(StartContext context) throws StartException {
+        try {
+            ManagedBeanRegistry.register(context.getController().getName(), this);
+        } catch (ManagedBeanRegistry.DuplicateMangedBeanException e) {
+            throw new StartException("Failed to register with the managed bean registry");
+        }
     }
 
     /** {@inheritDoc} */
     public void stop(StopContext context) {
+        ManagedBeanRegistry.unregister(context.getController().getName(), this);
     }
 
     /**

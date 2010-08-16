@@ -42,14 +42,16 @@ public class MethodResourceInjection<T> extends ResourceInjection<T> {
      *
      * @param methodName The method name to use for injection
      * @param injectedTypeName The parameter type of the method
+     * @param primitive Is the argument type primitive
      */
-    public MethodResourceInjection(String methodName, String injectedTypeName) {
+    public MethodResourceInjection(final String methodName, final String injectedTypeName, final boolean primitive) {
+        super(primitive);
         this.methodName = methodName;
         this.injectedTypeName = injectedTypeName;
     }
 
     /** {@inheritDoc} */
-    protected Injector<T> getInjector(Object target) {
+    protected Injector<T> getInjector(final Object target) {
         final Class<?> targetClass = target.getClass();
         final Method method;
         try {

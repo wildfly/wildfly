@@ -20,43 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.naming;
+package org.jboss.as.deployment.test;
 
-import org.jboss.msc.service.ServiceName;
+import javax.annotation.ManagedBean;
+import javax.annotation.Resource;
 
 /**
- * Common names used for deploying naming related services at different scopes.   
- *
  * @author John E. Bailey
  */
-public class ContextNames {
-    /**
-     * Parent ServiceName for all naming services.
-     */
-    public static final ServiceName NAMING = ServiceName.JBOSS.append("naming");
-
-    /**
-     * ServiceName for java: namespace
-     */
-    public static final ServiceName JAVA = NAMING.append("context", "java");
-
-    /**
-     * ServiceName for java:global namespace
-     */
-    public static final ServiceName GLOBAL = JAVA.append("global");
-
-    /**
-     * Parent ServiceName for java:app namespaces
-     */
-    public static final ServiceName APPLICATION = JAVA.append("application");
-
-    /**
-     * Parent ServiceName for java:module namespaces
-     */
-    public static final ServiceName MODULE = JAVA.append("module");
-
-    /**
-     * Parent ServiceName for java:comp namespaces
-     */
-    public static final ServiceName COMPONENT = JAVA.append("component");
+@ManagedBean("TestBean")
+public class TestManagedBean {
+    @Resource private int someNumber;
 }

@@ -33,13 +33,26 @@ import org.jboss.msc.value.InjectedValue;
  */
 public abstract class ResourceInjection <T> {
     private final InjectedValue<T> value = new InjectedValue<T>();
+    private final boolean primitiveTarget;
+
+    /**
+     * Construct new instance.
+     * @param primitiveTarget Is the injection target a primitive value
+     */
+    protected ResourceInjection(final boolean primitiveTarget) {
+        this.primitiveTarget = primitiveTarget;
+    }
 
     /**
      * Run the injection by passing the injected value into the injector.
      */
     public void inject(final Object target) {
         final Injector<T> injector = getInjector(target);
-        injector.inject(value.getValue());
+        final T theValue = value.getValue();
+        if(primitiveTarget && theValue == null) {
+            return; // Skip the injection of null into a primitive target
+        }
+        injector.inject(theValue);
     }
 
     /**

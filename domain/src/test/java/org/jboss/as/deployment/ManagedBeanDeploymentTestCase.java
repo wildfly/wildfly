@@ -25,20 +25,21 @@ package org.jboss.as.deployment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
+import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessors;
+import org.jboss.as.deployment.managedbean.ManagedBeanService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
+import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
-import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
-import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.as.deployment.test.MockContext;
 import org.jboss.as.deployment.test.PassthroughService;
+import org.jboss.as.deployment.test.TestManagedBean;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
@@ -48,68 +49,62 @@ import javax.naming.Context;
 
 import static org.jboss.as.deployment.TestUtils.copyResource;
 import static org.jboss.as.deployment.TestUtils.getResource;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Test case to do some basic Service deployment functionality checking.
+ * Test case to do some basic Managed bean deployment functionality checking.
  *
  * @author John E. Bailey
  */
-public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
-
-    private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
 
     @BeforeClass
     public static void setupChain() {
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.managedbean");
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
         deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessors(), ManagedBeanDeploymentProcessors.PRIORITY);
+
         DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
             new DeploymentChainProvider.Selector() {
                 public boolean supports(VirtualFile root) {
-                    return "serviceXmlDeployment.jar".equals(root.getName());
+                    return "managedBeanDeployment.jar".equals(root.getName());
                 }
             }
         );
     }
 
+    @Override
+    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        final Context context = new MockContext("java:");
+        batchBuilder.addService(ContextNames.JAVA, new PassthroughService<Context>(context));
+        context.bind("managedBeanDeployment_jar_0000000000000000000000000000000000000000/someNumber", Integer.valueOf(99));
+    }
+
     @Test
     public void testDeployment() throws Exception {
-        executeDeployment(initializeDeployment("/test/serviceXmlDeployment.jar"));
-        
-        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME);
+        final VirtualFile deploymentRoot = initializeDeployment("/test/managedBeanDeployment.jar");
+        executeDeployment(deploymentRoot);
+
+        final String expectedDeploymentName = getDeploymentName(deploymentRoot);
+
+        final ServiceController<?> testServiceController = serviceContainer.getService(ManagedBeanService.SERVICE_NAME.append(expectedDeploymentName, "TestBean"));
         assertNotNull(testServiceController);
-        assertEquals(ServiceController.State.UP, testServiceController.getState());
-        final LegacyService legacyService = (LegacyService)testServiceController.getValue();
-        assertNotNull(legacyService);
-        assertEquals("Test Value", legacyService.getSomethingElse());
+        final TestManagedBean testManagedBean = (TestManagedBean) testServiceController.getValue();
+        assertNotNull(testManagedBean);
+        assertFalse(testManagedBean.equals(testServiceController.getValue()));
 
-        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_SERVICE_NAME.append("second"));
-        assertNotNull(testServiceControllerTwo);
-        assertEquals(ServiceController.State.UP, testServiceControllerTwo.getState());
-        final LegacyService legacyServiceTwo = (LegacyService)testServiceControllerTwo.getValue();
-        assertNotNull(legacyServiceTwo);
-        assertEquals(legacyService, legacyServiceTwo.getOther());
-        assertEquals("Test Value - more value", legacyServiceTwo.getSomethingElse());
-
-        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_SERVICE_NAME.append("third"));
-        assertNotNull(testServiceControllerThree);
-        assertEquals(ServiceController.State.UP, testServiceControllerThree.getState());
-        final LegacyService legacyServiceThree = (LegacyService)testServiceControllerThree.getValue();
-        assertNotNull(legacyServiceThree);
-        assertEquals(legacyService, legacyServiceThree.getOther());
-        assertEquals("Another test value", legacyServiceThree.getSomethingElse());
     }
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource(ServiceDeploymentTestCase.class, path));
-        copyResource(ServiceDeploymentTestCase.class, "/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
+        final VirtualFile virtualFile = VFS.getChild(getResource(ManagedBeanDeploymentTestCase.class, path));
+        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestManagedBean.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
     }
 }

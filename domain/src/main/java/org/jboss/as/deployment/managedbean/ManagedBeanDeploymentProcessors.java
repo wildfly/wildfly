@@ -34,14 +34,18 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Values;
 
 import javax.annotation.ManagedBean;
 import javax.annotation.Resource;
 import javax.naming.Context;
+import javax.naming.Reference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Deployment unit processors responsible for adding deployment items for each managed bean configuration.
@@ -50,6 +54,18 @@ import java.util.List;
  */
 public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(200L);
+
+    private static final Map<String, Class> PRIMITIVE_NAME_TYPE_MAP = new HashMap<String, Class>();
+    static {
+        PRIMITIVE_NAME_TYPE_MAP.put("boolean", Boolean.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("byte", Byte.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("char", Character.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("short", Short.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("int", Integer.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("long", Long.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("float", Float.TYPE);
+        PRIMITIVE_NAME_TYPE_MAP.put("double", Double.TYPE);
+    }
 
     /**
      * Process the deployment and add a managed bean service for each managed bean configuration in the deployment.
@@ -116,20 +132,30 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
             throw new RuntimeException("Failed to load managed bean class", e);
         }
 
-        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(ManagedBeanService.SERVICE_NAME.append(deploymentName, name), managedBeanService);
+
+        final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentName, name);
+        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
         for (ResourceInjectionConfiguration resourceInjectionConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
             final ResourceInjection<Object> resourceInjection = processResourceInjection(resourceInjectionConfiguration, managedBeanClass, batchBuilder, serviceBuilder, deploymentName, classLoader);
             resourceInjections.add(resourceInjection);
         }
         // TODO: Get naming context and add a ResourceBinder for this managed bean
+        final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName);
+        final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>("global/" + deploymentName + "/" + name, Values.immediateValue(managedBeanFactoryReference));
+        batchBuilder.addService(managedBeanServiceName.append("factorybinder"), managedBeanFactoryBinder)
+            .addDependency(ContextNames.JAVA, Context.class, managedBeanFactoryBinder.getContextInjector())
+            .addDependency(managedBeanServiceName);
     }
 
     private ResourceInjection<Object> processResourceInjection(final ResourceInjectionConfiguration resourceInjectionConfiguration, final Class<?> managedBeanClass, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final String deploymentName, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
         final String targetName = resourceInjectionConfiguration.getName();
+        final String injectedType = resourceInjectionConfiguration.getInjectedType();
+        final boolean primitiveTarget = isPrimative(injectedType);
         final String contextNameSuffix;
         final Resource resource;
         final ResourceInjection<Object> resourceInjection;
         // Determine where to bind the injected value
+
         if(ResourceInjectionConfiguration.TargetType.FIELD.equals(resourceInjectionConfiguration.getTargetType())) {
             final Field field;
             try {
@@ -139,7 +165,7 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
             }
             resource = field.getAnnotation(Resource.class);
             contextNameSuffix = field.getName();
-            resourceInjection = new FieldResourceInjection<Object>(targetName);
+            resourceInjection = new FieldResourceInjection<Object>(targetName, primitiveTarget);
         } else {
             final Method method;
             try {
@@ -150,7 +176,7 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
             resource = method.getAnnotation(Resource.class);
             final String methodName = method.getName();
             contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-            resourceInjection = new MethodResourceInjection<Object>(targetName, resourceInjectionConfiguration.getInjectedType());
+            resourceInjection = new MethodResourceInjection<Object>(targetName, injectedType, primitiveTarget);
         }
         if(!resource.type().equals(Object.class)) {
             resourceInjectionConfiguration.setInjectedType(resource.type().getName());
@@ -165,9 +191,9 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
         if(mappedName == null || "".equals(mappedName)) {
             final Class<?> type;
             try {
-                type = classLoader.loadClass(resourceInjectionConfiguration.getInjectedType());
+                type = loadClass(injectedType, classLoader);
             } catch(ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load injection target class: " + resourceInjectionConfiguration.getInjectedType(), e, null);
+                throw new DeploymentUnitProcessingException("Failed to load injection target class: " + injectedType, e, null);
             }
             if(isEnvironmentEntryType(type)) {
                 mappedName = contextNameSuffix;
@@ -178,14 +204,27 @@ public class ManagedBeanDeploymentProcessors implements DeploymentUnitProcessor 
                 throw new DeploymentUnitProcessingException("Unable to determine mapped name for @Resource injection.", null);
             }
         }
-        
+
         // Now add a binder for the local context
         final OptionalNamingLookupValue<Object> bindValue = new OptionalNamingLookupValue<Object>(mappedName);
         final ResourceBinder<Object> resourceBinder = new ResourceBinder<Object>(contextName, bindValue);
         final BatchServiceBuilder<Object> binderServiceBuilder = batchBuilder.addService(binderName, resourceBinder);
-        binderServiceBuilder.addDependency(ContextNames.MODULE.append(deploymentName), Context.class, resourceBinder.getContextInjector());
+        final ServiceName moduleContextName = ContextNames.MODULE.append(deploymentName);
+        binderServiceBuilder.addDependency(moduleContextName, Context.class, resourceBinder.getContextInjector());
+        binderServiceBuilder.addDependency(moduleContextName, Context.class, bindValue.getContextInjector());
         binderServiceBuilder.addOptionalDependency(resourceBinderBaseName.append(mappedName), bindValue.getValueInjector());
         return resourceInjection;
+    }
+
+    private boolean isPrimative(final String typeName) {
+        return PRIMITIVE_NAME_TYPE_MAP.containsKey(typeName);
+    }
+
+    private Class<?> loadClass(final String name, final ClassLoader classLoader) throws ClassNotFoundException {
+        if(PRIMITIVE_NAME_TYPE_MAP.containsKey(name)) {
+            return PRIMITIVE_NAME_TYPE_MAP.get(name);
+        }
+        return classLoader.loadClass(name);
     }
 
     private boolean isEnvironmentEntryType(Class<?> type) {

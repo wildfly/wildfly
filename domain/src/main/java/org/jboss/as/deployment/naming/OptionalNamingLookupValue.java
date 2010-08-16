@@ -56,7 +56,7 @@ public class OptionalNamingLookupValue <T> implements Value<T> {
      */
     public T getValue() throws IllegalStateException {
         T value = injectedValue.getOptionalValue();
-        if(value != null) {
+        if(value == null) {
             final Context context = contextValue.getValue();
             try {
                 value = (T)context.lookup(contextName);

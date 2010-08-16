@@ -40,13 +40,15 @@ public class FieldResourceInjection<T> extends ResourceInjection<T> {
      * Construct an instance.
      *
      * @param fieldName The name of the field on the target.
+     * @param primitive Is the field type primitive
      */
-    public FieldResourceInjection(String fieldName) {
+    public FieldResourceInjection(final String fieldName, final boolean primitive) {
+        super(primitive);
         this.fieldName = fieldName;
     }
 
     /** {@inheritDoc} */
-    protected Injector<T> getInjector(Object target) {
+    protected Injector<T> getInjector(final Object target) {
         final Class<?> targetClass = target.getClass();
         final Field field;
         try {

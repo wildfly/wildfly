@@ -34,6 +34,7 @@ import org.jboss.vfs.VirtualFile;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides deployment chain for a virtual file root.
@@ -47,6 +48,7 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
     public static final DeploymentChainProvider INSTANCE = new DeploymentChainProvider();
 
     private final Set<OrderedChainSelector> selectors = new TreeSet<OrderedChainSelector>();
+    private final AtomicLong currentPriority = new AtomicLong(9999L);
 
     private DeploymentChainProvider() {}
 
@@ -77,6 +79,17 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
         }
         return null;
     }
+
+    /**
+     * Add a deployment chain and a selector with no specified priority.
+     *
+     * @param deploymentChain The deployment chain
+     * @param selector The selector
+     */
+    public void addDeploymentChain(final DeploymentChain deploymentChain, final Selector selector) {
+        selectors.add(new OrderedChainSelector(deploymentChain, selector, currentPriority.getAndIncrement()));
+    }
+
 
     /**
      * Add a deployment chain and a selector.

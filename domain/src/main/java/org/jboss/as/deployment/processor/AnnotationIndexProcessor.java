@@ -64,7 +64,6 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
         try {
             final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
             for(VirtualFile classFile : classChildren) {
-                System.out.println("Adding class to index: " + classFile);
                 InputStream inputStream = null;
                 try {
                     inputStream = classFile.openStream();

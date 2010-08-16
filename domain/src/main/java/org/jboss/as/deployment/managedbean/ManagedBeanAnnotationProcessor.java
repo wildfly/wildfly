@@ -130,6 +130,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(methodName, ResourceInjectionConfiguration.TargetType.METHOD, args[0].name().toString()));
             }
         }
+        managedBeanConfiguration.setResourceInjectionConfigurations(resourceInjectionConfigurations);
     }
 
 

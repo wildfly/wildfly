@@ -42,7 +42,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private volatile int totalServices;
     private volatile int onDemandServices;
     private volatile int startedServices;
-    private volatile int count;
+    private volatile int count = 1;
     private final long start = System.currentTimeMillis();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
     private final Callback finishCallback;
