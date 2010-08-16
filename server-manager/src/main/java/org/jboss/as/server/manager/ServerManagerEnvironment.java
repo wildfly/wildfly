@@ -86,6 +86,7 @@ public class ServerManagerEnvironment {
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
     
     private final Properties props;
+    private final String processName;
     private final InetAddress processManagerAddress;
     private final Integer processManagerPort;
     private final File homeDir;
@@ -103,7 +104,7 @@ public class ServerManagerEnvironment {
     private final PrintStream stderr;
     
     public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
-            InetAddress processManagerAddress, Integer processManagerPort) {
+            String processName, InetAddress processManagerAddress, Integer processManagerPort) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -124,22 +125,19 @@ public class ServerManagerEnvironment {
         }
         this.stderr = stderr;
         
+        if (processName == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        if (processManagerAddress == null) {
+            throw new IllegalArgumentException("processManagerAddress is null");
+        }
+        if (processManagerPort == null) {
+            throw new IllegalArgumentException("processManagerPort is null");
+        }
+        this.processName = processName;
         this.processManagerPort = processManagerPort;
-        if (processManagerPort != null) {
-            if (processManagerAddress == null) {
-                this.processManagerAddress = findLocalhost();
-            }
-            else {
-                this.processManagerAddress = processManagerAddress;
-            }
-        }
-        else if (processManagerAddress != null) {
-            throw new IllegalArgumentException("processManagerPort is null; cannot be null when processManagerAddress is set");
-        }
-        else {
-            this.processManagerAddress = null;
-        }
-        
+        this.processManagerAddress = processManagerAddress;
+
         File home = getFileFromProperty(HOME_DIR);
         if (home == null) {
            home = new File(System.getProperty("user.dir"));
@@ -228,6 +226,15 @@ public class ServerManagerEnvironment {
         return stderr;
     }
 
+    /**
+     * Get the process name of this process, needed to inform the process manager we have started
+     * 
+     * @return the process name 
+     */
+    public String getProcessName() {
+        return processName;
+    }
+    
     /**
      * Gets the address, if any, the process manager passed to this process
      * to use in communicating with it.

@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
@@ -57,6 +58,7 @@ public final class Main {
         System.out.println("    -help                           Display this message and exit");
         System.out.println("    -interprocess-address <address> address of socket on which this process should listen for communication from child processes");
         System.out.println("    -interprocess-port <port>       port of socket on which this process should listen for communication from child processes");
+        System.out.println("    -interprocess-name <proc>       name of this process, used to register the socket with the server");
         System.out.println("    -P  <url>                       Load system properties from the given url");
         System.out.println("    -properties <url>               Load system properties from the given url");
         System.out.println("    -version                        Print version and exit\n");
@@ -94,7 +96,6 @@ public final class Main {
     }
 
     private void boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-
         ServerManager sm = null;
         try {
             ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
@@ -147,19 +148,20 @@ public final class Main {
     private ServerManagerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
+        String procName = null;
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             stderr.println(arg);
             try {
-                if ("-version".equals(arg)) {
+                if (CommandLineConstants.VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());
                     return null;
-                } else if ("-help".equals(arg)) {
+                } else if (CommandLineConstants.HELP.equals(arg)) {
                     usage();
                     return null;
-                } else if ("-properties".equals(arg) || "-P".equals(arg)) {
+                } else if (CommandLineConstants.PROPERTIES.equals(arg) || "-P".equals(arg)) {
                     // Set system properties from url/file
                     URL url = null;
                     try {
@@ -175,23 +177,25 @@ public final class Main {
                         usage();
                         return null;
                     }
-                } else if ("-interprocess-port".equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PORT.equals(arg)) {
                     try {
                         pmPort = Integer.valueOf(args[++i]);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for -interprocess-port is not an Integer -- %s\n", args[i]);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
                         usage();
                         return null;
                     }
-                } else if ("-interprocess-address".equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_ADDRESS.equals(arg)) {
                     try {
                         pmAddress = InetAddress.getByName(args[++i]);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for -interprocess-address is not a known host -- %s\n", args[i]);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_ADDRESS, args[i]);
                         usage();
                         return null;
                     }
-                } else if (arg.startsWith("-D")) {
+                } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
+                    procName = args[++i];
+                }else if (arg.startsWith("-D")) {
 
                     // set a system property
                     String name, value;
@@ -216,7 +220,7 @@ public final class Main {
             }
         }
 
-        return new ServerManagerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort);
+        return new ServerManagerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

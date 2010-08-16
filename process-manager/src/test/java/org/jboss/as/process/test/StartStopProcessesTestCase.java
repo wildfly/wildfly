@@ -45,24 +45,24 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
 
     @Test
     public void testStartStopProcess() throws Exception {
-        addProcess("Main", StartStopSimpleProcess.class);
-        assertTrue(getProcessNames(false).contains("Main"));
-        assertFalse(getProcessNames(true).contains("Main"));
+        addProcess("Main1", StartStopSimpleProcess.class/*, 8787, true*/);
+        assertTrue(getProcessNames(false).contains("Main1"));
+        assertFalse(getProcessNames(true).contains("Main1"));
         assertEquals(0, TestFileUtils.getNumberOutputFiles());
 
-        TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
+        TestProcessListenerStream listener = startTestProcessListenerAndWait("Main1");
         assertEquals(StartStopSimpleProcess.STARTED, listener.readMessage());
-        assertTrue(getProcessNames(true).contains("Main"));
+        assertTrue(getProcessNames(true).contains("Main1"));
 
         stopTestProcessListenerAndWait(listener);
         assertEquals(StartStopSimpleProcess.STOPPED, listener.readMessage());
-        assertTrue(getProcessNames(false).contains("Main"));
-        assertFalse(getProcessNames(true).contains("Main"));
+        assertTrue(getProcessNames(false).contains("Main1"));
+        assertFalse(getProcessNames(true).contains("Main1"));
 
-        removeProcess("Main");
+        removeProcess("Main1");
 
-        assertNull(getTestProcessListener("Main", 0));
-        assertFalse(getProcessNames(false).contains("Main"));
+        assertNull(getTestProcessListener("Main1", 0));
+        assertFalse(getProcessNames(false).contains("Main1"));
     }
 
     @Test

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.process;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,9 +53,10 @@ public abstract class AbstractProcessManagerTest {
     Set<String> stoppedProcesses = new HashSet<String>();
 
     private TestStreamManager testManager;
+    
 
     @Before
-    public void beforeTest() {
+    public void beforeTest() throws IOException, UnknownHostException{
         testManager = TestProcessUtils
                 .createStreamManager(new TestProcessController() {
 
@@ -67,7 +71,8 @@ public abstract class AbstractProcessManagerTest {
                     }
                 });
 
-        master = new ProcessManagerMaster();
+        master = new ProcessManagerMaster(InetAddress.getLocalHost(), 12967);
+        master.start();
         TestFileUtils.cleanFiles();
     }
 
@@ -75,31 +80,37 @@ public abstract class AbstractProcessManagerTest {
     public void afterTest() {
         testManager.shutdown();
 
+        master.shutdown();
         master = null;
         processes.clear();
         stoppedProcesses.clear();
+        
     }
 
-    protected TestFile addProcess(String processName, Class<?> clazz) {
+    protected TestFile addProcess(String processName, Class<?> clazz)  throws UnknownHostException {
         return addProcess(processName, clazz, 0, false);
     }
 
-    protected TestFile addProcess(String processName, Class<?> clazz,
-            int debugPort, boolean suspend) {
-        master.addProcess(processName, TestProcessUtils.createCommand(processName, clazz
-                .getName(), debugPort, suspend), System.getenv(), ".");
+    protected TestFile addProcess(String processName, Class<?> clazz, int debugPort, boolean suspend) throws UnknownHostException {
+        master.addProcess(processName, 
+                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend), 
+                System.getenv(), 
+                ".");
         processes.add(processName);
         return TestFileUtils.getOutputFile(processName);
     }
 
-    protected TestFile addProcess(String processName, Class<?> clazz, RespawnPolicy respawnPolicy) {
+    protected TestFile addProcess(String processName, Class<?> clazz, RespawnPolicy respawnPolicy)  throws UnknownHostException {
         return addProcess(processName, clazz, respawnPolicy, 0, false);
     }
 
     protected TestFile addProcess(String processName, Class<?> clazz, RespawnPolicy respawnPolicy,
-            int debugPort, boolean suspend) {
-        master.addProcess(processName, TestProcessUtils.createCommand(processName, clazz
-                .getName(), debugPort, suspend), System.getenv(), ".", respawnPolicy);
+            int debugPort, boolean suspend)  throws UnknownHostException {
+        master.addProcess(processName, 
+                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend), 
+                System.getenv(), 
+                ".", 
+                respawnPolicy);
         processes.add(processName);
         return TestFileUtils.getOutputFile(processName);
     }
