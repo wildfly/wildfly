@@ -56,7 +56,7 @@ public abstract class AbstractProcess {
     private final TestFile file;
 
     /** The name of this process */
-    protected String processName;
+    protected final String processName;
     
     /** The process manager slave */
     private ProcessManagerSlave slave;
@@ -65,11 +65,11 @@ public abstract class AbstractProcess {
     private final int port;
 
     /** True if this process has received the shutdown event */
-    private AtomicBoolean shutdown = new AtomicBoolean();
+    private final AtomicBoolean shutdown = new AtomicBoolean();
 
     /** The stream for sending data back to the test manager */
     private TestProcessSenderStream clientStream;
-
+    
     /**
      * Constructor
      * 
