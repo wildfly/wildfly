@@ -37,6 +37,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import javax.naming.event.EventContext;
+import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 import java.util.Hashtable;
@@ -55,7 +57,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
  * 
  * @author John E. Bailey
  */
-public class NamingContext implements Context {
+public class NamingContext implements EventContext {
     /*
      * The active naming store to use for any context created without a name store.
      */
@@ -181,7 +183,7 @@ public class NamingContext implements Context {
             className = asReference(object).getClassName();
         }
         try {
-            namingStore.bind(absoluteName, object, className);
+            namingStore.bind(this, absoluteName, object, className);
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             continuationContext.bind(cpe.getRemainingName(), object);
@@ -206,7 +208,7 @@ public class NamingContext implements Context {
             className = asReference(object).getClassName();
         }
         try {
-            namingStore.rebind(absoluteName, object, className);
+            namingStore.rebind(this, absoluteName, object, className);
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             continuationContext.rebind(cpe.getRemainingName(), object);
@@ -221,7 +223,7 @@ public class NamingContext implements Context {
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
         try {
-            namingStore.unbind(getAbsoluteName(name));
+            namingStore.unbind(this, getAbsoluteName(name));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             continuationContext.unbind(cpe.getRemainingName());
@@ -293,7 +295,7 @@ public class NamingContext implements Context {
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
         try {
-            return namingStore.createSubcontext(getAbsoluteName(name));
+            return namingStore.createSubcontext(this, getAbsoluteName(name));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             return continuationContext.createSubcontext(cpe.getRemainingName());
@@ -374,6 +376,26 @@ public class NamingContext implements Context {
     /** {@inheritDoc} */
     public String getNameInNamespace() throws NamingException {
         return prefix.toString();
+    }
+
+    /** {@inheritDoc} */
+    public void addNamingListener(final Name target, final int scope, final NamingListener listener) throws NamingException {
+        namingStore.addNamingListener(target, scope, listener);
+    }
+
+    /** {@inheritDoc} */
+    public void addNamingListener(final String target, final int scope, final NamingListener listener) throws NamingException {
+        addNamingListener(parseName(target), scope, listener);
+    }
+
+    /** {@inheritDoc} */
+    public void removeNamingListener(final NamingListener listener) throws NamingException {
+        namingStore.removeNamingListener(listener);
+    }
+
+    /** {@inheritDoc} */
+    public boolean targetMustExist() throws NamingException {
+        return false;
     }
 
     private Name parseName(final String name) throws NamingException {

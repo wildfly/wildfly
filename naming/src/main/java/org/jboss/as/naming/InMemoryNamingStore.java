@@ -33,6 +33,9 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.event.EventContext;
+import javax.naming.event.NamingEvent;
+import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,22 +63,33 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
  */
 public class InMemoryNamingStore implements NamingStore {
 
-    /**
-     * The root node of the tree.  Represents a JNDI name of ""
-     */
+    /* The root node of the tree.  Represents a JNDI name of "" */
     private final ContextNode root = new ContextNode(new CompositeName(), null);
 
+    /* Cached security namanger */
     private transient SecurityManager securityManager;
+
+    /* Naming Event Coordinator */
+    private final NamingEventCoordinator eventCoordinator;
+
+    public InMemoryNamingStore() {
+        this(null);
+    }
+
+    public InMemoryNamingStore(final NamingEventCoordinator eventCoordinator) {
+        this.eventCoordinator = eventCoordinator;
+    }
 
     /**
      * Bind an entry into the tree.  This will create a binding node in the tree for the provided named object.
      *
+     * @param callingContext   The calling context
      * @param name      The entry name
      * @param object    The entry object
      * @param className The entry class name
      * @throws NamingException
      */
-    public void bind(final Name name, final Object object, final String className) throws NamingException {
+    public void bind(final Context callingContext, final Name name, final Object object, final String className) throws NamingException {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
@@ -86,18 +100,21 @@ public class InMemoryNamingStore implements NamingStore {
         final Binding binding = new Binding(childName, className, object, true);
         final BindingNode bindingNode = new BindingNode(name, binding);
         bindContextNode.addChild(childName, bindingNode);
+
+        fireEvent(callingContext, name, null, binding, NamingEvent.OBJECT_ADDED, "bind");
     }
 
     /**
      * Replace an existing entry in the tree.  This will create a new binding node in the tree and no longer store
      * the previous value.
      *
-     * @param name      The entry name
-     * @param object    The entry object
+     * @param callingContext The calling context
+     * @param name The entry name
+     * @param object The entry object
      * @param className The entry class name
      * @throws NamingException
      */
-    public void rebind(final Name name, final Object object, final String className) throws NamingException {
+    public void rebind(final Context callingContext, final Name name, final Object object, final String className) throws NamingException {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
@@ -107,22 +124,28 @@ public class InMemoryNamingStore implements NamingStore {
         final String childName = getLastComponent(name);
         final Binding binding = new Binding(childName, className, object, true);
         final BindingNode bindingNode = new BindingNode(name, binding);
-        bindContextNode.replaceChild(childName, bindingNode);
+        final TreeNode previous = bindContextNode.replaceChild(childName, bindingNode);
+
+        final Binding previousBinding = previous != null ? previous.binding : null;
+        fireEvent(callingContext, name, previousBinding, binding, previousBinding != null ? NamingEvent.OBJECT_CHANGED : NamingEvent.OBJECT_ADDED, "rebind");
     }
 
     /**
      * Unbind the entry in the provided location.  This will remove the node in the tree and no longer manage it.
      *
+     * @param callingContext The calling context
      * @param name The entry name
      * @throws NamingException
      */
-    public void unbind(final Name name) throws NamingException {
+    public void unbind(final Context callingContext, final Name name) throws NamingException {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.UNBIND);
         final ContextNode bindContextNode = getBindingContext(name);
-        bindContextNode.removeChild(getLastComponent(name));
+        final TreeNode previous = bindContextNode.removeChild(getLastComponent(name));
+
+        fireEvent(callingContext, name, previous.binding, null, NamingEvent.OBJECT_REMOVED, "unbind");
     }
 
     /**
@@ -203,35 +226,71 @@ public class InMemoryNamingStore implements NamingStore {
     /**
      * Create a context node at the give location in the tree.
      *
+     * @param callingContext The calling context
      * @param name The entry name
      * @return The new context
      * @throws NamingException
      */
-    public Context createSubcontext(final Name name) throws NamingException {
+    public Context createSubcontext(final Context callingContext, final Name name) throws NamingException {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.CREATE_SUBCONTEXT);
 
         final ContextNode bindingContextNode = getBindingContext(name);
-        final NamingContext context = new NamingContext(name, this, new Hashtable<String, Object>());
-        bindingContextNode.addChild(getLastComponent(name), new ContextNode(name, context));
-        return context;
+        final NamingContext subContext = new NamingContext(name, this, new Hashtable<String, Object>());
+        final ContextNode subContextNode = new ContextNode(name, subContext);
+        bindingContextNode.addChild(getLastComponent(name), subContextNode);
+        
+        fireEvent(callingContext, name, null, subContextNode.binding, NamingEvent.OBJECT_ADDED, "createSubcontext");
+        return subContext;
+    }
+
+    /**
+     * Add a {@code NamingListener} to the naming event coordinator. 
+     *
+     * @param target The target name to add the listener to
+     * @param scope The listener scope
+     * @param listener The listener
+     */
+    public void addNamingListener(final Name target, final int scope, final NamingListener listener) {
+        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        if(coordinator != null) {
+            coordinator.addListener(target.toString(), scope, listener);
+        }
+    }
+
+    /**
+     * Remove a {@code NamingListener} from the naming event coordinator.
+     * @param listener The listener
+     */
+    public void removeNamingListener(final NamingListener listener) {
+        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        if(coordinator != null) {
+            coordinator.removeListener(listener);
+        }
+    }
+
+    private void fireEvent(final Context callingContext, final Name name, final Binding existingBinding, final Binding newBinding, final int type, final String changeInfo) {
+        final NamingEventCoordinator coordinator = this.eventCoordinator;
+        if(coordinator != null && callingContext instanceof EventContext) {
+            coordinator.fireEvent(EventContext.class.cast(callingContext), name, existingBinding, newBinding, type, changeInfo, NamingEventCoordinator.DEFAULT_SCOPES);
+        }
     }
 
     private TreeNode findNode(final Name name) throws NamingException {
         Name currentName = name;
         ContextNode currentNode = root;
-        for(int i = 0; i < name.size(); i++) {
+        for (int i = 0; i < name.size(); i++) {
             String childName = currentName.get(0);
             final TreeNode childNode = currentNode.children.get(childName);
             currentName = currentName.getSuffix(1);
 
-            if(childNode == null) {
+            if (childNode == null) {
                 throw nameNotFoundException(childName, currentName);
-            } else if(isEmpty(currentName)) {
+            } else if (isEmpty(currentName)) {
                 return childNode;
-            } else if(childNode instanceof ContextNode) {
+            } else if (childNode instanceof ContextNode) {
                 currentNode = cast(childNode);
             } else {
                 checkReferenceForContinuation(currentName, childNode.binding.getObject());
@@ -255,19 +314,19 @@ public class InMemoryNamingStore implements NamingStore {
     private Object findObject(final Name name) throws NamingException {
         Name currentName = name;
         ContextNode currentNode = root;
-        for(int i = 0; i < name.size(); i++) {
+        for (int i = 0; i < name.size(); i++) {
             String childName = currentName.get(0);
             final TreeNode childNode = currentNode.children.get(childName);
             currentName = currentName.getSuffix(1);
-            if(childNode == null) {
+            if (childNode == null) {
                 throw nameNotFoundException(childName, currentName);
-            } else if(isEmpty(currentName)) {
+            } else if (isEmpty(currentName)) {
                 return childNode.binding.getObject();
-            } else if(childNode instanceof ContextNode) {
+            } else if (childNode instanceof ContextNode) {
                 currentNode = cast(childNode);
             } else {
                 final Object boundObject = childNode.binding.getObject();
-                if(boundObject instanceof Reference) {
+                if (boundObject instanceof Reference) {
                     checkReferenceForContinuation(currentName, boundObject);
                     return new ResolveResult(boundObject, currentName);
                 }
@@ -315,7 +374,7 @@ public class InMemoryNamingStore implements NamingStore {
         }
 
         private synchronized void addChild(final String childName, final TreeNode childNode) throws NamingException {
-            if(children.containsKey(childName)) {
+            if (children.containsKey(childName)) {
                 throw nameAlreadyBoundException(fullName.add(childName));
             }
             final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
@@ -331,7 +390,7 @@ public class InMemoryNamingStore implements NamingStore {
         }
 
         private synchronized TreeNode removeChild(final String childName) throws NameNotFoundException {
-            if(!children.containsKey(childName)) {
+            if (!children.containsKey(childName)) {
                 throw nameNotFoundException(childName, fullName);
             }
             final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);

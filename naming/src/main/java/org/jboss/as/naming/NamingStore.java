@@ -27,6 +27,7 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
+import javax.naming.event.NamingListener;
 import java.util.List;
 
 /**
@@ -39,30 +40,33 @@ public interface NamingStore {
     /**
      * Bind and object into the naming store.  All parent contexts must be created before this can be executed.
      *
+     * @param context The calling context
      * @param name The entry name
      * @param object The entry object
      * @param className The entry class name
      * @throws NamingException If any problems occur
      */
-    void bind(Name name, Object object, String className) throws NamingException;
+    void bind(Context context, Name name, Object object, String className) throws NamingException;
 
     /**
      * Re-bind and object into the naming store.  All parent contexts must be created before this can be executed.
      *
+     * @param context The calling context
      * @param name The entry name
      * @param object The entry object
      * @param className The entry class name
      * @throws NamingException If any problems occur
      */
-    void rebind(Name name, Object object, String className) throws NamingException;
+    void rebind(Context context, Name name, Object object, String className) throws NamingException;
 
     /**
      * Unbind an object from the naming store.  An entry for the name must exist.  
-     * 
+     *
+     * @param context The calling context
      * @param name The entry name
      * @throws NamingException If any problems occur
      */
-    void unbind(Name name) throws NamingException;
+    void unbind(Context context, Name name) throws NamingException;
 
     /**
      * Look up an object from the naming store.  An entry for this name must already exist.
@@ -96,11 +100,12 @@ public interface NamingStore {
     /**
      * Create a sub-context for the provided name.  All parent contexts must be created before this can be executed.
      *
+     * @param context The calling context
      * @param name The entry name
      * @return The new sub-context
      * @throws NamingException If any errors occur
      */
-    Context createSubcontext(Name name) throws NamingException;
+    Context createSubcontext(Context context, Name name) throws NamingException;
 
     /**
      * Close the naming store and cleanup any resource used by the store. 
@@ -108,4 +113,20 @@ public interface NamingStore {
      * @throws NamingException If any errors occur
      */
     void close() throws NamingException;
+
+    /**
+     * Add a {@code NamingListener} for a specific target and scope.
+     *
+     * @param target The target name to add the listener to
+     * @param scope The listener scope
+     * @param listener The listener
+     */
+    void addNamingListener(Name target, int scope, NamingListener listener);
+
+    /**
+     * Remove a {@code NamingListener} from all targets and scopes
+     *
+     * @param listener The listener
+     */
+    void removeNamingListener(NamingListener listener);
 }
