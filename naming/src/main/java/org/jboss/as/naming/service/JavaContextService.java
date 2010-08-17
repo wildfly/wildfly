@@ -32,6 +32,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.jboss.as.naming.util.NamingUtils.cast;
+
 /**
  * Service wrapper for the java: naming context.  Mainly used as a dependency for other contexts and binders. 
  *
@@ -55,7 +57,7 @@ public class JavaContextService implements Service<Context> {
             throw new StartException("Failed to get initial context", e);
         }
         try {
-            this.javaContext = Context.class.cast(initContext.lookup("java:"));
+            this.javaContext = cast(initContext.lookup("java:"));
         } catch (NamingException e) {
             throw new StartException("Failed to retrieve java: context", e);
         }

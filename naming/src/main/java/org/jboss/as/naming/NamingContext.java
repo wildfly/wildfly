@@ -22,9 +22,11 @@
 
 package org.jboss.as.naming;
 
+import org.jboss.as.naming.util.NameParser;
+import org.jboss.as.naming.util.NamingUtils;
+
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
-import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
 import javax.naming.InitialContext;
@@ -33,12 +35,20 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.NotContextException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 import java.util.Hashtable;
+
+import static org.jboss.as.naming.util.NamingUtils.asReference;
+import static org.jboss.as.naming.util.NamingUtils.asReferenceable;
+import static org.jboss.as.naming.util.NamingUtils.cast;
+import static org.jboss.as.naming.util.NamingUtils.emptyName;
+import static org.jboss.as.naming.util.NamingUtils.isEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.
@@ -79,7 +89,7 @@ public class NamingContext implements Context {
      * @param environment The naming environment
      */
     public NamingContext(final Hashtable<String, Object> environment) {
-        this(new CompositeName(), ACTIVE_NAMING_STORE, environment);
+        this(emptyName(), ACTIVE_NAMING_STORE, environment);
     }
 
     /**
@@ -113,8 +123,8 @@ public class NamingContext implements Context {
 
     /** {@inheritDoc} */
     public Object lookup(final Name name) throws NamingException {
-        if (name.isEmpty() || (name.size() == 1 && "".equals(name.get(0)))) {
-            return new NamingContext(prefix, namingStore, environment != null ? (Hashtable<String, Object>)environment.clone() : null);
+        if (isEmpty(name)) {
+            return new NamingContext(prefix, namingStore, NamingUtils.clone(environment));
         }
 
         final Name absoluteName = getAbsoluteName(name);
@@ -127,7 +137,7 @@ public class NamingContext implements Context {
         }
 
         if (result instanceof ResolveResult) {
-            final ResolveResult resolveResult = ResolveResult.class.cast(result);
+            final ResolveResult resolveResult = cast(result);
             final Object resolvedObject = resolveResult.getResolvedObj();
 
             Object context;
@@ -137,9 +147,9 @@ public class NamingContext implements Context {
                 context = getObjectInstance(resolvedObject, absoluteName, environment);
             }
             if (!(context instanceof Context)) {
-                throw new NotContextException(context + " is not a Context");
+                throw notAContextException(absoluteName.getPrefix(absoluteName.size() - resolveResult.getRemainingName().size()));
             }
-            final Context namingContext = Context.class.cast(context);
+            final Context namingContext = cast(context);
             return namingContext.lookup(resolveResult.getRemainingName());
         } else if (result instanceof LinkRef) {
             result = resolveLink(result);
@@ -149,7 +159,6 @@ public class NamingContext implements Context {
                 result = resolveLink(result);
             }
         }
-
         return result;
     }
 
@@ -165,11 +174,11 @@ public class NamingContext implements Context {
         object = NamingManager.getStateToBind(object, absoluteName, this, environment);
 
         if(object instanceof Referenceable) {
-            object = Referenceable.class.cast(object).getReference();
+            object = asReferenceable(object).getReference();
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = Reference.class.cast(object).getClassName();
+            className = asReference(object).getClassName();
         }
         try {
             namingStore.bind(absoluteName, object, className);
@@ -190,11 +199,11 @@ public class NamingContext implements Context {
         object = NamingManager.getStateToBind(object, absoluteName, this, environment);
 
         if(object instanceof Referenceable) {
-            object = Referenceable.class.cast(object).getReference();
+            object = asReferenceable(object).getReference();
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = Reference.class.cast(object).getClassName();
+            className = asReference(object).getClassName();
         }
         try {
             namingStore.rebind(absoluteName, object, className);
@@ -239,7 +248,7 @@ public class NamingContext implements Context {
     /** {@inheritDoc} */
     public NamingEnumeration<NameClassPair> list(final Name name) throws NamingException {
         try {
-            return new NamingEnumerationImpl<NameClassPair>(namingStore.list(getAbsoluteName(name)));
+            return namingEnumeration(namingStore.list(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             return continuationContext.list(cpe.getRemainingName());
@@ -254,7 +263,7 @@ public class NamingContext implements Context {
     /** {@inheritDoc} */
     public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException {
         try {
-            return new NamingEnumerationImpl<Binding>(namingStore.listBindings(getAbsoluteName(name)));
+            return namingEnumeration(namingStore.listBindings(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             return continuationContext.listBindings(cpe.getRemainingName());
@@ -271,9 +280,9 @@ public class NamingContext implements Context {
         final Name absoluteName = getAbsoluteName(name);
         if (!list(name).hasMore()) {
             unbind(name);
-        }
-        else
+        } else {
             throw new ContextNotEmptyException(absoluteName.toString());
+        }
     }
 
     /** {@inheritDoc} */
@@ -298,20 +307,18 @@ public class NamingContext implements Context {
 
     /** {@inheritDoc} */
     public Object lookupLink(Name name) throws NamingException {
-        if (name.isEmpty())
+        if (name.isEmpty()) {
             return lookup(name);
+        }
         try {
             final Name absoluteName = getAbsoluteName(name);
             Object link = namingStore.lookup(absoluteName);
-            if (!(link instanceof LinkRef) && link instanceof Reference)
+            if (!(link instanceof LinkRef) && link instanceof Reference) {
                 link = getObjectInstance(link, name, null);
+            }
             return link;
-        }
-        catch (Exception e) {
-            NamingException ex = new NamingException("Could not lookup link");
-            ex.setRemainingName(name);
-            ex.setRootCause(e);
-            throw ex;
+        } catch (Exception e) {
+            throw namingException("Could not lookup link", e, name);
         }
     }
 
@@ -332,7 +339,7 @@ public class NamingContext implements Context {
 
     /** {@inheritDoc} */
     public Name composeName(Name name, Name prefix) throws NamingException {
-        final Name result = (Name) (prefix.clone());
+        final Name result = NamingUtils.clone(prefix);
         result.addAll(name);
         return result;
     }
@@ -388,27 +395,23 @@ public class NamingContext implements Context {
             return NamingManager.getObjectInstance(object, name, this, environment);
         } catch(NamingException e) {
             throw e;
-        } catch(Exception e) {
-            final NamingException namingException = new NamingException("Could not dereference object");
-            namingException.setRootCause(e);
-            throw namingException;
+        } catch(Throwable t) {
+            throw namingException("Could not dereference object", t);
         }
     }
 
     private Object resolveLink(Object result) throws NamingException {
         final Object linkResult;
         try {
-            final LinkRef linkRef = LinkRef.class.cast(result);
-            String referenceName = linkRef.getLinkName();
-            if (referenceName.startsWith("./"))
+            final LinkRef linkRef = cast(result);
+            final String referenceName = linkRef.getLinkName();
+            if (referenceName.startsWith("./")) {
                 linkResult = lookup(referenceName.substring(2));
-            else
+            } else {
                 linkResult = new InitialContext().lookup(referenceName);
-        }
-        catch (Exception e) {
-            NamingException ex = new NamingException("Could not dereference object");
-            ex.setRootCause(e);
-            throw ex;
+            }
+        } catch (Throwable t) {
+            throw namingException("Could not dereference object", t);
         }
         return linkResult;
     }
