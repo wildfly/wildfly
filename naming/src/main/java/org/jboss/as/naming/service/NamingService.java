@@ -24,6 +24,7 @@ package org.jboss.as.naming.service;
 
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.NamingContext;
+import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -43,6 +44,16 @@ public class NamingService implements Service<NamingStore> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
     private NamingStore namingStore;
+    private final boolean supportEvents;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param supportEvents Should the naming impl support events.
+     */
+    public NamingService(final boolean supportEvents) {
+        this.supportEvents = supportEvents;
+    }
 
     /**
      * Creates a new NamingServer and sets the naming context to use the naming server.
@@ -53,7 +64,10 @@ public class NamingService implements Service<NamingStore> {
     public synchronized void start(StartContext context) throws StartException {
         log.info("Starting Naming Service");
         try {
-            namingStore = new InMemoryNamingStore();
+            if(supportEvents)
+                namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
+            else
+                namingStore = new InMemoryNamingStore();
             NamingContext.setActiveNamingStore(namingStore);
         } catch (Throwable t) {
             throw new StartException("Failed to start naming server", t);

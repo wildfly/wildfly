@@ -72,10 +72,18 @@ public class InMemoryNamingStore implements NamingStore {
     /* Naming Event Coordinator */
     private final NamingEventCoordinator eventCoordinator;
 
+    /**
+     * Construct instance with no event support.
+     */
     public InMemoryNamingStore() {
         this(null);
     }
 
+    /**
+     * Construct instance with an event coordinator.
+     *
+     * @param eventCoordinator The event coordinator
+     */
     public InMemoryNamingStore(final NamingEventCoordinator eventCoordinator) {
         this.eventCoordinator = eventCoordinator;
     }

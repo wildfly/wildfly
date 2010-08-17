@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
  *
  * @author John E. Bailey
  */
-class NamingEventCoordinator {
+public class NamingEventCoordinator {
     private volatile Map<TargetScope, List<ListenerHolder>> holdersByTarget = Collections.emptyMap();
     private volatile Map<NamingListener, ListenerHolder> holdersByListener = Collections.emptyMap();
 

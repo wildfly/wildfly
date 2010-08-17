@@ -50,13 +50,17 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
+    private boolean supportEvents = true; 
+
     /**
      * Create a new instance without a stream reader.
      *
      * @param location The source location
+     * @param supportEvents Should the naming system support events
      */
-    public NamingSubsystemElement(final Location location) {
+    public NamingSubsystemElement(final Location location, final boolean supportEvents) {
         super(location, new QName("urn:jboss:domain:naming:1.0", "subsystem"));
+        this.supportEvents = supportEvents;
     }
 
     /**
@@ -67,6 +71,21 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
      */
     public NamingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // Attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case SUPPORT_EVENTS: {
+                    supportEvents = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
+                default: throw unexpectedAttribute(reader, i);
+            }
+        }
         requireNoContent(reader);
     }
 
@@ -86,6 +105,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute("supportEvents", Boolean.toString(isSupportEvents()));
     }
 
     /**
@@ -106,7 +126,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
         // Create the Naming Service
         final BatchBuilder builder = context.getBatchBuilder();
-        builder.addService(NamingService.SERVICE_NAME, new NamingService());
+        builder.addService(NamingService.SERVICE_NAME, new NamingService(isSupportEvents()));
 
         // Create java: context service
         final JavaContextService contextService = new JavaContextService();
@@ -117,5 +137,9 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     /** {@inheritDoc} */
     public Collection<String> getReferencedSocketBindings() {
         return null;
+    }
+
+    public boolean isSupportEvents() {
+        return supportEvents;
     }
 }
