@@ -113,11 +113,12 @@ public class NamingContext implements Context {
 
     /** {@inheritDoc} */
     public Object lookup(final Name name) throws NamingException {
-        if (name.isEmpty())
-            return new NamingContext(prefix, namingStore, environment);
+        if (name.isEmpty() || (name.size() == 1 && "".equals(name.get(0)))) {
+            return new NamingContext(prefix, namingStore, environment != null ? (Hashtable<String, Object>)environment.clone() : null);
+        }
 
         final Name absoluteName = getAbsoluteName(name);
-        Object result = null;
+        Object result;
         try {
             result = namingStore.lookup(absoluteName);
         } catch(CannotProceedException cpe) {
@@ -135,7 +136,7 @@ public class NamingContext implements Context {
             } else {
                 context = getObjectInstance(resolvedObject, absoluteName, environment);
             }
-            if ((context instanceof Context) == false) {
+            if (!(context instanceof Context)) {
                 throw new NotContextException(context + " is not a Context");
             }
             final Context namingContext = Context.class.cast(context);

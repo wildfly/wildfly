@@ -32,25 +32,24 @@ import java.security.PermissionCollection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * This class represents access to a path in the JNDI tree. A JndiPermission
  * consists of a pathname and a set of actions valid for that pathname.
- * <P>
+ * <p/>
  * Pathname is the pathname of the file or directory granted the specified
  * actions. A pathname that ends in "/*" indicates all the files and directories
  * contained in that directory. A pathname that ends with "/-" indicates
  * (recursively) all files and subdirectories contained in that directory. A
  * pathname consisting of the special token "&lt;&lt;ALL BINDINGS&gt;&gt;" matches
  * <b>any</b> file.
- * <P>
- * The actions to be granted are passed to the constructor in a string
- * containing a list of one or more comma-separated keywords. The possible
- * keywords are "bind", "rebind", "unbind", "lookup", "list", "listBindings",
- * and "createSubcontext". Their meaning is defined as follows:
- * <P>
+ * <p/>
+ * The actions to be granted are passed to the constructor in an array of
+ * {@code Action} instances.  The possible actions are "bind", "rebind",
+ * "unbind", "lookup", "list", "listBindings", and "createSubcontext".
+ * Their meaning is defined as follows:
+ * <p/>
  * <DL>
  * <DT> bind
  * <DD> Context.bind permission
@@ -67,577 +66,459 @@ import java.util.List;
  * <DT> createSubcontext
  * <DD> Context.createSubcontext permission.
  * </DL>
- * <P>
- * The actions string is converted to lowercase before processing.
- * <P>
+ * <p/>
  * Be careful when granting JndiPermissions. Think about the implications of
  * granting read and especially write access to various files and directories.
  * The "&lt;&lt;ALL BINDINGS>>" permission with write action is especially
  * dangerous. This grants permission to write to the entire file system. One
  * thing this effectively allows is replacement of the system binary, including
  * the JVM runtime environment.
- *
- * <p>
+ * <p/>
+ * <p/>
  * Please note: Code can always read a file from the same directory it's in (or
  * a subdirectory of that directory); it does not need explicit permission to do
  * so.
  *
- * @see java.security.Permission
- * @see java.security.Permissions
- * @see java.security.PermissionCollection
- *
- *
  * @author Marianne Mueller
  * @author Roland Schemers
  * @author Scott.Stark@jboss.org
- *
- * @serial exclude
  * @version $Revision: 81310 $
+ * @serial exclude
+ * @see java.security.Permission
+ * @see java.security.Permissions
+ * @see java.security.PermissionCollection
  */
 public final class JndiPermission extends Permission
-   implements Serializable
-{
-   private static final long serialVersionUID = 1;
+        implements Serializable {
+    private static final long serialVersionUID = 1;
 
-   /**
-    * bind action.
-    */
-   public final static int BIND = 1;
-   /**
-    * rebind action.
-    */
-   public final static int REBIND = 2;
-   /**
-    * unbind action.
-    */
-   public final static int UNBIND = 4;
-   /**
-    * lookup action.
-    */
-   public final static int LOOKUP = 8;
-   /**
-    * list action.
-    */
-   public final static int LIST = 16;
+    public enum Action {
+        NONE("none", 0x0),
+        BIND("bind", 1),
+        REBIND("rebind", 2),
+        UNBIND("unbind", 4),
+        LOOKUP("lookup", 8),
+        LIST("list", 16),
+        LIST_BINDINGS("listBindings", 32),
+        CREATE_SUBCONTEXT("createSubcontext", 64),
+        ALL("all", BIND.mask | REBIND.mask | UNBIND.mask | LOOKUP.mask | LIST.mask | LIST_BINDINGS.mask | CREATE_SUBCONTEXT.mask);
 
-   public final static int LIST_BINDINGS = 32;
+        private String actionName;
+        private int mask;
 
-   public final static int CREATE_SUBCONTEXT = 64;
-   private final static int ACTION_COUNT = 7;
+        private Action(String actionName, int mask) {
+            this.actionName = actionName;
+            this.mask = mask;
+        }
 
-
-   /**
-    * All actions (bind, rebind, unbind, lookup, list, listBindings, createSubcontext)
-    */
-   public final static int ALL = LOOKUP | REBIND | BIND | UNBIND | LIST
-         | LIST_BINDINGS | CREATE_SUBCONTEXT;
-
-   /**
-    * No actions.
-    */
-   public final static int NONE = 0x0;
-
-   public static final String BIND_ACTION = "bind";
-
-   public static final String REBIND_ACTION = "rebind";
-
-   public static final String UNBIND_ACTION = "unbind";
-
-   public static final String LOOKUP_ACTION = "lookup";
-
-   public static final String LIST_ACTION = "list";
-
-   public static final String LIST_BINDINGS_ACTION = "listBindings";
-   public static final String ALL_ACTION = "*";
-
-   public static final String CREATE_SUBCONTEXT_ACTION = "createSubcontext";
-   private static final String[] ALL_ACTIONS = {BIND_ACTION, REBIND_ACTION, UNBIND_ACTION,
-      LOOKUP_ACTION, LIST_ACTION, LIST_BINDINGS_ACTION, CREATE_SUBCONTEXT_ACTION
-   };
-   private static final HashMap<String, Integer> actionMap = new HashMap<String, Integer>();
-   static
-   {
-      actionMap.put(BIND_ACTION, BIND);
-      actionMap.put(REBIND_ACTION, REBIND);
-      actionMap.put(UNBIND_ACTION, UNBIND);
-      actionMap.put(LOOKUP_ACTION, LOOKUP);
-      actionMap.put(LIST_ACTION, LIST);
-      actionMap.put(LIST_BINDINGS_ACTION.toLowerCase(), LIST_BINDINGS);
-      actionMap.put(CREATE_SUBCONTEXT_ACTION.toLowerCase(), CREATE_SUBCONTEXT);
-      actionMap.put(ALL_ACTION, ALL);
-   }
-
-   // the actions mask
-   private transient int mask;
-
-   // does path indicate a directory? (wildcard or recursive)
-   private transient boolean directory;
-
-   // is it a recursive directory specification?
-   private transient boolean recursive;
-
-   /**
-    * the actions string.
-    *
-    * @serial
-    */
-   private String actions; // Left null as long as possible, then
-
-   // created and re-used in the getAction function.
-
-   // canonicalized dir path. In the case of
-   // directories, it is the name "/blah/*" or "/blah/-" without
-   // the last character (the "*" or "-").
-
-   private transient String cpath;
-
-   // static Strings used by init(int mask)
-   private static final char RECURSIVE_CHAR = '-';
-
-   private static final char WILD_CHAR = '*';
-
-   /**
-    * initialize a JndiPermission object. Common to all constructors. Also
-    * called during de-serialization.
-    *
-    * @param mask
-    *           the actions mask to use.
-    *
-    */
-   private void init(int mask)
-   {
-      if ((mask & ALL) != mask)
-         throw new IllegalArgumentException("invalid actions mask");
-
-      if (mask == NONE)
-         throw new IllegalArgumentException("invalid actions mask");
-
-      if ((cpath = getName()) == null)
-         throw new NullPointerException("name can't be null");
-
-      this.mask = mask;
-
-      if (cpath.equals("<<ALL BINDINGS>>"))
-      {
-         directory = true;
-         recursive = true;
-         cpath = "";
-         return;
-      }
-
-      int len = cpath.length();
-      char last = ((len > 0) ? cpath.charAt(len - 1) : 0);
-
-      if (last == RECURSIVE_CHAR && cpath.charAt(len - 2) == '/')
-      {
-         directory = true;
-         recursive = true;
-         cpath = cpath.substring(0, --len);
-      }
-      else if (last == WILD_CHAR && cpath.charAt(len - 2) == '/')
-      {
-         directory = true;
-         // recursive = false;
-         cpath = cpath.substring(0, --len);
-      }
-      else
-      {
-         // overkill since they are initialized to false, but
-         // commented out here to remind us...
-         // directory = false;
-         // recursive = false;
-      }
-   }
-
-   /**
-    * Creates a new JndiPermission object with the specified actions. <i>path</i>
-    * is the pathname of a file or directory, and <i>actions</i> contains a
-    * comma-separated list of the desired actions granted on the file or
-    * directory. Possible actions are "bind", "rebind", "unbind", "lookup",
-    * "list", "listBindings", and "createSubcontext".
-    *
-    * <p>
-    * A pathname that ends in "/*" (where "/" is the file separator character,
-    * <code>'/'</code>) indicates all the files and directories contained in
-    * that directory. A pathname that ends with "/-" indicates (recursively) all
-    * files and subdirectories contained in that directory. The special pathname
-    * "&lt;&lt;ALL BINDINGS&gt;&gt;" matches any file.
-    *
-    * <p>
-    * A pathname consisting of a single "*" indicates all the files in the
-    * current directory, while a pathname consisting of a single "-" indicates
-    * all the files in the current directory and (recursively) all files and
-    * subdirectories contained in the current directory.
-    *
-    * <p>
-    * A pathname containing an empty string represents an empty path.
-    *
-    * @param path
-    *           the pathname of the file/directory.
-    * @param actions
-    *           the action string.
-    *
-    * @throws IllegalArgumentException
-    *            If actions is <code>null</code>, empty or contains an action
-    *            other than the specified possible actions.
-    */
-
-   public JndiPermission(String path, String actions)
-   {
-      super(path);
-      init(getMask(actions));
-   }
-   public JndiPermission(Name path, String actions)
-   {
-      super(path.toString());
-      init(getMask(actions));
-   }
-
-   /**
-    * Creates a new JndiPermission object using an action mask. More efficient
-    * than the JndiPermission(String, String) constructor. Can be used from
-    * within code that needs to create a JndiPermission object to pass into the
-    * <code>implies</code> method.
-    *
-    * @param path
-    *           the pathname of the file/directory.
-    * @param mask
-    *           the action mask to use.
-    */
-
-   // package private for use by the JndiPermissionCollection add method
-   JndiPermission(String path, int mask)
-   {
-      super(path);
-      init(mask);
-   }
-   public JndiPermission(Name path, int mask)
-   {
-      super(path.toString());
-      init(mask);
-   }
-
-   /**
-    * Checks if this JndiPermission object "implies" the specified permission.
-    * <P>
-    * More specifically, this method returns true if:
-    * <p>
-    * <ul>
-    * <li> <i>p</i> is an instanceof JndiPermission,
-    * <p>
-    * <li> <i>p</i>'s actions are a proper subset of this object's actions, and
-    * <p>
-    * <li> <i>p</i>'s pathname is implied by this object's pathname. For
-    * example, "/tmp/*" implies "/tmp/foo", since "/tmp/*" encompasses all files
-    * in the "/tmp" directory, including the one named "foo".
-    * </ul>
-    *
-    * @param p
-    *           the permission to check against.
-    *
-    * @return <code>true</code> if the specified permission is not
-    *         <code>null</code> and is implied by this object,
-    *         <code>false</code> otherwise.
-    */
-   public boolean implies(Permission p)
-   {
-      if (!(p instanceof JndiPermission))
-         return false;
-
-      JndiPermission that = (JndiPermission) p;
-
-      // we get the effective mask. i.e., the "and" of this and that.
-      // They must be equal to that.mask for implies to return true.
-
-      return ((this.mask & that.mask) == that.mask) && impliesIgnoreMask(that);
-   }
-
-   /**
-    * Checks if the Permission's actions are a proper subset of the this
-    * object's actions. Returns the effective mask iff the this JndiPermission's
-    * path also implies that JndiPermission's path.
-    *
-    * @param that
-    *           the JndiPermission to check against.
-    * @return the effective mask
-    */
-   boolean impliesIgnoreMask(JndiPermission that)
-   {
-      if (this.directory)
-      {
-         if (this.recursive)
-         {
-            // make sure that.path is longer then path so
-            // something like /foo/- does not imply /foo
-            if (that.directory)
-            {
-               return (that.cpath.length() >= this.cpath.length())
-                     && that.cpath.startsWith(this.cpath);
+        public static Action forName(final String actionName) {
+            for(Action action : Action.values()) {
+                if(action.actionName.equals(actionName))
+                    return action;
             }
-            else
-            {
-               return ((that.cpath.length() >= this.cpath.length()) && that.cpath
-                     .startsWith(this.cpath));
+            return null;
+        }
+    }
+
+    // the actions mask
+    private transient int mask;
+
+    // does path indicate a directory? (wildcard or recursive)
+    private transient boolean directory;
+
+    // is it a recursive directory specification?
+    private transient boolean recursive;
+
+    /**
+     * the actions string.
+     *
+     * @serial
+     */
+    private String actions; // Left null as long as possible, then
+
+    // created and re-used in the getAction function.
+
+    // canonicalized dir path. In the case of
+    // directories, it is the name "/blah/*" or "/blah/-" without
+    // the last character (the "*" or "-").
+
+    private transient String cpath;
+
+    // static Strings used by init(int mask)
+    private static final char RECURSIVE_CHAR = '-';
+
+    private static final char WILD_CHAR = '*';
+
+    /**
+     * initialize a JndiPermission object. Common to all constructors. Also
+     * called during de-serialization.
+     *
+     * @param mask the actions mask to use.
+     */
+    private void init(int mask) {
+        if ((mask & Action.ALL.mask) != mask)
+            throw new IllegalArgumentException("invalid actions mask");
+
+        if (mask == Action.NONE.mask)
+            throw new IllegalArgumentException("invalid actions mask");
+
+        if ((cpath = getName()) == null)
+            throw new NullPointerException("name can't be null");
+
+        this.mask = mask;
+
+        if (cpath.equals("<<ALL BINDINGS>>")) {
+            directory = true;
+            recursive = true;
+            cpath = "";
+            return;
+        }
+
+        int len = cpath.length();
+        char last = ((len > 0) ? cpath.charAt(len - 1) : 0);
+
+        if (last == RECURSIVE_CHAR && cpath.charAt(len - 2) == '/') {
+            directory = true;
+            recursive = true;
+            cpath = cpath.substring(0, --len);
+        } else if (last == WILD_CHAR && cpath.charAt(len - 2) == '/') {
+            directory = true;
+            // recursive = false;
+            cpath = cpath.substring(0, --len);
+        } else {
+            // overkill since they are initialized to false, but
+            // commented out here to remind us...
+            // directory = false;
+            // recursive = false;
+        }
+    }
+
+    /**
+     * Creates a new JndiPermission object with the specified actions. <i>path</i>
+     * is the pathname of a file or directory, and <i>actions</i> contains a
+     * comma-separated list of the desired actions granted on the file or
+     * directory. Possible actions are "bind", "rebind", "unbind", "lookup",
+     * "list", "listBindings", and "createSubcontext".
+     * <p/>
+     * <p/>
+     * A pathname that ends in "/*" (where "/" is the file separator character,
+     * <code>'/'</code>) indicates all the files and directories contained in
+     * that directory. A pathname that ends with "/-" indicates (recursively) all
+     * files and subdirectories contained in that directory. The special pathname
+     * "&lt;&lt;ALL BINDINGS&gt;&gt;" matches any file.
+     * <p/>
+     * <p/>
+     * A pathname consisting of a single "*" indicates all the files in the
+     * current directory, while a pathname consisting of a single "-" indicates
+     * all the files in the current directory and (recursively) all files and
+     * subdirectories contained in the current directory.
+     * <p/>
+     * <p/>
+     * A pathname containing an empty string represents an empty path.
+     *
+     * @param path    the pathname of the file/directory.
+     * @param actions the action string.
+     * @throws IllegalArgumentException If actions is <code>null</code>, empty or contains an action
+     *                                  other than the specified possible actions.
+     */
+
+    public JndiPermission(String path, Action... actions) {
+        super(path);
+        init(getMask(actions));
+    }
+
+    public JndiPermission(Name path, Action... actions) {
+        this(path.toString(), actions);
+    }
+
+    /**
+     * Checks if this JndiPermission object "implies" the specified permission.
+     * <p/>
+     * More specifically, this method returns true if:
+     * <p/>
+     * <ul>
+     * <li> <i>p</i> is an instanceof JndiPermission,
+     * <p/>
+     * <li> <i>p</i>'s actions are a proper subset of this object's actions, and
+     * <p/>
+     * <li> <i>p</i>'s pathname is implied by this object's pathname. For
+     * example, "/tmp/*" implies "/tmp/foo", since "/tmp/*" encompasses all files
+     * in the "/tmp" directory, including the one named "foo".
+     * </ul>
+     *
+     * @param p the permission to check against.
+     * @return <code>true</code> if the specified permission is not
+     *         <code>null</code> and is implied by this object,
+     *         <code>false</code> otherwise.
+     */
+    public boolean implies(Permission p) {
+        if (!(p instanceof JndiPermission))
+            return false;
+
+        JndiPermission that = (JndiPermission) p;
+
+        // we get the effective mask. i.e., the "and" of this and that.
+        // They must be equal to that.mask for implies to return true.
+
+        return ((this.mask & that.mask) == that.mask) && impliesIgnoreMask(that);
+    }
+
+    /**
+     * Checks if the Permission's actions are a proper subset of the this
+     * object's actions. Returns the effective mask iff the this JndiPermission's
+     * path also implies that JndiPermission's path.
+     *
+     * @param that the JndiPermission to check against.
+     * @return the effective mask
+     */
+    boolean impliesIgnoreMask(JndiPermission that) {
+        if (this.directory) {
+            if (this.recursive) {
+                // make sure that.path is longer then path so
+                // something like /foo/- does not imply /foo
+                if (that.directory) {
+                    return (that.cpath.length() >= this.cpath.length())
+                            && that.cpath.startsWith(this.cpath);
+                } else {
+                    return ((that.cpath.length() >= this.cpath.length()) && that.cpath
+                            .startsWith(this.cpath));
+                }
+            } else {
+                if (that.directory) {
+                    // if the permission passed in is a directory
+                    // specification, make sure that a non-recursive
+                    // permission (i.e., this object) can't imply a recursive
+                    // permission.
+                    if (that.recursive)
+                        return false;
+                    else
+                        return (this.cpath.equals(that.cpath));
+                } else {
+                    int last = that.cpath.lastIndexOf('/');
+                    if (last == -1)
+                        return false;
+                    else {
+                        // this.cpath.equals(that.cpath.substring(0, last+1));
+                        // Use regionMatches to avoid creating new string
+                        return (this.cpath.length() == (last + 1))
+                                && this.cpath.regionMatches(0, that.cpath, 0, last + 1);
+                    }
+                }
             }
-         }
-         else
-         {
-            if (that.directory)
-            {
-               // if the permission passed in is a directory
-               // specification, make sure that a non-recursive
-               // permission (i.e., this object) can't imply a recursive
-               // permission.
-               if (that.recursive)
-                  return false;
-               else
-                  return (this.cpath.equals(that.cpath));
+        } else if (that.directory) {
+            // if this is NOT recursive/wildcarded,
+            // do not let it imply a recursive/wildcarded permission
+            return false;
+        } else {
+            return (this.cpath.equals(that.cpath));
+        }
+    }
+
+    /**
+     * Checks two JndiPermission objects for equality. Checks that <i>obj</i> is
+     * a JndiPermission, and has the same pathname and actions as this object.
+     * <p/>
+     *
+     * @param obj the object we are testing for equality with this object.
+     * @return <code>true</code> if obj is a JndiPermission, and has the same
+     *         pathname and actions as this JndiPermission object,
+     *         <code>false</code> otherwise.
+     */
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof JndiPermission))
+            return false;
+
+        JndiPermission that = (JndiPermission) obj;
+
+        return (this.mask == that.mask) && this.cpath.equals(that.cpath)
+                && (this.directory == that.directory)
+                && (this.recursive == that.recursive);
+    }
+
+    /**
+     * Returns the hash code value for this object.
+     *
+     * @return a hash code value for this object.
+     */
+
+    public int hashCode() {
+        return this.cpath.hashCode();
+    }
+
+    /**
+     * Converts an actions array to an actions mask.
+     *
+     * @param actions - an array of actions
+     * @return the actions mask.
+     */
+    private static int getMask(final Action[] actions) {
+
+        int mask = Action.NONE.mask;
+
+        // Null action valid?
+        if (actions == null || actions.length == 0) {
+            return mask;
+        }
+        if(actions.length == 1) {
+            return actions[0].mask;
+        }
+
+        for (Action action : actions) {
+            mask |= action.mask;
+        }
+
+        return mask;
+    }
+
+    /**
+     * Converts an actions String to an actions mask.
+     *
+     * @param actions - the comma separated list of actions.
+     * @return the actions mask.
+     */
+    private static int getMask(String actions) {
+
+        int mask = Action.NONE.mask;
+
+        // Null action valid?
+        if (actions == null || actions.length() == 0) {
+            return mask;
+        }
+        // Check against use of constants
+        Action action = Action.forName(actions);
+        if(action != null) {
+            return action.mask;
+        }
+
+        String[] sa = actions.split(",");
+        for (String s : sa) {
+            String key = s.toLowerCase();
+            action = Action.forName(key);
+            if (action == null) {
+                throw new IllegalArgumentException("invalid permission, unknown action: " + s);
             }
-            else
-            {
-               int last = that.cpath.lastIndexOf('/');
-               if (last == -1)
-                  return false;
-               else
-               {
-                  // this.cpath.equals(that.cpath.substring(0, last+1));
-                  // Use regionMatches to avoid creating new string
-                  return (this.cpath.length() == (last + 1))
-                        && this.cpath.regionMatches(0, that.cpath, 0, last + 1);
-               }
+            int i = action.mask;
+            mask |= i;
+        }
+
+        return mask;
+    }
+
+    /**
+     * Return the current action mask. Used by the JndiPermissionCollection.
+     *
+     * @return the actions mask.
+     */
+
+    int getMask() {
+        return mask;
+    }
+
+    /**
+     * Return the canonical string representation of the actions. Always returns
+     * present actions in the following order: bind, rebind, unbind, lookup,
+     * list, listBindings, createSubcontext
+     *
+     * @return the canonical string representation of the actions.
+     */
+    private static String getActions(int mask) {
+        StringBuilder sb = new StringBuilder();
+        boolean insertComma = false;
+        final Action[] allActions = Action.values();
+        for (int n = 0; n < allActions.length; n++) {
+            int action = 1 << n;
+            if ((mask & action) == action) {
+                if (insertComma)
+                    sb.append(',');
+                sb.append(allActions[n].actionName);
+                insertComma = true;
             }
-         }
-      }
-      else if (that.directory)
-      {
-         // if this is NOT recursive/wildcarded,
-         // do not let it imply a recursive/wildcarded permission
-         return false;
-      }
-      else
-      {
-         return (this.cpath.equals(that.cpath));
-      }
-   }
+        }
 
-   /**
-    * Checks two JndiPermission objects for equality. Checks that <i>obj</i> is
-    * a JndiPermission, and has the same pathname and actions as this object.
-    * <P>
-    *
-    * @param obj
-    *           the object we are testing for equality with this object.
-    * @return <code>true</code> if obj is a JndiPermission, and has the same
-    *         pathname and actions as this JndiPermission object,
-    *         <code>false</code> otherwise.
-    */
-   public boolean equals(Object obj)
-   {
-      if (obj == this)
-         return true;
+        return sb.toString();
+    }
 
-      if (!(obj instanceof JndiPermission))
-         return false;
+    /**
+     * Returns the "canonical string representation" of the actions. That is,
+     * this method always returns present actions in the following order: bind,
+     * rebind, unbind, lookup, list, listBindings, createSubcontext.
+     * For example, if this JndiPermission object allows
+     * both unbind and bind actions, a call to <code>getActions</code> will
+     * return the string "bind,unbind".
+     *
+     * @return the canonical string representation of the actions.
+     */
+    public String getActions() {
+        if (actions == null)
+            actions = getActions(this.mask);
 
-      JndiPermission that = (JndiPermission) obj;
+        return actions;
+    }
 
-      return (this.mask == that.mask) && this.cpath.equals(that.cpath)
-            && (this.directory == that.directory)
-            && (this.recursive == that.recursive);
-   }
+    /**
+     * Returns a new PermissionCollection object for storing JndiPermission
+     * objects.
+     * <p/>
+     * JndiPermission objects must be stored in a manner that allows them to be
+     * inserted into the collection in any order, but that also enables the
+     * PermissionCollection <code>implies</code> method to be implemented in an
+     * efficient (and consistent) manner.
+     * <p/>
+     * <p/>
+     * For example, if you have two JndiPermissions:
+     * <OL>
+     * <LI> <code>"/tmp/-", "bind"</code>
+     * <LI> <code>"/tmp/scratch/foo", "unbind"</code>
+     * </OL>
+     * <p/>
+     * <p/>
+     * and you are calling the <code>implies</code> method with the
+     * JndiPermission:
+     * <p/>
+     * <pre>
+     *   &quot;/tmp/scratch/foo&quot;, &quot;bind,unbind&quot;,
+     * </pre>
+     * <p/>
+     * then the <code>implies</code> function must take into account both the
+     * "/tmp/-" and "/tmp/scratch/foo" permissions, so the effective permission
+     * is "bind,unbind", and <code>implies</code> returns true. The "implies"
+     * semantics for JndiPermissions are handled properly by the
+     * PermissionCollection object returned by this
+     * <code>newPermissionCollection</code> method.
+     *
+     * @return a new PermissionCollection object suitable for storing
+     *         JndiPermissions.
+     */
 
-   /**
-    * Returns the hash code value for this object.
-    *
-    * @return a hash code value for this object.
-    */
+    public PermissionCollection newPermissionCollection() {
+        return new JndiPermissionCollection();
+    }
 
-   public int hashCode()
-   {
-      return this.cpath.hashCode();
-   }
+    /**
+     * WriteObject is called to save the state of the JndiPermission to a stream.
+     * The actions are serialized, and the superclass takes care of the name.
+     */
+    private void writeObject(ObjectOutputStream s) throws IOException {
+        // Write out the actions. The superclass takes care of the name
+        // call getActions to make sure actions field is initialized
+        if (actions == null)
+            getActions();
+        s.defaultWriteObject();
+    }
 
-
-   /**
-    * Converts an actions String to an actions mask.
-    *
-    * @param actions - the comma separated list of actions.
-    * @return the actions mask.
-    */
-   private static int getMask(String actions)
-   {
-
-      int mask = NONE;
-
-      // Null action valid?
-      if (actions == null || actions.length() == 0)
-      {
-         return mask;
-      }
-      // Check against use of constants
-      if (actions == LOOKUP_ACTION)
-      {
-         return LOOKUP;
-      }
-      else if (actions == REBIND_ACTION)
-      {
-         return REBIND;
-      }
-      else if (actions == BIND_ACTION)
-      {
-         return BIND;
-      }
-      else if (actions == UNBIND_ACTION)
-      {
-         return UNBIND;
-      }
-      else if (actions == LIST_ACTION)
-      {
-         return LIST;
-      }
-      else if (actions == LIST_BINDINGS_ACTION)
-      {
-         return LIST_BINDINGS;
-      }
-      else if (actions == CREATE_SUBCONTEXT_ACTION)
-      {
-         return CREATE_SUBCONTEXT;
-      }
-
-      String[] sa = actions.split(",");
-      for(String s : sa)
-      {
-         String key = s.toLowerCase();
-         if(actionMap.containsKey(key) == false)
-         {
-            throw new IllegalArgumentException("invalid permission, unknown action: " + s);
-         }
-         int i = actionMap.get(key);
-         mask |= i;
-      }
-
-      return mask;
-   }
-
-   /**
-    * Return the current action mask. Used by the JndiPermissionCollection.
-    *
-    * @return the actions mask.
-    */
-
-   int getMask()
-   {
-      return mask;
-   }
-
-   /**
-    * Return the canonical string representation of the actions. Always returns
-    * present actions in the following order: bind, rebind, unbind, lookup,
-    * list, listBindings, createSubcontext
-    *
-    * @return the canonical string representation of the actions.
-    */
-   private static String getActions(int mask)
-   {
-      StringBuilder sb = new StringBuilder();
-      boolean insertComma = false;
-      for(int n = 0; n < ACTION_COUNT; n ++)
-      {
-         int action = 1 << n;
-         if((mask & action) == action)
-         {
-            if(insertComma)
-               sb.append(',');
-            sb.append(ALL_ACTIONS[n]);
-            insertComma = true;
-         }
-      }
-
-      return sb.toString();
-   }
-
-   /**
-    * Returns the "canonical string representation" of the actions. That is,
-    * this method always returns present actions in the following order: bind,
-    * rebind, unbind, lookup, list, listBindings, createSubcontext.
-    * For example, if this JndiPermission object allows
-    * both unbind and bind actions, a call to <code>getActions</code> will
-    * return the string "bind,unbind".
-    *
-    * @return the canonical string representation of the actions.
-    */
-   public String getActions()
-   {
-      if (actions == null)
-         actions = getActions(this.mask);
-
-      return actions;
-   }
-
-   /**
-    * Returns a new PermissionCollection object for storing JndiPermission
-    * objects.
-    * <p>
-    * JndiPermission objects must be stored in a manner that allows them to be
-    * inserted into the collection in any order, but that also enables the
-    * PermissionCollection <code>implies</code> method to be implemented in an
-    * efficient (and consistent) manner.
-    *
-    * <p>
-    * For example, if you have two JndiPermissions:
-    * <OL>
-    * <LI> <code>"/tmp/-", "bind"</code>
-    * <LI> <code>"/tmp/scratch/foo", "unbind"</code>
-    * </OL>
-    *
-    * <p>
-    * and you are calling the <code>implies</code> method with the
-    * JndiPermission:
-    *
-    * <pre>
-    *   &quot;/tmp/scratch/foo&quot;, &quot;bind,unbind&quot;,
-    * </pre>
-    *
-    * then the <code>implies</code> function must take into account both the
-    * "/tmp/-" and "/tmp/scratch/foo" permissions, so the effective permission
-    * is "bind,unbind", and <code>implies</code> returns true. The "implies"
-    * semantics for JndiPermissions are handled properly by the
-    * PermissionCollection object returned by this
-    * <code>newPermissionCollection</code> method.
-    *
-    * @return a new PermissionCollection object suitable for storing
-    *         JndiPermissions.
-    */
-
-   public PermissionCollection newPermissionCollection()
-   {
-      return new JndiPermissionCollection();
-   }
-
-   /**
-    * WriteObject is called to save the state of the JndiPermission to a stream.
-    * The actions are serialized, and the superclass takes care of the name.
-    */
-   private void writeObject(ObjectOutputStream s) throws IOException
-   {
-      // Write out the actions. The superclass takes care of the name
-      // call getActions to make sure actions field is initialized
-      if (actions == null)
-         getActions();
-      s.defaultWriteObject();
-   }
-
-   /**
-    * readObject is called to restore the state of the JndiPermission from a
-    * stream.
-    */
-   private void readObject(ObjectInputStream s) throws IOException,
-         ClassNotFoundException
-   {
-      // Read in the actions, then restore everything else by calling init.
-      s.defaultReadObject();
-      init(getMask(actions));
-   }
+    /**
+     * readObject is called to restore the state of the JndiPermission from a
+     * stream.
+     */
+    private void readObject(ObjectInputStream s) throws IOException,
+            ClassNotFoundException {
+        // Read in the actions, then restore everything else by calling init.
+        s.defaultReadObject();
+        init(getMask(actions));
+    }
 }
 
 /**
@@ -654,113 +535,93 @@ public final class JndiPermission extends Permission
  * account both the /tmp/- and /tmp/scratch/foo permissions, so the effective
  * permission is "bind,unbind".
  *
- * @see java.security.Permission
- * @see java.security.Permissions
- * @see java.security.PermissionCollection
- *
- *
  * @author Marianne Mueller
  * @author Roland Schemers
  * @author Scott.Stark@jboss.org
- *
- * @serial include
  * @version $Revision: 81310 $
- *
+ * @serial include
+ * @see java.security.Permission
+ * @see java.security.Permissions
+ * @see java.security.PermissionCollection
  */
 final class JndiPermissionCollection extends PermissionCollection implements
-      Serializable
-{
-   private static final long serialVersionUID = 1;
-   private List<JndiPermission> perms;
+        Serializable {
+    private static final long serialVersionUID = 1;
+    private List<JndiPermission> perms;
 
-   /**
-    * Create an empty JndiPermissions object.
-    *
-    */
-   public JndiPermissionCollection()
-   {
-      perms = new ArrayList<JndiPermission>();
-   }
+    /**
+     * Create an empty JndiPermissions object.
+     */
+    public JndiPermissionCollection() {
+        perms = new ArrayList<JndiPermission>();
+    }
 
-   /**
-    * Adds a permission to the JndiPermissions. The key for the hash is
-    * permission.path.
-    *
-    * @param permission
-    *           the Permission object to add.
-    *
-    * @exception IllegalArgumentException -
-    *               if the permission is not a JndiPermission
-    *
-    * @exception SecurityException -
-    *               if this JndiPermissionCollection object has been marked
-    *               readonly
-    */
+    /**
+     * Adds a permission to the JndiPermissions. The key for the hash is
+     * permission.path.
+     *
+     * @param permission the Permission object to add.
+     * @throws IllegalArgumentException -
+     *                                  if the permission is not a JndiPermission
+     * @throws SecurityException        -
+     *                                  if this JndiPermissionCollection object has been marked
+     *                                  readonly
+     */
 
-   public void add(Permission permission)
-   {
-      if (!(permission instanceof JndiPermission))
-         throw new IllegalArgumentException("invalid permission: " + permission);
-      if (isReadOnly())
-         throw new SecurityException("attempt to add a Permission to a readonly PermissionCollection");
+    public void add(Permission permission) {
+        if (!(permission instanceof JndiPermission))
+            throw new IllegalArgumentException("invalid permission: " + permission);
+        if (isReadOnly())
+            throw new SecurityException("attempt to add a Permission to a readonly PermissionCollection");
 
-      synchronized (this)
-      {
-         perms.add((JndiPermission)permission);
-      }
-   }
+        synchronized (this) {
+            perms.add((JndiPermission) permission);
+        }
+    }
 
-   /**
-    * Check and see if this set of permissions implies the permissions expressed
-    * in "permission".
-    *
-    * @param permission
-    *           the Permission object to compare
-    *
-    * @return true if "permission" is a proper subset of a permission in the
-    *         set, false if not.
-    */
+    /**
+     * Check and see if this set of permissions implies the permissions expressed
+     * in "permission".
+     *
+     * @param permission the Permission object to compare
+     * @return true if "permission" is a proper subset of a permission in the
+     *         set, false if not.
+     */
 
-   public boolean implies(Permission permission)
-   {
-      if (!(permission instanceof JndiPermission))
-         return false;
+    public boolean implies(Permission permission) {
+        if (!(permission instanceof JndiPermission))
+            return false;
 
-      JndiPermission fp = (JndiPermission) permission;
+        JndiPermission fp = (JndiPermission) permission;
 
-      int desired = fp.getMask();
-      int effective = 0;
-      int needed = desired;
+        int desired = fp.getMask();
+        int effective = 0;
+        int needed = desired;
 
-      synchronized (this)
-      {
-         for(JndiPermission x : perms)
-         {
-            if (((needed & x.getMask()) != 0) && x.impliesIgnoreMask(fp))
-            {
-               effective |= x.getMask();
-               if ((effective & desired) == desired)
-                  return true;
-               needed = (desired ^ effective);
+        synchronized (this) {
+            for (JndiPermission x : perms) {
+                if (((needed & x.getMask()) != 0) && x.impliesIgnoreMask(fp)) {
+                    effective |= x.getMask();
+                    if ((effective & desired) == desired)
+                        return true;
+                    needed = (desired ^ effective);
+                }
             }
-         }
-      }
-      return false;
-   }
+        }
+        return false;
+    }
 
-   /**
-    * Returns an enumeration of all the JndiPermission objects in the container.
-    *
-    * @return an enumeration of all the JndiPermission objects.
-    */
+    /**
+     * Returns an enumeration of all the JndiPermission objects in the container.
+     *
+     * @return an enumeration of all the JndiPermission objects.
+     */
 
-   public Enumeration elements()
-   {
-      // Convert Iterator into Enumeration
-      synchronized (this)
-      {
-         return Collections.enumeration(perms);
-      }
-   }
+    public Enumeration elements() {
+        // Convert Iterator into Enumeration
+        synchronized (this) {
+            return Collections.enumeration(perms);
+        }
+    }
 
 }

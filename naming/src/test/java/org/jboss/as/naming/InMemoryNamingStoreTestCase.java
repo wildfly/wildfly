@@ -32,6 +32,8 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
+import javax.naming.Reference;
+import javax.naming.spi.ResolveResult;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +99,15 @@ public class InMemoryNamingStoreTestCase {
         assertTrue(result instanceof NamingContext);
         result = nameStore.lookup(new CompositeName(""));
         assertTrue(result instanceof NamingContext);
+    }
+
+    @Test
+    public void testBindAndLookupResolveResult() throws Exception {
+        final Name name = new CompositeName("test");
+        final Reference reference = new Reference(Context.class.getName());
+        nameStore.bind(name, reference, Context.class.getName());
+        final Object result = nameStore.lookup(new CompositeName("test/value"));
+        assertTrue(result instanceof ResolveResult);
     }
 
     @Test

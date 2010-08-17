@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import org.jboss.as.naming.util.FastCopyHashMap;
+
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
@@ -34,11 +36,12 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
 import javax.naming.Reference;
+import javax.naming.spi.ResolveResult;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 /**
  * In-memory implementation of the NamingStore.  The backing for the entries is a basic tree structure with either context
@@ -68,7 +71,7 @@ public class InMemoryNamingStore implements NamingStore {
         if (name.isEmpty() || getLastComponent(name).equals("")) {
             throw emptyName();
         }
-        checkPermissions(name, JndiPermission.BIND);
+        checkPermissions(name, JndiPermission.Action.BIND);
 
         final ContextNode bindContextNode = getBindingContext(name);
 
@@ -90,7 +93,7 @@ public class InMemoryNamingStore implements NamingStore {
         if (name.isEmpty() || getLastComponent(name).equals("")) {
             throw emptyName();
         }
-        checkPermissions(name, JndiPermission.REBIND);
+        checkPermissions(name, JndiPermission.Action.REBIND);
 
         final ContextNode bindContextNode = getBindingContext(name);
         final Binding binding = new Binding(getLastComponent(name), className, object, true);
@@ -108,7 +111,7 @@ public class InMemoryNamingStore implements NamingStore {
         if (name.isEmpty() || getLastComponent(name).equals("")) {
             throw emptyName();
         }
-        checkPermissions(name, JndiPermission.UNBIND);
+        checkPermissions(name, JndiPermission.Action.UNBIND);
         final ContextNode bindContextNode = getBindingContext(name);
         bindContextNode.removeChild(getLastComponent(name));
     }
@@ -123,12 +126,11 @@ public class InMemoryNamingStore implements NamingStore {
     public Object lookup(final Name name) throws NamingException {
         if (name.isEmpty() || (name.size() == 1 && "".equals(name.get(0)))) {
             final Name emptyName = new CompositeName("");
-            checkPermissions(emptyName, JndiPermission.LOOKUP);
+            checkPermissions(emptyName, JndiPermission.Action.LOOKUP);
             return new NamingContext(emptyName, this, new Hashtable<String, Object>());
         }
-        checkPermissions(name, JndiPermission.LOOKUP);
-        final TreeNode boundNode = root.findNode(name);
-        return boundNode.binding.getObject();
+        checkPermissions(name, JndiPermission.Action.LOOKUP);
+        return findObject(name);
     }
 
     /**
@@ -139,9 +141,9 @@ public class InMemoryNamingStore implements NamingStore {
      * @throws NamingException
      */
     public List<NameClassPair> list(final Name name) throws NamingException {
-        checkPermissions(name, JndiPermission.LIST);
+        checkPermissions(name, JndiPermission.Action.LIST);
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        final TreeNode node = root.findNode(nodeName);
+        final TreeNode node = findNode(nodeName);
         if (node instanceof BindingNode) {
             checkReferenceForContinuation(new CompositeName(""), node.binding.getObject());
             throw notAContext(name);
@@ -165,9 +167,9 @@ public class InMemoryNamingStore implements NamingStore {
      * @throws NamingException
      */
     public List<Binding> listBindings(final Name name) throws NamingException {
-        checkPermissions(name, JndiPermission.LIST_BINDINGS);
+        checkPermissions(name, JndiPermission.Action.LIST_BINDINGS);
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        final TreeNode node = root.findNode(nodeName);
+        final TreeNode node = findNode(nodeName);
         if (node instanceof BindingNode) {
             checkReferenceForContinuation(new CompositeName(""), node.binding.getObject());
             throw notAContext(name);
@@ -188,7 +190,7 @@ public class InMemoryNamingStore implements NamingStore {
      * @throws NamingException
      */
     public void close() throws NamingException {
-        root.children.clear();
+        root.clear();
     }
 
     /**
@@ -202,7 +204,7 @@ public class InMemoryNamingStore implements NamingStore {
         if (name.isEmpty()) {
             throw emptyName();
         }
-        checkPermissions(name, JndiPermission.CREATE_SUBCONTEXT);
+        checkPermissions(name, JndiPermission.Action.CREATE_SUBCONTEXT);
 
         final ContextNode bindingContextNode = getBindingContext(name);
 
@@ -211,9 +213,31 @@ public class InMemoryNamingStore implements NamingStore {
         return context;
     }
 
+    private TreeNode findNode(final Name name) throws NamingException {
+        Name currentName = name;
+        ContextNode currentNode = root;
+        for(int i = 0; i < name.size(); i++) {
+            String childName = currentName.get(0);
+            final TreeNode childNode = currentNode.children.get(childName);
+            currentName = currentName.getSuffix(1);
+
+            if(childNode == null) {
+                throw nameNotFound(childName, currentName);
+            } else if(currentName.isEmpty()) {
+                return childNode;
+            } else if(childNode instanceof ContextNode) {
+                currentNode = ContextNode.class.cast(childNode);
+            } else {
+                checkReferenceForContinuation(currentName, childNode.binding.getObject());
+                throw notAContext(name);
+            }
+        }
+        return currentNode;
+    }
+
     private ContextNode getBindingContext(final Name name) throws NamingException {
         final Name bindingContextName = name.getPrefix(name.size() - 1);
-        final TreeNode node = root.findNode(bindingContextName);
+        final TreeNode node = findNode(bindingContextName);
         if (node instanceof ContextNode) {
             return ContextNode.class.cast(node);
         } else {
@@ -221,6 +245,31 @@ public class InMemoryNamingStore implements NamingStore {
             throw notAContext(bindingContextName);
         }
 
+    }
+
+    private Object findObject(final Name name) throws NamingException {
+        Name currentName = name;
+        ContextNode currentNode = root;
+        for(int i = 0; i < name.size(); i++) {
+            String childName = currentName.get(0);
+            final TreeNode childNode = currentNode.children.get(childName);
+            currentName = currentName.getSuffix(1);
+            if(childNode == null) {
+                throw nameNotFound(childName, currentName);
+            } else if(currentName.isEmpty()) {
+                return childNode.binding.getObject();
+            } else if(childNode instanceof ContextNode) {
+                currentNode = ContextNode.class.cast(childNode);
+            } else {
+                final Object boundObject = childNode.binding.getObject();
+                if(boundObject instanceof Reference) {
+                    checkReferenceForContinuation(currentName, boundObject);
+                    return new ResolveResult(boundObject, currentName);
+                }
+                throw notAContext(name);
+            }
+        }
+        return currentNode;
     }
 
     private void checkReferenceForContinuation(final Name name, final Object object) throws CannotProceedException {
@@ -234,13 +283,12 @@ public class InMemoryNamingStore implements NamingStore {
         }
     }
 
-    private void checkPermissions(final Name name, int permission) {
+    private void checkPermissions(final Name name, JndiPermission.Action permission) {
         if (securityManager == null)
             securityManager = System.getSecurityManager();
 
         if (securityManager != null) {
-            JndiPermission perm = new JndiPermission(name, permission);
-            securityManager.checkPermission(perm);
+            securityManager.checkPermission(new JndiPermission(name, permission));
         }
     }
 
@@ -277,50 +325,42 @@ public class InMemoryNamingStore implements NamingStore {
     }
 
     private class ContextNode extends TreeNode {
-        private final ConcurrentMap<String, TreeNode> children = new ConcurrentHashMap<String, TreeNode>();
+        private volatile Map<String, TreeNode> children = Collections.emptyMap();
 
         private ContextNode(final Name fullName, final NamingContext context) {
             super(fullName, new Binding(getLastComponent(fullName), Context.class.getName(), context));
         }
 
-        private void addChild(final String childName, final TreeNode childNode) throws NamingException {
-            if (children.putIfAbsent(childName, childNode) != null) {
+        private synchronized void addChild(final String childName, final TreeNode childNode) throws NamingException {
+            if(children.containsKey(childName)) {
                 throw nameAlreadyBound(fullName.add(childName));
             }
+            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
+            copy.put(childName, childNode);
+            children = copy;
         }
 
-        private TreeNode replaceChild(final String childName, final TreeNode childNode) throws NamingException {
-            return children.put(childName, childNode);
-        }
-
-        private TreeNode removeChild(final String childName) throws NameNotFoundException {
-            final TreeNode existing = children.remove(childName);
-            if (existing == null) {
-                throw nameNotFound(childName, fullName);
-            }
+        private synchronized TreeNode replaceChild(final String childName, final TreeNode childNode) throws NamingException {
+            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
+            final TreeNode existing = copy.put(childName, childNode);
+            children = copy;
             return existing;
         }
 
-        private TreeNode findNode(final Name name) throws NamingException {
-            if (name.size() == 0) {
-                return this;
-            } else {
-                final String childName = name.get(0);
-                final TreeNode childNode = children.get(childName);
-                if (childNode == null) {
-                    throw nameNotFound(childName, fullName);
-                } else if (childNode instanceof ContextNode) {
-                    final ContextNode childContextNode = ContextNode.class.cast(childNode);
-                    return childContextNode.findNode(name.getSuffix(1));
-                } else {
-                    if (name.size() == 1) {
-                        return childNode;
-                    } else {
-                        checkReferenceForContinuation(name.getSuffix(1), childNode.binding.getObject());
-                        throw notAContext(name);
-                    }
-                }
+        private synchronized TreeNode removeChild(final String childName) throws NameNotFoundException {
+            if(!children.containsKey(childName)) {
+                throw nameNotFound(childName, fullName);
             }
+            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
+            final TreeNode existing = copy.remove(childName);
+            children = copy;
+            return existing;
+        }
+
+        private synchronized void clear() {
+            final Map<String, TreeNode> copy = new FastCopyHashMap<String, TreeNode>(children);
+            copy.clear();
+            children = copy;
         }
     }
 

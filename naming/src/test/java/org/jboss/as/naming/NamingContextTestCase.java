@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import javax.naming.Binding;
 import javax.naming.CompositeName;
-import javax.naming.CompoundName;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
 import javax.naming.InvalidNameException;
@@ -42,7 +41,6 @@ import javax.naming.spi.ObjectFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Properties;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -112,6 +110,18 @@ public class NamingContextTestCase {
         namingContext.bind("test/nested", "test");
 
         final Object result = namingContext.lookup(new CompositeName("test/nested"));
+        assertEquals("test", result);
+    }
+
+    @Test
+    public void testBindAndLookupWitResolveResult() throws Exception {
+        namingContext.createSubcontext("test");
+        namingContext.bind("test/nested", "test");
+
+        final Reference reference = new Reference(String.class.getName(), new StringRefAddr("blahh", "test"), TestObjectFactoryWithNameResolution.class.getName(), null);
+        namingContext.bind(new CompositeName("comp"), reference);
+
+        final Object result = namingContext.lookup(new CompositeName("comp/nested"));
         assertEquals("test", result);
     }
 
