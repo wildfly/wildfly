@@ -55,9 +55,16 @@ import org.jboss.as.process.CommandLineConstants;
  * @version $Revision: 1.1 $
  */
 public abstract class TestProcessUtils {
-    private static final int PORT = 8080;
+    
+    private static final int DEFAULT_PORT = 12934;
+    private static final int PORT;
+    static {
+        String s = System.getenv().get("PM_TEST_LISTENER_PORT");
+        PORT = s == null ? DEFAULT_PORT : Integer.valueOf(s);
+    }
+    
     private static final int TIMEOUT_MILLISECONDS = 1000;
-
+    
     static final Map<String, TestCommand> COMMANDS;
     static {
         Map<String, TestCommand> map = new HashMap<String, TestCommand>();
@@ -405,10 +412,11 @@ public abstract class TestProcessUtils {
         public ClientSocketWriter(String processName) {
             this.processName = processName;
             try {
-                socket = new Socket(InetAddress.getLocalHost(), 8080);
+                socket = new Socket(InetAddress.getLocalHost(), PORT);
                 socketOutput = new PrintWriter(socket.getOutputStream(), true);
                 socketOutput.println(new StartCommand(processName));
             } catch (Exception e) {
+                e.printStackTrace(System.err);
                 shutdown();
                 throw new RuntimeException(e);
             }
