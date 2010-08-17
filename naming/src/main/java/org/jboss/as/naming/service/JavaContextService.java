@@ -20,67 +20,66 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.service;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jnp.interfaces.Naming;
-import org.jnp.interfaces.NamingContext;
-import org.jnp.server.NamingServer;
 
 import javax.naming.Context;
-import javax.naming.spi.NamingManager;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
- * Service responsible for creating and managing the life-cycle of the Naming Server. 
+ * Service wrapper for the java: naming context.  Mainly used as a dependency for other contexts and binders. 
  *
  * @author John E. Bailey
  */
-public class NamingService implements Service<Naming> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
-    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
-    private static final String PACKAGE_PREFIXES = "org.jboss.naming:org.jnp.interfaces";
-    private NamingServer server;
+public class JavaContextService implements Service<Context> {
+    public static final ServiceName SERVICE_NAME = NamingService.SERVICE_NAME.append("context", "java");
+    private Context javaContext;
 
     /**
-     * Creates a new NamingServer and sets the naming context to use the naming server.
-     *
+     * Looks up the java: context from the initial context.
+     * 
      * @param context The start context
-     * @throws StartException If any errors occur setting up the naming server
+     * @throws StartException If any naming errors occur getting the java: context
      */
     public synchronized void start(StartContext context) throws StartException {
-        log.info("Starting Naming Service");
+        final Context initContext;
         try {
-            server = new NamingServer();
-            System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
-            NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
-            NamingContext.setLocal(server);
-        } catch (Throwable t) {
-            throw new StartException("Failed to start naming server", t);
+            initContext = new InitialContext();
+        } catch (NamingException e) {
+            throw new StartException("Failed to get initial context", e);
+        }
+        try {
+            this.javaContext = Context.class.cast(initContext.lookup("java:"));
+        } catch (NamingException e) {
+            throw new StartException("Failed to retrieve java: context", e);
         }
     }
 
     /**
-     * Removes the naming server from the naming context.  
+     * Clear out the java: context.
      *
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
-        NamingContext.setLocal(null);
-        server = null;
+        this.javaContext = null;
     }
 
     /**
-     * Get the naming server.
+     * Get the java: context.
      *
-     * @return The naming server.
-     * @throws IllegalStateException
+     * @return The context
+     * @throws IllegalStateException If the context has not been set
      */
-    public synchronized Naming getValue() throws IllegalStateException {
-        return server;  
+    public synchronized Context getValue() throws IllegalStateException {
+        if(javaContext == null) {
+            throw new IllegalStateException("java: is null.  Has the service started");
+        }
+        return javaContext;
     }
 }

@@ -20,23 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.interfaces.java;
 
-import org.jboss.as.model.ParseResult;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.as.naming.NamingContext;
 
-import javax.xml.stream.XMLStreamException;
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.spi.ObjectFactory;
+import java.util.Hashtable;
 
 /**
- * Parser responsible for handling the naming subsystem schema.
- *  
+ * Implementation of {@code ObjectFactory} used to create a {@code NamingContext} instances to support the java: namespace.
+ * 
  * @author John E. Bailey
  */
-final class NamingSubsystemElementParser implements XMLElementReader<ParseResult<NamingSubsystemElement>> {
+public class javaURLContextFactory implements ObjectFactory {
 
     /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final ParseResult<NamingSubsystemElement> result) throws XMLStreamException {
-        result.setResult(new NamingSubsystemElement(xmlExtendedStreamReader));
+    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+        return new NamingContext(name != null ? name : new CompositeName(""), (Hashtable<String, Object>) environment);
     }
 }

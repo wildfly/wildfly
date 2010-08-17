@@ -22,33 +22,25 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
+import javax.naming.CompositeName;
+import javax.naming.Name;
+import javax.naming.NamingException;
 
 /**
- * Domain extension used to initialize the naming subsystem element handlers. 
- *
+ * Name parser used by the NamingContext instances.  Relies on composite name instances.
+ * 
  * @author John E. Bailey
  */
-public class NamingExtension implements Extension {
+public class NameParser implements javax.naming.NameParser {
 
     /**
-     * Register the naming element handlers.
+     * Parse the string name into a {@code javax.naming.Name} instance.
      *
-     * @param mapper the mapper
+     * @param name The name to parse
+     * @return The parsed name.
+     * @throws NamingException
      */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), new NamingSubsystemElementParser());
-    }
-
-    /**
-     * Activate the extension.  
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    public Name parse(String name) throws NamingException {
+        return new CompositeName(name);
     }
 }

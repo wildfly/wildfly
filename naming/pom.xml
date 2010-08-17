@@ -47,9 +47,11 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.jboss.naming</groupId>
-            <artifactId>jnpserver</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

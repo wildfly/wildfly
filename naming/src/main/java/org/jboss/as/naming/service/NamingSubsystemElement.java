@@ -20,10 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.service;
 
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
@@ -31,6 +32,9 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.spi.NamingManager;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
@@ -42,6 +46,7 @@ import java.util.Collection;
  */
 final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsystemElement> {
     private static final long serialVersionUID = -5701304143558865658L;
+    private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
@@ -90,6 +95,14 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
      */
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Naming Subsystem");
+
+        // Setup naming environment
+        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+        try {
+            NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+        } catch (NamingException e) {
+            log.warn("Failed to set InitialContextFactoryBuilder", e);
+        }
 
         // Create the Naming Service
         final BatchBuilder builder = context.getBatchBuilder();
