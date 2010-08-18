@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.naming.CompositeName;
@@ -45,7 +46,12 @@ import static org.junit.Assert.assertTrue;
  */
 public class NamingEventCoordinatorTestCase {
 
-    private final NamingContext context = new NamingContext(null);
+    private NamingContext context;
+
+    @Before
+    public void setup() throws Exception {
+        context = new NamingContext(null);
+    }
 
     @Test
     public void testFireObjectEvent() throws Exception {

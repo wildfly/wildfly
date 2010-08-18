@@ -23,6 +23,7 @@
 package org.jboss.as.naming;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.naming.Binding;
@@ -53,7 +54,12 @@ import static org.junit.Assert.fail;
  */
 public class NamingContextTestCase {
 
-    private final NamingContext namingContext = new NamingContext(null);
+    private NamingContext namingContext;
+
+    @Before
+    public void setup() throws Exception {
+        namingContext = new NamingContext(null);
+    }
 
     @After
     public void cleanup() throws Exception {

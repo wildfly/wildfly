@@ -90,7 +90,7 @@ public class NamingContext implements EventContext {
      *
      * @param environment The naming environment
      */
-    public NamingContext(final Hashtable<String, Object> environment) {
+    public NamingContext(final Hashtable<String, Object> environment) throws NamingException {
         this(emptyName(), ACTIVE_NAMING_STORE, environment);
     }
 
@@ -100,7 +100,7 @@ public class NamingContext implements EventContext {
      * @param prefix The prefix for this context
      * @param environment The naming environment
      */
-    public NamingContext(final Name prefix, final Hashtable<String, Object> environment) {
+    public NamingContext(final Name prefix, final Hashtable<String, Object> environment) throws NamingException {
         this(prefix, ACTIVE_NAMING_STORE, environment);
     }
 
@@ -111,7 +111,7 @@ public class NamingContext implements EventContext {
      * @param namingStore The NamingStore
      * @param environment The naming environment
      */
-    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) {
+    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) throws NamingException {
         if(prefix == null) {
             throw new IllegalArgumentException("Naming prefix can not be null");
         }
@@ -120,13 +120,17 @@ public class NamingContext implements EventContext {
             throw new IllegalArgumentException("NamingStore can not be null");
         }
         this.namingStore = namingStore;
-        this.environment = environment;
+        if(environment != null) {
+            this.environment = NamingUtils.clone(environment);
+        } else {
+            this.environment = new Hashtable<String, Object>();
+        }
     }
 
     /** {@inheritDoc} */
     public Object lookup(final Name name) throws NamingException {
         if (isEmpty(name)) {
-            return new NamingContext(prefix, namingStore, NamingUtils.clone(environment));
+            return new NamingContext(prefix, namingStore, environment);
         }
 
         final Name absoluteName = getAbsoluteName(name);

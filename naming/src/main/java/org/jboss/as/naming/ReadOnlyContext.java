@@ -40,10 +40,13 @@ import java.util.Hashtable;
  * @author John E. Bailey
  */
 public class ReadOnlyContext implements Context {
-    final Context realContext;
+    private final Context realContext;
 
-    public ReadOnlyContext(Context realContext) {
+    private final Hashtable<String, Object> environment;
+
+    public ReadOnlyContext(Context realContext) throws NamingException {
         this.realContext = realContext;
+        this.environment = (Hashtable<String, Object>) NamingUtils.clone(realContext.getEnvironment());
     }
 
     /** {@inheritDoc} */
@@ -178,7 +181,7 @@ public class ReadOnlyContext implements Context {
 
     /** {@inheritDoc} */
     public Hashtable<?, ?> getEnvironment() throws NamingException {
-        return NamingUtils.clone(realContext.getEnvironment());
+        return environment;
     }
 
     /** Not supported */
