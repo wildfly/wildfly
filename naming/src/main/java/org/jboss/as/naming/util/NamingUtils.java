@@ -22,6 +22,7 @@
 
 package org.jboss.as.naming.util;
 
+import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
@@ -87,6 +88,13 @@ public class NamingUtils {
         final NamingException exception = namingException(message, cause);
         exception.setRemainingName(remainingName);
         return exception;
+    }
+
+    public static CannotProceedException cannotProceedException(final Object resolvedObject, final Name remainingName) {
+        final CannotProceedException cpe = new CannotProceedException();
+        cpe.setResolvedObj(resolvedObject);
+        cpe.setRemainingName(remainingName);
+        return cpe;
     }
 
     private static final Name EMPTY_NAME = new CompositeName();

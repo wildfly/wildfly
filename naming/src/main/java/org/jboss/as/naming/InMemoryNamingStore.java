@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.jboss.as.naming.util.NamingUtils.asReference;
-import static org.jboss.as.naming.util.NamingUtils.cast;
+import static org.jboss.as.naming.util.NamingUtils.cannotProceedException;
 import static org.jboss.as.naming.util.NamingUtils.emptyName;
 import static org.jboss.as.naming.util.NamingUtils.emptyNameException;
 import static org.jboss.as.naming.util.NamingUtils.getLastComponent;
@@ -64,7 +64,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 public class InMemoryNamingStore implements NamingStore {
 
     /* The root node of the tree.  Represents a JNDI name of "" */
-    private final ContextNode root = new ContextNode(new CompositeName(), null);
+    private final ContextNode root = new ContextNode(emptyName(), null);
 
     /* Cached security namanger */
     private transient SecurityManager securityManager;
@@ -91,9 +91,9 @@ public class InMemoryNamingStore implements NamingStore {
     /**
      * Bind an entry into the tree.  This will create a binding node in the tree for the provided named object.
      *
-     * @param callingContext   The calling context
-     * @param name      The entry name
-     * @param object    The entry object
+     * @param callingContext The calling context
+     * @param name The entry name
+     * @param object The entry object
      * @param className The entry class name
      * @throws NamingException
      */
@@ -102,14 +102,7 @@ public class InMemoryNamingStore implements NamingStore {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.BIND);
-
-        final ContextNode bindContextNode = getBindingContext(name);
-        final String childName = getLastComponent(name);
-        final Binding binding = new Binding(childName, className, object, true);
-        final BindingNode bindingNode = new BindingNode(name, binding);
-        bindContextNode.addChild(childName, bindingNode);
-
-        fireEvent(callingContext, name, null, binding, NamingEvent.OBJECT_ADDED, "bind");
+        root.accept(new BindVisitor(callingContext, name, object, className));
     }
 
     /**
@@ -127,15 +120,7 @@ public class InMemoryNamingStore implements NamingStore {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.REBIND);
-
-        final ContextNode bindContextNode = getBindingContext(name);
-        final String childName = getLastComponent(name);
-        final Binding binding = new Binding(childName, className, object, true);
-        final BindingNode bindingNode = new BindingNode(name, binding);
-        final TreeNode previous = bindContextNode.replaceChild(childName, bindingNode);
-
-        final Binding previousBinding = previous != null ? previous.binding : null;
-        fireEvent(callingContext, name, previousBinding, binding, previousBinding != null ? NamingEvent.OBJECT_CHANGED : NamingEvent.OBJECT_ADDED, "rebind");
+        root.accept(new RebindVisitor(callingContext, name, object, className));
     }
 
     /**
@@ -150,10 +135,7 @@ public class InMemoryNamingStore implements NamingStore {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.UNBIND);
-        final ContextNode bindContextNode = getBindingContext(name);
-        final TreeNode previous = bindContextNode.removeChild(getLastComponent(name));
-
-        fireEvent(callingContext, name, previous.binding, null, NamingEvent.OBJECT_REMOVED, "unbind");
+        root.accept(new UnbindVisitor(callingContext, name));
     }
 
     /**
@@ -170,7 +152,7 @@ public class InMemoryNamingStore implements NamingStore {
             return new NamingContext(emptyName, this, new Hashtable<String, Object>());
         }
         checkPermissions(name, JndiPermission.Action.LOOKUP);
-        return findObject(name);
+        return root.accept(new LookupVisitor(name));
     }
 
     /**
@@ -181,21 +163,9 @@ public class InMemoryNamingStore implements NamingStore {
      * @throws NamingException
      */
     public List<NameClassPair> list(final Name name) throws NamingException {
-        checkPermissions(name, JndiPermission.Action.LIST);
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        final TreeNode node = findNode(nodeName);
-        if (node instanceof BindingNode) {
-            checkReferenceForContinuation(emptyName(), node.binding.getObject());
-            throw notAContextException(name);
-        }
-        final ContextNode contextNode = cast(node);
-
-        final List<NameClassPair> nameClassPairs = new ArrayList<NameClassPair>();
-        for (TreeNode childNode : contextNode.children.values()) {
-            final Binding binding = childNode.binding;
-            nameClassPairs.add(new NameClassPair(binding.getName(), binding.getClassName(), true));
-        }
-        return nameClassPairs;
+        checkPermissions(nodeName, JndiPermission.Action.LIST);
+        return root.accept(new ListVisitor(nodeName));
     }
 
     /**
@@ -206,29 +176,9 @@ public class InMemoryNamingStore implements NamingStore {
      * @throws NamingException
      */
     public List<Binding> listBindings(final Name name) throws NamingException {
-        checkPermissions(name, JndiPermission.Action.LIST_BINDINGS);
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        final TreeNode node = findNode(nodeName);
-        if (node instanceof BindingNode) {
-            checkReferenceForContinuation(emptyName(), node.binding.getObject());
-            throw notAContextException(name);
-        }
-        final ContextNode contextNode = cast(node);
-
-        final List<Binding> bindings = new ArrayList<Binding>();
-        for (TreeNode childNode : contextNode.children.values()) {
-            bindings.add(childNode.binding);
-        }
-        return bindings;
-    }
-
-    /**
-     * Close the store.  This will clear all children from the root node.
-     *
-     * @throws NamingException
-     */
-    public void close() throws NamingException {
-        root.clear();
+        checkPermissions(nodeName, JndiPermission.Action.LIST_BINDINGS);
+        return root.accept(new ListBindingsVisitor(name));
     }
 
     /**
@@ -244,18 +194,20 @@ public class InMemoryNamingStore implements NamingStore {
             throw emptyNameException();
         }
         checkPermissions(name, JndiPermission.Action.CREATE_SUBCONTEXT);
-
-        final ContextNode bindingContextNode = getBindingContext(name);
-        final NamingContext subContext = new NamingContext(name, this, new Hashtable<String, Object>());
-        final ContextNode subContextNode = new ContextNode(name, subContext);
-        bindingContextNode.addChild(getLastComponent(name), subContextNode);
-        
-        fireEvent(callingContext, name, null, subContextNode.binding, NamingEvent.OBJECT_ADDED, "createSubcontext");
-        return subContext;
+        return root.accept(new CreateSubContextVisitor(callingContext, name));
     }
 
     /**
-     * Add a {@code NamingListener} to the naming event coordinator. 
+     * Close the store.  This will clear all children from the root node.
+     *
+     * @throws NamingException
+     */
+    public void close() throws NamingException {
+        root.clear();
+    }
+
+    /**
+     * Add a {@code NamingListener} to the naming event coordinator.
      *
      * @param target The target name to add the listener to
      * @param scope The listener scope
@@ -263,94 +215,34 @@ public class InMemoryNamingStore implements NamingStore {
      */
     public void addNamingListener(final Name target, final int scope, final NamingListener listener) {
         final NamingEventCoordinator coordinator = this.eventCoordinator;
-        if(coordinator != null) {
+        if (coordinator != null) {
             coordinator.addListener(target.toString(), scope, listener);
         }
     }
 
     /**
      * Remove a {@code NamingListener} from the naming event coordinator.
+     *
      * @param listener The listener
      */
     public void removeNamingListener(final NamingListener listener) {
         final NamingEventCoordinator coordinator = this.eventCoordinator;
-        if(coordinator != null) {
+        if (coordinator != null) {
             coordinator.removeListener(listener);
         }
     }
 
     private void fireEvent(final Context callingContext, final Name name, final Binding existingBinding, final Binding newBinding, final int type, final String changeInfo) {
         final NamingEventCoordinator coordinator = this.eventCoordinator;
-        if(coordinator != null && callingContext instanceof EventContext) {
+        if (coordinator != null && callingContext instanceof EventContext) {
             coordinator.fireEvent(EventContext.class.cast(callingContext), name, existingBinding, newBinding, type, changeInfo, NamingEventCoordinator.DEFAULT_SCOPES);
         }
-    }
-
-    private TreeNode findNode(final Name name) throws NamingException {
-        Name currentName = name;
-        ContextNode currentNode = root;
-        for (int i = 0; i < name.size(); i++) {
-            String childName = currentName.get(0);
-            final TreeNode childNode = currentNode.children.get(childName);
-            currentName = currentName.getSuffix(1);
-
-            if (childNode == null) {
-                throw nameNotFoundException(childName, currentName);
-            } else if (isEmpty(currentName)) {
-                return childNode;
-            } else if (childNode instanceof ContextNode) {
-                currentNode = cast(childNode);
-            } else {
-                checkReferenceForContinuation(currentName, childNode.binding.getObject());
-                throw notAContextException(name);
-            }
-        }
-        return currentNode;
-    }
-
-    private ContextNode getBindingContext(final Name name) throws NamingException {
-        final Name bindingContextName = name.getPrefix(name.size() - 1);
-        final TreeNode node = findNode(bindingContextName);
-        if (node instanceof ContextNode) {
-            return cast(node);
-        } else {
-            checkReferenceForContinuation(name.getSuffix(name.size() - 1), node.binding.getObject());
-            throw notAContextException(bindingContextName);
-        }
-    }
-
-    private Object findObject(final Name name) throws NamingException {
-        Name currentName = name;
-        ContextNode currentNode = root;
-        for (int i = 0; i < name.size(); i++) {
-            String childName = currentName.get(0);
-            final TreeNode childNode = currentNode.children.get(childName);
-            currentName = currentName.getSuffix(1);
-            if (childNode == null) {
-                throw nameNotFoundException(childName, currentName);
-            } else if (isEmpty(currentName)) {
-                return childNode.binding.getObject();
-            } else if (childNode instanceof ContextNode) {
-                currentNode = cast(childNode);
-            } else {
-                final Object boundObject = childNode.binding.getObject();
-                if (boundObject instanceof Reference) {
-                    checkReferenceForContinuation(currentName, boundObject);
-                    return new ResolveResult(boundObject, currentName);
-                }
-                throw notAContextException(name);
-            }
-        }
-        return currentNode;
     }
 
     private void checkReferenceForContinuation(final Name name, final Object object) throws CannotProceedException {
         if (object instanceof Reference) {
             if (asReference(object).get("nns") != null) {
-                CannotProceedException cpe = new CannotProceedException();
-                cpe.setResolvedObj(object);
-                cpe.setRemainingName(name);
-                throw cpe;
+                throw cannotProceedException(object, name);
             }
         }
     }
@@ -372,6 +264,8 @@ public class InMemoryNamingStore implements NamingStore {
             this.fullName = fullName;
             this.binding = binding;
         }
+
+        protected abstract <T> T accept(NodeVisitor<T> visitor) throws NamingException;
     }
 
     private class ContextNode extends TreeNode {
@@ -412,11 +306,224 @@ public class InMemoryNamingStore implements NamingStore {
             copy.clear();
             children = copy;
         }
+
+        protected final <T> T accept(NodeVisitor<T> visitor) throws NamingException {
+            return visitor.visit(this);
+        }
     }
 
     private class BindingNode extends TreeNode {
         private BindingNode(final Name fullName, final Binding binding) {
             super(fullName, binding);
         }
+
+        protected final <T> T accept(NodeVisitor<T> visitor) throws NamingException {
+            return visitor.visit(this);
+        }
     }
+
+    private interface NodeVisitor<T> {
+        T visit(BindingNode bindingNode) throws NamingException;
+
+        T visit(ContextNode contextNode) throws NamingException;
+    }
+
+    private abstract class NodeTraversingVisitor<T> implements NodeVisitor<T> {
+        private Name currentName;
+        protected final Name targetName;
+
+        private NodeTraversingVisitor(final Name targetName) {
+            this.currentName = targetName;
+            this.targetName = targetName;
+        }
+
+        public final T visit(final BindingNode bindingNode) throws NamingException {
+            if (isEmpty(currentName)) {
+                return found(bindingNode);
+            }
+            return foundReferenceInsteadOfContext(bindingNode);
+        }
+
+        public final T visit(final ContextNode contextNode) throws NamingException {
+            if (isEmpty(currentName)) {
+                return found(contextNode);
+            }
+            final String childName = currentName.get(0);
+            final TreeNode node = contextNode.children.get(childName);
+            if (node == null) {
+                throw nameNotFoundException(childName, currentName);
+            }
+            currentName = currentName.getSuffix(1);
+            return node.accept(this);
+        }
+
+        protected abstract T found(ContextNode contextNode) throws NamingException;
+
+        protected abstract T found(BindingNode bindingNode) throws NamingException;
+
+        protected T foundReferenceInsteadOfContext(BindingNode bindingNode) throws NamingException {
+            final Object object = bindingNode.binding.getObject();
+            checkReferenceForContinuation(currentName, object);
+            throw notAContextException(bindingNode.fullName);
+        }
+    }
+
+    private abstract class BindingContextVisitor<T> extends NodeTraversingVisitor<T> {
+        protected final Name targetName;
+
+        private BindingContextVisitor(final Name targetName) {
+            super(targetName.getPrefix(targetName.size() - 1));
+            this.targetName = targetName;
+        }
+
+        protected final T found(final ContextNode contextNode) throws NamingException {
+            return foundBindContext(contextNode);
+        }
+
+        protected final T found(final BindingNode bindingNode) throws NamingException {
+            checkReferenceForContinuation(targetName.getSuffix(bindingNode.fullName.size()), bindingNode.binding.getObject());
+            throw notAContextException(targetName);
+        }
+
+        protected abstract T foundBindContext(final ContextNode contextNode) throws NamingException;
+    }
+
+    private final class BindVisitor extends BindingContextVisitor<Void> {
+        private final Context callingContext;
+        private final Object object;
+        private final String className;
+
+        private BindVisitor(final Context callingContext, final Name name, final Object object, final String className) {
+            super(name);
+            this.callingContext = callingContext;
+            this.object = object;
+            this.className = className;
+        }
+
+        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+            final String childName = getLastComponent(targetName);
+            final Binding binding = new Binding(childName, className, object, true);
+            final BindingNode bindingNode = new BindingNode(targetName, binding);
+            contextNode.addChild(childName, bindingNode);
+            fireEvent(callingContext, targetName, null, binding, NamingEvent.OBJECT_ADDED, "bind");
+            return null;
+        }
+    }
+
+    private final class RebindVisitor extends BindingContextVisitor<Void> {
+        private final Context callingContext;
+        private final Object object;
+        private final String className;
+
+        private RebindVisitor(final Context callingContext, final Name name, final Object object, final String className) {
+            super(name);
+            this.callingContext = callingContext;
+            this.object = object;
+            this.className = className;
+        }
+
+        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+            final String childName = getLastComponent(targetName);
+            final Binding binding = new Binding(childName, className, object, true);
+            final BindingNode bindingNode = new BindingNode(targetName, binding);
+            final TreeNode previous = contextNode.replaceChild(childName, bindingNode);
+
+            final Binding previousBinding = previous != null ? previous.binding : null;
+            fireEvent(callingContext, targetName, previousBinding, binding, previousBinding != null ? NamingEvent.OBJECT_CHANGED : NamingEvent.OBJECT_ADDED, "rebind");
+            return null;
+        }
+    }
+
+    private final class UnbindVisitor extends BindingContextVisitor<Void> {
+        private final Context callingContext;
+
+        private UnbindVisitor(final Context callingContext, final Name targetName) throws NamingException {
+            super(targetName);
+            this.callingContext = callingContext;
+        }
+
+        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+            final TreeNode previous = contextNode.removeChild(getLastComponent(targetName));
+            fireEvent(callingContext, targetName, previous.binding, null, NamingEvent.OBJECT_REMOVED, "unbind");
+            return null;
+        }
+    }
+
+    private final class CreateSubContextVisitor extends BindingContextVisitor<Context> {
+        private final Context callingContext;
+        
+        private CreateSubContextVisitor(final Context callingContext, final Name targetName) throws NamingException {
+            super(targetName);
+            this.callingContext = callingContext;
+        }
+
+        protected final Context foundBindContext(ContextNode contextNode) throws NamingException {
+            final NamingContext subContext = new NamingContext(targetName, InMemoryNamingStore.this, new Hashtable<String, Object>());
+            final ContextNode subContextNode = new ContextNode(targetName, subContext);
+            contextNode.addChild(getLastComponent(targetName), subContextNode);
+            fireEvent(callingContext, targetName, null, subContextNode.binding, NamingEvent.OBJECT_ADDED, "createSubcontext");
+            return subContext;
+        }
+    }
+
+    private final class LookupVisitor extends NodeTraversingVisitor<Object> {
+        private LookupVisitor(final Name targetName) {
+            super(targetName);
+        }
+
+        protected final Object found(final ContextNode contextNode) throws NamingException {
+            return contextNode.binding.getObject();
+        }
+
+        protected final Object found(final BindingNode bindingNode) throws NamingException {
+            return bindingNode.binding.getObject();
+        }
+
+        protected final Object foundReferenceInsteadOfContext(final BindingNode bindingNode) throws NamingException {
+            final Name remainingName = targetName.getSuffix(bindingNode.fullName.size());
+            final Object boundObject = bindingNode.binding.getObject();
+            checkReferenceForContinuation(remainingName, boundObject);
+            return new ResolveResult(boundObject, remainingName);
+        }
+    }
+
+    private final class ListVisitor extends NodeTraversingVisitor<List<NameClassPair>> {
+        private ListVisitor(final Name targetName) {
+            super(targetName);
+        }
+
+        protected final List<NameClassPair> found(final ContextNode contextNode) throws NamingException {
+            final List<NameClassPair> nameClassPairs = new ArrayList<NameClassPair>();
+            for (TreeNode childNode : contextNode.children.values()) {
+                final Binding binding = childNode.binding;
+                nameClassPairs.add(new NameClassPair(binding.getName(), binding.getClassName(), true));
+            }
+            return nameClassPairs;
+        }
+
+        protected final List<NameClassPair> found(final BindingNode bindingNode) throws NamingException {
+            checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
+            throw notAContextException(targetName);
+        }
+    }
+
+    private final class ListBindingsVisitor extends NodeTraversingVisitor<List<Binding>> {
+        private ListBindingsVisitor(final Name targetName) {
+            super(targetName);
+        }
+
+        protected final List<Binding> found(final ContextNode contextNode) throws NamingException {
+            final List<Binding> bindings = new ArrayList<Binding>();
+            for (TreeNode childNode : contextNode.children.values()) {
+                bindings.add(childNode.binding);
+            }
+            return bindings;
+        }
+
+        protected final List<Binding> found(final BindingNode bindingNode) throws NamingException {
+            checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
+            throw notAContextException(targetName);
+        }
+    }
+
 }
