@@ -26,9 +26,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -122,9 +125,25 @@ public abstract class TestProcessUtils {
             super("Test Server Socket Thread");
             this.controller = controller;
             try {
-                server = new ServerSocket(PORT, 0, InetAddress.getLocalHost());
+                server = new ServerSocket();
+                server.setReuseAddress(true);
+                SocketAddress addr = new InetSocketAddress(InetAddress.getLocalHost(), PORT);
+                System.err.println("*Test - " + this.getName() + " attempting to listen on " + PORT);
+                
+                //ServerSocket.close() does not seem to always free up the port. I don't really want 
+                //to modify everything to pass ports through to the tests yet, so retry a few times 
+                for (int i = 0 ; ; i++) {
+                    try {
+                        server.bind(addr, 5);
+                        break;
+                    } catch (BindException e) {
+                        if (i == 5)
+                            throw e;
+                        Thread.sleep(100);
+                    }
+                }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Can't listen on port " + PORT, e);
             }
         }
 
@@ -287,6 +306,7 @@ public abstract class TestProcessUtils {
             try {
                 if (!server.isClosed())
                     server.close();
+                System.err.println("*Test - server socket closed " + server.isClosed() + " " + server.isClosed());
             } catch (IOException e) {
                 e.printStackTrace();
             }

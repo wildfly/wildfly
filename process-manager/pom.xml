@@ -38,9 +38,9 @@
 
     <name>JBoss Application Server: Process Manager</name>
 
-    <properties>
+    <!--properties>
         <skipTests>true</skipTests>
-    </properties>
+    </properties-->
 
     <dependencies>
         <dependency>

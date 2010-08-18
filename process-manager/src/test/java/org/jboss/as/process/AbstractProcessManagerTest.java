@@ -78,13 +78,16 @@ public abstract class AbstractProcessManagerTest {
 
     @After
     public void afterTest() {
-        testManager.shutdown();
-
-        master.shutdown();
+        System.err.println("*Test - afterTest()");
+        if (testManager != null)
+            testManager.shutdown();
+        if (master != null)
+            master.shutdown();
         master = null;
+        testManager = null;
         processes.clear();
         stoppedProcesses.clear();
-        
+        System.err.println("*Test - afterTest() - end");
     }
 
     protected TestFile addProcess(String processName, Class<?> clazz)  throws UnknownHostException {
