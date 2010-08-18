@@ -40,30 +40,28 @@
 
     <profiles>
         <profile name="something">
-            <!-- FIXME move web-containers to another namespace -->
-            <web-containers>
-                <web-container name="jboss.web">
-                    <config>
-                        <servlets>
-                            <default listings="true" />
-                            <ssi/>
-                        </servlets>
-                    </config>
+            <!-- FIXME move web-container to another namespace -->
+            <web-container>
+                <config>
+                    <servlets>
+                        <default listings="true" />
+                        <ssi/>
+                    </servlets>
+                </config>
                     
-                    <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
-                    <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
-                                    default-virtual-server="localhost">
-                        <ssl name="jbossweb"/>
-                        <socket name="https"/>
-                    </connector>
+                <!--  FIXME the use of address/port here needs to be updated to use the central socket configuration facility -->
+                <connector name="httpsConnector" protocol="tls" scheme="https" secure="true" 
+                                default-virtual-server="localhost">
+                    <ssl name="jbossweb"/>
+                    <socket name="https"/>
+                </connector>
     
-                    <virtual-server name="localhost">
-                        <access-log/>
-                        <connector>httpsConnector</connector>
-                        <host>localhost</host>
-                    </virtual-server>
-               </web-container>
-            </web-containers>
+                <virtual-server name="localhost">
+                    <access-log/>
+                    <connector>httpsConnector</connector>
+                    <host>localhost</host>
+                </virtual-server>
+            </web-container>
         </profile>
     
         <profile name="something2">
