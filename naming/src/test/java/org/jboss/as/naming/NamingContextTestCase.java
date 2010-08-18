@@ -148,6 +148,18 @@ public class NamingContextTestCase {
     }
 
     @Test
+    public void testBindAndLookupContextLink() throws Exception {
+        final Name name = new CompositeName("test");
+        final Context context = namingContext.createSubcontext(name);
+        context.bind("value", "testValue");
+        final Name linkName = new CompositeName("link");
+        namingContext.bind(linkName, new LinkRef("./test"));
+        Object result = namingContext.lookup("link/value");
+        assertEquals("testValue", result);
+    }
+
+
+    @Test
     public void testLookupNameNotFound() throws Exception {
         try {
             namingContext.lookup(new CompositeName("test"));
