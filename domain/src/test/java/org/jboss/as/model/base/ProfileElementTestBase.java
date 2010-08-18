@@ -231,20 +231,15 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
     }
     
     public void testSerializationDeserialization() throws Exception {
+        
         String testContent = "<profile name=\"test\"><include profile=\"foo\"/>" + MockAnyElement.getFullXmlContent() + "</profile>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
         MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         ProfileElement testee = (ProfileElement) root.getChild(getTargetNamespace(), Element.PROFILE.getLocalName());
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(testee);
-        oos.close();
-        
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        ProfileElement testee1 = (ProfileElement) ois.readObject();
-        bais.close();
+        byte[] bytes = serialize(testee);        
+        ProfileElement testee1 = deserialize(bytes, ProfileElement.class);
+
         assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getName(), testee1.getName());
         Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = testee1.getSubsystems();

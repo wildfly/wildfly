@@ -22,9 +22,25 @@
 
 package org.jboss.as.model.base;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.Checksum;
+
 import junit.framework.TestCase;
 
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.ModularClassTable;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -91,5 +107,52 @@ public abstract class DomainModelElementTestBase extends TestCase {
      * @return
      */
     protected abstract String getTargetNamespaceLocation();
+    
+    protected static byte[] serialize(AbstractModelElement<?> element) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        final Checksum chksum = new Adler32();
+        final CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
+        final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
+        try {
+            marshaller.start(Marshalling.createByteOutput(cos));
+            marshaller.writeObject(element);
+            marshaller.finish();
+            marshaller.close();
+            return baos.toByteArray();
+        } finally {
+            safeClose(marshaller);
+        }
+    }
+
+    protected static <T extends AbstractModelElement<?>> T deserialize(byte[] message, Class<T> type) throws IOException, ClassNotFoundException {
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
+        final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
+        try {
+            unmarshaller.start(Marshalling.createByteInput(byteArrayInputStream));
+            final T element = unmarshaller.readObject(type);
+            unmarshaller.finish();
+            unmarshaller.close();
+            return element;
+        } finally {
+            safeClose(unmarshaller);
+        }
+    }
+
+    private static final MarshallerFactory MARSHALLER_FACTORY;
+    private static final MarshallingConfiguration CONFIG;
+
+    static {
+        MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Thread.currentThread().getContextClassLoader());
+        final MarshallingConfiguration config = new MarshallingConfiguration();
+        CONFIG = config;
+    }
+
+    private static void safeClose(final Closeable closeable) {
+        if (closeable != null) try {
+            closeable.close();
+        } catch (Throwable t) {
+            t.printStackTrace(System.err);
+        }
+    }
 
 }

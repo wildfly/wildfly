@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ProfileElement;
 import org.jboss.as.model.ProfileIncludeElement;
 import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;
@@ -125,15 +126,9 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
         MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         ProfileIncludeElement testee = (ProfileIncludeElement) root.getChild(getTargetNamespace(), Element.INCLUDE.getLocalName());
         
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(testee);
-        oos.close();
-        
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        ProfileIncludeElement testee1 = (ProfileIncludeElement) ois.readObject();
-        bais.close();
+        byte[] bytes = serialize(testee);        
+        ProfileIncludeElement testee1 = deserialize(bytes, ProfileIncludeElement.class);
+
         assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getProfile(), testee1.getProfile());
     }
