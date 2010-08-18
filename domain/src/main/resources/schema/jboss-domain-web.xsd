@@ -32,12 +32,7 @@
     <xs:include schemaLocation="jboss-domain-common.xsd"/>
       -->
    
-   <xs:element name="web-containers" type="web-containersType"/>
-   <xs:complexType name="web-containersType">
-       <xs:sequence>
-           <xs:element name="web-container" type="web-containerType" minOccurs="1" maxOccurs="unbounded" />
-       </xs:sequence>
-   </xs:complexType>
+   <xs:element name="web-container" type="web-containerType"/>
 
    <!-- The web container configuration -->
    <xs:complexType name="web-containerType">
@@ -52,7 +47,6 @@
               </xs:annotation>
           </xs:element>
       </xs:sequence>
-      <xs:attribute name="name" use="required"/>
   </xs:complexType>
 
   <xs:element name="config">
@@ -72,6 +66,7 @@
         <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-filterType"/>
         <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
         <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="expires" type="expires-filterType"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -128,6 +123,7 @@
 
   <xs:complexType name="ssi-servletType">
     <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="exec" default="false" type="boolean"/>
     <xs:attribute name="webapp-relative" default="false" type="boolean"/>
     <xs:attribute name="expires"/>
     <xs:attribute name="buffered" default="false" type="boolean"/>
@@ -137,9 +133,16 @@
 
   <xs:complexType name="ssi-filterType">
     <xs:attribute name="debug" default="0"/>
+    <xs:attribute name="exec" default="false" type="boolean"/>
     <xs:attribute name="webapp-relative" default="false" type="boolean"/>
     <xs:attribute name="expires"/>
     <xs:attribute name="content-type-regex"/>
+  </xs:complexType>
+
+  <xs:complexType name="expires-filterType">
+    <xs:attribute name="by-type"/>
+    <xs:attribute name="default"/>
+    <xs:attribute name="excluded-response-status-codes"/>
   </xs:complexType>
 
   <xs:element name="connector">

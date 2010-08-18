@@ -27,5 +27,8 @@
         <!-- Insert resources here -->
     </resources>
 
-    <dependencies/>
+    <dependencies>
+        <module group="org.jboss.modules" name="jboss-modules"/>
+        <module group="system" name="system"/>
+    </dependencies>
 </module>

@@ -326,8 +326,8 @@
     <xs:sequence>
       <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:choice minOccurs="1" maxOccurs="unbounded">
-          <!-- FIXME move web-containers to another namespace and remove this -->
-          <xs:element ref="web-containers"/>
+          <!-- FIXME move web-container to another namespace and remove this -->
+          <xs:element ref="web-container"/>
           <!-- FIXME move mod-cluster-config to another namespace and remove this -->
           <xs:element ref="mod-cluster-config"/>
           <xs:any namespace="##other">
