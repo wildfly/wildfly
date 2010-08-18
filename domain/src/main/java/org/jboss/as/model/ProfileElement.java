@@ -121,6 +121,9 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                 }
             }
         }
+        if (subsystems.size() == 0) {
+            throw new XMLStreamException("Profile " + name + " has no subsystem configurations", reader.getLocation());
+        }
     }
     
     /**
@@ -187,6 +190,10 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     public Set<ProfileIncludeElement> getIncludedProfiles() {
         return Collections.unmodifiableSet(new HashSet<ProfileIncludeElement>(includedProfiles.values()));
     }
+    
+    public Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> getSubsystems() {
+        return Collections.unmodifiableSet(new HashSet<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(subsystems.values()));
+    }
 
     @Override
     public long elementHash() {
@@ -222,6 +229,18 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     @Override
     public void activate(final ServiceActivatorContext context) {
+        
+        // Activate included profiles
+        for (ProfileIncludeElement includeEl : includedProfiles.values()) {
+            ProfileElement prof = includedProfileResolver.resolveRef(includeEl.getProfile());
+            if (prof == null) {
+                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() + 
+                        "' at " + includeEl.getLocation().toString() + " refers to non-existent profile '" + 
+                        includeEl.getProfile() + "'");
+            }
+            prof.activate(context);
+        }
+        
         // Activate sub-systems
         final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
         for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
