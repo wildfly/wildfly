@@ -175,7 +175,10 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
     private Object getProcessId(String processName, Class<?> clazz) throws Exception {
         String classname = clazz.getName();
         MonitoredHost local = MonitoredHost.getMonitoredHost("localhost");
-        Set<Object> vmList = local.activeVms();
+        
+        //OpenJDK insists this is an Integer, Sun does not seem to care the set can be parameterized with everything 
+        @SuppressWarnings("unchecked")
+        Set vmList = local.activeVms();
         
         Object found = null;
         for (Object id : vmList) {
