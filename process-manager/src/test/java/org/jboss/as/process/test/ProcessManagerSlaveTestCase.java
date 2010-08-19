@@ -69,8 +69,8 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertEquals("Test-ProcA-Fwd$ProcB$Hello", listenerA.readMessage());
         assertEquals("ProcA-ProcB-Hello", listenerB.readMessage());
 
-        stopTestProcessListener("ProcA");
-        stopTestProcessListener("ProcA");
+        stopTestProcessListenerAndWait(listenerA);
+        stopTestProcessListenerAndWait(listenerB);
         removeProcess("ProcA");
         removeProcess("ProcB");
     }
@@ -118,12 +118,12 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertNull(listenerE.readMessage(10));
         assertNull(listenerF.readMessage(10));
         
-        stopTestProcessListener("ProcA");
-        stopTestProcessListener("ProcB");
-        stopTestProcessListener("ProcC");
-        stopTestProcessListener("ProcD");
-        stopTestProcessListener("ProcE");
-        stopTestProcessListener("ProcF");
+        stopTestProcessListenerAndWait(listenerA);
+        stopTestProcessListenerAndWait(listenerB);
+        stopTestProcessListenerAndWait(listenerC);
+        stopTestProcessListenerAndWait(listenerD);
+        stopTestProcessListenerAndWait(listenerE);
+        stopTestProcessListenerAndWait(listenerF);
         removeProcess("ProcA");
         removeProcess("ProcB");
         removeProcess("ProcC");
@@ -160,10 +160,12 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertEquals("ProcA-ProcC-Hello", listenerC.readMessage());
         assertEquals("ProcA-ProcA-Hello", listenerA.readMessage());
 
-        stopTestProcessListener("ProcA");
-        stopTestProcessListener("ProcA");
+        stopTestProcessListenerAndWait(listenerA);
+        stopTestProcessListenerAndWait(listenerB);
+        stopTestProcessListenerAndWait(listenerC);
         removeProcess("ProcA");
         removeProcess("ProcB");
+        removeProcess("ProcC");
     }
 
     @Test

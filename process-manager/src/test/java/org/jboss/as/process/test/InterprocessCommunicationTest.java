@@ -120,9 +120,9 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertEquals("Test-Five", listenerB.readMessage());
         assertEquals("Test-Five", listenerC.readMessage());
 
-        stopTestProcessListener("ReceiverA");
-        stopTestProcessListener("ReceiverB");
-        stopTestProcessListener("ReceiverC");
+        stopTestProcessListenerAndWait(listenerA);
+        stopTestProcessListenerAndWait(listenerB);
+        stopTestProcessListenerAndWait(listenerC);
 
         removeProcess("ReceiverA");
         removeProcess("ReceiverB");
@@ -169,7 +169,7 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertNull(listenerB.readMessage(50));
         assertEquals("Test-5", listenerC.readMessage());
         
-        stopTestProcessListener("ReceiverC");
+        stopTestProcessListenerAndWait(listenerC);
         removeProcess("ReceiverC");
     }
 }
