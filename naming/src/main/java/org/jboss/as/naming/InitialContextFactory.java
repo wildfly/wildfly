@@ -39,6 +39,7 @@ public class InitialContextFactory implements javax.naming.spi.InitialContextFac
      * @return A naming context instance
      * @throws NamingException
      */
+    @SuppressWarnings("unchecked")
     public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
         return new NamingContext((Hashtable<String, Object>) environment);
     }

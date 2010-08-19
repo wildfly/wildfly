@@ -25,15 +25,18 @@ package org.jboss.as.naming.service;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.naming.InitialContextFactoryBuilder;
+import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.value.Values;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -50,7 +53,10 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
-    private boolean supportEvents = true; 
+    private boolean supportEvents = true;
+    private boolean bindAppContext;
+    private boolean bindModuleContext;
+    private boolean bindCompContext;
 
     /**
      * Create a new instance without a stream reader.
@@ -83,6 +89,17 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
                     supportEvents = Boolean.parseBoolean(reader.getAttributeValue(i));
                     break;
                 }
+                case BIND_APP_CONTEXT: {
+                    bindAppContext = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
+                case BIND_MODULE_CONTEXT: {
+                    bindModuleContext = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }case BIND_COMP_CONTEXT: {
+                    bindCompContext = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
                 default: throw unexpectedAttribute(reader, i);
             }
         }
@@ -105,7 +122,10 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute("supportEvents", Boolean.toString(isSupportEvents()));
+        streamWriter.writeAttribute(Attribute.SUPPORT_EVENTS.getLocalName(), Boolean.toString(isSupportEvents()));
+        streamWriter.writeAttribute(Attribute.BIND_APP_CONTEXT.getLocalName(), Boolean.toString(isBindAppContext()));
+        streamWriter.writeAttribute(Attribute.BIND_MODULE_CONTEXT.getLocalName(), Boolean.toString(isBindModuleContext()));
+        streamWriter.writeAttribute(Attribute.BIND_COMP_CONTEXT.getLocalName(), Boolean.toString(isBindCompContext()));
     }
 
     /**
@@ -132,6 +152,23 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         final JavaContextService contextService = new JavaContextService();
         builder.addService(JavaContextService.SERVICE_NAME, contextService)
             .addDependency(NamingService.SERVICE_NAME);
+
+        if(isBindAppContext()) {
+            addContextFactory(builder, "app");
+        }
+        if(isBindModuleContext()) {
+            addContextFactory(builder, "module");
+        }
+        if(isBindCompContext()) {
+            addContextFactory(builder, "comp");
+        }
+    }
+
+    private void addContextFactory(final BatchBuilder builder, final String contextName) {
+        final Reference appReference = NamespaceObjectFactory.createReference(contextName);
+        final BinderService<Reference> binderService = new BinderService<Reference>(contextName, Values.immediateValue(appReference));
+        builder.addService(JavaContextService.SERVICE_NAME.append(contextName), binderService)
+            .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector());
     }
 
     /** {@inheritDoc} */
@@ -141,5 +178,17 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
 
     public boolean isSupportEvents() {
         return supportEvents;
+    }
+
+    public boolean isBindAppContext() {
+        return bindAppContext;
+    }
+
+    public boolean isBindModuleContext() {
+        return bindModuleContext;
+    }
+
+    public boolean isBindCompContext() {
+        return bindCompContext;
     }
 }

@@ -32,7 +32,10 @@ import java.util.Map;
  */
 public enum Attribute {
     UNKNOWN(null),
-    SUPPORT_EVENTS("supportEvents"),
+    SUPPORT_EVENTS("support-events"),
+    BIND_APP_CONTEXT("bind-app-context"),
+    BIND_MODULE_CONTEXT("bind-module-context"),
+    BIND_COMP_CONTEXT("bind-comp-context"),
     ;
     private final String name;
 
