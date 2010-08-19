@@ -22,23 +22,20 @@
 
 package org.jboss.as.naming;
 
-import org.jnp.interfaces.NamingContextFactory;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 /**
- * InitialContextFactory builder which ensures the proper JBoss naming context factory is used if the environment
+ * Initial context factory builder which ensures the proper naming context factory is used if the environment
  * does not override the initial context impl property.
  *
  * @author John E. Bailey
  */
 public class InitialContextFactoryBuilder implements javax.naming.spi.InitialContextFactoryBuilder {
-    private static final InitialContextFactory DEFAULT_FACTORY = new NamingContextFactory();
+    private static final javax.naming.spi.InitialContextFactory DEFAULT_FACTORY = new InitialContextFactory();
 
     /**
      * Create a InitialContext factory.  If the environment does not override the factory class it will use the
@@ -48,15 +45,15 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
      * @return An initial context factory
      * @throws NamingException If an error occurs loading the factroy class. 
      */
-    public InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
+    public javax.naming.spi.InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
         final String factoryClassName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
-        if(factoryClassName == null || NamingContextFactory.class.getName().equals(factoryClassName)) {
+        if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
             return DEFAULT_FACTORY;
         }
         final ClassLoader classLoader = getContextClassLoader();
         try {
             final Class<?> factoryClass = classLoader.loadClass(factoryClassName);
-            return (InitialContextFactory)factoryClass.newInstance();
+            return (javax.naming.spi.InitialContextFactory)factoryClass.newInstance();
         } catch (Exception e) {
             throw new NamingException("Failed instantiate InitialContextFactory " + factoryClassName + " from classloader " + classLoader);
         }

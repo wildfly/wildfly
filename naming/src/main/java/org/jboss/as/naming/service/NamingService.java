@@ -20,31 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.service;
 
+import org.jboss.as.naming.InMemoryNamingStore;
+import org.jboss.as.naming.NamingContext;
+import org.jboss.as.naming.NamingEventCoordinator;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jnp.interfaces.Naming;
-import org.jnp.interfaces.NamingContext;
-import org.jnp.server.NamingServer;
 
-import javax.naming.Context;
-import javax.naming.spi.NamingManager;
+import javax.naming.NamingException;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server. 
  *
  * @author John E. Bailey
  */
-public class NamingService implements Service<Naming> {
+public class NamingService implements Service<NamingStore> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
-    private static final String PACKAGE_PREFIXES = "org.jboss.naming:org.jnp.interfaces";
-    private NamingServer server;
+    private NamingStore namingStore;
+    private final boolean supportEvents;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param supportEvents Should the naming impl support events.
+     */
+    public NamingService(final boolean supportEvents) {
+        this.supportEvents = supportEvents;
+    }
 
     /**
      * Creates a new NamingServer and sets the naming context to use the naming server.
@@ -55,10 +64,11 @@ public class NamingService implements Service<Naming> {
     public synchronized void start(StartContext context) throws StartException {
         log.info("Starting Naming Service");
         try {
-            server = new NamingServer();
-            System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
-            NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
-            NamingContext.setLocal(server);
+            if(supportEvents)
+                namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
+            else
+                namingStore = new InMemoryNamingStore();
+            NamingContext.setActiveNamingStore(namingStore);
         } catch (Throwable t) {
             throw new StartException("Failed to start naming server", t);
         }
@@ -70,17 +80,21 @@ public class NamingService implements Service<Naming> {
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
-        NamingContext.setLocal(null);
-        server = null;
+        NamingContext.setActiveNamingStore(null);
+        try {
+            namingStore.close();
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Get the naming server.
+     * Get the naming store value.
      *
-     * @return The naming server.
+     * @return The naming store.
      * @throws IllegalStateException
      */
-    public synchronized Naming getValue() throws IllegalStateException {
-        return server;  
+    public synchronized NamingStore getValue() throws IllegalStateException {
+        return namingStore;
     }
 }

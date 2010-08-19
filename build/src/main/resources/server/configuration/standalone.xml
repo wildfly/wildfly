@@ -39,7 +39,7 @@
                 <threads:keepalive-time time="10" unit="SECONDS"/>
             </threads:scheduled-thread-pool-executor>
         </threads:subsystem>
-        <naming:subsystem/>
+        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
 	</profile>
 
     <interfaces>
@@ -61,9 +61,6 @@
     </system-properties>
 
     <deployments>
-        <deployment name="my-app.ear" sha1="965ff5768fa166a04b13"/>
-        <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af"/>
-        <deployment name="my-war.ear" sha1="22cfd207b9b90e0014a4" start="false"/>
     </deployments>
 
 </standalone>

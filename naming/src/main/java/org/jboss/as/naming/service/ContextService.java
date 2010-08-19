@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.service;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

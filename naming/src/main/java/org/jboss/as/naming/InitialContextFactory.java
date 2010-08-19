@@ -22,33 +22,25 @@
 
 package org.jboss.as.naming;
 
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import java.util.Hashtable;
 
 /**
- * Domain extension used to initialize the naming subsystem element handlers. 
+ * Initial context factory which returns {@code NamingContext} instances. 
  *
  * @author John E. Bailey
  */
-public class NamingExtension implements Extension {
-
+public class InitialContextFactory implements javax.naming.spi.InitialContextFactory {
     /**
-     * Register the naming element handlers.
+     * Get an initial context instance.
      *
-     * @param mapper the mapper
+     * @param environment The naming environment
+     * @return A naming context instance
+     * @throws NamingException
      */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), new NamingSubsystemElementParser());
-    }
-
-    /**
-     * Activate the extension.  
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    @SuppressWarnings("unchecked")
+    public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
+        return new NamingContext((Hashtable<String, Object>) environment);
     }
 }
