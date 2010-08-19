@@ -349,11 +349,11 @@ public class InMemoryNamingStore implements NamingStore {
                 return found(contextNode);
             }
             final String childName = currentName.get(0);
+            currentName = currentName.getSuffix(1);
             final TreeNode node = contextNode.children.get(childName);
             if (node == null) {
                 throw nameNotFoundException(childName, currentName);
             }
-            currentName = currentName.getSuffix(1);
             return node.accept(this);
         }
 

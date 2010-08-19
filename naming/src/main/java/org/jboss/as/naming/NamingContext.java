@@ -409,11 +409,20 @@ public class NamingContext implements EventContext {
     private Name getAbsoluteName(final Name name) throws NamingException {
         if(name.isEmpty()) {
             return composeName(name, prefix);
-        } else if("".equals(name.get(0)) || "java:".equals(name.get(0))) {
-            return name.getSuffix(1);
         }
-        else
+        final String firstComponent = name.get(0);
+        if(firstComponent.startsWith("java:")) {
+            final String cleaned = firstComponent.substring(5);
+            final Name suffix = name.getSuffix(1);
+            if(cleaned.isEmpty()) {
+                return suffix;
+            }
+            return suffix.add(0, cleaned);
+        } else if(firstComponent.isEmpty()) {
+            return name.getSuffix(1);
+        } else {
             return composeName(name, prefix);
+        }
     }
 
     private Object getObjectInstance(final Object object, final Name name, final Hashtable environment) throws NamingException {
