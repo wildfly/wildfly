@@ -38,17 +38,16 @@ import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.as.deployment.test.TestManagedBean;
 import org.jboss.as.deployment.test.TestManagedBeanWithInjection;
+import org.jboss.as.naming.InMemoryNamingStore;
+import org.jboss.as.naming.InitialContextFactory;
+import org.jboss.as.naming.NamingContext;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.jnp.interfaces.NamingContext;
-import org.jnp.interfaces.NamingContextFactory;
-import org.jnp.server.NamingServer;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.LinkRef;
 
@@ -93,14 +92,14 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
 
-        final NamingServer namingServer = new NamingServer();
-        NamingContext.setLocal(namingServer);
-        javaContext = (Context)namingServer.lookup(new CompositeName());
+        NamingContext.setActiveNamingStore(new InMemoryNamingStore());
+        javaContext = new NamingContext(null);
         batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext));
         final Context globalContext = javaContext.createSubcontext("global");
         batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext));
         globalContext.bind("someNumber", Integer.valueOf(99));
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, NamingContextFactory.class.getName());
+        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, InitialContextFactory.class.getName());
+        System.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.as.naming.interfaces");
     }
 
     @Test

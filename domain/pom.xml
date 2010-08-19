@@ -100,8 +100,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.naming</groupId>
-            <artifactId>jnpserver</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-naming</artifactId>
             <scope>test</scope>
         </dependency>
       
