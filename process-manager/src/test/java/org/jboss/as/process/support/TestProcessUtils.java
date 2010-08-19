@@ -242,18 +242,24 @@ public abstract class TestProcessUtils {
 
         @Override
         public void stopProcessListener(String name) {
+            if (name == null)
+                throw new IllegalArgumentException("Null name");
             CountDownLatch processLatch = null;
+
             synchronized (this) {
-                ListenerSocketThread thread = listenerThreadsByProcessName
+                ListenerSocketThread thread = null;
+                thread = listenerThreadsByProcessName
                         .get(name);
+
                 if (thread == null)
                     return;
 
                 processLatch = new CountDownLatch(1);
                 stopProcessLatches.put(name, processLatch);
-                controller.stopProcess(name);
                 System.err.println("*Test - Stopping " + name + " "
                         + stopProcessLatches);
+                controller.stopProcess(name);
+                System.err.println("*Test - Waiting for stop " + name);
             }
 
             try {
@@ -327,10 +333,10 @@ public abstract class TestProcessUtils {
     }
 
     private static class ListenerSocketThread extends Thread implements TestProcessListenerStream {
-        String processName;
-        ServerSocketThread serverSocketThread;
-        Socket socket;
-        BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+        volatile String processName;
+        final ServerSocketThread serverSocketThread;
+        final Socket socket;
+        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
 
         public ListenerSocketThread(ServerSocketThread serverSocketThread,
                 Socket socket) {
@@ -377,8 +383,8 @@ public abstract class TestProcessUtils {
 
         void processStarted(String processName) {
             // TODO Check we don't get started twice
-            serverSocketThread.processStarted(processName, this);
             this.processName = processName;
+            serverSocketThread.processStarted(processName, this);
         }
 
         void processStopped(String processName) {
