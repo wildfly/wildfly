@@ -98,6 +98,12 @@
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.naming</groupId>
+            <artifactId>jnpserver</artifactId>
+            <scope>test</scope>
+        </dependency>
       
         <dependency>
            <groupId>junit</groupId>

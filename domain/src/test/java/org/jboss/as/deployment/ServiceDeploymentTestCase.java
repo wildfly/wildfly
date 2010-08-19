@@ -29,22 +29,16 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
 import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
 import org.jboss.as.deployment.test.LegacyService;
-import org.jboss.as.deployment.test.MockContext;
-import org.jboss.as.deployment.test.PassthroughService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.naming.Context;
 
 import static org.jboss.as.deployment.TestUtils.copyResource;
 import static org.jboss.as.deployment.TestUtils.getResource;

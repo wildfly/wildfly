@@ -27,7 +27,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import javax.naming.Context;
@@ -47,10 +46,11 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final ServiceName moduleContextServiceName = ContextNames.MODULE.append(context.getName());
+        final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
         final ContextService contextService = new ContextService(context.getName());
         batchBuilder.addService(moduleContextServiceName, contextService)
-            .addDependency(ContextNames.JAVA, Context.class, contextService.getParentContextInjector());
+            .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector());
+
         // TODO: This will need to change when application scoping becomes available.
     }
 }

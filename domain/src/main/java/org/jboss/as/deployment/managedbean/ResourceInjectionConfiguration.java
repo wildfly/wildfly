@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.managedbean;
 
 import java.io.Serializable;
+import java.lang.reflect.AccessibleObject;
 
 /**
  * Configuration object used to store information for an @Resource injection for a managed bean. 
@@ -35,24 +36,33 @@ public class ResourceInjectionConfiguration implements Serializable {
     /**
      * The target of the resource injection annotation.
      */
-    public static enum TargetType {
-        FIELD, METHOD;
-    }
+    public static enum TargetType { FIELD, METHOD }
 
     private final String name;
-    private String injectedType;
+    private final AccessibleObject target;
     private final TargetType targetType;
+    private final Class<?> injectedType;
+    private final String localContextName;
+    private final String targetContextName;
+
 
     /**
      * Construct an instance.
      *
      * @param name The name of the target
+     * @param target The injection target(field or method)
      * @param targetType The type of target (field or method)
+     * @param injectedType The type of object to be injected
+     * @param localContextName The name to use in the local context
+     * @param targetContextName The name to retrieve the value form
      */
-    public ResourceInjectionConfiguration(final String name, final TargetType targetType, final String injectedType) {
+    public ResourceInjectionConfiguration(final String name, final AccessibleObject target, final TargetType targetType, final Class<?> injectedType, final String localContextName, final String targetContextName) {
         this.name = name;
+        this.target = target;
         this.targetType = targetType;
         this.injectedType = injectedType;
+        this.localContextName = localContextName;
+        this.targetContextName = targetContextName;
     }
 
     /**
@@ -69,7 +79,7 @@ public class ResourceInjectionConfiguration implements Serializable {
      *
      * @return The type
      */
-    public String getInjectedType() {
+    public Class<?> getInjectedType() {
         return injectedType;
     }
 
@@ -83,11 +93,29 @@ public class ResourceInjectionConfiguration implements Serializable {
     }
 
     /**
-     * Set the injected type of the resource.
-     * 
-     * @param injectedType The class type of the object being injected
+     * Get the local context name.
+     *
+     * @return The local context name
      */
-    public void setInjectedType(String injectedType) {
-        this.injectedType = injectedType;
+    public String getLocalContextName() {
+        return localContextName;
+    }
+
+    /**
+     * Get the target context name
+     *
+     * @return The target context name
+     */
+    public String getTargetContextName() {
+        return targetContextName;
+    }
+
+    /**
+     * Get the injection targer
+     *
+     * @return The injection target
+     */
+    public AccessibleObject getTarget() {
+        return target;
     }
 }

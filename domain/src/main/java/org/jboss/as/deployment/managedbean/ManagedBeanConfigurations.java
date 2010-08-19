@@ -57,16 +57,16 @@ public class ManagedBeanConfigurations implements Serializable{
      * @param managedBeanConfiguration the ManagedBeanConfiguration to add
      */
     public void add(final ManagedBeanConfiguration managedBeanConfiguration) {
-        this.configurations.put(managedBeanConfiguration.getType(), managedBeanConfiguration);
+        this.configurations.put(managedBeanConfiguration.getName(), managedBeanConfiguration);
     }
 
     /**
      * Check to see if the map contains an entry for the specified type.
      *
-     * @param type the type to check
+     * @param name the type to check
      * @return true if the type exists in the map, false if not
      */
-    public boolean containsType(final String type) {
-        return this.configurations.containsKey(type);
+    public boolean containsName(final String name) {
+        return this.configurations.containsKey(name);
     }
 }

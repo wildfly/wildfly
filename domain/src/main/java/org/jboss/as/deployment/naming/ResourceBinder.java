@@ -41,9 +41,10 @@ import javax.naming.NamingException;
  * @author John E. Bailey
  */
 public class ResourceBinder<T> implements Service<Object> {
-    public static final ServiceName APPLICATION_BINDER = ContextNames.APPLICATION.append("binder");
-    public static final ServiceName MODULE_BINDER = ContextNames.MODULE.append("binder");
-    public static final ServiceName COMPONENT_BINDER = ContextNames.COMPONENT.append("binder");
+    public static final ServiceName JAVA_BINDER = ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("binder");
+    public static final ServiceName APPLICATION_BINDER = ContextNames.APPLICATION_CONTEXT_SERVICE_NAME.append("binder");
+    public static final ServiceName MODULE_BINDER = ContextNames.MODULE_CONTEXT_SERVICE_NAME.append("binder");
+    public static final ServiceName COMPONENT_BINDER = ContextNames.COMPONENT_CONTEXT_SERVICE_NAME.append("binder");
 
     private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
     private final String name;

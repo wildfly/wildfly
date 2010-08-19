@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.managedbean;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -34,9 +35,9 @@ public class ManagedBeanConfiguration implements Serializable {
     private static final long serialVersionUID = 5339916057235989276L;
 
     private String name;
-    private String type;
-    private String postConstructMethod;
-    private String preDestroyMethod;
+    private Class<?> type;
+    private Method postConstructMethod;
+    private Method preDestroyMethod;
     private List<ResourceInjectionConfiguration> resourceInjectionConfigurations;
 
     /**
@@ -48,9 +49,11 @@ public class ManagedBeanConfiguration implements Serializable {
     /**
      * Constructor taking the managed bean type.
      *
+     * @param name The managed bean name
      * @param type the managed bean type
      */
-    public ManagedBeanConfiguration(final String type) {
+    public ManagedBeanConfiguration(final String name, final Class<?> type) {
+        this.name = name;
         this.type = type;
     }
 
@@ -76,52 +79,43 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @return the managed bean type
      */
-    public String getType() {
+    public Class<?> getType() {
         return type;
     }
 
     /**
-     * Set the managed bean type
+     * Get the post construct method.
      *
-     * @param type the managed bean type
+     * @return the post construct method
      */
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /**
-     * Get the post construct method name.
-     *
-     * @return the post construct method name
-     */
-    public String getPostConstructMethod() {
+    public Method getPostConstructMethod() {
         return postConstructMethod;
     }
 
     /**
-     * Set the post construct method name.
+     * Set the post construct method.
      * 
-     * @param postConstructMethod the post construct method name
+     * @param postConstructMethod the post construct method
      */
-    public void setPostConstructMethod(String postConstructMethod) {
+    public void setPostConstructMethod(Method postConstructMethod) {
         this.postConstructMethod = postConstructMethod;
     }
 
     /**
-     * Get the pre destroy method name.
+     * Get the pre destroy method.
      *
-     * @return the pre destroy method name
+     * @return the pre destroy method
      */
-    public String getPreDestroyMethod() {
+    public Method getPreDestroyMethod() {
         return preDestroyMethod;
     }
 
     /**
-     * Set the pre destroy method name.
+     * Set the pre destroy method.
      *
-     * @param preDestroyMethod the pre destroy method name
+     * @param preDestroyMethod the pre destroy method
      */
-    public void setPreDestroyMethod(String preDestroyMethod) {
+    public void setPreDestroyMethod(Method preDestroyMethod) {
         this.preDestroyMethod = preDestroyMethod;
     }
 

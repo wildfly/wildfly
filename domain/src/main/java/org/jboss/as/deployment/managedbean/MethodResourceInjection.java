@@ -24,6 +24,7 @@ package org.jboss.as.deployment.managedbean;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.SetMethodInjector;
+import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
 import java.lang.reflect.Method;
@@ -34,34 +35,21 @@ import java.lang.reflect.Method;
  * @author John E. Bailey
  */
 public class MethodResourceInjection<T> extends ResourceInjection<T> {
-    private final String methodName;
-    private final String injectedTypeName;
+    private final Value<Method> methodValue;
 
     /**
      * Construct an instance.
      *
-     * @param methodName The method name to use for injection
-     * @param injectedTypeName The parameter type of the method
+     * @param methodValue The method value to use for injection
      * @param primitive Is the argument type primitive
      */
-    public MethodResourceInjection(final String methodName, final String injectedTypeName, final boolean primitive) {
+    public MethodResourceInjection(final Value<Method> methodValue, final boolean primitive) {
         super(primitive);
-        this.methodName = methodName;
-        this.injectedTypeName = injectedTypeName;
+        this.methodValue = methodValue;
     }
 
     /** {@inheritDoc} */
     protected Injector<T> getInjector(final Object target) {
-        final Class<?> targetClass = target.getClass();
-        final Method method;
-        try {
-            final Class<?> argumentType = targetClass.getClassLoader().loadClass(injectedTypeName);
-            method = targetClass.getMethod(methodName, argumentType);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Target object not valid for this resource injections", e);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Target object not valid for this resource injections", e);
-        }
-        return new SetMethodInjector<T>(Values.immediateValue(target), Values.immediateValue(method));
+        return new SetMethodInjector<T>(Values.immediateValue(target), methodValue);
     }
 }

@@ -36,27 +36,53 @@ public class ContextNames {
     public static final ServiceName NAMING = ServiceName.JBOSS.append("naming");
 
     /**
+     * Jndi name for java: namespace
+     */
+    public static final String JAVA_CONTEXT_NAME = "java:";
+
+    /**
      * ServiceName for java: namespace
      */
-    public static final ServiceName JAVA = NAMING.append("context", "java");
+    public static final ServiceName JAVA_CONTEXT_SERVICE_NAME = NAMING.append("context", "java");
+
+    /**
+     * Jndi name for java:global namespace
+     */
+    public static final String GLOBAL_CONTEXT_NAME = "java:global";
 
     /**
      * ServiceName for java:global namespace
      */
-    public static final ServiceName GLOBAL = JAVA.append("global");
+    public static final ServiceName GLOBAL_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("global");
 
     /**
-     * Parent ServiceName for java:app namespaces
+     * Jndi name for java:app namespace
      */
-    public static final ServiceName APPLICATION = JAVA.append("application");
+    public static final String APPLICATION_CONTEXT_NAME = "java:app";
 
     /**
-     * Parent ServiceName for java:module namespaces
+     * Parent ServiceName for java:app namespace
      */
-    public static final ServiceName MODULE = JAVA.append("module");
+    public static final ServiceName APPLICATION_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("application");
 
     /**
-     * Parent ServiceName for java:comp namespaces
+     * Jndi name for java:module namespace
      */
-    public static final ServiceName COMPONENT = JAVA.append("component");
+    public static final String MODULE_CONTEXT_NAME = "java:module";
+
+    /**
+     * Parent ServiceName for java:module namespace
+     */
+    public static final ServiceName MODULE_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("module");
+
+    /**
+     * Jndi name for java:comp namespace
+     */
+    public static final String COMPONENT_CONTEXT_NAME = "java:comp";
+
+
+    /**
+     * Parent ServiceName for java:comp namespace
+     */
+    public static final ServiceName COMPONENT_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("component");
 }

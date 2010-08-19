@@ -24,6 +24,7 @@ package org.jboss.as.deployment.managedbean;
 
 import org.jboss.msc.inject.FieldInjector;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
 import java.lang.reflect.Field;
@@ -34,29 +35,21 @@ import java.lang.reflect.Field;
  * @author John E. Bailey
  */
 public class FieldResourceInjection<T> extends ResourceInjection<T> {
-    private final String fieldName;
+    private final Value<Field> fieldValue;
 
     /**
      * Construct an instance.
      *
-     * @param fieldName The name of the field on the target.
+     * @param fieldValue The field on the target.
      * @param primitive Is the field type primitive
      */
-    public FieldResourceInjection(final String fieldName, final boolean primitive) {
+    public FieldResourceInjection(final Value<Field> fieldValue, final boolean primitive) {
         super(primitive);
-        this.fieldName = fieldName;
+        this.fieldValue = fieldValue;
     }
 
     /** {@inheritDoc} */
     protected Injector<T> getInjector(final Object target) {
-        final Class<?> targetClass = target.getClass();
-        final Field field;
-        try {
-            field = targetClass.getDeclaredField(fieldName);
-            field.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new IllegalArgumentException("Target object not valid for this resource injections", e);
-        }
-        return new FieldInjector<T>(Values.immediateValue(target), Values.immediateValue(field));  
+        return new FieldInjector<T>(Values.immediateValue(target), fieldValue);  
     }
 }

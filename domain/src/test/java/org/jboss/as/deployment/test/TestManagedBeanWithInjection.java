@@ -20,34 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.test;
+
+import javax.annotation.ManagedBean;
+import javax.annotation.Resource;
+import java.io.Serializable;
 
 /**
- * Deployment phase constants used to establish general rules for ordering deployment processors.
- * 
  * @author John E. Bailey
  */
-public enum DeploymentPhases {
-    VALIDATE(0L),
-    PARSE_DESCRIPTORS(VALIDATE.plus(1000000L)),
-    MODULE_DEPENDENCIES(PARSE_DESCRIPTORS.plus(1000000L)),
-    MODULARIZE(MODULE_DEPENDENCIES.plus(1000000L)),
-    POST_MODULE_DESCRIPTORS(MODULARIZE.plus(1000000L)),
-    //...
-    INSTALL_SERVICES(POST_MODULE_DESCRIPTORS.plus(1000000L)),
-    CLEANUP(INSTALL_SERVICES.plus(1000000L));
+@ManagedBean("TestBeanWithInjection")
+public class TestManagedBeanWithInjection implements Serializable {
+    @Resource private TestManagedBean other;
 
-    private final long priority;
-
-    private DeploymentPhases(long priority) {
-        this.priority = priority;
-    }
-
-    public long plus(final long offset) {
-        return priority + offset;
-    }
-
-    public long priority() {
-        return priority;
+    public TestManagedBean getOther() {
+        return other;
     }
 }

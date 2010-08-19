@@ -26,7 +26,7 @@ import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
-import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessors;
+import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
@@ -63,7 +63,7 @@ public class ServiceDeploymentActivator implements ServiceActivator {
         deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessors(), ManagedBeanDeploymentProcessors.PRIORITY);
+        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
         DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new ServiceDeploymentChainSelector(), SERVICE_DEPLOYMENT_CHAIN_PRIORITY);
     }
 }

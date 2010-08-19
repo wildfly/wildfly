@@ -23,12 +23,11 @@
 package org.jboss.as.deployment.test;
 
 import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
+import java.io.Serializable;
 
 /**
  * @author John E. Bailey
  */
 @ManagedBean("TestBean")
-public class TestManagedBean {
-    @Resource private int someNumber;
+public class TestManagedBean implements Serializable {
 }
