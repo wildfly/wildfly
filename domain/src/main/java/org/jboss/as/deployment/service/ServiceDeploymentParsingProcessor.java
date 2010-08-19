@@ -29,7 +29,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.ParseResult;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -92,9 +91,9 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             if(xmlDescriptor != null)
                 context.putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
-                throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", null);
+                throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
         } catch(Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e, new Location(e.getStackTrace()[0].getFileName(), e.getStackTrace()[0].getLineNumber(), -1, null));
+            throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

@@ -50,6 +50,17 @@ public class DeploymentUnitProcessingException extends DeploymentException {
      * initialized, and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
      *
      * @param msg the detail message
+     */
+    public DeploymentUnitProcessingException(final String msg) {
+        super(msg);
+        this.location = new Location(this.getStackTrace()[0].getFileName(), this.getStackTrace()[0].getLineNumber(), -1, null);
+    }
+
+    /**
+     * Constructs a {@code DeploymentUnitProcessingException} with the specified detail message. The cause is not
+     * initialized, and may subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.
+     *
+     * @param msg the detail message
      * @param location the location at which the processing error occurred
      */
     public DeploymentUnitProcessingException(final String msg, final Location location) {
@@ -63,11 +74,35 @@ public class DeploymentUnitProcessingException extends DeploymentException {
      * (which typically contains the class and detail message of {@code cause}).
      *
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
+     */
+    public DeploymentUnitProcessingException(final Throwable cause) {
+        super(cause);
+        this.location = new Location(cause.getStackTrace()[0].getFileName(), cause.getStackTrace()[0].getLineNumber(), -1, null);
+    }
+
+
+    /**
+     * Constructs a {@code DeploymentUnitProcessingException} with the specified cause. The detail message is set to:
+     * <pre>(cause == null ? null : cause.toString())</pre>
+     * (which typically contains the class and detail message of {@code cause}).
+     *
+     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      * @param location the location at which the processing error occurred
      */
     public DeploymentUnitProcessingException(final Throwable cause, final Location location) {
         super(cause);
         this.location = location;
+    }
+
+    /**
+     * Constructs a {@code DeploymentUnitProcessingException} with the specified detail message and cause.
+     *
+     * @param msg the detail message
+     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
+     */
+    public DeploymentUnitProcessingException(final String msg, final Throwable cause) {
+        super(msg, cause);
+        this.location = new Location(cause.getStackTrace()[0].getFileName(), cause.getStackTrace()[0].getLineNumber(), -1, null);
     }
 
     /**

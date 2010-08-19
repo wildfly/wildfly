@@ -86,7 +86,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Manged bean annotation processing requires a module.", null);
+            throw new DeploymentUnitProcessingException("Manged bean annotation processing requires a module.");
 
         final ClassLoader classLoader = module.getClassLoader();
 
@@ -95,7 +95,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
         for (AnnotationTarget target : targets) {
             if (!(target instanceof ClassInfo)) {
-                throw new DeploymentUnitProcessingException("The ManagedBean annotation is only allowed at the class level: " + target, null);
+                throw new DeploymentUnitProcessingException("The ManagedBean annotation is only allowed at the class level: " + target);
             }
             final ClassInfo classInfo = ClassInfo.class.cast(target);
             final String beanClassName = classInfo.name().toString();
@@ -103,7 +103,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             try {
                 beanCass = classLoader.loadClass(beanClassName);
             } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName, null);
+                throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName);
             }
 
             // Get the managed bean name from the annotation
@@ -128,7 +128,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 final Method postConstructMethod = beanClass.getMethod(postConstructMethodName);
                 managedBeanConfiguration.setPostConstructMethod(postConstructMethod);
             } catch (NoSuchMethodException e) {
-                throw new DeploymentUnitProcessingException("Failed to get PostConstruct method '" + postConstructMethodName + "' for managed bean type: " + beanClass.getName(), e, null);
+                throw new DeploymentUnitProcessingException("Failed to get PostConstruct method '" + postConstructMethodName + "' for managed bean type: " + beanClass.getName(), e);
             }
         }
         final String preDestroyMethodName = getSingleAnnotatedNoArgMethodMethod(classAnnotations, PRE_DESTROY_ANNOTATION_NAME);
@@ -137,7 +137,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 final Method preDestroyMethod = beanClass.getMethod(preDestroyMethodName);
                 managedBeanConfiguration.setPreDestroyMethod(preDestroyMethod);
             } catch(NoSuchMethodException e) {
-                throw new DeploymentUnitProcessingException("Failed to get PreDestroy method '" + preDestroyMethodName + "' for managed bean type: " + beanClass.getName(), e, null);
+                throw new DeploymentUnitProcessingException("Failed to get PreDestroy method '" + preDestroyMethodName + "' for managed bean type: " + beanClass.getName(), e);
             }
         }
     }
@@ -163,7 +163,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 try {
                     field = beanClass.getDeclaredField(fieldName);
                 } catch(NoSuchFieldException e) {
-                    throw new DeploymentUnitProcessingException("Failed to get field '" + fieldName + "' from class '" + beanClass + "'", e, null);
+                    throw new DeploymentUnitProcessingException("Failed to get field '" + fieldName + "' from class '" + beanClass + "'", e);
                 }
                 resource = field.getAnnotation(Resource.class);
                 contextNameSuffix = field.getName();
@@ -176,13 +176,13 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 final String methodName = methodInfo.name();
                 final Type[] args = methodInfo.args();
                 if (!methodName.startsWith("set") || args.length != 1) {
-                    throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo, null);
+                    throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
                 }
                 final Method method;
                 try {
                     method = beanClass.getMethod(methodName);
                 } catch (NoSuchMethodException e) {
-                    throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + beanClass + "'", e, null);
+                    throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + beanClass + "'", e);
                 }
                 resource = method.getAnnotation(Resource.class);
                 contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
@@ -209,7 +209,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     final ManagedBean managedBean = injectionType.getAnnotation(ManagedBean.class);
                      targetContextName = "".equals(managedBean.value()) ? injectionType.getName() : managedBean.value();
                 } else {
-                    throw new DeploymentUnitProcessingException("Unable to determine mapped name for @Resource injection.", null);
+                    throw new DeploymentUnitProcessingException("Unable to determine mapped name for @Resource injection.");
                 }
             }
             target.setAccessible(true);
@@ -226,17 +226,17 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         }
 
         if (targets.size() > 1) {
-            throw new DeploymentUnitProcessingException("Only one method may be annotated with " + annotationName + " per managed bean.", null);
+            throw new DeploymentUnitProcessingException("Only one method may be annotated with " + annotationName + " per managed bean.");
         }
 
         final AnnotationTarget target = targets.get(0);
         if (!(target instanceof MethodInfo)) {
-            throw new DeploymentUnitProcessingException(annotationName + " is only valid on method targets.", null);
+            throw new DeploymentUnitProcessingException(annotationName + " is only valid on method targets.");
         }
 
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         if (methodInfo.args().length > 0) {
-            throw new DeploymentUnitProcessingException(annotationName + " methods can not have arguments", null);
+            throw new DeploymentUnitProcessingException(annotationName + " methods can not have arguments");
         }
         return methodInfo.name();
     }

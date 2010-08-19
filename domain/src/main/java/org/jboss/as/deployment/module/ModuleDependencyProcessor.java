@@ -27,7 +27,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.Location;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -56,7 +55,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
         try {
             manifest = VFSUtils.getManifest(deploymentRoot);
         } catch(IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e, new Location(e.getStackTrace()[0].getFileName(), e.getStackTrace()[0].getLineNumber(), -1, null));
+            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
         }
         if(manifest == null)
             return;

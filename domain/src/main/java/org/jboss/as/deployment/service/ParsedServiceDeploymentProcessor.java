@@ -81,7 +81,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName(), null);
+            throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
 
         final ClassLoader classLoader = module.getClassLoader();
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);

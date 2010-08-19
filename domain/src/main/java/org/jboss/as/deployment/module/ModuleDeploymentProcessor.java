@@ -66,7 +66,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             try {
                 specBuilder.addResourceRoot(new VFSResourceLoader(specBuilder.getIdentifier(), resource.getRootName(), resource.getRoot(), resource.getMountHandle()));
             } catch(IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e, null);
+                throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
             }
         }
         final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
@@ -86,7 +86,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
             context.putAttachment(MODULE_ATTACHMENT_KEY, module);
         } catch (ModuleLoadException e) {
-            throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e, null);
+            throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }
     }
 }

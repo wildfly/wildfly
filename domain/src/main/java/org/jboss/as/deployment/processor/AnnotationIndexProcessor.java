@@ -76,7 +76,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
             final Index index = indexer.complete();
             context.putAttachment(ATTACHMENT_KEY, index);
         } catch(Throwable t) {
-            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t, null);
+            throw new DeploymentUnitProcessingException("Failed to index deployment root for annotations", t);
         }
     }
 }
