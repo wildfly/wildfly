@@ -56,7 +56,7 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
         final ServiceName managedBeanName = (ServiceName)refAddr.getContent();
         final ManagedBeanService<?> managedBeanService = ManagedBeanRegistry.get(managedBeanName);
         if(managedBeanService == null) {
-            throw new NamingException("Managed bean does not exist with name: " + name);
+            throw new NamingException("Managed bean does not exist with name: " + managedBeanName);
         }
         return managedBeanService.getValue();
     }

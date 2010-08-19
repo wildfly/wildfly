@@ -75,7 +75,6 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
         final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(beanClass, managedBeanConfiguration.getPostConstructMethod(), managedBeanConfiguration.getPreDestroyMethod(), resourceInjections);
 
-        final ServiceName binderBase = ResourceBinder.MODULE_BINDER.append(deploymentName);
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(deploymentName);
 
         final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentName, managedBeanName);
@@ -83,41 +82,42 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName managedBeanContextName = moduleContextServiceName.append(managedBeanName, "ctx");
         for (ResourceInjectionConfiguration resourceInjectionConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
-            final ResourceInjection<Object> resourceInjection = processResourceInjection(resourceInjectionConfiguration, managedBeanName, batchBuilder, serviceBuilder, deploymentName, moduleContextServiceName);
+            final ResourceInjection<Object> resourceInjection = processResourceInjection(resourceInjectionConfiguration, batchBuilder, serviceBuilder, moduleContextServiceName, managedBeanContextName);
             resourceInjections.add(resourceInjection);
         }
 
-        final ContextService actualBeanContext = new ContextService(managedBeanName + "_ctx");
+        final ContextService actualBeanContext = new ContextService(managedBeanName + "-ctx");
         batchBuilder.addService(managedBeanContextName, actualBeanContext)
             .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector());
 
         final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName);
         final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>(managedBeanName, Values.immediateValue(managedBeanFactoryReference));
-        batchBuilder.addService(binderBase.append(managedBeanName), managedBeanFactoryBinder)
-            .addDependency(moduleContextServiceName, Context.class, managedBeanFactoryBinder.getContextInjector());
+        final ServiceName referenceBinderName = moduleContextServiceName.append(managedBeanName);
+        batchBuilder.addService(referenceBinderName, managedBeanFactoryBinder)
+            .addDependency(moduleContextServiceName, Context.class, managedBeanFactoryBinder.getContextInjector())
+            .addDependency(managedBeanServiceName);
     }
 
-    private ResourceInjection<Object> processResourceInjection(final ResourceInjectionConfiguration resourceInjectionConfiguration, final String mangedBeanName, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final String deploymentName, final ServiceName moduleContextServiceName) throws DeploymentUnitProcessingException {
+    private ResourceInjection<Object> processResourceInjection(final ResourceInjectionConfiguration resourceInjectionConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final ServiceName moduleContextServiceName,  final ServiceName beanContextServiceName) throws DeploymentUnitProcessingException {
         final String localContextName = resourceInjectionConfiguration.getLocalContextName();
         final String targetContextName = resourceInjectionConfiguration.getTargetContextName();
 
         final ResourceInjection<Object> resourceInjection = getResourceInjection(resourceInjectionConfiguration);
 
         // Now add a binder for the local context
-        final ServiceName resourceBinderBaseName = ResourceBinder.MODULE_BINDER.append(deploymentName);
-        final ServiceName binderName = resourceBinderBaseName.append(localContextName);
+        final ServiceName binderName = beanContextServiceName.append(localContextName);
         serviceBuilder.addDependency(binderName, resourceInjection.getValueInjector());
 
         final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : ContextNames.MODULE_CONTEXT_NAME + "/" + targetContextName);
         final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(localContextName, Values.immediateValue(linkRef));
+
         final BatchServiceBuilder<Object> binderServiceBuilder = batchBuilder.addService(binderName, resourceBinder);
-        binderServiceBuilder.addDependency(moduleContextServiceName, Context.class, resourceBinder.getContextInjector());
-        binderServiceBuilder.addDependency(resourceBinderBaseName.append(mangedBeanName));
+        binderServiceBuilder.addDependency(beanContextServiceName, Context.class, resourceBinder.getContextInjector());
 
         if(targetContextName.startsWith("java:")) {
             binderServiceBuilder.addOptionalDependency(ResourceBinder.JAVA_BINDER.append(targetContextName));
         } else {
-            binderServiceBuilder.addOptionalDependency(resourceBinderBaseName.append(targetContextName));
+            binderServiceBuilder.addOptionalDependency(moduleContextServiceName.append(targetContextName));
         }
 
         return resourceInjection;
