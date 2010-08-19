@@ -183,7 +183,7 @@ final class ManagedProcess {
                 for (;;) {
                     Status status = StreamUtils.readWord(inputStream, b);
                     if (status == Status.END_OF_STREAM) {
-                        log.info("Received end of stream, shutting down");
+                        log.info("Received end of stream, shutting down " + processName);
                         commandStream.closeSocketOutputStream();
                         // no more input
                         return;

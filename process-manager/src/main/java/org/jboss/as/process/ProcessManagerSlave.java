@@ -50,7 +50,7 @@ public final class ProcessManagerSlave {
     private final InputStream input;
     private final OutputStream output;
     private final Socket socket;
-    private final Runnable controller = new Controller();
+    private final Controller controller = new Controller();
 
     public ProcessManagerSlave(String processName, InetAddress addr, Integer port, Handler handler) {
         //TODO Duplicate code - ServerCommunicationHandler
@@ -330,36 +330,36 @@ public final class ProcessManagerSlave {
                 shutdown();
             }
         }
+    }
 
-        private void shutdown() {
-            if (shutdown.getAndSet(true)) {
-                return;
+    public void shutdown() {
+        if (controller.shutdown.getAndSet(true)) {
+            return;
+        }
+        
+        try{
+            handler.shutdown();
+        }
+        catch (Throwable t) {
+            t.printStackTrace(System.err);
+        }
+        finally {            
+            if (socket != null) {
+                closeSocket();
             }
-            
-            try{
-                ProcessManagerSlave.this.handler.shutdown();
-            }
-            catch (Throwable t) {
-                t.printStackTrace(System.err);
-            }
-            finally {            
-                if (socket != null) {
-                    closeSocket();
+
+            final Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    System.exit(0);
                 }
-
-                final Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        System.exit(0);
-                    }
-                });
-                thread.setName("Exit thread");
-                thread.start();
-            }
-            
+            });
+            thread.setName("Exit thread");
+            thread.start();
         }
         
     }
 
+    
     public interface Handler {
         
         void handleMessage(String sourceProcessName, byte[] message);
