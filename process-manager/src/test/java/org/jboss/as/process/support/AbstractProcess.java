@@ -297,6 +297,7 @@ public abstract class AbstractProcess {
             shutdown.set(true);
             AbstractProcess.this.shutdown();
             clientStream.shutdown();
+            slave.shutdown();
         }
     }
 }
