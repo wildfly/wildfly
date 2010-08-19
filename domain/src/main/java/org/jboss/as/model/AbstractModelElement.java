@@ -40,8 +40,10 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.
@@ -376,6 +378,23 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             }
         }
         return loc;
+    }
+    
+
+    /**
+     * Returns a new {@link TreeMap} by passing the provided map to its constructor.
+     * Thread safety note: <code>toCopy</code>'s monitor is held while the TreeMap
+     * is being constructed.
+     * 
+     * @param <K> the type of <code>toCopy</code>'s keys
+     * @param <V> the type of <code>toCopy</code>'s values
+     * @param toCopy the map to copy. Cannot be <code>null</code>
+     * @return the copy
+     */
+    protected static <K, V> NavigableMap<K, V> safeCopyMap(NavigableMap<K, V> toCopy) {
+        synchronized (toCopy) {
+            return new TreeMap<K, V>(toCopy);
+        }
     }
 
     /**

@@ -203,10 +203,12 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     
     public Set<ServerInterfaceElement> getInterfaces() {
         Set<ServerInterfaceElement> intfs = new LinkedHashSet<ServerInterfaceElement>();
-        for (Map.Entry<String, ServerInterfaceElement> entry : interfaces.entrySet()) {
-            intfs.add(entry.getValue());
+        synchronized (interfaces) {
+            for (Map.Entry<String, ServerInterfaceElement> entry : interfaces.entrySet()) {
+                intfs.add(entry.getValue());
+            }
         }
-        return Collections.unmodifiableSet(intfs);
+        return intfs;
     }
     
     public SocketBindingGroupRefElement getSocketBindingGroup() {
@@ -271,13 +273,15 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
         }
         
-        if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
-            for (InterfaceElement element : interfaces.values()) {
-                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (interfaces) {
+            if (! interfaces.isEmpty()) {
+                streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
+                for (InterfaceElement element : interfaces.values()) {
+                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
 
         if (bindingGroup != null) {

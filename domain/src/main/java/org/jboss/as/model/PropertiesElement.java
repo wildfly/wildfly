@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -46,7 +46,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private final SortedMap<String, String> properties = new TreeMap<String, String>(); 
+    private final NavigableMap<String, String> properties = new TreeMap<String, String>(); 
     private final Element propertyType;
     private final boolean allowNullValue;
     
@@ -162,8 +162,8 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<PropertiesElement>> target, final PropertiesElement other) {
-        // TODO not thread safe
-        calculateDifference(target, properties, other.properties, new DifferenceHandler<String, String, PropertiesElement>() {
+        
+        calculateDifference(target, safeCopyMap(properties), safeCopyMap(other.properties), new DifferenceHandler<String, String, PropertiesElement>() {
             public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String newElement) {
                 target.add(new PropertyAdd(name, newElement));
             }
