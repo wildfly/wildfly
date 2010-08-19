@@ -57,6 +57,9 @@ public class InitialContextFactoryTestCase {
         InitialContext initialContext = new InitialContext();
         Context context = (Context)initialContext.lookup("java:");
         assertTrue(context instanceof NamingContext);
+        context.createSubcontext("comp");
+        context = (Context)initialContext.lookup("java:comp");
+        assertTrue(context instanceof NamingContext);
 
     }
 }
