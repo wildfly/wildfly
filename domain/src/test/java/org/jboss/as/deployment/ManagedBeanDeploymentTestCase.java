@@ -35,12 +35,10 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.test.MockContext;
 import org.jboss.as.deployment.test.PassthroughService;
 import org.jboss.as.deployment.test.TestManagedBean;
 import org.jboss.as.deployment.test.TestManagedBeanWithInjection;
-import org.jboss.as.naming.InMemoryNamingStore;
-import org.jboss.as.naming.InitialContextFactory;
-import org.jboss.as.naming.NamingContext;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
@@ -92,14 +90,11 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
 
-        NamingContext.setActiveNamingStore(new InMemoryNamingStore());
-        javaContext = new NamingContext(null);
+        javaContext = new MockContext();
         batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext));
         final Context globalContext = javaContext.createSubcontext("global");
         batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext));
         globalContext.bind("someNumber", Integer.valueOf(99));
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, InitialContextFactory.class.getName());
-        System.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.as.naming.interfaces");
     }
 
     @Test

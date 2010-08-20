@@ -34,14 +34,12 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.Type;
 import org.jboss.modules.Module;
 
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -108,14 +106,14 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             // Get the managed bean name from the annotation
             final ManagedBean managedBeanAnnotation = beanCass.getAnnotation(ManagedBean.class);
-            final String beanName = "".equals(managedBeanAnnotation.value()) ? beanClassName : managedBeanAnnotation.value();
+            final String beanName = managedBeanAnnotation.value().isEmpty() ? beanClassName : managedBeanAnnotation.value();
             final ManagedBeanConfiguration managedBeanConfiguration = new ManagedBeanConfiguration(beanName, beanCass);
 
             final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
 
             processLifecycleMethods(managedBeanConfiguration, classAnnotations, beanCass);
 
-            processResourceInjections(managedBeanConfiguration, classAnnotations, beanCass);
+            processResources(managedBeanConfiguration, classAnnotations, beanCass);
 
             managedBeanConfigurations.add(managedBeanConfiguration);
         }
@@ -142,82 +140,76 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void processResourceInjections(ManagedBeanConfiguration managedBeanConfiguration, Map<DotName, List<AnnotationTarget>> classAnnotations, final Class<?> beanClass) throws DeploymentUnitProcessingException {
+    private void processResources(ManagedBeanConfiguration managedBeanConfiguration, Map<DotName, List<AnnotationTarget>> classAnnotations, final Class<?> beanClass) throws DeploymentUnitProcessingException {
         final List<AnnotationTarget> resourceInjectionTargets = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
         if (resourceInjectionTargets == null) {
-            managedBeanConfiguration.setResourceInjectionConfigurations(Collections.<ResourceInjectionConfiguration>emptyList());
+            managedBeanConfiguration.setResourceInjectionConfigurations(Collections.<ResourceConfiguration>emptyList());
             return;
         }
-        final List<ResourceInjectionConfiguration> resourceInjectionConfigurations = new ArrayList<ResourceInjectionConfiguration>(resourceInjectionTargets.size());
+        final List<ResourceConfiguration> resourceConfigurations = new ArrayList<ResourceConfiguration>(resourceInjectionTargets.size());
         for (AnnotationTarget annotationTarget : resourceInjectionTargets) {
-            final AccessibleObject target;
-            final Resource resource;
-            final String targetName;
-            final String contextNameSuffix;
-            final ResourceInjectionConfiguration.TargetType targetType;
-            Class<?> injectionType;
+            final ResourceConfiguration resourceConfiguration;
             if (annotationTarget instanceof FieldInfo) {
-                final FieldInfo fieldInfo = FieldInfo.class.cast(annotationTarget);
-                final String fieldName = fieldInfo.name();
-                final Field field;
-                try {
-                    field = beanClass.getDeclaredField(fieldName);
-                } catch(NoSuchFieldException e) {
-                    throw new DeploymentUnitProcessingException("Failed to get field '" + fieldName + "' from class '" + beanClass + "'", e);
-                }
-                resource = field.getAnnotation(Resource.class);
-                contextNameSuffix = field.getName();
-                targetType = ResourceInjectionConfiguration.TargetType.FIELD;
-                injectionType = field.getType();
-                targetName = fieldName;
-                target = field;
+                resourceConfiguration = processFieldResource(FieldInfo.class.cast(annotationTarget), beanClass);
             } else if(annotationTarget instanceof MethodInfo) {
-                final MethodInfo methodInfo = MethodInfo.class.cast(annotationTarget);
-                final String methodName = methodInfo.name();
-                final Type[] args = methodInfo.args();
-                if (!methodName.startsWith("set") || args.length != 1) {
-                    throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
-                }
-                final Method method;
-                try {
-                    method = beanClass.getMethod(methodName);
-                } catch (NoSuchMethodException e) {
-                    throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + beanClass + "'", e);
-                }
-                resource = method.getAnnotation(Resource.class);
-                contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-                targetType = ResourceInjectionConfiguration.TargetType.METHOD;
-                injectionType = method.getReturnType();
-                targetName = methodName;
-                target = method;
+                resourceConfiguration = processMethodResource(MethodInfo.class.cast(annotationTarget), beanClass);
+            } else if(annotationTarget instanceof ClassInfo) {
+                resourceConfiguration = processClassResource(beanClass);
             } else {
                 continue;
             }
-
-            if(!resource.type().equals(Object.class)) {
-                injectionType = resource.type();
-            }
-
-            final String resourceName = resource.name();
-            final String localContextName = !"".equals(resourceName) ? resourceName : contextNameSuffix;
-
-            String targetContextName = resource.mappedName();
-            if("".equals( targetContextName)) {
-                if(isEnvironmentEntryType(injectionType)) {
-                     targetContextName = contextNameSuffix;
-                } else if(injectionType.isAnnotationPresent(ManagedBean.class)) {
-                    final ManagedBean managedBean = injectionType.getAnnotation(ManagedBean.class);
-                     targetContextName = "".equals(managedBean.value()) ? injectionType.getName() : managedBean.value();
-                } else {
-                    throw new DeploymentUnitProcessingException("Unable to determine mapped name for @Resource injection.");
-                }
-            }
-            target.setAccessible(true);
-            resourceInjectionConfigurations.add(new ResourceInjectionConfiguration(targetName, target, targetType, injectionType, localContextName, targetContextName));
+            resourceConfigurations.add(resourceConfiguration);
         }
-        managedBeanConfiguration.setResourceInjectionConfigurations(resourceInjectionConfigurations);
+        managedBeanConfiguration.setResourceInjectionConfigurations(resourceConfigurations);
     }
 
+    private ResourceConfiguration processFieldResource(final FieldInfo fieldInfo, final Class<?> beanClass) throws DeploymentUnitProcessingException {
+        final String fieldName = fieldInfo.name();
+        final Field field;
+        try {
+            field = beanClass.getDeclaredField(fieldName);
+            field.setAccessible(true);
+        } catch(NoSuchFieldException e) {
+            throw new DeploymentUnitProcessingException("Failed to get field '" + fieldName + "' from class '" + beanClass + "'", e);
+        }
+        final Resource resource = field.getAnnotation(Resource.class);
+        final String localContextName = resource.name().isEmpty() ? fieldName : resource.name();
+        final Class<?> injectionType = resource.type().equals(Object.class) ? field.getType() : resource.type();
+        return new ResourceConfiguration(fieldName, field, ResourceConfiguration.TargetType.FIELD, injectionType, localContextName, getTargetContextName(resource, fieldName, injectionType));
+    }
+
+    private ResourceConfiguration processMethodResource(final MethodInfo methodInfo, final Class<?> beanClass) throws DeploymentUnitProcessingException {
+        final String methodName = methodInfo.name();
+        if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
+            throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+        }
+        final Method method;
+        try {
+            method = beanClass.getMethod(methodName);
+            method.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + beanClass + "'", e);
+        }
+        final Resource resource = method.getAnnotation(Resource.class);
+        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+        final Class<?> injectionType = resource.type().equals(Object.class) ? method.getReturnType() : resource.type();
+        final String localContextName = resource.name().isEmpty() ? contextNameSuffix : resource.name();
+        return new ResourceConfiguration(methodName, method, ResourceConfiguration.TargetType.METHOD, injectionType, localContextName, getTargetContextName(resource, contextNameSuffix, injectionType));
+    }
+
+    private ResourceConfiguration processClassResource(final Class<?> beanClass) throws DeploymentUnitProcessingException {
+        final Resource resource = beanClass.getAnnotation(Resource.class);
+        if(resource.name().isEmpty()) {
+            throw new DeploymentUnitProcessingException("Class level @Resource annotations must provide a name.");
+        }
+        if(resource.mappedName().isEmpty()) {
+            throw new DeploymentUnitProcessingException("Class level @Resource annotations must provide a mapped name.");
+        }
+        if(Object.class.equals(resource.type())) {
+            throw new DeploymentUnitProcessingException("Class level @Resource annotations must provide a type.");
+        }
+        return new ResourceConfiguration(beanClass.getName(), null, ResourceConfiguration.TargetType.CLASS, resource.type(), resource.name(), resource.mappedName());
+    }
 
     private String getSingleAnnotatedNoArgMethodMethod(final Map<DotName, List<AnnotationTarget>> classAnnotations, final DotName annotationName) throws DeploymentUnitProcessingException {
         final List<AnnotationTarget> targets = classAnnotations.get(annotationName);
@@ -239,6 +231,21 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException(annotationName + " methods can not have arguments");
         }
         return methodInfo.name();
+    }
+
+    private String getTargetContextName(final Resource resource, final String contextNameSuffix, final Class<?> injectionType) throws DeploymentUnitProcessingException {
+        String targetContextName = resource.mappedName();
+        if(targetContextName.isEmpty()) {
+            if(isEnvironmentEntryType(injectionType)) {
+                 targetContextName = contextNameSuffix;
+            } else if(injectionType.isAnnotationPresent(ManagedBean.class)) {
+                final ManagedBean managedBean = injectionType.getAnnotation(ManagedBean.class);
+                 targetContextName = managedBean.value().isEmpty() ? injectionType.getName() : managedBean.value();
+            } else {
+                throw new DeploymentUnitProcessingException("Unable to determine mapped name for @Resource injection.");
+            }
+        }
+        return targetContextName;
     }
 
     private boolean isEnvironmentEntryType(Class<?> type) {

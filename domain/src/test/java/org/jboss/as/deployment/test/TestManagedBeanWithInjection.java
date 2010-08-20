@@ -30,6 +30,7 @@ import java.io.Serializable;
  * @author John E. Bailey
  */
 @ManagedBean("TestBeanWithInjection")
+@Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
 public class TestManagedBeanWithInjection implements Serializable {
     @Resource private TestManagedBean other;
 

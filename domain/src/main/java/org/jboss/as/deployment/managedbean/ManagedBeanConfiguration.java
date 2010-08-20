@@ -38,7 +38,7 @@ public class ManagedBeanConfiguration implements Serializable {
     private Class<?> type;
     private Method postConstructMethod;
     private Method preDestroyMethod;
-    private List<ResourceInjectionConfiguration> resourceInjectionConfigurations;
+    private List<ResourceConfiguration> resourceConfigurations;
 
     /**
      * Default constructor.
@@ -124,16 +124,16 @@ public class ManagedBeanConfiguration implements Serializable {
      *
      * @return the resource injection configurations
      */
-    public List<ResourceInjectionConfiguration> getResourceInjectionConfigurations() {
-        return resourceInjectionConfigurations;
+    public List<ResourceConfiguration> getResourceInjectionConfigurations() {
+        return resourceConfigurations;
     }
 
     /**
      * Set the resource injection configurations.
      *
-     * @param resourceInjectionConfigurations the resource injection configurations
+     * @param resourceConfigurations the resource injection configurations
      */
-    public void setResourceInjectionConfigurations(List<ResourceInjectionConfiguration> resourceInjectionConfigurations) {
-        this.resourceInjectionConfigurations = resourceInjectionConfigurations;
+    public void setResourceInjectionConfigurations(List<ResourceConfiguration> resourceConfigurations) {
+        this.resourceConfigurations = resourceConfigurations;
     }
 }

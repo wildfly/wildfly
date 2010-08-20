@@ -80,13 +80,15 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentName, managedBeanName);
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
 
-        final ServiceName managedBeanContextName = moduleContextServiceName.append(managedBeanName, "ctx");
-        for (ResourceInjectionConfiguration resourceInjectionConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
-            final ResourceInjection<Object> resourceInjection = processResourceInjection(resourceInjectionConfiguration, batchBuilder, serviceBuilder, moduleContextServiceName, managedBeanContextName);
-            resourceInjections.add(resourceInjection);
+        final ServiceName managedBeanContextName = moduleContextServiceName.append(managedBeanName, "context");
+        for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
+            final ResourceInjection<Object> resourceInjection = processResource(resourceConfiguration, batchBuilder, serviceBuilder, moduleContextServiceName, managedBeanContextName);
+            if(resourceInjection != null) {
+                resourceInjections.add(resourceInjection);
+            }
         }
 
-        final ContextService actualBeanContext = new ContextService(managedBeanName + "-ctx");
+        final ContextService actualBeanContext = new ContextService(managedBeanName + "-context");
         batchBuilder.addService(managedBeanContextName, actualBeanContext)
             .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector());
 
@@ -98,15 +100,17 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             .addDependency(managedBeanServiceName);
     }
 
-    private ResourceInjection<Object> processResourceInjection(final ResourceInjectionConfiguration resourceInjectionConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final ServiceName moduleContextServiceName,  final ServiceName beanContextServiceName) throws DeploymentUnitProcessingException {
-        final String localContextName = resourceInjectionConfiguration.getLocalContextName();
-        final String targetContextName = resourceInjectionConfiguration.getTargetContextName();
+    private ResourceInjection<Object> processResource(final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final ServiceName moduleContextServiceName,  final ServiceName beanContextServiceName) throws DeploymentUnitProcessingException {
+        final String localContextName = resourceConfiguration.getLocalContextName();
+        final String targetContextName = resourceConfiguration.getTargetContextName();
 
-        final ResourceInjection<Object> resourceInjection = getResourceInjection(resourceInjectionConfiguration);
+        final ResourceInjection<Object> resourceInjection = getResourceInjection(resourceConfiguration);
 
         // Now add a binder for the local context
         final ServiceName binderName = beanContextServiceName.append(localContextName);
-        serviceBuilder.addDependency(binderName, resourceInjection.getValueInjector());
+        if(resourceInjection != null) {
+            serviceBuilder.addDependency(binderName, resourceInjection.getValueInjector());
+        }
 
         final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : ContextNames.MODULE_CONTEXT_NAME + "/" + targetContextName);
         final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(localContextName, Values.immediateValue(linkRef));
@@ -123,11 +127,14 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         return resourceInjection;
     }
 
-    private ResourceInjection<Object> getResourceInjection(final ResourceInjectionConfiguration resourceInjectionConfiguration) {
-        if(ResourceInjectionConfiguration.TargetType.FIELD.equals(resourceInjectionConfiguration.getTargetType())) {
-            return new FieldResourceInjection<Object>(Values.immediateValue(Field.class.cast(resourceInjectionConfiguration.getTarget())), resourceInjectionConfiguration.getInjectedType().isPrimitive());
-        } else {
-            return new MethodResourceInjection<Object>(Values.immediateValue(Method.class.cast(resourceInjectionConfiguration.getTarget())), resourceInjectionConfiguration.getInjectedType().isPrimitive());
+    private ResourceInjection<Object> getResourceInjection(final ResourceConfiguration resourceConfiguration) {
+        switch(resourceConfiguration.getTargetType()) {
+            case FIELD:
+                return new FieldResourceInjection<Object>(Values.immediateValue(Field.class.cast(resourceConfiguration.getTarget())), resourceConfiguration.getInjectedType().isPrimitive());
+            case METHOD:
+                return new MethodResourceInjection<Object>(Values.immediateValue(Method.class.cast(resourceConfiguration.getTarget())), resourceConfiguration.getInjectedType().isPrimitive());
+            default:
+                return null;
         }
     }
 }

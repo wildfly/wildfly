@@ -30,13 +30,13 @@ import java.lang.reflect.AccessibleObject;
  *
  * @author John E. Bailey
  */
-public class ResourceInjectionConfiguration implements Serializable {
+public class ResourceConfiguration implements Serializable {
     private static final long serialVersionUID = 3405348115132260519L;
 
     /**
      * The target of the resource injection annotation.
      */
-    public static enum TargetType { FIELD, METHOD }
+    public static enum TargetType { FIELD, METHOD, CLASS }
 
     private final String name;
     private final AccessibleObject target;
@@ -56,11 +56,29 @@ public class ResourceInjectionConfiguration implements Serializable {
      * @param localContextName The name to use in the local context
      * @param targetContextName The name to retrieve the value form
      */
-    public ResourceInjectionConfiguration(final String name, final AccessibleObject target, final TargetType targetType, final Class<?> injectedType, final String localContextName, final String targetContextName) {
+    public ResourceConfiguration(final String name, final AccessibleObject target, final TargetType targetType, final Class<?> injectedType, final String localContextName, final String targetContextName) {
         this.name = name;
         this.target = target;
         this.targetType = targetType;
         this.injectedType = injectedType;
+        this.localContextName = localContextName;
+        this.targetContextName = targetContextName;
+    }
+
+
+    /**
+     * Construct an instance.
+     *
+     * @param name The name of the target
+     * @param targetType The type of target (field or method)
+     * @param localContextName The name to use in the local context
+     * @param targetContextName The name to retrieve the value form
+     */
+    public ResourceConfiguration(final String name, final TargetType targetType, final String localContextName, final String targetContextName) {
+        this.name = name;
+        this.target = null;
+        this.targetType = targetType;
+        this.injectedType = null;
         this.localContextName = localContextName;
         this.targetContextName = targetContextName;
     }
