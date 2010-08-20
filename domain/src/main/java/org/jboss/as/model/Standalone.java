@@ -74,8 +74,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
-    /**FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of its JVM */
-    private final JvmElement jvm;
     private PropertiesElement systemProperties;
 
     
@@ -101,7 +99,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         super(reader);
         
         this.portOffset = 0;
-        this.jvm = null;
         
         // Handle namespaces
         namespaces.putAll(readNamespaces(reader));
@@ -276,28 +273,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
             }
             // TODO log a WARN about interfaces that aren't referenced via socket bindings
         }
-        
-        // FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of it's JVM
-        
-        JvmElement serverVM = server.getJvm();
-        String serverVMName = serverVM != null ? serverVM.getName() : null;
-        
-        JvmElement groupVM = serverGroup.getJvm();
-        String groupVMName = groupVM != null ? groupVM.getName() : null;
-        
-        String ourVMName = serverVMName != null ? serverVMName : groupVMName;
-        if (ourVMName == null) {
-            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() + 
-                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
-        }
-        
-        if (!ourVMName.equals(groupVMName)) {
-            // the server setting replaced the group, so ignore group
-            groupVM = null;
-        }
-        JvmElement hostVM = host.getJvm(ourVMName);
-        
-        this.jvm = new JvmElement(groupVM, hostVM, serverVM);
     }
 
     /**
@@ -307,16 +282,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      */
     public String getServerName() {
         return serverName;
-    }    
-
-    /**
-     * Gets the jvm configuration for this server.
-     * 
-     * @return the jvm configuration. Will not be <code>null</code>
-     */
-    public JvmElement getJvm() {
-        // FIXME this belongs in the ServerManager
-        return jvm;
     }
     
     /**
@@ -340,7 +305,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         cksum = calculateElementHashOf(interfaces.values(), cksum);
         if (socketBindings != null) cksum = Long.rotateLeft(cksum, 1) ^ socketBindings.elementHash();
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
-        if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         return cksum;
     }
 

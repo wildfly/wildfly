@@ -35,9 +35,12 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.model.Domain;
+import org.jboss.as.model.Element;
 import org.jboss.as.model.Host;
+import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
+import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.logging.Logger;
@@ -110,9 +113,9 @@ public class ServerManager {
             if (serverEl.isStart()) {
                 log.info("Starting server " + serverEl.getName());
                 Standalone serverConf = new Standalone(domainConfig, hostConfig, serverEl.getName());
-                
+                JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
-                    Server server = serverMaker.makeServer(serverConf);
+                    Server server = serverMaker.makeServer(serverConf, jvmElement);
                     servers.put(serverConf.getServerName(), server);
                     server.start(serverConf);
                 } catch (IOException e) {
@@ -128,7 +131,7 @@ public class ServerManager {
 //        }
         
     }
-    
+
     public void stop() {
         for (Map.Entry<String, Server> entry : servers.entrySet()) {
             try {
@@ -207,5 +210,46 @@ public class ServerManager {
         } catch (Exception e) {
             throw new RuntimeException("Caught exception during processing of domain.xml", e);
         }
+    }
+    
+    /**
+     * Combines information from the domain, server group, host and server levels
+     * to come up with an overall JVM configuration for a server.
+     * 
+     * @param domain the domain configuration object
+     * @param host the host configuration object
+     * @param serverName the name of the server
+     * @return the JVM configuration object
+     */
+    private JvmElement getServerJvmElement(Domain domain, Host host, String serverName) {
+        
+        ServerElement server = host.getServer(serverName);
+        if (server == null)
+            throw new IllegalStateException("Server " + serverName + " is not listed in Host");
+        
+        String serverGroupName = server.getServerGroup();
+        ServerGroupElement serverGroup = domain.getServerGroup(serverGroupName);
+        if (serverGroup == null)
+            throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
+        
+        JvmElement serverVM = server.getJvm();
+        String serverVMName = serverVM != null ? serverVM.getName() : null;
+        
+        JvmElement groupVM = serverGroup.getJvm();
+        String groupVMName = groupVM != null ? groupVM.getName() : null;
+        
+        String ourVMName = serverVMName != null ? serverVMName : groupVMName;
+        if (ourVMName == null) {
+            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() + 
+                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
+        }
+        
+        if (!ourVMName.equals(groupVMName)) {
+            // the server setting replaced the group, so ignore group
+            groupVM = null;
+        }
+        JvmElement hostVM = host.getJvm(ourVMName);
+        
+        return new JvmElement(groupVM, hostVM, serverVM);
     }
 }
