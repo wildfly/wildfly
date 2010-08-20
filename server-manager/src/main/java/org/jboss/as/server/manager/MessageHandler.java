@@ -25,13 +25,12 @@
  */
 package org.jboss.as.server.manager;
 
-import org.jboss.as.process.ProcessManagerSlave.Handler;
-import org.jboss.logging.Logger;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.List;
+
+import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.logging.Logger;
 
 /**
  * A MessageHandler.
@@ -53,18 +52,6 @@ class MessageHandler implements Handler {
         this.serverManager = serverManager;
     }
 
-    @Override
-    public void handleMessage(String sourceProcessName, byte[] message) {
-        ServerMessage serverMessage = null;
-        try {
-            serverMessage = readServerMessage(message);
-            // TODO: actually handle this....
-            log.info("Received message from server " + sourceProcessName + ": " + serverMessage.getMessage());
-        } catch (Throwable t) {
-            log.warn("Failed to read server message", t);
-        }
-    }
-    
     /* (non-Javadoc)
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
      */
@@ -75,23 +62,22 @@ class MessageHandler implements Handler {
     }
 
     @Override
+    public void handleMessage(String sourceProcessName, byte[] message) {
+        try {
+            Command cmd = ServerManagerProtocolCommand.readCommand(message);
+//          // TODO: actually handle this....
+            log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+
+    @Override
     public void shutdown() {
         serverManager.stop();        
     }
 
-    private ServerMessage readServerMessage(byte[] message) throws IOException, ClassNotFoundException {
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
-        ObjectInputStream objectInputStream = null;
-        try {
-            objectInputStream = new ObjectInputStream(byteArrayInputStream);
-            final ServerMessage serverMessage = (ServerMessage)objectInputStream.readObject();
-            return serverMessage;
-        } finally {
-            if(objectInputStream != null)
-                objectInputStream.close();
-        }
-    }
-    
 //    public void registerServer(String serverName, Server server) {
 //        if (serverName == null) {
 //            throw new IllegalArgumentException("serverName is null");

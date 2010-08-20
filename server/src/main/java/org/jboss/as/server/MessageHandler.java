@@ -25,21 +25,14 @@
  */
 package org.jboss.as.server;
 
-import java.io.Closeable;
-import org.jboss.as.model.Standalone;
-import org.jboss.as.server.manager.ServerCommand;
-import org.jboss.logging.Logger;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
+
+import org.jboss.as.model.Standalone;
+import org.jboss.as.server.manager.ServerManagerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.logging.Logger;
 
 /**
  * A MessageHandler.
@@ -50,63 +43,14 @@ import org.jboss.modules.ModuleLoadException;
 class MessageHandler implements ServerCommunicationHandler.Handler {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final Server server;
-
+    
     MessageHandler(Server server) {
         if (server == null) {
             throw new IllegalArgumentException("server is null");
         }
         this.server = server;
     }
-
-    @Override
-    public void handleMessage(byte[] message) {
-        final ServerCommand serverCommand;
-        try {
-            serverCommand = readServerCommand(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read server command", e);
-        }
-
-        if(serverCommand == null)
-            throw new RuntimeException("Server command is null");
-
-        switch(serverCommand.getCommand()) {
-            case START:
-                final Standalone standalone = (Standalone)serverCommand.getArgs()[0];
-                try {
-                    server.start(standalone);
-                } catch (ServerStartException e) {
-                    logger.error("Failed to start server", e);
-                }
-                break;
-            case STOP:
-                server.stop();
-                break;
-        }
-    }
-
-    private ServerCommand readServerCommand(byte[] message) throws IOException, ClassNotFoundException {
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(message);
-        final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
-        try {
-            unmarshaller.start(Marshalling.createByteInput(byteArrayInputStream));
-            final ServerCommand serverCommand = unmarshaller.readObject(ServerCommand.class);
-            unmarshaller.finish();
-            unmarshaller.close();
-            return serverCommand;
-        } finally {
-            safeClose(unmarshaller);
-        }
-    }
-
-    private static void safeClose(final Closeable closeable) {
-        if (closeable != null) try {
-            closeable.close();
-        } catch (Throwable ignored) {
-            // todo: log me
-        }
-    }
-
+    
     /* (non-Javadoc)
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
      */
@@ -115,22 +59,42 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         logger.info("Message received: " + message);
     }
 
+    
+    @Override
+    public void handleMessage(byte[] message) {
+        Command cmd = null;
+        try {
+            cmd = ServerManagerProtocolCommand.readCommand(message);
+        } catch (IOException e) {
+            logger.error("Error reading command", e);
+            return;
+        }
+        switch (cmd.getCommand()) {
+        case START_SERVER:
+            Standalone standalone = null;
+            try {
+                standalone = ServerManagerProtocolUtils.unmarshallCommandData(Standalone.class, cmd);
+            } catch (Exception e) {
+                logger.error("Error reading standalone", e);
+                return;
+            }
+            try {
+                server.start(standalone);
+            } catch (ServerStartException e) {
+                logger.error("Error starting server", e);
+                return;
+            }
+            break;
+        case STOP_SERVER:
+            server.stop();
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown command " + cmd.getCommand());
+        }
+    }
+
     @Override
     public void shutdown() {
         server.stop();        
-    }
-
-    private static final MarshallerFactory MARSHALLER_FACTORY;
-    private static final MarshallingConfiguration CONFIG;
-
-    static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
-        final MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassTable(ModularClassTable.getInstance());
-        CONFIG = config;
     }
 }

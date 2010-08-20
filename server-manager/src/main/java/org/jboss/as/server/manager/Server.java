@@ -22,21 +22,10 @@
 
 package org.jboss.as.server.manager;
 
-import java.io.Closeable;
-import org.jboss.as.model.Standalone;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.Adler32;
-import java.util.zip.CheckedOutputStream;
-import java.util.zip.Checksum;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
+
+import org.jboss.as.model.Standalone;
+import org.jboss.as.process.StreamUtils;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
@@ -44,7 +33,6 @@ import org.jboss.modules.ModuleLoadException;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Server {
-//    private static final ThreadFactory FACTORY = Executors.defaultThreadFactory();
     
     private final ServerCommunicationHandler communicationHandler;
     
@@ -93,7 +81,7 @@ public final class Server {
 //
 //        });
 //    }
-    
+
     public Server(ServerCommunicationHandler communicationHandler) {
         if (communicationHandler == null) {
             throw new IllegalArgumentException("communicationHandler is null");
@@ -102,64 +90,21 @@ public final class Server {
     }
 
     public void start(Standalone serverConf) throws IOException {
-        
-        ServerCommand command = new ServerCommand(ServerCommand.Command.START, new Object[] {serverConf}, new Class<?>[]{Standalone.class});
-        sendCommand(command);
+        sendCommand(ServerManagerProtocolCommand.START_SERVER, serverConf);
     }
 
     public void stop() throws IOException {
+        sendCommand(ServerManagerProtocolCommand.START_SERVER);
+    }
+
+    private void sendCommand(ServerManagerProtocolCommand command) throws IOException {
+        sendCommand(command, null);
+    }    
+    
+    private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
         
-        sendCommand(new ServerCommand(ServerCommand.Command.START)); 
+        byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
+        communicationHandler.sendMessage(cmd, StreamUtils.calculateChecksum(cmd));
     }
 
-    private static final MarshallerFactory MARSHALLER_FACTORY;
-    private static final MarshallingConfiguration CONFIG;
-
-    static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
-        final MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassTable(ModularClassTable.getInstance());
-        CONFIG = config;
-    }
-
-    private void sendCommand(ServerCommand command) throws IOException {
-        
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-        final Checksum chksum = new Adler32();
-        final CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
-        final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-        try {
-            marshaller.start(Marshalling.createByteOutput(cos));
-            marshaller.writeObject(command);
-            marshaller.finish();
-            marshaller.close();
-            communicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
-        } finally {
-            safeClose(marshaller);
-        }
-    }
-
-    private static void safeClose(final Closeable closeable) {
-        if (closeable != null) try {
-            closeable.close();
-        } catch (Throwable ignored) {
-            // todo: log me
-        }
-    }
-
-//    private static String readCommand(final InputStream in) throws IOException {
-//        final StringBuilder b = new StringBuilder();
-//        int c;
-//        while ((c = in.read()) != -1 && c != '\n') {
-//            b.append((char) (c & 0xff));
-//        }
-//        if (b.length() == 0 && c == -1) {
-//            return null;
-//        }
-//        return b.toString();
-//    }
 }
