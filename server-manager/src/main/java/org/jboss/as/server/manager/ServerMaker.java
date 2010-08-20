@@ -69,7 +69,7 @@ public final class ServerMaker {
         this.messageHandler = messageHandler;
     }
     
-    public Server makeServer(Standalone serverConfig) throws IOException {
+    public Server makeServer(Standalone serverConfig, JvmElement jvmElement) throws IOException {
 //        final List<String> args = new ArrayList<String>();
 //        if (false) {
 //            // Example: run at high priority on *NIX
@@ -101,8 +101,8 @@ public final class ServerMaker {
 //        final OutputStream outputStream = process.getOutputStream();
         
         String serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
-        List<String> command = getServerLaunchCommand(serverConfig);
-        Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
+        List<String> command = getServerLaunchCommand(serverConfig, jvmElement);
+        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
         processManagerSlave.startProcess(serverProcessName);
         
@@ -114,9 +114,7 @@ public final class ServerMaker {
         return server;
     }
 
-    private List<String> getServerLaunchCommand(Standalone serverConfig) {
-        
-        JvmElement jvm = serverConfig.getJvm();
+    private List<String> getServerLaunchCommand(Standalone serverConfig, JvmElement jvm) {
         
         List<String> command = new ArrayList<String>();
         
