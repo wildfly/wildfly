@@ -220,6 +220,26 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
     }
+
+    /**
+     * Get an exception reporting a missing, required XML child element.
+     *
+     * @param reader the stream reader
+     * @param required a set of enums whose toString method returns the attribute name
+     * @return the exception
+     */
+    protected static XMLStreamException missingRequiredElement(final XMLExtendedStreamReader reader, final Set<?> required) {
+        final StringBuilder b = new StringBuilder();
+        Iterator<?> iterator = required.iterator();
+        while (iterator.hasNext()) {
+            final Object o = iterator.next();
+            b.append(o.toString());
+            if (iterator.hasNext()) {
+                b.append(", ");
+            }
+        }
+        return new XMLStreamException("Missing required element(s): " + b, reader.getLocation());
+    }
     
     /**
      * Checks that the current element has no attributes, throwing an {@link XMLStreamException}

@@ -90,7 +90,8 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                             final String attrValue = reader.getAttributeValue(i);
                             if (reader.getAttributeNamespace(i) != null) {
                                 throw unexpectedAttribute(reader, i);
-                            } else {
+                            } 
+                            else {
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                                 switch (attribute) {
                                     case NAME: {
@@ -102,19 +103,19 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                                     }
                                     case VALUE: {
                                         value = attrValue;
-                                        if (value == null && !allowNullValue) {
-                                            throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
-                                        }
                                         break;
                                     }
                                     default: throw unexpectedAttribute(reader, i);
                                 }
                             }
-                            if (name == null) {
-                                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-                            }
-                            properties.put(name, value);
                         }
+                        if (name == null) {
+                            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+                        }
+                        if (value == null && !allowNullValue) {
+                            throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
+                        }
+                        properties.put(name, value);
                         // Handle elements
                         requireNoContent(reader);
                     } else {
@@ -124,6 +125,9 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                 }
                 default: throw unexpectedElement(reader);
             }
+        }
+        if (properties.size() == 0) {
+            throw missingRequiredElement(reader, Collections.singleton(propertyType));
         }
     }
     
@@ -154,7 +158,9 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
         long total = 0;
         synchronized (properties) {
             for (Map.Entry<String, String> entry : properties.entrySet()) {
-                total = Long.rotateLeft(total, 1) ^ ((long)entry.getKey().hashCode() << 32L | entry.getValue().hashCode() & 0xffffffffL);
+                String val = entry.getValue();
+                int valHash = val == null ? 0 : val.hashCode();
+                total = Long.rotateLeft(total, 1) ^ ((long)entry.getKey().hashCode() << 32L | valHash & 0xffffffffL);
             }
         }
         return total;
