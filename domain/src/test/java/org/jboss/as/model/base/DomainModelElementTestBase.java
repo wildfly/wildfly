@@ -37,10 +37,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
 
 /**

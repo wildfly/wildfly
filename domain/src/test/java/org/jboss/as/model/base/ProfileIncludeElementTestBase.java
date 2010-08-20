@@ -22,17 +22,12 @@
 
 package org.jboss.as.model.base;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.StringReader;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
-import org.jboss.as.model.ProfileElement;
 import org.jboss.as.model.ProfileIncludeElement;
 import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;

@@ -166,7 +166,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param s the string
      * @return the bytes
      */
-    protected static byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len >> 1];
         for (int i = 0, j = 0; j < len; i++) {
