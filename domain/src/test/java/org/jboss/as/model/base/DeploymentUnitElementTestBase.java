@@ -32,7 +32,6 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DeploymentUnitKey;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.ProfileIncludeElement;
 import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;
 import org.jboss.as.model.base.util.TestXMLElementReader;
