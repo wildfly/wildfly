@@ -47,14 +47,6 @@
             </xs:documentation>
          </xs:annotation>
         </xs:element>
-        <xs:element name="bootstrap-context" type="bootstrap-contextType" minOccurs="0" maxOccurs="unbounded">
-         <xs:annotation>
-            <xs:documentation>
-               Bootstrap context map (unique name to a cloneable bootstrap context) which allows developers to bind
-               (through jboss-ra.xml) their resource adapter to a specific bootstrap context instance.
-            </xs:documentation>
-         </xs:annotation>
-        </xs:element>
       </xs:sequence>
     </xs:complexType>
 
@@ -83,32 +75,5 @@
           </xs:attribute>
         </xs:extension>
       </xs:simpleContent>
-    </xs:complexType>
-    <xs:complexType name="bootstrap-contextType" mixed="true">
-     <xs:annotation>
-      <xs:documentation>
-         Bootstrap context map (unique name to a cloneable bootstrap context) which allows developers to bind
-         (through jboss-ra.xml) their resource adapter to a specific bootstrap context instance.
-         The map is constructed specifying keys in name attribute and values as content of the tag.
-         Please note that value are org.jboss.jca.core.api.CloneableBootstrapContext
-         
-      </xs:documentation>
-     </xs:annotation>
-      <xs:simpleContent>
-        <xs:extension base="xs:token">
-          <xs:attribute name="name" type="xs:token" use="required">
-            <xs:annotation>
-               <xs:documentation>The key of the map</xs:documentation>
-            </xs:annotation>
-          </xs:attribute>
-          <xs:attribute name="default" type="xs:boolean" use="optional" default="false">
-            <xs:annotation>
-               <xs:documentation>
-                  set this to true if this boot strap context should be considered as default one
-               </xs:documentation>
-            </xs:annotation>
-          </xs:attribute>
-        </xs:extension>
-      </xs:simpleContent>      
     </xs:complexType>
 </xs:schema>
