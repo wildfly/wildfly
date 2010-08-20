@@ -57,7 +57,7 @@ public class SimpleRefResolver<K, V extends AbstractModelElement<V>> implements 
         if (ref == null)
             throw new IllegalArgumentException("ref is null");
         synchronized (map) {
-            return null;
+            return map.get(ref);
         }
     }
 
