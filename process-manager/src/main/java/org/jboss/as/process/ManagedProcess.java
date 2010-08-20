@@ -57,7 +57,7 @@ final class ManagedProcess {
     private final Logger log;
 
     private boolean stopped;
-    private boolean start;
+    private volatile boolean start;
     private final DelegatingSocketOutputStream commandStream = new DelegatingSocketOutputStream();
     private Process process;
     private List<StopProcessListener> stopProcessListeners;
@@ -351,23 +351,22 @@ final class ManagedProcess {
                 log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
 
             } finally {
+                boolean respawn = false;
                 safeClose(inputStream);
                 int exitCode = 0;
                 for (;;) try {
                     exitCode = process.waitFor();
+                    synchronized (ManagedProcess.this) {
+                        start = false;
+                        if (exitCode != 0)
+                            respawn = !stopped;
+                    }
                     invokeStopProcessListeners(exitCode);
+                    if (respawn)
+                        respawn();
                     break;
                 } catch (InterruptedException e) {
                 }
-                
-                boolean respawn = false;
-                synchronized (ManagedProcess.this) {
-                    start = false;
-                    if (exitCode != 0)
-                        respawn = !stopped;
-                }
-                if (respawn)
-                    respawn();
             }
         }
         
