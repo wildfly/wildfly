@@ -196,7 +196,7 @@ public abstract class AbstractProcess {
      */
     protected void sendMessage(String processName, byte[] message){
         try {
-            slave.sendMessage(processName, message, StreamUtils.calculateChecksum(message));
+            slave.sendMessage(processName, message);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -274,7 +274,7 @@ public abstract class AbstractProcess {
      */
     protected void broadcastMessage(final byte[] message){
         try {
-            slave.broadcastMessage(message, StreamUtils.calculateChecksum(message));
+            slave.broadcastMessage(message);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

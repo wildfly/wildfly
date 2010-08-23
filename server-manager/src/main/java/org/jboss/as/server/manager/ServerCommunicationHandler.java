@@ -16,5 +16,5 @@ public interface ServerCommunicationHandler {
 
     void sendMessage(List<String> message) throws IOException;
     
-    void sendMessage(byte[] msg, long checksum) throws IOException;
+    void sendMessage(byte[] msg) throws IOException;
 }

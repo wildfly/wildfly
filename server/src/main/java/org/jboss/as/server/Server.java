@@ -103,7 +103,7 @@ public class Server extends AbstractServer {
     private void sendMessage(ServerManagerProtocolCommand command) {
         try {
             byte[] bytes = command.createCommandBytes(null);
-            serverCommunicationHandler.sendMessage(bytes, StreamUtils.calculateChecksum(bytes));
+            serverCommunicationHandler.sendMessage(bytes);
         } catch (IOException e) {
             log.error("Failed to send message to Server Manager [" + command + "]", e);
         }

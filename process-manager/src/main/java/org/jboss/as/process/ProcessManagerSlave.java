@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.process.StreamUtils.CheckedBytes;
-
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
  * with the process-manager-side ManagedProcess.
@@ -213,7 +211,7 @@ public final class ProcessManagerSlave {
         }
     }
 
-    public void sendMessage(final String recipient, final byte[] message, final long checksum) throws IOException {
+    public void sendMessage(final String recipient, final byte[] message) throws IOException {
         if (recipient == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -224,7 +222,6 @@ public final class ProcessManagerSlave {
             StreamUtils.writeString(output, b.toString());
             StreamUtils.writeInt(output, message.length);
             output.write(message, 0, message.length);
-            StreamUtils.writeLong(output, checksum);
             StreamUtils.writeChar(output, '\n');
             output.flush();
         }
@@ -243,14 +240,13 @@ public final class ProcessManagerSlave {
         }
     }
 
-    public void broadcastMessage(final byte[] message, final long checksum) throws IOException {
+    public void broadcastMessage(final byte[] message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST_BYTES).append('\0');
         synchronized (output) {
             StreamUtils.writeString(output, b.toString());
             StreamUtils.writeInt(output, message.length);
             output.write(message);
-            StreamUtils.writeLong(output, checksum);
             StreamUtils.writeChar(output, '\n');
             output.flush();
         }
@@ -303,18 +299,12 @@ public final class ProcessManagerSlave {
                                     status = StreamUtils.readWord(input, b);
                                     final String sourceProcess = b.toString();
                                     if (status == Status.MORE) {
-                                        CheckedBytes cb = StreamUtils.readCheckedBytes(input);
-                                        status = cb.getStatus();
-                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
-                                            // FIXME deal with invalid checksum
+                                        try {
+                                            handler.handleMessage(sourceProcess, StreamUtils.readBytesWithLength(input));
+                                        } catch (Throwable t) {
+                                            // ignored!
                                         }
-                                        else {
-                                            try {
-                                                handler.handleMessage(sourceProcess, cb.getBytes());
-                                            } catch (Throwable t) {
-                                                // ignored!
-                                            }
-                                        }
+                                        status = StreamUtils.readStatus(input);
                                     }
                                 }
                                 break;

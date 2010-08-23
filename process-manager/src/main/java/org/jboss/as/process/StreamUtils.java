@@ -100,9 +100,35 @@ public final class StreamUtils {
         }
     }
     
-    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
-        return new CheckedBytes(input);
+    public static byte[] readBytesWithLength(final InputStream in) throws IOException {
+        int expectedLength = readInt(in);
+        byte[] bytes = new byte[expectedLength];
+        readFully(in, bytes, 0, expectedLength);
+        return bytes;
     }
+    
+    public static Status readStatus(final InputStream in) throws IOException{
+        int c = readChar(in);
+
+        switch (c) {
+            case -1: {
+                return Status.END_OF_STREAM;
+            }                    
+            case 0:  {
+                return Status.MORE;
+            }
+            case '\n': {
+                return Status.END_OF_LINE;
+            }
+            default: {
+                throw new IllegalStateException("unexpected char " + c);
+            }
+        }
+    }
+    
+//    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
+//        return new CheckedBytes(input);
+//    }
     
     public static int readInt(final InputStream in) throws IOException {
         int ch1 = in.read();
@@ -182,69 +208,5 @@ public final class StreamUtils {
         out.write((byte) (v >>> 16) & 0xFF);
         out.write((byte) (v >>>  8) & 0xFF);
         out.write((byte) (v >>>  0) & 0xFF);
-    }
-    
-    public static long calculateChecksum(byte[] bytes) {
-        return calculateChecksum(bytes, bytes.length);
-    }
-    
-    public static long calculateChecksum(byte[] bytes, int expectedLength) {
-        Adler32 adler = new Adler32();
-        adler.update(bytes, 0, expectedLength);
-        return adler.getValue();
-    }
-    
-    public static class CheckedBytes {
-         
-        private final int expectedLength;
-        private byte[] bytez;
-        private long checksum;
-        private long expectedChecksum;
-        private Status status;
-        
-        public int getExpectedLength() {
-            return expectedLength;
-        }
-        public byte[] getBytes() {
-            return bytez;
-        }
-        public long getChecksum() {
-            return checksum;
-        }
-        public long getExpectedChecksum() {
-            return expectedChecksum;
-        }
-        public Status getStatus() {
-            return status;
-        }
-        
-        private CheckedBytes(InputStream input) throws IOException {
-            this.expectedLength = readInt(input);
-            this.bytez = new byte[expectedLength];
-            readFully(input, bytez, 0, expectedLength);
-            this.expectedChecksum = readLong(input);
-            Adler32 adler = new Adler32();
-            adler.update(bytez, 0, expectedLength);
-            this.checksum = calculateChecksum(bytez, expectedLength);
-            int c = readChar(input);
-
-            switch (c) {
-                case -1: {
-                    status = Status.END_OF_STREAM;
-                    break;
-                }                    
-                case 0:  {
-                    status = Status.MORE;
-                    break;
-                }
-                case '\n': {
-                    status = Status.END_OF_LINE;
-                    break;
-                }
-                default: {
-                    throw new IllegalStateException("unexpected char " + c);
-                }
-            }
-        }
     }
 }

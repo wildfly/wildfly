@@ -173,7 +173,7 @@ public abstract class AbstractProcessManagerTest {
     }
 
     protected void sendMessage(String sender, String recipient, byte[] msg) {
-        master.sendMessage(sender, recipient, msg, StreamUtils.calculateChecksum(msg));
+        master.sendMessage(sender, recipient, msg);
     }
 
     protected void broadcastMessage(String sender, List<String> msg){
@@ -181,7 +181,7 @@ public abstract class AbstractProcessManagerTest {
     }
 
     protected void broadcastMessage(String sender, byte[] msg){
-        master.broadcastMessage(sender, msg, StreamUtils.calculateChecksum(msg));
+        master.broadcastMessage(sender, msg);
     }
 
     protected List<String> lazyList(String... strings) {

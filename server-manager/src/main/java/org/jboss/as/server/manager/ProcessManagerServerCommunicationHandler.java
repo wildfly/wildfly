@@ -41,8 +41,8 @@ public class ProcessManagerServerCommunicationHandler implements ServerCommunica
     }
 
     @Override
-    public void sendMessage(byte[] message, long checksum) throws IOException {
-        processManagerSlave.sendMessage(serverName, message, checksum);
+    public void sendMessage(byte[] message) throws IOException {
+        processManagerSlave.sendMessage(serverName, message);
     }
 
 }

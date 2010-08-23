@@ -104,7 +104,7 @@ public final class Server {
     private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
         
         byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
-        communicationHandler.sendMessage(cmd, StreamUtils.calculateChecksum(cmd));
+        communicationHandler.sendMessage(cmd);
     }
 
 }
