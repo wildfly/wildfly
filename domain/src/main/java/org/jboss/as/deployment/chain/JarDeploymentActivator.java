@@ -20,12 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.deployment.chain;
 
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
+import org.jboss.as.deployment.managedbean.ManagedBeanDependencyProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
@@ -33,19 +31,19 @@ import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
+import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceName;
 
 /**
- * Service activator which installs the various service required for service deployments.
+ * Service activator which installs the various service required for jar deployments.
  * 
  * @author John E. Bailey
  */
-public class ServiceDeploymentActivator implements ServiceActivator {
+public class JarDeploymentActivator implements ServiceActivator {
 
-    public static final ServiceName SERVICE_DEPLOYMENT_CHAIN_NAME = ServiceName.JBOSS.append("service", "deployment", "chain");
-    public static final long SERVICE_DEPLOYMENT_CHAIN_PRIORITY = 100000L;
+    public static final long SERVICE_DEPLOYMENT_CHAIN_PRIORITY = 1000000L;
 
     /**
      * Activate the services required for service deployments.
@@ -53,17 +51,18 @@ public class ServiceDeploymentActivator implements ServiceActivator {
      * @param context The service activator context
      */
     public void activate(final ServiceActivatorContext context) {
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.jar");
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManagedBeanDependencyProcessor(), ManagedBeanDependencyProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
         deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
         deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
         deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new ServiceDeploymentChainSelector(), SERVICE_DEPLOYMENT_CHAIN_PRIORITY);
+        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new JarDeploymentChainSelector(), SERVICE_DEPLOYMENT_CHAIN_PRIORITY);
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.test;
 
 import javax.annotation.ManagedBean;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.Serializable;
 
@@ -33,6 +34,11 @@ import java.io.Serializable;
 @Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
 public class TestManagedBeanWithInjection implements Serializable {
     @Resource private TestManagedBean other;
+
+    @PostConstruct
+    private void printMessage() {
+        System.out.println("Test manage bean started: " + other);
+    }
 
     public TestManagedBean getOther() {
         return other;

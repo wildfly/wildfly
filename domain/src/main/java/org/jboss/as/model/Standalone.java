@@ -23,7 +23,7 @@
 package org.jboss.as.model;
 
 import org.jboss.as.Extension;
-import org.jboss.as.deployment.service.ServiceDeploymentActivator;
+import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
@@ -457,7 +457,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         socketBindings.activate(context);
 
         // Activate deployments
-        new ServiceDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
+        new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
             try {

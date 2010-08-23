@@ -25,10 +25,15 @@ package org.jboss.as.deployment.managedbean;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
+
+import javax.annotation.ManagedBean;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.
@@ -38,6 +43,7 @@ import org.jboss.modules.ModuleIdentifier;
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
     private static ModuleIdentifier JAVAX_ANNOTATION_API_ID = new ModuleIdentifier("javax.annotation", "api", null);
+    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
 
     /**
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
@@ -47,9 +53,12 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY) == null) {
-            return; // Skip if there are no configurations
+        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
+        if (index == null) {
+            return; // Skip if there is no annotation index
         }
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_ANNOTATION_API_ID, true, false, false));
+        if(!index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME).isEmpty()) {
+            ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_ANNOTATION_API_ID, true, false, false));
+        }
     }
 }

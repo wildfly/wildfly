@@ -149,9 +149,13 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         builder.addService(NamingService.SERVICE_NAME, new NamingService(isSupportEvents()));
 
         // Create java: context service
-        final JavaContextService contextService = new JavaContextService();
-        builder.addService(JavaContextService.SERVICE_NAME, contextService)
+        final JavaContextService javaContextService = new JavaContextService();
+        builder.addService(JavaContextService.SERVICE_NAME, javaContextService)
             .addDependency(NamingService.SERVICE_NAME);
+
+        final ContextService globalContextService = new ContextService("global");
+        builder.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
+             .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector());
 
         if(isBindAppContext()) {
             addContextFactory(builder, "app");

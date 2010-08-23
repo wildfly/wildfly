@@ -88,6 +88,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
             batchComplete();
         }
         serviceController.removeListener(this);
+        log.errorf(reason, "Service [%s] start failed", serviceName);
     }   
 
     /**

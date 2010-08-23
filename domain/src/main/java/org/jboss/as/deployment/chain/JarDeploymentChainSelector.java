@@ -20,27 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.deployment.chain;
 
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment chain selector which determines whether the service deployment chain should handle this deployment.
+ * Deployment chain selector which determines whether the jar deployment chain should handle this deployment.
  *
  * @author John E. Bailey
  */
-public class ServiceDeploymentChainSelector implements DeploymentChainProvider.Selector {
-    private static final String SERVICE_ARCHIVE_EXTENSION = ".sar";
-    private static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
+public class JarDeploymentChainSelector implements DeploymentChainProvider.Selector {
+    private static final String ARCHIVE_EXTENSION = ".jar";
+    private static final String DESCRIPTOR_PATH = "META-INF";
 
     /**
-     * Determine where this deployment is supported by service deployer.
+     * Determine where this deployment is supported by jar deployer chain.
      *
      * @param virtualFile The deployment file
      * @return true if this is s service deployment, and false if not
      */
     public boolean supports(final VirtualFile virtualFile) {
-        return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
+        return virtualFile.getName().toLowerCase().endsWith(ARCHIVE_EXTENSION) || virtualFile.getChild(DESCRIPTOR_PATH).exists();
     }
 }

@@ -123,7 +123,8 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final String postConstructMethodName = getSingleAnnotatedNoArgMethodMethod(classAnnotations, POST_CONSTRUCT_ANNOTATION_NAME);
         if (postConstructMethodName != null) {
             try {
-                final Method postConstructMethod = beanClass.getMethod(postConstructMethodName);
+                final Method postConstructMethod = beanClass.getDeclaredMethod(postConstructMethodName);
+                postConstructMethod.setAccessible(true);
                 managedBeanConfiguration.setPostConstructMethod(postConstructMethod);
             } catch (NoSuchMethodException e) {
                 throw new DeploymentUnitProcessingException("Failed to get PostConstruct method '" + postConstructMethodName + "' for managed bean type: " + beanClass.getName(), e);
@@ -133,6 +134,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         if (preDestroyMethodName != null) {
             try {
                 final Method preDestroyMethod = beanClass.getMethod(preDestroyMethodName);
+                preDestroyMethod.setAccessible(true);
                 managedBeanConfiguration.setPreDestroyMethod(preDestroyMethod);
             } catch(NoSuchMethodException e) {
                 throw new DeploymentUnitProcessingException("Failed to get PreDestroy method '" + preDestroyMethodName + "' for managed bean type: " + beanClass.getName(), e);

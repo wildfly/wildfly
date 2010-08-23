@@ -23,8 +23,8 @@
 package org.jboss.as.deployment.managedbean;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.naming.ContextService;
+import org.jboss.as.deployment.naming.ModuleContextConfig;
 import org.jboss.as.deployment.naming.ResourceBinder;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -58,31 +58,36 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ManagedBeanConfigurations managedBeanConfigurations = context.getAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY);
-        if(managedBeanConfigurations == null)
+        if(managedBeanConfigurations == null) {
             return; // Skip deployments with no managed beans.
-
+        }
+        final ModuleContextConfig moduleContext = context.getAttachment(ModuleContextConfig.ATTACHMENT_KEY);
+        if(moduleContext == null) {
+            throw new DeploymentUnitProcessingException("Unable to deploy managed beans without a module naming context");
+        }
+        
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {
-            processManagedBean(context.getName(), managedBeanConfiguration, batchBuilder);
+            processManagedBean(context, moduleContext, managedBeanConfiguration, batchBuilder);
         }
     }
 
-    private void processManagedBean(final String deploymentName, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
+    private void processManagedBean(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
         final Class<Object> beanClass = (Class<Object>)managedBeanConfiguration.getType();
         final String managedBeanName = managedBeanConfiguration.getName();
 
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
         final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(beanClass, managedBeanConfiguration.getPostConstructMethod(), managedBeanConfiguration.getPreDestroyMethod(), resourceInjections);
 
-        final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(deploymentName);
+        final ServiceName moduleContextServiceName = moduleContext.getContextServiceName();
 
-        final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentName, managedBeanName);
+        final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentContext.getName(), managedBeanName);
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
 
         final ServiceName managedBeanContextName = moduleContextServiceName.append(managedBeanName, "context");
         for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
-            final ResourceInjection<Object> resourceInjection = processResource(resourceConfiguration, batchBuilder, serviceBuilder, moduleContextServiceName, managedBeanContextName);
+            final ResourceInjection<Object> resourceInjection = processResource(moduleContext, resourceConfiguration, batchBuilder, serviceBuilder, managedBeanContextName);
             if(resourceInjection != null) {
                 resourceInjections.add(resourceInjection);
             }
@@ -100,7 +105,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             .addDependency(managedBeanServiceName);
     }
 
-    private ResourceInjection<Object> processResource(final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final ServiceName moduleContextServiceName,  final ServiceName beanContextServiceName) throws DeploymentUnitProcessingException {
+    private ResourceInjection<Object> processResource(final ModuleContextConfig moduleContext, final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder serviceBuilder, final ServiceName beanContextServiceName) throws DeploymentUnitProcessingException {
         final String localContextName = resourceConfiguration.getLocalContextName();
         final String targetContextName = resourceConfiguration.getTargetContextName();
 
@@ -112,7 +117,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.addDependency(binderName, resourceInjection.getValueInjector());
         }
 
-        final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : ContextNames.MODULE_CONTEXT_NAME + "/" + targetContextName);
+        // TODO use java:module based name
+        final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : moduleContext.getContextName() + "/" + targetContextName);
         final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(localContextName, Values.immediateValue(linkRef));
 
         final BatchServiceBuilder<Object> binderServiceBuilder = batchBuilder.addService(binderName, resourceBinder);
@@ -121,7 +127,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         if(targetContextName.startsWith("java:")) {
             binderServiceBuilder.addOptionalDependency(ResourceBinder.JAVA_BINDER.append(targetContextName));
         } else {
-            binderServiceBuilder.addOptionalDependency(moduleContextServiceName.append(targetContextName));
+            binderServiceBuilder.addOptionalDependency(moduleContext.getContextServiceName().append(targetContextName));
         }
 
         return resourceInjection;

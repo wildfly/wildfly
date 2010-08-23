@@ -51,6 +51,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         batchBuilder.addService(moduleContextServiceName, contextService)
             .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector());
 
-        // TODO: This will need to change when application scoping becomes available.
+        context.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, ContextNames.GLOBAL_CONTEXT_NAME + "/" + context.getName()));
+        // TODO: These names will need to change when application scoping becomes available.
     }
 }

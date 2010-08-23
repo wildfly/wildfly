@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -40,6 +41,8 @@ import java.util.List;
  */
 public class ManagedBeanService<T> implements Service<T> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("managed", "bean");
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.managedbean");
+    
     private final List<ResourceInjection<?>> resourceInjections;
     private final Class<T> beanClass;
     private final Method postConstructMethod;
@@ -63,7 +66,9 @@ public class ManagedBeanService<T> implements Service<T> {
     /** {@inheritDoc} */
     public synchronized  void start(StartContext context) throws StartException {
         try {
-            ManagedBeanRegistry.register(context.getController().getName(), this);
+            final ServiceName serviceName = context.getController().getName();
+            log.infof("Starting managed bean %s", serviceName);
+            ManagedBeanRegistry.register(serviceName, this);
         } catch (ManagedBeanRegistry.DuplicateMangedBeanException e) {
             throw new StartException("Failed to register with the managed bean registry");
         }
@@ -71,6 +76,8 @@ public class ManagedBeanService<T> implements Service<T> {
 
     /** {@inheritDoc} */
     public void stop(StopContext context) {
+        final ServiceName serviceName = context.getController().getName();
+        log.infof("Stopping managed bean %s", serviceName);
         ManagedBeanRegistry.unregister(context.getController().getName(), this);
     }
 

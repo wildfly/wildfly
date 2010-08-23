@@ -23,20 +23,16 @@
 package org.jboss.as.deployment;
 
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
-import org.jboss.as.model.DeploymentUnitKey;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
 
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -86,9 +82,7 @@ public abstract class AbstractDeploymentTest {
     }
 
     protected String getDeploymentName(VirtualFile deploymentRoot) {
-        final DeploymentUnitKey expectedKey = new DeploymentUnitKey(deploymentRoot.getName(), BLANK_SHA1);
-        final String expectedDeploymentName =  expectedKey.getName().replace('.', '_') + '_' + expectedKey.getSha1HashAsHexString();
-        return expectedDeploymentName;
+        return deploymentRoot.getName().replace('.', '_');
     }
 
     protected void runWithLatchedBatch(final BatchedWork work) throws Exception {

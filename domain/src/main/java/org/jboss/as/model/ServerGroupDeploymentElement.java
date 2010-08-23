@@ -210,7 +210,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
     @Override
     public void activate(final ServiceActivatorContext context) {
-        final String deploymentName = key.getName().replace('.', '_') + '_' + key.getSha1HashAsHexString();
+        final String deploymentName = key.getName().replace('.', '_');
         log.info("Activating server group deployment: " + deploymentName);
 
         final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(key.getName()));
