@@ -25,6 +25,7 @@ package org.jboss.as.server.manager;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.Standalone;
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerSlave;
 
 import java.io.File;
@@ -100,7 +101,7 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
         
-        String serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+        String serverProcessName = getServerProcessName(serverConfig);
         List<String> command = getServerLaunchCommand(serverConfig, jvmElement);
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
@@ -199,10 +200,12 @@ public final class ServerMaker {
     private void appendArgsToMain(Standalone serverConfig, Map<String, String> jvmProps, List<String> command) {
 
         if (environment.getProcessManagerAddress() != null) {
-            command.add("-interprocess-address");
+            command.add(CommandLineConstants.INTERPROCESS_ADDRESS);
             command.add(environment.getProcessManagerAddress().getHostAddress());
-            command.add("-interprocess-port");
+            command.add(CommandLineConstants.INTERPROCESS_PORT);
             command.add(environment.getProcessManagerPort().toString());
+            command.add(CommandLineConstants.INTERPROCESS_NAME);
+            command.add(getServerProcessName(serverConfig));
         }
         
         // Pass through as args to main any sys props that are read at primordial boot
@@ -291,5 +294,8 @@ public final class ServerMaker {
         }
         return env;
     }
-    
+ 
+    private String getServerProcessName(Standalone serverConfig) {
+        return SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+    }
 }

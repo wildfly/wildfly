@@ -19,28 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.process;
 
 /**
  * 
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-package org.jboss.as.server;
+public class CommandLineConstants {
 
-/**
- * A ServerCommunicationHandlerFactory.
- * 
- * @author John E. Bailey
- */
-public final class ServerCommunicationHandlerFactory {
+    /** The ProcessManager address */
+    public static final String INTERPROCESS_ADDRESS = "-interprocess-address";
 
-    private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
+    /** The ProcessManager port */
+    public static final String INTERPROCESS_PORT = "-interprocess-port";
+
+    /** The name of a process started by the process manager */
+    public static final String INTERPROCESS_NAME = "-interprocess-name";
     
-    public static ServerCommunicationHandlerFactory getInstance() {
-        return INSTANCE;
-    }
+    /** Get the version of the server */
+    public static final String VERSION = "-version";
     
-    public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
-        return new ServerCommunicationHandler(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
-    }
+    /** Configure the file to be used to read properties */
+    public static final String PROPERTIES = "-properties";
     
-    private ServerCommunicationHandlerFactory() {}
+    /** Start a standalone server */
+    public static final String STANDALONE = "-standalone";
+    
+    /** Output usage */
+    public static final String HELP = "-help";
 }

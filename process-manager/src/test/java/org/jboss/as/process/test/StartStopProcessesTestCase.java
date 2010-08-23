@@ -45,7 +45,7 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
 
     @Test
     public void testStartStopProcess() throws Exception {
-        addProcess("Main", StartStopSimpleProcess.class);
+        addProcess("Main", StartStopSimpleProcess.class/*, 8787, true*/);
         assertTrue(getProcessNames(false).contains("Main"));
         assertFalse(getProcessNames(true).contains("Main"));
         assertEquals(0, TestFileUtils.getNumberOutputFiles());
@@ -79,7 +79,7 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
         TestProcessListenerStream stream2 = startTestProcessListenerAndWait("Main");
         assertEquals(StartStopSimpleProcess.STARTED, stream2.readMessage());
 
-        stopTestProcessListener("Main");
+        stopTestProcessListenerAndWait(stream2);
         assertEquals(StartStopSimpleProcess.STOPPED, stream2.readMessage());
 
         removeProcess("Main");
@@ -115,8 +115,10 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
         assertEquals(StartStopSimpleProcess.STARTED, listener.readMessage());
 
         removeProcess("Main");
-        assertNull(StartStopSimpleProcess.STOPPED, listener.readMessage(100));
-        assertTrue(getProcessNames(false).contains("Main"));
+        assertNull(listener.readMessage(100));
+        assertTrue(getProcessNames(true).contains("Main"));
+        
+        stopTestProcessListenerAndWait(listener);
     }
 
     @Test
@@ -127,7 +129,7 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
         TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
         assertEquals(StartStopSimpleProcess.STARTED, listener.readMessage());
 
-        startProcess("Main", 300);
+        startProcess("Main", 500);
         main.checkFile(StartStopSimpleProcess.STARTED);
 
         stopTestProcessListenerAndWait(listener);
@@ -150,11 +152,11 @@ public class StartStopProcessesTestCase extends AbstractProcessManagerTest {
         TestProcessListenerStream listenerB = startTestProcessListenerAndWait("ProcessB");
         assertEquals(StartStopSimpleProcess.STARTED, listenerB.readMessage());
 
-        stopTestProcessListener("ProcessB");
+        stopTestProcessListenerAndWait(listenerB);
         assertEquals(StartStopSimpleProcess.STOPPED, listenerB.readMessage());
         assertEquals(null, listenerA.readMessage(100));
 
-        stopTestProcessListener("ProcessA");
+        stopTestProcessListenerAndWait(listenerA);
         assertEquals(StartStopSimpleProcess.STOPPED, listenerA.readMessage());
 
         removeProcess("ProcessA");

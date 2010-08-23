@@ -30,14 +30,14 @@ import java.util.List;
  */
 public class CrashingProcess extends AbstractProcess {
 
-    protected CrashingProcess(String processName) {
-        super(processName);
+    protected CrashingProcess(String processName, int port) {
+        super(processName, port);
     }
 
     public static void main(String[] args) {
         if (args.length < 1)
             System.exit(-1);
-        CrashingProcess process = new CrashingProcess(args[0]);
+        CrashingProcess process = new CrashingProcess(args[0], getPort(args));
         process.startSlave();
     }
 

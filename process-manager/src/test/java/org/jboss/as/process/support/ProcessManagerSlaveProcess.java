@@ -30,17 +30,14 @@ import java.util.List;
  * @version $Revision: 1.1 $
  */
 public class ProcessManagerSlaveProcess extends AbstractProcess {
-    protected ProcessManagerSlaveProcess(String processName) {
-        super(processName);
+    protected ProcessManagerSlaveProcess(String processName, int port) {
+        super(processName, port);
     }
-
-    public static final String STARTED = "STARTED\n";
-    public static final String STOPPED = "STOPPED\n";
 
     public static void main(String[] args) {
         if (args.length < 1)
             System.exit(-1);
-        ProcessManagerSlaveProcess process = new ProcessManagerSlaveProcess(args[0]);
+        ProcessManagerSlaveProcess process = new ProcessManagerSlaveProcess(args[0], getPort(args));
         process.startSlave();
     }
 

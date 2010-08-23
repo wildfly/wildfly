@@ -29,8 +29,8 @@ import java.util.List;
  * @version $Revision: 1.1 $
  */
 public class StartStopSimpleProcess extends AbstractProcess {
-    protected StartStopSimpleProcess(String processName) {
-        super(processName);
+    protected StartStopSimpleProcess(String processName, int port) {
+        super(processName, port);
     }
 
     public static final String STARTED = "STARTED";
@@ -39,7 +39,7 @@ public class StartStopSimpleProcess extends AbstractProcess {
     public static void main(String[] args) {
         if (args.length < 1)
             System.exit(-1);
-        StartStopSimpleProcess process = new StartStopSimpleProcess(args[0]);
+        StartStopSimpleProcess process = new StartStopSimpleProcess(args[0], getPort(args));
         process.startSlave();
     }
 

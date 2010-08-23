@@ -26,10 +26,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,15 +47,24 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.process.CommandLineConstants;
+
 /**
  * 
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public abstract class TestProcessUtils {
-    private static final int PORT = 8080;
+    
+    private static final int DEFAULT_PORT = 12934;
+    private static final int PORT;
+    static {
+        String s = System.getenv().get("PM_TEST_LISTENER_PORT");
+        PORT = s == null ? DEFAULT_PORT : Integer.valueOf(s);
+    }
+    
     private static final int TIMEOUT_MILLISECONDS = 1000;
-
+    
     static final Map<String, TestCommand> COMMANDS;
     static {
         Map<String, TestCommand> map = new HashMap<String, TestCommand>();
@@ -64,12 +77,12 @@ public abstract class TestProcessUtils {
         COMMANDS = Collections.unmodifiableMap(map);
     }
 
-    public static List<String> createCommand(String processName, String classname) {
-        return createCommand(processName, classname, 0, false);
+    public static List<String> createCommand(String processName, String classname, int pmPort)  throws UnknownHostException {
+        return createCommand(processName, classname, pmPort, 0, false);
     }
 
-    public static List<String> createCommand(String processName, String classname,
-            int debugPort, boolean suspend) {
+    public static List<String> createCommand(String processName, String classname, int pmPort,  
+            int debugPort, boolean suspend) throws UnknownHostException {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getJava());
         cmd.add("-cp");
@@ -81,9 +94,18 @@ public abstract class TestProcessUtils {
 
         cmd.add(classname);
         cmd.add(processName);
+
+        //Add the socket parameters
+        cmd.add(CommandLineConstants.INTERPROCESS_PORT);
+        cmd.add(String.valueOf(pmPort));
+        cmd.add(CommandLineConstants.INTERPROCESS_ADDRESS);
+        cmd.add(InetAddress.getLocalHost().getHostAddress());
+        cmd.add(CommandLineConstants.INTERPROCESS_NAME);
+        cmd.add(processName);
+
         return cmd;
     }
-
+    
     public static TestStreamManager createStreamManager(TestProcessController controller) {
         ServerSocketThread serverSocketThread = new ServerSocketThread(
                 controller);
@@ -110,15 +132,31 @@ public abstract class TestProcessUtils {
             super("Test Server Socket Thread");
             this.controller = controller;
             try {
-                server = new ServerSocket(PORT, 0, InetAddress.getLocalHost());
+                server = new ServerSocket();
+                server.setReuseAddress(true);
+                SocketAddress addr = new InetSocketAddress(InetAddress.getLocalHost(), PORT);
+                System.err.println("*Test - " + this.getName() + " attempting to listen on " + PORT);
+                
+                //ServerSocket.close() does not seem to always free up the port. I don't really want 
+                //to modify everything to pass ports through to the tests yet, so retry a few times 
+                for (int i = 0 ; ; i++) {
+                    try {
+                        server.bind(addr, 5);
+                        break;
+                    } catch (BindException e) {
+                        if (i == 5)
+                            throw e;
+                        Thread.sleep(100);
+                    }
+                }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Can't listen on port " + PORT, e);
             }
         }
 
         @Override
         public void shutdown() {
-            System.err.println(this.getName() + " closing server");
+            System.err.println("*Test - " + this.getName() + " closing server");
 
             closeServer();
             synchronized (this) {
@@ -171,14 +209,14 @@ public abstract class TestProcessUtils {
             }
 
             try {
-                System.err.println("Starting " + name + " " + processLatch);
+                System.err.println("*Test - Starting " + name + " " + processLatch);
                 controller.startProcess(name);
                 processLatch.await(TIMEOUT_MILLISECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            System.err.println("Started " + name);
+            System.err.println("*Test - Started " + name);
             synchronized (this) {
                 ListenerSocketThread thread = listenerThreadsByProcessName
                         .get(name);
@@ -195,7 +233,7 @@ public abstract class TestProcessUtils {
         }
 
         void processStarted(String name, ListenerSocketThread thread) {
-            System.err.println("Start received for " + name + " " + startProcessLatches);
+            System.err.println("*Test - Start received for " + name + " " + startProcessLatches);
             synchronized (this) {
                 countdownLatch(startProcessLatches, name);
                 listenerThreadsByProcessName.put(name, thread);
@@ -204,18 +242,24 @@ public abstract class TestProcessUtils {
 
         @Override
         public void stopProcessListener(String name) {
+            if (name == null)
+                throw new IllegalArgumentException("Null name");
             CountDownLatch processLatch = null;
+
             synchronized (this) {
-                ListenerSocketThread thread = listenerThreadsByProcessName
+                ListenerSocketThread thread = null;
+                thread = listenerThreadsByProcessName
                         .get(name);
+
                 if (thread == null)
                     return;
 
                 processLatch = new CountDownLatch(1);
                 stopProcessLatches.put(name, processLatch);
-                controller.stopProcess(name);
-                System.err.println("Stopping " + name + " "
+                System.err.println("*Test - Stopping " + name + " "
                         + stopProcessLatches);
+                controller.stopProcess(name);
+                System.err.println("*Test - Waiting for stop " + name);
             }
 
             try {
@@ -223,11 +267,11 @@ public abstract class TestProcessUtils {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            System.err.println("Stopped " + name);
+            System.err.println("*Test - Stopped " + name);
         }
 
         void processStopped(String name, ListenerSocketThread thread) {
-            System.err.println("Stop received for " + name + " "  + stopProcessLatches);
+            System.err.println("*Test - Stop received for " + name + " "  + stopProcessLatches);
             synchronized (this) {
                 countdownLatch(stopProcessLatches, name);
                 listenerThreadsByProcessName.remove(name);
@@ -253,7 +297,7 @@ public abstract class TestProcessUtils {
         public void run() {
             try {
                 latch.countDown();
-                System.err.println("Server listening");
+                System.err.println("*Test - Server listening on " + server.getLocalPort());
                 while (true) {
                     ListenerSocketThread t = new ListenerSocketThread(this,
                             server.accept());
@@ -263,7 +307,7 @@ public abstract class TestProcessUtils {
                     }
                 }
             } catch (SocketException e) {
-                System.err.println(this.getName() + " server socket closed");
+                System.err.println("*Test - " + this.getName() + " server socket closed");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -275,6 +319,7 @@ public abstract class TestProcessUtils {
             try {
                 if (!server.isClosed())
                     server.close();
+                System.err.println("*Test - server socket closed " + server.isClosed() + " " + server.isClosed());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -288,10 +333,10 @@ public abstract class TestProcessUtils {
     }
 
     private static class ListenerSocketThread extends Thread implements TestProcessListenerStream {
-        String processName;
-        ServerSocketThread serverSocketThread;
-        Socket socket;
-        BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+        volatile String processName;
+        final ServerSocketThread serverSocketThread;
+        final Socket socket;
+        final BlockingQueue<String> messages = new LinkedBlockingQueue<String>();
 
         public ListenerSocketThread(ServerSocketThread serverSocketThread,
                 Socket socket) {
@@ -312,14 +357,14 @@ public abstract class TestProcessUtils {
         @Override
         public void run() {
             try {
-                System.err.println("Listener started");
+                System.err.println("*Test - Listener started");
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         socket.getInputStream()));
                 boolean done = false;
                 while (!done) {
                     String line = in.readLine();
 
-                    System.err.println(processName + " listener got data " + line);
+                    System.err.println("*Test - " + processName + " listener got data " + line);
 
                     if (line != null)
                         TestCommand.receive(this, line.trim());
@@ -327,7 +372,7 @@ public abstract class TestProcessUtils {
                         done = true;
                 }
             } catch (SocketException e) {
-                System.err.println(this.getName() + " socket closed");
+                System.err.println("*Test - " + this.getName() + " socket closed");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -338,8 +383,8 @@ public abstract class TestProcessUtils {
 
         void processStarted(String processName) {
             // TODO Check we don't get started twice
-            serverSocketThread.processStarted(processName, this);
             this.processName = processName;
+            serverSocketThread.processStarted(processName, this);
         }
 
         void processStopped(String processName) {
@@ -373,10 +418,11 @@ public abstract class TestProcessUtils {
         public ClientSocketWriter(String processName) {
             this.processName = processName;
             try {
-                socket = new Socket(InetAddress.getLocalHost(), 8080);
+                socket = new Socket(InetAddress.getLocalHost(), PORT);
                 socketOutput = new PrintWriter(socket.getOutputStream(), true);
                 socketOutput.println(new StartCommand(processName));
             } catch (Exception e) {
+                e.printStackTrace(System.err);
                 shutdown();
                 throw new RuntimeException(e);
             }
