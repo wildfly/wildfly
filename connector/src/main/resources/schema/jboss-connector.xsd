@@ -22,14 +22,14 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="urn:jboss:domain:1.0" xmlns="urn:jboss:domain:1.0"
+  targetNamespace="urn:jboss:domain:connector:1.0" xmlns="urn:jboss:domain:connector:1.0"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
   >
    
-    <xs:element name="jca-container" type="jca-containerType"></xs:element>
+    <xs:element name="subsystem" type="subsystemType"></xs:element>
     
-    <xs:complexType name="jca-containerType">
+    <xs:complexType name="subsystemType">
       <xs:sequence>
         <xs:element name="archive-validation" type="archive-validationType" minOccurs="0" maxOccurs="1">
           <xs:annotation>
