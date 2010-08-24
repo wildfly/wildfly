@@ -34,7 +34,7 @@ public class ModuleContextConfig {
     public static final AttachmentKey<ModuleContextConfig> ATTACHMENT_KEY = new AttachmentKey<ModuleContextConfig>(ModuleContextConfig.class);
 
     private final ServiceName contextServiceName;
-    private final String contextName;
+    private final JndiName contextName;
 
     /**
      * Create a new instance.
@@ -42,7 +42,7 @@ public class ModuleContextConfig {
      * @param contextServiceName The context service name
      * @param contextName The context jndi name.
      */
-    public ModuleContextConfig(ServiceName contextServiceName, String contextName) {
+    public ModuleContextConfig(ServiceName contextServiceName, JndiName contextName) {
         this.contextServiceName = contextServiceName;
         this.contextName = contextName;
     }
@@ -61,7 +61,7 @@ public class ModuleContextConfig {
      *
      * @return The jndi name
      */
-    public String getContextName() {
+    public JndiName getContextName() {
         return contextName;
     }
 }

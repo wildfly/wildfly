@@ -38,7 +38,7 @@ public class ContextNames {
     /**
      * Jndi name for java: namespace
      */
-    public static final String JAVA_CONTEXT_NAME = "java:";
+    public static final JndiName JAVA_CONTEXT_NAME = JndiName.of("java:");
 
     /**
      * ServiceName for java: namespace
@@ -48,7 +48,7 @@ public class ContextNames {
     /**
      * Jndi name for java:global namespace
      */
-    public static final String GLOBAL_CONTEXT_NAME = "java:global";
+    public static final JndiName GLOBAL_CONTEXT_NAME = JndiName.of("java:global");
 
     /**
      * ServiceName for java:global namespace
@@ -58,7 +58,7 @@ public class ContextNames {
     /**
      * Jndi name for java:app namespace
      */
-    public static final String APPLICATION_CONTEXT_NAME = "java:app";
+    public static final JndiName APPLICATION_CONTEXT_NAME = JndiName.of("java:app");
 
     /**
      * Parent ServiceName for java:app namespace
@@ -68,7 +68,7 @@ public class ContextNames {
     /**
      * Jndi name for java:module namespace
      */
-    public static final String MODULE_CONTEXT_NAME = "java:module";
+    public static final JndiName MODULE_CONTEXT_NAME = JndiName.of("java:module");
 
     /**
      * Parent ServiceName for java:module namespace
@@ -78,7 +78,7 @@ public class ContextNames {
     /**
      * Jndi name for java:comp namespace
      */
-    public static final String COMPONENT_CONTEXT_NAME = "java:comp";
+    public static final JndiName COMPONENT_CONTEXT_NAME = JndiName.of("java:comp");
 
 
     /**

@@ -47,11 +47,12 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
-        final ContextService contextService = new ContextService(context.getName());
+        final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(context.getName());
+        final ContextService contextService = new ContextService(moduleContextJndiName);
         batchBuilder.addService(moduleContextServiceName, contextService)
             .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector());
 
-        context.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, ContextNames.GLOBAL_CONTEXT_NAME + "/" + context.getName()));
+        context.putAttachment(ModuleContextConfig.ATTACHMENT_KEY, new ModuleContextConfig(moduleContextServiceName, moduleContextJndiName));
         // TODO: These names will need to change when application scoping becomes available.
     }
 }

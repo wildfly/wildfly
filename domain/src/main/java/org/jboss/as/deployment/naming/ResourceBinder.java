@@ -47,7 +47,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public static final ServiceName COMPONENT_BINDER = ContextNames.COMPONENT_CONTEXT_SERVICE_NAME.append("binder");
 
     private final InjectedValue<Context> namingContextValue = new InjectedValue<Context>();
-    private final String name;
+    private final JndiName name;
     private final Value<T> value;
 
     /**
@@ -56,7 +56,7 @@ public class ResourceBinder<T> implements Service<Object> {
      * @param name The JNDI name to use for binding.
      * @param value The value to bind into JNDI
      */
-    public ResourceBinder(final String name, final Value<T> value) {
+    public ResourceBinder(final JndiName name, final Value<T> value) {
         this.name = name;
         this.value = value;
     }
@@ -70,7 +70,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void start(StartContext context) throws StartException {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.rebind(name, value.getValue());
+            namingContext.rebind(name.getLocalName(), value.getValue());
         } catch (NamingException e) {
             throw new StartException("Failed to bind resource into context [" + namingContext + "] at location [" + name + "]", e);
         }
@@ -84,7 +84,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized void stop(StopContext context) {
         final Context namingContext = namingContextValue.getValue();
         try {
-            namingContext.unbind(name);
+            namingContext.unbind(name.getLocalName());
         } catch (NamingException e) {
             throw new RuntimeException("Failed to unbind resource from context [" + namingContext + "] at location [" + name + "]", e);
         }
@@ -99,7 +99,7 @@ public class ResourceBinder<T> implements Service<Object> {
     public synchronized Object getValue() throws IllegalStateException {
         final Context namingContext = namingContextValue.getValue();
         try {
-            return namingContext.lookup(name);
+            return namingContext.lookup(name.getLocalName());
         } catch (NamingException e) {
             throw new RuntimeException("Failed to lookup value from context [" + namingContext + "] at location [" + name + "]", e);
         }

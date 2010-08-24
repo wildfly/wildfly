@@ -39,7 +39,7 @@ import javax.naming.NamingException;
  */
 public class ContextService implements Service<Context> {
     private final InjectedValue<Context> parentContextValue = new InjectedValue<Context>();
-    private final String name;
+    private final JndiName name;
     private Context context;
 
     /**
@@ -47,7 +47,7 @@ public class ContextService implements Service<Context> {
      *
      * @param name The context name in the parent context
      */
-    public ContextService(final String name) {
+    public ContextService(final JndiName name) {
         this.name = name;
     }
 
@@ -60,7 +60,7 @@ public class ContextService implements Service<Context> {
     public synchronized void start(final StartContext context) throws StartException {
         final Context parentContext = parentContextValue.getValue();
         try {
-            this.context = parentContext.createSubcontext(name);
+            this.context = parentContext.createSubcontext(name.getLocalName());
         } catch (NamingException e) {
             throw new StartException("Failed to create sub-context with name '" + name + "' in context '" + parentContext + "'", e);
         }
@@ -74,9 +74,9 @@ public class ContextService implements Service<Context> {
     public synchronized void stop(StopContext context) {
         final Context parentContext = parentContextValue.getValue();
         try {
-            parentContext.unbind(name);
+            parentContext.destroySubcontext(name.getLocalName());
         } catch (NamingException e) {
-            throw new IllegalStateException("Failed to unbind sub-context with name '" + name + "' from context '" + parentContext + "'", e);
+            throw new IllegalStateException("Failed to destroy sub-context with name '" + name + "' from context '" + parentContext + "'", e);
         }
     }
 

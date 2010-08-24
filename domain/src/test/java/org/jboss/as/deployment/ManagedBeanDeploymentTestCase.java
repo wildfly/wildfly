@@ -130,10 +130,11 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
 
         final ServiceController<?> testServiceController = serviceContainer.getService(ManagedBeanService.SERVICE_NAME.append(expectedDeploymentName, "TestBeanWithInjection"));
         assertNotNull(testServiceController);
-        final TestManagedBeanWithInjection testManagedBean = (TestManagedBeanWithInjection) testServiceController.getValue();
+        final ManagedBeanContainer<TestManagedBeanWithInjection> managedBeanContainer = (ManagedBeanContainer<TestManagedBeanWithInjection>) testServiceController.getValue();
+        final TestManagedBeanWithInjection testManagedBean = managedBeanContainer.createInstance();
         assertNotNull(testManagedBean);
         assertNotNull(testManagedBean.getOther());
-        assertFalse(testManagedBean.equals(testServiceController.getValue()));
+        assertFalse(testManagedBean.equals(managedBeanContainer.createInstance()));
     }
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
