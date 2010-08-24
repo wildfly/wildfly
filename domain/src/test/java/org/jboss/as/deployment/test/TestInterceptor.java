@@ -22,31 +22,21 @@
 
 package org.jboss.as.deployment.test;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.interceptor.Interceptors;
-import java.io.Serializable;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author John E. Bailey
  */
-@ManagedBean("TestBeanWithInjection")
-@Resources({
-    @Resource(name="bar", type=TestManagedBean.class, mappedName="TestBean")
-})
-@Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
-@Interceptors({TestInterceptor.class})
-public class TestManagedBeanWithInjection implements Serializable {
-    @Resource private TestManagedBean other;
+@Interceptor
+public class TestInterceptor {
+    @Resource(name="baz")
+    private TestManagedBean other;
 
-    @PostConstruct
-    private void printMessage() {
-        System.out.println("Test manage bean started: " + other);
-    }
-
-    public TestManagedBean getOther() {
-        return other;
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        return context.proceed();
     }
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.managedbean.container;
 
 import org.jboss.msc.service.ServiceName;
 
@@ -54,11 +54,11 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
         final Reference reference = Reference.class.cast(obj);
         RefAddr refAddr = reference.get(0);
         final ServiceName managedBeanName = (ServiceName)refAddr.getContent();
-        final ManagedBeanService<?> managedBeanService = ManagedBeanRegistry.get(managedBeanName);
+        final ManagedBeanContainer<?> managedBeanService = ManagedBeanRegistry.get(managedBeanName);
         if(managedBeanService == null) {
             throw new NamingException("Managed bean does not exist with name: " + managedBeanName);
         }
-        return managedBeanService.getValue();
+        return managedBeanService.createInstance();
     }
 
     /**

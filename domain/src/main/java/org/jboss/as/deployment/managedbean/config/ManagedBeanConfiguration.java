@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.managedbean.config;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -36,9 +36,10 @@ public class ManagedBeanConfiguration implements Serializable {
 
     private String name;
     private Class<?> type;
-    private Method postConstructMethod;
-    private Method preDestroyMethod;
+    private List<Method> postConstructMethods;
+    private List<Method> preDestroyMethods;
     private List<ResourceConfiguration> resourceConfigurations;
+    private List<InterceptorConfiguration> interceptorConfigurations;
 
     /**
      * Default constructor.
@@ -70,7 +71,7 @@ public class ManagedBeanConfiguration implements Serializable {
      * Set the managed bean name
      * @param name the managed bean name
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -84,56 +85,74 @@ public class ManagedBeanConfiguration implements Serializable {
     }
 
     /**
-     * Get the post construct method.
+     * Get the post-construct methods.
      *
-     * @return the post construct method
+     * @return the post-construct methods
      */
-    public Method getPostConstructMethod() {
-        return postConstructMethod;
+    public List<Method> getPostConstructMethods() {
+        return postConstructMethods;
     }
 
     /**
-     * Set the post construct method.
+     * Set the post-construct methods.
      * 
-     * @param postConstructMethod the post construct method
+     * @param postConstructMethods the post-construct methods
      */
-    public void setPostConstructMethod(Method postConstructMethod) {
-        this.postConstructMethod = postConstructMethod;
+    public void setPostConstructMethods(final List<Method> postConstructMethods) {
+        this.postConstructMethods = postConstructMethods;
     }
 
     /**
-     * Get the pre destroy method.
+     * Get the pre-destroy methods.
      *
-     * @return the pre destroy method
+     * @return the pre-destroy methods
      */
-    public Method getPreDestroyMethod() {
-        return preDestroyMethod;
+    public List<Method> getPreDestroyMethods() {
+        return preDestroyMethods;
     }
 
     /**
-     * Set the pre destroy method.
+     * Set the pre-destroy methods.
      *
-     * @param preDestroyMethod the pre destroy method
+     * @param preDestroyMethods the pre-destroy methods
      */
-    public void setPreDestroyMethod(Method preDestroyMethod) {
-        this.preDestroyMethod = preDestroyMethod;
+    public void setPreDestroyMethods(final List<Method> preDestroyMethods) {
+        this.preDestroyMethods = preDestroyMethods;
     }
 
     /**
-     * Get the resource injection configurations.
+     * Get the resource configurations.
      *
-     * @return the resource injection configurations
+     * @return the resource configurations
      */
-    public List<ResourceConfiguration> getResourceInjectionConfigurations() {
+    public List<ResourceConfiguration> getResourceConfigurations() {
         return resourceConfigurations;
     }
 
     /**
-     * Set the resource injection configurations.
+     * Set the resource configurations.
      *
-     * @param resourceConfigurations the resource injection configurations
+     * @param resourceConfigurations the resource configurations
      */
-    public void setResourceInjectionConfigurations(List<ResourceConfiguration> resourceConfigurations) {
+    public void setResourceConfigurations(List<ResourceConfiguration> resourceConfigurations) {
         this.resourceConfigurations = resourceConfigurations;
+    }
+
+    /**
+     * Get the interceptor configurations.
+     *
+     * @return The interceptor configurations.
+     */
+    public List<InterceptorConfiguration> getInterceptorConfigurations() {
+        return interceptorConfigurations;
+    }
+
+    /**
+     * Set the interceptor configurations.
+     *
+     * @param interceptorConfigurations The interceptor configurations.
+     */
+    public void setInterceptorConfigurations(List<InterceptorConfiguration> interceptorConfigurations) {
+        this.interceptorConfigurations = interceptorConfigurations;
     }
 }

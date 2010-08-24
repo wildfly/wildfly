@@ -26,6 +26,7 @@ import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
 import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
@@ -109,9 +110,12 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
 
         final ServiceController<?> testServiceController = serviceContainer.getService(ManagedBeanService.SERVICE_NAME.append(expectedDeploymentName, "TestBean"));
         assertNotNull(testServiceController);
-        final TestManagedBean testManagedBean = (TestManagedBean) testServiceController.getValue();
+
+        final ManagedBeanContainer<TestManagedBean> managedBeanContainer = (ManagedBeanContainer<TestManagedBean>)testServiceController.getValue();
+
+        final TestManagedBean testManagedBean = managedBeanContainer.createInstance();
         assertNotNull(testManagedBean);
-        assertFalse(testManagedBean.equals(testServiceController.getValue()));
+        assertFalse(testManagedBean.equals(managedBeanContainer.createInstance()));
     }
 
     @Test
@@ -136,6 +140,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
         final VirtualFile virtualFile = VFS.getChild(getResource(ManagedBeanDeploymentTestCase.class, path));
         copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestManagedBean.class", path, "org/jboss/as/deployment/test");
         copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestManagedBeanWithInjection.class", path, "org/jboss/as/deployment/test");
+        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestInterceptor.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
     }
 }

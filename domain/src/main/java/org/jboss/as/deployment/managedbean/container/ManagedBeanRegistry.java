@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.managedbean.container;
 
 import org.jboss.msc.service.ServiceName;
 
@@ -28,22 +28,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Static registry used to manged registration and retrieval of managed bean services.
+ * Static registry used to manged registration and retrieval of managed bean containers.
  * 
  * @author John E. Bailey
  */
 public class ManagedBeanRegistry {
-    private static final ConcurrentMap<ServiceName, ManagedBeanService<?>> registry = new ConcurrentHashMap<ServiceName, ManagedBeanService<?>>();
+    private static final ConcurrentMap<ServiceName, ManagedBeanContainer<?>> registry = new ConcurrentHashMap<ServiceName, ManagedBeanContainer<?>>();
 
     /**
      * Register a managed bean service.
      *
      * @param name The service name
-     * @param managedBeanService The service
+     * @param managedBeanContainer The container
      * @throws DuplicateMangedBeanException if multiple instances are registered with the same name
      */
-    public static void register(final ServiceName name, final ManagedBeanService<?> managedBeanService) throws DuplicateMangedBeanException {
-        if(registry.putIfAbsent(name, managedBeanService) != null) {
+    public static void register(final ServiceName name, final ManagedBeanContainer<?> managedBeanContainer) throws DuplicateMangedBeanException {
+        if(registry.putIfAbsent(name, managedBeanContainer) != null) {
             throw new DuplicateMangedBeanException("ManagedBean bound to '%s' already exists in registry.", name);
         }
     }
@@ -54,7 +54,7 @@ public class ManagedBeanRegistry {
      * @param name The managed bean service name
      * @return The managed bean service if it exists in the registry, null if no.
      */
-    public static ManagedBeanService<?> get(final ServiceName name) {
+    public static ManagedBeanContainer<?> get(final ServiceName name) {
         return registry.get(name);
     }
 
@@ -62,13 +62,14 @@ public class ManagedBeanRegistry {
      * Remove a managed bean service from the registry.
      *
      * @param name The service name
-     * @param managedBeanService The service
+     * @param managedBeanContainer The service
      */
-    public static void unregister(final ServiceName name, final ManagedBeanService<?> managedBeanService) {
-        registry.remove(name, managedBeanService);
+    public static void unregister(final ServiceName name, final ManagedBeanContainer<?> managedBeanContainer) {
+        registry.remove(name, managedBeanContainer);
     }
 
     public static class DuplicateMangedBeanException extends Exception {
+        private static final long serialVersionUID = -2999486400675276839L;
         public DuplicateMangedBeanException(final String messageFormat, final Object... params) {
             super(String.format(messageFormat, params));
         }

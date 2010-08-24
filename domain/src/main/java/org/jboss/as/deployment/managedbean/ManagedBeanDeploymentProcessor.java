@@ -23,6 +23,16 @@
 package org.jboss.as.deployment.managedbean;
 
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
+import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
+import org.jboss.as.deployment.managedbean.container.FieldResourceInjection;
+import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanInterceptor;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanObjectFactory;
+import org.jboss.as.deployment.managedbean.container.MethodResourceInjection;
+import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
+import org.jboss.as.deployment.managedbean.container.ResourceInjection;
 import org.jboss.as.deployment.naming.ContextService;
 import org.jboss.as.deployment.naming.ModuleContextConfig;
 import org.jboss.as.deployment.naming.ResourceBinder;
@@ -78,7 +88,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final String managedBeanName = managedBeanConfiguration.getName();
 
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
-        final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(beanClass, managedBeanConfiguration.getPostConstructMethod(), managedBeanConfiguration.getPreDestroyMethod(), resourceInjections);
+        final List<ManagedBeanInterceptor> interceptors = new ArrayList<ManagedBeanInterceptor>();
+        final ManagedBeanService<Object> managedBeanService = new ManagedBeanService<Object>(new ManagedBeanContainer<Object>(beanClass, managedBeanConfiguration.getPostConstructMethods(), managedBeanConfiguration.getPreDestroyMethods(), resourceInjections, interceptors));
 
         final ServiceName moduleContextServiceName = moduleContext.getContextServiceName();
 
@@ -86,17 +97,25 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
 
         final ServiceName managedBeanContextName = moduleContextServiceName.append(managedBeanName, "context");
-        for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceInjectionConfigurations()) {
+
+        // Process managed bean resources
+        for (ResourceConfiguration resourceConfiguration : managedBeanConfiguration.getResourceConfigurations()) {
             final ResourceInjection<Object> resourceInjection = processResource(moduleContext, resourceConfiguration, batchBuilder, serviceBuilder, managedBeanContextName);
             if(resourceInjection != null) {
                 resourceInjections.add(resourceInjection);
             }
         }
 
+        // Process managed bean interceptors
+        for (InterceptorConfiguration interceptorConfiguration : managedBeanConfiguration.getInterceptorConfigurations()) {
+            interceptors.add(processInterceptor(moduleContext, interceptorConfiguration, batchBuilder, serviceBuilder, managedBeanContextName));
+        }
+
         final ContextService actualBeanContext = new ContextService(managedBeanName + "-context");
         batchBuilder.addService(managedBeanContextName, actualBeanContext)
             .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector());
 
+        // Add an object factory reference for this managed bean
         final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName);
         final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>(managedBeanName, Values.immediateValue(managedBeanFactoryReference));
         final ServiceName referenceBinderName = moduleContextServiceName.append(managedBeanName);
@@ -117,7 +136,6 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.addDependency(binderName, resourceInjection.getValueInjector());
         }
 
-        // TODO use java:module based name
         final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : moduleContext.getContextName() + "/" + targetContextName);
         final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(localContextName, Values.immediateValue(linkRef));
 
@@ -142,5 +160,17 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             default:
                 return null;
         }
+    }
+
+    private ManagedBeanInterceptor processInterceptor(ModuleContextConfig moduleContext, InterceptorConfiguration interceptorConfiguration, BatchBuilder batchBuilder, BatchServiceBuilder<?> serviceBuilder, ServiceName managedBeanContextName) throws DeploymentUnitProcessingException {
+        final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
+
+        for (ResourceConfiguration resourceConfiguration : interceptorConfiguration.getResourceConfigurations()) {
+            final ResourceInjection<Object> resourceInjection = processResource(moduleContext, resourceConfiguration, batchBuilder, serviceBuilder, managedBeanContextName);
+            if(resourceInjection != null) {
+                resourceInjections.add(resourceInjection);
+            }
+        }
+        return new ManagedBeanInterceptor(interceptorConfiguration.getInterceptorClass(), interceptorConfiguration.getAroundInvokeMethod(), resourceInjections);
     }
 }
