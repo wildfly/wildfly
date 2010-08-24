@@ -114,6 +114,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
         </dependency>

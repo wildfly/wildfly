@@ -59,7 +59,7 @@
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
         <version.junit>4.6</version.junit>
-        <version.org.javassist>3.14.0-SNAPSHOT</org.version.javassist>
+        <version.org.javassist>3.14.0-SNAPSHOT</version.org.javassist>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.jandex>1.0.0-SNAPSHOT</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>

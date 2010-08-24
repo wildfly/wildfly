@@ -153,6 +153,10 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def group="org.javassist" artifact="javassist">
+            <maven-resource group="org.javassist" artifact="javassist"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="jboss-as-domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
