@@ -179,7 +179,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Try to resolve with the help of the annotation index
             final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
 
-            final List<AnnotationTarget> targets = classAnnotations.get(DotName.createSimple(annotationType.toString()));
+            final List<AnnotationTarget> targets = classAnnotations.get(DotName.createSimple(annotationType.getName()));
             if (targets == null || targets.isEmpty()) {
                 return null;
             }

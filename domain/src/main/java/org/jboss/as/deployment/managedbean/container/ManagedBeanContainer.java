@@ -79,7 +79,7 @@ public class ManagedBeanContainer<T> {
                 try {
                     postConstructMethod.invoke(managedBean);
                 } catch (Throwable t) {
-                    throw new RuntimeException("Failed to invoke post construct method '" + postConstructMethod.getName() + "' for class " + beanClass);
+                    throw new RuntimeException("Failed to invoke post construct method '" + postConstructMethod.getName() + "' for class " + beanClass, t);
                 }
             }
         }
@@ -92,10 +92,13 @@ public class ManagedBeanContainer<T> {
                 throw new RuntimeException("Failed to create instance of interceptor " + managedBeanInterceptor.toString(), t);
             }
         }
-        final ProxyMethodHandler<T> proxyMethodHandler = new ProxyMethodHandler<T>(managedBean, aroundInvokeInterceptors);
-        // TODO: Create a proxy instance
-
-        return managedBean; // TODO return proxy
+        final T proxy;
+        try {
+            proxy = ManagedBeanProxyHandler.createProxy(beanClass, managedBean, aroundInvokeInterceptors);
+        } catch (Throwable t) {
+            throw new RuntimeException("Unable to create managed bean proxy for " + beanClass, t);
+        }
+        return proxy;
     }
 
 

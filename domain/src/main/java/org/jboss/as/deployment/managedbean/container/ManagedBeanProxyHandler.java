@@ -22,6 +22,10 @@
 
 package org.jboss.as.deployment.managedbean.container;
 
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
+
 import javax.interceptor.ExcludeClassInterceptors;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -33,34 +37,55 @@ import java.util.List;
  *
  * @author John E. Bailey
  */
-public class ProxyMethodHandler<T> {
-    private final T mangedBeanInstance;
+public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements MethodHandler {
     private final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors;
+    private final T instance;
+
+    public static <T> T createProxy(final Class<T> managedBeanClass, final T managedBean, final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) throws IllegalAccessException, InstantiationException {
+        final ManagedBeanProxyHandler<T> handler = new ManagedBeanProxyHandler<T>(managedBean, interceptors);
+        //return ProxyFactory.createProxy(managedBeanClass, );
+        final ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.setSuperclass(managedBeanClass);
+
+        Class<T> c = proxyFactory.createClass();
+        T proxy = c.newInstance();
+        ((ProxyObject)proxy).setHandler(handler);
+        return proxy;
+    }
 
     /**
      * Create an instance.
      *
-     * @param mangedBeanInstance The managed bean instance
+     * @param managedBeanInstance The managed bean instance
      * @param interceptors The interceptor chain
      */
-    public ProxyMethodHandler(T mangedBeanInstance, List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) {
-        this.mangedBeanInstance = mangedBeanInstance;
+    private ManagedBeanProxyHandler(T managedBeanInstance, List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) {
+        //super(managedBeanInstance);
+        this.instance = managedBeanInstance;
         this.interceptors = interceptors;
     }
 
     /**
      * Invoke a method on a managed bean instance method.
      *
-     * @param self {@code this}
-     * @param thisMethod The method on the proxy
-     * @param proceed The original method on the target
+     * @param instance The the managed bean instance
+     * @param method The method invoked
      * @param arguments The arguments to the method invocation
      * @return The value of the invocation context execution
      */
-    public Object invoke(final Object self, final Method thisMethod, final Method proceed, final Object[] arguments) throws Throwable {
-        if(!proceed.isAnnotationPresent(ExcludeClassInterceptors.class)) {
-            return new InvocationContext(mangedBeanInstance, proceed, arguments, interceptors).proceed();
+    protected Object invokeMethod(T instance, Method method, Object[] arguments) {
+        try {
+            if(!method.isAnnotationPresent(ExcludeClassInterceptors.class)) {
+                return new InvocationContext<T>(instance, method, arguments, interceptors).proceed();
+            }
+            return method.invoke(instance, arguments);
+        } catch(Throwable t) {
+            throw new RuntimeException(t);
         }
-        return proceed.invoke(mangedBeanInstance, arguments);
+    }
+
+    @Override
+    public Object invoke(Object o, Method method, Method proceed, Object[] arguments) throws Throwable {
+        return invokeMethod(instance, method, arguments);
     }
 }
