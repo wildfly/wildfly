@@ -109,7 +109,7 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
       }
       config.setBeanValidation(this.beanValidation);
 
-      final ConnectorSubsystemService connectorConfigService = new ConnectorSubsystemService(config);
+      final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
       builder.addService(ConnectorServices.JBOSS_CONNECTOR, connectorConfigService);
 
    }
@@ -141,6 +141,14 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
    @Override
    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException
    {
+      if (this.archiveValidationElement != null)
+      {
+         this.archiveValidationElement.writeContent(streamWriter);
+      }
+      streamWriter.writeStartElement(Element.BEAN_VALIDATION.getLocalName());
+      streamWriter.writeCharacters(String.valueOf(beanValidation));
+      streamWriter.writeEndElement();
+
    }
 
    /**

@@ -29,17 +29,17 @@ import org.jboss.msc.service.StopContext;
 
 /**
  *
- * A ConnectorSubsystemService.
+ * A ConnectorConfigService.
  *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-final class ConnectorSubsystemService implements Service<ConnectorSubsystemConfiguration>
+final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration>
 {
 
    private final ConnectorSubsystemConfiguration value;
 
-   public ConnectorSubsystemService(ConnectorSubsystemConfiguration value)
+   public ConnectorConfigService(ConnectorSubsystemConfiguration value)
    {
       this.value = value;
    }
