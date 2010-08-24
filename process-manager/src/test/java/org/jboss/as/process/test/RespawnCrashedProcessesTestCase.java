@@ -202,8 +202,13 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
     private void killProcess(String processName, Class<?> clazz) throws Exception {
         Object id = getProcessId(processName, clazz);
 
-        //TODO this only works on *nix
-        Process proc = Runtime.getRuntime().exec("kill -9 " + id);
+        String osName = System.getProperty("os.name");
+        Process proc;
+        if(osName.contains("Windows"))
+           proc = Runtime.getRuntime().exec("taskkill /pid " + id);
+        else //TODO this only works on *nix
+           proc = Runtime.getRuntime().exec("kill -9 " + id);
+        
         assertEquals(0, proc.waitFor());
         return;
     }

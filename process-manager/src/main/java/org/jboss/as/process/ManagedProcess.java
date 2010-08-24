@@ -347,8 +347,10 @@ final class ManagedProcess {
                             respawn = !stopped;
                     }
                     invokeStopProcessListeners(exitCode);
-                    if (respawn)
+                    if (respawn) {
+                        commandStream.closeSocketOutputStream();
                         respawn();
+                    }
                     break;
                 } catch (InterruptedException e) {
                 }
