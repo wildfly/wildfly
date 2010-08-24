@@ -101,15 +101,9 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
         
-<<<<<<< HEAD
-        String serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+	String serverProcessName = getServerProcessName(serverConfig);
         List<String> command = getServerLaunchCommand(serverConfig, jvmElement);
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
-=======
-        String serverProcessName = getServerProcessName(serverConfig);
-        List<String> command = getServerLaunchCommand(serverConfig);
-        Map<String, String> env = getServerLaunchEnvironment(serverConfig.getJvm());
->>>>>>> 8b5c617... [JBAS-8259] Replace stdio with socket communication for child processes
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
         processManagerSlave.startProcess(serverProcessName);
         

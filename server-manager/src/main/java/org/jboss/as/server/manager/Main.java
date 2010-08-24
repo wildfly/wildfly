@@ -153,7 +153,7 @@ public final class Main {
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
-            stderr.println(arg);
+            
             try {
                 if (CommandLineConstants.VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());
