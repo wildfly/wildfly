@@ -41,7 +41,7 @@ public final class ConnectorExtension implements Extension
    @Override
    public void registerElementHandlers(final XMLMapper mapper)
    {
-      mapper.registerRootElement(new QName("urn:jboss:domain:transactions:1.0", "subsystem"),
+      mapper.registerRootElement(new QName(Namespace.CONNECTOR_1_0.getUriString(), "subsystem"),
             new ConnectorSubsystemElementParser());
    }
 
