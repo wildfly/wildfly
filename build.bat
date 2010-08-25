@@ -27,6 +27,7 @@ SETLOCAL
 
 set CLASSPATH=
 set M2_HOME=
+set MAVEN+HOME=
 
 REM ******************************************************
 REM - "for" loops have been unrolled for compatibility
