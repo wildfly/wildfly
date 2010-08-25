@@ -29,7 +29,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
@@ -40,16 +42,15 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 public class ServerStartupListener extends AbstractServiceListener<Object>{
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
     private volatile int totalServices;
-    private volatile int onDemandServices;
     private volatile int startedServices;
     private volatile int count = 1;
     private final long start = System.currentTimeMillis();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
     private final Callback finishCallback;
+    private final Set<ServiceName> expectedOnDemandServices = new HashSet<ServiceName>();
 
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "count");
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> totalServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "totalServices");
-    private static final AtomicIntegerFieldUpdater<ServerStartupListener> onDemandServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "onDemandServices");
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> startedServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "startedServices");
 
     /**
@@ -64,9 +65,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     /** {@inheritDoc} */
     public void listenerAdded(final ServiceController<? extends Object> serviceController) {
         totalServicesUpdater.incrementAndGet(this);
-        if(ServiceController.Mode.ON_DEMAND.equals(serviceController.getMode())) {
-            onDemandServicesUpdater.incrementAndGet(this);
-        } else {
+        if(!expectedOnDemandServices.contains(serviceController.getName())) {
             countUpdater.incrementAndGet(this);
         }
     }
@@ -74,7 +73,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     /** {@inheritDoc} */
     public void serviceStarted(final ServiceController<? extends Object> serviceController) {
         startedServicesUpdater.incrementAndGet(this);
-        if (countUpdater.decrementAndGet(this) == 0) {
+        if (!expectedOnDemandServices.contains(serviceController.getName()) && countUpdater.decrementAndGet(this) == 0) {
             batchComplete();
         }
         serviceController.removeListener(this);
@@ -83,13 +82,13 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     /** {@inheritDoc} */
     public void serviceFailed(ServiceController<? extends Object> serviceController, StartException reason) {
         final ServiceName serviceName = serviceController.getName();
+        log.errorf(reason, "Service [%s] start failed", serviceName);
         serviceFailures.put(serviceName, reason);
-        if (countUpdater.decrementAndGet(this) == 0) {
+        if (!expectedOnDemandServices.contains(serviceController.getName()) && countUpdater.decrementAndGet(this) == 0) {
             batchComplete();
         }
         serviceController.removeListener(this);
-        log.errorf(reason, "Service [%s] start failed", serviceName);
-    }   
+    }
 
     /**
      * Call when all services in this group have been added.
@@ -103,8 +102,16 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private void batchComplete() {
         final long end = System.currentTimeMillis();
         if(finishCallback != null) {
-            finishCallback.run(serviceFailures, end - start, totalServices, onDemandServices, startedServices);
+            finishCallback.run(serviceFailures, end - start, totalServices, expectedOnDemandServices.size(), startedServices);
         }
+    }
+
+    public void expectOnDemand(final ServiceName serviceName) {
+        expectedOnDemandServices.add(serviceName);
+    }
+
+    public void unexpectOnDemand(final ServiceName serviceName) {
+        expectedOnDemandServices.remove(serviceName);
     }
 
     public static interface Callback {
