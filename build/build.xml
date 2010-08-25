@@ -42,7 +42,7 @@
             </fileset>
         </chmod>
     </target>
-	
+
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
@@ -155,6 +155,10 @@
 
         <module-def group="org.javassist" artifact="javassist">
             <maven-resource group="javassist" artifact="javassist"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-connector">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
         <module-def group="org.jboss.as" artifact="jboss-as-domain">

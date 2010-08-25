@@ -101,6 +101,7 @@
 
     <modules>
         <module>domain</module>
+	<module>connector</module>
         <module>server-manager</module>
         <module>server</module>
         <module>domain-controller</module>
@@ -163,6 +164,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-connector</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -214,6 +221,7 @@
                 <artifactId>jboss-as-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
 
             <!-- External Dependencies -->
 
