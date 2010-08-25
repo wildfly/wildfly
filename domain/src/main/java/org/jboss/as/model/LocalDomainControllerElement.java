@@ -156,7 +156,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
-        if (interfaces != null) {
+        synchronized (interfaces) {
             cksum = calculateElementHashOf(interfaces.values(), cksum);
         }
         if (jvm != null) {
@@ -181,14 +181,15 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.GROUP.getLocalName(), serverGroup);
 
-        
-        if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
-            for (InterfaceElement element : interfaces.values()) {
-                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (interfaces) {
+            if (! interfaces.isEmpty()) {
+                streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
+                for (InterfaceElement element : interfaces.values()) {
+                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
         if (jvm != null) {

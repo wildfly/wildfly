@@ -20,6 +20,7 @@ import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.RefResolver;
+import org.jboss.as.model.SimpleRefResolver;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -184,6 +185,45 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     }
     
     /**
+     * Creates a new SocketBindingGroupElement based on an existing element. The key thing
+     * this constructor does is use the given <code>source</code> element's
+     * {@link RefResolver} to resolve any included binding groups. It then creates
+     * its own RefResolver from only those included binding groups. The effect of this
+     * is to eliminate any extraneous SocketBindingGroupElement references that may be
+     * associated with <code>source</code>'s object graph.
+     * 
+     * @param source
+     */
+    public SocketBindingGroupElement(SocketBindingGroupElement source) {
+        super(source.getLocation());
+
+        this.name = source.name;
+        this.defaultInterface = source.defaultInterface;
+        this.interfaceResolver = source.interfaceResolver;
+        synchronized (source.socketBindings) {
+            this.socketBindings.putAll(source.socketBindings);
+        }
+        synchronized (source.includedGroups) {
+            this.includedGroups.putAll(source.includedGroups);
+        }
+        
+        final NavigableMap<String, SocketBindingGroupElement> resolvedGroups = new TreeMap<String, SocketBindingGroupElement>();
+        
+
+        for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : this.includedGroups.entrySet()) {
+            SocketBindingGroupElement group = source.includedGroupResolver.resolveRef(entry.getKey());
+            if (group == null) {
+                throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() + 
+                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +  
+                        Element.SOCKET_BINDING_GROUP + " '" + 
+                        entry.getValue().getGroupName() + "'");
+            }
+            resolvedGroups.put(entry.getKey(), new SocketBindingGroupElement(group));
+        }
+        this.includedGroupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(resolvedGroups);
+    }
+    
+    /**
      * Gets the name of the socket binding group.
      * 
      * @return the group name
@@ -211,10 +251,13 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             return Collections.unmodifiableSet(new HashSet<SocketBindingElement>(socketBindings.values()));
         else {
             Map<String, SocketBindingElement> result = new HashMap<String, SocketBindingElement>();
-            for (String groupName : includedGroups.keySet()) {
-                SocketBindingGroupElement group = includedGroupResolver.resolveRef(groupName);
+            for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : includedGroups.entrySet()) {
+                SocketBindingGroupElement group = includedGroupResolver.resolveRef(entry.getKey());
                 if (group == null) {
-                    throw new IllegalStateException("Cannot resolve reference from socket binding group " + name + " to included socket binding group " + groupName);
+                    throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() + 
+                            "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +  
+                            Element.SOCKET_BINDING_GROUP + " '" + 
+                            entry.getValue().getGroupName() + "'");
                 }
                 Set<SocketBindingElement> included = group.getAllSocketBindings();
                 for (SocketBindingElement binding : included) {
@@ -250,8 +293,12 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ defaultInterface.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(includedGroups.values(), cksum);
-        cksum = calculateElementHashOf(socketBindings.values(), cksum);
+        synchronized (includedGroups) {
+            cksum = calculateElementHashOf(includedGroups.values(), cksum);
+        }
+        synchronized (socketBindings) {
+            cksum = calculateElementHashOf(socketBindings.values(), cksum);
+        }
         return cksum;
     }
 
@@ -270,12 +317,17 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.DEFAULT_INTERFACE.getLocalName(), defaultInterface);
-        for (SocketBindingGroupIncludeElement included : includedGroups.values()) {
-            streamWriter.writeStartElement(Element.INCLUDE.getLocalName());
-            included.writeContent(streamWriter);
-        }for (SocketBindingElement included : socketBindings.values()) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING.getLocalName());
-            included.writeContent(streamWriter);
+        synchronized (includedGroups) {
+            for (SocketBindingGroupIncludeElement included : includedGroups.values()) {
+                streamWriter.writeStartElement(Element.INCLUDE.getLocalName());
+                included.writeContent(streamWriter);
+            }
+        }
+        synchronized (socketBindings) {
+            for (SocketBindingElement included : socketBindings.values()) {
+                streamWriter.writeStartElement(Element.SOCKET_BINDING.getLocalName());
+                included.writeContent(streamWriter);
+            }
         }
     }
 

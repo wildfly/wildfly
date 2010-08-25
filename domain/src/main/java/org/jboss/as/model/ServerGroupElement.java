@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -47,7 +48,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     private final String name;
     private final String profile;
-    private final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
+    private final NavigableMap<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
     private PropertiesElement systemProperties;
@@ -206,10 +207,12 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
      */
     public Set<ServerGroupDeploymentElement> getDeployments() {
         Set<ServerGroupDeploymentElement> deps = new LinkedHashSet<ServerGroupDeploymentElement>();
-        for (Map.Entry<DeploymentUnitKey, ServerGroupDeploymentElement> entry : deploymentMappings.entrySet()) {
-            deps.add(entry.getValue());
+        synchronized (deploymentMappings) {
+            for (Map.Entry<DeploymentUnitKey, ServerGroupDeploymentElement> entry : deploymentMappings.entrySet()) {
+                deps.add(entry.getValue());
+            }
         }
-        return Collections.unmodifiableSet(deps);
+        return deps;
     }
     
     /**
@@ -230,7 +233,9 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(deploymentMappings.values(), cksum);
+        synchronized (deploymentMappings) {
+            cksum = calculateElementHashOf(deploymentMappings.values(), cksum);
+        }
         if (bindingGroup != null) cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
         if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
@@ -264,14 +269,16 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
             bindingGroup.writeContent(streamWriter);
         }
         
-        if (! deploymentMappings.isEmpty()) {
-            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-            for (ServerGroupDeploymentElement element : deploymentMappings.values()) {
-                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }       
+        synchronized (deploymentMappings) {
+            if (! deploymentMappings.isEmpty()) {
+                streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+                for (ServerGroupDeploymentElement element : deploymentMappings.values()) {
+                    streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            }  
+        }
         
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());

@@ -18,8 +18,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Indicates that if a network interface satisfies any of a set of nested 
- * criteria, it may be used.
+ * Indicates that if a network interface satisfies either any or none of a set of nested 
+ * criteria, it may be used. Whether the test is for any or none depends on the
+ * <code>isAny</code> parameter passed to the constructor.
  * 
  * @author Brian Stansberry
  */
@@ -30,7 +31,7 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
     private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = 
             new TreeMap<Element, AbstractInterfaceCriteriaElement<?>>();
     /**
-     * Creates a new AnyCriteriaElement by parsing an xml stream
+     * Creates a new CompoundCriteriaElement by parsing an xml stream
      * 
      * @param reader stream reader used to read the xml
      * @param isAny true if this type {@link Element#ANY}, false if it is {@link Element#NOT}.
@@ -70,16 +71,19 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
 
     @Override
     public long elementHash() {
-        return calculateElementHashOf(interfaceCriteria.values(), 17l);
+        synchronized (interfaceCriteria) {
+            return calculateElementHashOf(interfaceCriteria.values(), 17l);
+        }
     }
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria.values()) {
-            streamWriter.writeStartElement(criteria.getElement().getLocalName());
-            criteria.writeContent(streamWriter);
+        synchronized (interfaceCriteria) {
+            for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria.values()) {
+                streamWriter.writeStartElement(criteria.getElement().getLocalName());
+                criteria.writeContent(streamWriter);
+            }
         }
-
         streamWriter.writeEndElement();
     }
 

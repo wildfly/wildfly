@@ -127,6 +127,41 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     }
     
     /**
+     * Creates a new ProfileElement based on an existing element. The key thing
+     * this constructor does is use the given <code>source</code> element's
+     * {@link RefResolver} to resolve any included profiles. It then creates
+     * its own RefResolver from only those included profiles. The effect of this
+     * is to eliminate any extraneous ProfileElement references that may be
+     * associated with <code>source</code>'s object graph.
+     * 
+     * @param source
+     */
+    public ProfileElement(ProfileElement source) {
+        super(source.getLocation());
+
+        this.name = source.name;
+        synchronized (source.subsystems) {
+            this.subsystems.putAll(source.subsystems);
+        }
+        synchronized (source.includedProfiles) {
+            this.includedProfiles.putAll(source.includedProfiles);
+        }
+
+        
+        final NavigableMap<String, ProfileElement> resolvedProfiles = new TreeMap<String, ProfileElement>();
+        for (Map.Entry<String, ProfileIncludeElement> entry : this.includedProfiles.entrySet()) {
+            ProfileElement prof = source.includedProfileResolver.resolveRef(entry.getKey());
+            if (prof == null) {
+                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() + 
+                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent profile '" + 
+                        entry.getValue().getProfile() + "'");
+            }
+            resolvedProfiles.put(entry.getKey(), new ProfileElement(prof));
+        }
+        this.includedProfileResolver = new SimpleRefResolver<String, ProfileElement>(resolvedProfiles);
+    }
+
+    /**
      * Gets the name of the profile
      * 
      * @return the profile name
@@ -137,7 +172,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<ProfileElement>> target, ProfileElement other) {
-        calculateDifference(target, includedProfiles, other.includedProfiles,
+        calculateDifference(target, safeCopyMap(includedProfiles), safeCopyMap(other.includedProfiles),
                 new DifferenceHandler<String, ProfileIncludeElement, ProfileElement>() {
                     public void handleAdd(final Collection<AbstractModelUpdate<ProfileElement>> target,
                             final String name, final ProfileIncludeElement newElement) {
@@ -160,8 +195,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                 });
         calculateDifference(
                 target,
-                subsystems,
-                other.subsystems,
+                safeCopyMap(subsystems),
+                safeCopyMap(other.subsystems),
                 new DifferenceHandler<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>, ProfileElement>() {
                     public void handleAdd(final Collection<AbstractModelUpdate<ProfileElement>> target,
                             final QName name,
@@ -188,18 +223,26 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     }
     
     public Set<ProfileIncludeElement> getIncludedProfiles() {
-        return Collections.unmodifiableSet(new HashSet<ProfileIncludeElement>(includedProfiles.values()));
+        synchronized (includedProfiles) {
+            return new HashSet<ProfileIncludeElement>(includedProfiles.values());
+        }
     }
     
     public Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> getSubsystems() {
-        return Collections.unmodifiableSet(new HashSet<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(subsystems.values()));
+        synchronized (subsystems) {
+            return new HashSet<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(subsystems.values());
+        }
     }
 
     @Override
     public long elementHash() {
         long hash = name.hashCode() & 0xffffffffL;
-        hash = calculateElementHashOf(includedProfiles.values(), hash);
-        hash = calculateElementHashOf(subsystems.values(), hash);
+        synchronized (includedProfiles) {
+            hash = calculateElementHashOf(includedProfiles.values(), hash);
+        }
+        synchronized (subsystems) {
+            hash = calculateElementHashOf(subsystems.values(), hash);
+        }
         return hash;
     }
 
@@ -211,17 +254,23 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        if (!includedProfiles.isEmpty()) {
-            for (ProfileIncludeElement included : includedProfiles.values()) {
-                streamWriter.writeStartElement(Element.INCLUDE.getLocalName());
-                included.writeContent(streamWriter);
+        
+        synchronized (includedProfiles) {
+            if (!includedProfiles.isEmpty()) {
+                for (ProfileIncludeElement included : includedProfiles.values()) {
+                    streamWriter.writeStartElement(Element.INCLUDE.getLocalName());
+                    included.writeContent(streamWriter);
+                }
             }
         }
-        if (!subsystems.isEmpty()) {
-            for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
-                QName qname = subsystem.getElementName();
-                streamWriter.writeStartElement(qname.getNamespaceURI(), qname.getLocalPart());
-                subsystem.writeContent(streamWriter);
+        
+        synchronized (subsystems) {
+            if (!subsystems.isEmpty()) {
+                for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
+                    QName qname = subsystem.getElementName();
+                    streamWriter.writeStartElement(qname.getNamespaceURI(), qname.getLocalPart());
+                    subsystem.writeContent(streamWriter);
+                }
             }
         }
         streamWriter.writeEndElement();
