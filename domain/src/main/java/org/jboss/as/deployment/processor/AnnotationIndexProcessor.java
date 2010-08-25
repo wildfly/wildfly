@@ -68,9 +68,8 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                 try {
                     inputStream = classFile.openStream();
                     indexer.index(inputStream);
-                } catch(Throwable t) {
-                    VFSUtils.safeClose(inputStream);
-                    throw t;
+                } finally {
+                    VFSUtils.safeClose(inputStream);   
                 }
             }
             final Index index = indexer.complete();
