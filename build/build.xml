@@ -154,7 +154,7 @@
         </module-def>
 
         <module-def group="org.javassist" artifact="javassist">
-            <maven-resource group="org.javassist" artifact="javassist"/>
+            <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
         <module-def group="org.jboss.as" artifact="jboss-as-domain">
