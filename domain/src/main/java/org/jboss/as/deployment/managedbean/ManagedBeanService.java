@@ -32,9 +32,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service responsible for managing the creation and life-cycle of a managed bean.  This service will return a new instance
- * of the manged bean each time getValue is called.  In essence this can be used as a factory to create instances of a specific managed
- * bean.
+ * Service responsible for managing the life-cycle of a managed bean container.  Once this service is started it will
+ * register the managed bean container with the registry and in essence mark the managed bean in service.  It will
+ * un-register the container from the registry when stopped. 
  * 
  * @author John E. Bailey
  */

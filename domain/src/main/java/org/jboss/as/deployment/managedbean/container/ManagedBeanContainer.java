@@ -63,7 +63,7 @@ public class ManagedBeanContainer<T> {
      */
     public T createInstance() {
         // Create instance
-        final T managedBean;
+        T managedBean;
         try {
             managedBean = beanClass.newInstance();
         } catch (Throwable t) {
@@ -83,22 +83,26 @@ public class ManagedBeanContainer<T> {
                 }
             }
         }
-        // Create a proxy
-        final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> aroundInvokeInterceptors = new ArrayList<ManagedBeanInterceptor.AroundInvokeInterceptor<?>>(interceptors.size());
-        for(ManagedBeanInterceptor<?> managedBeanInterceptor : interceptors) {
+
+        if(!interceptors.isEmpty()) {
+            // Create a proxy
+            final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> aroundInvokeInterceptors = new ArrayList<ManagedBeanInterceptor.AroundInvokeInterceptor<?>>(interceptors.size());
+            for(ManagedBeanInterceptor<?> managedBeanInterceptor : interceptors) {
+                try {
+                    aroundInvokeInterceptors.add(managedBeanInterceptor.createInstance());
+                } catch (Throwable t) {
+                    throw new RuntimeException("Failed to create instance of interceptor " + managedBeanInterceptor.toString(), t);
+                }
+            }
+
+            final T proxy;
             try {
-                aroundInvokeInterceptors.add(managedBeanInterceptor.createInstance());
+                managedBean = ManagedBeanProxyHandler.createProxy(beanClass, managedBean, aroundInvokeInterceptors);
             } catch (Throwable t) {
-                throw new RuntimeException("Failed to create instance of interceptor " + managedBeanInterceptor.toString(), t);
+                throw new RuntimeException("Unable to create managed bean proxy for " + beanClass, t);
             }
         }
-        final T proxy;
-        try {
-            proxy = ManagedBeanProxyHandler.createProxy(beanClass, managedBean, aroundInvokeInterceptors);
-        } catch (Throwable t) {
-            throw new RuntimeException("Unable to create managed bean proxy for " + beanClass, t);
-        }
-        return proxy;
+        return managedBean;
     }
 
 
