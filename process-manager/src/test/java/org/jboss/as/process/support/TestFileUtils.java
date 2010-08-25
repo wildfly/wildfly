@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -76,6 +77,11 @@ public abstract class TestFileUtils {
 
     public static int getNumberOutputFiles() {
         return getOutputFiles().length;
+    }
+    
+    public static void assertNumberOutputFiles(int expected) {
+        File[] files = getOutputFiles();
+        assertEquals(Arrays.toString(files), expected, files.length);
     }
 
     public static void close(Closeable c) {
@@ -126,7 +132,7 @@ public abstract class TestFileUtils {
 
         public void checkFile(String... expected) {
             List<String> lines = readFile();
-            assertEquals(expected.length, lines.size());
+            assertEquals(Arrays.toString(expected) + ":" + lines, + expected.length, lines.size());
 
             for (int i = 0; i < expected.length; i++) {
                 assertEquals(expected[i], lines.get(i));

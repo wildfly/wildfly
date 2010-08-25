@@ -22,6 +22,17 @@
 
 package org.jboss.as.model;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.Extension;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.model.socket.InterfaceElement;
@@ -41,16 +52,6 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -74,8 +75,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
-    /**FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of its JVM */
-    private final JvmElement jvm;
     private PropertiesElement systemProperties;
 
     
@@ -101,7 +100,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         super(reader);
         
         this.portOffset = 0;
-        this.jvm = null;
         
         // Handle namespaces
         namespaces.putAll(readNamespaces(reader));
@@ -153,18 +151,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
                             if (bindingGroup != null) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            RefResolver<String, InterfaceElement> intfResolver = new RefResolver<String, InterfaceElement>() {
-
-                                private static final long serialVersionUID = 8976121114197265586L;
-
-                                 @Override
-                                 public InterfaceElement resolveRef(String ref) {
-                                     if (ref == null)
-                                         throw new IllegalArgumentException("ref is null");
-                                     return interfaces.get(ref);
-                                 }
-                                 
-                            };
+                            RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
                             bindingGroup = new SocketBindingGroupElement(reader, intfResolver, null);
                             break;
                         }
@@ -224,9 +211,10 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
             throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
         
         String profileName = serverGroup.getProfileName();
-        this.profile = domain.getProfile(profileName);
-        if (profile == null)
+        ProfileElement domainProfile = domain.getProfile(profileName);
+        if (domainProfile == null)
             throw new IllegalStateException("Profile" + profileName + " is not listed in Domain");
+        this.profile = new ProfileElement(domainProfile);
         
         Set<ServerGroupDeploymentElement> groupDeployments = serverGroup.getDeployments();
         for (ServerGroupDeploymentElement dep : groupDeployments) {
@@ -237,7 +225,8 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         if (bindingRef == null) {
             bindingRef = serverGroup.getSocketBindingGroup();
         }
-        this.socketBindings = domain.getSocketBindingGroup(bindingRef.getRef());
+        SocketBindingGroupElement domainBindings = domain.getSocketBindingGroup(bindingRef.getRef());
+        this.socketBindings = domainBindings == null ? null : new SocketBindingGroupElement(domainBindings);
         this.portOffset = bindingRef.getPortOffset();
         
         this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, 
@@ -276,28 +265,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
             }
             // TODO log a WARN about interfaces that aren't referenced via socket bindings
         }
-        
-        // FIXME this JVM stuff belongs in the ServerManager; Standalone is unaware of it's JVM
-        
-        JvmElement serverVM = server.getJvm();
-        String serverVMName = serverVM != null ? serverVM.getName() : null;
-        
-        JvmElement groupVM = serverGroup.getJvm();
-        String groupVMName = groupVM != null ? groupVM.getName() : null;
-        
-        String ourVMName = serverVMName != null ? serverVMName : groupVMName;
-        if (ourVMName == null) {
-            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() + 
-                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
-        }
-        
-        if (!ourVMName.equals(groupVMName)) {
-            // the server setting replaced the group, so ignore group
-            groupVM = null;
-        }
-        JvmElement hostVM = host.getJvm(ourVMName);
-        
-        this.jvm = new JvmElement(groupVM, hostVM, serverVM);
     }
 
     /**
@@ -307,16 +274,6 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      */
     public String getServerName() {
         return serverName;
-    }    
-
-    /**
-     * Gets the jvm configuration for this server.
-     * 
-     * @return the jvm configuration. Will not be <code>null</code>
-     */
-    public JvmElement getJvm() {
-        // FIXME this belongs in the ServerManager
-        return jvm;
     }
     
     /**
@@ -331,16 +288,23 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = serverName.hashCode() &  0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        synchronized (namespaces) {
+            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        }
         if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ portOffset & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(deployments.values(), cksum);
-        cksum = calculateElementHashOf(extensions.values(), cksum);
-        cksum = calculateElementHashOf(interfaces.values(), cksum);
+        synchronized (deployments) {
+            cksum = calculateElementHashOf(deployments.values(), cksum);
+        }
+        synchronized (extensions) {
+            cksum = calculateElementHashOf(extensions.values(), cksum);
+        }
+        synchronized (interfaces) {
+            cksum = calculateElementHashOf(interfaces.values(), cksum);
+        }
         if (socketBindings != null) cksum = Long.rotateLeft(cksum, 1) ^ socketBindings.elementHash();
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
-        if (jvm != null) cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         return cksum;
     }
 
@@ -358,12 +322,14 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         
-        for (NamespaceAttribute namespace : namespaces.values()) {
-            if (namespace.isDefaultNamespaceDeclaration()) {
-                // for now I assume this is handled externally
-                continue;
+        synchronized (namespaces) {
+            for (NamespaceAttribute namespace : namespaces.values()) {
+                if (namespace.isDefaultNamespaceDeclaration()) {
+                    // for now I assume this is handled externally
+                    continue;
+                }
+                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
-            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
         }
         
         if (schemaLocation != null) {
@@ -376,25 +342,29 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         streamWriter.writeCharacters(serverName);
         streamWriter.writeEndElement();
         
-        if (! extensions.isEmpty()) {
-            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-            for (ExtensionElement element : extensions.values()) {        
+        synchronized (extensions) {
+            if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                element.writeContent(streamWriter);
+                for (ExtensionElement element : extensions.values()) {        
+                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
         streamWriter.writeStartElement(Element.PROFILE.getLocalName());
         profile.writeContent(streamWriter);
         
-        if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-            for (InterfaceElement element : interfaces.values()) {
-                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (interfaces) {
+            if (! interfaces.isEmpty()) {
+                streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+                for (InterfaceElement element : interfaces.values()) {
+                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
         if (socketBindings != null) {
@@ -427,8 +397,11 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
         // Activate extensions
-        final Map<String, ExtensionElement> extensions = this.extensions;
-        for(Map.Entry<String, ExtensionElement> extensionEntry : extensions.entrySet()) {
+        final Map<String, ExtensionElement> extensionsCopy;
+        synchronized (this.extensions) {
+            extensionsCopy = new TreeMap<String,ExtensionElement>(this.extensions);
+        }
+        for(Map.Entry<String, ExtensionElement> extensionEntry : extensionsCopy.entrySet()) {
             final ExtensionElement extensionElement = extensionEntry.getValue();
             final String moduleSpec = extensionElement.getModule();
             try {
@@ -444,7 +417,10 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         profile.activate(context);
 
         // Activate Interfaces
-        final Map<String, InterfaceElement> interfaces = this.interfaces;
+        final Map<String, InterfaceElement> interfaces;
+        synchronized (this.interfaces) {
+            interfaces = new TreeMap<String, InterfaceElement>(this.interfaces);
+        }
         for(InterfaceElement interfaceElement : interfaces.values()) {
             interfaceElement.activate(context);
         }
@@ -458,7 +434,10 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
 
         // Activate deployments
         new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
-        final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
+        final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments;
+        synchronized (this.deployments) {
+            deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>(this.deployments);
+        }
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
             try {
                 deploymentElement.activate(context);

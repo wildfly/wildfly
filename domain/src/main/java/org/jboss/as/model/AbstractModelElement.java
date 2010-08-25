@@ -40,8 +40,10 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * A generic model element.  Model elements are not generally thread-safe.
@@ -164,7 +166,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param s the string
      * @return the bytes
      */
-    protected static byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len >> 1];
         for (int i = 0, j = 0; j < len; i++) {
@@ -217,6 +219,26 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             }
         }
         return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
+    }
+
+    /**
+     * Get an exception reporting a missing, required XML child element.
+     *
+     * @param reader the stream reader
+     * @param required a set of enums whose toString method returns the attribute name
+     * @return the exception
+     */
+    protected static XMLStreamException missingRequiredElement(final XMLExtendedStreamReader reader, final Set<?> required) {
+        final StringBuilder b = new StringBuilder();
+        Iterator<?> iterator = required.iterator();
+        while (iterator.hasNext()) {
+            final Object o = iterator.next();
+            b.append(o.toString());
+            if (iterator.hasNext()) {
+                b.append(", ");
+            }
+        }
+        return new XMLStreamException("Missing required element(s): " + b, reader.getLocation());
     }
     
     /**
@@ -376,6 +398,23 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             }
         }
         return loc;
+    }
+    
+
+    /**
+     * Returns a new {@link TreeMap} by passing the provided map to its constructor.
+     * Thread safety note: <code>toCopy</code>'s monitor is held while the TreeMap
+     * is being constructed.
+     * 
+     * @param <K> the type of <code>toCopy</code>'s keys
+     * @param <V> the type of <code>toCopy</code>'s values
+     * @param toCopy the map to copy. Cannot be <code>null</code>
+     * @return the copy
+     */
+    protected static <K, V> NavigableMap<K, V> safeCopyMap(NavigableMap<K, V> toCopy) {
+        synchronized (toCopy) {
+            return new TreeMap<K, V>(toCopy);
+        }
     }
 
     /**

@@ -109,6 +109,7 @@ public class ServerEnvironment {
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
     
     private final Properties props;
+    private final String processName;
     private final InetAddress processManagerAddress;
     private final Integer processManagerPort;
     private final File homeDir;
@@ -126,7 +127,7 @@ public class ServerEnvironment {
     private final PrintStream stderr;
     
     public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
-            InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
+            String processName, InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
     	this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
@@ -148,21 +149,18 @@ public class ServerEnvironment {
         }
         this.stderr = stderr;
         
+        if (processName == null && !standalone) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        if (processManagerAddress == null && !standalone) {
+            throw new IllegalArgumentException("processManagerAddress is null");
+        }
+        if (processManagerPort == null && !standalone) {
+            throw new IllegalArgumentException("processManagerPort is null");
+        }
+        this.processName = processName;
         this.processManagerPort = processManagerPort;
-        if (processManagerPort != null) {
-            if (processManagerAddress == null) {
-                this.processManagerAddress = findLocalhost();
-            }
-            else {
-                this.processManagerAddress = processManagerAddress;
-            }
-        }
-        else if (processManagerAddress != null) {
-            throw new IllegalArgumentException("processManagerPort is null; cannot be null when processManagerAddress is set");
-        }
-        else {
-            this.processManagerAddress = null;
-        }
+        this.processManagerAddress = processManagerAddress;
         
         // Must have HOME_DIR
         this.homeDir = getFileFromProperty(HOME_DIR);
@@ -274,6 +272,15 @@ public class ServerEnvironment {
     public Integer getProcessManagerPort() {
         return processManagerPort;
     }
+    
+    /**
+     * Get the process name of this process, needed to inform the process manager we have started
+     * 
+     * @return the process name 
+     */
+    public String getProcessName() {
+        return processName;
+    }
 
     public File getHomeDir() {
         return homeDir;
@@ -311,11 +318,6 @@ public class ServerEnvironment {
 		return standalone;
 	}
     
-    private static InetAddress findLocalhost() {
-        // FIXME implement findLocalhost
-        throw new UnsupportedOperationException("implement me");
-    }
-
     /**
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.

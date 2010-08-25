@@ -23,7 +23,6 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -137,7 +136,9 @@ public final class Host extends AbstractModel<Host> {
      *         the given <code>name</name>
      */
     public JvmElement getJvm(String name) {
-        return jvms.get(name);
+        synchronized (jvms) {
+            return jvms.get(name);
+        }
     }
     
     /**
@@ -152,7 +153,9 @@ public final class Host extends AbstractModel<Host> {
      *         the given <code>name</name>
      */
     public InterfaceElement getInterface(String name) {
-        return interfaces.get(name);
+        synchronized (interfaces) {
+            return interfaces.get(name);
+        }
     }
     
     /**
@@ -161,7 +164,9 @@ public final class Host extends AbstractModel<Host> {
      * @return the interfaces. May be empty but will not be <code>null</code>
      */
     public Set<ServerInterfaceElement> getInterfaces() {
-        return Collections.unmodifiableSet(new HashSet<ServerInterfaceElement>(interfaces.values()));
+        synchronized (interfaces) {
+            return new HashSet<ServerInterfaceElement>(interfaces.values());
+        }
     }
     
    /**
@@ -170,7 +175,9 @@ public final class Host extends AbstractModel<Host> {
     * @return the servers. May be empty but will not be <code>null</code>
     */
     public Set<ServerElement> getServers() {
-        return Collections.unmodifiableSet(new HashSet<ServerElement>(servers.values()));
+        synchronized (servers) {
+            return new HashSet<ServerElement>(servers.values());
+        }
     }
     
     /**
@@ -182,7 +189,9 @@ public final class Host extends AbstractModel<Host> {
      *         named <code>name</code> is configured
      */
     public ServerElement getServer(String name) {
-        return servers.get(name);
+        synchronized (servers) {
+            return servers.get(name);
+        }
     }
     
     /**
@@ -205,15 +214,27 @@ public final class Host extends AbstractModel<Host> {
 
     /** {@inheritDoc} */
     public long elementHash() {
-        long cksum = calculateElementHashOf(interfaces.values(), 17l);
-        cksum = calculateElementHashOf(extensions.values(), cksum);
-        cksum = calculateElementHashOf(jvms.values(), cksum);
-        cksum = calculateElementHashOf(servers.values(), cksum);
+        long  cksum = 17l;
+    
+        synchronized (interfaces) {
+            cksum = calculateElementHashOf(interfaces.values(), cksum);
+        }
+        synchronized (extensions) {
+            cksum = calculateElementHashOf(extensions.values(), cksum);
+        }
+        synchronized (jvms) {
+            cksum = calculateElementHashOf(jvms.values(), cksum);
+        }
+        synchronized (servers) {
+            cksum = calculateElementHashOf(servers.values(), cksum);
+        }
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
         if (localDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ localDomainController.elementHash();
-        cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
-        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         // else FIXME remote domain controller
+        synchronized (namespaces) {
+            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        }
+        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         return cksum;
     }
 
@@ -231,12 +252,14 @@ public final class Host extends AbstractModel<Host> {
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         
-        for (NamespaceAttribute namespace : namespaces.values()) {
-            if (namespace.isDefaultNamespaceDeclaration()) {
-                // for now I assume this is handled externally
-                continue;
+        synchronized (namespaces) {
+            for (NamespaceAttribute namespace : namespaces.values()) {
+                if (namespace.isDefaultNamespaceDeclaration()) {
+                    // for now I assume this is handled externally
+                    continue;
+                }
+                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
-            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
         }
         
         if (schemaLocation != null) {
@@ -246,13 +269,15 @@ public final class Host extends AbstractModel<Host> {
         
         // TODO re-evaluate the element order in the xsd; make sure this is correct
         
-        if (! extensions.isEmpty()) {
-            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-            for (ExtensionElement element : extensions.values()) {        
+        synchronized (extensions) {
+            if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                element.writeContent(streamWriter);
+                for (ExtensionElement element : extensions.values()) {        
+                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
 
         if (systemProperties != null) {
@@ -266,35 +291,41 @@ public final class Host extends AbstractModel<Host> {
             streamWriter.writeStartElement(Element.LOCAL.getLocalName());
             localDomainController.writeContent(streamWriter);
         }
-        // FIXME remote domain controller
+        // else FIXME remote domain controller
         streamWriter.writeEndElement();
         
-        if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-            for (InterfaceElement element : interfaces.values()) {
-                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }
-        
-        if (! jvms.isEmpty()) {
-            streamWriter.writeStartElement(Element.JVMS.getLocalName());
-            for (JvmElement element : jvms.values()) {
-                streamWriter.writeStartElement(Element.JVM.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }
-        
-        if (! servers.isEmpty()) {
-            streamWriter.writeStartElement(Element.SERVERS.getLocalName());
-            for (ServerElement server : servers.values()) {
-                streamWriter.writeStartElement(Element.SERVER.getLocalName());
-                server.writeContent(streamWriter);
+        synchronized (interfaces) {
+            if (! interfaces.isEmpty()) {
+                streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+                for (InterfaceElement element : interfaces.values()) {
+                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
                 streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
+        }
+        
+        synchronized (jvms) {
+            if (! jvms.isEmpty()) {
+                streamWriter.writeStartElement(Element.JVMS.getLocalName());
+                for (JvmElement element : jvms.values()) {
+                    streamWriter.writeStartElement(Element.JVM.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            }
+        }
+        
+        synchronized (servers) {
+            if (! servers.isEmpty()) {
+                streamWriter.writeStartElement(Element.SERVERS.getLocalName());
+                for (ServerElement server : servers.values()) {
+                    streamWriter.writeStartElement(Element.SERVER.getLocalName());
+                    server.writeContent(streamWriter);
+                    streamWriter.writeEndElement();
+                }
+                streamWriter.writeEndElement();
+            }
         }
         
         streamWriter.writeEndElement();

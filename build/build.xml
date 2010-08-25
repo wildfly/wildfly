@@ -235,10 +235,6 @@
             <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
         </module-def>
         
-        <module-def group="org.jboss.naming" artifact="jnpserver">
-            <maven-resource group="org.jboss.naming" artifact="jnpserver"/>
-        </module-def>
-        
         <module-def group="org.jboss.remoting3" artifact="jboss-remoting">
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>

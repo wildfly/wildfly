@@ -55,6 +55,7 @@ public final class StreamUtils {
 
     public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
+        //System.err.println((char)a + "(" + a + ")");
         if (a < 0) {
             return -1;
         } else if (a == 0) {
@@ -68,7 +69,7 @@ public final class StreamUtils {
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+                throw new UTFDataFormatException(INVALID_BYTE + ":" + (char)a + "(" + a + ")");
             }
             return (a & 0x1f) << 6 | b & 0x3f;
         } else if (a < 0xf0) {

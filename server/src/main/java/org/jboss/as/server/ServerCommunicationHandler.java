@@ -22,17 +22,21 @@
 
 package org.jboss.as.server;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.process.Command;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TODO: We need to establish a full protocol.
@@ -44,13 +48,69 @@ public class ServerCommunicationHandler {
 
     private final Handler handler;
     private final InputStream input;
-    private final PrintStream stdout;
+    private final OutputStream output;
+    private final Socket socket;
     private final Runnable controller = new Controller();
 
-    public ServerCommunicationHandler(final InputStream input, final PrintStream stdout, final Handler handler) {
-        this.input = input;
-        this.stdout = stdout;
-        this.handler = handler;
+    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+        //TODO Duplicate code - ProcessManagerSlave
+        if (processName == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        if (addr == null) {
+            throw new IllegalArgumentException("addr is null");
+        }
+        if (port == null) {
+            throw new IllegalArgumentException("port is null");
+        }
+        if (handler == null) {
+            throw new IllegalArgumentException("handler is null");
+        }
+
+        try {
+            this.socket = new Socket(addr, port);
+            this.input = new BufferedInputStream(socket.getInputStream());
+            this.output = new BufferedOutputStream(socket.getOutputStream());
+            this.handler = handler;
+            
+            logger.infof("%s connected to process manager on port %d", processName, socket.getLocalPort());
+            
+            //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
+            StringBuilder sb = new StringBuilder(256);
+            sb.append("STARTED");
+            sb.append('\0');
+            sb.append(processName);
+            sb.append('\n');
+            
+            synchronized (output) {
+                StreamUtils.writeString(output, sb.toString());
+                output.flush();
+            }
+        } catch (IOException e) {
+            if (this.socket != null) {
+                closeSocket();
+            }
+            throw new RuntimeException(e);
+        }
+        //Duplicate code - ProcessManagerSlave - END 
+    }
+
+    private void closeSocket() {
+        try {
+            socket.shutdownOutput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.shutdownInput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
      public void sendMessage(final List<String> message) throws IOException {
@@ -61,8 +121,8 @@ public class ServerCommunicationHandler {
             b.append('\0').append(s);
         }
         b.append('\n');
-        StreamUtils.writeString(stdout, b);
-        stdout.flush();
+        StreamUtils.writeString(output, b);
+        output.flush();
     }
 
     public void sendMessage(final byte[] message, final long checksum) throws IOException {
@@ -70,12 +130,12 @@ public class ServerCommunicationHandler {
         b.append("SEND_BYTES");
         b.append('\0').append("ServerManager");
         b.append('\0');
-        StreamUtils.writeString(stdout, b.toString());
-        StreamUtils.writeInt(stdout, message.length);
-        stdout.write(message, 0, message.length);
-        StreamUtils.writeLong(stdout, checksum);
-        StreamUtils.writeChar(stdout, '\n');
-        stdout.flush();
+        StreamUtils.writeString(output, b.toString());
+        StreamUtils.writeInt(output, message.length);
+        output.write(message, 0, message.length);
+        StreamUtils.writeLong(output, checksum);
+        StreamUtils.writeChar(output, '\n');
+        output.flush();
     }
 
     public Runnable getController() {
@@ -171,6 +231,10 @@ public class ServerCommunicationHandler {
                 t.printStackTrace(System.err);
             }
             finally {
+                if (socket != null) {
+                    closeSocket();
+                }
+
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {
                         System.exit(0);

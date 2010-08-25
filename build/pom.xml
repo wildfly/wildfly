@@ -224,11 +224,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.naming</groupId>
-            <artifactId>jnpserver</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>
         </dependency>

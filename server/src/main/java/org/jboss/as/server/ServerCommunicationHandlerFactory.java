@@ -39,7 +39,7 @@ public final class ServerCommunicationHandlerFactory {
     }
     
     public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
-        return new ServerCommunicationHandler(environment.getStdin(), environment.getStdout(), handler);
+        return new ServerCommunicationHandler(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
     }
     
     private ServerCommunicationHandlerFactory() {}

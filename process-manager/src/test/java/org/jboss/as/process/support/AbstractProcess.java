@@ -22,9 +22,12 @@
 package org.jboss.as.process.support;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.ProcessManagerSlave.Handler;
@@ -53,25 +56,38 @@ public abstract class AbstractProcess {
     private final TestFile file;
 
     /** The name of this process */
-    protected String processName;
+    protected final String processName;
     
     /** The process manager slave */
     private ProcessManagerSlave slave;
+    
+    /** The port on which the ProcessManager is listening */
+    private final int port;
 
     /** True if this process has received the shutdown event */
-    private AtomicBoolean shutdown = new AtomicBoolean();
+    private final AtomicBoolean shutdown = new AtomicBoolean();
 
     /** The stream for sending data back to the test manager */
     private TestProcessSenderStream clientStream;
-
+    
     /**
      * Constructor
      * 
      * @param processName the name of this process
      */
-    protected AbstractProcess(String processName) {
+    protected AbstractProcess(String processName, int port) {
         this.processName = processName;
+        this.port = port;
         file = TestFileUtils.getOutputFile(processName);
+    }
+    
+    protected static Integer getPort(String[] args) {
+        for (int i = 0 ; i < args.length - 1 ; i++) {
+            if (args[i].equals(CommandLineConstants.INTERPROCESS_PORT)) {
+                return Integer.valueOf(args[++i]);
+            }
+        }
+        return null;
     }
 
     /**
@@ -110,8 +126,11 @@ public abstract class AbstractProcess {
     protected void startSlave() {
         clientStream = TestProcessUtils.createProcessClient(processName);
 
-        slave = new ProcessManagerSlave(System.in, System.out,
-                new TestHandler());
+        try {
+            slave = new ProcessManagerSlave(processName, InetAddress.getLocalHost(), port, new TestHandler());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
         Thread t = new Thread(this.slave.getController(), "Slave Process");
         t.start();
         started();
@@ -204,7 +223,7 @@ public abstract class AbstractProcess {
      */
     protected void addProcess(String processName, String classname) {
         try {
-            slave.addProcess(processName, TestProcessUtils.createCommand(processName, classname), System.getenv(), ".");
+            slave.addProcess(processName, TestProcessUtils.createCommand(processName, classname, port), System.getenv(), ".");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -278,6 +297,7 @@ public abstract class AbstractProcess {
             shutdown.set(true);
             AbstractProcess.this.shutdown();
             clientStream.shutdown();
+            slave.shutdown();
         }
     }
 }

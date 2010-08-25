@@ -23,7 +23,6 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -139,7 +138,9 @@ public final class Domain extends AbstractModel<Domain> {
      * @return the extensions. May be empty but will not be <code>null</code>
      */
     public Set<ExtensionElement> getExtensions() {
-        return Collections.unmodifiableSet(new HashSet<ExtensionElement>(extensions.values()));
+        synchronized (extensions) {
+            return new HashSet<ExtensionElement>(extensions.values());
+        }
     }
     
     /**
@@ -149,10 +150,12 @@ public final class Domain extends AbstractModel<Domain> {
      */
     public Set<InterfaceElement> getInterfaces() {
         Set<InterfaceElement> intfs = new LinkedHashSet<InterfaceElement>();
-        for (Map.Entry<String, InterfaceElement> entry : interfaces.entrySet()) {
-            intfs.add(entry.getValue());
+        synchronized (interfaces) {
+            for (Map.Entry<String, InterfaceElement> entry : interfaces.entrySet()) {
+                intfs.add(entry.getValue());
+            }
         }
-        return Collections.unmodifiableSet(intfs);
+        return intfs;
     }
     
     /**
@@ -165,7 +168,9 @@ public final class Domain extends AbstractModel<Domain> {
      *         named <code>name</code> is configured
      */
     public InterfaceElement getInterface(String name) {
-        return interfaces.get(name);
+        synchronized (interfaces) {
+            return interfaces.get(name);
+        }
     }
     
     /**
@@ -176,7 +181,9 @@ public final class Domain extends AbstractModel<Domain> {
      *         named <code>name</code> is configured
      */
     public ProfileElement getProfile(String name) {
-        return profiles.get(name);
+        synchronized (profiles) {
+            return profiles.get(name);
+        }
     }
     
     /**
@@ -188,7 +195,9 @@ public final class Domain extends AbstractModel<Domain> {
      *         no socket binding named <code>name</code> is configured
      */
     public SocketBindingGroupElement getSocketBindingGroup(String name) {
-        return bindingGroups.get(name);
+        synchronized (bindingGroups) {
+            return bindingGroups.get(name);
+        }
     }
     
     /**
@@ -200,7 +209,9 @@ public final class Domain extends AbstractModel<Domain> {
      *         group named <code>name</code> is configured
      */
     public ServerGroupElement getServerGroup(String name) {
-        return serverGroups.get(name);
+        synchronized (serverGroups) {
+            return serverGroups.get(name);
+        }
     }
     
     /**
@@ -219,21 +230,58 @@ public final class Domain extends AbstractModel<Domain> {
     /** {@inheritDoc} */
     public long elementHash() {
         long hash = 0L;
-        hash = calculateElementHashOf(extensions.values(), hash);
-        hash = calculateElementHashOf(serverGroups.values(), hash);
-        hash = calculateElementHashOf(deployments.values(), hash);
-        hash = calculateElementHashOf(profiles.values(), hash);
-        hash = calculateElementHashOf(interfaces.values(), hash);
-        hash = calculateElementHashOf(bindingGroups.values(), hash);
+        synchronized (extensions) {
+            hash = calculateElementHashOf(extensions.values(), hash);
+        }
+        synchronized (serverGroups) {
+            hash = calculateElementHashOf(serverGroups.values(), hash);
+        }
+        synchronized (deployments) {
+            hash = calculateElementHashOf(deployments.values(), hash);
+        }
+        synchronized (profiles) {
+            hash = calculateElementHashOf(profiles.values(), hash);
+        }
+        synchronized (interfaces) {
+            hash = calculateElementHashOf(interfaces.values(), hash);
+        }
+        synchronized (bindingGroups) {
+            hash = calculateElementHashOf(bindingGroups.values(), hash);
+        }
         if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
-        hash = Long.rotateLeft(hash, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        synchronized (namespaces) {
+            hash = Long.rotateLeft(hash, 1) ^ namespaces.hashCode() &  0xffffffffL;
+        }
         if (schemaLocation != null) hash = Long.rotateLeft(hash, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
         return hash;
     }
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<Domain>> target, final Domain other) {
-        calculateDifference(target, extensions, other.extensions, new DifferenceHandler<String, ExtensionElement, Domain>() {
+     
+        calculateDifference(target, safeCopyMap(namespaces), safeCopyMap(other.namespaces), new DifferenceHandler<String, NamespaceAttribute, Domain>() {
+
+            @Override
+            public void handleAdd(Collection<AbstractModelUpdate<Domain>> target, String name,
+                    NamespaceAttribute newElement) {
+                throw new UnsupportedOperationException("implement me");                
+            }
+
+            @Override
+            public void handleChange(Collection<AbstractModelUpdate<Domain>> target, String name,
+                    NamespaceAttribute oldElement, NamespaceAttribute newElement) {
+                throw new UnsupportedOperationException("implement me");                
+            }
+
+            @Override
+            public void handleRemove(Collection<AbstractModelUpdate<Domain>> target, String name,
+                    NamespaceAttribute oldElement) {
+                throw new UnsupportedOperationException("implement me");                
+            }
+            
+        });
+        
+        calculateDifference(target, safeCopyMap(extensions), safeCopyMap(other.extensions), new DifferenceHandler<String, ExtensionElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement newElement) {
                 throw new UnsupportedOperationException("implement me");
             }
@@ -248,7 +296,7 @@ public final class Domain extends AbstractModel<Domain> {
             }
         });
         
-        calculateDifference(target, profiles, other.profiles, new DifferenceHandler<String, ProfileElement, Domain>() {
+        calculateDifference(target, safeCopyMap(profiles), safeCopyMap(other.profiles), new DifferenceHandler<String, ProfileElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
                 // todo add-profile
                 throw new UnsupportedOperationException("implement me");
@@ -265,7 +313,7 @@ public final class Domain extends AbstractModel<Domain> {
             }
         });
         
-        calculateDifference(target, interfaces, other.interfaces, new DifferenceHandler<String, InterfaceElement, Domain>() {
+        calculateDifference(target, safeCopyMap(interfaces), safeCopyMap(other.interfaces), new DifferenceHandler<String, InterfaceElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement newElement) {
                 // todo add-interface
                 throw new UnsupportedOperationException("implement me");
@@ -282,7 +330,7 @@ public final class Domain extends AbstractModel<Domain> {
             }
         });
         
-        calculateDifference(target, bindingGroups, other.bindingGroups, new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
+        calculateDifference(target, safeCopyMap(bindingGroups), safeCopyMap(other.bindingGroups), new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement newElement) {
                 // todo add binding group
                 throw new UnsupportedOperationException("implement me");
@@ -302,7 +350,7 @@ public final class Domain extends AbstractModel<Domain> {
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
         
-        calculateDifference(target, deployments, other.deployments, new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
+        calculateDifference(target, safeCopyMap(deployments), safeCopyMap(other.deployments), new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
                 // todo deploy
                 throw new UnsupportedOperationException("implement me");
@@ -319,7 +367,7 @@ public final class Domain extends AbstractModel<Domain> {
             }
         });
         
-        calculateDifference(target, serverGroups, other.serverGroups, new DifferenceHandler<String, ServerGroupElement, Domain>() {
+        calculateDifference(target, safeCopyMap(serverGroups), safeCopyMap(other.serverGroups), new DifferenceHandler<String, ServerGroupElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
                 // todo add-server-group operation
                 throw new UnsupportedOperationException("implement me");
@@ -345,12 +393,14 @@ public final class Domain extends AbstractModel<Domain> {
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         
-        for (NamespaceAttribute namespace : namespaces.values()) {
-            if (namespace.isDefaultNamespaceDeclaration()) {
-                // for now I assume this is handled externally
-                continue;
+        synchronized (namespaces) {
+            for (NamespaceAttribute namespace : namespaces.values()) {
+                if (namespace.isDefaultNamespaceDeclaration()) {
+                    // for now I assume this is handled externally
+                    continue;
+                }
+                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
-            streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
         }
         
         if (schemaLocation != null) {
@@ -358,64 +408,76 @@ public final class Domain extends AbstractModel<Domain> {
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
         
-        if (! extensions.isEmpty()) {
-            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-            for (ExtensionElement element : extensions.values()) {        
+        synchronized (extensions) {
+            if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                element.writeContent(streamWriter);
+                for (ExtensionElement element : extensions.values()) {        
+                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
-        if (! profiles.isEmpty()) {
-            streamWriter.writeStartElement(Element.PROFILES.getLocalName());
-            for (ProfileElement element : profiles.values()) {
-                streamWriter.writeStartElement(Element.PROFILE.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (profiles) {
+            if (! profiles.isEmpty()) {
+                streamWriter.writeStartElement(Element.PROFILES.getLocalName());
+                for (ProfileElement element : profiles.values()) {
+                    streamWriter.writeStartElement(Element.PROFILE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
-        if (! interfaces.isEmpty()) {
-            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-            for (InterfaceElement element : interfaces.values()) {
-                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (interfaces) {
+            if (! interfaces.isEmpty()) {
+                streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+                for (InterfaceElement element : interfaces.values()) {
+                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
-        if (!bindingGroups.isEmpty()) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
-            for (SocketBindingGroupElement element : bindingGroups.values()) {
-                streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-                element.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }        
+        synchronized (bindingGroups) {
+            if (!bindingGroups.isEmpty()) {
+                streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
+                for (SocketBindingGroupElement element : bindingGroups.values()) {
+                    streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            } 
+        }
         
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
         
-        if (! deployments.isEmpty()) {
-            streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-            for (DeploymentUnitElement element : deployments.values()) {        
-                streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (deployments) {
+            if (! deployments.isEmpty()) {
+                streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
+                for (DeploymentUnitElement element : deployments.values()) {        
+                    streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
-        if (! serverGroups.isEmpty()) {
-            streamWriter.writeStartElement(Element.SERVER_GROUPS.getLocalName());
-            for (ServerGroupElement element : serverGroups.values()) {
-        
-                streamWriter.writeStartElement(Element.SERVER_GROUP.getLocalName());
-                element.writeContent(streamWriter);
+        synchronized (serverGroups) {
+            if (! serverGroups.isEmpty()) {
+                streamWriter.writeStartElement(Element.SERVER_GROUPS.getLocalName());
+                for (ServerGroupElement element : serverGroups.values()) {
+            
+                    streamWriter.writeStartElement(Element.SERVER_GROUP.getLocalName());
+                    element.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
             }
-            streamWriter.writeEndElement();
         }
         
         // close domain
@@ -463,18 +525,7 @@ public final class Domain extends AbstractModel<Domain> {
     
     private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
         
-        RefResolver<String, ProfileElement> resolver = new RefResolver<String, ProfileElement>() {
-
-           private static final long serialVersionUID = 8976121114197265586L;
-
-            @Override
-            public ProfileElement resolveRef(String ref) {
-                if (ref == null)
-                    throw new IllegalArgumentException("ref is null");
-                return profiles.get(ref);
-            }
-            
-        };
+        RefResolver<String, ProfileElement> resolver = new SimpleRefResolver<String, ProfileElement>(profiles) ;
         
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -538,30 +589,8 @@ public final class Domain extends AbstractModel<Domain> {
     }
     
     private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
-        RefResolver<String, SocketBindingGroupElement> groupResolver = new RefResolver<String, SocketBindingGroupElement>() {
-
-            private static final long serialVersionUID = 8976121114197265586L;
-
-             @Override
-             public SocketBindingGroupElement resolveRef(String ref) {
-                 if (ref == null)
-                     throw new IllegalArgumentException("ref is null");
-                 return bindingGroups.get(ref);
-             }
-             
-        };
-        RefResolver<String, InterfaceElement> intfResolver = new RefResolver<String, InterfaceElement>() {
-
-            private static final long serialVersionUID = 8976121114197265586L;
-
-             @Override
-             public InterfaceElement resolveRef(String ref) {
-                 if (ref == null)
-                     throw new IllegalArgumentException("ref is null");
-                 return interfaces.get(ref);
-             }
-             
-        };
+        RefResolver<String, SocketBindingGroupElement> groupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(bindingGroups);
+        RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
         
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -653,5 +682,4 @@ public final class Domain extends AbstractModel<Domain> {
             }
         }        
     }
-    
 }

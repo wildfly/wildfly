@@ -41,7 +41,7 @@ public class LoggingTestRunner extends BlockJUnit4ClassRunner{
     protected EachTestNotifier makeNotifier(FrameworkMethod method,
             RunNotifier notifier) {
         
-        System.err.println("===== Test " + getTestClass().getJavaClass().getSimpleName() + "." + testName(method) + " ===========");
+        System.err.println("\n===== Test " + getTestClass().getJavaClass().getSimpleName() + "." + testName(method) + " ===========");
         return super.makeNotifier(method, notifier);
     }
 
