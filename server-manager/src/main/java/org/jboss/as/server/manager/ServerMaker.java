@@ -101,7 +101,7 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
         
-	String serverProcessName = getServerProcessName(serverConfig);
+	    String serverProcessName = getServerProcessName(serverConfig);
         List<String> command = getServerLaunchCommand(serverConfig, jvmElement);
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
