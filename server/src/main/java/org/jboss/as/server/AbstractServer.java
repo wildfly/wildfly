@@ -94,8 +94,10 @@ public abstract class AbstractServer {
         final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
         batchBuilder.addListener(listener);
 
+        final ServerStartBatchBuilder serverStartBatchBuilder = new ServerStartBatchBuilder(batchBuilder, listener);
+
         try {
-            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
+            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(serverStartBatchBuilder);
             // Activate
             config.activate(serviceActivatorContext);
             batchBuilder.install();

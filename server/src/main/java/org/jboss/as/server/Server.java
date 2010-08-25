@@ -78,7 +78,7 @@ public class Server extends AbstractServer {
     	return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started - Installed %d and started %d services in %dms.", totalServices, startedServices, elapsedTime);
+                    log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
                     sendMessage("STARTED");
                 } else {
                     sendMessage("START FAILED");
