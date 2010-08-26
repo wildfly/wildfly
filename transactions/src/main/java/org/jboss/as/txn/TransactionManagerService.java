@@ -46,10 +46,7 @@ import com.arjuna.common.internal.util.logging.LoggingEnvironmentBean;
 import com.arjuna.common.internal.util.logging.commonPropertyManager;
 import com.arjuna.common.internal.util.logging.jakarta.JakartaRelevelingLogFactory;
 import com.arjuna.common.internal.util.logging.jakarta.Log4JLogger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.jboss.as.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -61,6 +58,10 @@ import org.jboss.tm.LastResource;
 import org.omg.CORBA.ORB;
 
 import javax.transaction.TransactionManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -70,8 +71,26 @@ final class TransactionManagerService implements Service<TransactionManager> {
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
+    private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
+
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private RecoveryManagerService recoveryManagerService;
+
+    private String coreNodeIdentifier;
+    private int coreSocketProcessIdMaxPorts;
+    private boolean coordinatorEnableStatistics;
+    private int coordinatorDefaultTimeout;
+    private String objectStoreDirectory;
+
+    TransactionManagerService(final String coreNodeIdentifier, final int coreSocketProcessIdMaxPorts, final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout, final String objectStoreDirectory) {
+        this.coreNodeIdentifier = coreNodeIdentifier;
+        this.coreSocketProcessIdMaxPorts = coreSocketProcessIdMaxPorts;
+        this.coordinatorEnableStatistics = coordinatorEnableStatistics;
+        this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
+        this.objectStoreDirectory = objectStoreDirectory;
+    }
 
     public synchronized void start(final StartContext context) throws StartException {
         // Global configuration.
@@ -82,10 +101,12 @@ final class TransactionManagerService implements Service<TransactionManager> {
 
         // Recovery env bean
         final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
-        recoveryEnvironmentBean.setRecoveryInetAddress(null); // todo - service binding
-        recoveryEnvironmentBean.setRecoveryPort(0); // todo - service binding
-        recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(null); // todo - service binding
-        recoveryEnvironmentBean.setTransactionStatusManagerPort(0); // todo - service binding
+        final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
+        recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
+        recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
+        final SocketBinding statusBinding = statusBindingInjector.getValue();
+        recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
+        recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
 
         final List<String> recoveryExtensions = new ArrayList<String>();
         final List<String> expiryScanners = new ArrayList<String>();
@@ -96,9 +117,9 @@ final class TransactionManagerService implements Service<TransactionManager> {
         expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
 
         final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
-        coreEnvironmentBean.setSocketProcessIdPort(0); // todo -service binding
-        coreEnvironmentBean.setNodeIdentifier("1"); // todo - configurable?
-        coreEnvironmentBean.setSocketProcessIdMaxPorts(10); // todo - configurable?
+        coreEnvironmentBean.setSocketProcessIdPort(socketProcessBindingInjector.getValue().getSocketAddress().getPort());
+        coreEnvironmentBean.setNodeIdentifier(coreNodeIdentifier);
+        coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
 
         final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
         jtaEnvironmentBean.setLastResourceOptimisationInterface(LastResource.class.getName());
@@ -106,11 +127,11 @@ final class TransactionManagerService implements Service<TransactionManager> {
         jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
 
         final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
-        coordinatorEnvironmentBean.setEnableStatistics(false); // todo - configurable?
-        coordinatorEnvironmentBean.setDefaultTimeout(300); // todo - configurable!
+        coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
+        coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
 
         final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
-        objectStoreEnvironmentBean.setObjectStoreDir("/tmp/tx-object-store"); // todo - configurable!
+        objectStoreEnvironmentBean.setObjectStoreDir(objectStoreDirectory);
 
         try {
             ObjStoreBean.getObjectStoreBrowserBean();
@@ -210,5 +231,17 @@ final class TransactionManagerService implements Service<TransactionManager> {
 
     Injector<ORB> getOrbInjector() {
         return orbInjector;
+    }
+
+    Injector<SocketBinding> getRecoveryBindingInjector() {
+        return recoveryBindingInjector;
+    }
+
+    Injector<SocketBinding> getStatusBindingInjector() {
+        return statusBindingInjector;
+    }
+
+    Injector<SocketBinding> getSocketProcessBindingInjector() {
+        return socketProcessBindingInjector;
     }
 }

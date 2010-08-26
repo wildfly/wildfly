@@ -38,6 +38,70 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
+         <xs:sequence>
+            <xs:element name="recovery-environment" type="recovery-environment" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="core-environment" type="core-environment"  minOccurs="1" maxOccurs="1"/>
+            <xs:element name="coordinator-environment" type="coordinator-environment"  minOccurs="0" maxOccurs="1"/>
+             <xs:element name="object-store" type="object-store"  minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="recovery-environment">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The recovery environment configuration.
+
+                The "socket-binding" attribute is used to reference the correct socket binding to use for the
+                recovery environment.
+                The "status-socket-binding" attribute is used to reference the correct socket binding to use for the
+                transaction status manager.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="socket-binding" type="xs:IDREF" />
+        <xs:attribute name="status-socket-binding" type="xs:IDREF" />
+    </xs:complexType>
+
+    <xs:complexType name="core-environment">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The core environment configuration.
+
+                The "socket-binding" attribute is used to reference the correct socket binding to use for the
+                socket process id.
+                The "node-identifier" attribute is used to set the node identifier on the core environment.
+                The "socket-process-id-max-ports" attribute is used to set the max ports on the core environment.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="socket-binding" type="xs:IDREF" use="required"/>
+        <xs:attribute name="node-identifier" type="xs:string" default="1"/>
+        <xs:attribute name="socket-process-id-max-ports" type="xs:int" default="10" />
+    </xs:complexType>
+
+    <xs:complexType name="coordinator-environment">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The coordinator environment configuration.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="enable-statistics" type="xs:boolean" default="false"/>
+        <xs:attribute name="default-timeout" type="xs:int" default="300" />
+    </xs:complexType>
+
+    <xs:complexType name="object-store">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The object store configuration.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="directory" type="xs:string"/>
     </xs:complexType>
 
 </xs:schema>
