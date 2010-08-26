@@ -17,6 +17,7 @@ ROOT="/"
 
 # Ignore user's MAVEN_HOME if it is set
 M2_HOME=""
+MAVEN_HOME=""
 
 MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
 export MAVEN_OPTS
@@ -29,7 +30,7 @@ MAVEN_SEARCH_PATH="\
     maven"
 
 # the default arguments
-MVN_OPTIONS=""
+MVN_OPTIONS="-s tools/maven/conf/settings.xml"
 
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"

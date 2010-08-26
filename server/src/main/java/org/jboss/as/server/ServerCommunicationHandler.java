@@ -125,7 +125,7 @@ public class ServerCommunicationHandler {
         output.flush();
     }
 
-    public void sendMessage(final byte[] message, final long checksum) throws IOException {
+    public void sendMessage(final byte[] message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append("SEND_BYTES");
         b.append('\0').append("ServerManager");
@@ -133,7 +133,6 @@ public class ServerCommunicationHandler {
         StreamUtils.writeString(output, b.toString());
         StreamUtils.writeInt(output, message.length);
         output.write(message, 0, message.length);
-        StreamUtils.writeLong(output, checksum);
         StreamUtils.writeChar(output, '\n');
         output.flush();
     }
@@ -189,19 +188,12 @@ public class ServerCommunicationHandler {
                                     status = StreamUtils.readWord(input, b);
                                     final String sourceProcess = b.toString();
                                     if (status == Status.MORE) {
-                                        StreamUtils.CheckedBytes cb = StreamUtils.readCheckedBytes(input);
-                                        status = cb.getStatus();
-                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
-                                            logger.error("Incorrect checksum from process " + sourceProcess);
-                                            // FIXME deal with invalid checksum
+                                        try {
+                                            handler.handleMessage(StreamUtils.readBytesWithLength(input));
+                                        } catch (Throwable t) {
+                                            logger.error("Caught exception handling message from " + sourceProcess, t);
                                         }
-                                        else {
-                                            try {
-                                                handler.handleMessage(cb.getBytes());
-                                            } catch (Throwable t) {
-                                                logger.error("Caught exception handling message from " + sourceProcess, t);
-                                            }
-                                        }
+                                        status = StreamUtils.readStatus(input);
                                     }                                    
                                 }
                                 break;

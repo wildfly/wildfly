@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.process.StreamUtils.CheckedBytes;
 import org.jboss.logging.Logger;
 import org.jboss.logging.NDC;
 
@@ -152,7 +151,7 @@ final class ManagedProcess {
         commandStream.flush();
     }
     
-    void send(final String sender, final byte[] msg, final long chksum) throws IOException {
+    void send(final String sender, final byte[] msg) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append("MSG_BYTES");
         b.append('\0');
@@ -161,7 +160,6 @@ final class ManagedProcess {
         StreamUtils.writeString(commandStream, b.toString());
         StreamUtils.writeInt(commandStream, msg.length);
         commandStream.write(msg, 0, msg.length);
-        StreamUtils.writeLong(commandStream, chksum);
         StreamUtils.writeChar(commandStream, '\n');
         commandStream.flush();
     }
@@ -304,15 +302,8 @@ final class ManagedProcess {
                                 status = StreamUtils.readWord(inputStream, b);
                                 if (status == Status.MORE) {
                                     final String recipient = b.toString();
-                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
-                                    status = cb.getStatus();
-                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
-                                        log.error("Incorrect checksum on message for " + recipient);
-                                        // FIXME deal with invalid checksum
-                                    }
-                                    else {
-                                        master.sendMessage(processName, recipient, cb.getBytes(), cb.getExpectedChecksum());
-                                    }
+                                    master.sendMessage(processName, recipient, StreamUtils.readBytesWithLength(inputStream));
+                                    status = StreamUtils.readStatus(inputStream);
                                 }
                                 break;
                             }
@@ -327,14 +318,8 @@ final class ManagedProcess {
                             }
                             case BROADCAST_BYTES: {
                                 if (status == Status.MORE) {
-                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
-                                    status = cb.getStatus();
-                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
-                                        // FIXME deal with invalid checksum
-                                    }
-                                    else {
-                                        master.broadcastMessage(processName, cb.getBytes(), cb.getExpectedChecksum());
-                                    }
+                                    master.broadcastMessage(processName, StreamUtils.readBytesWithLength(inputStream));
+                                    status = StreamUtils.readStatus(inputStream);
                                 }
                                 break;
                             }
@@ -349,6 +334,7 @@ final class ManagedProcess {
             } catch (Exception e) {
                 // exception caught, shut down channel and exit
                 log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
+                commandStream.closeSocketOutputStream();
 
             } finally {
                 boolean respawn = false;

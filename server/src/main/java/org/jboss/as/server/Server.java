@@ -25,18 +25,14 @@
  */
 package org.jboss.as.server;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.jboss.as.model.Standalone;
-import org.jboss.as.server.manager.ServerMessage;
+import org.jboss.as.process.StreamUtils;
+import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Map;
-import java.util.zip.Adler32;
-import java.util.zip.CheckedOutputStream;
-import java.util.zip.Checksum;
 
 
 /**
@@ -56,7 +52,7 @@ public class Server extends AbstractServer {
 
     public void start() {
         launchCommunicationHandler();
-        sendMessage("AVAILABLE");
+        sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
         log.info("Server Available to start");    	
     }
     
@@ -64,14 +60,14 @@ public class Server extends AbstractServer {
     	try {
     		super.start(config);
     	} catch(ServerStartException e) {
-    		sendMessage("START FAILED");
+    		sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
     		throw e;
     	}
     }
 
     public void stop() {
         super.stop();
-        sendMessage("STOPPED");
+        sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
     }
 
     ServerStartupListener.Callback createListenerCallback() {
@@ -79,9 +75,9 @@ public class Server extends AbstractServer {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
-                    sendMessage("STARTED");
+                    sendMessage(ServerManagerProtocolCommand.SERVER_STARTED);
                 } else {
-                    sendMessage("START FAILED");
+                    sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
                     final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
@@ -99,32 +95,12 @@ public class Server extends AbstractServer {
         t.start();
     }
 
-    private void sendMessage(final String message) {
+    private void sendMessage(ServerManagerProtocolCommand command) {
         try {
-            final ServerMessage serverMessage = new ServerMessage(message);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-            Checksum chksum = new Adler32();
-            CheckedOutputStream cos = new CheckedOutputStream(baos, chksum);
-            ObjectOutputStream oos = null;
-            try {
-                oos = new ObjectOutputStream(cos);
-                oos.writeObject(serverMessage);
-                oos.close();
-                oos = null;
-                serverCommunicationHandler.sendMessage(baos.toByteArray(), chksum.getValue());
-            }
-            finally {
-                if (oos != null) {
-                    try {
-                        oos.close();
-                    }
-                    catch (IOException ignored) {
-                    }
-                }
-            }
+            byte[] bytes = command.createCommandBytes(null);
+            serverCommunicationHandler.sendMessage(bytes);
         } catch (IOException e) {
-            log.error("Failed to send message to Server Manager [" + message + "]", e);
+            log.error("Failed to send message to Server Manager [" + command + "]", e);
         }
     }
 }
