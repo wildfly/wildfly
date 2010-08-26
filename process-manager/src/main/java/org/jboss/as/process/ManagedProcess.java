@@ -334,6 +334,7 @@ final class ManagedProcess {
             } catch (Exception e) {
                 // exception caught, shut down channel and exit
                 log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
+                commandStream.closeSocketOutputStream();
 
             } finally {
                 boolean respawn = false;
@@ -347,10 +348,8 @@ final class ManagedProcess {
                             respawn = !stopped;
                     }
                     invokeStopProcessListeners(exitCode);
-                    if (respawn) {
-                        commandStream.closeSocketOutputStream();
+                    if (respawn)
                         respawn();
-                    }
                     break;
                 } catch (InterruptedException e) {
                 }
