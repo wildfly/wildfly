@@ -74,13 +74,8 @@ public class Server extends AbstractServer {
     	return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-<<<<<<< HEAD
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
-                    sendMessage("STARTED");
-=======
-                    log.infof("JBoss AS started - Installed %d and started %d services in %dms.", totalServices, startedServices, elapsedTime);
                     sendMessage(ServerManagerProtocolCommand.SERVER_STARTED);
->>>>>>> [JBAS-8311] Binary protocol for ServerManager-Server communication
                 } else {
                     sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
                     final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
