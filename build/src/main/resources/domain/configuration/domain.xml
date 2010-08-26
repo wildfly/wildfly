@@ -50,8 +50,12 @@
                 <threads:keepalive-time time="10" unit="SECONDS"/>
             </threads:scheduled-thread-pool-executor>
         </threads:subsystem>
-        <txn:subsystem/>
-        <naming:subsystem/>
+        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <txn:subsystem>
+            <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <txn:core-environment socket-binding="txn-socket-process-id"/>
+        </txn:subsystem>
+        <!--<remoting:subsystem thread-pool="remoting"/>-->
         </profile>
 
         <profile name="something2">
@@ -116,6 +120,9 @@
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
+            <socket-binding name="txn-recovery-environment" port="4712"/>
+            <socket-binding name="txn-status-manager" port="4713"/>
+            <socket-binding name="txn-socket-process-id" port="4714"/>
          </socket-binding-group>
          <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
             <include socket-binding-group="standard-sockets"/>
@@ -138,9 +145,6 @@
     </system-properties>
 
     <deployments>
-        <deployment name="my-app.ear" sha1="965ff5768fa166a04b13"/>
-        <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af"/>
-        <deployment name="my-war.ear" sha1="22cfd207b9b90e0014a4" allowed="false" start="false"/>
     </deployments>
 
     <server-groups>
@@ -162,7 +166,6 @@
            </cluster>
 -->
             <deployments>
-                <deployment name="my-ejb.jar" sha1="7de777924ef61549b1af" start="true"/>
             </deployments>
 
             <system-properties>

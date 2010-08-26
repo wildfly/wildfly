@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module group="org.jboss.integration" name="jboss-transaction-spi"/>
         <module group="org.jboss.jbossts" name="jbossjts"/>
         <module group="org.slf4j" name="jcl-over-slf4j"/>
         <module group="javax.transaction" name="api"/>
