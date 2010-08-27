@@ -44,18 +44,18 @@
 
     <profiles>
         <profile name="something">
-        <threads:subsystem>
-            <threads:scheduled-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="SECONDS"/>
-            </threads:scheduled-thread-pool-executor>
-        </threads:subsystem>
-        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
-        <txn:subsystem>
-            <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-            <txn:core-environment socket-binding="txn-socket-process-id"/>
-        </txn:subsystem>
-        <remoting:subsystem thread-pool="remoting"/>
+            <threads:subsystem>
+                <threads:scheduled-thread-pool-executor name="remoting">
+                    <threads:max-threads count="10" per-cpu="20"/>
+                    <threads:keepalive-time time="10" unit="SECONDS"/>
+                </threads:scheduled-thread-pool-executor>
+            </threads:subsystem>
+            <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+            <txn:subsystem>
+                <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+                <txn:core-environment socket-binding="txn-socket-process-id"/>
+            </txn:subsystem>
+            <remoting:subsystem thread-pool="remoting"/>
         </profile>
 
         <profile name="something2">
