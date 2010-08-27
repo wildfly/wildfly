@@ -24,6 +24,7 @@ package org.jboss.as.remoting;
 
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -45,7 +46,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 
-import static org.jboss.as.threads.AbstractExecutorElement.*;
+import static org.jboss.as.threads.AbstractExecutorElement.JBOSS_THREAD_SCHEDULED_EXECUTOR;
 
 /**
  * A Remoting subsystem definition.
@@ -55,6 +56,8 @@ import static org.jboss.as.threads.AbstractExecutorElement.*;
 public final class RemotingSubsystemElement extends AbstractSubsystemElement<RemotingSubsystemElement> {
 
     private static final long serialVersionUID = 8225457441023207312L;
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     /**
      * The service name "jboss.remoting".
@@ -188,11 +191,12 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
 
     /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
+        log.info("Activating Remoting Subsystem");
         final BatchBuilder batchBuilder = context.getBatchBuilder();
         final EndpointService endpointService = new EndpointService();
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
-        serviceBuilder.addDependency(ServiceName.of(JBOSS_THREAD_EXECUTOR.append(threadPoolName)), Executor.class, executorInjector);
+        serviceBuilder.addDependency(JBOSS_THREAD_SCHEDULED_EXECUTOR.append(threadPoolName), Executor.class, executorInjector);
         serviceBuilder.setLocation(getLocation());
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map

@@ -55,7 +55,7 @@
             <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <txn:core-environment socket-binding="txn-socket-process-id"/>
         </txn:subsystem>
-        <!--<remoting:subsystem thread-pool="remoting"/>-->
+        <remoting:subsystem thread-pool="remoting"/>
         </profile>
 
         <profile name="something2">
