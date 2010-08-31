@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
@@ -237,6 +238,9 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
 
             // Setup a batch level dependency on deployment service
             deploymentSubBatch.addDependency(deploymentServiceName);
+
+            // Add a deployment failure listener to the batch
+            deploymentSubBatch.addListener(new DeploymentFailureListener(deploymentServiceName));
 
             // Create the deployment unit context
             final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch);
