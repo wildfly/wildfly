@@ -115,12 +115,11 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     }
 
     private void batchComplete() {
-        boolean finished = this.finished.get(); // Check first in case the batch callback invokes finish, which would not be valid for this batch.
+        boolean finished = this.finished.get(); // Check first in case the batch callback invokes finish, which would not be valid for this batch
         if(batchCallback != null) {
             batchCallback.run();
         }
         if(finished && callbackRan.compareAndSet(false, true)) {
-            new Exception().printStackTrace();
             final long end = System.currentTimeMillis();
             finishCallback.run(serviceFailures, end - start, totalServices, expectedOnDemandServices.size(), startedServices);
         }
