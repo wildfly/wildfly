@@ -24,20 +24,20 @@ package org.jboss.as.server;
 
 import org.jboss.as.model.Standalone;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * The server base class.
- * 
+ *
  * @author Emanuel Muckenhuber
  */
 public abstract class AbstractServer {
 
 	static final Logger log = Logger.getLogger("org.jboss.as.server");
-	
+
 	private Standalone config;
 	private ServiceContainer serviceContainer;
 	private final ServerEnvironment environment;
@@ -48,19 +48,19 @@ public abstract class AbstractServer {
         }
 		this.environment = environment;
 	}
-	
+
 	/**
 	 * Get the server environment.
-	 * 
+	 *
 	 * @return the server environment
 	 */
 	public ServerEnvironment getEnvironment() {
 		return environment;
 	}
-	
+
 	/**
 	 * Get the standalone configuration.
-	 * 
+	 *
 	 * @return the standalone configuration
 	 */
 	public Standalone getConfig() {
@@ -69,18 +69,18 @@ public abstract class AbstractServer {
 		}
 		return config;
 	}
-	
-	/**
-	 * Start the server. 
-	 * 
-	 * @throws ServerStartException
-	 */
-	public abstract void start() throws ServerStartException; 
-	
+
 	/**
 	 * Start the server.
-	 * 
-	 * @param config the server 
+	 *
+	 * @throws ServerStartException
+	 */
+	public abstract void start() throws ServerStartException;
+
+	/**
+	 * Start the server.
+	 *
+	 * @param config the server
 	 * @throws ServerStartException
 	 */
 	void start(final Standalone config) throws ServerStartException {
@@ -90,17 +90,34 @@ public abstract class AbstractServer {
 		this.config = config;
 		log.infof("Starting server '%s'", config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
-        batchBuilder.addListener(listener);
 
-        final ServerStartBatchBuilder serverStartBatchBuilder = new ServerStartBatchBuilder(batchBuilder, listener);
+        final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
 
         try {
-            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(serverStartBatchBuilder);
-            // Activate
-            config.activate(serviceActivatorContext);
-            batchBuilder.install();
+            // Activate subsystems
+            final ServerStartBatchBuilder subsystemBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
+            subsystemBatchBuilder.addListener(listener);
+            final ServiceActivatorContext subsystemActivatorContext = new ServiceActivatorContextImpl(subsystemBatchBuilder);
+            config.activateSubsystems(subsystemActivatorContext);
+            listener.startBatch(new Runnable() {
+                @Override
+                public void run() {
+                    // Activate deployments once the first batch is complete.
+                    final ServerStartBatchBuilder deploymentBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
+                    deploymentBatchBuilder.addListener(listener);
+                    final ServiceActivatorContext deploymentActivatorContext = new ServiceActivatorContextImpl(deploymentBatchBuilder);
+                    listener.startBatch(null);
+                    config.activateDeployments(deploymentActivatorContext);
+                    listener.finish(); // We have finished adding everything for the server start
+                    try {
+                        deploymentBatchBuilder.install();
+                        listener.finishBatch();
+                    } catch (ServiceRegistryException e) {
+                        throw new RuntimeException(e); // TODO: better exception handling.
+                    }
+                }
+            });
+            subsystemBatchBuilder.install();
             listener.finishBatch();
         } catch (Throwable t) {
             throw new ServerStartException("Failed to start server", t);

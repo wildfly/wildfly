@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
@@ -43,11 +44,14 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
     private volatile int totalServices;
     private volatile int startedServices;
-    private volatile int count = 1;
+    private volatile int count = 0;
     private final long start = System.currentTimeMillis();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
     private final Callback finishCallback;
+    private Runnable batchCallback;
     private final Set<ServiceName> expectedOnDemandServices = new HashSet<ServiceName>();
+    private final AtomicBoolean finished = new AtomicBoolean();
+    private final AtomicBoolean callbackRan = new AtomicBoolean();
 
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "count");
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> totalServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "totalServices");
@@ -90,18 +94,34 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
         serviceController.removeListener(this);
     }
 
-    /**
-     * Call when all services in this group have been added.
-     */
+    public void startBatch(final Runnable batchCallback) {
+        if(finished.get()) {
+            throw new IllegalStateException("Listener is already finished");     
+        }
+        if(!countUpdater.compareAndSet(this, 0, 1)) {
+            throw new IllegalStateException("Listener already has a started batch");
+        }
+        this.batchCallback = batchCallback;
+    }
+
     public void finishBatch() {
         if (countUpdater.decrementAndGet(this) == 0) {
             batchComplete();
         }
     }
 
+    public void finish() {
+        finished.set(true);
+    }
+
     private void batchComplete() {
-        final long end = System.currentTimeMillis();
-        if(finishCallback != null) {
+        boolean finished = this.finished.get(); // Check first in case the batch callback invokes finish, which would not be valid for this batch.
+        if(batchCallback != null) {
+            batchCallback.run();
+        }
+        if(finished && callbackRan.compareAndSet(false, true)) {
+            new Exception().printStackTrace();
+            final long end = System.currentTimeMillis();
             finishCallback.run(serviceFailures, end - start, totalServices, expectedOnDemandServices.size(), startedServices);
         }
     }

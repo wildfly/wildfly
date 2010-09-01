@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.chain;
 
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Deployment chain used to execute multiple ordered DeploymentUnitProcessor instances.
@@ -30,6 +31,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
  * @author John E. Bailey
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain");
     /**
      * Get the name of the deployment chain.  Ex. "deployment.chain.war"
      *

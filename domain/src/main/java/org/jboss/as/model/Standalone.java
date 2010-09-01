@@ -22,17 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.Extension;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.model.socket.InterfaceElement;
@@ -47,11 +36,20 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -61,7 +59,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Brian Stansberry
  * 
  */
-public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
+public final class Standalone extends AbstractModel<Standalone> {
 
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
@@ -394,8 +392,9 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
      *
      * @param context the service activator context
      */
-    public void activate(final ServiceActivatorContext context) {
+    public void activateSubsystems(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
+
         // Activate extensions
         final Map<String, ExtensionElement> extensionsCopy;
         synchronized (this.extensions) {
@@ -428,12 +427,15 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         // TODO move service binding manager to somewhere else?
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
         		new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
-        
+
         // Activate socket bindings
         socketBindings.activate(context);
 
         // Activate deployments
         new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
+    }
+
+    public void activateDeployments(final ServiceActivatorContext context) {
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments;
         synchronized (this.deployments) {
             deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>(this.deployments);

@@ -22,6 +22,8 @@
 
 package org.jboss.as.deployment.unit;
 
+import org.jboss.msc.service.ServiceName;
+
 /**
  * A deployment processor.  Instances of this interface represent a step in the deployer chain.  They may perform
  * a variety of tasks, including (but not limited to):
@@ -35,6 +37,7 @@ package org.jboss.as.deployment.unit;
  * 
  */
 public interface DeploymentUnitProcessor {
+    static final ServiceName DEPLOYMENT_PROCESSOR_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "processor");
 
     /**
      * Process the deployment unit.
