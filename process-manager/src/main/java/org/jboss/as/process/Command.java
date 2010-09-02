@@ -37,5 +37,6 @@ public enum Command {
     SHUTDOWN,
     MSG,
     MSG_BYTES,
+    LOG,
     ;
 }

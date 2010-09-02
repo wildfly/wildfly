@@ -24,6 +24,7 @@ package org.jboss.as.process;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import java.util.logging.LogRecord;
 
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
@@ -244,6 +247,23 @@ public final class ProcessManagerSlave {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST_BYTES).append('\0');
         synchronized (output) {
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
+            output.write(message);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
+    }
+
+    public void consoleLog(final LogRecord record) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.LOG).append('\0');
+        synchronized (output) {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final ModularObjectOutputStream oos = ModularObjectOutputStream.create(baos);
+            oos.writeObject(record);
+            oos.close();
+            final byte[] message = baos.toByteArray();
             StreamUtils.writeString(output, b.toString());
             StreamUtils.writeInt(output, message.length);
             output.write(message);

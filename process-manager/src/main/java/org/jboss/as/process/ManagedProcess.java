@@ -323,6 +323,14 @@ final class ManagedProcess {
                                 }
                                 break;
                             }
+                            case LOG: {
+                                if (status != Status.MORE) {
+                                    break;
+                                }
+                                final byte[] bytes = StreamUtils.readBytesWithLength(inputStream);
+                                status = StreamUtils.readStatus(inputStream);
+                                master.logMessage(processName, bytes);
+                            }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
