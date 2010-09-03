@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,8 +69,9 @@ public final class ProcessManagerSlave {
             throw new IllegalArgumentException("handler is null");
         }
 
+        this.socket = new Socket();
         try {
-            this.socket = new Socket(addr, port);
+            this.socket.connect(new InetSocketAddress(addr, port));
             this.input = new BufferedInputStream(socket.getInputStream());
             this.output = new BufferedOutputStream(socket.getOutputStream());
             this.handler = handler;
@@ -87,9 +89,7 @@ public final class ProcessManagerSlave {
                 output.flush();
             }
         } catch (IOException e) {
-            if (this.socket != null) {
-                closeSocket();
-            }
+            closeSocket();
             throw new RuntimeException(e);
         }
         //Duplicate code - ServerCommunicationHandler - END 
