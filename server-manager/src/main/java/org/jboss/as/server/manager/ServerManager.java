@@ -25,19 +25,11 @@
  */
 package org.jboss.as.server.manager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.stream.XMLInputFactory;
-
 import org.jboss.as.model.Domain;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Host;
 import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupElement;
@@ -45,6 +37,14 @@ import org.jboss.as.model.Standalone;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLMapper;
+
+import javax.xml.stream.XMLInputFactory;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A ServerManager.
@@ -62,6 +62,8 @@ public class ServerManager {
     private ProcessManagerSlave processManagerSlave;
     private Host hostConfig;
     private Domain domainConfig;
+    private DomainController domainController;
+    
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
 //    private final Lock domainLock = new ReentrantLock();
@@ -156,15 +158,21 @@ public class ServerManager {
         // FIXME -- parsing s/b in initiateDomainController; 
         // here we should discover a DC, provide our Host to it, ask it for 
         // current Domain. But for now we are cheating by using
-        this.domainConfig = parseDomain();
+        //this.domainConfig = parseDomain();
     }
 
     private void initiateDomainController() {
-        // FIXME implement initiateDomainController()
-        //Domain domain = parseDomain();
-        // create Standalone for DC
-        // tell PM to start DC process
-        // tell PM to give Standalone config to DC
+        final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
+        final ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler);
+        try {
+            log.info("Starting local domain controller");
+            domainController = serverMaker.makeDomainController(localDomainControllerElement.getJvm());
+            domainController.start();
+        } catch (IOException e) {
+            log.error("Failed to start domain controller server", e);
+        }
+        this.domainConfig = parseDomain();
+        // TODO: tell PM to give local DomainController config to DC
     }
 
     private Host parseHost() {

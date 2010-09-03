@@ -22,19 +22,17 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * An individual server on a {@link Host}.
@@ -86,17 +84,17 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                         name = value;
                         break;
                     }
-                    case GROUP: {
-                        group = value;
-                        break;
-                    }
+//                    case GROUP: {
+//                        group = value;
+//                        break;
+//                    }
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
         }
-        if (group == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
-        }
+//        if (group == null) {
+//            throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
+//        }
         this.name = name == null ? DEFAULT_NAME : name;
         this.serverGroup = group;
         
@@ -224,5 +222,9 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                 default: throw unexpectedElement(reader);
             }
         }    
+    }
+
+    public JvmElement getJvm() {
+        return jvm;
     }
 }

@@ -71,6 +71,7 @@ public final class ServerMaker {
     }
     
     public Server makeServer(Standalone serverConfig, JvmElement jvmElement) throws IOException {
+        final String serverName = serverConfig.getServerName();
 //        final List<String> args = new ArrayList<String>();
 //        if (false) {
 //            // Example: run at high priority on *NIX
@@ -101,8 +102,8 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
         
-	    String serverProcessName = getServerProcessName(serverConfig);
-        List<String> command = getServerLaunchCommand(serverConfig, jvmElement);
+	    String serverProcessName = getServerProcessName(serverName);
+        List<String> command = getServerLaunchCommand(serverName, serverProcessName, jvmElement, serverConfig.getSystemProperties());
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
         processManagerSlave.startProcess(serverProcessName);
@@ -111,11 +112,11 @@ public final class ServerMaker {
         // ServerManager over sockets, create a socket-based ServerCommunicationHandler
         ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
         Server server = new Server(commHandler);
-//        messageHandler.registerServer(serverConfig.getServerName(), server);
+//        messageHandler.registerServer(serverName, server);
         return server;
     }
 
-    private List<String> getServerLaunchCommand(Standalone serverConfig, JvmElement jvm) {
+    private List<String> getServerLaunchCommand(final String serverName, final String serverProcessName, final JvmElement jvm, final PropertiesElement systemProperties) {
         
         List<String> command = new ArrayList<String>();
         
@@ -136,7 +137,7 @@ public final class ServerMaker {
         Map<String, String> sysProps = appendJavaOptions(jvm, command);
         
         command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-        command.add("-Dorg.jboss.boot.log.file=logs/" + serverConfig.getServerName() + "/boot.log");
+        command.add("-Dorg.jboss.boot.log.file=logs/" + serverName + "/boot.log");
         command.add("-jar");
         command.add("jboss-modules.jar");
         command.add("-mp");
@@ -145,9 +146,37 @@ public final class ServerMaker {
         command.add("org.jboss.logmanager:jboss-logmanager");
         command.add("org.jboss.as:jboss-as-server");
         
-        appendArgsToMain(serverConfig, sysProps, command);
+        appendArgsToMain(serverName, serverProcessName, sysProps, systemProperties, command);
         
         return command;
+    }
+
+    public DomainController makeDomainController(final JvmElement jvmElement) throws IOException {
+	    final String serverProcessName = DomainController.DOMAIN_CONTROLLER_PROCESS_NAME;
+        final List<String> command = new ArrayList<String>();
+        command.add(getJavaCommand(jvmElement));
+        final Map<String, String> sysProps = appendJavaOptions(jvmElement, command);
+
+        command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+        command.add("-Dorg.jboss.boot.log.file=logs/" + serverProcessName + "/boot.log");
+        command.add("-jar");
+        command.add("jboss-modules.jar");
+        command.add("-mp");
+        command.add("modules");
+        command.add("-logmodule");
+        command.add("org.jboss.logmanager:jboss-logmanager");
+        command.add("org.jboss.as:jboss-as-domain-controller");
+
+        appendArgsToMain(serverProcessName, serverProcessName, sysProps, null, command);
+
+        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
+        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
+        processManagerSlave.startProcess(serverProcessName);
+
+        // TODO JBAS-8260 If serverConfig specified that server will work with
+        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
+        DomainController domainController = new DomainController(commHandler);
+        return domainController;
     }
 
     private String getJavaCommand(JvmElement jvm) {
@@ -197,7 +226,7 @@ public final class ServerMaker {
         return sysProps;
     }
 
-    private void appendArgsToMain(Standalone serverConfig, Map<String, String> jvmProps, List<String> command) {
+    private void appendArgsToMain(final String serverName, final String serverProcessName, final Map<String, String> jvmProps, final PropertiesElement propertiesElement, final List<String> command) {
 
         if (environment.getProcessManagerAddress() != null) {
             command.add(CommandLineConstants.INTERPROCESS_ADDRESS);
@@ -205,17 +234,16 @@ public final class ServerMaker {
             command.add(CommandLineConstants.INTERPROCESS_PORT);
             command.add(environment.getProcessManagerPort().toString());
             command.add(CommandLineConstants.INTERPROCESS_NAME);
-            command.add(getServerProcessName(serverConfig));
+            command.add(serverProcessName);
         }
         
         // Pass through as args to main any sys props that are read at primordial boot
         Map<String, String> sysProps = null;
-        PropertiesElement propsEl = serverConfig.getSystemProperties();
-        if (propsEl == null) {
+        if (propertiesElement == null) {
             sysProps = Collections.emptyMap();
         }
         else {
-            sysProps = propsEl.getProperties();
+            sysProps = propertiesElement.getProperties();
         }
         
         StringBuilder sb = new StringBuilder("-D");
@@ -228,7 +256,7 @@ public final class ServerMaker {
         sb = new StringBuilder("-D");
         sb.append(key);
         sb.append('=');
-        File serverBaseDir = new File(environment.getDomainServersDir(), serverConfig.getServerName());
+        File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
         sb.append(getPropertyValue(key, jvmProps, sysProps, serverBaseDir.getAbsolutePath()));
         command.add(sb.toString());
         
@@ -295,7 +323,7 @@ public final class ServerMaker {
         return env;
     }
  
-    private String getServerProcessName(Standalone serverConfig) {
-        return SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+    private String getServerProcessName(final String serverName) {
+        return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 }
