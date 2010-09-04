@@ -34,8 +34,20 @@ import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.Standalone;
+import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.as.services.net.NetworkInterfaceBinding;
+import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.stream.XMLInputFactory;
@@ -45,6 +57,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A ServerManager.
@@ -62,7 +75,8 @@ public class ServerManager {
     private ProcessManagerSlave processManagerSlave;
     private Host hostConfig;
     private Domain domainConfig;
-    private DomainController domainController;
+    private DomainControllerProcess localDomainControllerProcess;
+    private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
@@ -98,10 +112,10 @@ public class ServerManager {
         
         if (hostConfig.getLocalDomainControllerElement() != null) {
             initiateDomainController();
+        } else {
+            // DC does not know about this host. Inform it of our existence
+            registerWithDomainController();
         }
-        
-        // DC does not know about this host. Inform it of our existence
-        registerWithDomainController();
     }
     
     public void startServers() {
@@ -155,24 +169,66 @@ public class ServerManager {
     }
     
     private void registerWithDomainController() {
-        // FIXME -- parsing s/b in initiateDomainController; 
-        // here we should discover a DC, provide our Host to it, ask it for 
-        // current Domain. But for now we are cheating by using
-        //this.domainConfig = parseDomain();
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        final ServiceActivatorContext activatorContext = new ServiceActivatorContextImpl(batchBuilder);
+        final DomainControllerClientService domainControllerClientService = new DomainControllerClientService(this);
+        final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerClientService.SERVICE_NAME, domainControllerClientService)
+            .addListener(new AbstractServiceListener<Void>() {
+                @Override
+                public void serviceFailed(ServiceController<? extends Void> serviceController, StartException reason) {
+                    log.errorf("Failed to register with domain controller.", reason);
+                }
+            })
+            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+        final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
+        if(localDomainControllerElement != null) {
+            final String interfaceName = localDomainControllerElement.getAdminInterface();
+            ServerInterfaceElement interfaceElement = null;
+            // Activate admin interface
+            final Map<String, ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
+            if(dcInterfaces != null) {
+                interfaceElement = dcInterfaces.get(interfaceName);
+            }
+
+            final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
+            if(interfaceElement == null && hostInterfaces != null) {
+                for(ServerInterfaceElement hostInterfaceElement : hostInterfaces) {
+                    if(interfaceName.equals(hostInterfaceElement.getName())) {
+                        interfaceElement = hostInterfaceElement;
+                        break;
+                    }
+                }
+            }
+            if(interfaceElement != null) {
+                interfaceElement.activate(activatorContext);
+            }
+            serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), NetworkInterfaceBinding.class, domainControllerClientService.getDomainControllerInterface());
+            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), localDomainControllerElement.getAdminPort());
+        }
+        try {
+            batchBuilder.install();
+        } catch (ServiceRegistryException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void initiateDomainController() {
         final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
         final ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler);
+        final DomainControllerConfig config = new DomainControllerConfig(localDomainControllerElement, hostConfig);
         try {
             log.info("Starting local domain controller");
-            domainController = serverMaker.makeDomainController(localDomainControllerElement.getJvm());
-            domainController.start();
+            localDomainControllerProcess = serverMaker.makeDomainController(getDomainControllerJvmElement(hostConfig, localDomainControllerElement.getJvm()));
+            localDomainControllerProcess.start(config);
         } catch (IOException e) {
             log.error("Failed to start domain controller server", e);
         }
         this.domainConfig = parseDomain();
-        // TODO: tell PM to give local DomainController config to DC
+    }
+
+    void localDomainControllerReady() {
+        registerWithDomainController();
     }
 
     private Host parseHost() {
@@ -259,5 +315,21 @@ public class ServerManager {
         JvmElement hostVM = host.getJvm(ourVMName);
         
         return new JvmElement(groupVM, hostVM, serverVM);
+    }
+
+    /**
+     * Combines information from the domain controller element, and host to come up with an overall JVM configuration
+     * for the domain controller
+     *
+     * @param host the host configuration object
+     * @param dcJvmElement the domain controller jvm element
+     * @return the JVM configuration object
+     */
+    private JvmElement getDomainControllerJvmElement(final Host host, final JvmElement dcJvmElement) {
+        final JvmElement hostVM = host.getJvm(dcJvmElement.getName());
+        if(hostVM == null) {
+            return dcJvmElement;
+        }
+        return new JvmElement(hostVM, dcJvmElement);
     }
 }

@@ -25,12 +25,12 @@
  */
 package org.jboss.as.server.manager;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
 import org.jboss.logging.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * A MessageHandler.
@@ -67,6 +67,11 @@ class MessageHandler implements Handler {
             Command cmd = ServerManagerProtocolCommand.readCommand(message);
 //          // TODO: actually handle this....
             log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
+
+            // Hack
+            if(DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(sourceProcessName) && cmd.getCommand().equals(ServerManagerProtocolCommand.SERVER_STARTED)) {
+                serverManager.localDomainControllerReady();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

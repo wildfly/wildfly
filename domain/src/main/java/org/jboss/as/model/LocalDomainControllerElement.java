@@ -24,13 +24,14 @@ package org.jboss.as.model;
 
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -46,19 +47,22 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     public static final String DEFAULT_NAME = "DomainController";
     
     private final String name;
-    private final String serverGroup;
+    private final String adminInterface;
+    private final int adminPort;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
-    private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
+
+
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of the host element
      */
-    public LocalDomainControllerElement(final Location location, final String name, final String serverGroup) {
+    public LocalDomainControllerElement(final Location location, final String name, final String adminInterface, final int adminPort) {
         super(location);
         this.name = name;
-        this.serverGroup = serverGroup;
+        this.adminInterface = adminInterface;
+        this.adminPort = adminPort;
     }
 
     /**
@@ -71,7 +75,8 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         super(reader);
         // Handle attributes
         String name = null;
-        String group = null;
+        String adminInterface = null;
+        int adminPort = -1;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -84,20 +89,25 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                         name = value;
                         break;
                     }
-//                    case GROUP: {
-//                        group = value;
-//                        break;
-//                    }
+                    case ADMIN_INTERFACE: {
+                        adminInterface = value;
+                        break;
+                    }
+                    case ADMIN_PORT: {
+                        adminPort = Integer.parseInt(value);
+                        break;
+                    }
                     default: throw unexpectedAttribute(reader, i);
                 }
             }
         }
-//        if (group == null) {
-//            throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
-//        }
         this.name = name == null ? DEFAULT_NAME : name;
-        this.serverGroup = group;
-        
+        if(adminInterface == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.ADMIN_INTERFACE.getLocalName()));
+        }
+        this.adminInterface = adminInterface;
+        this.adminPort = adminPort;
+
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -115,13 +125,6 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                             jvm = new JvmElement(reader);
                             break;
                         }
-                        case SOCKET_BINDING_GROUP: {
-                            if (bindingGroup != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
-                            }
-                            bindingGroup = new SocketBindingGroupRefElement(reader);
-                            break;
-                        }
                         default: throw unexpectedElement(reader);
                     }
                     break;
@@ -129,7 +132,9 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                 default: throw unexpectedElement(reader);
             }
         }
-        
+        if (jvm == null) {
+            throw missingRequiredElement(reader, Collections.singleton(Element.JVM.getLocalName()));
+        }
     }
 
     /**
@@ -142,18 +147,29 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     }
 
     /**
-     * Gets the name of the server's server group.
-     * 
-     * @return the server group name. Will not be <code>null</code>
+     * Get the JVM configuration.
+     *
+     * @return The JVM configuration. Will not be <code>null</code>
      */
-    public String getServerGroup() {
-        return serverGroup;
+    public JvmElement getJvm() {
+        return jvm;
+    }
+
+    public String getAdminInterface() {
+        return adminInterface;
+    }
+
+    public int getAdminPort() {
+        return adminPort;
+    }
+
+    public Map<String, ServerInterfaceElement> getInterfaces() {
+        return interfaces;
     }
 
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
         synchronized (interfaces) {
             cksum = calculateElementHashOf(interfaces.values(), cksum);
         }
@@ -177,7 +193,6 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        streamWriter.writeAttribute(Attribute.GROUP.getLocalName(), serverGroup);
 
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
@@ -193,11 +208,6 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         if (jvm != null) {
             streamWriter.writeStartElement(Element.JVM.getLocalName());
             jvm.writeContent(streamWriter);
-        }
-
-        if (bindingGroup != null) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            bindingGroup.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }
@@ -222,9 +232,5 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                 default: throw unexpectedElement(reader);
             }
         }    
-    }
-
-    public JvmElement getJvm() {
-        return jvm;
     }
 }

@@ -35,8 +35,10 @@
         <module group="org.jboss.modules" name="jboss-modules"/>
         <module group="org.jboss.logging" name="jboss-logging"/>
         <module group="org.jboss.logmanager" name="jboss-logmanager"/>
+        <module group="org.jboss.marshalling" name="jboss-marshalling"/>
         <module group="org.jboss.stdio" name="jboss-stdio"/>
         <module group="org.jboss.as" name="jboss-as-domain"/>
         <module group="org.jboss.as" name="jboss-as-process-manager"/>
+        <module group="org.jboss.as" name="jboss-as-server-manager"/>
     </dependencies>
 </module>

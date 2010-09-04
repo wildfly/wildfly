@@ -22,33 +22,31 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Standalone;
-
 import java.io.IOException;
 
 /**
- * A client proxy for communication between a ServerManager and the DomainController.
+ * A proxy to control the local DomainController.
  * 
  * @author John bailey
  */
-public final class DomainController {
+public final class DomainControllerProcess {
     static final String DOMAIN_CONTROLLER_PROCESS_NAME = "domain-controller";
 
     private final ServerCommunicationHandler communicationHandler;
 
-    public DomainController(ServerCommunicationHandler communicationHandler) {
+    public DomainControllerProcess(ServerCommunicationHandler communicationHandler) {
         if (communicationHandler == null) {
             throw new IllegalArgumentException("communicationHandler is null");
         }
         this.communicationHandler = communicationHandler;
     }
 
-    public void start() throws IOException {
-        sendCommand(ServerManagerProtocolCommand.START_SERVER, DOMAIN_CONTROLLER_PROCESS_NAME);
+    public void start(final DomainControllerConfig domainControllerConfig) throws IOException {
+        sendCommand(ServerManagerProtocolCommand.START_SERVER, domainControllerConfig);
     }
 
     public void stop() throws IOException {
-        sendCommand(ServerManagerProtocolCommand.STOP_SERVER, DOMAIN_CONTROLLER_PROCESS_NAME);
+        sendCommand(ServerManagerProtocolCommand.STOP_SERVER);
     }
 
     private void sendCommand(ServerManagerProtocolCommand command) throws IOException {

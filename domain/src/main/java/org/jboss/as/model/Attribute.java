@@ -57,7 +57,8 @@ public enum Attribute {
     SOCKET_BINDING_GROUP("socket-binding-group"),
     START("start"),
     VALUE("value"),
-    
+    ADMIN_INTERFACE("admin-interface"),
+    ADMIN_PORT("admin-port"),
     ;
 
     private final String name;

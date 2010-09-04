@@ -151,8 +151,8 @@ public final class ServerMaker {
         return command;
     }
 
-    public DomainController makeDomainController(final JvmElement jvmElement) throws IOException {
-	    final String serverProcessName = DomainController.DOMAIN_CONTROLLER_PROCESS_NAME;
+    public DomainControllerProcess makeDomainController(final JvmElement jvmElement) throws IOException {
+	    final String serverProcessName = DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME;
         final List<String> command = new ArrayList<String>();
         command.add(getJavaCommand(jvmElement));
         final Map<String, String> sysProps = appendJavaOptions(jvmElement, command);
@@ -175,7 +175,7 @@ public final class ServerMaker {
 
         // TODO JBAS-8260 If serverConfig specified that server will work with
         ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
-        DomainController domainController = new DomainController(commHandler);
+        DomainControllerProcess domainController = new DomainControllerProcess(commHandler);
         return domainController;
     }
 
