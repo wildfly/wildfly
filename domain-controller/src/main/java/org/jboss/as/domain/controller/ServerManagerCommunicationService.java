@@ -72,7 +72,7 @@ public class ServerManagerCommunicationService implements Service<Void> {
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         try {
             serverSocket = new ServerSocket();
-            final SocketAddress address = new InetSocketAddress(interfaceBinding.getAddress(), domainControllerElement.getAdminPort());
+            final SocketAddress address = new InetSocketAddress(interfaceBinding.getAddress(), domainControllerElement.getPort());
             serverSocket.setReuseAddress(true);
             serverSocket.bind(address, 20);
             executorService.execute(new ServerSocketListener(serverSocket));

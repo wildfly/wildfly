@@ -47,8 +47,8 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     public static final String DEFAULT_NAME = "DomainController";
     
     private final String name;
-    private final String adminInterface;
-    private final int adminPort;
+    private final String interfaceName;
+    private final int port;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private JvmElement jvm;
 
@@ -58,11 +58,11 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
      *
      * @param location the declaration location of the host element
      */
-    public LocalDomainControllerElement(final Location location, final String name, final String adminInterface, final int adminPort) {
+    public LocalDomainControllerElement(final Location location, final String name, final String interfaceName, final int port) {
         super(location);
         this.name = name;
-        this.adminInterface = adminInterface;
-        this.adminPort = adminPort;
+        this.interfaceName = interfaceName;
+        this.port = port;
     }
 
     /**
@@ -75,8 +75,8 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         super(reader);
         // Handle attributes
         String name = null;
-        String adminInterface = null;
-        int adminPort = -1;
+        String interfaceName = null;
+        int port = -1;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -89,12 +89,12 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                         name = value;
                         break;
                     }
-                    case ADMIN_INTERFACE: {
-                        adminInterface = value;
+                    case INTERFACE: {
+                        interfaceName = value;
                         break;
                     }
-                    case ADMIN_PORT: {
-                        adminPort = Integer.parseInt(value);
+                    case PORT: {
+                        port = Integer.parseInt(value);
                         break;
                     }
                     default: throw unexpectedAttribute(reader, i);
@@ -102,11 +102,11 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
             }
         }
         this.name = name == null ? DEFAULT_NAME : name;
-        if(adminInterface == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.ADMIN_INTERFACE.getLocalName()));
+        if(interfaceName == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
         }
-        this.adminInterface = adminInterface;
-        this.adminPort = adminPort;
+        this.interfaceName = interfaceName;
+        this.port = port;
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -155,12 +155,12 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         return jvm;
     }
 
-    public String getAdminInterface() {
-        return adminInterface;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public int getAdminPort() {
-        return adminPort;
+    public int getPort() {
+        return port;
     }
 
     public Map<String, ServerInterfaceElement> getInterfaces() {

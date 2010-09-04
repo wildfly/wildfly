@@ -110,7 +110,7 @@ public class DomainController {
         final ServerManagerCommunicationService serverManagerCommunicationService = new ServerManagerCommunicationService(this, localDomainControllerElement);
         batchBuilder.addService(ServerManagerCommunicationService.SERVICE_NAME, serverManagerCommunicationService)
             .addListener(new DomainControllerStartupListener())
-            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(localDomainControllerElement.getAdminInterface()), NetworkInterfaceBinding.class, serverManagerCommunicationService.getInterfaceInjector())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(localDomainControllerElement.getInterfaceName()), NetworkInterfaceBinding.class, serverManagerCommunicationService.getInterfaceInjector())
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
 
         try {

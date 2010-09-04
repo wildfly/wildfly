@@ -183,7 +183,7 @@ public class ServerManager {
 
         final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
         if(localDomainControllerElement != null) {
-            final String interfaceName = localDomainControllerElement.getAdminInterface();
+            final String interfaceName = localDomainControllerElement.getInterfaceName();
             ServerInterfaceElement interfaceElement = null;
             // Activate admin interface
             final Map<String, ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
@@ -204,7 +204,7 @@ public class ServerManager {
                 interfaceElement.activate(activatorContext);
             }
             serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), NetworkInterfaceBinding.class, domainControllerClientService.getDomainControllerInterface());
-            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), localDomainControllerElement.getAdminPort());
+            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), localDomainControllerElement.getPort());
         }
         try {
             batchBuilder.install();
