@@ -106,6 +106,12 @@ public class ServerManagerCommunicationService implements Service<Void> {
         return interfaceBindingValue;
     }
 
+    void removeServerManagerConnection(final ServerManagerConnection serverManagerConnection) {
+        if(serverManagerConnections.remove(serverManagerConnection.getId(), serverManagerConnection)) {
+            // TODO: Handle
+        }
+    }
+
 
     class ServerSocketListener implements Runnable {
 
@@ -124,8 +130,10 @@ public class ServerManagerCommunicationService implements Service<Void> {
                 try {
                     final Socket socket = serverSocket.accept();
                     final String id = String.format("%s:%d", socket.getInetAddress().getHostAddress(), socket.getPort());
-                    final ServerManagerConnection connection = new ServerManagerConnection(id, domainController, socket);
-                    serverManagerConnections.putIfAbsent(id, connection);
+                    final ServerManagerConnection connection = new ServerManagerConnection(id, domainController, ServerManagerCommunicationService.this, socket);
+                    if(serverManagerConnections.putIfAbsent(id, connection) != null) {
+                        // TODO: Handle
+                    }
                     executor.execute(connection);
                 } catch (SocketException e) {
                     log.info("Closed server socket");

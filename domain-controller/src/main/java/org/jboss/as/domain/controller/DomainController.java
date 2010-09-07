@@ -22,8 +22,10 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.model.Domain;
 import org.jboss.as.model.Host;
 import org.jboss.as.model.LocalDomainControllerElement;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.server.manager.DomainControllerConfig;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
@@ -38,7 +40,12 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartException;
+import org.jboss.staxmapper.XMLMapper;
 
+import javax.xml.stream.XMLInputFactory;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +63,8 @@ public class DomainController {
     private final ProcessMessageHandler messageHandler = new ProcessMessageHandler(this);
     private ProcessCommunicationHandler communicationHandler;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
+    private final StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
+    private Domain domainConfig;
 
     /**
      * Create an instance with an environment.
@@ -82,6 +91,9 @@ public class DomainController {
      */
     synchronized void start(final DomainControllerConfig domainControllerConfig) {
         log.info("Starting Domain Controller");
+
+        log.info("Parsing Domain Configuration");
+        domainConfig = parseDomain();
 
         final LocalDomainControllerElement localDomainControllerElement = domainControllerConfig.getDomainControllerElement();
         final Host hostConfig = domainControllerConfig.getHost();
@@ -128,10 +140,36 @@ public class DomainController {
         serviceContainer.shutdown();
     }
 
+    public Domain getDomain() {
+        return domainConfig;
+    }
+
     private void launchCommunicationHandler() {
         communicationHandler = new ProcessCommunicationHandler(environment.getProcessManagerAddress(), environment.getProcessManagerPort(), messageHandler);
         Thread t = new Thread(communicationHandler.getController(), "DomainController Process");
         t.start();
+    }
+
+    private Domain parseDomain() {
+        final File domainXML = new File(environment.getDomainConfigurationDir(), "domain.xml");
+        if (!domainXML.exists()) {
+            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
+        }
+        else if (! domainXML.canWrite()) {
+            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " is not writeable. A DomainController cannot be launched without a writable domain.xml");
+        }
+
+        try {
+            final XMLMapper mapper = XMLMapper.Factory.create();
+            extensionRegistrar.registerStandardDomainReaders(mapper);
+            final ParseResult<Domain> parseResult = new ParseResult<Domain>();
+            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
+            return parseResult.getResult();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Caught exception during processing of domain.xml", e);
+        }
     }
 
     private void sendMessage(ServerManagerProtocolCommand command) {

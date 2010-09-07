@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A ServerManager.
@@ -77,6 +78,7 @@ public class ServerManager {
     private Domain domainConfig;
     private DomainControllerProcess localDomainControllerProcess;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
+    private final AtomicBoolean serversStarted = new AtomicBoolean();
     
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
@@ -224,7 +226,7 @@ public class ServerManager {
         } catch (IOException e) {
             log.error("Failed to start domain controller server", e);
         }
-        this.domainConfig = parseDomain();
+        //this.domainConfig = parseDomain();
     }
 
     void localDomainControllerReady() {
@@ -252,27 +254,17 @@ public class ServerManager {
             throw new RuntimeException("Caught exception during processing of host.xml", e);
         }
     }
-    
-    private Domain parseDomain() {
-        
-        File domainXML = new File(environment.getDomainConfigurationDir(), "domain.xml");
-        if (!domainXML.exists()) {
-            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
-        }
-        else if (! domainXML.canWrite()) {
-            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " is not writeable. A DomainController cannot be launched without a writable domain.xml");
-        }
-        
-        try {
-            XMLMapper mapper = XMLMapper.Factory.create();
-            extensionRegistrar.registerStandardDomainReaders(mapper);
-            ParseResult<Domain> parseResult = new ParseResult<Domain>();
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
-            return parseResult.getResult();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Caught exception during processing of domain.xml", e);
+
+    /**
+     * Set the domain for the server manager.  If this is the first time the domain has been set on this instance it will
+     * also invoke the server launch process.
+     *
+     * @param domain The domain configuration
+     */
+    public void setDomain(final Domain domain) {
+        this.domainConfig = domain;
+        if(serversStarted.compareAndSet(false, true)) {
+            startServers();
         }
     }
     

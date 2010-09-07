@@ -24,14 +24,6 @@ package org.jboss.as.server.manager;
 
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -41,13 +33,13 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,12 +54,15 @@ public class DomainControllerClientService implements Service<Void> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "client");
     private static final Logger log = Logger.getLogger("org.jboss.as.server.manager");
     private static final long POLLING_INTERVAL = 10000L;
-    
+
     private final InjectedValue<InetAddress> domainControllerAddress = new InjectedValue<InetAddress>();
     private final InjectedValue<Integer> domainControllerPort = new InjectedValue<Integer>();
     private ExecutorService executor; // TODO: inject
     private Socket socket;
-    private final ServerManager serverManager;
+    private InputStream socketIn;
+    private OutputStream socketOut;
+
+    final ServerManager serverManager;
 
     public DomainControllerClientService(final ServerManager serverManager) {
         this.serverManager = serverManager;
@@ -95,11 +90,7 @@ public class DomainControllerClientService implements Service<Void> {
                 executor.shutdown();
             }
         } finally {
-            if (socket != null) try {
-                socket.close();
-            } catch (IOException e) {
-                log.warn("Failed to close connection to domain controller", e);
-            }
+            closeSocket();
         }
     }
 
@@ -134,41 +125,14 @@ public class DomainControllerClientService implements Service<Void> {
         return domainControllerPort;
     }
 
-    private static final MarshallerFactory MARSHALLER_FACTORY;
-    private static final MarshallingConfiguration CONFIG;
-
-    static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
-        final MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassTable(ModularClassTable.getInstance());
-        CONFIG = config;
-    }
-
-
     /**
      * Register with the domain controller.
      */
     public void register() {
-        final Socket socket = this.socket;
-        Marshaller marshaller = null;
         try {
-            final OutputStream outputStream = socket.getOutputStream();
-            marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-            marshaller.start(Marshalling.createByteOutput(outputStream));
-            marshaller.writeByte((byte) 1);
-            marshaller.finish();
+            DomainControllerClientProtocol.OutgoingCommand.REGISTER.execute(this, DomainControllerClientService.this.socketOut);
         } catch (Throwable t) {
             throw new RuntimeException("Failed to register with domain controller", t); // TODO: better exception
-        } finally {
-            if (marshaller != null) try {
-                marshaller.close();
-            } catch (Throwable ignored) {
-                // todo: log me
-            }
         }
     }
 
@@ -185,10 +149,12 @@ public class DomainControllerClientService implements Service<Void> {
                     if (dcAddress.isAnyLocalAddress() || dcAddress.isSiteLocalAddress()) {
                         dcAddress = InetAddress.getLocalHost();
                     }
-                    socket = new Socket(dcAddress, domainControllerPort.getValue());
+                    DomainControllerClientService.this.socket = new Socket(dcAddress, domainControllerPort.getValue());
+                    DomainControllerClientService.this.socketIn = new BufferedInputStream(socket.getInputStream());
+                    DomainControllerClientService.this.socketOut = new BufferedOutputStream(socket.getOutputStream());
                     register();
                     log.infof("Connected to domain controller [%s:%d]", dcAddress.getHostAddress(), domainControllerPort.getValue());
-                    executor.execute(new ListenerTask(socket));
+                    executor.execute(new ListenerTask());
                     break;
                 } catch (IOException e) {
                     log.info("Unable to connect to domain controller.  Will retry.");
@@ -206,90 +172,44 @@ public class DomainControllerClientService implements Service<Void> {
 
     /**
      * Task that listens for commands from the domain controller.  When it receives the command it will determine the
-     * correct {@link org.jboss.as.server.manager.DomainControllerClientService.ProtocolCommand} and execute it.
+     * correct {@link org.jboss.as.server.manager.DomainControllerClientProtocol.IncomingCommand} and execute it.
      */
     private class ListenerTask implements Runnable {
-        private final Socket socket;
-
-        private ListenerTask(Socket socket) {
-            this.socket = socket;
-        }
-
         @Override
         public void run() {
-            Unmarshaller unmarshaller = null;
             try {
-                final InputStream inputStream = socket.getInputStream();
-                unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
                 for (; ;) {
-                    if (!socket.isConnected())
+                    if (!socket.isConnected()) {
                         break;
-                    unmarshaller.start(Marshalling.createByteInput(inputStream));
-
-                    byte commandByte = unmarshaller.readByte();
-                    ProtocolCommand command = ProtocolCommand.commandFor(commandByte);
-                    if (command == null) {
-                        throw new RuntimeException("Invalid command byte received: " + commandByte);
                     }
-                    command.execute(socket, unmarshaller);
+                    DomainControllerClientProtocol.IncomingCommand.processNext(DomainControllerClientService.this, DomainControllerClientService.this.socketIn);
                     // TODO:  What if execution bombs.  How do we recover?
                 }
             } catch (Throwable t) {
+                t.printStackTrace();
                 throw new RuntimeException(t); // TODO:  Better exceptions
             } finally {
-                if (unmarshaller != null) try {
-                    unmarshaller.close();
-                } catch (Throwable ignored) {
-                    // todo: log me
-                }
-                if (socket != null) try {
-                    socket.close();
-                } catch (Throwable ignored) {
-                    // todo: log me
-                }
+                closeSocket();
             }
         }
     }
 
-    private enum ProtocolCommand {
-        REGISTRATION_RESPONSE((byte) 1) {
-            void doExecute(final Socket socket, final Unmarshaller unmarshaller, final Marshaller marshaller) throws Exception {
-                log.info("Registered to domain controller");
-            }},;
-
-        final Byte command;
-
-        ProtocolCommand(final Byte command) {
-            this.command = command;
+    private void closeSocket() {
+        if(socket == null) return;
+        try {
+            socket.shutdownOutput();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        void execute(final Socket socket, final Unmarshaller unmarshaller) throws Exception {
-            if(unmarshaller == null) throw new IllegalArgumentException("Unmarshaller is null");
-            
-            Marshaller marshaller = null;
-            try {
-                marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-                final OutputStream outputStream = socket.getOutputStream();
-                marshaller.start(Marshalling.createByteOutput(outputStream));
-                doExecute(socket, unmarshaller, marshaller);
-            } finally {
-                unmarshaller.finish();
-                if(marshaller != null) marshaller.finish();
-            }
+        try {
+            socket.shutdownInput();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        abstract void doExecute(Socket socket, Unmarshaller unmarshaller, Marshaller marshaller) throws Exception;
-
-        static Map<Byte, ProtocolCommand> COMMANDS = new HashMap<Byte, ProtocolCommand>();
-
-        static {
-            for (ProtocolCommand command : values()) {
-                COMMANDS.put(command.command, command);
-            }
-        }
-
-        static ProtocolCommand commandFor(final byte commandByte) {
-            return COMMANDS.get(Byte.valueOf(commandByte));
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

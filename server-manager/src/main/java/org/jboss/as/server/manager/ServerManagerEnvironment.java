@@ -229,7 +229,7 @@ public class ServerManagerEnvironment {
     /**
      * Get the process name of this process, needed to inform the process manager we have started
      * 
-     * @return the process name 
+     * @return the process name
      */
     public String getProcessName() {
         return processName;

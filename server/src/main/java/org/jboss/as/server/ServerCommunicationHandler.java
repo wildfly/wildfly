@@ -22,6 +22,11 @@
 
 package org.jboss.as.server;
 
+import org.jboss.as.process.Command;
+import org.jboss.as.process.Status;
+import org.jboss.as.process.StreamUtils;
+import org.jboss.logging.Logger;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -32,11 +37,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.jboss.as.process.Command;
-import org.jboss.as.process.Status;
-import org.jboss.as.process.StreamUtils;
-import org.jboss.logging.Logger;
 
 /**
  * TODO: We need to establish a full protocol.
@@ -87,15 +87,14 @@ public class ServerCommunicationHandler {
                 output.flush();
             }
         } catch (IOException e) {
-            if (this.socket != null) {
-                closeSocket();
-            }
+            closeSocket();
             throw new RuntimeException(e);
         }
         //Duplicate code - ProcessManagerSlave - END 
     }
 
     private void closeSocket() {
+        if(socket == null) return;
         try {
             socket.shutdownOutput();
         } catch (IOException e) {
