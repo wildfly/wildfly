@@ -31,6 +31,7 @@ import org.jboss.as.model.Host;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.model.ParseResult;
+import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.Standalone;
@@ -55,6 +56,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -207,6 +210,16 @@ public class ServerManager {
             }
             serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), NetworkInterfaceBinding.class, domainControllerClientService.getDomainControllerInterface());
             serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), localDomainControllerElement.getPort());
+        } else {
+            final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainController();
+            final InetAddress hostAddress;
+            try {
+                hostAddress = InetAddress.getByName(remoteDomainControllerElement.getHost());
+            } catch (UnknownHostException e) {
+                throw new RuntimeException("Failed to get remote domain controller address", e);
+            }
+            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
+            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
         }
         try {
             batchBuilder.install();

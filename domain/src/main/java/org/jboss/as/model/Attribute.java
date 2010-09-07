@@ -47,6 +47,7 @@ public enum Attribute {
     MULTICAST_ADDRESS("multicast-address"),
     MULTICAST_PORT("multicast-port"),
     PATTERN("pattern"),
+    HOST("host"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
     PREFIX("prefix"),    

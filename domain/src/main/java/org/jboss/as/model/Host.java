@@ -22,15 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
@@ -39,6 +30,14 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -54,10 +53,11 @@ public final class Host extends AbstractModel<Host> {
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
     private LocalDomainControllerElement localDomainController;
-    
-    
+    private RemoteDomainControllerElement remoteDomainController;
+
+
     private PropertiesElement systemProperties;
-    
+
     /**
      * Construct a new instance.
      *
@@ -121,16 +121,16 @@ public final class Host extends AbstractModel<Host> {
                 default: throw unexpectedElement(reader);
             }
         }
-        
+
     }
-    
+
     /**
      * Gets the host level configuration for the jvm with the given <code>name</name>.
      * This configuration can extend or override any configuration for a jvm
      * with the same name at the {@link ServerGroupElement#getJvm() server group level}.
      * In turn, the details of the configuration of this jvm can be overridden at the
      * {@link ServerElement#getJvm() server level}.
-     *     
+     *
      * @param name the name of the jvm
      * @return the jvm configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
@@ -140,14 +140,14 @@ public final class Host extends AbstractModel<Host> {
             return jvms.get(name);
         }
     }
-    
+
     /**
      * Gets the host level configuration for the interface with the given <code>name</name>.
      * This configuration can override any configuration for an interface
      * with the same name at the {@link Domain#getInterface(String) domain level}.
      * In turn, the details of the configuration of this interface can be overridden at the
      * {@link ServerElement#getInterfaces() server level}.
-     *     
+     *
      * @param name the name of the interface
      * @return the interface configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
@@ -157,10 +157,10 @@ public final class Host extends AbstractModel<Host> {
             return interfaces.get(name);
         }
     }
-    
+
     /**
      * Gets the named interfaces configured at the host level.
-     * 
+     *
      * @return the interfaces. May be empty but will not be <code>null</code>
      */
     public Set<ServerInterfaceElement> getInterfaces() {
@@ -168,22 +168,22 @@ public final class Host extends AbstractModel<Host> {
             return new HashSet<ServerInterfaceElement>(interfaces.values());
         }
     }
-    
-   /**
-    * Gets the server-specific configurations for the servers associated with this host.
-    * 
-    * @return the servers. May be empty but will not be <code>null</code>
-    */
+
+    /**
+     * Gets the server-specific configurations for the servers associated with this host.
+     *
+     * @return the servers. May be empty but will not be <code>null</code>
+     */
     public Set<ServerElement> getServers() {
         synchronized (servers) {
             return new HashSet<ServerElement>(servers.values());
         }
     }
-    
+
     /**
-     * Gets the server configuration for the server with the given 
+     * Gets the server configuration for the server with the given
      * <code>name</code>.
-     * 
+     *
      * @param name the name of the server
      * @return the server configuration, or <code>null</code> if no server
      *         named <code>name</code> is configured
@@ -193,29 +193,33 @@ public final class Host extends AbstractModel<Host> {
             return servers.get(name);
         }
     }
-    
+
     /**
      * Gets any system properties defined at the host level. These properties
-     * can extend and override any properties declared at the 
-     * {@link Domain#getSystemProperties() domain level} or the 
-     * {@link ServerGroupElement server group level} and may in turn be extended 
+     * can extend and override any properties declared at the
+     * {@link Domain#getSystemProperties() domain level} or the
+     * {@link ServerGroupElement server group level} and may in turn be extended
      * or overridden by any properties declared at the
      * {@link ServerElement#getSystemProperties() server level}.
-     * 
+     *
      * @return the system properties, or <code>null</code> if there are none
      */
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
-    
+
     public LocalDomainControllerElement getLocalDomainControllerElement() {
         return localDomainController;
     }
 
+    public RemoteDomainControllerElement getRemoteDomainController() {
+        return remoteDomainController;
+    }
+
     /** {@inheritDoc} */
     public long elementHash() {
-        long  cksum = 17l;
-    
+        long cksum = 17l;
+
         synchronized (interfaces) {
             cksum = calculateElementHashOf(interfaces.values(), cksum);
         }
@@ -230,11 +234,11 @@ public final class Host extends AbstractModel<Host> {
         }
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
         if (localDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ localDomainController.elementHash();
-        // else FIXME remote domain controller
+        if (remoteDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ remoteDomainController.elementHash();
         synchronized (namespaces) {
-            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
+            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() & 0xffffffffL;
         }
-        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
+        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() & 0xffffffffL;
         return cksum;
     }
 
@@ -251,7 +255,7 @@ public final class Host extends AbstractModel<Host> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        
+
         synchronized (namespaces) {
             for (NamespaceAttribute namespace : namespaces.values()) {
                 if (namespace.isDefaultNamespaceDeclaration()) {
@@ -261,18 +265,18 @@ public final class Host extends AbstractModel<Host> {
                 streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
         }
-        
+
         if (schemaLocation != null) {
             NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
-        
+
         // TODO re-evaluate the element order in the xsd; make sure this is correct
-        
+
         synchronized (extensions) {
-            if (! extensions.isEmpty()) {
+            if (!extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {        
+                for (ExtensionElement element : extensions.values()) {
                     streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
                     element.writeContent(streamWriter);
                 }
@@ -291,11 +295,14 @@ public final class Host extends AbstractModel<Host> {
             streamWriter.writeStartElement(Element.LOCAL.getLocalName());
             localDomainController.writeContent(streamWriter);
         }
-        // else FIXME remote domain controller
+        else if (remoteDomainController != null) {
+            streamWriter.writeStartElement(Element.REMOTE.getLocalName());
+            remoteDomainController.writeContent(streamWriter);
+        }
         streamWriter.writeEndElement();
-        
+
         synchronized (interfaces) {
-            if (! interfaces.isEmpty()) {
+            if (!interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
                 for (InterfaceElement element : interfaces.values()) {
                     streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
@@ -304,9 +311,9 @@ public final class Host extends AbstractModel<Host> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (jvms) {
-            if (! jvms.isEmpty()) {
+            if (!jvms.isEmpty()) {
                 streamWriter.writeStartElement(Element.JVMS.getLocalName());
                 for (JvmElement element : jvms.values()) {
                     streamWriter.writeStartElement(Element.JVM.getLocalName());
@@ -315,9 +322,9 @@ public final class Host extends AbstractModel<Host> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (servers) {
-            if (! servers.isEmpty()) {
+            if (!servers.isEmpty()) {
                 streamWriter.writeStartElement(Element.SERVERS.getLocalName());
                 for (ServerElement server : servers.values()) {
                     streamWriter.writeStartElement(Element.SERVER.getLocalName());
@@ -327,7 +334,7 @@ public final class Host extends AbstractModel<Host> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         streamWriter.writeEndElement();
     }
 
@@ -339,11 +346,20 @@ public final class Host extends AbstractModel<Host> {
                     switch (element) {
                         case LOCAL: {
                             if (localDomainController != null) {
-                                throw new XMLStreamException("Child " + element.getLocalName() + 
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() + 
+                                throw new XMLStreamException("Child " + element.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
                                         " already declared", reader.getLocation());
                             }
                             this.localDomainController = new LocalDomainControllerElement(reader);
+                            break;
+                        }
+                        case REMOTE: {
+                            if (remoteDomainController != null) {
+                                throw new XMLStreamException("Child " + element.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
+                                        " already declared", reader.getLocation());
+                            }
+                            this.remoteDomainController = new RemoteDomainControllerElement(reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -352,9 +368,16 @@ public final class Host extends AbstractModel<Host> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
+        if (remoteDomainController == null && localDomainController == null) {
+            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " +
+                    Element.LOCAL.getLocalName() + " domain controller configuration must be declared.", reader.getLocation());
+        } else if (remoteDomainController != null && localDomainController != null) {
+            throw new XMLStreamException("Only a single " + Element.REMOTE.getLocalName() + " or " +
+                    Element.LOCAL.getLocalName() + " domain controller configuration can be declared.", reader.getLocation());
+        }
     }
-    
+
     private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String module = extensionElement.getModule();
         try {
@@ -367,7 +390,7 @@ public final class Host extends AbstractModel<Host> {
             throw new XMLStreamException("Failed to load module", e);
         }
     }
-    
+
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -390,9 +413,9 @@ public final class Host extends AbstractModel<Host> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -413,9 +436,9 @@ public final class Host extends AbstractModel<Host> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseJvms(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -436,10 +459,10 @@ public final class Host extends AbstractModel<Host> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
 
-    
+
     private void parseServers(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -460,6 +483,6 @@ public final class Host extends AbstractModel<Host> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
 }

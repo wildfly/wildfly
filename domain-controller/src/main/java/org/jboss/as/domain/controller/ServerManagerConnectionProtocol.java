@@ -65,7 +65,6 @@ public class ServerManagerConnectionProtocol {
     enum OutgoingCommand {
         CONFIRM_REGISTRATION((byte) 0) {
             void doExecute(ServerManagerConnection serverManagerConnection, Marshaller marshaller) throws Exception {
-                marshaller.writeByte(command);
             }},
         UPDATE_DOMAIN((byte) 1) {
             void doExecute(final ServerManagerConnection serverManagerConnection, final Marshaller marshaller) throws Exception {

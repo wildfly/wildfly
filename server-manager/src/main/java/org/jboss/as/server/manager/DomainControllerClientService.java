@@ -75,7 +75,7 @@ public class DomainControllerClientService implements Service<Void> {
      * @throws StartException
      */
     public synchronized void start(final StartContext context) throws StartException {
-        executor = Executors.newSingleThreadExecutor();
+        executor = Executors.newFixedThreadPool(2);
         executor.execute(new ConnectTask());
     }
 
@@ -152,9 +152,9 @@ public class DomainControllerClientService implements Service<Void> {
                     DomainControllerClientService.this.socket = new Socket(dcAddress, domainControllerPort.getValue());
                     DomainControllerClientService.this.socketIn = new BufferedInputStream(socket.getInputStream());
                     DomainControllerClientService.this.socketOut = new BufferedOutputStream(socket.getOutputStream());
-                    register();
                     log.infof("Connected to domain controller [%s:%d]", dcAddress.getHostAddress(), domainControllerPort.getValue());
                     executor.execute(new ListenerTask());
+                    register();
                     break;
                 } catch (IOException e) {
                     log.info("Unable to connect to domain controller.  Will retry.");
