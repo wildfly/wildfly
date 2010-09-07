@@ -135,6 +135,7 @@ public final class ServerMaker {
         
         Map<String, String> sysProps = appendJavaOptions(jvm, command);
         
+        command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
         command.add("-Dorg.jboss.boot.log.file=logs/" + serverConfig.getServerName() + "/boot.log");
         command.add("-jar");
         command.add("jboss-modules.jar");
