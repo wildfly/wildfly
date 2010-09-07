@@ -22,7 +22,6 @@
 
 package org.jboss.as.process;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -43,9 +42,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
 import org.jboss.logging.Logger;
-import org.jboss.logmanager.ExtLogRecord;
-
-import java.util.logging.LogRecord;
 
 /**
  * Process manager main entry point.  The thin process manager process is implemented here.
@@ -58,13 +54,13 @@ public final class ProcessManagerMaster {
 
     private final ServerSocketListener serverSocketListener;
     
-    private static final Logger log = Logger.getLogger(ProcessManagerMaster.class);
+    private final Logger log = Logger.getLogger(ProcessManagerMaster.class);
     
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
     
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
-    ProcessManagerMaster(InetAddress addr, int port) throws IOException {
+    ProcessManagerMaster(InetAddress addr, int port) throws UnknownHostException, IOException {
         serverSocketListener = createServerSocketListener(addr, port);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             
@@ -303,27 +299,7 @@ public final class ProcessManagerMaster {
             }
         }
     }
-
-    void logMessage(final String processName, final byte[] bytes) {
-        try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            final ModularObjectInputStream ois = ModularObjectInputStream.create(bais);
-            LogRecord rec = (LogRecord) ois.readObject();
-            if (rec instanceof ExtLogRecord) {
-                // TODO: on release of logmanager
-//                ((ExtLogRecord)rec).putMdc("process", processName);
-            }
-            final String loggerName = rec.getLoggerName();
-            java.util.logging.Logger.getLogger(loggerName).log(rec);
-        } catch (RuntimeException e) {
-            // ignore
-        } catch (ClassNotFoundException e) {
-            // ignore
-        } catch (IOException e) {
-            // ignore
-        }
-    }
-
+    
     void registerStopProcessListener(final String name, final StopProcessListener listener) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
@@ -352,7 +328,7 @@ public final class ProcessManagerMaster {
         }
     }
 
-    ServerSocketListener createServerSocketListener(InetAddress addr, Integer port) throws IOException{
+    ServerSocketListener createServerSocketListener(InetAddress addr, Integer port) throws UnknownHostException, IOException{
         if (addr == null)
             addr = InetAddress.getLocalHost();
         if (port == null)
@@ -365,7 +341,7 @@ public final class ProcessManagerMaster {
         serverSocket.bind(saddr, 20);
         return new ServerSocketListener(serverSocket);
     }
-
+    
     private static class ParsedArgs {
         final Integer port;
         final InetAddress address;
@@ -452,7 +428,7 @@ public final class ProcessManagerMaster {
         @Override
         public void run() {
             boolean done = false;
-            log.infof("PM listening on port %d", Integer.valueOf(serverSocket.getLocalPort()));
+            log.infof("PM listening on " + serverSocket.getLocalPort());
             while (!done) {
                 try {
                     Socket socket = serverSocket.accept();
@@ -502,11 +478,11 @@ public final class ProcessManagerMaster {
                 //TODO Timeout on the read?
                 Status status = StreamUtils.readWord(in, sb);
                 if (status != Status.MORE) {
-                    log.errorf("Process acceptor: received '%s' but no more", sb);
+                    log.errorf("Process acceptor: received '%s' but no more", sb.toString());
                     return;
                 }
                 if (!sb.toString().equals("STARTED")) {
-                    log.errorf("Process acceptor: received unknown start command '%s'", sb);
+                    log.errorf("Process acceptor: received unknown start command '%s'", sb.toString());
                     return;
                 }
                 sb = new StringBuilder();
@@ -520,11 +496,11 @@ public final class ProcessManagerMaster {
                 synchronized (processes) {
                     process = processes.get(processName);
                     if (process == null) {
-                        log.errorf("Process acceptor: received start command for unknown process '%s' (%s)", processName, processes.keySet());
+                        log.errorf("Process acceptor: received start command for unknown process '%s'", processName + "(" +  processes.keySet() + ")");
                         return;
                     }
                     if (!process.isStart()) {
-                        log.errorf("Process acceptor: received start command for not started process '%s'", process);
+                        log.errorf("Process acceptor: received start command for not started process '" + process + "'");
                         return;
                     }
                 }
@@ -533,7 +509,7 @@ public final class ProcessManagerMaster {
                 ok = true;
                 
             } catch (IOException e) {
-                log.errorf("Process acceptor: error reading from socket: %s", e);
+                log.errorf("Process acceptor: error reading from socket: %s", e.getMessage());
             }
             finally {
                 if (!ok){
