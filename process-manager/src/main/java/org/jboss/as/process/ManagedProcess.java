@@ -521,19 +521,21 @@ final class ManagedProcess {
         public void run() {
             boolean respawn = false;
             int exitCode = 0;
-            for (;;) try {
-                exitCode = process.waitFor();
-                log.infof("Process %s has finished", processName);
-                synchronized (ManagedProcess.this) {
-                    start = false;
-                    if (exitCode != 0)
-                        respawn = !stopped;
+            for (;;) {
+                try {
+                    exitCode = process.waitFor();
+                    log.infof("Process %s has finished", processName);
+                    synchronized (ManagedProcess.this) {
+                        start = false;
+                        if (exitCode != 0)
+                            respawn = !stopped;
+                    }
+                    invokeStopProcessListeners(exitCode);
+                    if (respawn)
+                        respawn();
+                    break;
+                } catch (InterruptedException e) {
                 }
-                invokeStopProcessListeners(exitCode);
-                if (respawn)
-                    respawn();
-                break;
-            } catch (InterruptedException e) {
             }
         }
     	
