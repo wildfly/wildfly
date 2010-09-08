@@ -22,6 +22,12 @@
 
 package org.jboss.as.server.manager;
 
+import java.io.Closeable;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.model.DomainModel;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
@@ -32,12 +38,6 @@ import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
-
-import java.io.Closeable;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Protocol used by domain controller clients.
@@ -66,11 +66,13 @@ public class DomainControllerClientProtocol {
      */
     enum OutgoingCommand {
         REGISTER((byte) 0) {
+            @Override
             protected void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception {
                 marshaller.writeObject(domainControllerClientService.serverManager.getHostConfig());
             }
         },
         UNREGISTER(Byte.MAX_VALUE) {
+            @Override
             protected void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception {
             }
         },;
@@ -102,11 +104,13 @@ public class DomainControllerClientProtocol {
      */
     enum IncomingCommand {
         REGISTRATION_RESPONSE((byte) 0) {
+            @Override
             protected void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
                 log.info("Registered with domain controller");
             }
         },
         DOMAIN_UPDATE((byte) 1) {
+            @Override
             protected void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
                 log.info("Received domain update from domain controller");
                 final DomainModel domain = unmarshaller.readObject(DomainModel.class);

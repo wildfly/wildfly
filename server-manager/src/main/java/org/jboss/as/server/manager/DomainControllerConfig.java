@@ -22,10 +22,10 @@
 
 package org.jboss.as.server.manager;
 
+import java.io.Serializable;
+
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.LocalDomainControllerElement;
-
-import java.io.Serializable;
 
 /**
  * Config object passed to a local domain controller with the pre-parsed host and local domain controller element.

@@ -32,20 +32,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.communication.SocketConnection;
 import org.jboss.logging.Logger;
 import org.jboss.logging.NDC;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
+ *
  */
-final class ManagedProcess {
+final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     private final ProcessManagerMaster master;
     private final String processName;
     private final List<String> command;
@@ -68,18 +69,18 @@ final class ManagedProcess {
         this.env = env;
         this.workingDirectory = workingDirectory;
         this.respawnPolicy = respawnPolicy;
-        this.log = Logger.getLogger("org.jboss.process." + processName);
+        this.log = Logger.getLogger("org.jboss.as.process." + processName);
     }
 
     public String getProcessName() {
         return processName;
     }
 
-    synchronized void setSocket(Socket socket) throws IOException{
+    synchronized void setSocket(SocketConnection socketConnection) throws IOException{
         log.info("Initializing socket for " + processName);
-        commandStream.setSocketOutputStream(socket.getOutputStream());
+        commandStream.setSocketOutputStream(socketConnection.getOutputStream());
 
-        final OutputStreamHandler outputStreamHandler = new OutputStreamHandler(new BufferedInputStream(socket.getInputStream()));
+        final ProcessOutputStreamHandler outputStreamHandler = new ProcessOutputStreamHandler(master, this, new BufferedInputStream(socketConnection.getInputStream()));
         final Thread outputThread = new Thread(outputStreamHandler);
         outputThread.setName("Process " + processName + " socket reader thread");
         // todo - error handling in the event that a thread can't start?
@@ -132,7 +133,7 @@ final class ManagedProcess {
             }
             stopped = true;
             final OutputStream stream = commandStream;
-            StreamUtils.writeString(stream, "SHUTDOWN\n");
+            StreamUtils.writeString(stream, Command.SHUTDOWN + "\n");
             stream.flush();
         }
     }
@@ -142,29 +143,69 @@ final class ManagedProcess {
     }
 
     void send(final String sender, final List<String> msg) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append("MSG");
-        b.append('\0');
-        b.append(sender);
-        for (String s : msg) {
-            b.append('\0').append(s);
+        synchronized (this) {
+            if (!start)
+                return;
+            final StringBuilder b = new StringBuilder();
+            b.append(Command.MSG);
+            b.append('\0');
+            b.append(sender);
+            for (String s : msg) {
+                b.append('\0').append(s);
+            }
+            b.append('\n');
+            StreamUtils.writeString(commandStream, b);
+            commandStream.flush();
         }
-        b.append('\n');
-        StreamUtils.writeString(commandStream, b);
-        commandStream.flush();
     }
 
     void send(final String sender, final byte[] msg) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append("MSG_BYTES");
-        b.append('\0');
-        b.append(sender);
-        b.append('\0');
-        StreamUtils.writeString(commandStream, b.toString());
-        StreamUtils.writeInt(commandStream, msg.length);
-        commandStream.write(msg, 0, msg.length);
-        StreamUtils.writeChar(commandStream, '\n');
-        commandStream.flush();
+        synchronized (this) {
+            if (!start)
+                return;
+            final StringBuilder b = new StringBuilder();
+            b.append(Command.MSG_BYTES);
+            b.append('\0');
+            b.append(sender);
+            b.append('\0');
+            StreamUtils.writeString(commandStream, b.toString());
+            StreamUtils.writeInt(commandStream, msg.length);
+            commandStream.write(msg, 0, msg.length);
+            StreamUtils.writeChar(commandStream, '\n');
+            commandStream.flush();
+        }
+    }
+
+    boolean shutdownServers() throws IOException {
+        checkServerManager();
+        synchronized (this) {
+            if (!start)
+                return false;
+            final OutputStream stream = commandStream;
+            StreamUtils.writeString(stream, Command.SHUTDOWN_SERVERS + "\n");
+            stream.flush();
+            return true;
+        }
+    }
+
+    void down(String stoppedProcessName) throws IOException {
+        checkServerManager();
+        synchronized (this) {
+            if (!start)
+                return;
+            StringBuilder sb = new StringBuilder();
+            sb.append(Command.DOWN);
+            sb.append('\0');
+            sb.append(stoppedProcessName);
+            sb.append('\n');
+            StreamUtils.writeString(commandStream, sb.toString());
+            commandStream.flush();
+        }
+    }
+
+    private void checkServerManager() {
+        if (!ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME.equals(processName))
+            throw new IllegalStateException("Attempt to send SHUTDOWN_SERVERS on a ManagedProcess that is not " + ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME + ": " + processName);
     }
 
     private void respawn() {
@@ -172,6 +213,12 @@ final class ManagedProcess {
         synchronized (this) {
             if (stopped || start)
                 return;
+
+            if (respawnPolicy == null) {
+                master.downServer(processName);
+                return;
+            }
+
             wait = respawnPolicy.getTimeOutMs(++respawnCount);
             if (wait < 0){
                 log.info(processName + " has crashed " + respawnCount + " times, stopping it");
@@ -201,184 +248,11 @@ final class ManagedProcess {
         }
     }
 
-
-    private final class OutputStreamHandler implements Runnable {
-
-        private final InputStream inputStream;
-
-        OutputStreamHandler(final InputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-
-        public void run() {
-
-            // FIXME reliable transmission support (JBAS-8262)
-            final InputStream inputStream = this.inputStream;
-            final StringBuilder b = new StringBuilder();
-            try {
-                for (;;) {
-                    Status status = StreamUtils.readWord(inputStream, b);
-                    if (status == Status.END_OF_STREAM) {
-                        log.info("Received end of stream, shutting down " + processName);
-                        commandStream.closeSocketOutputStream();
-                        // no more input
-                        return;
-                    }
-                    try {
-                        final Command command = Command.valueOf(b.toString());
-                        OUT: switch (command) {
-                            case ADD: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                final String name = b.toString();
-                                status = StreamUtils.readWord(inputStream, b);
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                final String workingDirectory = b.toString();
-                                status = StreamUtils.readWord(inputStream, b);
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                final String sizeString = b.toString();
-                                final int size;
-                                try {
-                                    size = Integer.parseInt(sizeString, 10);
-                                } catch (NumberFormatException e) {
-                                    e.printStackTrace(System.err); // FIXME remove
-                                    break;
-                                }
-                                final List<String> execCmd = new ArrayList<String>();
-                                for (int i = 0; i < size; i++) {
-                                    status = StreamUtils.readWord(inputStream, b);
-                                    if (status != Status.MORE) {
-                                        break OUT;
-                                    }
-                                    execCmd.add(b.toString());
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                final String mapSizeString = b.toString();
-                                final int mapSize, lastEntry;
-                                try {
-                                    mapSize = Integer.parseInt(mapSizeString, 10);
-                                    lastEntry = mapSize - 1;
-                                } catch (NumberFormatException e) {
-                                    e.printStackTrace(System.err); // FIXME remove
-                                    break;
-                                }
-                                final Map<String, String> env = new HashMap<String, String>();
-                                for (int i = 0; i < mapSize; i ++) {
-                                    status = StreamUtils.readWord(inputStream, b);
-                                    if (status != Status.MORE) {
-                                        break OUT;
-                                    }
-                                    final String key = b.toString();
-                                    status = StreamUtils.readWord(inputStream, b);
-                                    if (status == Status.MORE || (i == lastEntry && status == Status.END_OF_LINE)) {
-                                        env.put(key, b.toString());
-                                    }
-                                    else {
-                                        break OUT;
-                                    }
-                                }
-                                master.addProcess(name, execCmd, env, workingDirectory);
-                                break;
-                            }
-                            case START: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                final String name = b.toString();
-                                master.startProcess(name);
-                                break;
-                            }
-                            case STOP: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                final String name = b.toString();
-                                master.stopProcess(name);
-                                break;
-                            }
-                            case REMOVE: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                final String name = b.toString();
-                                master.removeProcess(name);
-                                break;
-                            }
-                            case SEND: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                final String recipient = b.toString();
-                                final List<String> msg = new ArrayList<String>(0);
-                                while (status == Status.MORE) {
-                                    status = StreamUtils.readWord(inputStream, b);
-                                    msg.add(b.toString());
-                                }
-                                master.sendMessage(processName, recipient, msg);
-                                break;
-                            }
-                            case SEND_BYTES: {
-                                if (status != Status.MORE) {
-                                    break;
-                                }
-                                status = StreamUtils.readWord(inputStream, b);
-                                if (status == Status.MORE) {
-                                    final String recipient = b.toString();
-                                    master.sendMessage(processName, recipient, StreamUtils.readBytesWithLength(inputStream));
-                                    status = StreamUtils.readStatus(inputStream);
-                                }
-                                break;
-                            }
-                            case BROADCAST: {
-                                final List<String> msg = new ArrayList<String>(0);
-                                while (status == Status.MORE) {
-                                    status = StreamUtils.readWord(inputStream, b);
-                                    msg.add(b.toString());
-                                }
-                                master.broadcastMessage(processName, msg);
-                                break;
-                            }
-                            case BROADCAST_BYTES: {
-                                if (status == Status.MORE) {
-                                    master.broadcastMessage(processName, StreamUtils.readBytesWithLength(inputStream));
-                                    status = StreamUtils.readStatus(inputStream);
-                                }
-                                break;
-                            }
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // unknown command...
-                        log.error("Received unknown command: " + b.toString());
-                    }
-                    if (status == Status.MORE) StreamUtils.readToEol(inputStream);
-
-                }
-            } catch (Exception e) {
-                // exception caught, shut down channel and exit
-                log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
-                commandStream.closeSocketOutputStream();
-
-            } finally {
-                safeClose(inputStream);
-            }
-        }
+    @Override
+    public void closeCommandStream() {
+        commandStream.close();
     }
+
 
     private static final class ErrorStreamHandler implements Runnable {
         private static final Logger log = Logger.getLogger("org.jboss.as.process.stderr");
@@ -498,7 +372,7 @@ final class ManagedProcess {
             }
         }
 
-        void closeSocketOutputStream() {
+        public void close() {
             synchronized (this) {
                 if (realOut == null) {
                     throw new IllegalStateException("The socket output stream was already closed " + processName);
@@ -509,6 +383,7 @@ final class ManagedProcess {
             }
         }
     }
+
 
     private class ProcessMonitor implements Runnable {
         final Process process;
@@ -541,7 +416,7 @@ final class ManagedProcess {
 
     }
 
-    private static void safeClose(final Closeable closeable) {
+    static void safeClose(final Closeable closeable) {
         try {
             closeable.close();
         } catch (Throwable ignored) {

@@ -1,0 +1,99 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project name="module-repository-lib" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+    
+    <property name="src.dir" value="src"/>
+    <property name="module.repo.src.dir" value="${src.dir}/main/resources/modules"/>
+    <property name="output.dir" value="target"/>
+    <property name="module.repo.output.dir" value="${output.dir}/modules"/>
+    <property name="module.xml" value="module.xml"/>
+    
+    <macrodef name="module-def">
+        <attribute name="name"/>
+        <attribute name="slot" default="main"/>
+        <element name="resources" implicit="yes" optional="yes"/>
+                
+        <sequential>
+            <echo message="Initializing module -> @{name}"/>
+            <!-- Figure out the correct module path -->
+            <define-module-dir name="@{name}" slot="@{slot}"/>
+            
+            <!-- Make the module output director -->
+            <mkdir dir="${module.repo.output.dir}/${current.module.path}"/>
+            
+            <!-- Copy the module.xml and other stuff to the output director -->
+            <copy todir="${module.repo.output.dir}/${current.module.path}">
+                <fileset dir="${module.repo.src.dir}/${current.module.path}">
+                    <include name="**"/>
+                </fileset>
+            </copy>
+            
+            <!-- Process the resource -->
+            <resources/>
+            
+            <!-- Some final cleanup -->
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+              <replacetoken><![CDATA[
+        <!-- Insert resources here -->]]></replacetoken>
+              <replacevalue></replacevalue>
+            </replace>
+        </sequential>
+    </macrodef>
+    
+    <scriptdef name="define-module-dir" language="javascript">
+        <attribute name="name"/>
+        <attribute name="slot"/>
+        <![CDATA[
+            name = attributes.get("name");
+            last = name.lastIndexOf('.');
+            group = name.substring(0, last);
+            artifact = name.substring(last + 1);
+            group = group.replace(".", "/");
+            project.setProperty("current.module.path", group + "/" + artifact + "/" + attributes.get("slot"));
+        ]]>
+    </scriptdef>
+    
+    <macrodef name="maven-resource">
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        
+        <sequential>
+            <!-- Copy the jar to the module dir -->
+            <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
+                <fileset file="${@{group}:@{artifact}:jar}"/>
+                <mapper type="flatten" />
+            </copy>
+
+            <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
+
+            <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}}" update="true"/>
+
+            <!-- Update the resource entry in module.xml -->
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+                <replacefilter token="&lt;!-- Insert resources here --&gt;" value="&lt;resource-root path=&quot;${resourcename.@{group}.@{artifact}}&quot;/&gt;&#10;        &lt;!-- Insert resources here --&gt;"/>
+            </replace>
+        </sequential>
+        
+    </macrodef>
+    
+</project>

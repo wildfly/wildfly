@@ -41,16 +41,23 @@ public final class StreamUtils {
         int c;
         for (;;) {
             c = readChar(input);
-            switch (c) {
-                case -1: return Status.END_OF_STREAM;
-                case 0: return Status.MORE;
-                case '\n': return Status.END_OF_LINE;
-                default: dest.append((char) c);
-            }
+            Status status = getStatus(c);
+            if (status != null)
+                return status;
+            dest.append((char) c);
         }
     }
 
     private static final String INVALID_BYTE = "Invalid byte";
+
+    public static Status getStatus(int c) {
+        switch (c) {
+        case -1: return Status.END_OF_STREAM;
+        case 0: return Status.MORE;
+        case '\n': return Status.END_OF_LINE;
+        default: return null;
+        }
+    }
 
     public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
@@ -146,7 +153,7 @@ public final class StreamUtils {
         while (n < len) {
             int count = in.read(b, off + n, len - n);
             if (count < 0)
-            throw new EOFException();
+            throw new EOFException("Read " + n + " bytes");
             n += count;
         }
     }

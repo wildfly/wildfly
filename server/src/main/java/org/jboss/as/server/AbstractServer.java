@@ -88,7 +88,7 @@ public abstract class AbstractServer {
             throw new IllegalArgumentException("null standalone config");
         }
         this.config = config;
-        log.infof("Starting server '%s'", config.getServerName());
+        log.infof("Starting server '%s'", environment.getProcessName());
         serviceContainer = ServiceContainer.Factory.create();
 
         final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());

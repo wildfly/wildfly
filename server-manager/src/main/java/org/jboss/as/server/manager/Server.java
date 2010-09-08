@@ -23,17 +23,26 @@
 package org.jboss.as.server.manager;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.process.RespawnPolicy;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public final class Server {
 
-    private final ServerCommunicationHandler communicationHandler;
+    private final String serverProcessName;
+    private final ServerModel serverConfig;
+    private volatile ServerCommunicationHandler communicationHandler;
+
+    private final RespawnPolicy respawnPolicy;
+    private final AtomicInteger respawnCount = new AtomicInteger();
+    private volatile ServerState state;
 
 //    public Server(final InputStream errorStream, final InputStream inputStream, final OutputStream outputStream) {
 //        this.processManagerSlave = null;
@@ -81,19 +90,55 @@ public final class Server {
 //        });
 //    }
 
-    public Server(ServerCommunicationHandler communicationHandler) {
-        if (communicationHandler == null) {
-            throw new IllegalArgumentException("communicationHandler is null");
+    public Server(ServerModel serverConfig, RespawnPolicy respawnPolicy) {
+        if (serverConfig == null) {
+            throw new IllegalArgumentException("serverConfig is null");
         }
+        if (respawnPolicy == null) {
+            throw new IllegalArgumentException("respawnPolicy is null");
+        }
+        this.serverProcessName = ServerManager.getServerProcessName(serverConfig);
+        this.serverConfig = serverConfig;
+        this.respawnPolicy = respawnPolicy;
+        this.state = ServerState.BOOTING;
+//        this.communicationHandler = communicationHandler;
+    }
+
+    ServerState getState() {
+        return state;
+    }
+
+    void setState(ServerState state) {
+        this.state = state;
+    }
+
+    int incrementAndGetRespawnCount() {
+        return respawnCount.incrementAndGet();
+    }
+
+    String getServerProcessName() {
+        return serverProcessName;
+    }
+
+    RespawnPolicy getRespawnPolicy() {
+        return respawnPolicy;
+    }
+
+    ServerModel getServerConfig() {
+        return serverConfig;
+    }
+
+    void setCommunicationHandler(ServerCommunicationHandler communicationHandler) {
         this.communicationHandler = communicationHandler;
     }
 
-    public void start(ServerModel serverConf) throws IOException {
-        sendCommand(ServerManagerProtocolCommand.START_SERVER, serverConf);
+    public void start() throws IOException {
+        sendCommand(ServerManagerProtocolCommand.START_SERVER, serverConfig);
     }
 
     public void stop() throws IOException {
-        sendCommand(ServerManagerProtocolCommand.START_SERVER);
+        sendCommand(ServerManagerProtocolCommand.STOP_SERVER);
+        respawnCount.set(0);
     }
 
     private void sendCommand(ServerManagerProtocolCommand command) throws IOException {
@@ -101,7 +146,6 @@ public final class Server {
     }
 
     private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
-
         byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
         communicationHandler.sendMessage(cmd);
     }

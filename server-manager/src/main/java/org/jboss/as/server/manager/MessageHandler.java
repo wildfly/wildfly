@@ -25,12 +25,13 @@
  */
 package org.jboss.as.server.manager;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
 import org.jboss.logging.Logger;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * A MessageHandler.
@@ -65,12 +66,31 @@ class MessageHandler implements Handler {
     public void handleMessage(String sourceProcessName, byte[] message) {
         try {
             Command cmd = ServerManagerProtocolCommand.readCommand(message);
-//          // TODO: actually handle this....
             log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
 
             // Hack
             if(DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(sourceProcessName) && cmd.getCommand().equals(ServerManagerProtocolCommand.SERVER_STARTED)) {
                 serverManager.localDomainControllerReady();
+            }
+            switch (cmd.getCommand()) {
+            case SERVER_AVAILABLE:
+                serverManager.availableServer(sourceProcessName);
+                break;
+            case SERVER_STARTED:
+                serverManager.startedServer(sourceProcessName);
+                break;
+            case SERVER_START_FAILED:
+                serverManager.failedStartServer(sourceProcessName);
+                break;
+            case SERVER_STOPPED:
+                serverManager.stoppedServer(sourceProcessName);
+                break;
+            default:
+                if (log.isTraceEnabled())
+                    log.warn("Received unknown command for " + sourceProcessName + ":" + Arrays.asList(message));
+                else
+                    log.warn("Received unknown command for " + sourceProcessName);
+                break;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -81,6 +101,15 @@ class MessageHandler implements Handler {
     @Override
     public void shutdown() {
         serverManager.stop();
+    }
+
+    public void shutdownServers() {
+        serverManager.shutdownServers();
+    }
+
+    @Override
+    public void down(String downProcessName) {
+        serverManager.downServer(downProcessName);
     }
 
 //    public void registerServer(String serverName, Server server) {
@@ -99,5 +128,6 @@ class MessageHandler implements Handler {
 //        }
 //        servers.remove(serverName);
 //    }
+
 
 }

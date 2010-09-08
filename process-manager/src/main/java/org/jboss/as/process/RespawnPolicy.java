@@ -41,7 +41,10 @@ public interface RespawnPolicy {
     long getTimeOutMs(int retryCount);
 
     class DefaultRespawnPolicy implements RespawnPolicy{
-        static final RespawnPolicy INSTANCE = new DefaultRespawnPolicy();
+        public static final RespawnPolicy INSTANCE = new DefaultRespawnPolicy();
+
+        private DefaultRespawnPolicy() {
+        }
 
         @Override
         public long getTimeOutMs(int retryCount) {

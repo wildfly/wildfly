@@ -112,6 +112,8 @@ public class ServerEnvironment {
     private final String processName;
     private final InetAddress processManagerAddress;
     private final Integer processManagerPort;
+    private final InetAddress serverManagerAddress;
+    private final Integer serverManagerPort;
     private final File homeDir;
     private final File modulesDir;
     private final File serverBaseDir;
@@ -127,7 +129,7 @@ public class ServerEnvironment {
     private final PrintStream stderr;
 
     public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
-            String processName, InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
+            String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress, Integer serverManagerPort, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
@@ -158,9 +160,17 @@ public class ServerEnvironment {
         if (processManagerPort == null && !standalone) {
             throw new IllegalArgumentException("processManagerPort is null");
         }
+        if (serverManagerAddress == null && !standalone) {
+            throw new IllegalArgumentException("serverManagerAddress is null");
+        }
+        if (serverManagerPort == null && !standalone) {
+            throw new IllegalArgumentException("serverManagerPort is null");
+        }
         this.processName = processName;
         this.processManagerPort = processManagerPort;
         this.processManagerAddress = processManagerAddress;
+        this.serverManagerAddress = serverManagerAddress;
+        this.serverManagerPort = serverManagerPort;
 
         // Must have HOME_DIR
         this.homeDir = getFileFromProperty(HOME_DIR);
@@ -271,6 +281,27 @@ public class ServerEnvironment {
      */
     public Integer getProcessManagerPort() {
         return processManagerPort;
+    }
+
+    /**
+     * Gets the address, if any, of the server manager that we need to connect to.
+     *
+     * @return the server manager's address, or <code>null</code> if
+     *         none was provided
+     */
+    public InetAddress getServerManagerAddress() {
+        return serverManagerAddress;
+    }
+
+    /**
+     * Gets the port number, if any, of the server manager that we need to connect to.
+     * to use in communicating with it.
+     *
+     * @return the server manager's port, or <code>null</code> if
+     *         none was provided
+     */
+    public Integer getServerManagerPort() {
+        return serverManagerPort;
     }
 
     /**

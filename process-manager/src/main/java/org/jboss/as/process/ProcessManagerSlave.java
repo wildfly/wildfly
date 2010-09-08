@@ -28,11 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.communication.SocketConnection;
 
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
@@ -47,7 +48,7 @@ public final class ProcessManagerSlave {
     private final Handler handler;
     private final InputStream input;
     private final OutputStream output;
-    private final Socket socket;
+    private final SocketConnection socketConnection;
     private final Controller controller = new Controller();
 
     public ProcessManagerSlave(String processName, InetAddress addr, Integer port, Handler handler) {
@@ -55,59 +56,13 @@ public final class ProcessManagerSlave {
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
-        if (addr == null) {
-            throw new IllegalArgumentException("addr is null");
-        }
-        if (port == null) {
-            throw new IllegalArgumentException("port is null");
-        }
         if (handler == null) {
             throw new IllegalArgumentException("handler is null");
         }
-
-        try {
-            this.socket = new Socket(addr, port);
-            this.input = new BufferedInputStream(socket.getInputStream());
-            this.output = new BufferedOutputStream(socket.getOutputStream());
-            this.handler = handler;
-
-            System.err.printf("%s connected to port %d\n", processName, socket.getLocalPort());
-
-            //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
-            StringBuilder sb = new StringBuilder(256);
-            sb.append("STARTED");
-            sb.append('\0');
-            sb.append(processName);
-            sb.append('\n');
-            synchronized (output) {
-                StreamUtils.writeString(output, sb.toString());
-                output.flush();
-            }
-        } catch (IOException e) {
-            if (this.socket != null) {
-                closeSocket();
-            }
-            throw new RuntimeException(e);
-        }
-        //Duplicate code - ServerCommunicationHandler - END
-    }
-
-    private void closeSocket() {
-        try {
-            socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.socketConnection = SocketConnection.connect(addr, port, "CONNECTED", processName);
+        this.input = new BufferedInputStream(socketConnection.getInputStream());
+        this.output = new BufferedOutputStream(socketConnection.getOutputStream());
+        this.handler = handler;
     }
 
     public Runnable getController() {
@@ -252,6 +207,13 @@ public final class ProcessManagerSlave {
         }
     }
 
+    public void serversShutdown() throws IOException {
+        synchronized (output) {
+            StreamUtils.writeString(output, Command.SERVERS_SHUTDOWN + "\n");
+            output.flush();
+        }
+    }
+
     private final class Controller implements Runnable {
 
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
@@ -272,6 +234,17 @@ public final class ProcessManagerSlave {
                         switch (command) {
                             case SHUTDOWN: {
                                 shutdown();
+                                break;
+                            }
+                            case SHUTDOWN_SERVERS : {
+                                handler.shutdownServers();
+                                break;
+                            }
+                            case DOWN:{
+                                if (status == Status.MORE) {
+                                    status = StreamUtils.readWord(input, b);
+                                    handler.down(b.toString());
+                                }
                                 break;
                             }
                             case MSG: {
@@ -334,13 +307,13 @@ public final class ProcessManagerSlave {
             t.printStackTrace(System.err);
         }
         finally {
-            if (socket != null) {
-                closeSocket();
+            if (socketConnection != null) {
+                socketConnection.close();
             }
 
             final Thread thread = new Thread(new Runnable() {
                 public void run() {
-                    System.exit(0);
+                    SystemExiter.exit(0);
                 }
             });
             thread.setName("Exit thread");
@@ -357,5 +330,9 @@ public final class ProcessManagerSlave {
         void handleMessage(String sourceProcessName, List<String> message);
 
         void shutdown();
+
+        void shutdownServers();
+
+        void down(String downProcessName);
     }
 }

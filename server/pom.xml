@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
-        </dependency>
+        </dependency>        
     </dependencies>
 
 </project>

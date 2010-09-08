@@ -89,6 +89,8 @@ public class ServerManagerEnvironment {
     private final String processName;
     private final InetAddress processManagerAddress;
     private final Integer processManagerPort;
+    private final InetAddress serverManagerAddress;
+    private final Integer serverManagerPort;
     private final File homeDir;
     private final File modulesDir;
     private final File domainBaseDir;
@@ -104,7 +106,7 @@ public class ServerManagerEnvironment {
     private final PrintStream stderr;
 
     public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
-            String processName, InetAddress processManagerAddress, Integer processManagerPort) {
+            String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress, Integer serverManagerPort) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -134,9 +136,17 @@ public class ServerManagerEnvironment {
         if (processManagerPort == null) {
             throw new IllegalArgumentException("processManagerPort is null");
         }
+        if (serverManagerAddress == null) {
+            throw new IllegalArgumentException("serverManagerAddress is null");
+        }
+        if (serverManagerPort == null) {
+            throw new IllegalArgumentException("serverManagerPort is null");
+        }
         this.processName = processName;
         this.processManagerPort = processManagerPort;
         this.processManagerAddress = processManagerAddress;
+        this.serverManagerAddress = serverManagerAddress;
+        this.serverManagerPort = serverManagerPort;
 
         File home = getFileFromProperty(HOME_DIR);
         if (home == null) {
@@ -236,26 +246,43 @@ public class ServerManagerEnvironment {
     }
 
     /**
-     * Gets the address, if any, the process manager passed to this process
+     * Gets the address the process manager passed to this process
      * to use in communicating with it.
      *
-     * @return the process manager's address, or <code>null</code> if
-     *         none was provided
+     * @return the process manager's address
      */
     public InetAddress getProcessManagerAddress() {
         return processManagerAddress;
     }
 
     /**
-     * Gets the port number, if any, the process manager passed to this process
+     * Gets the port number the process manager passed to this process
      * to use in communicating with it.
      *
-     * @return the process manager's port, or <code>null</code> if
-     *         none was provided
+     * @return the process manager's port
      */
     public Integer getProcessManagerPort() {
         return processManagerPort;
     }
+
+    /**
+     * Gets the address the process manager told us to listen for communication from the servers.
+     *
+     * @return the server manager's address
+     */
+    public InetAddress getServerManagerAddress() {
+        return serverManagerAddress;
+    }
+
+    /**
+     * Gets the port the process manager told us to listend for communication from the servers.
+     *
+     * @return the servermanager's port
+     */
+    public Integer getServerManagerPort() {
+        return serverManagerPort;
+    }
+
 
     public File getHomeDir() {
         return homeDir;

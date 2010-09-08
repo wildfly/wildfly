@@ -78,10 +78,10 @@ public abstract class AbstractProcessManagerTest {
 
     @After
     public void afterTest() {
-        if (testManager != null)
-            testManager.shutdown();
         if (master != null)
             master.shutdown();
+        if (testManager != null)
+            testManager.shutdown();
         master = null;
         testManager = null;
         processes.clear();

@@ -28,14 +28,24 @@ package org.jboss.as.process;
  */
 public class CommandLineConstants {
 
-    /** The ProcessManager address */
+    //Put these two in to get DC to compile
     public static final String INTERPROCESS_ADDRESS = "-interprocess-address";
+    public static final String INTERPROCESS_PORT = "-interprocess-port";
+
+    /** The ProcessManager address */
+    public static final String INTERPROCESS_PM_ADDRESS = "-interprocess-pm-address";
 
     /** The ProcessManager port */
-    public static final String INTERPROCESS_PORT = "-interprocess-port";
+    public static final String INTERPROCESS_PM_PORT = "-interprocess-pm-port";
 
     /** The name of a process started by the process manager */
     public static final String INTERPROCESS_NAME = "-interprocess-name";
+
+    /** The ServerManager address */
+    public static final String INTERPROCESS_SM_ADDRESS = "-interprocess-sm-address";
+
+    /** The ServerManager port */
+    public static final String INTERPROCESS_SM_PORT = "-interprocess-sm-port";
 
     /** Get the version of the server */
     public static final String VERSION = "-version";

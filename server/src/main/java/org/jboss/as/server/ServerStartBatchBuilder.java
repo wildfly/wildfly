@@ -22,6 +22,8 @@
 
 package org.jboss.as.server;
 
+import java.util.Collection;
+
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -32,8 +34,6 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.value.Value;
-
-import java.util.Collection;
 
 /**
  * Super-hack batch builder used to ignore on-demand services for the server startup listener.

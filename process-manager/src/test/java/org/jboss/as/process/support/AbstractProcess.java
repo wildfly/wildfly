@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerSlave;
-import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessSenderStream;
@@ -83,7 +82,7 @@ public abstract class AbstractProcess {
 
     protected static Integer getPort(String[] args) {
         for (int i = 0 ; i < args.length - 1 ; i++) {
-            if (args[i].equals(CommandLineConstants.INTERPROCESS_PORT)) {
+            if (args[i].equals(CommandLineConstants.INTERPROCESS_PM_PORT)) {
                 return Integer.valueOf(args[++i]);
             }
         }
@@ -174,6 +173,20 @@ public abstract class AbstractProcess {
      */
     protected abstract void shutdown();
 
+    /**
+     * Callback for when the process receives a <code>down()</code> call.
+     */
+    protected void down(String downProcessName) {
+    	
+    }
+    
+    /**
+     * Callback for when the process receives a <code>shutdownServers()</code> call.
+     */
+    protected void shutdownServers() {
+    	
+    }
+    
     /**
      * Send a message to another process via the slave
      *
@@ -279,6 +292,18 @@ public abstract class AbstractProcess {
             throw new RuntimeException(e);
         }
     }
+    
+    /**
+     * Sends the SERVERS_SHUTDOWN message to the PM via the slave
+     * (This will only be sent by the ServerManager process)
+     */
+    protected void serversShutdown() {
+    	try {
+    		slave.serversShutdown();
+    	} catch (IOException e) {
+    		throw new RuntimeException(e);
+    	}
+    }
 
     private class TestHandler implements Handler {
 
@@ -298,6 +323,16 @@ public abstract class AbstractProcess {
             AbstractProcess.this.shutdown();
             clientStream.shutdown();
             slave.shutdown();
+        }
+
+		@Override
+        public void shutdownServers() {
+			AbstractProcess.this.shutdownServers();
+        }
+
+		@Override
+        public void down(String downProcessName) {
+			AbstractProcess.this.down(downProcessName);
         }
     }
 }

@@ -33,6 +33,8 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.SystemExiter;
+import org.jboss.as.process.SystemExiter.Exiter;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
@@ -68,8 +70,17 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
+        create(args, in, out, err);
+    }
+
+    private static AbstractServer create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        return create(args, stdin, stdout, stderr, null);
+    }
+
+    public static AbstractServer create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, Exiter exiter) {
+        SystemExiter.initialize(exiter);
         Main main = new Main();
-        main.boot(args, in, out, err);
+        return main.boot(args, stdin, stdout, stderr);
     }
 
     Properties props = new Properties(System.getProperties());
@@ -77,7 +88,7 @@ public final class Main {
     private Main() {
     }
 
-    private void boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private AbstractServer boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         AbstractServer server = null;
         try {
             ServerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
@@ -91,10 +102,12 @@ public final class Main {
                 }
                 // Start the server.
                 server.start();
+                return server;
             }
         } catch (Throwable t) {
             abort(t);
         }
+        return null;
     }
 
     private void abort(Throwable t) {
@@ -107,7 +120,7 @@ public final class Main {
             // FIXME implement shutdown()
             throw new UnsupportedOperationException("implement me");
         } finally {
-            System.exit(1);
+            SystemExiter.exit(1);
         }
     }
 
@@ -115,6 +128,8 @@ public final class Main {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         String procName = null;
+        Integer smPort = null;
+        InetAddress smAddress = null;
         boolean standalone = false;
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -134,24 +149,37 @@ public final class Main {
                         System.err.printf("Unable to load properties from URL %s\n", url);
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_PORT.equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PM_PORT.equals(arg)) {
                     try {
                         pmPort = Integer.valueOf(args[++i]);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PM_PORT, args[i]);
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_ADDRESS.equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PM_ADDRESS.equals(arg)) {
                     try {
                         pmAddress = InetAddress.getByName(args[++i]);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_ADDRESS, args[i]);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PM_ADDRESS, args[i]);
                         return null;
                     }
                 } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
                     procName = args[++i];
-
-                } else if (arg.equals(CommandLineConstants.STANDALONE)) {
+                } else if (CommandLineConstants.INTERPROCESS_SM_PORT.equals(arg)) {
+                    try {
+                        smPort = Integer.valueOf(args[++i]);
+                    } catch (NumberFormatException e) {
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_SM_PORT, args[i]);
+                        return null;
+                    }
+                } else if (CommandLineConstants.INTERPROCESS_SM_ADDRESS.equals(arg)) {
+                    try {
+                        smAddress = InetAddress.getByName(args[++i]);
+                    } catch (UnknownHostException e) {
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_SM_ADDRESS, args[i]);
+                        return null;
+                    }
+                }else if (arg.equals(CommandLineConstants.STANDALONE)) {
                     // Start in standalone mode
                     standalone = true;
                 } else if (arg.startsWith("-D")) {
@@ -177,7 +205,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort, standalone);
+        return new ServerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, standalone);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

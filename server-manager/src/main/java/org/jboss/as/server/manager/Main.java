@@ -22,14 +22,6 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.stdio.LoggingOutputStream;
-import org.jboss.stdio.NullInputStream;
-import org.jboss.stdio.SimpleStdioContextSelector;
-import org.jboss.stdio.StdioContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +31,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
+
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.SystemExiter;
+import org.jboss.as.process.SystemExiter.Exiter;
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
 
 /**
  * The main-class entry point for the server manager process.
@@ -54,14 +56,16 @@ public final class Main {
     private static void usage() {
         System.out.println("Usage: ./run.sh [args...]\n");
         System.out.println("where args include:");
-        System.out.println("    -D<name>[=<value>]              Set a system property");
-        System.out.println("    -help                           Display this message and exit");
-        System.out.println("    -interprocess-address <address> address of socket on which this process should listen for communication from child processes");
-        System.out.println("    -interprocess-port <port>       port of socket on which this process should listen for communication from child processes");
-        System.out.println("    -interprocess-name <proc>       name of this process, used to register the socket with the server");
-        System.out.println("    -P  <url>                       Load system properties from the given url");
-        System.out.println("    -properties <url>               Load system properties from the given url");
-        System.out.println("    -version                        Print version and exit\n");
+        System.out.println("    -D<name>[=<value>]                 Set a system property");
+        System.out.println("    -help                              Display this message and exit");
+        System.out.println("    -interprocess-pm-address <address> Address of process manager socket");
+        System.out.println("    -interprocess-pm-port <port>       Port of process manager socket");
+        System.out.println("    -interprocess-name <proc>          Name of this process, used to register the socket with the server in the process manager");
+        System.out.println("    -interprocess-sm-address <address> Address this server manager's socket should listen on");
+        System.out.println("    -interprocess-sm-port <port>       Port of this server manager's socket  should listen on");
+        System.out.println("    -P  <url>                          Load system properties from the given url");
+        System.out.println("    -properties <url>                  Load system properties from the given url");
+        System.out.println("    -version                           Print version and exit\n");
     }
 
     /**
@@ -86,8 +90,7 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        Main main = new Main();
-        main.boot(args, in, out, err);
+        create(args, in, out, err);
     }
 
     Properties props = new Properties(System.getProperties());
@@ -95,13 +98,24 @@ public final class Main {
     private Main() {
     }
 
-    private void boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+        return create(args, stdin, stdout, stderr, null);
+    }
+
+
+    public static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, Exiter exiter) {
+        Main main = new Main();
+        SystemExiter.initialize(exiter);
+        return main.boot(args, stdin, stdout, stderr);
+    }
+
+    private ServerManager boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         ServerManager sm = null;
         try {
             ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
-                return;
+                return null;
             } else {
                 sm = new ServerManager(config);
                 sm.start();
@@ -109,7 +123,23 @@ public final class Main {
         } catch (Throwable t) {
             t.printStackTrace(stderr);
             abort(t);
-            return;
+            return null;
+        }
+
+        // We are now past the point where a failure should result in a
+        // shutdown() call; i.e. the ServerManager should be running and
+        // capable of handling external input
+        try {
+            sm.startServers();
+            return sm;
+        }
+        catch (RuntimeException e) {
+            e.printStackTrace(stderr);
+            throw e;
+        }
+        catch (Error e) {
+            e.printStackTrace(stderr);
+            throw e;
         }
     }
 
@@ -126,13 +156,15 @@ public final class Main {
 //            }
 
         } finally {
-            System.exit(1);
+            SystemExiter.exit(1);
         }
     }
 
     private ServerManagerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
+        Integer smPort = null;
+        InetAddress smAddress = null;
         String procName = null;
 
         final int argsLength = args.length;
@@ -162,19 +194,35 @@ public final class Main {
                         usage();
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_PORT.equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PM_PORT.equals(arg)) {
                     try {
                         pmPort = Integer.valueOf(args[++i]);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PM_PORT, args[i]);
                         usage();
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_ADDRESS.equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PM_ADDRESS.equals(arg)) {
                     try {
                         pmAddress = InetAddress.getByName(args[++i]);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_ADDRESS, args[i]);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PM_ADDRESS, args[i]);
+                        usage();
+                        return null;
+                    }
+                } else if (CommandLineConstants.INTERPROCESS_SM_PORT.equals(arg)) {
+                    try {
+                        smPort = Integer.valueOf(args[++i]);
+                    } catch (NumberFormatException e) {
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_SM_PORT, args[i]);
+                        usage();
+                        return null;
+                    }
+                } else if (CommandLineConstants.INTERPROCESS_SM_ADDRESS.equals(arg)) {
+                    try {
+                        smAddress = InetAddress.getByName(args[++i]);
+                    } catch (UnknownHostException e) {
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_SM_ADDRESS, args[i]);
                         usage();
                         return null;
                     }
@@ -205,7 +253,7 @@ public final class Main {
             }
         }
 
-        return new ServerManagerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort);
+        return new ServerManagerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

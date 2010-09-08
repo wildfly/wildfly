@@ -21,17 +21,18 @@
  */
 package org.jboss.as.server;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Map;
+
+import javax.xml.stream.XMLInputFactory;
+
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerModel;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.stream.XMLInputFactory;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.Map;
 
 /**
  * The standalone server.

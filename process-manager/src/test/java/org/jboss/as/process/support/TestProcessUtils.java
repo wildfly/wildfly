@@ -96,9 +96,9 @@ public abstract class TestProcessUtils {
         cmd.add(processName);
 
         //Add the socket parameters
-        cmd.add(CommandLineConstants.INTERPROCESS_PORT);
+        cmd.add(CommandLineConstants.INTERPROCESS_PM_PORT);
         cmd.add(String.valueOf(pmPort));
-        cmd.add(CommandLineConstants.INTERPROCESS_ADDRESS);
+        cmd.add(CommandLineConstants.INTERPROCESS_PM_ADDRESS);
         cmd.add(InetAddress.getLocalHost().getHostAddress());
         cmd.add(CommandLineConstants.INTERPROCESS_NAME);
         cmd.add(processName);

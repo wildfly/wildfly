@@ -22,12 +22,6 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.JvmElement;
-import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.ProcessManagerSlave;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +29,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.PropertiesElement;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.as.process.RespawnPolicy;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -50,9 +51,12 @@ public final class ServerMaker {
     private final MessageHandler messageHandler;
     private final ServerManagerEnvironment environment;
 
+    private final CommunicationVariables communicationVariables;
+
     public ServerMaker(ServerManagerEnvironment environment,
             ProcessManagerSlave processManagerSlave,
-            MessageHandler messageHandler) {
+            MessageHandler messageHandler,
+            CommunicationVariables communicationVariables) {
 
         if (environment == null) {
             throw new IllegalArgumentException("environment is null");
@@ -68,10 +72,13 @@ public final class ServerMaker {
             throw new IllegalArgumentException("messageHandler is null");
         }
         this.messageHandler = messageHandler;
+        if (communicationVariables == null) {
+            throw new IllegalArgumentException("communicationVariables is null");
+        }
+        this.communicationVariables = communicationVariables;
     }
 
-    public Server makeServer(ServerModel serverConfig, JvmElement jvmElement) throws IOException {
-        final String serverName = serverConfig.getServerName();
+    public Server makeServer(ServerModel serverConfig, JvmElement jvmElement, RespawnPolicy respawnPolicy) throws IOException {
 //        final List<String> args = new ArrayList<String>();
 //        if (false) {
 //            // Example: run at high priority on *NIX
@@ -101,23 +108,24 @@ public final class ServerMaker {
 //        final InputStream inputStream = process.getInputStream();
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
-
-        String serverProcessName = getServerProcessName(serverName);
+        String serverName = serverConfig.getServerName();
+        String serverProcessName = ServerManager.getServerProcessName(serverConfig);
         List<String> command = getServerLaunchCommand(serverName, serverProcessName, jvmElement, serverConfig.getSystemProperties());
-        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
-        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
-        processManagerSlave.startProcess(serverProcessName);
 
-        // TODO JBAS-8260 If serverConfig specified that server will work with
-        // ServerManager over sockets, create a socket-based ServerCommunicationHandler
-        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
-        Server server = new Server(commHandler);
-//        messageHandler.registerServer(serverName, server);
+        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
+
+        //Add to process manager
+        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
+
+        //Server gets started in process manager in ServerManager.startServers() after being added to the map of
+        //available servers
+
+        Server server = new Server(serverConfig, respawnPolicy);
+//        messageHandler.registerServer(serverConfig.getServerName(), server);
         return server;
     }
 
     private List<String> getServerLaunchCommand(final String serverName, final String serverProcessName, final JvmElement jvm, final PropertiesElement systemProperties) {
-
         List<String> command = new ArrayList<String>();
 
 //      if (false) {
@@ -228,14 +236,16 @@ public final class ServerMaker {
 
     private void appendArgsToMain(final String serverName, final String serverProcessName, final Map<String, String> jvmProps, final PropertiesElement propertiesElement, final List<String> command) {
 
-        if (environment.getProcessManagerAddress() != null) {
-            command.add(CommandLineConstants.INTERPROCESS_ADDRESS);
-            command.add(environment.getProcessManagerAddress().getHostAddress());
-            command.add(CommandLineConstants.INTERPROCESS_PORT);
-            command.add(environment.getProcessManagerPort().toString());
-            command.add(CommandLineConstants.INTERPROCESS_NAME);
-            command.add(serverProcessName);
-        }
+        command.add(CommandLineConstants.INTERPROCESS_PM_ADDRESS);
+        command.add(communicationVariables.getProcessManagerAddress());
+        command.add(CommandLineConstants.INTERPROCESS_PM_PORT);
+        command.add(communicationVariables.getProcessManagerPort());
+        command.add(CommandLineConstants.INTERPROCESS_NAME);
+        command.add(serverProcessName);
+        command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
+        command.add(communicationVariables.getServerManagerAddress());
+        command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
+        command.add(communicationVariables.getServerManagerPort());
 
         // Pass through as args to main any sys props that are read at primordial boot
         Map<String, String> sysProps = null;
@@ -321,9 +331,5 @@ public final class ServerMaker {
             env = Collections.emptyMap();
         }
         return env;
-    }
-
-    private String getServerProcessName(final String serverName) {
-        return SERVER_PROCESS_NAME_PREFIX + serverName;
     }
 }

@@ -43,6 +43,7 @@
         <module>smoke</module>
         <module>stress</module>
         <module>benchmark</module>
+        <module>protocol</module>
     </modules>
 
     <packaging>pom</packaging>

@@ -27,6 +27,7 @@ package org.jboss.as.server;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
@@ -43,6 +44,9 @@ import org.jboss.msc.service.StartException;
 public class Server extends AbstractServer {
 
     private ServerCommunicationHandler serverCommunicationHandler;
+    private ServerCommunicationHandler processManagerCommunicationHandler;
+    private AtomicBoolean stopping = new AtomicBoolean();
+
     private final MessageHandler messageHandler = new MessageHandler(this);
 
     public Server(ServerEnvironment environment) {
@@ -65,10 +69,16 @@ public class Server extends AbstractServer {
     }
 
     public void stop() {
+        if (stopping.getAndSet(true))
+            return;
         super.stop();
         sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
+        log.info("Server stopped");
+        serverCommunicationHandler.shutdown();
+        processManagerCommunicationHandler.shutdown();
     }
 
+    @Override
     ServerStartupListener.Callback createListenerCallback() {
         return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
@@ -89,9 +99,10 @@ public class Server extends AbstractServer {
     }
 
     private void launchCommunicationHandler() {
+        this.processManagerCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getProcessManagerCommunicationHandler(getEnvironment(), messageHandler);
+        this.processManagerCommunicationHandler.start();
         this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
-        Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");
-        t.start();
+        this.serverCommunicationHandler.start();
     }
 
     private void sendMessage(ServerManagerProtocolCommand command) {

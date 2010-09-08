@@ -22,18 +22,18 @@
 
 package org.jboss.as.server;
 
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 
 /**
  * Service listener used by a starting service to collect the result of all the services being installed.

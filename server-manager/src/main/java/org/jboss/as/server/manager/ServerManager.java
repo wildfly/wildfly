@@ -25,6 +25,23 @@
  */
 package org.jboss.as.server.manager;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.xml.stream.XMLInputFactory;
+
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
@@ -37,6 +54,7 @@ import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
+import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
@@ -50,18 +68,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.stream.XMLInputFactory;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A ServerManager.
@@ -79,6 +85,7 @@ public class ServerManager {
     private ProcessManagerSlave processManagerSlave;
     private HostModel hostConfig;
     private DomainModel domainConfig;
+    private DirectServerCommunicationListener directServerCommunicationListener;
     private DomainControllerProcess localDomainControllerProcess;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
@@ -86,7 +93,9 @@ public class ServerManager {
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
 //    private final Lock domainLock = new ReentrantLock();
-    private final Map<String, Server> servers = new HashMap<String, Server>();
+    private final Map<String, Server> servers = Collections.synchronizedMap(new HashMap<String, Server>());
+
+    ShutdownLatch shutdownLatch;
 
     public ServerManager(ServerManagerEnvironment environment) {
         if (environment == null) {
@@ -111,6 +120,9 @@ public class ServerManager {
 
         // TODO set up logging for this process based on config in Host
 
+        //Start listening for server communication on our socket
+        launchDirectServerCommunicationHandler();
+
         // Start communication with the ProcessManager. This also
         // creates a daemon thread to keep this process alive
         launchProcessManagerSlave();
@@ -128,7 +140,8 @@ public class ServerManager {
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
-        ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler);
+        CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
+        ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
@@ -136,9 +149,15 @@ public class ServerManager {
                 ServerModel serverConf = new ServerModel(domainConfig, hostConfig, serverEl.getName());
                 JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
-                    Server server = serverMaker.makeServer(serverConf, jvmElement);
-                    servers.put(serverConf.getServerName(), server);
-                    server.start(serverConf);
+
+                    //TODO JBAS-8390 Read respawn policy from host or domain?
+                    RespawnPolicy respawnPolicy = RespawnPolicy.DefaultRespawnPolicy.INSTANCE;
+
+                    Server server = serverMaker.makeServer(serverConf, jvmElement, respawnPolicy);
+                    servers.put(getServerProcessName(serverConf), server);
+
+                    //Now that the server is in the servers map we can start it
+                    processManagerSlave.startProcess(server.getServerProcessName());
                 } catch (IOException e) {
                     // FIXME handle failure to start server
                     log.error("Failed to start server " + serverEl.getName(), e);
@@ -150,27 +169,191 @@ public class ServerManager {
 //        finally {
 //            hostLock.unlock();
 //        }
-
     }
 
+    /**
+     * Callback for when we receive the SERVER_AVAILABLE message from a Server
+     *
+     * @param serverName the name of the server
+     */
+    void availableServer(String serverName) {
+        try {
+            Server server = servers.get(serverName);
+            if (server == null) {
+                log.errorf("No server called %s available", serverName);
+                return;
+            }
+            checkState(server, ServerState.BOOTING);
+
+            log.infof("Sending config to server %s", serverName);
+            server.start();
+            server.setState(ServerState.STARTING);
+        } catch (IOException e) {
+            log.errorf(e, "Could not start server %s", serverName);
+        }
+    }
+
+    /**
+     * Callback for when we receive the SHUTDOWN message from PM
+     */
     public void stop() {
-        for (Map.Entry<String, Server> entry : servers.entrySet()) {
+        directServerCommunicationListener.shutdown();
+        // FIXME stop any local DomainController, stop other internal SM services
+    }
+
+    /**
+     * Callback for when we receive the SHUTDOWN_SERVERS message from PM
+     *
+     * @param serverName the name of the server
+     */
+    public void shutdownServers() {
+        log.info("Shutting down servers");
+        System.out.println();
+        if (shutdownLatch != null) {
+            throw new IllegalStateException("Already shutting down");
+        }
+        shutdownLatch = new ShutdownLatch();
+
+        Map<String, Server> serversCopy;
+        synchronized (servers) {
+            serversCopy = new HashMap<String, Server>(servers);
+        }
+
+        for (Map.Entry<String, Server> entry : serversCopy.entrySet()) {
             try {
-                entry.getValue().stop();
-                processManagerSlave.removeProcess(entry.getKey());
+                Server server = entry.getValue();
+                if (server.getState() == ServerState.STOPPED)
+                    continue;
+                shutdownLatch.add(entry.getKey());
+                log.infof("Stopping %s", server.getServerProcessName());
+                server.stop();
+                server.setState(ServerState.STOPPING);
             }
             catch (Exception e) {
                 // FIXME handle exception stopping server
             }
         }
+        shutdownLatch.addedAll();
+        try {
+            shutdownLatch.waitForAll();
+        } catch (InterruptedException e) {
+            log.errorf("Wait for server shutdown was interrupted");
+        }
 
-        // FIXME stop any local DomainController, stop other internal SM services
+        try {
+            processManagerSlave.serversShutdown();
+        } catch (IOException e) {
+            log.error("Error confiriming servers shutdown", e);
+        }
+    }
+
+
+
+    /**
+     * Callback for when we receive the SERVER_STOPPED message from a Server
+     *
+     * @param serverName the name of the server
+     */
+    void stoppedServer(String serverName) {
+        Server server = servers.get(serverName);
+        if (server == null) {
+            log.errorf("No server called %s exists", serverName);
+            return;
+        }
+        checkState(server, ServerState.STOPPING);
+        shutdownLatch.remove(serverName);
+
+        try {
+            processManagerSlave.stopProcess(serverName);
+            processManagerSlave.removeProcess(serverName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Callback for when we receive the SERVER_STARTED message from a Server
+     *
+     * @param serverName the name of the server
+     */
+    void startedServer(String serverName) {
+        Server server = servers.get(serverName);
+        if (server == null) {
+            log.errorf("No server called %s exists", serverName);
+            return;
+        }
+        checkState(server, ServerState.STARTING);
+        server.setState(ServerState.STARTED);
+    }
+
+    /**
+     * Callback for when we receive the SERVER_START_FAILED message from a Server
+     *
+     * @param serverName the name of the server
+     */
+    void failedStartServer(String serverName) {
+        Server server = servers.get(serverName);
+        if (server == null) {
+            log.errorf("No server called %s exists", serverName);
+            return;
+        }
+        checkState(server, ServerState.STARTING);
+        server.setState(ServerState.FAILED);
+        respawn(server);
+    }
+
+    private void respawn(Server server){
+        try {
+            processManagerSlave.stopProcess(server.getServerProcessName());
+        } catch (IOException e) {
+            log.errorf(e, "Error respawning server % s", server.getServerProcessName());
+        }
+
+        RespawnPolicy respawnPolicy = server.getRespawnPolicy();
+        long timeout = respawnPolicy.getTimeOutMs(server.incrementAndGetRespawnCount());
+        if (timeout < 0 ) {
+            server.setState(ServerState.MAX_FAILED);
+            try {
+                processManagerSlave.removeProcess(server.getServerProcessName());
+            } catch (IOException e) {
+                log.errorf(e, "Error stopping respawned server % s", server.getServerProcessName());
+            }
+            return;
+        }
+
+        //TODO JBAS-8390 Put in actual sleep
+        //Thread.sleep(timeout);
+
+        try {
+            server.setState(ServerState.BOOTING);
+            processManagerSlave.startProcess(server.getServerProcessName());
+        } catch (IOException e) {
+            log.errorf(e, "Error respawning server % s", server.getServerProcessName());
+        }
+    }
+
+    public void downServer(String downServerName) {
+        Server server = servers.get(downServerName);
+        if (server == null) {
+            log.errorf("No server called %s exists", downServerName);
+            return;
+        }
+        server.setState(ServerState.FAILED);
+        respawn(server);
     }
 
     private void launchProcessManagerSlave() {
         this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, hostConfig, messageHandler);
         Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
         t.start();
+    }
+
+    private void launchDirectServerCommunicationHandler() {
+        try {
+            this.directServerCommunicationListener = DirectServerCommunicationListener.create(this, environment.getServerManagerAddress(), environment.getServerManagerPort(), 20);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void registerWithDomainController() {
@@ -230,7 +413,8 @@ public class ServerManager {
 
     private void initiateDomainController() {
         final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
-        final ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler);
+        CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
+        final ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
         final DomainControllerConfig config = new DomainControllerConfig(localDomainControllerElement, hostConfig);
         try {
             log.info("Starting local domain controller");
@@ -340,5 +524,52 @@ public class ServerManager {
             return dcJvmElement;
         }
         return new JvmElement(hostVM, dcJvmElement);
+    }
+
+    Server getServer(String name) {
+        return servers.get(name);
+    }
+
+    static String getServerProcessName(ServerModel serverConfig) {
+        return ServerMaker.SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+    }
+
+    private void checkState(Server server, ServerState expected) {
+        ServerState state = server.getState();
+        if (state != expected) {
+            log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
+        }
+
+    }
+
+    private static class ShutdownLatch {
+        private Set<String> waitingForServers = Collections.synchronizedSet(new HashSet<String>());
+        private CountDownLatch done = new CountDownLatch(1);
+        private CountDownLatch waitFor;
+
+        synchronized void add(String serverName) {
+            waitingForServers.add(serverName);
+        }
+
+        synchronized void remove(String serverName) {
+            if (!waitingForServers.remove(serverName)) {
+                log.warnf("Could not find server called %s", serverName);
+                return;
+            }
+            if (waitFor != null)
+                waitFor.countDown();
+        }
+
+        synchronized void addedAll() {
+            waitFor = new CountDownLatch(waitingForServers.size());
+            done.countDown();
+        }
+
+        void waitForAll() throws InterruptedException{
+            done.await();
+            if (!waitFor.await(10, TimeUnit.SECONDS)) {
+                log.warnf("Waited 10 seconds for confirmation from all servers they are closing down before giving up %s", waitingForServers);
+            }
+        }
     }
 }

@@ -269,6 +269,19 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-testsuite-protocol-base</artifactId>
+                <version>${project.version}</version>                
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-testsuite-protocol-modules</artifactId>
+                <version>${project.version}</version>                
+            </dependency>
+
+
 
             <!-- External Dependencies -->
 

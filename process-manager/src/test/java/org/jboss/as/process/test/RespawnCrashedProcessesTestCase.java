@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.AbstractProcessManagerTest;
 import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.process.support.CaptureDownFromPmProcess;
 import org.jboss.as.process.support.CrashingProcess;
 import org.jboss.as.process.support.LoggingTestRunner;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
@@ -106,6 +107,22 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         stopTestProcessListenerAndWait(listener);
 
         //Check the process has not been respawned
+        assertNull(getTestProcessListener("Main", 2000));
+    }
+    
+    @Test
+    public void testDontRespawnProcessWithNoRespawnPolicy() throws Exception {
+        addProcess("Main", CrashingProcess.class);
+        startTestProcessListenerAndWait("Main");
+        ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
+        getProcessId("Main", CrashingProcess.class);
+
+        detachTestProcessListener("Main");
+        killProcess("Main", CrashingProcess.class);
+        assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
+        assertTrue(0 != stopLatch.getExitCode());
+        
+        //Check the process has not been respawned
         assertNull(getTestProcessListener("Main", 1000));
     }
 
@@ -125,7 +142,62 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         //Check the process has not been respawned
         assertNull(getTestProcessListener("Main", 1000));
     }
-
+    
+    @Test
+    public void testServerManagerGetsInformedOfKilledDownProcess() throws Exception {
+        addProcess("ServerManager", CaptureDownFromPmProcess.class);
+        TestProcessListenerStream smListener = startTestProcessListenerAndWait("ServerManager");
+        
+        addProcess("Down", CrashingProcess.class);
+        startTestProcessListenerAndWait("Down");
+        
+        ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
+        detachTestProcessListener("Down");
+        killProcess("Down", CrashingProcess.class);
+        assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
+        assertTrue(0 != stopLatch.getExitCode());
+        
+        assertEquals("Down is down", smListener.readMessage());
+    }
+    
+    @Test
+    public void testServerManagerGetsInformedOfExitCodeNonZeroDownProcess() throws Exception {
+        addProcess("ServerManager", CaptureDownFromPmProcess.class);
+        TestProcessListenerStream smListener = startTestProcessListenerAndWait("ServerManager");
+        
+        addProcess("Down", CrashingProcess.class);
+        TestProcessListenerStream procListener = startTestProcessListenerAndWait("Down");
+        
+        
+        ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
+        detachTestProcessListener("Down");
+        sendMessage("Test", "Down", lazyList("Exit1"));
+        assertEquals("Down-Exit1", procListener.readMessage());
+        assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
+        assertEquals(1, stopLatch.getExitCode());
+        
+        assertEquals("Down is down", smListener.readMessage());
+    }
+    
+    @Test
+    public void testServerManagerDoesNotGetInformedOfExitCodeZeroDownProcess() throws Exception {
+        addProcess("ServerManager", CaptureDownFromPmProcess.class);
+        TestProcessListenerStream smListener = startTestProcessListenerAndWait("ServerManager");
+        
+        addProcess("Down", CrashingProcess.class);
+        TestProcessListenerStream procListener = startTestProcessListenerAndWait("Down");
+        
+        
+        ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
+        detachTestProcessListener("Down");
+        sendMessage("Test", "Down", lazyList("Exit0"));
+        assertEquals("Down-Exit0", procListener.readMessage());
+        assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
+        assertEquals(0, stopLatch.getExitCode());
+        
+        assertNull(smListener.readMessage(2000));
+    }
+    
     @Test
     public void testDelayInRespawningProcessesBeforeGivingUp() throws Exception {
         addProcess("KillMe", CrashingProcess.class, new TestRespawnPolicy());
