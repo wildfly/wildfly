@@ -58,7 +58,6 @@ final class ManagedProcess {
     private boolean stopped;
     private volatile boolean start;
     private final DelegatingSocketOutputStream commandStream = new DelegatingSocketOutputStream();
-    private Process process;
     private List<StopProcessListener> stopProcessListeners;
     private int respawnCount;
 
@@ -112,9 +111,13 @@ final class ManagedProcess {
             final ErrorStreamHandler errorStreamHandler = new ErrorStreamHandler(processName, process.getErrorStream());
             final Thread errorThread = new Thread(errorStreamHandler);
             errorThread.setName("Process " + processName + " stderr thread");
+            
+            final Thread monitorThread = new Thread(new ProcessMonitor(process));
+            monitorThread.setName("Process " + processName + " monitor thread");
+            
             // todo - error handling in the event that a thread can't start?
             errorThread.start();
-            this.process = process;
+            monitorThread.start();
             start = true;
             stopped = false;
             if (!isRespawn)
@@ -164,6 +167,41 @@ final class ManagedProcess {
         commandStream.flush();
     }
 
+    private void respawn() {
+        long wait = 0;
+        synchronized (this) {
+            if (stopped || start)
+                return;
+            wait = respawnPolicy.getTimeOutMs(++respawnCount);
+            if (wait < 0){
+                log.info(processName + " has crashed " + respawnCount + " times, stopping it");
+                try {
+                    stop();
+                } catch (IOException e) {
+                    log.warn("Error stopping crashed " + processName, e);
+                }
+                return;
+            }
+        }
+        
+        try {
+            TimeUnit.MILLISECONDS.sleep(wait);
+        } catch (InterruptedException e) {
+            log.info("Error waiting  " + wait + "ms to respawn crashed " + processName, e);
+        }
+        
+        synchronized (this) {
+            if (stopped || start)
+                return;
+        }
+        try {
+            start(true);
+        }catch(IOException e) {
+            log.warn("Error respawning " + processName, e);
+        }
+    }
+    
+    
     private final class OutputStreamHandler implements Runnable {
 
         private final InputStream inputStream;
@@ -337,56 +375,7 @@ final class ManagedProcess {
                 commandStream.closeSocketOutputStream();
 
             } finally {
-                boolean respawn = false;
                 safeClose(inputStream);
-                int exitCode = 0;
-                for (;;) try {
-                    exitCode = process.waitFor();
-                    synchronized (ManagedProcess.this) {
-                        start = false;
-                        if (exitCode != 0)
-                            respawn = !stopped;
-                    }
-                    invokeStopProcessListeners(exitCode);
-                    if (respawn)
-                        respawn();
-                    break;
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-        
-        private void respawn() {
-            long wait = 0;
-            synchronized (this) {
-                if (stopped || start)
-                    return;
-                wait = respawnPolicy.getTimeOutMs(++respawnCount);
-                if (wait < 0){
-                    log.info(processName + " has crashed " + respawnCount + " times, stopping it");
-                    try {
-                        stop();
-                    } catch (IOException e) {
-                        log.warn("Error stopping crashed " + processName, e);
-                    }
-                    return;
-                }
-            }
-            
-            try {
-                TimeUnit.MILLISECONDS.sleep(wait);
-            } catch (InterruptedException e) {
-                log.info("Error waiting  " + wait + "ms to respawn crashed " + processName, e);
-            }
-            
-            synchronized (this) {
-                if (stopped || start)
-                    return;
-            }
-            try {
-                start(true);
-            }catch(IOException e) {
-                log.warn("Error respawning " + processName, e);
             }
         }
     }
@@ -519,6 +508,35 @@ final class ManagedProcess {
                 current = null;
             }
         }
+    }
+    
+    private class ProcessMonitor implements Runnable {
+    	final Process process;
+    	
+    	ProcessMonitor(Process process){
+    		this.process = process;
+    	}
+    	
+		@Override
+        public void run() {
+            boolean respawn = false;
+            int exitCode = 0;
+            for (;;) try {
+                exitCode = process.waitFor();
+                log.infof("Process %s has finished", processName);
+                synchronized (ManagedProcess.this) {
+                    start = false;
+                    if (exitCode != 0)
+                        respawn = !stopped;
+                }
+                invokeStopProcessListeners(exitCode);
+                if (respawn)
+                    respawn();
+                break;
+            } catch (InterruptedException e) {
+            }
+        }
+    	
     }
 
     private static void safeClose(final Closeable closeable) {
