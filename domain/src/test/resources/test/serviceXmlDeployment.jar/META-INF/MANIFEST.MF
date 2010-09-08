@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Dependencies: system:system
+Dependencies: system

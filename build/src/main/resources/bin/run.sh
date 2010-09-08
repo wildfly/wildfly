@@ -136,15 +136,15 @@ while true; do
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/logs/process-manager/boot.log \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager:jboss-logmanager" \
-         org.jboss.as:jboss-as-process-manager \
+         -logmodule "org.jboss.logmanager.jboss-logmanager" \
+         org.jboss.as.jboss-as-process-manager \
          "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/logs/server-manager/boot.log \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager:jboss-logmanager" \
-         org.jboss.as:jboss-as-server-manager \
+         -logmodule "org.jboss.logmanager.jboss-logmanager" \
+         org.jboss.as.jboss-as-server-manager \
          "$@"
       JBOSS_STATUS=$?
    else
@@ -152,14 +152,14 @@ while true; do
       eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager:jboss-logmanager" \
-         org.jboss.as:jboss-as-process-manager \
+         -logmodule "org.jboss.logmanager.jboss-logmanager" \
+         org.jboss.as.jboss-as-process-manager \
          "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager:jboss-logmanager" \
-         org.jboss.as:jboss-as-server-manager \
+         -logmodule "org.jboss.logmanager.jboss-logmanager" \
+         org.jboss.as.jboss-as-server-manager \
          "$@" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process

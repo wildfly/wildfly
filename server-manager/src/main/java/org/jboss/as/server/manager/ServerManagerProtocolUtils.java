@@ -37,7 +37,7 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -46,7 +46,7 @@ public class ServerManagerProtocolUtils {
     private static final MarshallingConfiguration CONFIG;
     static {
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.jboss-marshalling-river"));
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
         }
@@ -70,16 +70,16 @@ public class ServerManagerProtocolUtils {
                 safeClose(marshaller);
             }
         }
-        
+
         return protocol.createCommandBytes(objectBytes);
     }
-    
+
     public static <T> T unmarshallCommandData(Class<T> clazz, Command command) throws IOException, ClassNotFoundException{
         if (clazz == null)
             throw new IllegalArgumentException("Null clazz");
         if (command == null)
             throw new IllegalArgumentException("Null command");
-        if (command.getData() == null || command.getData().length == 0) 
+        if (command.getData() == null || command.getData().length == 0)
             throw new IllegalArgumentException("No data in command ");
 
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(command.getData());
@@ -93,9 +93,9 @@ public class ServerManagerProtocolUtils {
         } finally {
             safeClose(unmarshaller);
         }
-        
+
     }
-    
+
     private static void safeClose(final Closeable closeable) {
         if (closeable != null) try {
             closeable.close();

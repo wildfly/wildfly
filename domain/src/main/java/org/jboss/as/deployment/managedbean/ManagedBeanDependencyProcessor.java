@@ -37,18 +37,18 @@ import javax.annotation.ManagedBean;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.
- * 
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
-    private static ModuleIdentifier JAVAX_ANNOTATION_API_ID = new ModuleIdentifier("javax.annotation", "api", null);
+    private static ModuleIdentifier JAVAX_ANNOTATION_API_ID = ModuleIdentifier.create("javax.annotation.api");
     private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
 
     /**
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
      * to the deployment.
-     * 
+     *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */

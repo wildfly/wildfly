@@ -40,36 +40,36 @@ import java.util.Map;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerMaker {
-    
+
     /**
      * Prefix applied to a server's name to create it's process name.
      */
     static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
-    
+
     private final ProcessManagerSlave processManagerSlave;
     private final MessageHandler messageHandler;
     private final ServerManagerEnvironment environment;
-    
-    public ServerMaker(ServerManagerEnvironment environment, 
-            ProcessManagerSlave processManagerSlave, 
+
+    public ServerMaker(ServerManagerEnvironment environment,
+            ProcessManagerSlave processManagerSlave,
             MessageHandler messageHandler) {
-        
+
         if (environment == null) {
             throw new IllegalArgumentException("environment is null");
         }
         this.environment = environment;
-        
+
         if (processManagerSlave == null) {
             throw new IllegalArgumentException("processManagerSlave is null");
         }
         this.processManagerSlave = processManagerSlave;
-        
+
         if (messageHandler == null) {
             throw new IllegalArgumentException("messageHandler is null");
         }
         this.messageHandler = messageHandler;
     }
-    
+
     public Server makeServer(Standalone serverConfig, JvmElement jvmElement) throws IOException {
         final String serverName = serverConfig.getServerName();
 //        final List<String> args = new ArrayList<String>();
@@ -107,7 +107,7 @@ public final class ServerMaker {
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
         processManagerSlave.startProcess(serverProcessName);
-        
+
         // TODO JBAS-8260 If serverConfig specified that server will work with
         // ServerManager over sockets, create a socket-based ServerCommunicationHandler
         ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
@@ -119,7 +119,7 @@ public final class ServerMaker {
     private List<String> getServerLaunchCommand(final String serverName, final String serverProcessName, final JvmElement jvm, final PropertiesElement systemProperties) {
         
         List<String> command = new ArrayList<String>();
-        
+
 //      if (false) {
 //          // Example: run at high priority on *NIX
 //          args.add("/usr/bin/nice");
@@ -131,11 +131,11 @@ public final class ServerMaker {
 //          args.add("/usr/bin/taskset");
 //          args.add("0x0000000F");
 //      }
-        
+
         command.add(getJavaCommand(jvm));
-        
+
         Map<String, String> sysProps = appendJavaOptions(jvm, command);
-        
+
         command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
         command.add("-Dorg.jboss.boot.log.file=logs/" + serverName + "/boot.log");
         command.add("-jar");
@@ -143,8 +143,8 @@ public final class ServerMaker {
         command.add("-mp");
         command.add("modules");
         command.add("-logmodule");
-        command.add("org.jboss.logmanager:jboss-logmanager");
-        command.add("org.jboss.as:jboss-as-server");
+        command.add("org.jboss.logmanager.jboss-logmanager");
+        command.add("org.jboss.as.jboss-as-server");
         
         appendArgsToMain(serverName, serverProcessName, sysProps, systemProperties, command);
         
@@ -164,8 +164,8 @@ public final class ServerMaker {
         command.add("-mp");
         command.add("modules");
         command.add("-logmodule");
-        command.add("org.jboss.logmanager:jboss-logmanager");
-        command.add("org.jboss.as:jboss-as-domain-controller");
+        command.add("org.jboss.logmanager.jboss-logmanager");
+        command.add("org.jboss.as.jboss-as-domain-controller");
 
         appendArgsToMain(serverProcessName, serverProcessName, sysProps, null, command);
 
@@ -181,10 +181,10 @@ public final class ServerMaker {
 
     private String getJavaCommand(JvmElement jvm) {
         String javaHome = jvm.getJavaHome();
-        if (javaHome == null) { // TODO should this be possible?            
+        if (javaHome == null) { // TODO should this be possible?
             return "java"; // hope for the best
         }
-        
+
         File f = new File(javaHome);
         f = new File(f, "bin");
         f = new File (f, "java");
@@ -192,10 +192,10 @@ public final class ServerMaker {
     }
 
     private Map<String, String> appendJavaOptions(JvmElement jvm, List<String> command) {
-        
+
         String heap = jvm.getHeapSize();
         String max = jvm.getMaxHeap();
-        
+
         // FIXME not the correct place to establish defaults
         if (max == null && heap != null) {
             max = heap;
@@ -203,18 +203,18 @@ public final class ServerMaker {
         if (heap == null && max != null) {
             heap = max;
         }
-        
+
         if (heap != null) {
             command.add("-Xms"+ heap);
         }
         if (max != null) {
             command.add("-Xmx"+ max);
         }
-        
+
         PropertiesElement propsEl = jvm.getSystemProperties();
         Map<String, String> sysProps = propsEl == null ? new HashMap<String, String>() : propsEl.getProperties();
         addStandardProperties(sysProps);
-        
+
         for (Map.Entry<String, String> prop : sysProps.entrySet()) {
             StringBuilder sb = new StringBuilder("-D");
             sb.append(prop.getKey());
@@ -222,7 +222,7 @@ public final class ServerMaker {
             sb.append(prop.getValue() == null ? "true" : prop.getValue());
             command.add(sb.toString());
         }
-        
+
         return sysProps;
     }
 
@@ -236,7 +236,7 @@ public final class ServerMaker {
             command.add(CommandLineConstants.INTERPROCESS_NAME);
             command.add(serverProcessName);
         }
-        
+
         // Pass through as args to main any sys props that are read at primordial boot
         Map<String, String> sysProps = null;
         if (propertiesElement == null) {
@@ -245,13 +245,13 @@ public final class ServerMaker {
         else {
             sysProps = propertiesElement.getProperties();
         }
-        
+
         StringBuilder sb = new StringBuilder("-D");
         sb.append(ServerManagerEnvironment.HOME_DIR);
         sb.append('=');
         sb.append(getPropertyValue(ServerManagerEnvironment.HOME_DIR, jvmProps, sysProps, environment.getHomeDir().getAbsolutePath()));
         command.add(sb.toString());
-        
+
         String key = "jboss.server.base.dir";  // TODO fragile! common constant between server-manager and server modules
         sb = new StringBuilder("-D");
         sb.append(key);
@@ -259,12 +259,12 @@ public final class ServerMaker {
         File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
         sb.append(getPropertyValue(key, jvmProps, sysProps, serverBaseDir.getAbsolutePath()));
         command.add(sb.toString());
-        
+
         // TODO fragile! common constants between server-manager and server modules
-        String[] keys = {"jboss.server.config.dir", "jboss.server.config.dir", 
+        String[] keys = {"jboss.server.config.dir", "jboss.server.config.dir",
                 "jboss.server.data.dir", "jboss.server.log.dir", "jboss.server.temp.dir"};
         for (String propkey : keys) {
-            if (sysProps.containsKey(propkey)) {                
+            if (sysProps.containsKey(propkey)) {
                 sb = new StringBuilder("-D");
                 sb.append(propkey);
                 sb.append('=');
@@ -272,7 +272,7 @@ public final class ServerMaker {
                 command.add(sb.toString());
             }
         }
-        
+
     }
 
     private static String getPropertyValue(String property, Map<String, String> jvmProps, Map<String, String> sysProps, String defaultVal) {
@@ -285,27 +285,27 @@ public final class ServerMaker {
 
     /**
      * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
-     * 
+     *
      * TODO externalize this somewhere if doing this at all is the right thing
-     * 
+     *
      * @param sysProps
      */
     private void addStandardProperties(Map<String, String> sysProps) {
-        // 
+        //
         if (!sysProps.containsKey("sun.rmi.dgc.client.gcInterval")) {
             sysProps.put("sun.rmi.dgc.client.gcInterval","3600000");
         }
         if (!sysProps.containsKey("sun.rmi.dgc.server.gcInterval")) {
             sysProps.put("sun.rmi.dgc.server.gcInterval","3600000");
         }
-        
+
         // Following is disabled per:
         // Jason: not sure if it makes sense
         // Jason: everything should be doing Class.forName
         // David: agreed on that
         // Jason: and if they enable that option
         // Jason: it would do the equiv
-        // Jason: so my vote is dont        
+        // Jason: so my vote is dont
 //        if (!sysProps.containsKey("sun.lang.ClassLoader.allowArraySyntax")) {
 //            sysProps.put("sun.lang.ClassLoader.allowArraySyntax","true");
 //        }

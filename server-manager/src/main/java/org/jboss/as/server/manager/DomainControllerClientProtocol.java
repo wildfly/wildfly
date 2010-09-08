@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Protocol used by domain controller clients.  
+ * Protocol used by domain controller clients.
  *
  * @author John E. Bailey
  */
@@ -52,7 +52,7 @@ public class DomainControllerClientProtocol {
 
     static {
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.jboss-marshalling-river"));
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
         }

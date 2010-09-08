@@ -29,15 +29,15 @@
     <property name="module.xml" value="module.xml"/>
     
     <macrodef name="module-def">
-        <attribute name="group"/>
-        <attribute name="artifact"/>
-        <attribute name="version" default="noversion"/>
+        <attribute name="name"/>
+        <attribute name="slot" default="main"/>
         <element name="resources" implicit="yes" optional="yes"/>
                 
         <sequential>
-            <echo message="Initializing module -> @{group}:@{artifact}"/>
+            <echo message="Initializing module -> @{name}"/>
             <!-- Figure out the correct module path -->
-            <define-module-dir group="@{group}" artifact="@{artifact}" version="@{version}"/>
+            <define-module-dir name="@{name}" slot="@{slot}"/>
+            
             <!-- Make the module output director -->
             <mkdir dir="${module.repo.output.dir}/${current.module.path}"/>
             
@@ -61,13 +61,15 @@
     </macrodef>
     
     <scriptdef name="define-module-dir" language="javascript">
-        <attribute name="group"/>
-        <attribute name="artifact"/>
-        <attribute name="version"/>
+        <attribute name="name"/>
+        <attribute name="slot"/>
         <![CDATA[
-            group = attributes.get("group");
+            name = attributes.get("name");
+            last = name.lastIndexOf('.');
+            group = name.substring(0, last);
+            artifact = name.substring(last + 1);
             group = group.replace(".", "/");
-            project.setProperty("current.module.path", group + "/" + attributes.get("artifact") + "/" + attributes.get("version"));
+            project.setProperty("current.module.path", group + "/" + artifact + "/" + attributes.get("slot"));
         ]]>
     </scriptdef>
     

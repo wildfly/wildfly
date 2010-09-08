@@ -41,7 +41,7 @@ import java.util.Map;
 
 /**
  * Protocol used by the domain controller to communicate with server manager instances.
- * 
+ *
  * @author John E. Bailey
  */
 public class ServerManagerConnectionProtocol {
@@ -51,7 +51,7 @@ public class ServerManagerConnectionProtocol {
 
     static {
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling:jboss-marshalling-river"));
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.jboss-marshalling-river"));
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
         }
