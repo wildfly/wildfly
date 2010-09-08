@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.model.Host;
 import org.jboss.logging.Logger;
 
 import java.io.BufferedInputStream;
@@ -45,6 +46,7 @@ public class ServerManagerConnection implements Runnable {
     private final OutputStream socketOut;
     private final ServerManagerCommunicationService communicationService;
     private final DomainController domainController;
+    private Host hostConfig;
 
 
     /**
@@ -87,6 +89,14 @@ public class ServerManagerConnection implements Runnable {
 
     public String getId() {
         return id;
+    }
+
+    public Host getHostConfig() {
+        return hostConfig;
+    }
+
+    public void setHostConfig(Host hostConfig) {
+        this.hostConfig = hostConfig;
     }
 
     public void updateDomain() {

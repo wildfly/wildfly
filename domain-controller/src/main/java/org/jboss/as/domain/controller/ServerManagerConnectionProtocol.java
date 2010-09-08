@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.model.Host;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -101,6 +102,8 @@ public class ServerManagerConnectionProtocol {
         REGISTER((byte) 0) {
             protected void execute(final ServerManagerConnection serverManagerConnection, final Unmarshaller unmarshaller) throws Exception {
                 log.infof("Server manager registered [%s]", serverManagerConnection.getId());
+                final Host hostConfig = unmarshaller.readObject(Host.class);
+                serverManagerConnection.setHostConfig(hostConfig);
                 serverManagerConnection.confirmRegistration();
                 serverManagerConnection.updateDomain();
             }

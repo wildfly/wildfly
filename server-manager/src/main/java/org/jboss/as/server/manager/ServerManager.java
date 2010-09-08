@@ -246,6 +246,10 @@ public class ServerManager {
         registerWithDomainController();
     }
 
+    Host getHostConfig() {
+        return hostConfig;
+    }
+
     private Host parseHost() {
         
         if (!hostXML.exists()) {

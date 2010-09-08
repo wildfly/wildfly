@@ -67,6 +67,7 @@ public class DomainControllerClientProtocol {
     enum OutgoingCommand {
         REGISTER((byte) 0) {
             protected void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception {
+                marshaller.writeObject(domainControllerClientService.serverManager.getHostConfig());
             }
         },
         UNREGISTER(Byte.MAX_VALUE) {
