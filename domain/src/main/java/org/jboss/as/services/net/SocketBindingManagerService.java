@@ -197,7 +197,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
             return new ManagedSocketBinding(SocketBindingManagerService.this);
         }
 
-        public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
+        public Socket createSocket(final String host, final int port) throws IOException {
             return createSocket(InetAddress.getByName(host), port);
         }
 
@@ -207,7 +207,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
             return socket;
         }
 
-        public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException, UnknownHostException {
+        public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException {
             return createSocket(InetAddress.getByName(host), port, localHost, localPort);
         }
 

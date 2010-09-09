@@ -60,7 +60,7 @@ public final class ProcessManagerMaster {
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
-    ProcessManagerMaster(InetAddress addr, int port) throws UnknownHostException, IOException {
+    ProcessManagerMaster(InetAddress addr, int port) throws IOException {
         serverSocketListener = createServerSocketListener(addr, port);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
@@ -328,7 +328,7 @@ public final class ProcessManagerMaster {
         }
     }
 
-    ServerSocketListener createServerSocketListener(InetAddress addr, Integer port) throws UnknownHostException, IOException{
+    ServerSocketListener createServerSocketListener(InetAddress addr, Integer port) throws IOException {
         if (addr == null)
             addr = InetAddress.getLocalHost();
         if (port == null)
