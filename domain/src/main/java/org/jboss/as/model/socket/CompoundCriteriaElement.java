@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -18,37 +18,37 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Indicates that if a network interface satisfies either any or none of a set of nested 
+ * Indicates that if a network interface satisfies either any or none of a set of nested
  * criteria, it may be used. Whether the test is for any or none depends on the
  * <code>isAny</code> parameter passed to the constructor.
- * 
+ *
  * @author Brian Stansberry
  */
 public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<CompoundCriteriaElement> {
 
     private static final long serialVersionUID = -649277969243521207L;
 
-    private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = 
+    private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria =
             new TreeMap<Element, AbstractInterfaceCriteriaElement<?>>();
     /**
      * Creates a new CompoundCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @param isAny true if this type {@link Element#ANY}, false if it is {@link Element#NOT}.
-     * 
+     *
      * @throws XMLStreamException if an error occurs
      */
     public CompoundCriteriaElement(XMLExtendedStreamReader reader, boolean isAny) throws XMLStreamException {
         super(reader, isAny ? Element.ANY : Element.NOT);
-        
+
         Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>(interfaceCriteria.size());
         for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria.values()) {
             criteria.add(element.getInterfaceCriteria());
         }
-        
+
         InterfaceCriteria ours = isAny ? new AnyInterfaceCriteria(criteria) : new NotInterfaceCriteria(criteria);
         setInterfaceCriteria(ours);
-        
+
 
         // Handle attributes
         requireNoAttributes(reader);
@@ -97,7 +97,7 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
     protected Class<CompoundCriteriaElement> getElementClass() {
         return CompoundCriteriaElement.class;
     }
-    
-    
+
+
 
 }

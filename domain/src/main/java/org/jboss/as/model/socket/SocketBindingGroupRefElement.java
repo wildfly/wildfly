@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -17,7 +17,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A mapping of a socket binding group to a server group or server.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBindingGroupRefElement> {
@@ -26,7 +26,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
 
     private final String ref;
     private int portOffset;
-    
+
     /**
      * @param location
      */
@@ -60,12 +60,12 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
                         try {
                             offset = Integer.valueOf(value);
                             if (offset < 0) {
-                                throw new XMLStreamException(offset + " is not a valid " + 
-                                        attribute.getLocalName() + " -- must be greater than zero", 
+                                throw new XMLStreamException(offset + " is not a valid " +
+                                        attribute.getLocalName() + " -- must be greater than zero",
                                         reader.getLocation());
                             }
                         } catch (NumberFormatException e) {
-                            throw new XMLStreamException(offset + " is not a valid " + 
+                            throw new XMLStreamException(offset + " is not a valid " +
                                     attribute.getLocalName(), reader.getLocation(), e);
                         }
                         break;
@@ -82,12 +82,12 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
         // Handle elements
         requireNoContent(reader);
     }
-    
-    
+
+
     /**
      * Gets the offset to apply to ports in the socket binding group to get
      * port values that are unused on a server.
-     * 
+     *
      * @return a non-negative number
      */
     public int getPortOffset() {
@@ -97,12 +97,12 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
     /**
      * Sets the offset to apply to ports in the socket binding group to get
      * port values that are unused on a server.
-     * 
+     *
      * @param portOffset a non-negative number
      */
     void setPortOffset(int portOffset) {
         if (portOffset < 0) {
-            throw new IllegalArgumentException(portOffset + " is not a valid " + 
+            throw new IllegalArgumentException(portOffset + " is not a valid " +
                     "port offset -- must be greater than zero");
         }
         this.portOffset = portOffset;
@@ -110,7 +110,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
 
     /**
      * Gets the name of the socket binding group.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getRef() {

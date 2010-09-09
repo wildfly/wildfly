@@ -38,7 +38,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with an unbounded queue.
- * 
+ *
  * @author John E. Bailey
  */
 public class UnboundedQueueThreadPoolService implements Service<ExecutorService> {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -10,23 +10,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * {@link InterfaceCriteria} that tests whether a given network interface and 
+ * {@link InterfaceCriteria} that tests whether a given network interface and
  * address satisfy <i>none</i> of a contained set of {@link InterfaceCriteria}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class NotInterfaceCriteria implements InterfaceCriteria {
 
     private static final long serialVersionUID = -2037624198837453203L;
-    
+
     private final Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>();
-    
+
     /**
      * Creates a new AnyInterfaceCriteria
-     * 
-     * @param criteria the criteria to check to see if none are satisfied. 
+     *
+     * @param criteria the criteria to check to see if none are satisfied.
      *                 Cannot be <code>null</code>
-     *                 
+     *
      * @throws IllegalArgumentException if <code>criteria</code> is <code>null</code>
      */
     public NotInterfaceCriteria(Set<InterfaceCriteria> criteria) {
@@ -34,23 +34,23 @@ public class NotInterfaceCriteria implements InterfaceCriteria {
             throw new IllegalArgumentException("criteria is null");
         this.criteria.addAll(criteria);
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
-     * @return <code>true</code> if <code>networkInterface</code and 
+     *
+     * @return <code>true</code> if <code>networkInterface</code and
      *         <code>address</code> satisfy <i>none</i> of a contained set of criteria.
      */
     @Override
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        
+
         for (InterfaceCriteria ic : criteria) {
             if (ic.isAcceptable(networkInterface, address))
                 return false;
-        }   
+        }
         return true;
     }
-    
-    
+
+
 
 }

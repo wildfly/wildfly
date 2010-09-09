@@ -34,8 +34,8 @@ import org.jboss.msc.service.StopContext;
 /**
  * Service responsible for managing the life-cycle of a managed bean container.  Once this service is started it will
  * register the managed bean container with the registry and in essence mark the managed bean in service.  It will
- * un-register the container from the registry when stopped. 
- * 
+ * un-register the container from the registry when stopped.
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanService<T> implements Service<ManagedBeanContainer<T>> {

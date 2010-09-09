@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 /**
  * Configuration object for a JBoss service constructor.
- * 
+ *
  * @author John E. Bailey
  */
 public class JBossServiceConstructorConfig  implements Serializable {

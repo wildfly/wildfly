@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server.manager;
 
@@ -65,14 +65,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A ServerManager.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ServerManager {
-    
+
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
-    
-    private final ServerManagerEnvironment environment;    
+
+    private final ServerManagerEnvironment environment;
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
@@ -82,12 +82,12 @@ public class ServerManager {
     private DomainControllerProcess localDomainControllerProcess;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
-    
+
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
 //    private final Lock domainLock = new ReentrantLock();
     private final Map<String, Server> servers = new HashMap<String, Server>();
-    
+
     public ServerManager(ServerManagerEnvironment environment) {
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
@@ -97,7 +97,7 @@ public class ServerManager {
         this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
         this.messageHandler = new MessageHandler(this);
     }
-    
+
     /**
      * Starts the ServerManager. This brings this ServerManager to the point where
      * it has processed it's own configuration file, registered with the DomainController
@@ -106,15 +106,15 @@ public class ServerManager {
      * this process manageable by remote clients.
      */
     public void start() {
-        
+
         this.hostConfig = parseHost();
-        
+
         // TODO set up logging for this process based on config in Host
-        
+
         // Start communication with the ProcessManager. This also
         // creates a daemon thread to keep this process alive
         launchProcessManagerSlave();
-        
+
         if (hostConfig.getLocalDomainControllerElement() != null) {
             initiateDomainController();
         } else {
@@ -122,9 +122,9 @@ public class ServerManager {
             registerWithDomainController();
         }
     }
-    
+
     public void startServers() {
-        
+
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
@@ -150,7 +150,7 @@ public class ServerManager {
 //        finally {
 //            hostLock.unlock();
 //        }
-        
+
     }
 
     public void stop() {
@@ -163,7 +163,7 @@ public class ServerManager {
                 // FIXME handle exception stopping server
             }
         }
-        
+
         // FIXME stop any local DomainController, stop other internal SM services
     }
 
@@ -172,7 +172,7 @@ public class ServerManager {
         Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
         t.start();
     }
-    
+
     private void registerWithDomainController() {
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final ServiceActivatorContext activatorContext = new ServiceActivatorContextImpl(batchBuilder);
@@ -251,14 +251,14 @@ public class ServerManager {
     }
 
     private Host parseHost() {
-        
+
         if (!hostXML.exists()) {
             throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " does not exist.");
         }
         else if (! hostXML.canWrite()) {
             throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " is not writeable.");
         }
-        
+
         try {
             XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardHostReaders(mapper);
@@ -284,45 +284,45 @@ public class ServerManager {
             startServers();
         }
     }
-    
+
     /**
      * Combines information from the domain, server group, host and server levels
      * to come up with an overall JVM configuration for a server.
-     * 
+     *
      * @param domain the domain configuration object
      * @param host the host configuration object
      * @param serverName the name of the server
      * @return the JVM configuration object
      */
     private JvmElement getServerJvmElement(Domain domain, Host host, String serverName) {
-        
+
         ServerElement server = host.getServer(serverName);
         if (server == null)
             throw new IllegalStateException("Server " + serverName + " is not listed in Host");
-        
+
         String serverGroupName = server.getServerGroup();
         ServerGroupElement serverGroup = domain.getServerGroup(serverGroupName);
         if (serverGroup == null)
             throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
-        
+
         JvmElement serverVM = server.getJvm();
         String serverVMName = serverVM != null ? serverVM.getName() : null;
-        
+
         JvmElement groupVM = serverGroup.getJvm();
         String groupVMName = groupVM != null ? groupVM.getName() : null;
-        
+
         String ourVMName = serverVMName != null ? serverVMName : groupVMName;
         if (ourVMName == null) {
-            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() + 
+            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() +
                     " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
         }
-        
+
         if (!ourVMName.equals(groupVMName)) {
             // the server setting replaced the group, so ignore group
             groupVM = null;
         }
         JvmElement hostVM = host.getJvm(ourVMName);
-        
+
         return new JvmElement(groupVM, hostVM, serverVM);
     }
 

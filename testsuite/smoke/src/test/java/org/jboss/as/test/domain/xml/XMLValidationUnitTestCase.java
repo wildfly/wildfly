@@ -41,7 +41,7 @@ import junit.framework.TestCase;
 
 /**
  * A XSDValidationUnitTestCase.
- * 
+ *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
@@ -67,7 +67,7 @@ public class XMLValidationUnitTestCase extends TestCase
          factory.setValidating(true);
       if(!factory.isXIncludeAware())
          factory.setXIncludeAware(true);
-      
+
       SAXParser parser = factory.newSAXParser();
       XMLReader reader = parser.getXMLReader();
       reader.setFeature("http://apache.org/xml/features/validation/schema", true);
@@ -101,14 +101,14 @@ public class XMLValidationUnitTestCase extends TestCase
    {
       return getResourceUrl("schema/" + xsdName);
    }
-   
+
    private URL getResourceUrl(String resourceName)
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
       assertNotNull(resourceName + " not found", url);
       return url;
    }
-   
+
    private final class ErrorHandlerImpl implements ErrorHandler
    {
       @Override
@@ -128,7 +128,7 @@ public class XMLValidationUnitTestCase extends TestCase
       {
          System.out.println(formatMessage(e));
       }
-      
+
       private String formatMessage(SAXParseException e)
       {
          StringBuffer sb = new StringBuffer();

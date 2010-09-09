@@ -38,13 +38,13 @@ import org.jboss.as.model.Standalone;
  * 0..n bytes: The data that goes with the command
  * <p>
  * Checksums and length of data are handled at the ManagedProcess/MessageHandler level
- * 
- * 
+ *
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public enum ServerManagerProtocolCommand {
-    
+
     //The SM->Server commands
     /** Message sent from ServerManager to Server containing the bytes of a {@link Standalone} */
     START_SERVER((byte)1, true),
@@ -59,7 +59,7 @@ public enum ServerManagerProtocolCommand {
     SERVER_AVAILABLE((byte)53),
     /** Message sent from Server to ServerManager when the server could not start normally. No data */
     SERVER_START_FAILED((byte)54);
-    
+
     private final static Map<Byte, ServerManagerProtocolCommand> COMMANDS;
     static {
         Map<Byte, ServerManagerProtocolCommand> cmds = new HashMap<Byte, ServerManagerProtocolCommand>();
@@ -71,14 +71,14 @@ public enum ServerManagerProtocolCommand {
         cmds.put(SERVER_START_FAILED.getId(), SERVER_START_FAILED);
         COMMANDS = Collections.unmodifiableMap(cmds);
     }
-    
+
     private final byte id;
     private boolean hasData;
-    
+
     private ServerManagerProtocolCommand(byte id) {
         this(id, false);
     }
-    
+
     private ServerManagerProtocolCommand(byte id, boolean hasData) {
         this.id = id;
         this.hasData = hasData;
@@ -87,14 +87,14 @@ public enum ServerManagerProtocolCommand {
     byte getId() {
         return id;
     }
-    
+
     public byte[] createCommandBytes(byte[] data) throws IOException{
         int length = data == null ? 0 : data.length;
         if (length == 0 && hasData)
             throw new IllegalArgumentException("Expected some data for " + this);
         else if (length != 0 && !hasData)
             throw new IllegalArgumentException("Expected no data for " + this);
-        
+
         if (length == 0)
             return new byte[] {id};
         byte[] all = new byte[length + 1];
@@ -102,14 +102,14 @@ public enum ServerManagerProtocolCommand {
         System.arraycopy(data, 0, all, 1, length);
         return all;
     }
-    
+
     static ServerManagerProtocolCommand parse(byte id) {
         ServerManagerProtocolCommand cmd = COMMANDS.get(id);
         if (cmd == null)
             throw new IllegalArgumentException("Unknown command " + id);
         return cmd;
     }
-    
+
     public static Command readCommand(byte[] bytes) throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         byte command = (byte)in.read();
@@ -119,10 +119,10 @@ public enum ServerManagerProtocolCommand {
 
     public static class Command {
         private static final byte[] NO_DATA = new byte[0];
-        
+
         private final ServerManagerProtocolCommand command;
         private final byte[] data;
-        
+
         private Command(ServerManagerProtocolCommand command, byte[] data) {
             if (command == null)
                 throw new IllegalArgumentException("Null command");

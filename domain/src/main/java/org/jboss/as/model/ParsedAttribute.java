@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model;
 
@@ -9,7 +9,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A ForeignNamespaceAttribute.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ParsedAttribute {
@@ -18,7 +18,7 @@ public class ParsedAttribute {
     private final String prefix;
     private final String localPart;
     private final String value;
-    
+
     public ParsedAttribute(String namespace, String prefix, String localPart, String value) {
         this.namespace = namespace;
         this.prefix = prefix;
@@ -41,7 +41,7 @@ public class ParsedAttribute {
     public String getValue() {
         return value;
     }
-    
+
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         if (prefix == null && namespace == null) {
             streamWriter.writeAttribute(localPart, value);

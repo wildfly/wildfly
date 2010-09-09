@@ -54,7 +54,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.
- * 
+ *
  * @author John E. Bailey
  */
 public class NamingContext implements EventContext {

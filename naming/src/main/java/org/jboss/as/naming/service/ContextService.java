@@ -36,7 +36,7 @@ import javax.naming.NamingException;
 /**
  * Service responsible for creating and managing the life-cycle of a naming context.  Will create a sub-context with
  * the provided name in the injected parent context.
- * 
+ *
  * @author John E. Bailey
  */
 public class ContextService implements Service<Context> {
@@ -58,7 +58,7 @@ public class ContextService implements Service<Context> {
      * parent was injected.
      *
      * @param context The start context.
-     * @throws StartException If any problems occur creating the sub-context. 
+     * @throws StartException If any problems occur creating the sub-context.
      */
     public synchronized void start(StartContext context) throws StartException {
         try {
@@ -93,7 +93,7 @@ public class ContextService implements Service<Context> {
     }
 
     /**
-     * Get the naming context. 
+     * Get the naming context.
      *
      * @return The naming context
      */

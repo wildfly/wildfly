@@ -23,7 +23,7 @@ package org.jboss.as.process;
 
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -31,15 +31,15 @@ public interface RespawnPolicy {
 
     /**
      * Get the timeout for this retry attempt.
-     * 
+     *
      * @param retryCount the current retry count. This will be 1 for the first time and then be incremented
      * each time we try to respawn the process
      * @return a number >= 0 containing the milliseconds to wait before respawning. If -1 is
-     * returned we have retried too many times and should give up.  
+     * returned we have retried too many times and should give up.
      * @throws IllegalArgumentException if retryCount <= 0
      */
     long getTimeOutMs(int retryCount);
-    
+
     class DefaultRespawnPolicy implements RespawnPolicy{
         static final RespawnPolicy INSTANCE = new DefaultRespawnPolicy();
 
@@ -58,6 +58,6 @@ public interface RespawnPolicy {
             else {
                 throw new IllegalArgumentException("Retry count must be >= 0, was " + retryCount);
             }
-        }   
+        }
     }
 }

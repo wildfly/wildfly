@@ -36,51 +36,51 @@ public enum Element {
 
     // Domain 1.0 elements in alpha order
     ANY("any"),
-    
+
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
-    
+
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
-    
+
     HEAP("heap"),
     HOST("host"),
-    
+
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
     INTERFACE("interface"),
     INTERFACE_SPECS("interface-specs"),
     INTERFACES("interfaces"),
-    
+
     JVM("jvm"),
     JVMS("jvms"),
 
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
     LOOPBACK("loopback"),
-    
+
     MULTICAST("multicast"),
-    
+
     NAME("name"),
     NIC("nic"),
     NIC_MATCH("nic-match"),
     NOT("not"),
-    
+
     POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
     PUBLIC_ADDRESS("public-address"),
-    
+
     REMOTE("remote"),
-    
+
     SERVER("server"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
-    SERVER_GROUPS("server-groups"),    
+    SERVER_GROUPS("server-groups"),
     SITE_LOCAL_ADDRESS("site-local-address"),
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
@@ -90,7 +90,7 @@ public enum Element {
     STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
     SYSTEM_PROPERTIES("system-properties"),
-    
+
     UP("up"),
     VARIABLE("variable"),
     VIRTUAL("virtual"),

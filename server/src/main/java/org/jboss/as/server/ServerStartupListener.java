@@ -96,7 +96,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
 
     public void startBatch(final Runnable batchCallback) {
         if(finished.get()) {
-            throw new IllegalStateException("Listener is already finished");     
+            throw new IllegalStateException("Listener is already finished");
         }
         if(!countUpdater.compareAndSet(this, 0, 1)) {
             throw new IllegalStateException("Listener already has a started batch");

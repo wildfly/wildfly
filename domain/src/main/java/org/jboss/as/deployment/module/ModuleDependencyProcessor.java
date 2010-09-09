@@ -36,7 +36,7 @@ import java.util.jar.Manifest;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * Deployment unit processor that will extract module dependencies from an archive. 
+ * Deployment unit processor that will extract module dependencies from an archive.
  *
  * @author John E. Bailey
  */

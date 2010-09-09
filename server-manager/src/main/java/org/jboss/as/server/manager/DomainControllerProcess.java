@@ -26,7 +26,7 @@ import java.io.IOException;
 
 /**
  * A proxy to control the local DomainController.
- * 
+ *
  * @author John bailey
  */
 public final class DomainControllerProcess {
@@ -51,10 +51,10 @@ public final class DomainControllerProcess {
 
     private void sendCommand(ServerManagerProtocolCommand command) throws IOException {
         sendCommand(command, null);
-    }    
-    
+    }
+
     private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
-        
+
         byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
         communicationHandler.sendMessage(cmd);
     }

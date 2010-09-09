@@ -50,7 +50,7 @@ public interface DeploymentChain extends DeploymentUnitProcessor {
     /**
      * Remove a DeploymentUnitProcessor from the chain at a specific priority.
      * The priority is required for removal to not restrict processor instance to
-     * a single location int the chain. 
+     * a single location int the chain.
      *
      * @param processor The processor to removed
      * @param priority The priority location to remove the processor from

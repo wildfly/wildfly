@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -31,7 +31,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * to use for the interface or an
  * optional set of {@link AbstractInterfaceCriteriaElement criteria} for
  * determining at runtime what address to use for the interface.
- * 
+ *
  * @author Brian Stansberry
  */
 public class InterfaceElement extends AbstractModelElement<InterfaceElement> implements ServiceActivator {
@@ -41,27 +41,27 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
     private final String name;
     private String address;
-    private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = 
+    private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria =
             new TreeMap<Element, AbstractInterfaceCriteriaElement<?>>();
-    
+
     /**
      * Creates a new InterfaceElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
      */
     public InterfaceElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         this(reader, false);
     }
-    
+
     /**
      * Creates a new NonCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to the xml
      * @param criteriaRequired <code>true</code> if the element content must
      *         include criteria to identify the IP address to use for the
      *         interface; <code>false</code> if that is not required
-     *         
+     *
      * @throws XMLStreamException if an error occurs
      */
     protected InterfaceElement(XMLExtendedStreamReader reader, boolean criteriaRequired) throws XMLStreamException {
@@ -133,19 +133,19 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
             throw new XMLStreamException("Cannot use interface criteria element " + element.getLocalName() + " since inet-address is already set", reader.getLocation());
         }
     }
-    
+
     /**
      * Gets the name of the interface
-     * 
+     *
      * @return the interface name. Will not be <code>null</code>
      */
     public String getName() {
         return name;
     }
-    
+
     /**
      * Gets the IP address or host name to use for this interface.
-     * 
+     *
      * @return an InetAddress in string form, or a host name, or <code>null</code>
      */
     public String getAddress() {
@@ -154,7 +154,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
     /**
      * Gets the IP address or host name to use for this interface.
-     * 
+     *
      * @param address an InetAddress in string form, or a host name, or <code>null</code>
      */
     void setAddress(String address) {
@@ -163,19 +163,19 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
     public InterfaceCriteria getInterfaceCriteria() {
         if (address != null) {
-            throw new IllegalStateException(InterfaceCriteria.class.getSimpleName() + 
+            throw new IllegalStateException(InterfaceCriteria.class.getSimpleName() +
                     " is not available when an IP address is configured; call " +
                     "getIpAddress() before asking for an " + InterfaceCriteria.class.getSimpleName());
         }
         return new OverallInterfaceCriteria();
     }
-    
+
     /**
      * Gets whether this element is configured with necessary information needed
      * to determine an IP address for the interface; either via a directly
      * specified {@link #getAddress() address} or via at least one address
      * selection criteria.
-     * 
+     *
      * @return <code>true</code> if the necessary information is available, <code>false</code>
      *         otherwise
      */
@@ -233,14 +233,14 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
 
         @Override
         public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-            
+
             for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria.values()) {
                 if (! criteria.getInterfaceCriteria().isAcceptable(networkInterface, address))
                     return false;
             }
             return true;
         }
-        
+
     }
 
 }

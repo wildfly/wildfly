@@ -27,22 +27,22 @@ import java.net.InetSocketAddress;
 
 /**
  * The managed binding.
- * 
+ *
  * @author Emanuel Muckenhuber
  */
 public interface ManagedBinding extends Closeable {
 
 	/**
 	 * Get the bind address.
-	 * 
+	 *
 	 * @return the bind address.
 	 */
 	InetSocketAddress getBindAddress();
-	
+
 	/**
 	 * Close and unregister this binding.
 	 */
 	void close() throws IOException;
-	
+
 }
 

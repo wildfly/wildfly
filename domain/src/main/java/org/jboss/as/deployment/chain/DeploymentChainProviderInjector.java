@@ -27,7 +27,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.Value;
 
 /**
- * Injector used to add a deployment chain to the deployment chain provider service.  
+ * Injector used to add a deployment chain to the deployment chain provider service.
  *
  * @author John E. Bailey
  */
@@ -39,7 +39,7 @@ public class DeploymentChainProviderInjector<T extends DeploymentChain> implemen
 
     /**
      * Create new instance.
-     * 
+     *
      * @param deploymentChainValue The deployment chain to inject into the provider
      * @param selector The deployment chain selector
      * @param priority The deployment chain priority

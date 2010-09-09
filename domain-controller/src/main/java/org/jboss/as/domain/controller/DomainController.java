@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Domain controller instance. 
+ * A Domain controller instance.
  *
  * @author John Bailey
  */

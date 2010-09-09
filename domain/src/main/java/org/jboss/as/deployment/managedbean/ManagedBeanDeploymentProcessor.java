@@ -79,7 +79,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         if(moduleContext == null) {
             throw new DeploymentUnitProcessingException("Unable to deploy managed beans without a module naming context");
         }
-        
+
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {

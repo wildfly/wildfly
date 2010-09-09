@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Interface to layout a contract for naming entry back-end storage.  This will be used by {@code NamingContext} instances
- * to manage naming entries.   
+ * to manage naming entries.
  *
  * @author John E. Bailey
  */
@@ -60,7 +60,7 @@ public interface NamingStore {
     void rebind(Context context, Name name, Object object, String className) throws NamingException;
 
     /**
-     * Unbind an object from the naming store.  An entry for the name must exist.  
+     * Unbind an object from the naming store.  An entry for the name must exist.
      *
      * @param context The calling context
      * @param name The entry name
@@ -108,8 +108,8 @@ public interface NamingStore {
     Context createSubcontext(Context context, Name name) throws NamingException;
 
     /**
-     * Close the naming store and cleanup any resource used by the store. 
-     * 
+     * Close the naming store and cleanup any resource used by the store.
+     *
      * @throws NamingException If any errors occur
      */
     void close() throws NamingException;

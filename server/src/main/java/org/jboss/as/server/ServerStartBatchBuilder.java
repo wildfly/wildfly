@@ -37,7 +37,7 @@ import java.util.Collection;
 
 /**
  * Super-hack batch builder used to ignore on-demand services for the server startup listener.
- * 
+ *
  * @author John E. Bailey
  */
 public class ServerStartBatchBuilder implements BatchBuilder {

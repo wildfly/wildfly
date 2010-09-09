@@ -37,7 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Service responsible for creating, starting and stopping a thread pool executor with a bounded queue.  
+ * Service responsible for creating, starting and stopping a thread pool executor with a bounded queue.
  *
  * @author John E. Bailey
  */

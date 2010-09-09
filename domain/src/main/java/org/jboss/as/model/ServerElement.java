@@ -41,7 +41,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * An individual server on a {@link Host}.
- * 
+ *
  * @author Brian Stansberry
  */
 public final class ServerElement extends AbstractModelElement<ServerElement> {
@@ -55,7 +55,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
     private PropertiesElement systemProperties;
-    
+
     /**
      * Construct a new instance.
      *
@@ -112,7 +112,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         this.name = name;
         this.serverGroup = group;
         this.start = start == null ? true : start.booleanValue();
-        
+
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -151,22 +151,22 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                 default: throw unexpectedElement(reader);
             }
         }
-        
+
     }
-    
-    
-    /** 
+
+
+    /**
      * Gets whether this server should be started.
-     * 
+     *
      * @return <code>true</code> if the server should be started, <code>false</code> if not
      */
     public boolean isStart() {
         return start;
     }
 
-    /** 
+    /**
      * Sets whether this server should be started.
-     * 
+     *
      * @param start <code>true</code> if the server should be started, <code>false</code> if not
      */
     void setStart(boolean start) {
@@ -175,32 +175,32 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
     /**
      * Gets the name of the server.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getName() {
         return name;
     }
-    
+
     /**
      * Gets the default jvm configuration for servers in this group. This can
      * be overridden at the {@link ServerElement#getJvm() server level}.
-     *     
+     *
      * @return the jvm configuration, or <code>null</code> if there is none
      */
     public JvmElement getJvm() {
         return jvm;
     }
-    
+
     /**
      * Gets the default jvm configuration for servers in this group.
-     *     
+     *
      * param jvm the jvm configuration. May be <code>null</code>
      */
     void setJvm(JvmElement jvm) {
         this.jvm = jvm;
     }
-    
+
     public Set<ServerInterfaceElement> getInterfaces() {
         Set<ServerInterfaceElement> intfs = new LinkedHashSet<ServerInterfaceElement>();
         synchronized (interfaces) {
@@ -210,27 +210,27 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         }
         return intfs;
     }
-    
+
     public SocketBindingGroupRefElement getSocketBindingGroup() {
         return bindingGroup;
     }
 
     /**
      * Gets the name of the server's server group.
-     * 
+     *
      * @return the server group name. Will not be <code>null</code>
      */
     public String getServerGroup() {
         return serverGroup;
     }
-    
+
     /**
      * Gets any system properties defined at the server level. These properties
-     * can extend and override any properties declared at the 
-     * {@link Domain#getSystemProperties() domain level}, the 
+     * can extend and override any properties declared at the
+     * {@link Domain#getSystemProperties() domain level}, the
      * {@link ServerGroupElement server group level} or the
      * {@link ServerElement#getSystemProperties() server level}.
-     * 
+     *
      * @return the system properties, or <code>null</code> if there are none
      */
     public PropertiesElement getSystemProperties() {
@@ -272,7 +272,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         if (!start) {
             streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
         }
-        
+
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
@@ -294,14 +294,14 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             systemProperties.writeContent(streamWriter);
             streamWriter.writeEndElement();
         }
-        
+
         if (jvm != null) {
             streamWriter.writeStartElement(Element.JVM.getLocalName());
             jvm.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }
-    
+
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -322,6 +322,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
 }

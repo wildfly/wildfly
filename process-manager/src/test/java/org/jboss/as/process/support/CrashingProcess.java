@@ -24,7 +24,7 @@ package org.jboss.as.process.support;
 import java.util.List;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */

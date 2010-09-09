@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.lang.reflect.AccessibleObject;
 
 /**
- * Configuration object used to store information for an @Resource injection for a managed bean. 
+ * Configuration object used to store information for an @Resource injection for a managed bean.
  *
  * @author John E. Bailey
  */

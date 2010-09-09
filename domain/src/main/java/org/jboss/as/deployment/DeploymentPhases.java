@@ -24,7 +24,7 @@ package org.jboss.as.deployment;
 
 /**
  * Deployment phase constants used to establish general rules for ordering deployment processors.
- * 
+ *
  * @author John E. Bailey
  */
 public enum DeploymentPhases {

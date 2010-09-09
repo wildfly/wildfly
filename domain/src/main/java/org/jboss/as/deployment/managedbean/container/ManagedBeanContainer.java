@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Container responsible for holding onto the components necessary for creating instance of managed beans. 
+ * Container responsible for holding onto the components necessary for creating instance of managed beans.
  *
  * @author John E. Bailey
  */
@@ -37,7 +37,7 @@ public class ManagedBeanContainer<T> {
     private final List<Method> preDestroyMethods;
     private final List<ResourceInjection<?>> resourceInjections;
     private final List<ManagedBeanInterceptor> interceptors;
-    
+
     /**
      * Construct with managed bean configuration.
      *

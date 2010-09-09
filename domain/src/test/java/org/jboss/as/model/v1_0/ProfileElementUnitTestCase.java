@@ -27,7 +27,7 @@ import org.jboss.as.model.base.ProfileElementTestBase;
 
 /**
  * Test ProfileElement with {@link Namespace#DOMAIN_1_0}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ProfileElementUnitTestCase extends ProfileElementTestBase {

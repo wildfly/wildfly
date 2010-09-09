@@ -31,7 +31,7 @@ public class LegacyService {
 
     public LegacyService() {
     }
-    
+
     public LegacyService(String somethingElse) {
         this.somethingElse = somethingElse;
     }

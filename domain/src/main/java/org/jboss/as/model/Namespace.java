@@ -62,7 +62,7 @@ public enum Namespace {
      * Set of all namespaces, excluding the special {@link #UNKNOWN} value.
      */
     public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(Namespace.UNKNOWN));
-    
+
     private static final Map<String, Namespace> MAP;
 
     static {

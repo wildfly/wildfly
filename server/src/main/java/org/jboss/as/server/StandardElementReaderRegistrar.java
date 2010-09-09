@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
@@ -10,7 +10,7 @@ import org.jboss.staxmapper.XMLMapper;
 /**
  * An object responsible for registering the standard set of {@link XMLElementReader}
  * implementations needed for parsing a standalone.xml.
- * 
+ *
  * @author Brian Stansberry
  */
 public interface StandardElementReaderRegistrar {

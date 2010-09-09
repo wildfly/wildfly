@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.naming.Context;
 
 /**
- * Deployment processor that deploys a naming context for the current module. 
+ * Deployment processor that deploys a naming context for the current module.
  *
  * @author John E. Bailey
  */
@@ -40,7 +40,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(5L);
     /**
      * Add a ContextService for this module.
-     * 
+     *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */

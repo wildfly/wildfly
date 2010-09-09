@@ -31,7 +31,7 @@ public final class NetworkInterfaceBinding {
 
 	private final InetAddress address;
 	private final NetworkInterface networkInterface;
-	
+
 	NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
 		this.address = address;
 		this.networkInterface = networkInterface;
@@ -39,16 +39,16 @@ public final class NetworkInterfaceBinding {
 
 	/**
 	 * Get the network address.
-	 * 
+	 *
 	 * @return the network address
 	 */
 	public InetAddress getAddress() {
 		return this.address;
 	}
-	
+
 	/**
 	 * Get the network interface.
-	 * 
+	 *
 	 * @return the network interface
 	 */
 	public NetworkInterface getNetworkInterface() {

@@ -35,7 +35,7 @@ import javax.naming.NamingException;
 import static org.jboss.as.naming.util.NamingUtils.cast;
 
 /**
- * Service wrapper for the java: naming context.  Mainly used as a dependency for other contexts and binders. 
+ * Service wrapper for the java: naming context.  Mainly used as a dependency for other contexts and binders.
  *
  * @author John E. Bailey
  */
@@ -45,7 +45,7 @@ public class JavaContextService implements Service<Context> {
 
     /**
      * Looks up the java: context from the initial context.
-     * 
+     *
      * @param context The start context
      * @throws StartException If any naming errors occur getting the java: context
      */

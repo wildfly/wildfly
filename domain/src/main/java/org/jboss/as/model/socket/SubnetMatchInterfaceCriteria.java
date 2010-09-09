@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -10,25 +10,25 @@ import java.net.SocketException;
 /**
  * {@link InterfaceCriteria} that tests whether a given address is on the
  * desired subnet.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
 
 
     private static final long serialVersionUID = 149404752878332750L;
-    
+
     private byte[] network;
     private int mask;
-    
+
     /**
      * Creates a new SubnetMatchInterfaceCriteria
-     * 
-     * @param network an InetAddress in byte[] form. 
+     *
+     * @param network an InetAddress in byte[] form.
      *                 Cannot be <code>null</code>
      * @param mask the number of bytes in <code>network</code> that represent
      *             the network
-     *                 
+     *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
      */
     public SubnetMatchInterfaceCriteria(byte[] network, int mask) {
@@ -37,15 +37,15 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
         this.network = network;
         this.mask = mask;
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * @return <code>true</code> if the <code>address</code> is on the correct subnet.
      */
     @Override
     public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
-        
+
         byte[] addr = address.getAddress();
         if (addr.length != network.length) {
             // different address type TODO translate?
@@ -59,7 +59,7 @@ public class SubnetMatchInterfaceCriteria implements InterfaceCriteria {
         }
         return true;
     }
-    
-    
+
+
 
 }

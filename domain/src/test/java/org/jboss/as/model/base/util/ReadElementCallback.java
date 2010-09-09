@@ -30,7 +30,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 /**
  * Callback called from {@link TestXMLElementReader} when it needs to create
  * an element.
- * 
+ *
  * @author Brian Stansberry
  */
 public interface ReadElementCallback<T extends AbstractModelElement<T>> {

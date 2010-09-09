@@ -26,12 +26,12 @@ import java.io.Serializable;
 
 /**
  * Configuration for a service attribute.
- * 
+ *
  * @author John E. Bailey
  */
 public class JBossServiceAttributeConfig implements Serializable {
     private static final long serialVersionUID = 7859894445434159600L;
-    
+
     private String name;
     private boolean replace;
     private boolean trim;
@@ -89,7 +89,7 @@ public class JBossServiceAttributeConfig implements Serializable {
     }
 
     public static class ValueFactory implements Serializable {
-        private static final long serialVersionUID = 2524264651820839136L;        
+        private static final long serialVersionUID = 2524264651820839136L;
         private String beanName;
         private String methodName;
         private ValueFactoryParameter[] parameters;
@@ -120,7 +120,7 @@ public class JBossServiceAttributeConfig implements Serializable {
     }
 
     public static class ValueFactoryParameter implements Serializable {
-        private static final long serialVersionUID = -1980437946334603841L;        
+        private static final long serialVersionUID = -1980437946334603841L;
         private String type;
         private String value;
 

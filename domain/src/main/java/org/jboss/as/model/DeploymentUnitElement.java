@@ -35,7 +35,7 @@ import java.util.Collections;
 
 /**
  * A deployment that is known to the domain.
- * 
+ *
  * @author Brian Stansberry
  * @author John E. Bailey
  */
@@ -48,14 +48,14 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     private boolean allowed;
     private boolean start;
 
-    public DeploymentUnitElement(final Location location, final String fileName, 
+    public DeploymentUnitElement(final Location location, final String fileName,
             final byte[] sha1Hash, final boolean allowed, final boolean start) {
         super(location);
         this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.allowed = allowed;
         this.start = start;
     }
-    
+
     public DeploymentUnitElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
@@ -80,9 +80,9 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                             sha1Hash = hexStringToByteArray(value);
                         }
                         catch (Exception e) {
-                           throw new XMLStreamException("Value " + value + 
-                                   " for attribute " + attribute.getLocalName() + 
-                                   " does not represent a properly hex-encoded SHA1 hash", 
+                           throw new XMLStreamException("Value " + value +
+                                   " for attribute " + attribute.getLocalName() +
+                                   " does not represent a properly hex-encoded SHA1 hash",
                                    reader.getLocation(), e);
                         }
                         break;
@@ -108,11 +108,11 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.allowed = allowed == null ? true : Boolean.valueOf(allowed);
         this.start = start == null ? true : Boolean.valueOf(start);
-        
+
         // Handle elements
         requireNoContent(reader);
     }
-    
+
     /**
      * Gets the identifier of this deployment that's suitable for use as a map key.
      * @return the key
@@ -120,10 +120,10 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     public DeploymentUnitKey getKey() {
         return key;
     }
-    
+
     /**
      * Gets the name of the deployment.
-     * 
+     *
      * @return the name
      */
     public String getName() {
@@ -132,7 +132,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
 
     /**
      * Gets a defensive copy of the sha1 hash of the deployment.
-     * 
+     *
      * @return the hash
      */
     public byte[] getSha1Hash() {
@@ -141,14 +141,14 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
 
     /**
      * Gets whether the deployment should be started upon server start.
-     * 
+     *
      * @return <code>true</code> if the deployment should be started; <code>false</code>
      *         if not.
      */
     public boolean isStart() {
         return start;
     }
-    
+
     /**
      * Sets whether the deployments should be started upon server start.
      * @param start <code>true</code> if the deployment should be started; <code>false</code>
@@ -161,18 +161,18 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     /**
      * Gets whether the deployment can be mapped to a server group; i.e. made
      * available to servers.
-     * 
+     *
      * @return <code>true</code> if the deployment can be mapped; <code>false</code>
      *         if not.
      */
     public boolean isAllowed() {
         return allowed;
     }
-    
+
     /**
      * Sets whether the deployment can be mapped to a server group; i.e. made
      * available to servers.
-     * 
+     *
      * @param allowed <code>true</code> if the deployment can be mapped; <code>false</code>
      *         if not.
      */

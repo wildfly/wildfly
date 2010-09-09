@@ -46,10 +46,10 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private final NavigableMap<String, String> properties = new TreeMap<String, String>(); 
+    private final NavigableMap<String, String> properties = new TreeMap<String, String>();
     private final Element propertyType;
     private final boolean allowNullValue;
-    
+
     /**
      * Construct a new instance.
      *
@@ -69,7 +69,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     public PropertiesElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         this(reader, Element.PROPERTY, true);
     }
-    
+
     public PropertiesElement(final XMLExtendedStreamReader reader, final Element propertyType, boolean allowNullValue) throws XMLStreamException {
         super(reader);
         this.propertyType = propertyType;
@@ -80,7 +80,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());                    
+                    final Element element = Element.forName(reader.getLocalName());
                     if (element == propertyType) {
                         // Handle attributes
                         String name = null;
@@ -90,7 +90,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                             final String attrValue = reader.getAttributeValue(i);
                             if (reader.getAttributeNamespace(i) != null) {
                                 throw unexpectedAttribute(reader, i);
-                            } 
+                            }
                             else {
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                                 switch (attribute) {
@@ -130,7 +130,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
             throw missingRequiredElement(reader, Collections.singleton(propertyType));
         }
     }
-    
+
     public PropertiesElement(final Element propertyType, boolean allowNullValue, PropertiesElement ... toCombine) {
         // FIXME -- hack Location
         super(new Location("N/A", 0, 0, null));
@@ -168,7 +168,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<PropertiesElement>> target, final PropertiesElement other) {
-        
+
         calculateDifference(target, safeCopyMap(properties), safeCopyMap(other.properties), new DifferenceHandler<String, String, PropertiesElement>() {
             public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String newElement) {
                 target.add(new PropertyAdd(name, newElement));
@@ -241,10 +241,10 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
             return properties.get(name);
         }
     }
-    
+
     /**
      * Gets the names of the properties.
-     * 
+     *
      * @return the names. Will not return <code>null</code>
      */
     public Set<String> getPropertyNames() {
@@ -252,7 +252,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
             return new HashSet<String>(properties.keySet());
         }
     }
-    
+
     public Map<String, String> getProperties() {
         synchronized (properties) {
             return new HashMap<String, String>(properties);

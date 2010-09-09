@@ -29,7 +29,7 @@ import org.jboss.staxmapper.XMLMapper;
 import javax.xml.namespace.QName;
 
 /**
- * Domain extension used to initialize the naming subsystem element handlers. 
+ * Domain extension used to initialize the naming subsystem element handlers.
  *
  * @author John E. Bailey
  */
@@ -45,7 +45,7 @@ public class NamingExtension implements Extension {
     }
 
     /**
-     * Activate the extension.  
+     * Activate the extension.
      *
      * @param context the service activation context
      */

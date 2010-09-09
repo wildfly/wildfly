@@ -30,12 +30,12 @@ import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
 import org.junit.Test;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public class ServerManagerProtocolCommandUnitTestCase {
-    
+
     @Test
     public void testSmStop() throws Exception {
         byte[] bytes = ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null);
@@ -43,20 +43,20 @@ public class ServerManagerProtocolCommandUnitTestCase {
         assertSame(ServerManagerProtocolCommand.STOP_SERVER, stop.getCommand());
         assertEquals(0, stop.getData().length);
     }
-    
+
     @Test
     public void testSmStart() throws Exception {
         byte[] data = new byte[] {10, 11, 12, 13, 14, 15};
         byte[] bytes = ServerManagerProtocolCommand.START_SERVER.createCommandBytes(data);
         Command start = ServerManagerProtocolCommand.readCommand(bytes);
         assertSame(ServerManagerProtocolCommand.START_SERVER, start.getCommand());
-        
+
         assertEquals(data.length, start.getData().length);
         for (int i = 0 ; i < data.length ; i++)
             assertEquals(data[i], start.getData()[i]);
     }
-    
-    @Test 
+
+    @Test
     public void testFailNoArgsCommandWithData() throws Exception {
         try {
             byte[] data = new byte[] {5, 6, 7};
@@ -66,7 +66,7 @@ public class ServerManagerProtocolCommandUnitTestCase {
         }
         fail("Should have picked up not expected data");
     }
-    
+
     @Test
     public void testFailArgsCommandWithNoData() throws Exception {
         try {
@@ -76,7 +76,7 @@ public class ServerManagerProtocolCommandUnitTestCase {
         }
         fail("Should have picked up missing data");
     }
-    
+
     @Test
     public void testParseServerManagerProtocolCommands() {
         for (ServerManagerProtocolCommand cmd : ServerManagerProtocolCommand.values()) {

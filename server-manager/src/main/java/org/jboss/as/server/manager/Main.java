@@ -42,7 +42,7 @@ import java.util.Properties;
 
 /**
  * The main-class entry point for the server manager process.
- * 
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Main {
@@ -66,12 +66,12 @@ public final class Main {
 
     /**
      * The main method.
-     * 
+     *
      * @param args
      *            the command-line arguments
      */
     public static void main(String[] args) {
-        
+
         // Grab copies of our streams.
         final InputStream in = System.in;
         final PrintStream out = System.out;
@@ -120,11 +120,11 @@ public final class Main {
 
             // FIXME implement abort()
             throw new UnsupportedOperationException("implement me");
-            
+
 //            if (t != null) {
 //                t.printStackTrace(System.err);
 //            }
-            
+
         } finally {
             System.exit(1);
         }
@@ -138,7 +138,7 @@ public final class Main {
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
-            
+
             try {
                 if (CommandLineConstants.VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());

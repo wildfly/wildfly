@@ -27,7 +27,7 @@ import org.jboss.msc.service.BatchBuilder;
 
 /**
  * Default implementation for DeploymentUnitContext.
- *  
+ *
  * @author John E. Bailey
  */
 public class DeploymentUnitContextImpl extends SimpleAttachable implements DeploymentUnitContext {
@@ -36,7 +36,7 @@ public class DeploymentUnitContextImpl extends SimpleAttachable implements Deplo
 
     /**
      * Construct new instance.
-     * 
+     *
      * @param name The deployment unit name.
      * @param batchBuilder The batch builder
      */

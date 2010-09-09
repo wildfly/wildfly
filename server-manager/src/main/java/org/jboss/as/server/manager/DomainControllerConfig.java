@@ -30,7 +30,7 @@ import java.io.Serializable;
 
 /**
  * Config object passed to a local domain controller with the pre-parsed host and local domain controller element.
- * 
+ *
  * @author John E. Bailey
  */
 public class DomainControllerConfig implements Serializable {

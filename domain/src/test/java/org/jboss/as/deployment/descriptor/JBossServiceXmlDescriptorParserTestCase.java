@@ -44,7 +44,7 @@ import static org.junit.Assert.assertNull;
 
 /**
  * Test to verify the {@code JBossServiceXmlDescriptorParser} implementation.
- * 
+ *
  * @author John E. Bailey
  */
 public class JBossServiceXmlDescriptorParserTestCase {
@@ -64,7 +64,7 @@ public class JBossServiceXmlDescriptorParserTestCase {
     @Test
     public void testParse() throws Exception {
         final File testXmlFile = getResourceFile(JBossServiceXmlDescriptorParserTestCase.class, "/test/serviceXmlDeployment.jar/META-INF/jboss-service.xml");
-        final ParseResult<JBossServiceXmlDescriptor> jBossServiceXmlDescriptorParseResult = new ParseResult<JBossServiceXmlDescriptor>(); 
+        final ParseResult<JBossServiceXmlDescriptor> jBossServiceXmlDescriptorParseResult = new ParseResult<JBossServiceXmlDescriptor>();
         InputStream inputStream = null;
         try {
             inputStream = new FileInputStream(testXmlFile);
@@ -105,7 +105,7 @@ public class JBossServiceXmlDescriptorParserTestCase {
                 assertEquals(1, parameters.length);
                 assertEquals("java.lang.String", parameters[0].getType());
                 assertEquals("more value", parameters[0].getValue());
-            } else if(jBossServiceConfig.getName().equals("jboss.test.service.third")) {        
+            } else if(jBossServiceConfig.getName().equals("jboss.test.service.third")) {
                 assertNull(jBossServiceConfig.getConstructorConfig());
 
                 final JBossServiceAttributeConfig[] attributeConfigs = jBossServiceConfig.getAttributeConfigs();

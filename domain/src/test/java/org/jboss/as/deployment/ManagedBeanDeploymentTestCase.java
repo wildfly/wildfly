@@ -63,7 +63,7 @@ import static org.junit.Assert.assertNotNull;
 public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
     private static final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.managedbean");
     private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
-    
+
     Context javaContext;
 
     @BeforeClass
@@ -125,7 +125,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
         final String expectedDeploymentName = getDeploymentName(deploymentRoot);
         final LinkRef moduleLink = new LinkRef("java:global/" + expectedDeploymentName);
         javaContext.rebind("module", moduleLink);
-        
+
         executeDeployment(deploymentRoot);
 
         final ServiceController<?> testServiceController = serviceContainer.getService(ManagedBeanService.SERVICE_NAME.append(expectedDeploymentName, "TestBeanWithInjection"));

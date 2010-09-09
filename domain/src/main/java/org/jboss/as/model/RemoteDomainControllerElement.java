@@ -32,7 +32,7 @@ import java.util.Collections;
 
 /**
  * A configuration element for a remote domain controller.
- * 
+ *
  * @author John E. Bailey
  */
 public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDomainControllerElement> {
@@ -94,7 +94,7 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<RemoteDomainControllerElement>> target, RemoteDomainControllerElement other) {
-        
+
     }
 
     @Override

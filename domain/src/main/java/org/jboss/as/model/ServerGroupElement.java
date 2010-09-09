@@ -52,7 +52,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
     private PropertiesElement systemProperties;
-    
+
     /**
      * Construct a new instance.
      *
@@ -64,7 +64,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         this.name = name;
         this.profile = profile;
     }
-    
+
     public ServerGroupElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
@@ -140,69 +140,69 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     /**
      * Gets the name of the server group.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getName() {
         return name;
     }
-    
+
     /**
      * Gets the name of the profile that servers in the server group will run.
-     * 
+     *
      * @return the profile name. Will not be <code>null</code>
      */
     public String getProfileName() {
         return profile;
     }
-    
+
     /**
      * Gets the default jvm configuration for servers in this group. Which jvm to
      * use can be overridden at the {@link ServerElement#getJvm() server level}.
      * The details of the configuration of this jvm can be overridden at the
-     * @{link {@link Host#getJvm(String) host level} or at the 
+     * @{link {@link Host#getJvm(String) host level} or at the
      * {@link ServerElement#getJvm() server level}.
-     *     
+     *
      * @return the jvm configuration, or <code>null</code> if there is none
      */
     public JvmElement getJvm() {
         return jvm;
     }
-    
+
     /**
      * Sets the default jvm configuration for servers in this group.
-     *     
+     *
      * param jvm the jvm configuration. May be <code>null</code>
      */
     void setJvm(JvmElement jvm) {
         this.jvm = jvm;
     }
-    
+
     /**
      * Gets the default
      * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
      * assignment for this server group.
-     * 
+     *
      * @return the socket binding group reference, or <code>null</code>
      */
     public SocketBindingGroupRefElement getSocketBindingGroup() {
         return bindingGroup;
     }
-    
+
     /**
      * Sets the default
      * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
      * assignment for this server group.
-     * 
+     *
      * param ref the socket binding group reference, or <code>null</code>
      */
     void setSocketBindingGroupRefElement(SocketBindingGroupRefElement ref) {
         this.bindingGroup = ref;
     }
-    
+
     /**
      * Gets the deployments mapped to this server group.
-     * 
+     *
      * @return the deployments. May be empty but will not be <code>null</code>
      */
     public Set<ServerGroupDeploymentElement> getDeployments() {
@@ -214,15 +214,15 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         }
         return deps;
     }
-    
+
     /**
-     * Gets any system properties defined at the server group level for this 
+     * Gets any system properties defined at the server group level for this
      * server group. These properties can extend and override any properties
      * declared at the {@link Domain#getSystemProperties() domain level} and
      * may in turn be extended or overridden by any properties declared at the
-     * {@link Host#getSystemProperties() host level} or the 
+     * {@link Host#getSystemProperties() host level} or the
      * {@link ServerElement#getSystemProperties() server level}.
-     * 
+     *
      * @return the system properties, or <code>null</code> if there are none
      */
     public PropertiesElement getSystemProperties() {
@@ -258,17 +258,17 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
 
-        
+
         if (jvm != null) {
             streamWriter.writeStartElement(Element.JVM.getLocalName());
             jvm.writeContent(streamWriter);
         }
-        
+
         if (bindingGroup != null) {
             streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             bindingGroup.writeContent(streamWriter);
         }
-        
+
         synchronized (deploymentMappings) {
             if (! deploymentMappings.isEmpty()) {
                 streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
@@ -277,9 +277,9 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
-            }  
+            }
         }
-        
+
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
@@ -287,7 +287,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
         streamWriter.writeEndElement();
     }
-    
+
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -297,8 +297,8 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                         case DEPLOYMENT: {
                             final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
                             if (deploymentMappings.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() + 
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
                             deploymentMappings.put(deployment.getKey(), deployment);
@@ -310,6 +310,6 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
                 }
                 default: throw unexpectedElement(reader);
             }
-        }        
+        }
     }
 }

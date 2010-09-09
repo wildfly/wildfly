@@ -66,7 +66,7 @@ public abstract class ResourceInjection <T> {
 
     /**
      * Get the injector capable of performing the injection on the provided target.
-     * 
+     *
      * @param target The target object of the injection
      * @return an injector
      */

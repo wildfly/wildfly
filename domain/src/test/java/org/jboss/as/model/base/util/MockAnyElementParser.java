@@ -48,7 +48,7 @@ public final class MockAnyElementParser implements XMLElementReader<ParseResult<
         mapper.registerRootElement(new QName(MockAnyElement.NAMESPACE, MockAnyElement.MOCK_ELEMENT), INSTANCE);
         mapper.registerRootElement(new QName(MockAnyElement.NAMESPACE, MockAnyElement.ANOTHER_MOCK_ELEMENT), INSTANCE);
     }
-    
+
     /**
      * Get the instance.
      *

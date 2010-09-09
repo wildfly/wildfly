@@ -29,7 +29,7 @@ import java.util.Properties;
 
 /**
  * Encapsulates the runtime environment for a {@link DomainController}.
- * 
+ *
  * @author Brian Stansberry
  * @author John Bailey
  */

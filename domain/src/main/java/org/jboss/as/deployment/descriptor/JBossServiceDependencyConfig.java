@@ -31,7 +31,7 @@ import java.io.Serializable;
  */
 public class JBossServiceDependencyConfig implements Serializable {
     private static final long serialVersionUID = 7058092116435789802L;
-    
+
     private String dependencyName;
     private JBossServiceConfig serviceConfig;
     private String proxyType;

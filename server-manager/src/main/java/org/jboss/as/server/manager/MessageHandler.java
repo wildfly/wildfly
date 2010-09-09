@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server.manager;
 
@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * A MessageHandler.
- * 
+ *
  * @author Brian Stansberry
  */
 class MessageHandler implements Handler {
@@ -43,8 +43,8 @@ class MessageHandler implements Handler {
 
     private final ServerManager serverManager;
 //    private final Map<String, Server> servers = new ConcurrentHashMap<String, Server>();
-    
-    
+
+
     MessageHandler(ServerManager serverManager) {
         if (serverManager == null) {
             throw new IllegalArgumentException("serverManager is null");
@@ -76,11 +76,11 @@ class MessageHandler implements Handler {
             throw new RuntimeException(e);
         }
     }
-    
+
 
     @Override
     public void shutdown() {
-        serverManager.stop();        
+        serverManager.stop();
     }
 
 //    public void registerServer(String serverName, Server server) {
@@ -92,7 +92,7 @@ class MessageHandler implements Handler {
 //        }
 //        servers.put(serverName, server);
 //    }
-//    
+//
 //    public void unregisterServer(String serverName) {
 //        if (serverName == null) {
 //            throw new IllegalArgumentException("serverName is null");

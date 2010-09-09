@@ -44,7 +44,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
- * Test to verify the DeploymentChainProcessorInjector can correctly add a DeploymentUnitProcessor to a DeploymentChain 
+ * Test to verify the DeploymentChainProcessorInjector can correctly add a DeploymentUnitProcessor to a DeploymentChain
  * through service injection.
  *
  * @author John E. Bailey

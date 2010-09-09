@@ -51,14 +51,14 @@ public final class MockRootElementParser implements XMLElementReader<ParseResult
     public static void registerXMLElementReaders(XMLMapper mapper, String namespace) {
         mapper.registerRootElement(new QName(namespace, MockRootElement.ELEMENT_NAME), INSTANCE);
     }
-    
+
     public static MockRootElement parseRootElement(XMLMapper mapper, Reader content) throws XMLStreamException {
         XMLStreamReader xmlReader = XMLInputFactory.newInstance().createXMLStreamReader(content);
         ParseResult<MockRootElement> parseResult = new ParseResult<MockRootElement>();
         mapper.parseDocument(parseResult, xmlReader);
         return parseResult.getResult();
     }
-    
+
     /**
      * Get the instance.
      *

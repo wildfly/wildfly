@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -33,7 +33,7 @@ import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
 import org.junit.Test;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -141,7 +141,7 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         broadcastMessage("Test", "2");
         assertEquals("Test-2", listenerA.readMessage());
         assertEquals("Test-2", listenerB.readMessage());
-        
+
         addProcess("ReceiverC", ReceivingProcess.class);
         TestProcessListenerStream listenerC = startTestProcessListenerAndWait("ReceiverC");
         broadcastMessage("Test", "3");
@@ -168,7 +168,7 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertNull(listenerA.readMessage(50));
         assertNull(listenerB.readMessage(50));
         assertEquals("Test-5", listenerC.readMessage());
-        
+
         stopTestProcessListenerAndWait(listenerC);
         removeProcess("ReceiverC");
     }

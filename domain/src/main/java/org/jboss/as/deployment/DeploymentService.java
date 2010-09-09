@@ -31,7 +31,7 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
- * The life-cycle of this service should be used to control the life-cycle of the deployment. 
+ * The life-cycle of this service should be used to control the life-cycle of the deployment.
  *
  * @author John E. Bailey
  */
@@ -50,7 +50,7 @@ public class DeploymentService implements Service<Void> {
 
     /**
      * Stop the deployment.  This will close the virtual file mount.
-     * 
+     *
      * @param context The stop context
      */
     public void stop(StopContext context) {

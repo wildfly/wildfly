@@ -39,13 +39,13 @@ public class SocketBindingService implements Service<SocketBinding> {
 	private final SocketBindingElement element;
 	private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
 	private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<SocketBindingManager>();
-	
+
 	private SocketBinding binding;
-	
+
 	public SocketBindingService(final SocketBindingElement element) {
 		this.element = element;
 	}
-	
+
 	public synchronized void start(StartContext arg0) throws StartException {
 		this.binding = new SocketBinding(element, interfaceBinding.getValue(), socketBindings.getValue());
 	}
@@ -65,21 +65,21 @@ public class SocketBindingService implements Service<SocketBinding> {
 	InjectedValue<SocketBindingManager> getSocketBindings() {
 		return socketBindings;
 	}
-	
+
 	InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
 		return interfaceBinding;
 	}
-	
+
 	public static void addService(BatchBuilder builder, SocketBindingElement element) {
     	SocketBindingService service = new SocketBindingService(element);
     	BatchServiceBuilder<SocketBinding> batch = builder
     		.addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
-    	batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()), 
+    	batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()),
     			NetworkInterfaceBinding.class, service.getInterfaceBinding());
     	batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
     			SocketBindingManager.class, service.getSocketBindings());
     	batch.setInitialMode(Mode.ON_DEMAND);
 	}
-	
+
 }
 

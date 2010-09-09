@@ -63,7 +63,7 @@ public class VFSResourceLoader implements ResourceLoader {
 
     /**
      * Construct new instance.
-     * 
+     *
      * @param moduleIdentifier The module identifier
      * @param rootName The module root name
      * @param root The root virtual file

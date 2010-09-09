@@ -44,7 +44,7 @@ import java.util.concurrent.Executors;
 /**
  * Coordinator responsible for passing @(code NamingEvent} instances to registered @{code NamingListener} instances.  Two
  * maps are used to managed a mapping between a listener and its configuration as well as a mapping from target name to a list
- * of listener configurations.  These maps are updated atomically on listener add and remove. 
+ * of listener configurations.  These maps are updated atomically on listener add and remove.
  *
  * @author John E. Bailey
  */

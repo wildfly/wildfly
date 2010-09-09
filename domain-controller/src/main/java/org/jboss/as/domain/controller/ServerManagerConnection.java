@@ -34,7 +34,7 @@ import java.net.Socket;
 
 /**
  * Responsible for managing the communication with a single server manager instance.
- * 
+ *
  * @author John E. Bailey
  */
 public class ServerManagerConnection implements Runnable {

@@ -28,7 +28,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -40,7 +40,7 @@ public class LoggingTestRunner extends BlockJUnit4ClassRunner{
 
     protected EachTestNotifier makeNotifier(FrameworkMethod method,
             RunNotifier notifier) {
-        
+
         System.err.println("\n===== Test " + getTestClass().getJavaClass().getSimpleName() + "." + testName(method) + " ===========");
         return super.makeNotifier(method, notifier);
     }

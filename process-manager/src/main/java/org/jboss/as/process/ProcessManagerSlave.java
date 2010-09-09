@@ -37,13 +37,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
  * with the process-manager-side ManagedProcess.
- * 
+ *
  * FIXME reliable transmission support (JBAS-8262)
- * 
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessManagerSlave {
-    
+
     private final Handler handler;
     private final InputStream input;
     private final OutputStream output;
@@ -70,9 +70,9 @@ public final class ProcessManagerSlave {
             this.input = new BufferedInputStream(socket.getInputStream());
             this.output = new BufferedOutputStream(socket.getOutputStream());
             this.handler = handler;
-            
+
             System.err.printf("%s connected to port %d\n", processName, socket.getLocalPort());
-            
+
             //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
             StringBuilder sb = new StringBuilder(256);
             sb.append("STARTED");
@@ -89,9 +89,9 @@ public final class ProcessManagerSlave {
             }
             throw new RuntimeException(e);
         }
-        //Duplicate code - ServerCommunicationHandler - END 
+        //Duplicate code - ServerCommunicationHandler - END
     }
-    
+
     private void closeSocket() {
         try {
             socket.shutdownOutput();
@@ -326,14 +326,14 @@ public final class ProcessManagerSlave {
         if (controller.shutdown.getAndSet(true)) {
             return;
         }
-        
+
         try{
             handler.shutdown();
         }
         catch (Throwable t) {
             t.printStackTrace(System.err);
         }
-        finally {            
+        finally {
             if (socket != null) {
                 closeSocket();
             }
@@ -346,16 +346,16 @@ public final class ProcessManagerSlave {
             thread.setName("Exit thread");
             thread.start();
         }
-        
+
     }
 
-    
+
     public interface Handler {
-        
+
         void handleMessage(String sourceProcessName, byte[] message);
-        
+
         void handleMessage(String sourceProcessName, List<String> message);
-        
+
         void shutdown();
     }
 }

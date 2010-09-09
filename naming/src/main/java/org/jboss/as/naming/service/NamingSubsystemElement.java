@@ -44,7 +44,7 @@ import java.util.Collection;
 
 /**
  * Subsystem element representing the naming subsystem.
- * 
+ *
  * @author John E. Bailey
  */
 final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsystemElement> {

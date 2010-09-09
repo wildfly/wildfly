@@ -451,7 +451,7 @@ public class InMemoryNamingStore implements NamingStore {
 
     private final class CreateSubContextVisitor extends BindingContextVisitor<Context> {
         private final Context callingContext;
-        
+
         private CreateSubContextVisitor(final Context callingContext, final Name targetName) throws NamingException {
             super(targetName);
             this.callingContext = callingContext;

@@ -32,36 +32,36 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * {@link ReadElementCallBack} implementation that constructs an instance of
- * a provided class that exposes a single argument constructor that takes an 
+ * a provided class that exposes a single argument constructor that takes an
  * {@link XMLExtendedStreamReader} as the single argument.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SimpleReadElementCallback<T extends AbstractModelElement<T>> implements ReadElementCallback<T> {
-    
+
     private final Constructor<T> ctor;
-    
+
     /**
      * Static factory for the callback.
-     * 
+     *
      * @param <T> the type of the object the callback will return
      * @param clazz class of type T
-     * 
+     *
      * @return a callback that will return an instance of T when given an
      *         XMLExtendedStreamReader
-     * 
+     *
      * @throws NoSuchMethodException if clazz does not expose a single argument
-     *              constructor that takes an {@link XMLExtendedStreamReader} 
+     *              constructor that takes an {@link XMLExtendedStreamReader}
      *              as the single argument
      */
     public static <T extends AbstractModelElement<T>> ReadElementCallback<T> getCallback(Class<T> clazz) throws NoSuchMethodException {
         return new SimpleReadElementCallback<T>(clazz);
     }
-    
+
     private SimpleReadElementCallback(Class<T> clazz) throws NoSuchMethodException {
         this.ctor = clazz.getConstructor(XMLExtendedStreamReader.class);
     }
-    
+
     @Override
     public T readElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         try {

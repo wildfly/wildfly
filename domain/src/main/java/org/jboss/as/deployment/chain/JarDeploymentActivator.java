@@ -44,7 +44,7 @@ import org.jboss.msc.value.Values;
 
 /**
  * Service activator which installs the various service required for jar deployments.
- * 
+ *
  * @author John E. Bailey
  */
 public class JarDeploymentActivator implements ServiceActivator {
@@ -53,7 +53,7 @@ public class JarDeploymentActivator implements ServiceActivator {
 
     /**
      * Activate the services required for service deployments.
-     * 
+     *
      * @param context The service activator context
      */
     public void activate(final ServiceActivatorContext context) {

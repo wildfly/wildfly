@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -39,28 +39,28 @@ import org.jboss.as.process.support.TestProcessUtils.TestProcessSenderStream;
  * method must instantiate the test using the first argument as the processName
  * parameter ending up in {@link AbstractProcess#AbstractProcess(String)} and
  * then call {@link #startSlave()}, i.e.
- * 
+ *
  * <pre>
  * public static void main(String[] args) {
  *     SpecificProcess = new SpecificProcess(args[0]);
  *     startSlave();
  * }
  * </pre>
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public abstract class AbstractProcess {
-    
+
     /** The output file */
     private final TestFile file;
 
     /** The name of this process */
     protected final String processName;
-    
+
     /** The process manager slave */
     private ProcessManagerSlave slave;
-    
+
     /** The port on which the ProcessManager is listening */
     private final int port;
 
@@ -69,10 +69,10 @@ public abstract class AbstractProcess {
 
     /** The stream for sending data back to the test manager */
     private TestProcessSenderStream clientStream;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param processName the name of this process
      */
     protected AbstractProcess(String processName, int port) {
@@ -80,7 +80,7 @@ public abstract class AbstractProcess {
         this.port = port;
         file = TestFileUtils.getOutputFile(processName);
     }
-    
+
     protected static Integer getPort(String[] args) {
         for (int i = 0 ; i < args.length - 1 ; i++) {
             if (args[i].equals(CommandLineConstants.INTERPROCESS_PORT)) {
@@ -92,17 +92,17 @@ public abstract class AbstractProcess {
 
     /**
      * Writes the string to this processes output stream and to its output file
-     * 
+     *
      * @param s the string to write
      */
     protected void writeData(String s) {
         file.writeToFile(s + "\n");
         clientStream.writeData(s);
     }
-    
+
     /**
      * Write a message to this processes System.err
-     * 
+     *
      * @param processName the name of the process
      * @param msg the message
      */
@@ -112,7 +112,7 @@ public abstract class AbstractProcess {
 
     /**
      * Write a message to this processes System.err
-     * 
+     *
      * @param msg the message
      */
     protected void debug(String msg) {
@@ -121,7 +121,7 @@ public abstract class AbstractProcess {
 
     /**
      * Must be called after instantiating the process for the process to respond
-     * to output. This initializes the 
+     * to output. This initializes the
      */
     protected void startSlave() {
         clientStream = TestProcessUtils.createProcessClient(processName);
@@ -136,11 +136,11 @@ public abstract class AbstractProcess {
         started();
 
     }
-    
+
     /**
      * Check if the process has been shutdown, useful for process specific
      * worker threads
-     * 
+     *
      * @return true if the process has been shut down
      */
     protected synchronized boolean isShutdown() {
@@ -155,7 +155,7 @@ public abstract class AbstractProcess {
     /**
      * Callback for when the process receives a <code>handleMessage()</code>
      * call
-     * 
+     *
      * @param sourceProcessName the name of the process sending the message
      * @param message the message
      */
@@ -173,10 +173,10 @@ public abstract class AbstractProcess {
      * Callback for when the process receives a <code>shutdown()</code> call.
      */
     protected abstract void shutdown();
-    
+
     /**
      * Send a message to another process via the slave
-     * 
+     *
      * @param processName the name of the process
      * @param message the messages
      */
@@ -187,10 +187,10 @@ public abstract class AbstractProcess {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Send a message to another process via the slave
-     * 
+     *
      * @param processName the name of the process
      * @param message the message
      */
@@ -204,7 +204,7 @@ public abstract class AbstractProcess {
 
     /**
      * Broadcast a message to other processes via the slave
-     * 
+     *
      * @param message the messages
      */
     protected void broadcastMessage(List<String> message){
@@ -214,10 +214,10 @@ public abstract class AbstractProcess {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Add a process via the slave
-     * 
+     *
      * @param processName the process name
      * @param classname the class name
      */
@@ -231,7 +231,7 @@ public abstract class AbstractProcess {
 
     /**
      * Start a process via the slave
-     * 
+     *
      * @param processName the process name
      */
     protected void startProcess(String processName) {
@@ -244,7 +244,7 @@ public abstract class AbstractProcess {
 
     /**
      * Stop a process via the slave
-     * 
+     *
      * @param processName the process name
      */
     protected void stopProcess(String processName) {
@@ -257,7 +257,7 @@ public abstract class AbstractProcess {
 
     /**
      * Remove a process via the slave
-     * 
+     *
      * @param processName the process name
      */
     protected void removeProcess(String processName) {
@@ -269,7 +269,7 @@ public abstract class AbstractProcess {
     }
     /**
      * Broadcast a message to other processes via the slave
-     * 
+     *
      * @param message the message
      */
     protected void broadcastMessage(final byte[] message){

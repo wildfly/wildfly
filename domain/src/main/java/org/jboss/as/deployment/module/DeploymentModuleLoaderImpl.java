@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Default deployment module loader.  Maintains a map of module specs that can be loaded at a later time. 
+ * Default deployment module loader.  Maintains a map of module specs that can be loaded at a later time.
  *
  * @author John E. Bailey
  */
@@ -64,7 +64,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
 
     @Override
     public void removeModule(ModuleIdentifier moduleIdentifier) {
-        // TODO: Determine how to enable module removal from this loader... 
+        // TODO: Determine how to enable module removal from this loader...
         throw new UnsupportedOperationException();
     }
 }

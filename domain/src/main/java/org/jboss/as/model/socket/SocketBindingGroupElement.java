@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -30,7 +30,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * A named group of socket binding configurations that can be applied to a
  * server group.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> implements ServiceActivator {
@@ -44,7 +44,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
 
     private final RefResolver<String, InterfaceElement> interfaceResolver;
     private final RefResolver<String, SocketBindingGroupElement> includedGroupResolver;
-    
+
     /**
      * Construct a new instance.
      *
@@ -53,37 +53,37 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * @param defaultInterface the name of the interface to use by default when
      *            nested {@link SocketBindingGroupElement}s do not declare an interface.
      *            Cannot be <code>null</code>
-     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     * @param interfaceResolver {@link RefResolver} to use to resolve references
      *           to interfaces. May be used safely in the constructor
      *           itself. Cannot be <code>null</code>
-     * @param includedGroupResolver {@link RefResolver} to use to resolve references 
+     * @param includedGroupResolver {@link RefResolver} to use to resolve references
      *           to included socket binding groups. Should not be used in the constructor
      *           itself as referenced groups may not have been created yet.
      *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an 
+     *           element will result in an
      *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      */
-    public SocketBindingGroupElement(Location location, final String name, final String defaultInterface, 
+    public SocketBindingGroupElement(Location location, final String name, final String defaultInterface,
             final RefResolver<String, InterfaceElement> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) {
         super(location);
-        
+
         if (name == null)
             throw new IllegalArgumentException("name is null");
         this.name = name;
-        
+
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
-        
+
         if (defaultInterface == null)
             throw new IllegalArgumentException("defaultInterface is null");
-        
+
         if (this.interfaceResolver.resolveRef(defaultInterface) == null) {
             throw new IllegalArgumentException("Unknown interface " + defaultInterface);
         }
         this.defaultInterface = defaultInterface;
-        
+
         this.includedGroupResolver = includedGroupResolver;
     }
 
@@ -91,29 +91,29 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * Construct a new instance.
      *
      * @param reader the reader from which to build this element
-     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     * @param interfaceResolver {@link RefResolver} to use to resolve references
      *           to interfaces. May be used safely in the constructor
      *           itself
-     * @param includedGroupResolver {@link RefResolver} to use to resolve references 
+     * @param includedGroupResolver {@link RefResolver} to use to resolve references
      *           to included socket binding groups. Should not be used in the constructor
      *           itself as referenced groups may not have been created yet.
      *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an 
+     *           element will result in an
      *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
-     *           
+     *
      * @throws XMLStreamException if an error occurs
      */
-    public SocketBindingGroupElement(XMLExtendedStreamReader reader, 
+    public SocketBindingGroupElement(XMLExtendedStreamReader reader,
             final RefResolver<String, InterfaceElement> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) throws XMLStreamException {
         super(reader);
-        
+
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
-        
+
         this.includedGroupResolver = includedGroupResolver;
-        
+
         // Handle attributes
         String name = null;
         String defIntf = null;
@@ -131,8 +131,8 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                     }
                     case DEFAULT_INTERFACE: {
                         if (this.interfaceResolver.resolveRef(value) == null) {
-                            throw new XMLStreamException("Unknown interface " + value + 
-                                    " " + attribute.getLocalName() + " must be declared in element " + 
+                            throw new XMLStreamException("Unknown interface " + value +
+                                    " " + attribute.getLocalName() + " must be declared in element " +
                                     Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         defIntf = value;
@@ -183,7 +183,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             }
         }
     }
-    
+
     /**
      * Creates a new SocketBindingGroupElement based on an existing element. The key thing
      * this constructor does is use the given <code>source</code> element's
@@ -191,7 +191,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * its own RefResolver from only those included binding groups. The effect of this
      * is to eliminate any extraneous SocketBindingGroupElement references that may be
      * associated with <code>source</code>'s object graph.
-     * 
+     *
      * @param source
      */
     public SocketBindingGroupElement(SocketBindingGroupElement source) {
@@ -206,26 +206,26 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         synchronized (source.includedGroups) {
             this.includedGroups.putAll(source.includedGroups);
         }
-        
+
         final NavigableMap<String, SocketBindingGroupElement> resolvedGroups = new TreeMap<String, SocketBindingGroupElement>();
-        
+
 
         for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : this.includedGroups.entrySet()) {
             SocketBindingGroupElement group = source.includedGroupResolver.resolveRef(entry.getKey());
             if (group == null) {
-                throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() + 
-                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +  
-                        Element.SOCKET_BINDING_GROUP + " '" + 
+                throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
+                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +
+                        Element.SOCKET_BINDING_GROUP + " '" +
                         entry.getValue().getGroupName() + "'");
             }
             resolvedGroups.put(entry.getKey(), new SocketBindingGroupElement(group));
         }
         this.includedGroupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(resolvedGroups);
     }
-    
+
     /**
      * Gets the name of the socket binding group.
-     * 
+     *
      * @return the group name
      */
     public String getName() {
@@ -235,17 +235,17 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     /**
      * Gets the name of the default interface to use for socket bindings
      * that do not declare an interface.
-     * 
+     *
      * @return the interface name
      */
     public String getDefaultInterface() {
         return defaultInterface;
     }
-    
+
     public Set<SocketBindingGroupIncludeElement> getIncludedSocketBindingGroups() {
         return Collections.unmodifiableSet(new HashSet<SocketBindingGroupIncludeElement>(includedGroups.values()));
     }
-    
+
     public Set<SocketBindingElement> getAllSocketBindings() {
         if (this.includedGroups.size() == 0)
             return Collections.unmodifiableSet(new HashSet<SocketBindingElement>(socketBindings.values()));
@@ -254,9 +254,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : includedGroups.entrySet()) {
                 SocketBindingGroupElement group = includedGroupResolver.resolveRef(entry.getKey());
                 if (group == null) {
-                    throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() + 
-                            "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +  
-                            Element.SOCKET_BINDING_GROUP + " '" + 
+                    throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
+                            "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +
+                            Element.SOCKET_BINDING_GROUP + " '" +
                             entry.getValue().getGroupName() + "'");
                 }
                 Set<SocketBindingElement> included = group.getAllSocketBindings();
@@ -275,7 +275,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     		element.activate(serviceActivatorContext);
     	}
     }
-    
+
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.server.manager;
 
@@ -10,13 +10,13 @@ import org.jboss.staxmapper.XMLMapper;
 /**
  * An object responsible for registering the standard set of {@link XMLElementReader}
  * implementations needed for parsing a domain.xml or a host.xml.
- * 
+ *
  * @author Brian Stansberry
  */
 public interface StandardElementReaderRegistrar {
 
     void registerStandardHostReaders(XMLMapper mapper) throws ModuleLoadException;
-    
+
     void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException;
 
     /**

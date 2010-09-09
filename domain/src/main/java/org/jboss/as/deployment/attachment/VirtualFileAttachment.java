@@ -28,7 +28,7 @@ import org.jboss.vfs.VirtualFile;
 
 /**
  * Utility to help attach and retrieve a VirtualFile from a deployment context.
- *  
+ *
  * @author John E. Bailey
  */
 public class VirtualFileAttachment {

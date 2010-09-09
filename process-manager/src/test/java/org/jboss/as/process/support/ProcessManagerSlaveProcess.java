@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -85,7 +85,7 @@ public class ProcessManagerSlaveProcess extends AbstractProcess {
             int index2 = message.indexOf("$", index1 + 1);
             String proc = message.substring(index1 + 1, index2);
             String clazz = message.substring(index2 + 1);
-            
+
             debug(processName, "Adding " + proc + ":" + clazz);
             addProcess(proc, clazz);
             writeData(processName + "-" + message);
@@ -112,7 +112,7 @@ public class ProcessManagerSlaveProcess extends AbstractProcess {
             writeData(processName + "-" + message);
         }
     }
-    
+
     @Override
     protected void shutdown() {
     }

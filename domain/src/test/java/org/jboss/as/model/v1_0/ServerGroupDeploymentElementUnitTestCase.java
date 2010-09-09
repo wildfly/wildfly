@@ -27,7 +27,7 @@ import org.jboss.as.model.base.DeploymentUnitElementTestBase;
 
 /**
  * Test ServerGroupDeploymentElement with {@link Namespace#DOMAIN_1_0}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ServerGroupDeploymentElementUnitTestCase extends DeploymentUnitElementTestBase {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model;
 
@@ -21,7 +21,7 @@ import java.util.TreeMap;
 
 /**
  * An element representing the set of subsystems that make up a server profile.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ProfileElement extends AbstractModelElement<ProfileElement> implements ServiceActivator {
@@ -29,15 +29,15 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
-    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = 
+    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
         new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(QNameComparator.getInstance());
     private final RefResolver<String, ProfileElement> includedProfileResolver;
-    
+
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of the element
-     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references
      *           to included profiles. Should not be used in the constructor
      *           itself as referenced profiles may not have been created yet.
      *           Cannot be <code>null</code>
@@ -48,16 +48,16 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         this.name = name;
         this.includedProfileResolver = includedProfileResolver;
     }
-    
+
     /**
      * Construct a new instance.
      *
      * @param reader the reader from which to build this element
-     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references
      *           to included profiles. Should not be used in the constructor
      *           itself as referenced profiles may not have been parsed yet.
      *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an 
+     *           element will result in an
      *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      * @throws XMLStreamException if an error occurs
      */
@@ -65,7 +65,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         super(reader);
 
         this.includedProfileResolver = includedProfileResolver;
-        
+
         // Handle attributes
         String name = null;
         final int count = reader.getAttributeCount();
@@ -125,7 +125,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
             throw new XMLStreamException("Profile " + name + " has no subsystem configurations", reader.getLocation());
         }
     }
-    
+
     /**
      * Creates a new ProfileElement based on an existing element. The key thing
      * this constructor does is use the given <code>source</code> element's
@@ -133,7 +133,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
      * its own RefResolver from only those included profiles. The effect of this
      * is to eliminate any extraneous ProfileElement references that may be
      * associated with <code>source</code>'s object graph.
-     * 
+     *
      * @param source
      */
     public ProfileElement(ProfileElement source) {
@@ -147,13 +147,13 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
             this.includedProfiles.putAll(source.includedProfiles);
         }
 
-        
+
         final NavigableMap<String, ProfileElement> resolvedProfiles = new TreeMap<String, ProfileElement>();
         for (Map.Entry<String, ProfileIncludeElement> entry : this.includedProfiles.entrySet()) {
             ProfileElement prof = source.includedProfileResolver.resolveRef(entry.getKey());
             if (prof == null) {
-                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() + 
-                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent profile '" + 
+                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
+                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent profile '" +
                         entry.getValue().getProfile() + "'");
             }
             resolvedProfiles.put(entry.getKey(), new ProfileElement(prof));
@@ -163,7 +163,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     /**
      * Gets the name of the profile
-     * 
+     *
      * @return the profile name
      */
     public String getName() {
@@ -221,13 +221,13 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                     }
                 });
     }
-    
+
     public Set<ProfileIncludeElement> getIncludedProfiles() {
         synchronized (includedProfiles) {
             return new HashSet<ProfileIncludeElement>(includedProfiles.values());
         }
     }
-    
+
     public Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> getSubsystems() {
         synchronized (subsystems) {
             return new HashSet<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(subsystems.values());
@@ -254,7 +254,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        
+
         synchronized (includedProfiles) {
             if (!includedProfiles.isEmpty()) {
                 for (ProfileIncludeElement included : includedProfiles.values()) {
@@ -263,7 +263,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                 }
             }
         }
-        
+
         synchronized (subsystems) {
             if (!subsystems.isEmpty()) {
                 for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
@@ -278,22 +278,22 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     @Override
     public void activate(final ServiceActivatorContext context) {
-        
+
         // Activate included profiles
         for (ProfileIncludeElement includeEl : includedProfiles.values()) {
             ProfileElement prof = includedProfileResolver.resolveRef(includeEl.getProfile());
             if (prof == null) {
-                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() + 
-                        "' at " + includeEl.getLocation().toString() + " refers to non-existent profile '" + 
+                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
+                        "' at " + includeEl.getLocation().toString() + " refers to non-existent profile '" +
                         includeEl.getProfile() + "'");
             }
             prof.activate(context);
         }
-        
+
         // Activate sub-systems
         final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
         for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
-            subsystem.activate(context);            
+            subsystem.activate(context);
         }
     }
 }

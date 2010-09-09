@@ -123,7 +123,7 @@ public abstract class AbstractServer {
             throw new ServerStartException("Failed to start server", t);
         }
 	}
-	
+
 	/**
 	 * Stop the server.
 	 *
@@ -137,8 +137,8 @@ public abstract class AbstractServer {
 		this.config = null;
 		this.serviceContainer = null;
 	}
-	
+
 	abstract ServerStartupListener.Callback createListenerCallback();
-	
+
 }
 

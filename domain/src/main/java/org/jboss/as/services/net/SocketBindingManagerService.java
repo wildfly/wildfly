@@ -61,44 +61,44 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	public SocketBindingManagerService(int portOffSet) {
 		this.portOffSet = portOffSet;
 	}
-	
+
 	public void start(StartContext context) throws StartException {
 		//
 	}
-	
+
 	public void stop(StopContext context) {
-		
+
 	}
 
 	public SocketBindingManager getValue() throws IllegalStateException {
 		return this;
 	}
-	
+
 	public int getPortOffset() {
 		return portOffSet;
 	}
-	
+
 	/**
 	 * Get the managed server socket factory.
-	 * 
+	 *
 	 * @return the server socket factory
 	 */
 	public ServerSocketFactory getServerSocketFactory() {
 		return serverSocketFactory;
 	}
-	
+
 	/**
 	 * Get the socket factory.
-	 * 
+	 *
 	 * @return the socket factory
 	 */
 	public SocketFactory getSocketFactory() {
 		return socketFactory;
 	}
-	
+
 	/**
 	 * Create a datagram socket.
-	 * 
+	 *
 	 * @param address the socket address
 	 * @return the datagram socket
 	 * @throws SocketException
@@ -106,12 +106,12 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException {
 		return new ManagedDatagramSocketBinding(this, address);
 	}
-	
+
 	/**
 	 * Create a multicast socket.
-	 * 
+	 *
 	 * @param address the socket address
-	 * @return the multicast socket 
+	 * @return the multicast socket
 	 * @throws IOException
 	 */
 	public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
@@ -124,10 +124,10 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	public Collection<ManagedBinding> listActiveBindings() {
 		return managedBindings.values();
 	}
-	
+
 	/**
 	 * Register an active socket binding.
-	 * 
+	 *
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
 	 */
@@ -154,24 +154,24 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	public Closeable registerChannel(SocketChannel channel) {
 		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
 	}
-	
+
 	/**
 	 * Unregister a socket binding.
-	 * 
+	 *
 	 * @param binding the managed socket binding
 	 */
 	public void unregisterBinding(ManagedBinding binding) {
 		unregisterBinding(binding.getBindAddress());
 	}
-	
+
 	public void unregisterSocket(DatagramSocket socket) {
 		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
 	}
 	public void unregisterSocket(ServerSocket socket) {
-		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());	
+		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
 	}
 	public void unregisterSocket(Socket socket) {
-		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());	
+		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
 	}
 	public void unregisterChannel(DatagramChannel channel) {
 		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
@@ -186,17 +186,17 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	Closeable registerBinding(InetSocketAddress address, Closeable closeable) {
 		return registerBinding(new CloseableManagedBinding(address, closeable));
 	}
-	
+
 	void unregisterBinding(InetSocketAddress address) {
 		managedBindings.remove(address);
 	}
-	
+
 	class ManagedSocketFactory extends SocketFactory {
 
 		public Socket createSocket() {
 			return new ManagedSocketBinding(SocketBindingManagerService.this);
 		}
-	
+
 		public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
 			return createSocket(InetAddress.getByName(host), port);
 		}
@@ -243,7 +243,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 	        return serverSocket;
 	    }
 	}
-	
+
 	class CloseableManagedBinding implements ManagedBinding {
 		private final InetSocketAddress address;
 		private final Closeable closeable;
@@ -279,7 +279,7 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 			}
 		}
 	}
-	
+
 	class WrappedManagedSocket implements ManagedBinding {
 		private final Socket socket;
 		public WrappedManagedSocket(final Socket socket) {
@@ -313,6 +313,6 @@ public class SocketBindingManagerService implements SocketBindingManager, Servic
 			}
 		}
 	}
-	
+
 }
 

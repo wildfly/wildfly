@@ -42,7 +42,7 @@ import java.util.Iterator;
 
 /**
  * Common utility functions used by the naming implementation.
- * 
+ *
  * @author John E. Bailey
  */
 public class NamingUtils {

@@ -8,29 +8,29 @@ import javax.xml.namespace.QName;
 
 /**
  * Compares two {@link QName}s.
- * 
+ *
  * @author Brian Stansberry
  */
 public class QNameComparator implements Comparator<QName>, Serializable {
 
     private static final long serialVersionUID = -4438373076800825294L;
-    
+
     private static final QNameComparator INSTANCE = new QNameComparator();
-    
+
     public static QNameComparator getInstance() {
         return INSTANCE;
     }
-    
+
     /** Prevent external instantiation */
     private QNameComparator() {
-        // 
+        //
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * Compares two {@link QName}s, first by comparing their
-     * {@link QName#getNamespaceURI() namespaces} then if necessary by comparing 
+     * {@link QName#getNamespaceURI() namespaces} then if necessary by comparing
      * their {@link QName#getLocalPart() local parts} and finally if necessary
      * by comparing their {@link QName#getPrefix() prefixes}.
      */
@@ -45,7 +45,7 @@ public class QNameComparator implements Comparator<QName>, Serializable {
         }
         return result;
     }
-    
+
     private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }

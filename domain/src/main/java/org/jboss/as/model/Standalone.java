@@ -57,13 +57,13 @@ import java.util.TreeMap;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry
- * 
+ *
  */
 public final class Standalone extends AbstractModel<Standalone> {
 
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
-    
+
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
     private final String serverName;
@@ -75,7 +75,7 @@ public final class Standalone extends AbstractModel<Standalone> {
     private final int portOffset;
     private PropertiesElement systemProperties;
 
-    
+
     /**
      * Construct a new instance.
      *
@@ -96,9 +96,9 @@ public final class Standalone extends AbstractModel<Standalone> {
      */
     public Standalone(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        
+
         this.portOffset = 0;
-        
+
         // Handle namespaces
         namespaces.putAll(readNamespaces(reader));
         // Handle attributes
@@ -194,31 +194,31 @@ public final class Standalone extends AbstractModel<Standalone> {
         if (serverName == null) {
             throw new IllegalArgumentException("serverName is null");
         }
-        
+
         this.schemaLocation = null;
-        
+
         ServerElement server = host.getServer(serverName);
         if (server == null)
             throw new IllegalStateException("Server " + serverName + " is not listed in Host");
-        
+
         this.serverName = serverName;
-        
+
         String serverGroupName = server.getServerGroup();
         ServerGroupElement serverGroup = domain.getServerGroup(serverGroupName);
         if (serverGroup == null)
             throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
-        
+
         String profileName = serverGroup.getProfileName();
         ProfileElement domainProfile = domain.getProfile(profileName);
         if (domainProfile == null)
             throw new IllegalStateException("Profile" + profileName + " is not listed in Domain");
         this.profile = new ProfileElement(domainProfile);
-        
+
         Set<ServerGroupDeploymentElement> groupDeployments = serverGroup.getDeployments();
         for (ServerGroupDeploymentElement dep : groupDeployments) {
             deployments.put(dep.getKey(), dep);
         }
-        
+
         SocketBindingGroupRefElement bindingRef = server.getSocketBindingGroup();
         if (bindingRef == null) {
             bindingRef = serverGroup.getSocketBindingGroup();
@@ -226,11 +226,11 @@ public final class Standalone extends AbstractModel<Standalone> {
         SocketBindingGroupElement domainBindings = domain.getSocketBindingGroup(bindingRef.getRef());
         this.socketBindings = domainBindings == null ? null : new SocketBindingGroupElement(domainBindings);
         this.portOffset = bindingRef.getPortOffset();
-        
-        this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, 
+
+        this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true,
                 domain.getSystemProperties(), serverGroup.getSystemProperties(),
                 host.getSystemProperties(), server.getSystemProperties());
-        
+
         Set<String> unspecifiedInterfaces = new HashSet<String>();
         for (InterfaceElement ie : domain.getInterfaces()) {
             if (ie.isFullySpecified())
@@ -251,13 +251,13 @@ public final class Standalone extends AbstractModel<Standalone> {
             // or fail
             if (unspecifiedInterfaces.contains(this.socketBindings.getDefaultInterface())) {
                 throw new IllegalStateException("The default interface for socket binding group " + this.socketBindings.getName() +
-                        " references interface " + this.socketBindings.getDefaultInterface() + 
+                        " references interface " + this.socketBindings.getDefaultInterface() +
                         " but the Server and Host configurations do not specify how to assign an IP address to that interface");
             }
             for (SocketBindingElement binding : this.socketBindings.getAllSocketBindings()) {
                 if (unspecifiedInterfaces.contains(binding.getInterfaceName())) {
-                    throw new IllegalStateException("Socket binding " + binding.getName() + 
-                            " references interface " + binding.getInterfaceName() + 
+                    throw new IllegalStateException("Socket binding " + binding.getName() +
+                            " references interface " + binding.getInterfaceName() +
                             " but the Server and Host configurations do not specify how to assign an IP address to that interface");
                 }
             }
@@ -267,22 +267,22 @@ public final class Standalone extends AbstractModel<Standalone> {
 
     /**
      * Gets the name of the server.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getServerName() {
         return serverName;
     }
-    
+
     /**
      * Gets any system properties defined for this server.
-     * 
+     *
      * @return the system properties, or <code>null</code> if there are none
      */
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
-    
+
     /** {@inheritDoc} */
     public long elementHash() {
         long cksum = serverName.hashCode() &  0xffffffffL;
@@ -319,7 +319,7 @@ public final class Standalone extends AbstractModel<Standalone> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        
+
         synchronized (namespaces) {
             for (NamespaceAttribute namespace : namespaces.values()) {
                 if (namespace.isDefaultNamespaceDeclaration()) {
@@ -329,31 +329,31 @@ public final class Standalone extends AbstractModel<Standalone> {
                 streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
         }
-        
+
         if (schemaLocation != null) {
             NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
-        
+
         // TODO re-evaluate the element order in the xsd; make sure this is correct
         streamWriter.writeStartElement(Element.NAME.getLocalName());
         streamWriter.writeCharacters(serverName);
         streamWriter.writeEndElement();
-        
+
         synchronized (extensions) {
             if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {        
+                for (ExtensionElement element : extensions.values()) {
                     streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
             }
         }
-        
+
         streamWriter.writeStartElement(Element.PROFILE.getLocalName());
         profile.writeContent(streamWriter);
-        
+
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
@@ -364,19 +364,19 @@ public final class Standalone extends AbstractModel<Standalone> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         if (socketBindings != null) {
             streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             socketBindings.writeContent(streamWriter);
         }
-        
+
         // FIXME ssls
-        
+
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
-        
+
         if (! deployments.isEmpty()) {
             streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (ServerGroupDeploymentElement element : deployments.values()) {
@@ -384,7 +384,7 @@ public final class Standalone extends AbstractModel<Standalone> {
                 element.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
-        } 
+        }
     }
 
     /**
@@ -449,7 +449,7 @@ public final class Standalone extends AbstractModel<Standalone> {
             }
         }
     }
-    
+
     private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String module = extensionElement.getModule();
         try {
@@ -462,7 +462,7 @@ public final class Standalone extends AbstractModel<Standalone> {
             throw new XMLStreamException("Failed to load module", e);
         }
     }
-    
+
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -485,9 +485,9 @@ public final class Standalone extends AbstractModel<Standalone> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -508,9 +508,9 @@ public final class Standalone extends AbstractModel<Standalone> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -520,8 +520,8 @@ public final class Standalone extends AbstractModel<Standalone> {
                         case DEPLOYMENT: {
                             final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
                             if (deployments.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() + 
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
                             deployments.put(deployment.getKey(), deployment);
@@ -533,6 +533,6 @@ public final class Standalone extends AbstractModel<Standalone> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }        
+        }
     }
 }

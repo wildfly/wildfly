@@ -27,7 +27,7 @@ import javax.naming.NamingException;
 import java.util.Hashtable;
 
 /**
- * Initial context factory which returns {@code NamingContext} instances. 
+ * Initial context factory which returns {@code NamingContext} instances.
  *
  * @author John E. Bailey
  */

@@ -55,7 +55,7 @@ import java.util.TreeMap;
 public abstract class AbstractModelElement<E extends AbstractModelElement<E>> implements Serializable, Cloneable, XMLContentWriter, XMLStreamConstants {
 
     private static final long serialVersionUID = 66064050420378211L;
-    
+
     // FIXME make non-transient and final when MSC-16 is fixed
     private transient Location location;
     private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
@@ -159,10 +159,10 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return builder.toString();
     }
-    
+
     /**
      * Convert a hex string into a byte[].
-     * 
+     *
      * @param s the string
      * @return the bytes
      */
@@ -240,7 +240,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return new XMLStreamException("Missing required element(s): " + b, reader.getLocation());
     }
-    
+
     /**
      * Checks that the current element has no attributes, throwing an {@link XMLStreamException}
      * if one is found.
@@ -253,7 +253,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             throw unexpectedAttribute(reader, 0);
         }
     }
-    
+
     /**
      * Consumes the remainder of the current element, throwing an {@link XMLStreamException}
      * if it contains any child elements.
@@ -370,7 +370,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
             throw unexpectedAttribute(reader, 1);
         }
     }
-    
+
     protected static Map<String, NamespaceAttribute> readNamespaces(final XMLExtendedStreamReader reader) {
         int count = reader.getNamespaceCount();
         Map<String, NamespaceAttribute> result = new HashMap<String, NamespaceAttribute>();
@@ -381,7 +381,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return result;
     }
-    
+
     protected static String readSchemaLocation(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         if (count == 0) {
@@ -389,7 +389,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         String loc = null;
         for (int i = 0; i < count; i++) {
-            if ("http://www.w3.org/2001/XMLSchema-instance".equals(reader.getAttributeNamespace(i)) 
+            if ("http://www.w3.org/2001/XMLSchema-instance".equals(reader.getAttributeNamespace(i))
                     && "schemaLocation".equals(reader.getAttributeLocalName(i))) {
                 loc = reader.getAttributeValue(i);
             }
@@ -399,13 +399,13 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
         }
         return loc;
     }
-    
+
 
     /**
      * Returns a new {@link TreeMap} by passing the provided map to its constructor.
      * Thread safety note: <code>toCopy</code>'s monitor is held while the TreeMap
      * is being constructed.
-     * 
+     *
      * @param <K> the type of <code>toCopy</code>'s keys
      * @param <V> the type of <code>toCopy</code>'s values
      * @param toCopy the map to copy. Cannot be <code>null</code>
@@ -631,7 +631,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     public final int hashCode() {
         return super.hashCode();
     }
-    
+
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         // FIXME remove when MSC-16 is fixed
         out.defaultWriteObject();

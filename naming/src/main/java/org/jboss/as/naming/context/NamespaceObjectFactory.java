@@ -35,7 +35,7 @@ import static org.jboss.as.naming.util.NamingUtils.asReference;
 /**
  * Object factory used to retrieve a naming context with a given name.  This relies on a {@code org.jboss.as.naming.contexts.NamespaceContextSelector}
  * to select the right naming context to return.
- * 
+ *
  * @author John E. Bailey
  */
 public class NamespaceObjectFactory implements ObjectFactory {

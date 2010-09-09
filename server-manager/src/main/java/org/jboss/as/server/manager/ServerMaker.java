@@ -101,7 +101,7 @@ public final class ServerMaker {
 //        final InputStream inputStream = process.getInputStream();
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
-        
+
 	    String serverProcessName = getServerProcessName(serverName);
         List<String> command = getServerLaunchCommand(serverName, serverProcessName, jvmElement, serverConfig.getSystemProperties());
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
@@ -117,7 +117,7 @@ public final class ServerMaker {
     }
 
     private List<String> getServerLaunchCommand(final String serverName, final String serverProcessName, final JvmElement jvm, final PropertiesElement systemProperties) {
-        
+
         List<String> command = new ArrayList<String>();
 
 //      if (false) {
@@ -145,9 +145,9 @@ public final class ServerMaker {
         command.add("-logmodule");
         command.add("org.jboss.logmanager.jboss-logmanager");
         command.add("org.jboss.as.jboss-as-server");
-        
+
         appendArgsToMain(serverName, serverProcessName, sysProps, systemProperties, command);
-        
+
         return command;
     }
 
@@ -322,7 +322,7 @@ public final class ServerMaker {
         }
         return env;
     }
- 
+
     private String getServerProcessName(final String serverName) {
         return SERVER_PROCESS_NAME_PREFIX + serverName;
     }

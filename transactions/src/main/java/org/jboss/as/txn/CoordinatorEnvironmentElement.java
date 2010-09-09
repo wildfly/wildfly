@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * The model element for the coordinator environment element. 
+ * The model element for the coordinator environment element.
  *
  * @author John E. Bailey
  */

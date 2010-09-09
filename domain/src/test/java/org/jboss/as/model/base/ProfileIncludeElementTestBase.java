@@ -36,7 +36,7 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Base class for unit tests of {@link ProfileIncludeElement}.
- * 
+ *
  * @author Brian Stansberry
  */
 public abstract class ProfileIncludeElementTestBase extends DomainModelElementTestBase {
@@ -47,13 +47,13 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
     public ProfileIncludeElementTestBase(String name) {
         super(name);
     }
-    
+
     protected XMLMapper createXMLMapper() throws Exception{
 
         XMLMapper mapper = XMLMapper.Factory.create();
         MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
-        mapper.registerRootElement(new QName(getTargetNamespace(), Element.INCLUDE.getLocalName()), 
-                new TestXMLElementReader<ProfileIncludeElement>(ProfileIncludeElement.class));  
+        mapper.registerRootElement(new QName(getTargetNamespace(), Element.INCLUDE.getLocalName()),
+                new TestXMLElementReader<ProfileIncludeElement>(ProfileIncludeElement.class));
         return mapper;
     }
 
@@ -64,11 +64,11 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
         ProfileIncludeElement testee = (ProfileIncludeElement) root.getChild(getTargetNamespace(), Element.INCLUDE.getLocalName());
         assertEquals("foo", testee.getProfile());
     }
-    
+
     public void testNoProfileParse() throws Exception {
         String testContent = "<include/>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Missing 'profile' attribute did not cause parsing failure");
@@ -77,11 +77,11 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
             // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testBadAttributeParse() throws Exception {
         String testContent = "<include name=\"foo\"/>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous 'name' attribute did not cause parsing failure");
@@ -89,10 +89,10 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
-        
+
         testContent = "<include profile=\"foo\" name=\"bar\"/>";
         fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous 'name' attribute did not cause parsing failure");
@@ -105,7 +105,7 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
     public void testBadChildElement() throws Exception {
         String testContent = "<include profile=\"foo\"><bogus/></include>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous child element did not cause parsing failure");
@@ -114,36 +114,36 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
             // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testSerializationDeserialization() throws Exception {
         String testContent = "<include profile=\"foo\"/>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         ProfileIncludeElement testee = (ProfileIncludeElement) root.getChild(getTargetNamespace(), Element.INCLUDE.getLocalName());
-        
-        byte[] bytes = serialize(testee);        
+
+        byte[] bytes = serialize(testee);
         ProfileIncludeElement testee1 = deserialize(bytes, ProfileIncludeElement.class);
 
         assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getProfile(), testee1.getProfile());
     }
-    
+
 //    public void testXMLRoundTrip() throws Exception {
 //        String testContent = "<include profile=\"foo\"/>";
 //        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
 //        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
 //        ProfileIncludeElement testee = (ProfileIncludeElement) root.getChild(getTargetNamespace(), Element.INCLUDE.getLocalName());
-//        
+//
 //        XMLExtendedStreamWriter xmlWriter = new FormattingXMLStreamWriter(XMLOutputFactory.newInstance().createXMLStreamWriter(new StringWriter()));
 //        xmlWriter.setDefaultNamespace(getTargetNamespace());
 //        xmlWriter.writeStartElement(MockRootElement.ELEMENT_NAME);
 //        xmlWriter.writeDefaultNamespace(getTargetNamespace());
 //        root.writeContent(xmlWriter);
 //        xmlWriter.close();
-//        
+//
 //        MockRootElement root1 = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(writer.toString()));
 //        ProfileIncludeElement testee1 = (ProfileIncludeElement) root1.getChild(getTargetNamespace(), Element.INCLUDE.getLocalName());
-//        
+//
 //        assertEquals(testee.elementHash(), testee1.elementHash());
 //        assertEquals(testee.getProfile(), testee1.getProfile());
 //    }

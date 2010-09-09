@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * Configuration object which maintains required information to create instances of managed beans.  
+ * Configuration object which maintains required information to create instances of managed beans.
  *
  * @author John E. Bailey
  */
@@ -95,7 +95,7 @@ public class ManagedBeanConfiguration implements Serializable {
 
     /**
      * Set the post-construct methods.
-     * 
+     *
      * @param postConstructMethods the post-construct methods
      */
     public void setPostConstructMethods(final List<Method> postConstructMethods) {

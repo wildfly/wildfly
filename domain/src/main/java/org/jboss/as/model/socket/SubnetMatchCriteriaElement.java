@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -18,7 +18,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Indicates that an address must fit on a particular subnet to match the criteria.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement<SubnetMatchCriteriaElement> {
@@ -28,15 +28,15 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
     private String value;
     private byte[] network;
     private int mask;
-    
+
     /**
      * Creates a new SubnetMatchCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
      */
     public SubnetMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader, Element.SUBNET_MATCH);        
+        super(reader, Element.SUBNET_MATCH);
 
         // Handle attributes
         String value = null;
@@ -80,7 +80,7 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
         this.network = net;
         this.mask = mask;
         // Handle elements
-        requireNoContent(reader);        
+        requireNoContent(reader);
 
         setInterfaceCriteria(new SubnetMatchInterfaceCriteria(this.network, this.mask));
     }

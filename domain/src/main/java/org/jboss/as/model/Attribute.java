@@ -36,10 +36,10 @@ public enum Attribute {
 
     // domain 1.0 attributes in alpha order
     ALLOWED("allowed"),
-    DEFAULT_INTERFACE("default-interface"),   
-    FIXED_PORT("fixed-port"),    
-    GROUP("group"),    
-    INTERFACE("interface"), 
+    DEFAULT_INTERFACE("default-interface"),
+    FIXED_PORT("fixed-port"),
+    GROUP("group"),
+    INTERFACE("interface"),
     JAVA_HOME("java-home"),
     NAME("name"),
     MAX_SIZE("max-size"),
@@ -50,7 +50,7 @@ public enum Attribute {
     HOST("host"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
-    PREFIX("prefix"),    
+    PREFIX("prefix"),
     PROFILE("profile"),
     REF("ref"),
     SHA1("sha1"),

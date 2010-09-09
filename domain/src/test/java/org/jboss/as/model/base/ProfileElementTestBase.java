@@ -44,7 +44,7 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Base class for unit tests of {@link ProfileElement}.
- * 
+ *
  * @author Brian Stansberry
  */
 public abstract class ProfileElementTestBase extends DomainModelElementTestBase {
@@ -57,32 +57,32 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         public ProfileElement resolveRef(String ref) {
             return null;
         }
-        
+
     };
-    
+
     private static final ReadElementCallback<ProfileElement> callback = new ReadElementCallback<ProfileElement>() {
 
         @Override
         public ProfileElement readElement(XMLExtendedStreamReader reader) throws XMLStreamException {
             return new ProfileElement(reader, refResolver);
         }
-        
+
     };
-    
-    
+
+
     /**
      * @param name
      */
     public ProfileElementTestBase(String name) {
         super(name);
     }
-    
+
     protected XMLMapper createXMLMapper() throws Exception{
 
         XMLMapper mapper = XMLMapper.Factory.create();
         MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
-        mapper.registerRootElement(new QName(getTargetNamespace(), Element.PROFILE.getLocalName()), 
-                new TestXMLElementReader<ProfileElement>(callback));  
+        mapper.registerRootElement(new QName(getTargetNamespace(), Element.PROFILE.getLocalName()),
+                new TestXMLElementReader<ProfileElement>(callback));
         MockAnyElementParser.registerXMLElementReaders(mapper);
         return mapper;
     }
@@ -140,11 +140,11 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         assertTrue(gotMock);
         assertTrue(gotAnotherMock);
     }
-    
+
     public void testNoNameParse() throws Exception {
         String testContent = "<profile>" + MockAnyElement.getSimpleXmlContent() + "</profile>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Missing 'name' attribute did not cause parsing failure");
@@ -153,11 +153,11 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
             // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testBadAttributeParse() throws Exception {
         String testContent = "<profile bogus=\"bogus\">" + MockAnyElement.getSimpleXmlContent() + "</profile>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
@@ -165,10 +165,10 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
-        
+
         testContent = "<profile name=\"test\" bogus=\"bogus\">" + MockAnyElement.getSimpleXmlContent() + "</profile>";
         fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
@@ -177,11 +177,11 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
             // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testNoSubsystemParse() throws Exception {
         String testContent = "<profile name=\"test\"/>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Missing children did not cause parsing failure");
@@ -189,10 +189,10 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
-        
+
         testContent = "<profile name=\"test\"><include profile=\"foo\"/></profile>";
         fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Missing children did not cause parsing failure");
@@ -205,7 +205,7 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
     public void testBadChildElement() throws Exception {
         String testContent = "<profile name=\"test\"><bogus/></profile>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous child element did not cause parsing failure");
@@ -213,10 +213,10 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
-        
+
         testContent = "<profile name=\"test\">" + MockAnyElement.getSimpleXmlContent() + "<bogus/></profile>";
         fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
             fail("Extraneous child element did not cause parsing failure");
@@ -225,15 +225,15 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
             // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testSerializationDeserialization() throws Exception {
-        
+
         String testContent = "<profile name=\"test\"><include profile=\"foo\"/>" + MockAnyElement.getFullXmlContent() + "</profile>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
         MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         ProfileElement testee = (ProfileElement) root.getChild(getTargetNamespace(), Element.PROFILE.getLocalName());
-        
-        byte[] bytes = serialize(testee);        
+
+        byte[] bytes = serialize(testee);
         ProfileElement testee1 = deserialize(bytes, ProfileElement.class);
 
         assertEquals(testee.elementHash(), testee1.elementHash());

@@ -33,21 +33,21 @@ import java.net.SocketException;
 class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
 
 	private final SocketBindingManager socketBindings;
-	
+
 	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
 		super(address);
 		this.socketBindings = socketBindings;
 	}
-	
+
 	public InetSocketAddress getBindAddress() {
 		return (InetSocketAddress) getLocalSocketAddress();
 	}
-	
+
 	public synchronized void bind(SocketAddress addr) throws SocketException {
 		super.bind(addr);
 		socketBindings.registerBinding(this);
 	}
-	
+
 	public void close() {
 		try {
 			super.close();

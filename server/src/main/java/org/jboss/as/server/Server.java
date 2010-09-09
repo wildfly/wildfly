@@ -53,9 +53,9 @@ public class Server extends AbstractServer {
     public void start() {
         launchCommunicationHandler();
         sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
-        log.info("Server Available to start");    	
+        log.info("Server Available to start");
     }
-    
+
     public void start(Standalone config) throws ServerStartException {
     	try {
     		super.start(config);
@@ -88,7 +88,7 @@ public class Server extends AbstractServer {
             }
         };
     }
-    
+
     private void launchCommunicationHandler() {
         this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
         Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");

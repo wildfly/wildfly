@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -24,7 +24,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Binding configuration for a named socket.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> implements ServiceActivator {
@@ -39,24 +39,24 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private InetAddress multicastAddress;
     private int multicastPort;
     private final String defaultInterfaceName;
-    
+
     /**
      * Construct a new instance.
      *
      * @param location the declaration location of the element
      * @param name the name of the group. Cannot be <code>null</code>
-     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     * @param interfaceResolver {@link RefResolver} to use to resolve references
      *           to interfaces. May be used safely in the constructor
      *           itself. Cannot be <code>null</code>
      */
     public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) {
         super(location);
         this.name = name;
-        
+
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
-        
+
         if (defaultInterfaceName == null)
             throw new IllegalArgumentException("defaultInterfaceName is null");
         this.defaultInterfaceName = defaultInterfaceName;
@@ -66,22 +66,22 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * Construct a new instance.
      *
      * @param reader the reader from which to build this element
-     * @param interfaceResolver {@link RefResolver} to use to resolve references 
+     * @param interfaceResolver {@link RefResolver} to use to resolve references
      *           to interfaces. May be used safely in the constructor
      *           itself. Cannot be <code>null</code>
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
         super(reader);
-        
+
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
         this.interfaceResolver = interfaceResolver;
-        
+
         if (defaultInterfaceName == null)
             throw new IllegalArgumentException("defaultInterfaceName is null");
         this.defaultInterfaceName = defaultInterfaceName;
-        
+
         // Handle attributes
         String name = null;
         String intf = null;
@@ -103,8 +103,8 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
                     }
                     case INTERFACE: {
                         if (this.interfaceResolver.resolveRef(value) == null) {
-                            throw new XMLStreamException("Unknown interface " + value + 
-                                    " " + attribute.getLocalName() + " must be declared in element " + 
+                            throw new XMLStreamException("Unknown interface " + value +
+                                    " " + attribute.getLocalName() + " must be declared in element " +
                                     Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         intf = value;
@@ -122,13 +122,13 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
                         try {
                             mcastAddr = InetAddress.getByName(value);
                             if (!mcastAddr.isMulticastAddress()) {
-                                throw new XMLStreamException("Value " + value + " for attribute " + 
-                                        attribute.getLocalName() + " is not a valid multicast address", 
+                                throw new XMLStreamException("Value " + value + " for attribute " +
+                                        attribute.getLocalName() + " is not a valid multicast address",
                                         reader.getLocation());
                             }
                         } catch (UnknownHostException e) {
-                            throw new XMLStreamException("Value " + value + " for attribute " + 
-                                    attribute.getLocalName() + " is not a valid multicast address", 
+                            throw new XMLStreamException("Value " + value + " for attribute " +
+                                    attribute.getLocalName() + " is not a valid multicast address",
                                     reader.getLocation(), e);
                         }
                     }
@@ -150,51 +150,51 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
         this.multicastAddress = mcastAddr;
         this.multicastPort = mcastAddr == null ? -1 : mcastPort != null ? mcastPort.intValue() : -1;
         if (this.multicastPort == -1 && this.multicastAddress != null) {
-            throw new XMLStreamException("Must configure " + Attribute.MULTICAST_PORT + 
+            throw new XMLStreamException("Must configure " + Attribute.MULTICAST_PORT +
                     " if " + Attribute.MULTICAST_ADDRESS + " is configured", reader.getLocation());
         }
         // Handle elements
         requireNoContent(reader);
     }
-    
+
     /**
      * Gets the name of the socket binding
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getName() {
         return name;
     }
-    
+
     /**
-     * Gets the name of the interface to use for this socket binding. This is 
+     * Gets the name of the interface to use for this socket binding. This is
      * either the {@link #getConfiguredInterfaceName() configured interface name}
-     * or the containing socket binding group's 
-     * {@link #getDefaultInterfaceName() default interface name}. 
-     * 
+     * or the containing socket binding group's
+     * {@link #getDefaultInterfaceName() default interface name}.
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getInterfaceName() {
         return interfaceName == null ? defaultInterfaceName : interfaceName;
     }
-    
+
     /**
-     * Gets the name of the interface specificially configured for use for this 
+     * Gets the name of the interface specificially configured for use for this
      * socket binding, or <code>null</code> if no specific configuration was
-     * supplied and this socket binding should use the 
+     * supplied and this socket binding should use the
      * {@link #getDefaultInterfaceName() socket binding group's default interface}.
-     * 
+     *
      * @return the name. May be <code>null</code>
      */
     public String getConfiguredInterfaceName() {
         return interfaceName;
     }
-    
+
     /**
      * Gets the name of the default interface to use for this socket binding if
      * no specific interface was {@link #getConfiguredInterfaceName() configured}.
      * This value comes from the enclosing {@link SocketBindingGroupElement}.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getDefaultInterfaceName() {
@@ -203,7 +203,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
     /**
      * Sets the name of the interface to use for this socket binding.
-     * 
+     *
      * @param interfaceName the name. May be <code>null</code>
      */
     void setConfiguredInterfaceName(String interfaceName) {
@@ -212,7 +212,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
     /**
      * Gets the port to use for this socket binding.
-     * 
+     *
      * @return the port
      */
     public int getPort() {
@@ -221,7 +221,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
     /**
      * Sets the port to use for this socket binding.
-     * 
+     *
      * @param port the port
      */
     void setPort(int port) {
@@ -231,9 +231,9 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     }
 
     /**
-     * Gets whether the specified port should not be overridden via a 
+     * Gets whether the specified port should not be overridden via a
      * server-level port offset.
-     * 
+     *
      * @return <code>true</code> if the port should not be overridden; <code>false</code>
      *         if overriding is allowed
      */
@@ -242,10 +242,10 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     }
 
     /**
-     * Sets whether the specified port should not be overridden via a 
+     * Sets whether the specified port should not be overridden via a
      * server-level port offset.
-     * 
-     * @param fixedPort <code>true</code> if the port should not be overridden; 
+     *
+     * @param fixedPort <code>true</code> if the port should not be overridden;
      *                  <code>false</code> if overriding is allowed
      */
     void setFixedPort(boolean fixedPort) {
@@ -255,7 +255,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /**
      * Gets the multicast address (if any) on which this socket should listen
      * for multicast traffic
-     * 
+     *
      * @return the multicast address, or <code>null</code> if the socket should
      *         not listen for multicast
      */
@@ -266,7 +266,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /**
      * Sets the multicast address (if any) on which this socket should listen
      * for multicast traffic
-     * 
+     *
      * @param  multicastAddress the multicast address, or <code>null</code> if the socket should
      *         not listen for multicast
      */
@@ -283,7 +283,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /**
      * Gets the multicast port (if any) on which this socket should listen
      * for multicast traffic
-     * 
+     *
      * @return the multicast port, or <code>-1</code> if the socket should
      *         not listen for multicast
      */
@@ -294,7 +294,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /**
      * Sets the multicast port (if any) on which this socket should listen
      * for multicast traffic
-     * 
+     *
      * @param multicastPort the multicast port
      */
     void setMulticastPort(int multicastPort) {
@@ -361,30 +361,30 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
         }
         streamWriter.writeEndElement();
     }
-    
+
     private int parsePort(String value, Attribute attribute, XMLExtendedStreamReader reader, boolean allowEphemeral) throws XMLStreamException {
         int legal;
         try {
             legal = Integer.valueOf(value);
             int min = allowEphemeral ? 0 : 1;
             if (legal < min || legal >= 65536) {
-                throw new XMLStreamException("Illegal value " + value + 
-                        " for attribute '" + attribute.getLocalName() + 
+                throw new XMLStreamException("Illegal value " + value +
+                        " for attribute '" + attribute.getLocalName() +
                         "' must be between " + min + " and 65536", reader.getLocation());
             }
         }
         catch (NumberFormatException nfe) {
-            throw new XMLStreamException("Illegal value " + value + 
-                    " for attribute '" + attribute.getLocalName() + 
+            throw new XMLStreamException("Illegal value " + value +
+                    " for attribute '" + attribute.getLocalName() +
                     "' must be an integer", reader.getLocation(), nfe);
         }
         return legal;
     }
 
-    
+
     public void activate(ServiceActivatorContext activatorContext) {
     	// create the binding service
     	SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
     }
-    
+
 }

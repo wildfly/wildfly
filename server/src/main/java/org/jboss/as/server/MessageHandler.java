@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
@@ -36,21 +36,21 @@ import org.jboss.logging.Logger;
 
 /**
  * A MessageHandler.
- * 
+ *
  * @author Brian Stansberry
  * @author John E. Bailey
  */
 class MessageHandler implements ServerCommunicationHandler.Handler {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final Server server;
-    
+
     MessageHandler(Server server) {
         if (server == null) {
             throw new IllegalArgumentException("server is null");
         }
         this.server = server;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
      */
@@ -59,7 +59,7 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         logger.info("Message received: " + message);
     }
 
-    
+
     @Override
     public void handleMessage(byte[] message) {
         Command cmd = null;
@@ -95,6 +95,6 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
 
     @Override
     public void shutdown() {
-        server.stop();        
+        server.stop();
     }
 }

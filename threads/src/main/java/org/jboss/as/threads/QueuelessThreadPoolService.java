@@ -38,7 +38,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with no queue.
- * 
+ *
  * @author John E. Bailey
  */
 public class QueuelessThreadPoolService implements Service<ExecutorService> {

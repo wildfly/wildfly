@@ -37,7 +37,7 @@ import org.jboss.modules.PathFilters;
 import java.io.IOException;
 
 /**
- * Processor responsible for creating a module for the deployment and attach it to the deployment. 
+ * Processor responsible for creating a module for the deployment and attach it to the deployment.
  *
  * @author John E. Bailey
  */
@@ -47,7 +47,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
 
 
     /**
-     * Create a  module from the attached module config and attache the built module.. 
+     * Create a  module from the attached module config and attache the built module..
      *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException

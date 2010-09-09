@@ -104,7 +104,7 @@ public final class Main {
             System.exit(1);
         }
     }
-    
+
     private DomainControllerEnvironment determineEnvironment(final String[] args, final InputStream stdin, final PrintStream stdout, final PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
@@ -129,7 +129,7 @@ public final class Main {
                     }
                 } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
                     procName = args[++i];
-                    
+
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property

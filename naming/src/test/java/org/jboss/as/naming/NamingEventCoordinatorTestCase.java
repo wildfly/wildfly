@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Basic naming event coordinator tests.
- * 
+ *
  * @author John E. Bailey
  */
 public class NamingEventCoordinatorTestCase {
@@ -63,7 +63,7 @@ public class NamingEventCoordinatorTestCase {
         coordinator.addListener("test", EventContext.SUBTREE_SCOPE, subtreeListener);
         final CollectingListener oneLevelListener = new CollectingListener(0);
         coordinator.addListener("test", EventContext.ONELEVEL_SCOPE, oneLevelListener);
-        
+
         coordinator.fireEvent(context, new CompositeName("test/path"), null, null, NamingEvent.OBJECT_ADDED, "bind", EventContext.OBJECT_SCOPE);
 
         objectListener.latch.await(10L, TimeUnit.MILLISECONDS);

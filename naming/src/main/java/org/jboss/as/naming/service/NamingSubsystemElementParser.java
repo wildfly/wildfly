@@ -30,7 +30,7 @@ import javax.xml.stream.XMLStreamException;
 
 /**
  * Parser responsible for handling the naming subsystem schema.
- *  
+ *
  * @author John E. Bailey
  */
 final class NamingSubsystemElementParser implements XMLElementReader<ParseResult<NamingSubsystemElement>> {

@@ -37,7 +37,7 @@ import java.util.TreeMap;
 
 /**
  * An locally configured domain controller on a {@link Host}.
- * 
+ *
  * @author Brian Stansberry
  */
 public final class LocalDomainControllerElement extends AbstractModelElement<LocalDomainControllerElement> {
@@ -45,7 +45,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     private static final long serialVersionUID = 7667892965813702351L;
 
     public static final String DEFAULT_NAME = "DomainController";
-    
+
     private final String name;
     private final String interfaceName;
     private final int port;
@@ -139,7 +139,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
 
     /**
      * Gets the name of the server.
-     * 
+     *
      * @return the name. Will not be <code>null</code>
      */
     public String getName() {
@@ -204,14 +204,14 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                 streamWriter.writeEndElement();
             }
         }
-        
+
         if (jvm != null) {
             streamWriter.writeStartElement(Element.JVM.getLocalName());
             jvm.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
     }
-    
+
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -231,6 +231,6 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
 }

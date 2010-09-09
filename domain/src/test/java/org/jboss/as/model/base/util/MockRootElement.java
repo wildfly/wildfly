@@ -43,18 +43,18 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A fake root element for the domain xsd, equivalent to {@link Domain}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
 
-    private final NavigableMap<QName, AbstractModelElement<? extends AbstractModelElement<?>>> children = 
+    private final NavigableMap<QName, AbstractModelElement<? extends AbstractModelElement<?>>> children =
         new TreeMap<QName, AbstractModelElement<? extends AbstractModelElement<?>>>(QNameComparator.getInstance());
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
-    
+
     public static final String ELEMENT_NAME = "mock-root";
-    
+
     public static String getElementStart(String defaultNamespace, String namespaceLocation, boolean includeMockNamespace) {
         StringBuilder sb = new StringBuilder();
         sb.append('<');
@@ -77,11 +77,11 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
         sb.append("\">");
         return sb.toString();
     }
-    
+
     public static String getElementEnd() {
         return ("</" + ELEMENT_NAME + ">");
     }
-    
+
     public static String getXmlContent(String defaultNamespace, String namespaceLocation, boolean includeMockNamespace, String children) {
         StringBuilder sb = new StringBuilder(getElementStart(defaultNamespace, namespaceLocation, includeMockNamespace));
         sb.append(children);
@@ -114,14 +114,14 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
             }
         }
     }
-    
+
     public AbstractModelElement<? extends AbstractModelElement<?>> getChild(String namespace, String localPart) {
         return children.get(new QName(namespace, localPart));
     }
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<MockRootElement>> target, MockRootElement other) {
-        // no-op    
+        // no-op
     }
 
     @Override
@@ -139,7 +139,7 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        
+
         for (NamespaceAttribute namespace : namespaces.values()) {
             if (namespace.isDefaultNamespaceDeclaration()) {
                 // for now I assume this is handled externally
@@ -147,12 +147,12 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
             }
             streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
         }
-        
+
         if (schemaLocation != null) {
             NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
-        
+
         if (!children.isEmpty()) {
             for (Map.Entry<QName, AbstractModelElement<? extends AbstractModelElement<?>>> entry : children.entrySet()) {
                 QName qname = entry.getKey();
@@ -161,7 +161,7 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
             }
         }
         streamWriter.writeEndElement();
-        
+
     }
 
 }

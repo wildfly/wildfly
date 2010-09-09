@@ -21,26 +21,26 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
 /**
  * A ServerCommunicationHandlerFactory.
- * 
+ *
  * @author John E. Bailey
  */
 public final class ServerCommunicationHandlerFactory {
 
     private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
-    
+
     public static ServerCommunicationHandlerFactory getInstance() {
         return INSTANCE;
     }
-    
+
     public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
         return new ServerCommunicationHandler(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
     }
-    
+
     private ServerCommunicationHandlerFactory() {}
 }

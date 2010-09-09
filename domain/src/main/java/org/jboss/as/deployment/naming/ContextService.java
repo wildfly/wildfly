@@ -33,7 +33,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
- * Service responsible for managing the creation and life-cycle of a naming context. 
+ * Service responsible for managing the creation and life-cycle of a naming context.
  *
  * @author John E. Bailey
  */
@@ -92,7 +92,7 @@ public class ContextService implements Service<Context> {
 
     /**
      * Get the parent context injector.
-     * 
+     *
      * @return The injector
      */
     public Injector<Context> getParentContextInjector() {

@@ -86,7 +86,7 @@ public class InterceptorConfiguration implements Serializable {
 
     /**
      * Set the resource configurations.
-     * 
+     *
      * @param resourceConfigurations The resource configurations
      */
     public void setResourceConfigurations(final List<ResourceConfiguration> resourceConfigurations) {

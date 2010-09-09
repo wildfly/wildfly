@@ -41,12 +41,12 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
 	/** The service base name. */
 	public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
-	
-	private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack"); 
+
+	private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
 
 	/** The interface binding. */
 	private NetworkInterfaceBinding interfaceBinding;
-	
+
 	/** The network interface element. */
 	private final InterfaceElement interfaceElement;
 
@@ -68,7 +68,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 		}
 		if(this.interfaceBinding == null) {
 			throw new StartException("failed to resolve interface for " + interfaceElement.getName()
-					+ ", " + interfaceElement.getLocation()); 
+					+ ", " + interfaceElement.getLocation());
 		}
 	}
 
@@ -83,7 +83,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 		}
 		return binding;
 	}
-	
+
 	static NetworkInterfaceBinding resolveInterface(final InterfaceElement element) throws SocketException {
 		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
 		while (networkInterfaces.hasMoreElements()) {
@@ -101,7 +101,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 		}
 		return null;
 	}
-	
+
 	static InetAddress getInterfaceAddress(final NetworkInterface networkInterface) {
 		final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
 		while(interfaceAddresses.hasMoreElements()) {
@@ -115,6 +115,6 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 		}
 		return null;
 	}
-	
+
 }
 

@@ -47,7 +47,7 @@ import static org.junit.Assert.fail;
  */
 public abstract class AbstractDeploymentTest {
     protected static final byte[] BLANK_SHA1 = new byte[20];
-    
+
     protected ServiceContainer serviceContainer;
 
     @Before
@@ -56,7 +56,7 @@ public abstract class AbstractDeploymentTest {
         Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
 
         serviceContainer = ServiceContainer.Factory.create();
-        
+
         runWithLatchedBatch(new BatchedWork() {
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {

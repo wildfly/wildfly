@@ -50,6 +50,6 @@ public class FieldResourceInjection<T> extends ResourceInjection<T> {
 
     /** {@inheritDoc} */
     protected Injector<T> getInjector(final Object target) {
-        return new FieldInjector<T>(Values.immediateValue(target), fieldValue);  
+        return new FieldInjector<T>(Values.immediateValue(target), fieldValue);
     }
 }

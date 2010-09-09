@@ -441,7 +441,7 @@ public class NamingContextTestCase {
         final NamingEnumeration<Binding> results = namingContext.listBindings(new CompositeName());
         final Set<String> expected = new HashSet<String>(Arrays.asList("test", "testTwo", "testThree", "testContext"));
         while(results.hasMore()) {
-            final Binding result = results.next(); 
+            final Binding result = results.next();
             final String resultName = result.getName();
             if("test".equals(resultName)) {
                 assertEquals(Object.class.getName(), result.getClassName());

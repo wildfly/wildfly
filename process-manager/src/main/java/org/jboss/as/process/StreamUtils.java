@@ -99,21 +99,21 @@ public final class StreamUtils {
             }
         }
     }
-    
+
     public static byte[] readBytesWithLength(final InputStream in) throws IOException {
         int expectedLength = readInt(in);
         byte[] bytes = new byte[expectedLength];
         readFully(in, bytes, 0, expectedLength);
         return bytes;
     }
-    
+
     public static Status readStatus(final InputStream in) throws IOException{
         int c = readChar(in);
 
         switch (c) {
             case -1: {
                 return Status.END_OF_STREAM;
-            }                    
+            }
             case 0:  {
                 return Status.MORE;
             }
@@ -125,11 +125,11 @@ public final class StreamUtils {
             }
         }
     }
-    
+
 //    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
 //        return new CheckedBytes(input);
 //    }
-    
+
     public static int readInt(final InputStream in) throws IOException {
         int ch1 = in.read();
         int ch2 = in.read();
@@ -139,7 +139,7 @@ public final class StreamUtils {
             throw new EOFException();
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
     }
-    
+
     public static void readFully(final InputStream in, byte b[], int off, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
@@ -151,7 +151,7 @@ public final class StreamUtils {
             n += count;
         }
     }
-    
+
     public static long readLong(final InputStream in) throws IOException {
         byte[] bytes = new byte[8];
         readFully(in, bytes, 0, 8);
@@ -177,7 +177,7 @@ public final class StreamUtils {
             writeChar(output, s.charAt(strIdx ++));
         }
     }
-    
+
     public static void writeChar(final OutputStream output, final char c) throws IOException {
 
         if (c >= 0x20 && c <= 0x7f) {
@@ -191,14 +191,14 @@ public final class StreamUtils {
             output.write((byte)(0x80 | 0x3f & c));
         }
     }
-    
+
     public static void writeInt(final OutputStream out, final int v) throws IOException {
         out.write((v >>> 24) & 0xFF);
         out.write((v >>> 16) & 0xFF);
         out.write((v >>>  8) & 0xFF);
         out.write((v >>>  0) & 0xFF);
     }
-    
+
     public static void writeLong(final OutputStream out, final long v) throws IOException {
         out.write((byte) (v >>> 56) & 0xFF);
         out.write((byte) (v >>> 48) & 0xFF);

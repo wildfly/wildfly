@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model;
 
@@ -13,7 +13,7 @@ import java.util.Collections;
 
 /**
  * A element identifying a profile that should be included in another profile.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeElement> {
@@ -28,7 +28,7 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
             throw new IllegalArgumentException("profile is null");
         this.profile = profile;
     }
-    
+
     public ProfileIncludeElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
@@ -56,10 +56,10 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
         // Handle elements
         requireNoContent(reader);
     }
-    
+
     /**
      * Gets the name of the included profile.
-     * 
+     *
      * @return the profile name. Will not be <code>null</code>
      */
     public String getProfile() {

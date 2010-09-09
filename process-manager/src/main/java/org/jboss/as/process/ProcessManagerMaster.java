@@ -53,24 +53,24 @@ public final class ProcessManagerMaster {
     private static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
 
     private final ServerSocketListener serverSocketListener;
-    
+
     private final Logger log = Logger.getLogger(ProcessManagerMaster.class);
-    
+
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
-    
+
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
     ProcessManagerMaster(InetAddress addr, int port) throws UnknownHostException, IOException {
         serverSocketListener = createServerSocketListener(addr, port);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            
+
             @Override
             public void run() {
                 shutdown();
             }
         }, "Shutdown Hook"));
     }
-    
+
     public static void main(String[] args) throws Exception{
         ParsedArgs parsedArgs = ParsedArgs.parse(args);
         if (parsedArgs == null) {
@@ -78,7 +78,7 @@ public final class ProcessManagerMaster {
         }
         final ProcessManagerMaster master = new ProcessManagerMaster(parsedArgs.address, parsedArgs.port);
         master.start();
-        
+
         List<String> command = new ArrayList<String>(parsedArgs.command);
         command.add(CommandLineConstants.INTERPROCESS_ADDRESS);
         command.add(master.getInetAddress().getHostAddress());
@@ -86,7 +86,7 @@ public final class ProcessManagerMaster {
         command.add(String.valueOf(master.getPort()));
         command.add(CommandLineConstants.INTERPROCESS_NAME);
         command.add(SERVER_MANAGER_PROCESS_NAME);
-        
+
         master.addProcess(SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), parsedArgs.workingDir);
         master.startProcess(SERVER_MANAGER_PROCESS_NAME);
     }
@@ -95,12 +95,12 @@ public final class ProcessManagerMaster {
         Thread t = new Thread(serverSocketListener);
         t.start();
     }
-    
+
     void shutdown() {
         boolean isShutdown = shutdown.getAndSet(true);
         if (isShutdown)
             return;
-            
+
         serverSocketListener.shutdown();
         synchronized (processes) {
             for (ManagedProcess proc : processes.values()) {
@@ -113,13 +113,13 @@ public final class ProcessManagerMaster {
             }
             processes.clear();
         }
-        
+
     }
-    
+
     InetAddress getInetAddress() {
         return serverSocketListener.getAddress();
     }
-    
+
     Integer getPort() {
         return serverSocketListener.getPort();
     }
@@ -129,10 +129,10 @@ public final class ProcessManagerMaster {
     }
 
     void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, RespawnPolicy respawnPolicy) {
-        
+
         if (shutdown.get())
             return;
-        
+
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             if (processes.containsKey(processName)) {
@@ -140,7 +140,7 @@ public final class ProcessManagerMaster {
                 // ignore
                 return;
             }
-            
+
             final ManagedProcess process = new ManagedProcess(this, processName, command, env, workingDirectory, respawnPolicy);
             processes.put(processName, process);
         }
@@ -229,7 +229,7 @@ public final class ProcessManagerMaster {
             }
         }
     }
-    
+
     void sendMessage(final String sender, final String recipient, final byte[] msg) {
         if (shutdown.get())
             return;
@@ -253,7 +253,7 @@ public final class ProcessManagerMaster {
                 }
             }
         }
-        
+
     }
 
     void broadcastMessage(final String sender, final List<String> msg) {
@@ -277,7 +277,7 @@ public final class ProcessManagerMaster {
             }
         }
     }
-    
+
     void broadcastMessage(final String sender, final byte[] msg) {
         if (shutdown.get())
             return;
@@ -299,7 +299,7 @@ public final class ProcessManagerMaster {
             }
         }
     }
-    
+
     void registerStopProcessListener(final String name, final StopProcessListener listener) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
@@ -309,10 +309,10 @@ public final class ProcessManagerMaster {
             process.registerStopProcessListener(listener);
         }
     }
-    
+
     List<String> getProcessNames(final boolean onlyStarted) {
         final Map<String, ManagedProcess> processes = this.processes;
-        
+
         synchronized (processes) {
             if (onlyStarted) {
                 List<String> started = new ArrayList<String>();
@@ -334,20 +334,20 @@ public final class ProcessManagerMaster {
         if (port == null)
             port = 0;
 
-        
+
         ServerSocket serverSocket = new ServerSocket();
         SocketAddress saddr = new InetSocketAddress(addr, port);
         serverSocket.setReuseAddress(true);
         serverSocket.bind(saddr, 20);
         return new ServerSocketListener(serverSocket);
     }
-    
+
     private static class ParsedArgs {
         final Integer port;
         final InetAddress address;
         final String workingDir;
         final List<String> command;
-        
+
         ParsedArgs(Integer port, InetAddress address, String workingDir, List<String> command){
             this.port = port;
             this.address = address;
@@ -370,7 +370,7 @@ public final class ProcessManagerMaster {
                             System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
                             return null;
                         }
-    
+
                     }
                     else if (arg.equals(CommandLineConstants.INTERPROCESS_ADDRESS)) {
                         try {
@@ -387,32 +387,32 @@ public final class ProcessManagerMaster {
             }
             List<String> command = new ArrayList<String>(Arrays.asList(args).subList(i, args.length));
 
-            
+
             port = port != null ? port : Integer.valueOf(0);
             if (address == null) {
                 try {
-                    address = InetAddress.getLocalHost(); 
+                    address = InetAddress.getLocalHost();
                 } catch (UnknownHostException e) {
                     System.err.printf("Could not determine local host");
                     return null;
                 }
             }
-       
+
             return new ParsedArgs(port, address, workingDir, command);
         }
     }
 
     /**
-     * Contains the server socket that is listening for requests from client processes. 
+     * Contains the server socket that is listening for requests from client processes.
      * When a request is accepted, the new socket is handed off to ProcessAcceptorTask
      * which is executed in a separate thread.
-     * 
+     *
      */
     class ServerSocketListener implements Runnable {
-        
+
         private final ServerSocket serverSocket;
         private final ExecutorService executor = Executors.newCachedThreadPool();
-        
+
         private ServerSocketListener(ServerSocket serverSocket) {
             this.serverSocket = serverSocket;
         }
@@ -420,11 +420,11 @@ public final class ProcessManagerMaster {
         int getPort() {
             return serverSocket.getLocalPort();
         }
-        
+
         InetAddress getAddress() {
             return serverSocket.getInetAddress();
         }
-        
+
         @Override
         public void run() {
             boolean done = false;
@@ -458,23 +458,23 @@ public final class ProcessManagerMaster {
      * request is valid, the socket is handed off to the ManagedProcess
      * that has that name.
      * <p>
-     * If the request is not valid, or there is no ManagedProcess with 
-     * that name the socket is closed. 
+     * If the request is not valid, or there is no ManagedProcess with
+     * that name the socket is closed.
      */
     class ProcessAcceptorTask implements Runnable {
         private final Socket socket;
-        
+
         public ProcessAcceptorTask(Socket socket) {
             this.socket = socket;
         }
 
         @Override
         public void run() {
-            boolean ok = false; 
+            boolean ok = false;
             try {
                 InputStream in = socket.getInputStream();
                 StringBuilder sb = new StringBuilder();
-                
+
                 //TODO Timeout on the read?
                 Status status = StreamUtils.readWord(in, sb);
                 if (status != Status.MORE) {
@@ -490,7 +490,7 @@ public final class ProcessManagerMaster {
                     status = StreamUtils.readWord(in, sb);
                 }
                 String processName = sb.toString();
-                
+
                 final Map<String, ManagedProcess> processes = ProcessManagerMaster.this.processes;
                 ManagedProcess process = null;
                 synchronized (processes) {
@@ -505,9 +505,9 @@ public final class ProcessManagerMaster {
                     }
                 }
                 process.setSocket(socket);
-                
+
                 ok = true;
-                
+
             } catch (IOException e) {
                 log.errorf("Process acceptor: error reading from socket: %s", e.getMessage());
             }

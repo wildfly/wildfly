@@ -34,7 +34,7 @@ import junit.framework.TestCase;
 
 /**
  * A XSDValidationUnitTestCase.
- * 
+ *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
@@ -87,7 +87,7 @@ public class XSDValidationUnitTestCase extends TestCase
       assertNotNull(url);
       return url;
    }
-   
+
    private final class ErrorHandlerImpl implements ErrorHandler
    {
       @Override
@@ -107,7 +107,7 @@ public class XSDValidationUnitTestCase extends TestCase
       {
          System.out.println(formatMessage(e));
       }
-      
+
       private String formatMessage(SAXParseException e)
       {
          StringBuffer sb = new StringBuffer();

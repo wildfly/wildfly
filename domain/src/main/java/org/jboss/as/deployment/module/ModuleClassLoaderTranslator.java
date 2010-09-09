@@ -28,7 +28,7 @@ import org.jboss.msc.translate.Translator;
 
 /**
  * Translator that translates a Module into a ClassLoader.
- * 
+ *
  * @author John E. Bailey
  */
 public class ModuleClassLoaderTranslator implements Translator<Module, ClassLoader> {

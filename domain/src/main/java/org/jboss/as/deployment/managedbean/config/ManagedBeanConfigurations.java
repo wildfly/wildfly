@@ -39,7 +39,7 @@ public class ManagedBeanConfigurations implements Serializable{
     public static final AttachmentKey<ManagedBeanConfigurations> ATTACHMENT_KEY = new AttachmentKey<ManagedBeanConfigurations>(ManagedBeanConfigurations.class);
     private static final long serialVersionUID = 821466962862896774L;
 
-    /* Map of managed bean configurations mapped by type */ 
+    /* Map of managed bean configurations mapped by type */
     private final Map<String, ManagedBeanConfiguration> configurations = new HashMap<String, ManagedBeanConfiguration>();
 
     /**

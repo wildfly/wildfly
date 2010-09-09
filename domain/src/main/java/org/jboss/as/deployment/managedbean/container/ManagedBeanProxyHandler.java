@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Method handler used to proxy managed bean method invocations.  For each method called it will check to see if the method
  * supports interception and will execute a new {@link InvocationContext}.  If the method does not support interceptors,
- * it will run the method directly on the managed bean instance. 
+ * it will run the method directly on the managed bean instance.
  *
  * @author John E. Bailey
  */

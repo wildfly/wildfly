@@ -120,7 +120,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final ManagedBeanConfiguration managedBeanConfiguration = new ManagedBeanConfiguration(beanName, beanClass);
 
             processLifecycleMethods(managedBeanConfiguration, beanClass, index);
-            
+
             final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
             managedBeanConfiguration.setResourceConfigurations(processResources(classAnnotations, beanClass));
 

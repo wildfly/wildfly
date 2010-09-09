@@ -128,7 +128,7 @@ public final class ThreadFactoryElement extends AbstractModelElement<ThreadFacto
     }
 
     public void activate(final ServiceActivatorContext context) {
-        
+
     }
 
     public String getName() {

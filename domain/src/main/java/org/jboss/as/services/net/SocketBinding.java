@@ -41,11 +41,11 @@ import org.jboss.msc.service.ServiceName;
 public class SocketBinding {
 
 	public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
-	
+
 	private final SocketBindingElement element;
 	private final NetworkInterfaceBinding networkInterface;
 	private final SocketBindingManager socketBindings;
-	
+
 	SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
 			SocketBindingManager socketBindings) {
 		this.element = element;
@@ -55,16 +55,16 @@ public class SocketBinding {
 
 	/**
 	 * Get the socket binding manager.
-	 * 
+	 *
 	 * @return the socket binding manger
 	 */
 	public SocketBindingManager getSocketBindings() {
 		return socketBindings;
 	}
-	
+
 	/**
 	 * Get the socket address.
-	 * 
+	 *
 	 * @return the socket address
 	 */
 	public InetSocketAddress getSocketAddress() {
@@ -77,7 +77,7 @@ public class SocketBinding {
 
 	/**
 	 * Get the multicast socket address.
-	 * 
+	 *
 	 * @return
 	 */
 	public InetSocketAddress getMulticastSocketAddress() {
@@ -90,7 +90,7 @@ public class SocketBinding {
 
 	/**
 	 * Create and bind a socket.
-	 * 
+	 *
 	 * @return the socket
 	 * @throws IOException
 	 */
@@ -99,22 +99,22 @@ public class SocketBinding {
 		socket.bind(getSocketAddress());
 		return socket;
 	}
-	
+
 	/**
 	 * Create and bind a server socket
-	 * 
+	 *
 	 * @return the server socket
 	 * @throws IOException
 	 */
 	public ServerSocket createServerSocket() throws IOException {
 		final ServerSocket socket = getServerSocketFactory().createServerSocket();
 		socket.bind(getSocketAddress());
-		return socket;	
+		return socket;
 	}
-	
+
 	/**
 	 * Create and bind a server socket.
-	 * 
+	 *
 	 * @param backlog the backlog
 	 * @return the server socket
 	 * @throws IOException
@@ -124,21 +124,21 @@ public class SocketBinding {
 		socket.bind(getSocketAddress(), backlog);
 		return socket;
 	}
-	
+
 	/**
 	 * Create and bind a datagrap socket.
-	 * 
+	 *
 	 * @return the datagram socket
 	 * @throws SocketException
 	 */
 	public DatagramSocket createDatagramSocket() throws SocketException {
 		return new ManagedDatagramSocketBinding(socketBindings, getSocketAddress());
 	}
-	
+
 	/**
 	 * Create and bind a multicast socket. This will also join the given
-	 * multicast address. 
-	 * 
+	 * multicast address.
+	 *
 	 * @return the multicast socket
 	 * @throws IOException
 	 */
@@ -151,9 +151,9 @@ public class SocketBinding {
 	SocketFactory getSocketFactory() {
 		return socketBindings.getSocketFactory();
 	}
-	
+
 	ServerSocketFactory getServerSocketFactory() {
 		return socketBindings.getServerSocketFactory();
 	}
-	
+
 }

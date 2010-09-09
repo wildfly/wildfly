@@ -29,13 +29,13 @@ import org.jboss.as.process.StreamUtils;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
- * 
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Server {
-    
+
     private final ServerCommunicationHandler communicationHandler;
-    
+
 //    public Server(final InputStream errorStream, final InputStream inputStream, final OutputStream outputStream) {
 //        this.processManagerSlave = null;
 //        final Thread thread = FACTORY.newThread(new Runnable() {
@@ -99,10 +99,10 @@ public final class Server {
 
     private void sendCommand(ServerManagerProtocolCommand command) throws IOException {
         sendCommand(command, null);
-    }    
-    
+    }
+
     private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
-        
+
         byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
         communicationHandler.sendMessage(cmd);
     }

@@ -22,7 +22,7 @@
 package org.jboss.as.process;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -36,16 +36,16 @@ public class CommandLineConstants {
 
     /** The name of a process started by the process manager */
     public static final String INTERPROCESS_NAME = "-interprocess-name";
-    
+
     /** Get the version of the server */
     public static final String VERSION = "-version";
-    
+
     /** Configure the file to be used to read properties */
     public static final String PROPERTIES = "-properties";
-    
+
     /** Start a standalone server */
     public static final String STANDALONE = "-standalone";
-    
+
     /** Output usage */
     public static final String HELP = "-help";
 }

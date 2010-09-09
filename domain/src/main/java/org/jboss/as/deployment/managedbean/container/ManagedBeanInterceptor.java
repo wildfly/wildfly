@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * Container to store an interceptor and its resource injections.  
+ * Container to store an interceptor and its resource injections.
  *
  * @author John E. Bailey
  */

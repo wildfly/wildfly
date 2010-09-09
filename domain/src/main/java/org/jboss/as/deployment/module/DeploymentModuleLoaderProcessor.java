@@ -41,7 +41,7 @@ public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor 
 
     /**
      * If there isn't currently a deployment module loader, attach the default loader.
-     * 
+     *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */

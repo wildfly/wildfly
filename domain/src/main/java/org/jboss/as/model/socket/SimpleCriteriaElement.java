@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -13,9 +13,9 @@ import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Indicates that a network interface must be a {@link NetworkInterface#isLoopback() loopback interface} 
+ * Indicates that a network interface must be a {@link NetworkInterface#isLoopback() loopback interface}
  * to match the criteria.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<SimpleCriteriaElement> {
@@ -24,11 +24,11 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
 
     /**
      * Creates a new LoopbackCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @param type the specific type of this element
      * @param criteria criteria to use to validate network interfaces and addresses
-     * 
+     *
      * @throws XMLStreamException if an error occurs
      */
     public SimpleCriteriaElement(XMLExtendedStreamReader reader, Element type, InterfaceCriteria criteria) throws XMLStreamException {
@@ -48,9 +48,9 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<SimpleCriteriaElement>> target,
             SimpleCriteriaElement other) {
-        // no mutable state        
+        // no mutable state
     }
-    
-    
+
+
 
 }

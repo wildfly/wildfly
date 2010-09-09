@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -17,7 +17,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * Indicates that a network interface must have a particular {@link NetworkInterface#getName() name}
  * in order to match the criteria.
- * 
+ *
  * @author Brian Stansberry
  */
 public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCriteriaElement> {
@@ -25,18 +25,18 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
     private static final long serialVersionUID = 52177844089594172L;
 
     private String name;
-    
+
     /**
      * Creates a new NicCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
      */
     public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC);
-        
+
         this.name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-        
+
         setInterfaceCriteria(new NicInterfaceCriteria(name));
     }
 

@@ -40,7 +40,7 @@ import java.util.List;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
- * Deployment unit processor responsible for creating and attaching an annotation index for a deployment unit. 
+ * Deployment unit processor responsible for creating and attaching an annotation index for a deployment unit.
  *
  * @author John E. Bailey
  */
@@ -58,7 +58,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         if(context.getAttachment(ATTACHMENT_KEY) != null)
             return;
-        
+
         final VirtualFile virtualFile = getVirtualFileAttachment(context);
         final Indexer indexer = new Indexer();
         try {
@@ -69,7 +69,7 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
                     inputStream = classFile.openStream();
                     indexer.index(inputStream);
                 } finally {
-                    VFSUtils.safeClose(inputStream);   
+                    VFSUtils.safeClose(inputStream);
                 }
             }
             final Index index = indexer.complete();

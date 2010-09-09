@@ -78,19 +78,19 @@ final class ManagedProcess {
     synchronized void setSocket(Socket socket) throws IOException{
         log.info("Initializing socket for " + processName);
         commandStream.setSocketOutputStream(socket.getOutputStream());
-        
+
         final OutputStreamHandler outputStreamHandler = new OutputStreamHandler(new BufferedInputStream(socket.getInputStream()));
         final Thread outputThread = new Thread(outputStreamHandler);
         outputThread.setName("Process " + processName + " socket reader thread");
         // todo - error handling in the event that a thread can't start?
         outputThread.start();
     }
-    
+
     void start() throws IOException {
         log.info("Starting " + processName);
         start(false);
     }
-    
+
     private void start(boolean isRespawn) throws IOException{
         synchronized (this) {
             if (start) {
@@ -111,10 +111,10 @@ final class ManagedProcess {
             final ErrorStreamHandler errorStreamHandler = new ErrorStreamHandler(processName, process.getErrorStream());
             final Thread errorThread = new Thread(errorStreamHandler);
             errorThread.setName("Process " + processName + " stderr thread");
-            
+
             final Thread monitorThread = new Thread(new ProcessMonitor(process));
             monitorThread.setName("Process " + processName + " monitor thread");
-            
+
             // todo - error handling in the event that a thread can't start?
             errorThread.start();
             monitorThread.start();
@@ -153,7 +153,7 @@ final class ManagedProcess {
         StreamUtils.writeString(commandStream, b);
         commandStream.flush();
     }
-    
+
     void send(final String sender, final byte[] msg) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append("MSG_BYTES");
@@ -183,13 +183,13 @@ final class ManagedProcess {
                 return;
             }
         }
-        
+
         try {
             TimeUnit.MILLISECONDS.sleep(wait);
         } catch (InterruptedException e) {
             log.info("Error waiting  " + wait + "ms to respawn crashed " + processName, e);
         }
-        
+
         synchronized (this) {
             if (stopped || start)
                 return;
@@ -200,8 +200,8 @@ final class ManagedProcess {
             log.warn("Error respawning " + processName, e);
         }
     }
-    
-    
+
+
     private final class OutputStreamHandler implements Runnable {
 
         private final InputStream inputStream;
@@ -211,8 +211,8 @@ final class ManagedProcess {
         }
 
         public void run() {
-            
-            // FIXME reliable transmission support (JBAS-8262)            
+
+            // FIXME reliable transmission support (JBAS-8262)
             final InputStream inputStream = this.inputStream;
             final StringBuilder b = new StringBuilder();
             try {
@@ -287,7 +287,7 @@ final class ManagedProcess {
                                     }
                                     else {
                                         break OUT;
-                                    }                                    
+                                    }
                                 }
                                 master.addProcess(name, execCmd, env, workingDirectory);
                                 break;
@@ -379,7 +379,7 @@ final class ManagedProcess {
             }
         }
     }
-    
+
     private static final class ErrorStreamHandler implements Runnable {
         private static final Logger log = Logger.getLogger("org.jboss.as.process.stderr");
 
@@ -427,17 +427,17 @@ final class ManagedProcess {
             }
         }
     }
-    
+
     /**
-     * OutputStream to buffer commands to a process until the socket has been initialized 
-     * 
+     * OutputStream to buffer commands to a process until the socket has been initialized
+     *
      */
     private class DelegatingSocketOutputStream extends OutputStream {
         private List<byte[]> bufferedBytes = new ArrayList<byte[]>(0);
         private volatile OutputStream current;
         private volatile ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
         private volatile OutputStream realOut;
-        
+
         @Override
         public void write(int b) throws IOException {
             if (current == null) {
@@ -450,12 +450,12 @@ final class ManagedProcess {
                             current = realOut;
                         }
                     }
-                    
+
                 }
             }
             current.write(b);
         }
-        
+
         @Override
         public void flush() throws IOException {
             OutputStream curr = null;
@@ -472,7 +472,7 @@ final class ManagedProcess {
             if (curr != null)
                 curr.flush();
         }
-        
+
         void setSocketOutputStream(OutputStream out) throws IOException {
             synchronized (this) {
                 if (realOut != null) {
@@ -497,7 +497,7 @@ final class ManagedProcess {
                 bufferedBytes.clear();
             }
         }
-        
+
         void closeSocketOutputStream() {
             synchronized (this) {
                 if (realOut == null) {
@@ -509,14 +509,14 @@ final class ManagedProcess {
             }
         }
     }
-    
+
     private class ProcessMonitor implements Runnable {
     	final Process process;
-    	
+
     	ProcessMonitor(Process process){
     		this.process = process;
     	}
-    	
+
 		@Override
         public void run() {
             boolean respawn = false;
@@ -538,7 +538,7 @@ final class ManagedProcess {
                 }
             }
         }
-    	
+
     }
 
     private static void safeClose(final Closeable closeable) {
@@ -547,7 +547,7 @@ final class ManagedProcess {
         } catch (Throwable ignored) {
         }
     }
-    
+
     void registerStopProcessListener(StopProcessListener listener) {
         synchronized (this) {
             if (stopProcessListeners == null)
@@ -555,7 +555,7 @@ final class ManagedProcess {
             stopProcessListeners.add(listener);
         }
     }
-    
+
     private void invokeStopProcessListeners(int exitCode) {
         List<StopProcessListener> listeners = null;
         synchronized (ManagedProcess.this) {
@@ -566,8 +566,8 @@ final class ManagedProcess {
                 listener.processStopped(exitCode);
         }
     }
-    
+
     interface StopProcessListener{
         void processStopped(int exitCode);
-    }    
+    }
 }

@@ -29,7 +29,7 @@ import java.io.Closeable;
 
 /**
  * Wrapper object to hold onto and close a VFS mount handle.
- * 
+ *
  * @author John E. Bailey
  */
 public class MountHandle {

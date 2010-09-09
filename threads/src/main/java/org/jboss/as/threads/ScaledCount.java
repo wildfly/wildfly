@@ -47,7 +47,7 @@ public final class ScaledCount implements Serializable{
     }
 
     public int getScaledCount() {
-        return (int)(count + (perCpu * Runtime.getRuntime().availableProcessors())); 
+        return (int)(count + (perCpu * Runtime.getRuntime().availableProcessors()));
     }
 
     public long elementHash() {

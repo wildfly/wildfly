@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.server.manager;
 
@@ -11,11 +11,11 @@ import java.util.Properties;
 
 /**
  * Encapsulates the runtime environment for a {@link ServerManager}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ServerManagerEnvironment {
-    
+
 
     /////////////////////////////////////////////////////////////////////////
     //                   Configuration Value Identifiers                   //
@@ -84,7 +84,7 @@ public class ServerManagerEnvironment {
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/tmp</tt> .
      */
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
-    
+
     private final Properties props;
     private final String processName;
     private final InetAddress processManagerAddress;
@@ -97,34 +97,34 @@ public class ServerManagerEnvironment {
     private final File domainLogDir;
     private final File domainServersDir;
     private final File domainTempDir;
-    
-    
+
+
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
-    
-    public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
+
+    public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processManagerAddress, Integer processManagerPort) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
         this.props = props;
-        
+
         if (stdin == null) {
              throw new IllegalArgumentException("stdin is null");
         }
         this.stdin = stdin;
-        
+
         if (stdout == null) {
              throw new IllegalArgumentException("stdout is null");
         }
         this.stdout = stdout;
-        
+
         if (stderr == null) {
              throw new IllegalArgumentException("stderr is null");
         }
         this.stderr = stderr;
-        
+
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -144,62 +144,62 @@ public class ServerManagerEnvironment {
         }
         this.homeDir = home;
         System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
-        
+
         File tmp = getFileFromProperty(MODULES_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
         }
         this.modulesDir = tmp;
         System.setProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_BASE_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "domain");
         }
         this.domainBaseDir = tmp;
         System.setProperty(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "configuration");
         }
         this.domainConfigurationDir = tmp;
         System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "data");
         }
         this.domainDataDir = tmp;
         System.setProperty(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_LOG_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "log");
         }
         this.domainLogDir = tmp;
         System.setProperty(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_SERVERS_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "servers");
         }
         this.domainServersDir = tmp;
         System.setProperty(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(DOMAIN_TEMP_DIR);
         if (tmp == null) {
             tmp = new File(this.domainBaseDir, "tmp");
         }
         this.domainTempDir = tmp;
         System.setProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
-        
+
     }
-    
+
     /**
      * Gets the original System.in for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stdin
      */
     public InputStream getStdin() {
@@ -209,7 +209,7 @@ public class ServerManagerEnvironment {
     /**
      * Gets the original System.out for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stdout
      */
     public PrintStream getStdout() {
@@ -219,7 +219,7 @@ public class ServerManagerEnvironment {
     /**
      * Gets the original System.err for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stderr
      */
     public PrintStream getStderr() {
@@ -228,17 +228,17 @@ public class ServerManagerEnvironment {
 
     /**
      * Get the process name of this process, needed to inform the process manager we have started
-     * 
+     *
      * @return the process name
      */
     public String getProcessName() {
         return processName;
     }
-    
+
     /**
      * Gets the address, if any, the process manager passed to this process
      * to use in communicating with it.
-     * 
+     *
      * @return the process manager's address, or <code>null</code> if
      *         none was provided
      */
@@ -249,7 +249,7 @@ public class ServerManagerEnvironment {
     /**
      * Gets the port number, if any, the process manager passed to this process
      * to use in communicating with it.
-     * 
+     *
      * @return the process manager's port, or <code>null</code> if
      *         none was provided
      */

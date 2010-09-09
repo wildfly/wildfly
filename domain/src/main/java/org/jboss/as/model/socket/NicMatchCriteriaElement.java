@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -20,7 +20,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * Indicates that a network interface must have a {@link NetworkInterface#getName() name}
  * that matches a given regular expression in order to match the criteria.
- * 
+ *
  * @author Brian Stansberry
  */
 public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<NicMatchCriteriaElement> {
@@ -28,16 +28,16 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
     private static final long serialVersionUID = 52177844089594172L;
 
     private Pattern pattern;
-    
+
     /**
      * Creates a new NicMatchCriteriaElement by parsing an xml stream
-     * 
+     *
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
      */
     public NicMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC_MATCH);
-        
+
         // Handle attributes
         Pattern pattern = null;
         final int count = reader.getAttributeCount();
@@ -67,7 +67,7 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
         this.pattern = pattern;
         // Handle elements
         requireNoContent(reader);
-        
+
 
         setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
     }

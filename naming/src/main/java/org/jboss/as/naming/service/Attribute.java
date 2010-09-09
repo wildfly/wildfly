@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * Attributes used with the naming subsystem element.
- * 
+ *
  * @author John E. Bailey
  */
 public enum Attribute {

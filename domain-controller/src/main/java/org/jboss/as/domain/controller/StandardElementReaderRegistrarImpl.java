@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.domain.controller;
 
@@ -55,18 +55,18 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
             "org.jboss.as.jboss-as-transactions",
             "org.jboss.as.jboss-as-naming"
     });
-    
-    
+
+
     /* (non-Javadoc)
      * @see org.jboss.as.server.manager.ElementHandlerRegistrar#registerStandardDomainHandlers(org.jboss.staxmapper.XMLMapper)
      */
     @Override
     public synchronized void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException {
-        
+
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
             mapper.registerRootElement(new QName(ns.getUriString(), Element.DOMAIN.getLocalName()), DomainParser.getInstance());
         }
-        
+
         registerExtensions(mapper);
     }
 
@@ -75,15 +75,15 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
      */
     @Override
     public synchronized void registerStandardHostReaders(XMLMapper mapper) throws ModuleLoadException {
-        
+
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
             mapper.registerRootElement(new QName(ns.getUriString(), Element.HOST.getLocalName()), HostParser.getInstance());
         }
-        
+
         registerExtensions(mapper);
 
     }
-    
+
     private static void registerExtensions(XMLMapper mapper) throws ModuleLoadException {
         for (String module : EXTENSION_MODULES) {
             for (Extension extension : Module.loadService(module, Extension.class)) {

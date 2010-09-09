@@ -33,39 +33,39 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Flexible implementation of {@link XMLElementReader} designed for use in
  * unit tests. Takes a {@link ReadElementCallback} in the constructor and uses
  * it to create the desired domain model object.
- * 
+ *
  * @author Brian Stansberry
  */
 public class TestXMLElementReader<T extends AbstractModelElement<T>> implements XMLElementReader<ParseResult<T>> {
 
     private final ReadElementCallback<T> callback;
-    
+
     /**
      * Uses a {@link SimpleReadElementCallback} as the callback.
-     * 
+     *
      * @param clazz the class to base the callback on
-     * 
+     *
      * @throws NoSuchMethodException if <code>clazz</code> does not expose an
      *          appropriate constructor
-     *          
+     *
      * @see SimpleReadElementCallback#getCallback(Class)
      */
     public TestXMLElementReader(Class<T> clazz) throws NoSuchMethodException {
         this(SimpleReadElementCallback.getCallback(clazz));
     }
-    
+
     /**
      * Creates a TestXMLElementReader that uses the given callback.
-     * 
+     *
      * @param callback the callback
      */
     public TestXMLElementReader(ReadElementCallback<T> callback) {
         this.callback = callback;
     }
-    
+
     /**
      * Passes the <code>reader</code> to the {@link ReadElementCallback#readElement(XMLExtendedStreamReader) callback}.
-     * 
+     *
      * {@inheritDoc}
      */
     @Override

@@ -46,7 +46,7 @@ public class DeploymentFailureListener extends AbstractServiceListener<Object>{
 
     /**
      * Construct new instance with a deployment service name.
-     * 
+     *
      * @param deploymentServiceName The deployment service name
      */
     public DeploymentFailureListener(final ServiceName deploymentServiceName) {

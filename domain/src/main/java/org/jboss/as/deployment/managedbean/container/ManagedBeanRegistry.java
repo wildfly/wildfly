@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Static registry used to manged registration and retrieval of managed bean containers.
- * 
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanRegistry {

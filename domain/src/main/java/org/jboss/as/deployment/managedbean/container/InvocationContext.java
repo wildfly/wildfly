@@ -30,7 +30,7 @@ import java.util.Map;
 
 /**
  * Implementation of {@link javax.interceptor.InvocationContext} which supports the execution of managed bean method invocations
- * with an associated interceptor chain.  Uses a simple iterator to manage stepping through the interceptor chain. 
+ * with an associated interceptor chain.  Uses a simple iterator to manage stepping through the interceptor chain.
  *
  * @author John E. Bailey
  */
@@ -92,13 +92,13 @@ public class InvocationContext<T> implements javax.interceptor.InvocationContext
      * This implementation will first check to see if there are any more interceptors and if so, will use the next in the chain,
      * if not it will run the method against the target object.
      *
-     * @return The result of the interceptor chain invocation.  
+     * @return The result of the interceptor chain invocation.
      * @throws Exception
      */
     public Object proceed() throws Exception {
         if(interceptors.hasNext()) {
             final ManagedBeanInterceptor.AroundInvokeInterceptor<?> interceptor = interceptors.next();
-            return interceptor.intercept(this);       
+            return interceptor.intercept(this);
         } else {
             return method.invoke(target, parameters);
         }

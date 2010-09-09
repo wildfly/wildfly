@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -50,21 +50,21 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.process.CommandLineConstants;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public abstract class TestProcessUtils {
-    
+
     private static final int DEFAULT_PORT = 12934;
     private static final int PORT;
     static {
         String s = System.getenv().get("PM_TEST_LISTENER_PORT");
         PORT = s == null ? DEFAULT_PORT : Integer.valueOf(s);
     }
-    
+
     private static final int TIMEOUT_MILLISECONDS = 1000;
-    
+
     static final Map<String, TestCommand> COMMANDS;
     static {
         Map<String, TestCommand> map = new HashMap<String, TestCommand>();
@@ -81,7 +81,7 @@ public abstract class TestProcessUtils {
         return createCommand(processName, classname, pmPort, 0, false);
     }
 
-    public static List<String> createCommand(String processName, String classname, int pmPort,  
+    public static List<String> createCommand(String processName, String classname, int pmPort,
             int debugPort, boolean suspend) throws UnknownHostException {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getJava());
@@ -105,7 +105,7 @@ public abstract class TestProcessUtils {
 
         return cmd;
     }
-    
+
     public static TestStreamManager createStreamManager(TestProcessController controller) {
         ServerSocketThread serverSocketThread = new ServerSocketThread(
                 controller);
@@ -136,9 +136,9 @@ public abstract class TestProcessUtils {
                 server.setReuseAddress(true);
                 SocketAddress addr = new InetSocketAddress(InetAddress.getLocalHost(), PORT);
                 System.err.println("*Test - " + this.getName() + " attempting to listen on " + PORT);
-                
-                //ServerSocket.close() does not seem to always free up the port. I don't really want 
-                //to modify everything to pass ports through to the tests yet, so retry a few times 
+
+                //ServerSocket.close() does not seem to always free up the port. I don't really want
+                //to modify everything to pass ports through to the tests yet, so retry a few times
                 for (int i = 0 ; ; i++) {
                     try {
                         server.bind(addr, 5);
@@ -165,7 +165,7 @@ public abstract class TestProcessUtils {
                     if (listener.getProcessName() != null)
                         controller.stopProcess(listener.getProcessName());
                 }
-                    
+
                 for (ListenerSocketThread listener : listenerThreadsByProcessName.values()) {
                     listener.shutdown();
                     if (listener.getProcessName() != null)
@@ -174,11 +174,11 @@ public abstract class TestProcessUtils {
                 listenerThreadsByProcessName.clear();
             }
         }
-        
+
         @Override
         public TestProcessListenerStream getProcessListener(String name, long timeoutMillis) {
             long cutoff = System.currentTimeMillis() + timeoutMillis;
-            
+
             TestProcessListenerStream stream = null;
             do {
                 synchronized (this) {
@@ -191,7 +191,7 @@ public abstract class TestProcessUtils {
                     }
                 }
             }while (stream == null && System.currentTimeMillis() < cutoff);
-            
+
             return stream;
         }
 
@@ -225,7 +225,7 @@ public abstract class TestProcessUtils {
                 return thread;
             }
         }
-        
+
         public void detachProcessListener(String name) {
             synchronized (this) {
                 listenerThreadsByProcessName.remove(name);
@@ -284,7 +284,7 @@ public abstract class TestProcessUtils {
                 processLatch.countDown();
             }
         }
-        
+
         void waitForStart() {
             try {
                 latch.await();
@@ -497,11 +497,11 @@ public abstract class TestProcessUtils {
         public String formatCommandForSend() {
             return cmd() + ":" + processName;
         }
-        
+
         public String toString() {
             return cmd() + ":" + processName;
         }
-        
+
     }
 
     private static class StartCommand extends TestCommand {
@@ -576,7 +576,7 @@ public abstract class TestProcessUtils {
         public String formatCommandForSend() {
             return super.toString() + ":" + command;
         }
-        
+
         @Override
         public String toString() {
             return cmd() + ":" + processName + ":" + command;
@@ -591,13 +591,13 @@ public abstract class TestProcessUtils {
         TestProcessListenerStream getProcessListener(String name, long timeoutMillis);
 
         void stopProcessListener(String name);
-        
+
         void detachProcessListener(String name);
     }
 
     public interface TestProcessListenerStream {
         String getProcessName();
-        
+
         String readMessage();
 
         String readMessage(long timeoutMs);

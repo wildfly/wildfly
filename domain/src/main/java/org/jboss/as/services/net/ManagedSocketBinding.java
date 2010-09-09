@@ -32,15 +32,15 @@ import java.net.SocketAddress;
 class ManagedSocketBinding extends Socket implements ManagedBinding {
 
 	private final SocketBindingManager socketBindings;
-	
+
 	ManagedSocketBinding(final SocketBindingManager socketBindings) {
 		this.socketBindings = socketBindings;
 	}
-	
+
 	public InetSocketAddress getBindAddress() {
 		return InetSocketAddress.class.cast(getLocalAddress());
 	}
-	
+
 	public void bind(SocketAddress bindpoint) throws IOException {
 		super.bind(bindpoint);
 		socketBindings.registerBinding(this);
@@ -53,6 +53,6 @@ class ManagedSocketBinding extends Socket implements ManagedBinding {
 			socketBindings.unregisterBinding(this);
 		}
 	}
-	
+
 }
 

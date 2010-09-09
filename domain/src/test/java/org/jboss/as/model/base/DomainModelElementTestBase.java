@@ -42,50 +42,50 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Base class for unit-tests of {@link AbstractModelElement} subclasses.
- * 
+ *
  * @author Brian Stansberry
  */
 public abstract class DomainModelElementTestBase extends TestCase {
 
     private XMLMapper mapper;
-    
+
     /**
      * @param name
      */
     public DomainModelElementTestBase(String name) {
         super(name);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mapper = createXMLMapper();        
+        mapper = createXMLMapper();
     }
-    
+
     /**
-     * Tests that the element can be serialized, a new instance can be 
+     * Tests that the element can be serialized, a new instance can be
      * deserialized, and that the two objects will be equivalent.
      * @throws Exception
      */
     public abstract void testSerializationDeserialization() throws Exception;
-    
+
     /**
      * Test that the object can be parsed from XML, written back to XML, a new
      * instance reparsed from that output, and that the two parsed objects will
      * be equivalent.
-     * 
+     *
      * @throws Exception
      */
 //    public abstract void testXMLRoundTrip() throws Exception;
-    
-    
+
+
     protected XMLMapper getXMLMapper() {
         return mapper;
     }
-    
+
     /**
      * Create the XMLMapper that will be returned by {@link #getXMLMapper()}
-     * 
+     *
      * @return
      * @throws Exception
      */
@@ -93,18 +93,18 @@ public abstract class DomainModelElementTestBase extends TestCase {
 
     /**
      * Gets the namespace that will be used in tests.
-     * 
+     *
      * @return
      */
     protected abstract String getTargetNamespace();
 
     /**
      * Gets the schema location of the namespace that will be used in tests.
-     * 
+     *
      * @return
      */
     protected abstract String getTargetNamespaceLocation();
-    
+
     protected static byte[] serialize(AbstractModelElement<?> element) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         final Checksum chksum = new Adler32();

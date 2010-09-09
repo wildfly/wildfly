@@ -89,7 +89,7 @@ public final class Main {
             	} else {
             		server = new Server(config);
             	}
-            	// Start the server. 
+            	// Start the server.
             	server.start();
             }
         } catch (Throwable t) {
@@ -110,7 +110,7 @@ public final class Main {
             System.exit(1);
         }
     }
-    
+
     private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
@@ -150,7 +150,7 @@ public final class Main {
                     }
                 } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
                     procName = args[++i];
-                    
+
                 }else if (arg.equals(CommandLineConstants.STANDALONE)) {
                 	// Start in standalone mode
                 	standalone = true;

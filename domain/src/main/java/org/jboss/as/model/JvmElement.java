@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model;
 
@@ -14,7 +14,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A Java Virtual Machine configuration.
- * 
+ *
  * @author Brian Stansberry
  */
 public class JvmElement extends AbstractModelElement<JvmElement> {
@@ -27,7 +27,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     private String maxHeap;
     private PropertiesElement environmentVariables;
     private PropertiesElement systemProperties;
-    
+
     /**
      * @param location
      */
@@ -106,13 +106,13 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             }
         }
     }
-    
+
     public JvmElement(JvmElement ... toCombine) {
         // FIXME -- hack Location
         super(new Location("N/A", 0, 0, null));
-        
+
         this.name = toCombine[0].getName();
-        
+
         for (JvmElement element : toCombine) {
             if (! this.name.equals(element.getName())) {
                 throw new IllegalArgumentException("Jvm " + element.getName() + " has a different name from the other jvm elements; all must have the same name");
@@ -127,21 +127,21 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                 this.maxHeap = element.getMaxHeap();
             }
         }
-        
+
         PropertiesElement[] combinedEnv = new PropertiesElement[toCombine.length];
         for (int i = 0; i < toCombine.length; i++) {
             combinedEnv[i] = toCombine[i].getEnvironmentVariables();
         }
         this.environmentVariables = new PropertiesElement(Element.ENVIRONMENT_VARIABLES, true, combinedEnv);
-        
+
         PropertiesElement[] combinedSysp = new PropertiesElement[toCombine.length];
         for (int i = 0; i < toCombine.length; i++) {
             combinedSysp[i] = toCombine[i].getSystemProperties();
         }
         this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, combinedSysp);
     }
-    
-    
+
+
 
     public String getJavaHome() {
         return javaHome;
@@ -170,11 +170,11 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     public String getName() {
         return name;
     }
-    
+
     public PropertiesElement getEnvironmentVariables() {
         return environmentVariables;
     }
-    
+
     public PropertiesElement getSystemProperties() {
         return systemProperties;
     }
@@ -216,11 +216,11 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        
+
         if (javaHome != null) {
             streamWriter.writeAttribute(Attribute.JAVA_HOME.getLocalName(), javaHome);
         }
-        
+
         if (heapSize != null || maxHeap != null) {
             streamWriter.writeStartElement(Element.HEAP.getLocalName());
             if (heapSize != null)
@@ -229,12 +229,12 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                 streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), maxHeap);
             streamWriter.writeEndElement();
         }
-        
+
         if (environmentVariables != null && environmentVariables.size() > 0) {
             streamWriter.writeStartElement(Element.ENVIRONMENT_VARIABLES.getLocalName());
             environmentVariables.writeContent(streamWriter);
         }
-        
+
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
@@ -269,6 +269,6 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         this.maxHeap = max;
         // Handle elements
         requireNoContent(reader);
-        
+
     }
 }

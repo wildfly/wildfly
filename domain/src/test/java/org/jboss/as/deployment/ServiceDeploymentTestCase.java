@@ -76,7 +76,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
     @Test
     public void testDeployment() throws Exception {
         executeDeployment(initializeDeployment("/test/serviceXmlDeployment.jar"));
-        
+
         final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME);
         assertNotNull(testServiceController);
         assertEquals(ServiceController.State.UP, testServiceController.getState());

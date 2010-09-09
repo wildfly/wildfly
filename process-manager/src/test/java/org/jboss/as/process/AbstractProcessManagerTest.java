@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -42,7 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -53,7 +53,7 @@ public abstract class AbstractProcessManagerTest {
     Set<String> stoppedProcesses = new HashSet<String>();
 
     private TestStreamManager testManager;
-    
+
 
     @Before
     public void beforeTest() throws IOException, UnknownHostException{
@@ -94,9 +94,9 @@ public abstract class AbstractProcessManagerTest {
     }
 
     protected TestFile addProcess(String processName, Class<?> clazz, int debugPort, boolean suspend) throws UnknownHostException {
-        master.addProcess(processName, 
-                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend), 
-                System.getenv(), 
+        master.addProcess(processName,
+                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend),
+                System.getenv(),
                 ".");
         processes.add(processName);
         return TestFileUtils.getOutputFile(processName);
@@ -108,10 +108,10 @@ public abstract class AbstractProcessManagerTest {
 
     protected TestFile addProcess(String processName, Class<?> clazz, RespawnPolicy respawnPolicy,
             int debugPort, boolean suspend)  throws UnknownHostException {
-        master.addProcess(processName, 
-                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend), 
-                System.getenv(), 
-                ".", 
+        master.addProcess(processName,
+                TestProcessUtils.createCommand(processName, clazz.getName(), master.getPort(), debugPort, suspend),
+                System.getenv(),
+                ".",
                 respawnPolicy);
         processes.add(processName);
         return TestFileUtils.getOutputFile(processName);
@@ -155,11 +155,11 @@ public abstract class AbstractProcessManagerTest {
         master.registerStopProcessListener(processName, stopListener);
         return new ProcessExitCodeAndShutDownLatch(stopListener);
     }
-    
+
     protected TestProcessListenerStream getTestProcessListener(String name, long timeoutMillis) {
         return testManager.getProcessListener(name, timeoutMillis);
     }
-    
+
     protected void detachTestProcessListener(String name) {
         testManager.detachProcessListener(name);
     }
@@ -167,7 +167,7 @@ public abstract class AbstractProcessManagerTest {
     protected void removeProcess(String name) {
         master.removeProcess(name);
     }
-    
+
     protected void sendMessage(String sender, String recipient, List<String> msg){
         master.sendMessage(sender, recipient, msg);
     }
@@ -190,7 +190,7 @@ public abstract class AbstractProcessManagerTest {
             result.add(str);
         return result;
     }
-    
+
     protected List<String> getProcessNames(boolean onlyStarted) {
         return master.getProcessNames(onlyStarted);
     }
@@ -213,7 +213,7 @@ public abstract class AbstractProcessManagerTest {
             }
         }
     }
-    
+
     protected static class ProcessExitCodeAndShutDownLatch {
         final WaitForStopProcessListener listener;
 
@@ -224,11 +224,11 @@ public abstract class AbstractProcessManagerTest {
         public void waitForStop() {
             listener.waitForStop();
         }
-        
+
         public int getExitCode() {
             return listener.exitCode;
         }
-        
+
         public boolean await(long timeout, TimeUnit unit) throws InterruptedException{
             return listener.stopLatch.await(timeout, unit);
         }

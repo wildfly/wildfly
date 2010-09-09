@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -14,26 +14,26 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Parsing utility methods.
- * 
+ *
  * @author Brian Stansberry
  */
 class ParsingUtil {
 
-    
+
     public static final Set<Element> SIMPLE_CRITERIA = EnumSet.of(Element.LOOPBACK, Element.LINK_LOCAL_ADDRESS,
-            Element.MULTICAST, Element.NIC, Element.NIC_MATCH, Element.POINT_TO_POINT, Element.SITE_LOCAL_ADDRESS, 
+            Element.MULTICAST, Element.NIC, Element.NIC_MATCH, Element.POINT_TO_POINT, Element.SITE_LOCAL_ADDRESS,
             Element.PUBLIC_ADDRESS, Element.SUBNET_MATCH, Element.UP, Element.VIRTUAL);
     public static final String SIMPLE_CRITERIA_STRING;
     public static final Set<Element> ALL_CRITERIA = EnumSet.copyOf(SIMPLE_CRITERIA);
     public static final String ALL_CRITERIA_STRING;
     static {
         ALL_CRITERIA.add(Element.ANY);
-        ALL_CRITERIA.add(Element.NOT);        
-        
+        ALL_CRITERIA.add(Element.NOT);
+
         SIMPLE_CRITERIA_STRING = criteriaToString(SIMPLE_CRITERIA);
         ALL_CRITERIA_STRING = criteriaToString(ALL_CRITERIA);
     }
-    
+
     private static String criteriaToString(Set<Element> criteria) {
         final StringBuilder b = new StringBuilder();
         Iterator<Element> iterator = criteria.iterator();
@@ -46,13 +46,13 @@ class ParsingUtil {
         }
         return b.toString();
     }
-    
-    /** 
-     * Creates the appropriate AbstractInterfaceCriteriaElement for an element 
+
+    /**
+     * Creates the appropriate AbstractInterfaceCriteriaElement for an element
      * of a type included in {@link ParsingUtil#SIMPLE_CRITERIA}.
-     * 
+     *
      * @return the criteria element
-     * 
+     *
      * @throws XMLStreamException if an error occurs
      */
     public static AbstractInterfaceCriteriaElement<?> parseSimpleInterfaceCriteria(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
@@ -104,15 +104,15 @@ class ParsingUtil {
             }
             default: throw new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
         }
-        
+
         return result;
     }
-    
+
     /** Returns an XMLStreamException stating that at least one of <code>criteria</code>  must be supplied */
-    public static XMLStreamException missingCriteria(XMLExtendedStreamReader reader, String criteria) {        
-        return new XMLStreamException("At least one of the following elements must be supplied: " + criteria, reader.getLocation());        
+    public static XMLStreamException missingCriteria(XMLExtendedStreamReader reader, String criteria) {
+        return new XMLStreamException("At least one of the following elements must be supplied: " + criteria, reader.getLocation());
     }
-    
+
     /** Prevent instantiation */
     private ParsingUtil() {}
 }

@@ -33,11 +33,11 @@ import java.net.SocketAddress;
 class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
 
 	private final SocketBindingManager socketBindings;
-	
+
 	ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
 		this.socketBindings = socketBindings;
 	}
-	
+
 	public InetSocketAddress getBindAddress() {
 		return InetSocketAddress.class.cast(getLocalPort());
 	}
@@ -46,7 +46,7 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
 		super.bind(endpoint, backlog);
 		socketBindings.registerBinding(this);
 	}
-	
+
 	public Socket accept() throws IOException {
 		final ManagedSocketBinding socket = new ManagedSocketBinding(socketBindings);
 		implAccept(socket);
@@ -60,6 +60,6 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
 			socketBindings.unregisterBinding(this);
 		}
 	}
-	
+
 }
 

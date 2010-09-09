@@ -51,7 +51,7 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         super(location);
         this.module = module;
     }
-    
+
     public ExtensionElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle attributes
@@ -62,7 +62,7 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
 
     /**
      * Gets the module identifier of the extension
-     * 
+     *
      * @return the module identifier
      */
     public String getModule() {

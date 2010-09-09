@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors. 
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -45,7 +45,7 @@ import sun.jvmstat.monitor.MonitoredVmUtil;
 import sun.jvmstat.monitor.VmIdentifier;
 
 /**
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -59,28 +59,28 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
         Object id = getProcessId("Main", CrashingProcess.class);
-        
+
         detachTestProcessListener("Main");
         sendMessage("Test", "Main", lazyList("Exit1"));
         assertEquals("Main-Exit1", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(1, stopLatch.getExitCode());
-        
+
         //Check the process has been respawned
         listener = getTestProcessListener("Main", 1000);
         assertNotNull(listener);
         assertFalse(id.equals(getProcessId("Main", CrashingProcess.class)));
         assertTrue(id != getProcessId("Main", CrashingProcess.class));
-        
+
         stopTestProcessListenerAndWait(listener);
         removeProcess("Main");
     }
-    
+
     @Test
     public void testRespawnKilledProcess() throws Exception {
         addProcess("KillMe", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("KillMe");
-       
+
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("KillMe");
         Object id = getProcessId("KillMe", CrashingProcess.class);
 
@@ -88,62 +88,62 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         killProcess("KillMe", CrashingProcess.class);
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertTrue(0 != stopLatch.getExitCode());
-        
+
         //Check the process has been respawned
         listener = getTestProcessListener("KillMe", 1000);
         assertNotNull(listener);
         assertFalse(id.equals(getProcessId("KillMe", CrashingProcess.class)));
-        
+
         stopTestProcessListenerAndWait(listener);
         removeProcess("KillMe");
     }
-    
+
     @Test
     public void testDontRespawnProcessShutdownViaPM() throws Exception {
         addProcess("Main", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
-        
+
         stopTestProcessListenerAndWait(listener);
-        
+
         //Check the process has not been respawned
         assertNull(getTestProcessListener("Main", 1000));
     }
-    
+
     @Test
     public void testDontRespawnProcessWithExitCode0() throws Exception {
         addProcess("Main", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("Main");
-        
+
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
-        
+
         detachTestProcessListener("Main");
         sendMessage("Test", "Main", lazyList("Exit0"));
         assertEquals("Main-Exit0", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(0, stopLatch.getExitCode());
-        
+
         //Check the process has not been respawned
         assertNull(getTestProcessListener("Main", 1000));
     }
-    
+
     @Test
     public void testDelayInRespawningProcessesBeforeGivingUp() throws Exception {
         addProcess("KillMe", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("KillMe");
         runDelayInRespawningProcessesBeforeGivingUp(listener);
-        
+
         assertNull(getTestProcessListener("KillMe", 1000));
-        
+
         listener = startTestProcessListenerAndWait("KillMe");
         runDelayInRespawningProcessesBeforeGivingUp(listener);
-        
+
         assertNull(getTestProcessListener("KillMe", 1000));
     }
-    
+
     private void runDelayInRespawningProcessesBeforeGivingUp(TestProcessListenerStream listener) throws Exception{
         long lastRespawn = 0;
         Object lastId = getProcessId("KillMe", CrashingProcess.class);
-        
+
         for (int i = 0 ; i < 3 ; i++) {
             ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("KillMe");
 
@@ -153,7 +153,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
             assertTrue("Failed for " + i, stopLatch.await(1000, TimeUnit.MILLISECONDS));
             assertTrue(0 != stopLatch.getExitCode());
             listener.shutdown();
-            
+
             listener = getTestProcessListener("KillMe", 1000);
             if (i == 2) {
                 assertNull(listener);
@@ -162,24 +162,24 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
                 long respawn = System.currentTimeMillis() - killStart;
                 assertTrue(respawn + "<" + lastRespawn, respawn >= lastRespawn);
                 lastRespawn = respawn;
-                
+
                 Object id = getProcessId("KillMe", CrashingProcess.class);
                 assertFalse(lastId.equals(id));
                 lastId = id;
             }
         }
-        
+
     }
-    
-    
+
+
     private Object getProcessId(String processName, Class<?> clazz) throws Exception {
         String classname = clazz.getName();
         MonitoredHost local = MonitoredHost.getMonitoredHost("localhost");
-        
-        //OpenJDK insists this is an Integer, Sun does not seem to care the set can be parameterized with everything 
+
+        //OpenJDK insists this is an Integer, Sun does not seem to care the set can be parameterized with everything
         @SuppressWarnings("unchecked")
         Set vmList = local.activeVms();
-        
+
         Object found = null;
         for (Object id : vmList) {
             MonitoredVm vm = local.getMonitoredVm(new VmIdentifier("//" + id));
@@ -198,7 +198,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         fail("Could not find process");
         return null;
     }
-    
+
     private void killProcess(String processName, Class<?> clazz) throws Exception {
         Object id = getProcessId(processName, clazz);
 
@@ -208,11 +208,11 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
            proc = Runtime.getRuntime().exec("taskkill /pid " + id);
         else //TODO this only works on *nix
            proc = Runtime.getRuntime().exec("kill -9 " + id);
-        
+
         assertEquals(0, proc.waitFor());
         return;
     }
-    
+
     private static class TestRespawnPolicy implements RespawnPolicy{
 
         @Override

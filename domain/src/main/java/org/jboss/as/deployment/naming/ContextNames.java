@@ -25,7 +25,7 @@ package org.jboss.as.deployment.naming;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Common names used for deploying naming related services at different scopes.   
+ * Common names used for deploying naming related services at different scopes.
  *
  * @author John E. Bailey
  */

@@ -26,9 +26,9 @@ import java.util.Map;
 
 /**
  * @{link RefResolver} that does a simple lookup against an injected map.
- * Note on thread safety: Any access to the injected map by this class is with 
+ * Note on thread safety: Any access to the injected map by this class is with
  * the map's monitor held.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SimpleRefResolver<K, V extends AbstractModelElement<V>> implements RefResolver<K, V> {
@@ -36,11 +36,11 @@ public class SimpleRefResolver<K, V extends AbstractModelElement<V>> implements 
     private static final long serialVersionUID = 2911907294132597243L;
 
     private final Map<K, V> map;
-    
+
     /**
      * Creates a new SimpleRefResolver backed by the given Map.
      * @param map the map. Cannot be <code>null</code>
-     * 
+     *
      * @throws IllegalArgumentException if <code>map</code> is <code>null</code>
      */
     public SimpleRefResolver(Map<K, V> map) {
@@ -48,7 +48,7 @@ public class SimpleRefResolver<K, V extends AbstractModelElement<V>> implements 
             throw new IllegalArgumentException("map is null");
         this.map = map;
     }
-    
+
     /* (non-Javadoc)
      * @see org.jboss.as.model.RefResolver#resolveRef(java.lang.Object)
      */

@@ -27,7 +27,7 @@ import org.jboss.as.model.base.PropertiesElementTestBase;
 
 /**
  * Test PropertiesElement with {@link Namespace#DOMAIN_1_0}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class PropertiesElementUnitTestCase extends PropertiesElementTestBase {

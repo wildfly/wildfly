@@ -35,7 +35,7 @@ import java.util.Hashtable;
 /**
  * Naming ObjectFactory responsible for retrieving managed bean instances from the managed bean registry when a managed
  * bean is looked up from a naming context.
- *  
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanObjectFactory implements ObjectFactory {
@@ -76,7 +76,7 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
 
     public static final class ServiceNameRefAdr extends RefAddr {
         private static final long serialVersionUID = -8030736501810800377L;
-        
+
         private final ServiceName serviceName;
 
         public ServiceNameRefAdr(final ServiceName serviceName) {

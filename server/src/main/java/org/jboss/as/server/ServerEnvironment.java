@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
@@ -33,11 +33,11 @@ import java.util.Properties;
 
 /**
  * Encapsulates the runtime environment for a {@link Server}.
- * 
+ *
  * @author Brian Stansberry
  */
 public class ServerEnvironment {
-    
+
 
     /////////////////////////////////////////////////////////////////////////
     //                   Configuration Value Identifiers                   //
@@ -107,7 +107,7 @@ public class ServerEnvironment {
      * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/tmp</tt> .
      */
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
-    
+
     private final Properties props;
     private final String processName;
     private final InetAddress processManagerAddress;
@@ -121,34 +121,34 @@ public class ServerEnvironment {
     private final File serverLogDir;
     private final File serverTempDir;
     private final boolean standalone;
-    
+
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
-    
-    public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
+
+    public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
     	this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
         this.props = props;
-        
+
         if (stdin == null) {
              throw new IllegalArgumentException("stdin is null");
         }
         this.stdin = stdin;
-        
+
         if (stdout == null) {
              throw new IllegalArgumentException("stdout is null");
         }
         this.stdout = stdout;
-        
+
         if (stderr == null) {
              throw new IllegalArgumentException("stderr is null");
         }
         this.stderr = stderr;
-        
+
         if (processName == null && !standalone) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -161,34 +161,34 @@ public class ServerEnvironment {
         this.processName = processName;
         this.processManagerPort = processManagerPort;
         this.processManagerAddress = processManagerAddress;
-        
+
         // Must have HOME_DIR
         this.homeDir = getFileFromProperty(HOME_DIR);
         if (homeDir == null)
            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
         System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
-        
+
         File tmp = getFileFromProperty(MODULES_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
         }
         this.modulesDir = tmp;
         System.setProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(SERVER_BASE_DIR);
         if (tmp == null) {
             tmp = new File(this.homeDir, "server");
         }
         this.serverBaseDir = tmp;
         System.setProperty(SERVER_BASE_DIR, this.serverBaseDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(SERVER_CONFIG_DIR);
         if (tmp == null) {
             tmp = new File(this.serverBaseDir, "configuration");
         }
         this.serverConfigurationDir = tmp;
         System.setProperty(SERVER_CONFIG_DIR, this.serverConfigurationDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(SERVER_DATA_DIR);
         if (tmp == null) {
             tmp = new File(this.serverBaseDir, "data");
@@ -203,28 +203,28 @@ public class ServerEnvironment {
         this.serverDeployDir = tmp;
         System.setProperty(SERVER_DEPLOY_DIR, this.serverDeployDir.getAbsolutePath());
 
-        
+
         tmp = getFileFromProperty(SERVER_LOG_DIR);
         if (tmp == null) {
             tmp = new File(this.serverBaseDir, "log");
         }
         this.serverLogDir = tmp;
-        
+
         System.setProperty(SERVER_LOG_DIR, this.serverLogDir.getAbsolutePath());
-        
+
         tmp = getFileFromProperty(SERVER_TEMP_DIR);
         if (tmp == null) {
             tmp = new File(this.serverBaseDir, "tmp");
         }
         this.serverTempDir = tmp;
         System.setProperty(SERVER_TEMP_DIR, this.serverTempDir.getAbsolutePath());
-        
+
     }
-    
+
     /**
      * Gets the original System.in for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stdin
      */
     public InputStream getStdin() {
@@ -234,7 +234,7 @@ public class ServerEnvironment {
     /**
      * Gets the original System.out for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stdout
      */
     public PrintStream getStdout() {
@@ -244,7 +244,7 @@ public class ServerEnvironment {
     /**
      * Gets the original System.err for this process. This should only
      * be used for communication with the process manager that spawned this process.
-     * 
+     *
      * @return stderr
      */
     public PrintStream getStderr() {
@@ -254,7 +254,7 @@ public class ServerEnvironment {
     /**
      * Gets the address, if any, the process manager passed to this process
      * to use in communicating with it.
-     * 
+     *
      * @return the process manager's address, or <code>null</code> if
      *         none was provided
      */
@@ -265,18 +265,18 @@ public class ServerEnvironment {
     /**
      * Gets the port number, if any, the process manager passed to this process
      * to use in communicating with it.
-     * 
+     *
      * @return the process manager's port, or <code>null</code> if
      *         none was provided
      */
     public Integer getProcessManagerPort() {
         return processManagerPort;
     }
-    
+
     /**
      * Get the process name of this process, needed to inform the process manager we have started
-     * 
-     * @return the process name 
+     *
+     * @return the process name
      */
     public String getProcessName() {
         return processName;
@@ -317,7 +317,7 @@ public class ServerEnvironment {
     public boolean isStandalone() {
 		return standalone;
 	}
-    
+
     /**
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.

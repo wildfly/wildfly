@@ -60,7 +60,7 @@ public final class Domain extends AbstractModel<Domain> {
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
-    
+
     private PropertiesElement systemProperties;
 
     /**
@@ -131,10 +131,10 @@ public final class Domain extends AbstractModel<Domain> {
             }
         }
     }
-    
+
     /**
      * Gets the extension modules available for use in this domain.
-     * 
+     *
      * @return the extensions. May be empty but will not be <code>null</code>
      */
     public Set<ExtensionElement> getExtensions() {
@@ -142,10 +142,10 @@ public final class Domain extends AbstractModel<Domain> {
             return new HashSet<ExtensionElement>(extensions.values());
         }
     }
-    
+
     /**
      * Gets the named interfaces available for use in this domain.
-     * 
+     *
      * @return the interfaces. May be empty but will not be <code>null</code>
      */
     public Set<InterfaceElement> getInterfaces() {
@@ -157,12 +157,12 @@ public final class Domain extends AbstractModel<Domain> {
         }
         return intfs;
     }
-    
+
     /**
-     * Gets the domain-level configuration for a particular interface. Note that 
+     * Gets the domain-level configuration for a particular interface. Note that
      * this configuration can be overridden at the {@link ServerGroupElement server group}
      * {@link Host host} or {@link ServerElement server} levels.
-     * 
+     *
      * @param name the name of the interface
      * @return the interface configuration, or <code>null</code> if no interface
      *         named <code>name</code> is configured
@@ -172,10 +172,10 @@ public final class Domain extends AbstractModel<Domain> {
             return interfaces.get(name);
         }
     }
-    
+
     /**
      * Gets the configuration for a given profile.
-     * 
+     *
      * @param name the name of the profile
      * @return the profile configuration, or <code>null</code> if no profile
      *         named <code>name</code> is configured
@@ -185,13 +185,13 @@ public final class Domain extends AbstractModel<Domain> {
             return profiles.get(name);
         }
     }
-    
+
     /**
-     * Gets the socket binding group configuration for the group with the given 
+     * Gets the socket binding group configuration for the group with the given
      * <code>name</code>.
-     * 
+     *
      * @param name the name of the socket binding group
-     * @return the socket binding group configuration, or <code>null</code> if 
+     * @return the socket binding group configuration, or <code>null</code> if
      *         no socket binding named <code>name</code> is configured
      */
     public SocketBindingGroupElement getSocketBindingGroup(String name) {
@@ -199,11 +199,11 @@ public final class Domain extends AbstractModel<Domain> {
             return bindingGroups.get(name);
         }
     }
-    
+
     /**
-     * Gets the server group configuration for the group with the given 
+     * Gets the server group configuration for the group with the given
      * <code>name</code>.
-     * 
+     *
      * @param name the name of the server group
      * @return the server group configuration, or <code>null</code> if no server
      *         group named <code>name</code> is configured
@@ -213,14 +213,14 @@ public final class Domain extends AbstractModel<Domain> {
             return serverGroups.get(name);
         }
     }
-    
+
     /**
      * Gets any system properties defined at the domain level. These properties
      * may be extended or overridden by any properties declared at the
      * {@link ServerGroupElement#getSystemProperties() server group level}, the
-     * {@link Host#getSystemProperties() host level} or the 
+     * {@link Host#getSystemProperties() host level} or the
      * {@link ServerElement#getSystemProperties() server level}.
-     * 
+     *
      * @return the system properties, or <code>null</code> if there are none
      */
     public PropertiesElement getSystemProperties() {
@@ -258,29 +258,29 @@ public final class Domain extends AbstractModel<Domain> {
 
     /** {@inheritDoc} */
     protected void appendDifference(final Collection<AbstractModelUpdate<Domain>> target, final Domain other) {
-     
+
         calculateDifference(target, safeCopyMap(namespaces), safeCopyMap(other.namespaces), new DifferenceHandler<String, NamespaceAttribute, Domain>() {
 
             @Override
             public void handleAdd(Collection<AbstractModelUpdate<Domain>> target, String name,
                     NamespaceAttribute newElement) {
-                throw new UnsupportedOperationException("implement me");                
+                throw new UnsupportedOperationException("implement me");
             }
 
             @Override
             public void handleChange(Collection<AbstractModelUpdate<Domain>> target, String name,
                     NamespaceAttribute oldElement, NamespaceAttribute newElement) {
-                throw new UnsupportedOperationException("implement me");                
+                throw new UnsupportedOperationException("implement me");
             }
 
             @Override
             public void handleRemove(Collection<AbstractModelUpdate<Domain>> target, String name,
                     NamespaceAttribute oldElement) {
-                throw new UnsupportedOperationException("implement me");                
+                throw new UnsupportedOperationException("implement me");
             }
-            
+
         });
-        
+
         calculateDifference(target, safeCopyMap(extensions), safeCopyMap(other.extensions), new DifferenceHandler<String, ExtensionElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement newElement) {
                 throw new UnsupportedOperationException("implement me");
@@ -295,7 +295,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new IllegalStateException();
             }
         });
-        
+
         calculateDifference(target, safeCopyMap(profiles), safeCopyMap(other.profiles), new DifferenceHandler<String, ProfileElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
                 // todo add-profile
@@ -312,7 +312,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
-        
+
         calculateDifference(target, safeCopyMap(interfaces), safeCopyMap(other.interfaces), new DifferenceHandler<String, InterfaceElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement newElement) {
                 // todo add-interface
@@ -329,7 +329,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
-        
+
         calculateDifference(target, safeCopyMap(bindingGroups), safeCopyMap(other.bindingGroups), new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement newElement) {
                 // todo add binding group
@@ -346,10 +346,10 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
-        
+
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
-        
+
         calculateDifference(target, safeCopyMap(deployments), safeCopyMap(other.deployments), new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
                 // todo deploy
@@ -366,7 +366,7 @@ public final class Domain extends AbstractModel<Domain> {
                 throw new UnsupportedOperationException("implement me");
             }
         });
-        
+
         calculateDifference(target, safeCopyMap(serverGroups), safeCopyMap(other.serverGroups), new DifferenceHandler<String, ServerGroupElement, Domain>() {
             public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
                 // todo add-server-group operation
@@ -392,7 +392,7 @@ public final class Domain extends AbstractModel<Domain> {
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        
+
         synchronized (namespaces) {
             for (NamespaceAttribute namespace : namespaces.values()) {
                 if (namespace.isDefaultNamespaceDeclaration()) {
@@ -402,23 +402,23 @@ public final class Domain extends AbstractModel<Domain> {
                 streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
             }
         }
-        
+
         if (schemaLocation != null) {
             NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
-        
+
         synchronized (extensions) {
             if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {        
+                for (ExtensionElement element : extensions.values()) {
                     streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (profiles) {
             if (! profiles.isEmpty()) {
                 streamWriter.writeStartElement(Element.PROFILES.getLocalName());
@@ -429,7 +429,7 @@ public final class Domain extends AbstractModel<Domain> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
@@ -440,7 +440,7 @@ public final class Domain extends AbstractModel<Domain> {
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (bindingGroups) {
             if (!bindingGroups.isEmpty()) {
                 streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUPS.getLocalName());
@@ -449,41 +449,41 @@ public final class Domain extends AbstractModel<Domain> {
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
-            } 
+            }
         }
-        
+
         if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
-        
+
         synchronized (deployments) {
             if (! deployments.isEmpty()) {
                 streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
-                for (DeploymentUnitElement element : deployments.values()) {        
+                for (DeploymentUnitElement element : deployments.values()) {
                     streamWriter.writeStartElement(Element.DEPLOYMENT.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
             }
         }
-        
+
         synchronized (serverGroups) {
             if (! serverGroups.isEmpty()) {
                 streamWriter.writeStartElement(Element.SERVER_GROUPS.getLocalName());
                 for (ServerGroupElement element : serverGroups.values()) {
-            
+
                     streamWriter.writeStartElement(Element.SERVER_GROUP.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
             }
         }
-        
+
         // close domain
         streamWriter.writeEndElement();
     }
-    
+
     private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String module = extensionElement.getModule();
         try {
@@ -496,7 +496,7 @@ public final class Domain extends AbstractModel<Domain> {
             throw new XMLStreamException("Failed to load module", e);
         }
     }
-    
+
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -520,13 +520,13 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
-        
+
         RefResolver<String, ProfileElement> resolver = new SimpleRefResolver<String, ProfileElement>(profiles) ;
-        
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -546,7 +546,7 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }        
+        }
         // Validate included profiles
         // We do this after creating the profiles instead of in the ProfileElement
         // constructor itself because even if we required the user to declare the included
@@ -557,14 +557,14 @@ public final class Domain extends AbstractModel<Domain> {
                 ProfileElement included = profiles.get(include.getProfile());
                 if (included == null) {
                     Location loc = include.getLocation();
-                    throw new XMLStreamException("ParseError at [row,col]:[" + 
-                            loc.getLineNumber() + "," + loc.getColumnNumber() + 
+                    throw new XMLStreamException("ParseError at [row,col]:[" +
+                            loc.getLineNumber() + "," + loc.getColumnNumber() +
                             " Message: Included profile " + include.getProfile() + " not found");
                 }
             }
         }
     }
-    
+
     private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -585,13 +585,13 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }    
+        }
     }
-    
+
     private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
         RefResolver<String, SocketBindingGroupElement> groupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(bindingGroups);
         RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
-        
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
@@ -600,7 +600,7 @@ public final class Domain extends AbstractModel<Domain> {
                         case SOCKET_BINDING_GROUP: {
                             SocketBindingGroupElement group = new SocketBindingGroupElement(reader, intfResolver, groupResolver);
                             if (bindingGroups.containsKey(group.getName())) {
-                                throw new XMLStreamException(element.getLocalName() + " with name " + 
+                                throw new XMLStreamException(element.getLocalName() + " with name " +
                                         group.getName() + " already declared", reader.getLocation());
                             }
                             bindingGroups.put(group.getName(), group);
@@ -612,7 +612,7 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }         
+        }
         // Validate included groups
         // We do this after creating the groups instead of in the SocketBindingGroupElement
         // constructor itself because even if we required the user to declare the included
@@ -623,18 +623,18 @@ public final class Domain extends AbstractModel<Domain> {
                 SocketBindingGroupElement included = bindingGroups.get(include.getGroupName());
                 if (included == null) {
                     Location loc = include.getLocation();
-                    // TODO 
+                    // TODO
                     // 1) this isn't the exact correct location (probably c'est la vie
                     // 2) better to create a javax.xml.stream.Location and let
-                    throw new XMLStreamException("ParseError at [row,col]:[" + 
-                            loc.getLineNumber() + "," + loc.getColumnNumber() + 
-                            " Message: Included " + Element.SOCKET_BINDING_GROUP.getLocalName() + 
+                    throw new XMLStreamException("ParseError at [row,col]:[" +
+                            loc.getLineNumber() + "," + loc.getColumnNumber() +
+                            " Message: Included " + Element.SOCKET_BINDING_GROUP.getLocalName() +
                             " " + include.getGroupName() + " not found");
                 }
             }
-        } 
+        }
     }
-    
+
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -644,8 +644,8 @@ public final class Domain extends AbstractModel<Domain> {
                         case DEPLOYMENT: {
                             final DeploymentUnitElement deployment = new DeploymentUnitElement(reader);
                             if (deployments.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() + 
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) + 
+                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
                             deployments.put(deployment.getKey(), deployment);
@@ -657,9 +657,9 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }        
+        }
     }
-    
+
     private void parseServerGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -680,6 +680,6 @@ public final class Domain extends AbstractModel<Domain> {
                 }
                 default: throw unexpectedElement(reader);
             }
-        }        
+        }
     }
 }

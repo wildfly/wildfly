@@ -31,7 +31,7 @@ import org.jboss.msc.value.Values;
 
 /**
  * Service used to wrap a deployment module loader as a service.
- * 
+ *
  * @author John E. Bailey
  */
 public class DeploymentModuleLoaderService implements Service<DeploymentModuleLoader> {

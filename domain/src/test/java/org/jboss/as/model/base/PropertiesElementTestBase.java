@@ -41,7 +41,7 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Base class for unit tests of {@link PropertiesElement}.
- * 
+ *
  * @author Brian Stansberry
  */
 public abstract class PropertiesElementTestBase extends DomainModelElementTestBase {
@@ -50,16 +50,16 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
     private boolean allowNullValue = true;
     /** Test methods can change the value of this ref to control how 'callback' works */
     private  Element propertyType = Element.PROPERTY;
-    
+
     /** Callback that creates a PropertiesElement configured per the values in the above Atomic fields */
     private final ReadElementCallback<PropertiesElement> callback = new ReadElementCallback<PropertiesElement>() {
         @Override
         public PropertiesElement readElement(XMLExtendedStreamReader reader) throws XMLStreamException {
             return new PropertiesElement(reader, propertyType, allowNullValue);
         }
-        
+
     };
-    
+
     /**
      * @param name
      */
@@ -75,12 +75,12 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
 
         XMLMapper mapper = XMLMapper.Factory.create();
         MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
-        mapper.registerRootElement(new QName(getTargetNamespace(), Element.SYSTEM_PROPERTIES.getLocalName()), 
-                new TestXMLElementReader<PropertiesElement>(callback));  
+        mapper.registerRootElement(new QName(getTargetNamespace(), Element.SYSTEM_PROPERTIES.getLocalName()),
+                new TestXMLElementReader<PropertiesElement>(callback));
         MockAnyElementParser.registerXMLElementReaders(mapper);
         return mapper;
     }
-    
+
     public void testBasicProperties() throws Exception {
         String testContent = "<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\" value=\"value2\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
@@ -99,7 +99,7 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
         assertTrue(names.contains("prop1"));
         assertTrue(names.contains("prop2"));
     }
-    
+
     public void testNullProperties() throws Exception {
         String testContent = "<system-properties><property name=\"prop1\"/><property name=\"prop2\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
@@ -118,13 +118,13 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
         assertTrue(names.contains("prop1"));
         assertTrue(names.contains("prop2"));
     }
-    
+
     public void testRejectNullProperties() throws Exception {
         String testContent = "<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         propertyType = Element.PROPERTY;
         allowNullValue = false;
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
             fail("Missing property value did not cause parsing failure");
@@ -133,66 +133,66 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
          // TODO validate the location stuff in the exception message
         }
     }
-    
+
     public void testMissingName() throws Exception {
         String testContent = "<system-properties><property value=\"value1\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         propertyType = Element.PROPERTY;
         allowNullValue = false;
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
             fail("Missing name attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
          // TODO validate the location stuff in the exception message
-        }        
+        }
     }
-    
+
     public void testBogusAttribute() throws Exception {
         String testContent = "<system-properties><property name=\"prop1\" value=\"value1\" bogus=\"bad\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         propertyType = Element.PROPERTY;
         allowNullValue = false;
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
             fail("Bogus attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
          // TODO validate the location stuff in the exception message
-        }        
+        }
     }
-    
+
     public void testBogusChild() throws Exception {
         String testContent = "<system-properties><property name=\"prop1\" value=\"value1\"/><variable name=\"prop1\" value=\"value1\"/></system-properties>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         propertyType = Element.PROPERTY;
         allowNullValue = false;
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
             fail("Bogus child element did not cause parsing failure");
         }
         catch (XMLStreamException good) {
          // TODO validate the location stuff in the exception message
-        }        
+        }
     }
-    
+
     public void testNoChildren() throws Exception {
         String testContent = "<system-properties/>";
         String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         propertyType = Element.PROPERTY;
         allowNullValue = false;
-        
+
         try {
             MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
             fail("Missing child element did not cause parsing failure");
         }
         catch (XMLStreamException good) {
          // TODO validate the location stuff in the exception message
-        }        
-        
+        }
+
     }
 
     /* (non-Javadoc)
@@ -206,17 +206,17 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
         allowNullValue = true;
         MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         PropertiesElement testee = (PropertiesElement) root.getChild(getTargetNamespace(), Element.SYSTEM_PROPERTIES.getLocalName());
-        
-        byte[] bytes = serialize(testee);        
+
+        byte[] bytes = serialize(testee);
         PropertiesElement testee1 = deserialize(bytes, PropertiesElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());        
+        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.size(), testee1.size());
         for (String name : testee.getPropertyNames())
         {
             assertEquals("Property values match for " + name, testee.getProperty(name), testee1.getProperty(name));
         }
-        
+
         testContent = "<system-properties><variable name=\"prop1\" value=\"value1\"/><variable name=\"prop2\" value=\"value2\"/></system-properties>";
         fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
         System.out.println(fullcontent);
@@ -224,11 +224,11 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
         allowNullValue = false;
         root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
         testee = (PropertiesElement) root.getChild(getTargetNamespace(), Element.SYSTEM_PROPERTIES.getLocalName());
-        
-        bytes = serialize(testee);        
+
+        bytes = serialize(testee);
         testee1 = deserialize(bytes, PropertiesElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());        
+        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.size(), testee1.size());
         for (String name : testee.getPropertyNames())
         {

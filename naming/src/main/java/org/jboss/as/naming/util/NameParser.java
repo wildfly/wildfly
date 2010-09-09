@@ -28,7 +28,7 @@ import javax.naming.NamingException;
 
 /**
  * Name parser used by the NamingContext instances.  Relies on composite name instances.
- * 
+ *
  * @author John E. Bailey
  */
 public class NameParser implements javax.naming.NameParser {

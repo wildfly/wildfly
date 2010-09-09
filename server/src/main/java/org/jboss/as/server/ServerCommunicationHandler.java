@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TODO: We need to establish a full protocol.
- * 
+ *
  * @author John E. Bailey
  */
 public class ServerCommunicationHandler {
@@ -72,16 +72,16 @@ public class ServerCommunicationHandler {
             this.input = new BufferedInputStream(socket.getInputStream());
             this.output = new BufferedOutputStream(socket.getOutputStream());
             this.handler = handler;
-            
+
             logger.infof("%s connected to process manager on port %d", processName, socket.getLocalPort());
-            
+
             //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
             StringBuilder sb = new StringBuilder(256);
             sb.append("STARTED");
             sb.append('\0');
             sb.append(processName);
             sb.append('\n');
-            
+
             synchronized (output) {
                 StreamUtils.writeString(output, sb.toString());
                 output.flush();
@@ -90,7 +90,7 @@ public class ServerCommunicationHandler {
             closeSocket();
             throw new RuntimeException(e);
         }
-        //Duplicate code - ProcessManagerSlave - END 
+        //Duplicate code - ProcessManagerSlave - END
     }
 
     private void closeSocket() {
@@ -193,7 +193,7 @@ public class ServerCommunicationHandler {
                                             logger.error("Caught exception handling message from " + sourceProcess, t);
                                         }
                                         status = StreamUtils.readStatus(input);
-                                    }                                    
+                                    }
                                 }
                                 break;
                             }

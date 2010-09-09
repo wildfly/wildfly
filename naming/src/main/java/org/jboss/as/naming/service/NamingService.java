@@ -36,7 +36,7 @@ import org.jboss.msc.service.StopContext;
 import javax.naming.NamingException;
 
 /**
- * Service responsible for creating and managing the life-cycle of the Naming Server. 
+ * Service responsible for creating and managing the life-cycle of the Naming Server.
  *
  * @author John E. Bailey
  */
@@ -75,7 +75,7 @@ public class NamingService implements Service<NamingStore> {
     }
 
     /**
-     * Removes the naming server from the naming context.  
+     * Removes the naming server from the naming context.
      *
      * @param context The stop context.
      */

@@ -70,7 +70,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
     /**
      * Process a deployment for JbossService confguration.  Will install a {@Code JBossService} for each configured service.
-     * 
+     *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */

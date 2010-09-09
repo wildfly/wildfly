@@ -32,7 +32,7 @@ import java.util.Hashtable;
 
 /**
  * Implementation of {@code ObjectFactory} used to create a {@code NamingContext} instances to support the java: namespace.
- * 
+ *
  * @author John E. Bailey
  */
 public class javaURLContextFactory implements ObjectFactory {

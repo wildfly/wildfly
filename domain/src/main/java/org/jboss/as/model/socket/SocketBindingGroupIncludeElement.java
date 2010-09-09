@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.jboss.as.model.socket;
 
@@ -16,7 +16,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A element identifying a socket binding group that should be included in another socket binding group.
- * 
+ *
  * @author Brian Stansberry
  */
 public class SocketBindingGroupIncludeElement extends AbstractModelElement<SocketBindingGroupIncludeElement> {
@@ -24,7 +24,7 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
     private static final long serialVersionUID = 6868487634991345679L;
 
     private final String groupName;
-    
+
     /**
      * @param location
      */
@@ -41,10 +41,10 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
         super(reader);
         this.groupName = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
     }
-    
+
     /**
      * Gets the name of the included socket-binding-group.
-     * 
+     *
      * @return the profile name. Will not be <code>null</code>
      */
     public String getGroupName() {
