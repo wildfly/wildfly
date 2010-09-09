@@ -20,42 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- *
- */
 package org.jboss.as.domain.controller;
 
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.as.model.DomainModel;
 
 /**
- * An object responsible for registering the standard set of {@link org.jboss.staxmapper.XMLElementReader}
- * implementations needed for parsing a domain.xml or a host.xml.
+ * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
  *
- * @author Brian Stansberry
+ *  @author John Bailey
  */
-public interface StandardElementReaderRegistrar {
+public class RemoteDomainControllerClient implements DomainControllerClient {
+    final ServerManagerConnection serverManagerConnection;
 
-    void registerStandardHostReaders(XMLMapper mapper) throws ModuleLoadException;
+    public RemoteDomainControllerClient(ServerManagerConnection serverManagerConnection) {
+        this.serverManagerConnection = serverManagerConnection;
+    }
 
-    void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException;
+    public String getId() {
+        return serverManagerConnection.getId();
+    }
 
-    /**
-     * A factory for creating an instance of {@link org.jboss.as.domain.controller.StandardElementReaderRegistrar}.
-     */
-    class Factory {
-
-        private static StandardElementReaderRegistrar registrar = new StandardElementReaderRegistrarImpl();
-        private Factory() {
-        }
-
-        /**
-         * Gets a StandardElementHandlerRegistrar instance.
-         *
-         * @return the registrar instance
-         */
-        public static StandardElementReaderRegistrar getRegistrar() {
-            return registrar;
-        }
+    public void updateDomain(final DomainModel domain) {
+        serverManagerConnection.updateDomain(domain);
     }
 }

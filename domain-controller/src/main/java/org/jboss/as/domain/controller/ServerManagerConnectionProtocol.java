@@ -36,6 +36,7 @@ import org.jboss.modules.ModuleLoadException;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,7 +70,7 @@ public class ServerManagerConnectionProtocol {
             }},
         UPDATE_DOMAIN((byte) 1) {
             void doExecute(final ServerManagerConnection serverManagerConnection, final Marshaller marshaller) throws Exception {
-                marshaller.writeObject(serverManagerConnection.getDomainController().getDomain());
+                marshaller.writeObject(serverManagerConnection.getDomain());
             }
         },;
 
@@ -82,9 +83,10 @@ public class ServerManagerConnectionProtocol {
         void execute(final ServerManagerConnection serverManagerConnection, final OutputStream outputStream) throws Exception {
             Marshaller marshaller = null;
             try {
+                outputStream.write(command);
+
                 marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
                 marshaller.start(Marshalling.createByteOutput(outputStream));
-                marshaller.writeByte(command);
                 doExecute(serverManagerConnection, marshaller);
                 marshaller.finish();
             } finally {
@@ -103,9 +105,7 @@ public class ServerManagerConnectionProtocol {
             protected void execute(final ServerManagerConnection serverManagerConnection, final Unmarshaller unmarshaller) throws Exception {
                 log.infof("Server manager registered [%s]", serverManagerConnection.getId());
                 final HostModel hostConfig = unmarshaller.readObject(HostModel.class);
-                serverManagerConnection.setHostConfig(hostConfig);
-                serverManagerConnection.confirmRegistration();
-                serverManagerConnection.updateDomain();
+                serverManagerConnection.registered(hostConfig);
             }
         },
         UNREGISTER(Byte.MAX_VALUE) {
@@ -122,18 +122,28 @@ public class ServerManagerConnectionProtocol {
             this.command = command;
         }
 
-        static void processNext(final ServerManagerConnection serverManagerConnection, final InputStream inputStream) throws Exception {
+        static boolean processNext(final ServerManagerConnection serverManagerConnection, final InputStream inputStream) throws Exception {
             Unmarshaller unmarshaller = null;
             try {
+                final byte commandByte;
+                try {
+                    commandByte = (byte)inputStream.read();
+                } catch (SocketException e) {
+                    return false; // TODO: Should we log this?
+                }
+                if(commandByte == -1) {
+                    return false;  // We can't process past end of stream
+                }
+
                 unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
                 unmarshaller.start(Marshalling.createByteInput(inputStream));
-                final byte commandByte = unmarshaller.readByte();
                 final IncomingCommand command = IncomingCommand.commandFor(commandByte);
                 if (command == null) {
                     throw new RuntimeException("Invalid command byte received: " + commandByte);
                 }
                 command.execute(serverManagerConnection, unmarshaller); // TODO: How to handle failed commands?
                 unmarshaller.finish();
+                return true;
             } finally {
                 safeClose(unmarshaller);
             }

@@ -39,9 +39,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.xml.stream.XMLInputFactory;
-
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
@@ -87,8 +86,8 @@ public class ServerManager implements ShutdownListener {
     private volatile DirectServerCommunicationListener directServerCommunicationListener;
     private HostModel hostConfig;
     private DomainModel domainConfig;
-    private volatile DomainControllerProcess localDomainControllerProcess;
-    private volatile ServerMaker serverMaker;
+    private DomainControllerConnection domainControllerConnection;
+    private ServerMaker serverMaker;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
 
@@ -132,10 +131,10 @@ public class ServerManager implements ShutdownListener {
         initializeServerMaker();
 
         if (hostConfig.getLocalDomainControllerElement() != null) {
-            initiateDomainController();
+            launchLocalDomainController();
         } else {
             // DC does not know about this host. Inform it of our existence
-            registerWithDomainController();
+            connectToRemoteDomainController();
         }
     }
 
@@ -145,10 +144,6 @@ public class ServerManager implements ShutdownListener {
     }
 
     public void startServers() {
-
-        // TODO figure out concurrency controls
-//        hostLock.lock(); // should this be domainLock?
-//        try {
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
@@ -169,10 +164,6 @@ public class ServerManager implements ShutdownListener {
             }
             else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
-//        }
-//        finally {
-//            hostLock.unlock();
-//        }
     }
 
     private RespawnPolicy getRespawnPolicy(ServerModel serverConf) {
@@ -266,18 +257,18 @@ public class ServerManager implements ShutdownListener {
      * Callback for when we receive the SHUTDOWN message from PM
      */
     public void stop() {
+        log.info("Stopping ServerManager");
         directServerCommunicationListener.shutdown();
+        domainControllerConnection.unregister();
+        serviceContainer.shutdown();
         // FIXME stop any local DomainController, stop other internal SM services
     }
 
     /**
      * Callback for when we receive the SHUTDOWN_SERVERS message from PM
-     *
-     * @param serverName the name of the server
      */
     public void shutdownServers() {
         log.info("Shutting down servers");
-        System.out.println();
         if (shutdownLatch != null) {
             throw new IllegalStateException("Already shutting down");
         }
@@ -288,7 +279,7 @@ public class ServerManager implements ShutdownListener {
             serversCopy = new HashMap<String, Server>(servers);
         }
 
-        for (Map.Entry<String, Server> entry : serversCopy.entrySet()) {
+        for (Map.Entry<String, Server> entry : servers.entrySet()) {
             try {
                 Server server = entry.getValue();
                 if (server.getState() == ServerState.STOPPED)
@@ -445,11 +436,23 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-    private void registerWithDomainController() {
+    private void launchLocalDomainController() {
+        final DomainController domainController = new DomainController();
+        try {
+            final XMLMapper mapper = XMLMapper.Factory.create();
+            extensionRegistrar.registerStandardDomainReaders(mapper);
+            domainController.start(hostConfig, serviceContainer, mapper, environment.getDomainConfigurationDir());
+            setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController));
+        } catch (Exception e) {
+            throw new RuntimeException("Exception starting local domain controller", e);
+        }
+    }
+
+    private void connectToRemoteDomainController() {
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final ServiceActivatorContext activatorContext = new ServiceActivatorContextImpl(batchBuilder);
-        final DomainControllerClientService domainControllerClientService = new DomainControllerClientService(this);
-        final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerClientService.SERVICE_NAME, domainControllerClientService)
+        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this);
+        final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
                 public void serviceFailed(ServiceController<? extends Void> serviceController, StartException reason) {
@@ -463,9 +466,14 @@ public class ServerManager implements ShutdownListener {
             final String interfaceName = localDomainControllerElement.getInterfaceName();
             ServerInterfaceElement interfaceElement = null;
             // Activate admin interface
-            final Map<String, ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
+            final Set<ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
             if(dcInterfaces != null) {
-                interfaceElement = dcInterfaces.get(interfaceName);
+                for(ServerInterfaceElement dcInterfaceElement : dcInterfaces) {
+                    if(interfaceName.equals(dcInterfaceElement.getName())) {
+                        interfaceElement = dcInterfaceElement;
+                        break;
+                    }
+                }
             }
 
             final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
@@ -500,21 +508,9 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-    private void initiateDomainController() {
-        final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
-        final DomainControllerConfig config = new DomainControllerConfig(localDomainControllerElement, hostConfig);
-        try {
-            log.info("Starting local domain controller");
-            localDomainControllerProcess = serverMaker.makeDomainController(getDomainControllerJvmElement(hostConfig, localDomainControllerElement.getJvm()));
-            localDomainControllerProcess.start(config);
-        } catch (IOException e) {
-            log.error("Failed to start domain controller server", e);
-        }
-        //this.domainConfig = parseDomain();
-    }
-
-    void localDomainControllerReady() {
-        registerWithDomainController();
+    void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
+        this.domainControllerConnection = domainControllerConnection;
+        domainControllerConnection.register();
     }
 
     HostModel getHostConfig() {
@@ -531,9 +527,9 @@ public class ServerManager implements ShutdownListener {
         }
 
         try {
-            XMLMapper mapper = XMLMapper.Factory.create();
-            extensionRegistrar.registerStandardHostReaders(mapper);
             ParseResult<HostModel> parseResult = new ParseResult<HostModel>();
+            final XMLMapper mapper = XMLMapper.Factory.create();
+            extensionRegistrar.registerStandardHostReaders(mapper);
             mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
             return parseResult.getResult();
         } catch (RuntimeException e) {
@@ -601,22 +597,6 @@ public class ServerManager implements ShutdownListener {
         return new JvmElement(groupVM, hostVM, serverVM);
     }
 
-    /**
-     * Combines information from the domain controller element, and host to come up with an overall JVM configuration
-     * for the domain controller
-     *
-     * @param host the host configuration object
-     * @param dcJvmElement the domain controller jvm element
-     * @return the JVM configuration object
-     */
-    private JvmElement getDomainControllerJvmElement(final HostModel host, final JvmElement dcJvmElement) {
-        final JvmElement hostVM = host.getJvm(dcJvmElement.getName());
-        if(hostVM == null) {
-            return dcJvmElement;
-        }
-        return new JvmElement(hostVM, dcJvmElement);
-    }
-
     Server getServer(String name) {
         return servers.get(name);
     }
@@ -676,5 +656,4 @@ public class ServerManager implements ShutdownListener {
             }
         }
     }
-
 }

@@ -58,6 +58,7 @@ public enum Attribute {
     SOCKET_BINDING_GROUP("socket-binding-group"),
     START("start"),
     VALUE("value"),
+    MAX_THREADS("max-threads"),
     ;
 
     private final String name;

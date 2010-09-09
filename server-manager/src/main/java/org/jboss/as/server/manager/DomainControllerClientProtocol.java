@@ -25,6 +25,7 @@ package org.jboss.as.server.manager;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,13 +68,12 @@ public class DomainControllerClientProtocol {
     enum OutgoingCommand {
         REGISTER((byte) 0) {
             @Override
-            protected void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception {
+            protected void doExecute(final DomainControllerConnectionService domainControllerClientService, final Marshaller marshaller) throws Exception {
                 marshaller.writeObject(domainControllerClientService.serverManager.getHostConfig());
             }
         },
         UNREGISTER(Byte.MAX_VALUE) {
-            @Override
-            protected void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception {
+            protected void doExecute(final DomainControllerConnectionService domainControllerClientService, final Marshaller marshaller) throws Exception {
             }
         },;
 
@@ -83,12 +83,13 @@ public class DomainControllerClientProtocol {
             this.command = command;
         }
 
-        public void execute(final DomainControllerClientService domainControllerClientService, final OutputStream outputStream) throws Exception {
+        public void execute(final DomainControllerConnectionService domainControllerClientService, final OutputStream outputStream) throws Exception {
             Marshaller marshaller = null;
             try {
+                outputStream.write(command);
+
                 marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
                 marshaller.start(Marshalling.createByteOutput(outputStream));
-                marshaller.writeByte(command);
                 doExecute(domainControllerClientService, marshaller);
                 marshaller.finish();
             } finally {
@@ -96,7 +97,7 @@ public class DomainControllerClientProtocol {
             }
         }
 
-        protected abstract void doExecute(final DomainControllerClientService domainControllerClientService, final Marshaller marshaller) throws Exception;
+        protected abstract void doExecute(final DomainControllerConnectionService domainControllerClientService, final Marshaller marshaller) throws Exception;
     }
 
     /**
@@ -104,14 +105,12 @@ public class DomainControllerClientProtocol {
      */
     enum IncomingCommand {
         REGISTRATION_RESPONSE((byte) 0) {
-            @Override
-            protected void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
+            protected void execute(final DomainControllerConnectionService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
                 log.info("Registered with domain controller");
             }
         },
         DOMAIN_UPDATE((byte) 1) {
-            @Override
-            protected void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
+            protected void execute(final DomainControllerConnectionService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
                 log.info("Received domain update from domain controller");
                 final DomainModel domain = unmarshaller.readObject(DomainModel.class);
                 domainControllerClientService.serverManager.setDomain(domain);
@@ -124,25 +123,35 @@ public class DomainControllerClientProtocol {
             this.command = command;
         }
 
-        public static void processNext(final DomainControllerClientService domainControllerClientService, final InputStream inputStream) throws Exception {
+        public static boolean processNext(final DomainControllerConnectionService domainControllerClientService, final InputStream inputStream) throws Exception {
             Unmarshaller unmarshaller = null;
             try {
-                unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
-                unmarshaller.start(Marshalling.createByteInput(inputStream));
+                final byte commandByte;
+                try {
+                    commandByte  = (byte)inputStream.read();
+                } catch (SocketException e) {
+                    return false; // TODO: Should we log this?
+                }
 
-                final byte commandByte = unmarshaller.readByte();
+                if (commandByte == -1) {
+                    return false; // Can't process past the end of the stream
+                }
+
                 final IncomingCommand command = IncomingCommand.commandFor(commandByte);
                 if (command == null) {
                     throw new RuntimeException("Invalid command byte received: " + commandByte);
                 }
+                unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
+                unmarshaller.start(Marshalling.createByteInput(inputStream));
                 command.execute(domainControllerClientService, unmarshaller);
                 unmarshaller.finish();
+                return true;
             } finally {
                 safeClose(unmarshaller);
             }
         }
 
-        protected abstract void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception;
+        protected abstract void execute(final DomainControllerConnectionService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception;
 
         static Map<Byte, IncomingCommand> COMMANDS = new HashMap<Byte, IncomingCommand>();
 

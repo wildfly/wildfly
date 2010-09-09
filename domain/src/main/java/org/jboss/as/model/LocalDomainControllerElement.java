@@ -31,8 +31,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -49,6 +50,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     private final String name;
     private final String interfaceName;
     private final int port;
+    private int maxThreads = 10;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private JvmElement jvm;
 
@@ -95,6 +97,10 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
                     }
                     case PORT: {
                         port = Integer.parseInt(value);
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        maxThreads = Integer.parseInt(value);
                         break;
                     }
                     default: throw unexpectedAttribute(reader, i);
@@ -163,8 +169,14 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
         return port;
     }
 
-    public Map<String, ServerInterfaceElement> getInterfaces() {
-        return interfaces;
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
+    public Set<ServerInterfaceElement> getInterfaces() {
+        synchronized (interfaces) {
+            return new HashSet<ServerInterfaceElement>(interfaces.values());
+        }
     }
 
     /** {@inheritDoc} */

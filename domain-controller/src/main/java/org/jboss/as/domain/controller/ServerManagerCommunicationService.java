@@ -24,15 +24,13 @@ package org.jboss.as.domain.controller;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
+import java.util.HashSet;
+import java.util.Set;
 import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
@@ -52,14 +50,14 @@ import org.jboss.msc.value.InjectedValue;
  * @author John E. Bailey
  */
 public class ServerManagerCommunicationService implements Service<Void> {
-    static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "communication");
+    static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME_BASE.append("sm-communication");
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
     private final LocalDomainControllerElement domainControllerElement;
     private final DomainController domainController;
-    SocketListener socketListener;
-    //private ExecutorService executorService;
-    private final ConcurrentMap<String, ServerManagerConnection> serverManagerConnections = new ConcurrentHashMap<String, ServerManagerConnection>();
+    private SocketListener socketListener;
+    private final Set<ServerManagerConnection> connections = new HashSet<ServerManagerConnection>();
 
     public ServerManagerCommunicationService(final DomainController domainController, final LocalDomainControllerElement domainControllerElement) {
         this.domainController = domainController;
@@ -68,10 +66,10 @@ public class ServerManagerCommunicationService implements Service<Void> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        //executorService = Executors.newCachedThreadPool() ; // TODO inject from JBoss Threads (enable SL to use this for it's listener thread?)
+        final ExecutorService executorService = executorServiceValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         try {
-            socketListener = SocketListener.createSocketListener("DC", new DomainControllerSocketHandler(), interfaceBinding.getAddress(), domainControllerElement.getPort(), 20);
+            socketListener = SocketListener.createSocketListener("DC", new DomainControllerSocketHandler(executorService), interfaceBinding.getAddress(), domainControllerElement.getPort(), 20);
             socketListener.start();
         } catch (Exception e) {
             throw new StartException("Failed to start server socket", e);
@@ -80,7 +78,12 @@ public class ServerManagerCommunicationService implements Service<Void> {
 
     @Override
     public synchronized void stop(StopContext context) {
-        socketListener.shutdown();
+        for(ServerManagerConnection connection : connections) {
+            connection.close();
+        }
+        if(socketListener != null) {
+            socketListener.shutdown();
+        }
     }
 
     @Override
@@ -93,23 +96,23 @@ public class ServerManagerCommunicationService implements Service<Void> {
         return interfaceBindingValue;
     }
 
-    void removeServerManagerConnection(final ServerManagerConnection serverManagerConnection) {
-        if(serverManagerConnections.remove(serverManagerConnection.getId(), serverManagerConnection)) {
-            // TODO: Handle
-        }
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executorServiceValue;
     }
 
     class DomainControllerSocketHandler implements SocketHandler {
-        private final ExecutorService executor = Executors.newCachedThreadPool();
+        private final ExecutorService executorService;
+
+    private DomainControllerSocketHandler(final ExecutorService executorService) {
+        this.executorService = executorService;
+    }
 
         @Override
         public void initializeConnection(Socket socket) throws IOException, InitialSocketRequestException {
             final String id = String.format("%s:%d", socket.getInetAddress().getHostAddress(), socket.getPort());
-            final ServerManagerConnection connection = new ServerManagerConnection(id, domainController, ServerManagerCommunicationService.this, SocketConnection.accepted(socket));
-            if(serverManagerConnections.putIfAbsent(id, connection) != null) {
-                // TODO: Handle
-            }
-            executor.execute(connection);
+            final ServerManagerConnection connection = new ServerManagerConnection(id, domainController, SocketConnection.accepted(socket));
+            connections.add(connection);
+            executorService.execute(connection);
         }
     }
 }

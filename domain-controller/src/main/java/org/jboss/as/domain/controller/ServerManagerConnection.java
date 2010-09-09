@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.controller;
 
+import org.jboss.as.model.HostModel;
+import org.jboss.as.model.DomainModel;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.model.HostModel;
 import org.jboss.logging.Logger;
 
 /**
@@ -41,23 +41,21 @@ public class ServerManagerConnection implements Runnable {
     private final SocketConnection socketConnection;
     private final InputStream socketIn;
     private final OutputStream socketOut;
-    private final ServerManagerCommunicationService communicationService;
     private final DomainController domainController;
     private HostModel hostConfig;
-
+    private DomainModel domain;
+    private RemoteDomainControllerClient client;
 
     /**
      * Create a new instance.
      *
      * @param id The server manager identifier
      * @param domainController The domain controller
-     * @param communicationService The communication service
      * @param socketConnection The server managers socket
      */
-    public ServerManagerConnection(final String id, final DomainController domainController, final ServerManagerCommunicationService communicationService, final SocketConnection socketConnection) {
+    public ServerManagerConnection(final String id, final DomainController domainController, final SocketConnection socketConnection) {
         this.id = id;
         this.domainController = domainController;
-        this.communicationService = communicationService;
         this.socketConnection = socketConnection;
         this.socketIn = socketConnection.getInputStream();
         this.socketOut = socketConnection.getOutputStream();
@@ -69,7 +67,9 @@ public class ServerManagerConnection implements Runnable {
             for (;;) {
                 if(!socketConnection.isConnected())
                     break;
-                ServerManagerConnectionProtocol.IncomingCommand.processNext(this, socketIn);
+                if (!ServerManagerConnectionProtocol.IncomingCommand.processNext(this, socketIn)) {
+                    break;
+                }
             }
         } catch (Throwable t) {
             log.error(t);
@@ -77,6 +77,10 @@ public class ServerManagerConnection implements Runnable {
         } finally {
             socketConnection.close();
         }
+    }
+
+    public void close() {
+        socketConnection.close();
     }
 
     public String getId() {
@@ -87,11 +91,12 @@ public class ServerManagerConnection implements Runnable {
         return hostConfig;
     }
 
-    public void setHostConfig(HostModel hostConfig) {
-        this.hostConfig = hostConfig;
+    public DomainModel getDomain() {
+        return domain;
     }
 
-    public void updateDomain() {
+    public void updateDomain(final DomainModel domain) {
+        this.domain = domain;
         try {
             ServerManagerConnectionProtocol.OutgoingCommand.UPDATE_DOMAIN.execute(this, socketOut);
         } catch (Exception e) {
@@ -99,7 +104,10 @@ public class ServerManagerConnection implements Runnable {
         }
     }
 
-    void confirmRegistration() throws Exception {
+    void registered(final HostModel hostConfig) {
+        this.hostConfig = hostConfig;
+        client = new RemoteDomainControllerClient(this);
+        domainController.addClient(client);
         try {
             ServerManagerConnectionProtocol.OutgoingCommand.CONFIRM_REGISTRATION.execute(this, socketOut);
         } catch (Exception e) {
@@ -108,10 +116,6 @@ public class ServerManagerConnection implements Runnable {
     }
 
     void unregistered() {
-        communicationService.removeServerManagerConnection(this);
-    }
-
-    DomainController getDomainController() {
-        return domainController;
+        domainController.removeClient(client);
     }
 }

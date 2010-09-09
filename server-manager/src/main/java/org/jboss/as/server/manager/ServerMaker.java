@@ -159,34 +159,6 @@ public final class ServerMaker {
         return command;
     }
 
-    public DomainControllerProcess makeDomainController(final JvmElement jvmElement) throws IOException {
-        final String serverProcessName = DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME;
-        final List<String> command = new ArrayList<String>();
-        command.add(getJavaCommand(jvmElement));
-        final Map<String, String> sysProps = appendJavaOptions(jvmElement, command);
-
-        command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-        command.add("-Dorg.jboss.boot.log.file=logs/" + serverProcessName + "/boot.log");
-        command.add("-jar");
-        command.add("jboss-modules.jar");
-        command.add("-mp");
-        command.add("modules");
-        command.add("-logmodule");
-        command.add("org.jboss.logmanager");
-        command.add("org.jboss.as.domain-controller");
-
-        appendArgsToMain(serverProcessName, serverProcessName, sysProps, null, command);
-
-        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
-        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
-        processManagerSlave.startProcess(serverProcessName);
-
-        // TODO JBAS-8260 If serverConfig specified that server will work with
-        ServerCommunicationHandler commHandler = new ProcessManagerServerCommunicationHandler(serverProcessName, processManagerSlave);
-        DomainControllerProcess domainController = new DomainControllerProcess(commHandler);
-        return domainController;
-    }
-
     private String getJavaCommand(JvmElement jvm) {
         String javaHome = jvm.getJavaHome();
         if (javaHome == null) { // TODO should this be possible?
@@ -242,12 +214,10 @@ public final class ServerMaker {
         command.add(communicationVariables.getProcessManagerPort());
         command.add(CommandLineConstants.INTERPROCESS_NAME);
         command.add(serverProcessName);
-        if (!DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(serverProcessName)) {
-            command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
-            command.add(communicationVariables.getServerManagerAddress());
-            command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
-            command.add(communicationVariables.getServerManagerPort());
-        }
+        command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
+        command.add(communicationVariables.getServerManagerAddress());
+        command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
+        command.add(communicationVariables.getServerManagerPort());
 
         // Pass through as args to main any sys props that are read at primordial boot
         Map<String, String> sysProps = null;

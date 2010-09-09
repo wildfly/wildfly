@@ -67,11 +67,6 @@ class MessageHandler implements Handler {
         try {
             Command cmd = ServerManagerProtocolCommand.readCommand(message);
             log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
-
-            // Hack
-            if(DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(sourceProcessName) && cmd.getCommand().equals(ServerManagerProtocolCommand.SERVER_STARTED)) {
-                serverManager.localDomainControllerReady();
-            }
             switch (cmd.getCommand()) {
             case SERVER_AVAILABLE:
                 serverManager.availableServer(sourceProcessName);

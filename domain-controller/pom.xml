@@ -59,8 +59,8 @@
         </dependency>
        <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server-manager</artifactId>
-        </dependency>        
+            <artifactId>jboss-as-threads</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
