@@ -100,7 +100,7 @@
     </properties>
 
     <modules>
-        <module>checkstyle</module>
+        <module>build-config</module>
         <module>domain</module>
         <module>connector</module>
         <module>server-manager</module>
@@ -167,7 +167,7 @@
                     <dependencies>
                         <dependency>
                             <groupId>org.jboss.as</groupId>
-                            <artifactId>checkstyle-config</artifactId>
+                            <artifactId>build-config</artifactId>
                             <version>${project.version}</version>
                         </dependency>
                     </dependencies>
@@ -188,7 +188,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>checkstyle-config</artifactId>
+            <artifactId>build-config</artifactId>
         </dependency>
     </dependencies>
 
@@ -199,7 +199,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>checkstyle-config</artifactId>
+                <artifactId>build-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
