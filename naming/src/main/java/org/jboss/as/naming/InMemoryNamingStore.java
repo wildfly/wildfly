@@ -400,7 +400,7 @@ public class InMemoryNamingStore implements NamingStore {
             this.className = className;
         }
 
-        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+        protected Void foundBindContext(ContextNode contextNode) throws NamingException {
             final String childName = getLastComponent(targetName);
             final Binding binding = new Binding(childName, className, object, true);
             final BindingNode bindingNode = new BindingNode(targetName, binding);
@@ -422,7 +422,7 @@ public class InMemoryNamingStore implements NamingStore {
             this.className = className;
         }
 
-        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+        protected Void foundBindContext(ContextNode contextNode) throws NamingException {
             final String childName = getLastComponent(targetName);
             final Binding binding = new Binding(childName, className, object, true);
             final BindingNode bindingNode = new BindingNode(targetName, binding);
@@ -442,7 +442,7 @@ public class InMemoryNamingStore implements NamingStore {
             this.callingContext = callingContext;
         }
 
-        protected final Void foundBindContext(ContextNode contextNode) throws NamingException {
+        protected Void foundBindContext(ContextNode contextNode) throws NamingException {
             final TreeNode previous = contextNode.removeChild(getLastComponent(targetName));
             fireEvent(callingContext, targetName, previous.binding, null, NamingEvent.OBJECT_REMOVED, "unbind");
             return null;
@@ -457,7 +457,7 @@ public class InMemoryNamingStore implements NamingStore {
             this.callingContext = callingContext;
         }
 
-        protected final Context foundBindContext(ContextNode contextNode) throws NamingException {
+        protected Context foundBindContext(ContextNode contextNode) throws NamingException {
             final NamingContext subContext = new NamingContext(targetName, InMemoryNamingStore.this, new Hashtable<String, Object>());
             final ContextNode subContextNode = new ContextNode(targetName, subContext);
             contextNode.addChild(getLastComponent(targetName), subContextNode);
@@ -471,15 +471,15 @@ public class InMemoryNamingStore implements NamingStore {
             super(targetName);
         }
 
-        protected final Object found(final ContextNode contextNode) throws NamingException {
+        protected Object found(final ContextNode contextNode) throws NamingException {
             return contextNode.binding.getObject();
         }
 
-        protected final Object found(final BindingNode bindingNode) throws NamingException {
+        protected Object found(final BindingNode bindingNode) throws NamingException {
             return bindingNode.binding.getObject();
         }
 
-        protected final Object foundReferenceInsteadOfContext(final BindingNode bindingNode) throws NamingException {
+        protected Object foundReferenceInsteadOfContext(final BindingNode bindingNode) throws NamingException {
             final Name remainingName = targetName.getSuffix(bindingNode.fullName.size());
             final Object boundObject = bindingNode.binding.getObject();
             checkReferenceForContinuation(remainingName, boundObject);
@@ -492,7 +492,7 @@ public class InMemoryNamingStore implements NamingStore {
             super(targetName);
         }
 
-        protected final List<NameClassPair> found(final ContextNode contextNode) throws NamingException {
+        protected List<NameClassPair> found(final ContextNode contextNode) throws NamingException {
             final List<NameClassPair> nameClassPairs = new ArrayList<NameClassPair>();
             for (TreeNode childNode : contextNode.children.values()) {
                 final Binding binding = childNode.binding;
@@ -501,7 +501,7 @@ public class InMemoryNamingStore implements NamingStore {
             return nameClassPairs;
         }
 
-        protected final List<NameClassPair> found(final BindingNode bindingNode) throws NamingException {
+        protected List<NameClassPair> found(final BindingNode bindingNode) throws NamingException {
             checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
             throw notAContextException(targetName);
         }
@@ -512,7 +512,7 @@ public class InMemoryNamingStore implements NamingStore {
             super(targetName);
         }
 
-        protected final List<Binding> found(final ContextNode contextNode) throws NamingException {
+        protected List<Binding> found(final ContextNode contextNode) throws NamingException {
             final List<Binding> bindings = new ArrayList<Binding>();
             for (TreeNode childNode : contextNode.children.values()) {
                 bindings.add(childNode.binding);
@@ -520,7 +520,7 @@ public class InMemoryNamingStore implements NamingStore {
             return bindings;
         }
 
-        protected final List<Binding> found(final BindingNode bindingNode) throws NamingException {
+        protected List<Binding> found(final BindingNode bindingNode) throws NamingException {
             checkReferenceForContinuation(emptyName(), bindingNode.binding.getObject());
             throw notAContextException(targetName);
         }

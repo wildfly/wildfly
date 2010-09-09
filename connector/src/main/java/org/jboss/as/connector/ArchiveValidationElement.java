@@ -118,7 +118,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
     *
     * @return the failOnError.
     */
-   public final boolean isFailOnError()
+   public boolean isFailOnError()
    {
       return failOnError;
    }
@@ -128,7 +128,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
     *
     * @return the failOnWarn.
     */
-   public final boolean isFailOnWarn()
+   public boolean isFailOnWarn()
    {
       return failOnWarn;
    }

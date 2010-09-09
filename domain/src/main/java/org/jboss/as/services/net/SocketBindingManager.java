@@ -44,7 +44,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface SocketBindingManager {
 
-    public static final ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
+    ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
 
     /**
      * Get the managed server socket factory.

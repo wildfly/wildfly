@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
  * @author John E. Bailey
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain");
+    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain");
     /**
      * Get the name of the deployment chain.  Ex. "deployment.chain.war"
      *
