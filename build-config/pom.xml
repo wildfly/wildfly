@@ -27,8 +27,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>checkstyle-config</artifactId>
-    <name>JBoss Application Server: Checkstyle Configuration</name>
+    <artifactId>build-config</artifactId>
+    <name>JBoss Application Server: Build Configuration</name>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
 </project>
