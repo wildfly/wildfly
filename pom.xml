@@ -102,7 +102,7 @@
     <modules>
         <module>checkstyle</module>
         <module>domain</module>
-	<module>connector</module>
+        <module>connector</module>
         <module>server-manager</module>
         <module>server</module>
         <module>domain-controller</module>
