@@ -72,7 +72,7 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
     @Override
     public long elementHash() {
         synchronized (interfaceCriteria) {
-            return calculateElementHashOf(interfaceCriteria.values(), 17l);
+            return calculateElementHashOf(interfaceCriteria.values(), 17L);
         }
     }
 

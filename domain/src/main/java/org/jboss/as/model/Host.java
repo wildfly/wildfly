@@ -218,7 +218,7 @@ public final class Host extends AbstractModel<Host> {
 
     /** {@inheritDoc} */
     public long elementHash() {
-        long cksum = 17l;
+        long cksum = 17L;
 
         synchronized (interfaces) {
             cksum = calculateElementHashOf(interfaces.values(), cksum);
