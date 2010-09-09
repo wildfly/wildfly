@@ -49,7 +49,7 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
     /**
      * The complete set of elements within this model.
      */
-    private transient final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final transient ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     /**
      * Construct a new instance.

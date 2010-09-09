@@ -60,7 +60,7 @@ public enum ServerManagerProtocolCommand {
     /** Message sent from Server to ServerManager when the server could not start normally. No data */
     SERVER_START_FAILED((byte)54);
 
-    private final static Map<Byte, ServerManagerProtocolCommand> COMMANDS;
+    private static final Map<Byte, ServerManagerProtocolCommand> COMMANDS;
     static {
         Map<Byte, ServerManagerProtocolCommand> cmds = new HashMap<Byte, ServerManagerProtocolCommand>();
         cmds.put(START_SERVER.getId(), START_SERVER);
