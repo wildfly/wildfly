@@ -30,10 +30,10 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.modules.jboss-modules"/>
-        <module name="org.jboss.msc.jboss-msc"/>
-        <module name="org.jboss.logging.jboss-logging"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
         <!-- Import this guy so I can load the logmanager and configure it with one method call -->
-        <module name="org.jboss.logmanager.jboss-logmanager"/>
+        <module name="org.jboss.logmanager"/>
     </dependencies>
 </module>

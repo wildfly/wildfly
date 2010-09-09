@@ -22,12 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.slf4j.jcl-over-slf4j">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.process-manager">
+
+    <main-class name="org.jboss.as.process.ProcessManagerMaster"/>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.slf4j"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

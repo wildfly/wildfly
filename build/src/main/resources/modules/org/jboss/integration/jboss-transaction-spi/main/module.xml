@@ -28,7 +28,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.logging.jboss-logging"/>
+        <module name="org.jboss.logging"/>
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
     </dependencies>

@@ -143,8 +143,8 @@ public final class ServerMaker {
         command.add("-mp");
         command.add("modules");
         command.add("-logmodule");
-        command.add("org.jboss.logmanager.jboss-logmanager");
-        command.add("org.jboss.as.jboss-as-server");
+        command.add("org.jboss.logmanager");
+        command.add("org.jboss.as.server");
 
         appendArgsToMain(serverName, serverProcessName, sysProps, systemProperties, command);
 
@@ -164,8 +164,8 @@ public final class ServerMaker {
         command.add("-mp");
         command.add("modules");
         command.add("-logmodule");
-        command.add("org.jboss.logmanager.jboss-logmanager");
-        command.add("org.jboss.as.jboss-as-domain-controller");
+        command.add("org.jboss.logmanager");
+        command.add("org.jboss.as.domain-controller");
 
         appendArgsToMain(serverProcessName, serverProcessName, sysProps, null, command);
 

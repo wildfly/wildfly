@@ -136,10 +136,10 @@ while true; do
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/server/logs/boot.log \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager.jboss-logmanager" \
-		 org.jboss.as.jboss-as-server \
-		 -standalone \
-		 -Djboss.home.dir=\"$JBOSS_HOME\" \
+         -logmodule "org.jboss.logmanager" \
+         org.jboss.as.server \
+         -standalone \
+         -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@"
       JBOSS_STATUS=$?
    else
@@ -147,8 +147,8 @@ while true; do
       eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager.jboss-logmanager" \
-         org.jboss.as.jboss-as-server \
+         -logmodule "org.jboss.logmanager" \
+         org.jboss.as.server \
          -standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@" "&"

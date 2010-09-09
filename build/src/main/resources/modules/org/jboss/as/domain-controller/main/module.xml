@@ -22,12 +22,25 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.slf4j.jcl-over-slf4j">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.domain-controller">
+
+    <main-class name="org.jboss.as.domain.controller.Main"/>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.slf4j"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.logmanager"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.stdio"/>
+        <module name="org.jboss.as.domain"/>
+        <module name="org.jboss.as.process-manager"/>
+        <module name="org.jboss.as.server-manager"/>
+        <module name="system"/>
     </dependencies>
 </module>

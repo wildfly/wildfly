@@ -51,7 +51,7 @@ public class ServerManagerConnectionProtocol {
 
     static {
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.jboss-marshalling-river"));
+            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.river"));
         } catch (ModuleLoadException e) {
             throw new RuntimeException(e);
         }

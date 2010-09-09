@@ -29,9 +29,9 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="org.jboss.modules.jboss-modules"/>
-        <module name="org.jboss.msc.jboss-msc"/>
-        <module name="org.jboss.logging.jboss-logging"/>
-        <module name="org.jboss.jboss-vfs"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
     </dependencies>
 </module>
