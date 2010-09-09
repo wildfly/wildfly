@@ -514,13 +514,13 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
         private int expectedCount = modCount;
         private int current = -1;
         private boolean hasNext;
-        Entry<K, V> table[] = FastCopyHashMap.this.table;
+        Entry<K, V>[] table = FastCopyHashMap.this.table;
 
         public boolean hasNext() {
             if (hasNext == true)
                 return true;
 
-            Entry<K, V> table[] = this.table;
+            Entry<K, V>[] table = this.table;
             for (int i = next; i < table.length; i++) {
                 if (table[i] != null) {
                     next = i;

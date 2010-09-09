@@ -139,7 +139,7 @@ public final class StreamUtils {
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
     }
 
-    public static void readFully(final InputStream in, byte b[], int off, int len) throws IOException {
+    public static void readFully(final InputStream in, byte[] b, int off, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;
