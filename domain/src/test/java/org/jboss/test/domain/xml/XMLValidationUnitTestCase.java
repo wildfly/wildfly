@@ -45,21 +45,17 @@ import junit.framework.TestCase;
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
-public class XMLValidationUnitTestCase extends TestCase
-{
-   public void testHost() throws Exception
-   {
+public class XMLValidationUnitTestCase extends TestCase {
+   public void testHost() throws Exception {
       parseXml("host-example.xml");
    }
 
-   public void testDomain() throws Exception
-   {
+   public void testDomain() throws Exception {
       parseXml("jboss-domain-example.xml");
    }
 
    private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, SAXNotRecognizedException,
-         SAXNotSupportedException, IOException
-   {
+         SAXNotSupportedException, IOException {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       if(!factory.isNamespaceAware())
          factory.setNamespaceAware(true);
@@ -72,11 +68,9 @@ public class XMLValidationUnitTestCase extends TestCase
       XMLReader reader = parser.getXMLReader();
       reader.setFeature("http://apache.org/xml/features/validation/schema", true);
       reader.setErrorHandler(new ErrorHandlerImpl());
-      reader.setEntityResolver(new EntityResolver()
-      {
+      reader.setEntityResolver(new EntityResolver() {
          @Override
-         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException
-         {
+         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             if(systemId == null)
                fail("Failed to resolve schema: systemId is null");
             int lastSlash = systemId.lastIndexOf('/');
@@ -92,45 +86,37 @@ public class XMLValidationUnitTestCase extends TestCase
       reader.parse(is);
    }
 
-   private URL getXmlUrl(String xmlName)
-   {
+   private URL getXmlUrl(String xmlName) {
       return getResourceUrl("examples/" + xmlName);
    }
 
-   private URL getXsdUrl(String xsdName)
-   {
+   private URL getXsdUrl(String xsdName) {
       return getResourceUrl("schema/" + xsdName);
    }
 
-   private URL getResourceUrl(String resourceName)
-   {
+   private URL getResourceUrl(String resourceName) {
       URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
       assertNotNull(url);
       return url;
    }
 
-   private final class ErrorHandlerImpl implements ErrorHandler
-   {
+   private final class ErrorHandlerImpl implements ErrorHandler {
       @Override
-      public void error(SAXParseException e) throws SAXException
-      {
+      public void error(SAXParseException e) throws SAXException {
          fail(formatMessage(e));
       }
 
       @Override
-      public void fatalError(SAXParseException e) throws SAXException
-      {
+      public void fatalError(SAXParseException e) throws SAXException {
          fail(formatMessage(e));
       }
 
       @Override
-      public void warning(SAXParseException e) throws SAXException
-      {
+      public void warning(SAXParseException e) throws SAXException {
          System.out.println(formatMessage(e));
       }
 
-      private String formatMessage(SAXParseException e)
-      {
+      private String formatMessage(SAXParseException e) {
          StringBuffer sb = new StringBuffer();
          sb.append(e.getLineNumber()).append(':').append(e.getColumnNumber());
          if(e.getPublicId() != null)

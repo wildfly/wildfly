@@ -32,8 +32,7 @@ import java.util.Map;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-public enum Namespace
-{
+public enum Namespace {
    // must be first
    UNKNOWN(null),
 
@@ -46,8 +45,7 @@ public enum Namespace
 
    private final String name;
 
-   Namespace(final String name)
-   {
+   Namespace(final String name) {
       this.name = name;
    }
 
@@ -56,18 +54,15 @@ public enum Namespace
     *
     * @return the URI
     */
-   public String getUriString()
-   {
+   public String getUriString() {
       return name;
    }
 
    private static final Map<String, Namespace> MAP;
 
-   static
-   {
+   static {
       final Map<String, Namespace> map = new HashMap<String, Namespace>();
-      for (Namespace namespace : values())
-      {
+      for (Namespace namespace : values()) {
          final String name = namespace.getUriString();
          if (name != null)
             map.put(name, namespace);
@@ -75,8 +70,7 @@ public enum Namespace
       MAP = map;
    }
 
-   public static Namespace forUri(String uri)
-   {
+   public static Namespace forUri(String uri) {
       final Namespace element = MAP.get(uri);
       return element == null ? UNKNOWN : element;
    }

@@ -39,8 +39,7 @@ final class ConnectorSubsystemElementParser implements XMLElementReader<ParseRes
 
    @Override
    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader,
-         final ParseResult<ConnectorSubsystemElement> result) throws XMLStreamException
-   {
+         final ParseResult<ConnectorSubsystemElement> result) throws XMLStreamException {
         result.setResult(new ConnectorSubsystemElement(xmlExtendedStreamReader));
     }
 }

@@ -42,14 +42,11 @@ public class TempFileProviderService implements Service<TempFileProvider> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("TempFileProvider");
 
     private static final TempFileProvider PROVIDER;
-    static
-    {
-       try
-       {
+    static {
+       try {
           PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
        }
-       catch (final IOException ioe)
-       {
+       catch (final IOException ioe) {
           throw new RuntimeException("Failed to create temp file provider");
        }
     }

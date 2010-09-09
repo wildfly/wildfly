@@ -34,31 +34,26 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration>
-{
+final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration> {
 
    private final ConnectorSubsystemConfiguration value;
 
-   public ConnectorConfigService(ConnectorSubsystemConfiguration value)
-   {
+   public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
       this.value = value;
    }
 
    @Override
-   public ConnectorSubsystemConfiguration getValue() throws IllegalStateException
-   {
+   public ConnectorSubsystemConfiguration getValue() throws IllegalStateException {
       return ConnectorServices.notNull(value);
    }
 
    @Override
-   public void start(StartContext context) throws StartException
-   {
+   public void start(StartContext context) throws StartException {
 
    }
 
    @Override
-   public void stop(StopContext context)
-   {
+   public void stop(StopContext context) {
 
    }
 

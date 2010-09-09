@@ -67,8 +67,7 @@ public class StandaloneServer extends AbstractServer {
 
         start(parseResult.getResult());
         // TODO remove life thread
-        new Thread() {
-            {
+        new Thread() { {
                 setName("Server Life Thread");
                 setDaemon(false);
                 setPriority(MIN_PRIORITY);

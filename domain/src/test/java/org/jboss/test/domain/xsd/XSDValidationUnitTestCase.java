@@ -38,10 +38,8 @@ import junit.framework.TestCase;
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
-public class XSDValidationUnitTestCase extends TestCase
-{
-   public void testCommon() throws Exception
-   {
+public class XSDValidationUnitTestCase extends TestCase {
+   public void testCommon() throws Exception {
       validateXsd("jboss-domain-common.xsd");
    }
 
@@ -58,58 +56,48 @@ public class XSDValidationUnitTestCase extends TestCase
    /*
     * Both of those need jboss-domain-common.xsd but jboss-domain.xsd include both
     */
-   public void testWeb() throws Exception
-   {
+   public void testWeb() throws Exception {
       validateXsd("test-jboss-domain-web.xsd");
    }
 
-   public void testModCluster() throws Exception
-   {
+   public void testModCluster() throws Exception {
       validateXsd("test-jboss-domain-mod_cluster.xsd");
    }
 
-   public void testJBoss70() throws Exception
-   {
+   public void testJBoss70() throws Exception {
       validateXsd("jboss_7_0.xsd");
    }
 
-   private void validateXsd(String xsdName) throws SAXException
-   {
+   private void validateXsd(String xsdName) throws SAXException {
       URL jbossDomain = getXsdUrl(xsdName);
       SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
       schemaFactory.setErrorHandler(new ErrorHandlerImpl());
       schemaFactory.newSchema(jbossDomain);
    }
 
-   private URL getXsdUrl(String xsdName)
-   {
+   private URL getXsdUrl(String xsdName) {
       URL url = Thread.currentThread().getContextClassLoader().getResource("schema/" + xsdName);
       assertNotNull(url);
       return url;
    }
 
-   private final class ErrorHandlerImpl implements ErrorHandler
-   {
+   private final class ErrorHandlerImpl implements ErrorHandler {
       @Override
-      public void error(SAXParseException e) throws SAXException
-      {
+      public void error(SAXParseException e) throws SAXException {
          fail(formatMessage(e));
       }
 
       @Override
-      public void fatalError(SAXParseException e) throws SAXException
-      {
+      public void fatalError(SAXParseException e) throws SAXException {
          fail(formatMessage(e));
       }
 
       @Override
-      public void warning(SAXParseException e) throws SAXException
-      {
+      public void warning(SAXParseException e) throws SAXException {
          System.out.println(formatMessage(e));
       }
 
-      private String formatMessage(SAXParseException e)
-      {
+      private String formatMessage(SAXParseException e) {
          StringBuffer sb = new StringBuffer();
          sb.append(e.getLineNumber()).append(':').append(e.getColumnNumber());
          if(e.getPublicId() != null)

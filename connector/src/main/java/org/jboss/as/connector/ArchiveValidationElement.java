@@ -39,34 +39,27 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidationElement>
-{
+final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidationElement> {
 
    private boolean failOnError = true;
 
    private boolean failOnWarn = false;
 
-   public ArchiveValidationElement(final Location location)
-   {
+   public ArchiveValidationElement(final Location location) {
       super(location);
    }
 
-   public ArchiveValidationElement(final XMLExtendedStreamReader reader) throws XMLStreamException
-   {
+   public ArchiveValidationElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
       super(reader);
       final int count = reader.getAttributeCount();
-      for (int i = 0; i < count; i++)
-      {
+      for (int i = 0; i < count; i++) {
          final String value = reader.getAttributeValue(i);
-         if (reader.getAttributeNamespace(i) != null)
-         {
+         if (reader.getAttributeNamespace(i) != null) {
             throw unexpectedAttribute(reader, i);
          }
-         else
-         {
+         else {
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute)
-            {
+            switch (attribute) {
                case FAIL_ON_ERROR : {
                   failOnError = Boolean.valueOf(value);
                   break;
@@ -88,26 +81,22 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
 
 
    @Override
-   public long elementHash()
-   {
+   public long elementHash() {
       return 42;
    }
 
    @Override
    protected void appendDifference(Collection<AbstractModelUpdate<ArchiveValidationElement>> target,
-         ArchiveValidationElement other)
-   {
+         ArchiveValidationElement other) {
    }
 
    @Override
-   protected Class<ArchiveValidationElement> getElementClass()
-   {
+   protected Class<ArchiveValidationElement> getElementClass() {
       return ArchiveValidationElement.class;
    }
 
    @Override
-   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException
-   {
+   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
       streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
       streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), String.valueOf(failOnError));
       streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), String.valueOf(failOnWarn));
@@ -118,8 +107,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
     *
     * @return the failOnError.
     */
-   public boolean isFailOnError()
-   {
+   public boolean isFailOnError() {
       return failOnError;
    }
 
@@ -128,8 +116,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
     *
     * @return the failOnWarn.
     */
-   public boolean isFailOnWarn()
-   {
+   public boolean isFailOnWarn() {
       return failOnWarn;
    }
 

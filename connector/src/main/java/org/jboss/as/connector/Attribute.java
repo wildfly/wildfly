@@ -10,8 +10,7 @@ import java.util.Map;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-public enum Attribute
-{
+public enum Attribute {
    /** alweays the first **/
    UNKNOWN(null),
 
@@ -27,8 +26,7 @@ public enum Attribute
 
    private final String name;
 
-   Attribute(final String name)
-   {
+   Attribute(final String name) {
       this.name = name;
    }
 
@@ -37,18 +35,15 @@ public enum Attribute
     *
     * @return the local name
     */
-   public String getLocalName()
-   {
+   public String getLocalName() {
       return name;
    }
 
    private static final Map<String, Attribute> MAP;
 
-   static
-   {
+   static {
       final Map<String, Attribute> map = new HashMap<String, Attribute>();
-      for (Attribute element : values())
-      {
+      for (Attribute element : values()) {
          final String name = element.getLocalName();
          if (name != null)
             map.put(name, element);
@@ -56,15 +51,13 @@ public enum Attribute
       MAP = map;
    }
 
-   public static Attribute forName(String localName)
-   {
+   public static Attribute forName(String localName) {
       final Attribute element = MAP.get(localName);
       return element == null ? UNKNOWN : element;
    }
 
    @Override
-   public String toString()
-   {
+   public String toString() {
       return getLocalName();
    }
 }

@@ -43,8 +43,7 @@ public final class ConnectorServices {
     * @param value the value
     * @return the value or throw an {@link IllegalStateException} if value is null (a.k.a. service not started)
     */
-   public static <T> T notNull(T value)
-   {
+   public static <T> T notNull(T value) {
         if (value == null) throw new IllegalStateException("Service not started");
         return value;
     }

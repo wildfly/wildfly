@@ -316,11 +316,9 @@ public class DomainControllerEnvironment {
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.
      */
-    private File getFileFromProperty(final String name)
-    {
+    private File getFileFromProperty(final String name) {
        String value = props.getProperty(name, null);
-       if (value != null)
-       {
+       if (value != null) {
           File f = new File(value);
           return f;
        }

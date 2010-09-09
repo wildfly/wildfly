@@ -43,8 +43,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-final class ConnectorSubsystemElement extends AbstractSubsystemElement<ConnectorSubsystemElement>
-{
+final class ConnectorSubsystemElement extends AbstractSubsystemElement<ConnectorSubsystemElement> {
 
    /** The serialVersionUID */
    private static final long serialVersionUID = 6451041006443208660L;
@@ -53,28 +52,22 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
 
    private boolean beanValidation;
 
-   public ConnectorSubsystemElement(final Location location)
-   {
+   public ConnectorSubsystemElement(final Location location) {
       super(location, new QName("urn:jboss:domain:connector:1.0", "subsystem"));
    }
 
-   public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException
-   {
+   public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
       super(reader);
       final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-      while (reader.hasNext() && reader.nextTag() != END_ELEMENT)
-      {
-         switch (Namespace.forUri(reader.getNamespaceURI()))
-         {
+      while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+         switch (Namespace.forUri(reader.getNamespaceURI())) {
             case CONNECTOR_1_0 : {
                final Element element = Element.forName(reader.getLocalName());
-               if (visited.contains(element))
-               {
+               if (visited.contains(element)) {
                   throw unexpectedElement(reader);
                }
                visited.add(element);
-               switch (element)
-               {
+               switch (element) {
                   case ARCHIVE_VALIDATION : {
                      archiveValidationElement = new ArchiveValidationElement(reader);
                      break;
@@ -95,14 +88,12 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
    }
 
    @Override
-   public void activate(ServiceActivatorContext context)
-   {
+   public void activate(ServiceActivatorContext context) {
       final BatchBuilder builder = context.getBatchBuilder();
 
       final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
 
-      if (this.archiveValidationElement != null)
-      {
+      if (this.archiveValidationElement != null) {
          config.setArchiveValidation(true);
          config.setArchiveValidationFailOnError(this.archiveValidationElement.isFailOnError());
          config.setArchiveValidationFailOnWarn(this.archiveValidationElement.isFailOnWarn());
@@ -115,34 +106,28 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
    }
 
    @Override
-   public Collection<String> getReferencedSocketBindings()
-   {
+   public Collection<String> getReferencedSocketBindings() {
       return null;
    }
 
    @Override
-   public long elementHash()
-   {
+   public long elementHash() {
       return 42;
    }
 
    @Override
    protected void appendDifference(Collection<AbstractModelUpdate<ConnectorSubsystemElement>> target,
-         ConnectorSubsystemElement other)
-   {
+         ConnectorSubsystemElement other) {
    }
 
    @Override
-   protected Class<ConnectorSubsystemElement> getElementClass()
-   {
+   protected Class<ConnectorSubsystemElement> getElementClass() {
       return ConnectorSubsystemElement.class;
    }
 
    @Override
-   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException
-   {
-      if (this.archiveValidationElement != null)
-      {
+   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+      if (this.archiveValidationElement != null) {
          this.archiveValidationElement.writeContent(streamWriter);
       }
       streamWriter.writeStartElement(Element.BEAN_VALIDATION.getLocalName());
@@ -158,8 +143,7 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
     * @return the boolean representing element
     * @throws XMLStreamException StAX exception
     */
-   private boolean elementAsBoolean(XMLExtendedStreamReader reader) throws XMLStreamException
-   {
+   private boolean elementAsBoolean(XMLExtendedStreamReader reader) throws XMLStreamException {
       String elementtext = reader.getElementText();
       return elementtext == null || elementtext.length() == 0 ? true : Boolean.valueOf(elementtext.trim());
    }

@@ -30,8 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-public class ConnectorSubsystemConfiguration
-{
+public class ConnectorSubsystemConfiguration {
    /** Preform bean validation */
    private final AtomicBoolean beanValidation = new AtomicBoolean(true);
 
@@ -49,8 +48,7 @@ public class ConnectorSubsystemConfiguration
     * Create a new ConnectorSubsystemConfiguration.
     *
     */
-   public ConnectorSubsystemConfiguration()
-   {
+   public ConnectorSubsystemConfiguration() {
 
    }
 
@@ -58,8 +56,7 @@ public class ConnectorSubsystemConfiguration
     * Set if bean validation should be performed
     * @param value The value
     */
-   public void setBeanValidation(boolean value)
-   {
+   public void setBeanValidation(boolean value) {
       beanValidation.set(value);
    }
 
@@ -67,8 +64,7 @@ public class ConnectorSubsystemConfiguration
     * Should bean validation be performed
     * @return True if validation; otherwise false
     */
-   public boolean getBeanValidation()
-   {
+   public boolean getBeanValidation() {
       return beanValidation.get();
    }
 
@@ -76,8 +72,7 @@ public class ConnectorSubsystemConfiguration
     * Set if archive validation should be performed
     * @param value The value
     */
-   public void setArchiveValidation(boolean value)
-   {
+   public void setArchiveValidation(boolean value) {
       archiveValidation.set(value);
    }
 
@@ -85,8 +80,7 @@ public class ConnectorSubsystemConfiguration
     * Should archive validation be performed
     * @return True if validation; otherwise false
     */
-   public boolean getArchiveValidation()
-   {
+   public boolean getArchiveValidation() {
       return archiveValidation.get();
    }
 
@@ -94,8 +88,7 @@ public class ConnectorSubsystemConfiguration
     * Set if a failed warning archive validation report should fail the deployment
     * @param value The value
     */
-   public void setArchiveValidationFailOnWarn(boolean value)
-   {
+   public void setArchiveValidationFailOnWarn(boolean value) {
       archiveValidationFailOnWarn.set(value);
    }
 
@@ -103,8 +96,7 @@ public class ConnectorSubsystemConfiguration
     * Does a failed archive validation warning report fail the deployment
     * @return True if failing; otherwise false
     */
-   public boolean getArchiveValidationFailOnWarn()
-   {
+   public boolean getArchiveValidationFailOnWarn() {
       return archiveValidationFailOnWarn.get();
    }
 
@@ -112,8 +104,7 @@ public class ConnectorSubsystemConfiguration
     * Set if a failed error archive validation report should fail the deployment
     * @param value The value
     */
-   public void setArchiveValidationFailOnError(boolean value)
-   {
+   public void setArchiveValidationFailOnError(boolean value) {
       archiveValidationFailOnError.set(value);
    }
 
@@ -121,8 +112,7 @@ public class ConnectorSubsystemConfiguration
     * Does a failed archive validation error report fail the deployment
     * @return True if failing; otherwise false
     */
-   public boolean getArchiveValidationFailOnError()
-   {
+   public boolean getArchiveValidationFailOnError() {
       return archiveValidationFailOnError.get();
    }
 

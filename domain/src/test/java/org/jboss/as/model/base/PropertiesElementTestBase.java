@@ -212,8 +212,7 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
 
         assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.size(), testee1.size());
-        for (String name : testee.getPropertyNames())
-        {
+        for (String name : testee.getPropertyNames()) {
             assertEquals("Property values match for " + name, testee.getProperty(name), testee1.getProperty(name));
         }
 
@@ -230,8 +229,7 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
 
         assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.size(), testee1.size());
-        for (String name : testee.getPropertyNames())
-        {
+        for (String name : testee.getPropertyNames()) {
             assertEquals("Property values match for " + name, testee.getProperty(name), testee1.getProperty(name));
         }
     }

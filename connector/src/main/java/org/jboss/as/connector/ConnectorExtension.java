@@ -35,18 +35,15 @@ import org.jboss.staxmapper.XMLMapper;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  *
  */
-public final class ConnectorExtension implements Extension
-{
+public final class ConnectorExtension implements Extension {
 
    @Override
-   public void registerElementHandlers(final XMLMapper mapper)
-   {
+   public void registerElementHandlers(final XMLMapper mapper) {
       mapper.registerRootElement(new QName(Namespace.CONNECTOR_1_0.getUriString(), "subsystem"),
             new ConnectorSubsystemElementParser());
    }
 
    @Override
-   public void activate(final ServiceActivatorContext context)
-   {
+   public void activate(final ServiceActivatorContext context) {
    }
 }
