@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Domain;
 import org.jboss.as.model.Host;
 import org.jboss.as.model.LocalDomainControllerElement;
 

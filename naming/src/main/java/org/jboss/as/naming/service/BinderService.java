@@ -33,8 +33,6 @@ import org.jboss.msc.value.Value;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import static org.jboss.as.naming.util.NamingUtils.cast;
-
 /**
  * Service responsible for binding and unbinding a entry into a naming context.  This service can be used as a dependency for
  * any service that needs to retrieve this entry from the context.

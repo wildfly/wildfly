@@ -25,7 +25,6 @@ package org.jboss.as.server.manager;
 import java.io.IOException;
 
 import org.jboss.as.model.Standalone;
-import org.jboss.as.process.StreamUtils;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
