@@ -22,20 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="javax.api">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.jts.integration">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
     <dependencies>
-        <module name="system" export="true">
-            <exports>
-                <include path="javax/**"/>
-                <exclude path="javax/activation/**"/>
-                <exclude path="javax/annotation/**"/>
-                <exclude path="javax/jws/**"/>
-                <exclude path="javax/transaction/**"/>
-                <exclude path="javax/xml/bind/**"/>
-                <exclude path="javax/xml/soap/**"/>
-                <exclude path="javax/xml/ws/**"/>
-            </exports>
-        </module>
+        <module name="org.jboss.integration.jboss-transaction-spi"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.apache.commons.logging"/>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.resource.api"/>
     </dependencies>
 </module>

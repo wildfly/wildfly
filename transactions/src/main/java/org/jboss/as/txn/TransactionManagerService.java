@@ -46,6 +46,8 @@ import com.arjuna.common.internal.util.logging.LoggingEnvironmentBean;
 import com.arjuna.common.internal.util.logging.commonPropertyManager;
 import com.arjuna.common.internal.util.logging.jakarta.JakartaRelevelingLogFactory;
 import com.arjuna.common.internal.util.logging.jakarta.Log4JLogger;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -93,119 +95,126 @@ final class TransactionManagerService implements Service<TransactionManager> {
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        // Global configuration.
 
-        // Logging environment config
-        final LoggingEnvironmentBean loggingEnvironmentBean = commonPropertyManager.getLoggingEnvironmentBean();
-        loggingEnvironmentBean.setLoggingFactory(JakartaRelevelingLogFactory.class.getName() + ";" + Log4JLogger.class.getName());
-
-        // Recovery env bean
-        final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
-        final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
-        recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
-        recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
-        final SocketBinding statusBinding = statusBindingInjector.getValue();
-        recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
-        recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
-
-        final List<String> recoveryExtensions = new ArrayList<String>();
-        final List<String> expiryScanners = new ArrayList<String>();
-
-        recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
-        recoveryExtensions.add(TORecoveryModule.class.getName());
-
-        expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
-
-        final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
-        coreEnvironmentBean.setSocketProcessIdPort(socketProcessBindingInjector.getValue().getSocketAddress().getPort());
-        coreEnvironmentBean.setNodeIdentifier(coreNodeIdentifier);
-        coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
-
-        final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
-        jtaEnvironmentBean.setLastResourceOptimisationInterface(LastResource.class.getName());
-        jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
-        jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
-
-        final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
-        coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
-        coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
-
-        final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
-        objectStoreEnvironmentBean.setObjectStoreDir(objectStoreDirectory);
-
+        // JTS expects the TCCL to be set to something that can find the log factory class.
+        AccessController.doPrivileged(new SetContextLoaderAction(TransactionManagerService.class.getClassLoader()));
         try {
-            ObjStoreBean.getObjectStoreBrowserBean();
-        } catch (Exception e) {
-            throw new StartException("Failed to configure object store browser bean", e);
+            // Global configuration.
+
+            // Logging environment config
+            final LoggingEnvironmentBean loggingEnvironmentBean = commonPropertyManager.getLoggingEnvironmentBean();
+            loggingEnvironmentBean.setLoggingFactory(JakartaRelevelingLogFactory.class.getName() + ";" + Log4JLogger.class.getName());
+
+            // Recovery env bean
+            final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
+            final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
+            recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
+            recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
+            final SocketBinding statusBinding = statusBindingInjector.getValue();
+            recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
+            recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
+
+            final List<String> recoveryExtensions = new ArrayList<String>();
+            final List<String> expiryScanners = new ArrayList<String>();
+
+            recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
+            recoveryExtensions.add(TORecoveryModule.class.getName());
+
+            expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
+
+            final CoreEnvironmentBean coreEnvironmentBean = arjPropertyManager.getCoreEnvironmentBean();
+            coreEnvironmentBean.setSocketProcessIdPort(socketProcessBindingInjector.getValue().getSocketAddress().getPort());
+            coreEnvironmentBean.setNodeIdentifier(coreNodeIdentifier);
+            coreEnvironmentBean.setSocketProcessIdMaxPorts(coreSocketProcessIdMaxPorts);
+
+            final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
+            jtaEnvironmentBean.setLastResourceOptimisationInterface(LastResource.class.getName());
+            jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
+            jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
+
+            final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
+            coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
+            coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
+
+            final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
+            objectStoreEnvironmentBean.setObjectStoreDir(objectStoreDirectory);
+
+            try {
+                ObjStoreBean.getObjectStoreBrowserBean();
+            } catch (Exception e) {
+                throw new StartException("Failed to configure object store browser bean", e);
+            }
+
+            final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
+
+            final ORB orb = orbInjector.getValue();
+
+            if (orb == null) {
+                // No IIOP, stick with JTA mode.
+                final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
+                service.setJbossXATerminator(xaTerminatorInjector.getValue());
+                service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
+                recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
+                recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
+                recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
+                recoveryEnvironmentBean.setRecoveryActivators(null);
+                jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
+                jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
+                try {
+                    recoveryManagerService.create();
+                } catch (Exception e) {
+                    throw new StartException("Recovery manager create failed", e);
+                }
+                recoveryManagerService.start();
+                try {
+                    service.create();
+                } catch (Exception e) {
+                    throw new StartException("Transaction manager create failed", e);
+                }
+                service.start();
+                this.recoveryManagerService = recoveryManagerService;
+                value = service;
+            } else {
+                // IIOP is enabled, so fire up JTS mode.
+                final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
+                service.setJbossXATerminator(xaTerminatorInjector.getValue());
+                service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
+                recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
+                recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
+                recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
+                expiryScanners.add(ExpiredContactScanner.class.getName());
+                expiryScanners.add(ExpiredToplevelScanner.class.getName());
+                expiryScanners.add(ExpiredServerScanner.class.getName());
+                recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
+                recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
+                recoveryEnvironmentBean.setRecoveryActivators(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
+                jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
+                jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
+
+                try {
+                    recoveryManagerService.create();
+                } catch (Exception e) {
+                    throw new StartException("Recovery manager create failed", e);
+                }
+                recoveryManagerService.start();
+
+                try {
+                    service.create();
+                } catch (Exception e) {
+                    throw new StartException("Create failed", e);
+                }
+                try {
+                    service.start(orb);
+                } catch (Exception e) {
+                    throw new StartException("Start failed", e);
+                }
+                this.recoveryManagerService = recoveryManagerService;
+                value = service;
+            }
+            // todo: JNDI bindings
+        } finally {
+            AccessController.doPrivileged(CLEAR_ACTION);
         }
-
-        final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
-
-        final ORB orb = orbInjector.getValue();
-
-        if (orb == null) {
-            // No IIOP, stick with JTA mode.
-            final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
-            service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
-            recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
-            recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
-            recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
-            recoveryEnvironmentBean.setRecoveryActivators(null);
-            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
-            try {
-                recoveryManagerService.create();
-            } catch (Exception e) {
-                throw new StartException("Recovery manager create failed", e);
-            }
-            recoveryManagerService.start();
-            try {
-                service.create();
-            } catch (Exception e) {
-                throw new StartException("Transaction manager create failed", e);
-            }
-            service.start();
-            this.recoveryManagerService = recoveryManagerService;
-            value = service;
-        } else {
-            // IIOP is enabled, so fire up JTS mode.
-            final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
-            service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
-            recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
-            recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
-            recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
-            expiryScanners.add(ExpiredContactScanner.class.getName());
-            expiryScanners.add(ExpiredToplevelScanner.class.getName());
-            expiryScanners.add(ExpiredServerScanner.class.getName());
-            recoveryEnvironmentBean.setRecoveryExtensions(recoveryExtensions);
-            recoveryEnvironmentBean.setExpiryScanners(expiryScanners);
-            recoveryEnvironmentBean.setRecoveryActivators(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
-            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
-
-            try {
-                recoveryManagerService.create();
-            } catch (Exception e) {
-                throw new StartException("Recovery manager create failed", e);
-            }
-            recoveryManagerService.start();
-
-            try {
-                service.create();
-            } catch (Exception e) {
-                throw new StartException("Create failed", e);
-            }
-            try {
-                service.start(orb);
-            } catch (Exception e) {
-                throw new StartException("Start failed", e);
-            }
-            this.recoveryManagerService = recoveryManagerService;
-            value = service;
-        }
-        // todo: JNDI bindings
     }
 
     public synchronized void stop(final StopContext context) {
@@ -243,5 +252,21 @@ final class TransactionManagerService implements Service<TransactionManager> {
 
     Injector<SocketBinding> getSocketProcessBindingInjector() {
         return socketProcessBindingInjector;
+    }
+
+    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
+
+    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
+
+        private final ClassLoader classLoader;
+
+        public SetContextLoaderAction(final ClassLoader classLoader) {
+            this.classLoader = classLoader;
+        }
+
+        public Void run() {
+            Thread.currentThread().setContextClassLoader(classLoader);
+            return null;
+        }
     }
 }

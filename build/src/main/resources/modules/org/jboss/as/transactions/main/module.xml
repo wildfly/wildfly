@@ -35,8 +35,8 @@
         <module name="org.jboss.integration.jboss-transaction-spi"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.jbossts.jbossjts"/>
-        <module name="org.jboss.jbossts.jbossjts-integration"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.jts.integration"/>
         <module name="system"/>
     </dependencies>
 </module>

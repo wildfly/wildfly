@@ -153,6 +153,8 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="org.apache.commons.logging"/>
+
         <module-def name="org.javassist">
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
@@ -209,11 +211,11 @@
             <maven-resource group="org.jboss.integration" artifact="jboss-transaction-spi"/>
         </module-def>
 
-        <module-def name="org.jboss.jbossts.jbossjts">
+        <module-def name="org.jboss.jts">
             <maven-resource group="org.jboss.jbossts" artifact="jbossjts"/>
         </module-def>
 
-        <module-def name="org.jboss.jbossts.jbossjts-integration">
+        <module-def name="org.jboss.jts.integration">
             <maven-resource group="org.jboss.jbossts" artifact="jbossjts-integration"/>
         </module-def>
 

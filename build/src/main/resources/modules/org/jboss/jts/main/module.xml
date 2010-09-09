@@ -22,13 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.jbossts.jbossjts">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.jts">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.slf4j.jcl-over-slf4j"/>
+        <module name="org.apache.commons.logging"/>
+        <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
     </dependencies>
