@@ -161,8 +161,7 @@
                     <configuration>
                         <configLocation>jboss-as-checkstyle/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
-                        <!-- This will be enabled... soon -->
-                        <!--<failsOnError>true</failsOnError>-->
+                        <failsOnError>true</failsOnError>
                         <useFile/>
                     </configuration>
                     <dependencies>
