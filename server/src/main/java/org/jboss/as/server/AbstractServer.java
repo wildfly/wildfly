@@ -36,59 +36,59 @@ import org.jboss.msc.service.ServiceRegistryException;
  */
 public abstract class AbstractServer {
 
-	static final Logger log = Logger.getLogger("org.jboss.as.server");
+    static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-	private Standalone config;
-	private ServiceContainer serviceContainer;
-	private final ServerEnvironment environment;
+    private Standalone config;
+    private ServiceContainer serviceContainer;
+    private final ServerEnvironment environment;
 
-	protected AbstractServer(final ServerEnvironment environment) {
+    protected AbstractServer(final ServerEnvironment environment) {
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
-		this.environment = environment;
-	}
+        this.environment = environment;
+    }
 
-	/**
-	 * Get the server environment.
-	 *
-	 * @return the server environment
-	 */
-	public ServerEnvironment getEnvironment() {
-		return environment;
-	}
+    /**
+     * Get the server environment.
+     *
+     * @return the server environment
+     */
+    public ServerEnvironment getEnvironment() {
+        return environment;
+    }
 
-	/**
-	 * Get the standalone configuration.
-	 *
-	 * @return the standalone configuration
-	 */
-	public Standalone getConfig() {
-		if(config == null) {
-			throw new IllegalStateException("null configuration");
-		}
-		return config;
-	}
+    /**
+     * Get the standalone configuration.
+     *
+     * @return the standalone configuration
+     */
+    public Standalone getConfig() {
+        if(config == null) {
+            throw new IllegalStateException("null configuration");
+        }
+        return config;
+    }
 
-	/**
-	 * Start the server.
-	 *
-	 * @throws ServerStartException
-	 */
-	public abstract void start() throws ServerStartException;
+    /**
+     * Start the server.
+     *
+     * @throws ServerStartException
+     */
+    public abstract void start() throws ServerStartException;
 
-	/**
-	 * Start the server.
-	 *
-	 * @param config the server
-	 * @throws ServerStartException
-	 */
-	void start(final Standalone config) throws ServerStartException {
-		if(config == null)  {
-			throw new IllegalArgumentException("null standalone config");
-		}
-		this.config = config;
-		log.infof("Starting server '%s'", config.getServerName());
+    /**
+     * Start the server.
+     *
+     * @param config the server
+     * @throws ServerStartException
+     */
+    void start(final Standalone config) throws ServerStartException {
+        if(config == null)  {
+            throw new IllegalArgumentException("null standalone config");
+        }
+        this.config = config;
+        log.infof("Starting server '%s'", config.getServerName());
         serviceContainer = ServiceContainer.Factory.create();
 
         final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
@@ -122,23 +122,23 @@ public abstract class AbstractServer {
         } catch (Throwable t) {
             throw new ServerStartException("Failed to start server", t);
         }
-	}
+    }
 
-	/**
-	 * Stop the server.
-	 *
-	 */
-	public void stop() {
-		log.infof("Stopping server '%s'", config.getServerName());
-		final ServiceContainer container = this.serviceContainer;
-		if(container != null) {
-			container.shutdown();
-		}
-		this.config = null;
-		this.serviceContainer = null;
-	}
+    /**
+     * Stop the server.
+     *
+     */
+    public void stop() {
+        log.infof("Stopping server '%s'", config.getServerName());
+        final ServiceContainer container = this.serviceContainer;
+        if(container != null) {
+            container.shutdown();
+        }
+        this.config = null;
+        this.serviceContainer = null;
+    }
 
-	abstract ServerStartupListener.Callback createListenerCallback();
+    abstract ServerStartupListener.Callback createListenerCallback();
 
 }
 

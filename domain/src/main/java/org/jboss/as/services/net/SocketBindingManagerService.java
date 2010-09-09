@@ -52,267 +52,267 @@ import org.jboss.msc.service.StopContext;
  */
 public class SocketBindingManagerService implements SocketBindingManager, Service<SocketBindingManager> {
 
-	private final int portOffSet;
-	private final SocketFactory socketFactory = new ManagedSocketFactory();
-	private final ServerSocketFactory serverSocketFactory = new ManagedServerSocketFactory();
+    private final int portOffSet;
+    private final SocketFactory socketFactory = new ManagedSocketFactory();
+    private final ServerSocketFactory serverSocketFactory = new ManagedServerSocketFactory();
 
-	private final Map<InetSocketAddress, ManagedBinding> managedBindings = new ConcurrentHashMap<InetSocketAddress, ManagedBinding>();
+    private final Map<InetSocketAddress, ManagedBinding> managedBindings = new ConcurrentHashMap<InetSocketAddress, ManagedBinding>();
 
-	public SocketBindingManagerService(int portOffSet) {
-		this.portOffSet = portOffSet;
-	}
+    public SocketBindingManagerService(int portOffSet) {
+        this.portOffSet = portOffSet;
+    }
 
-	public void start(StartContext context) throws StartException {
-		//
-	}
+    public void start(StartContext context) throws StartException {
+        //
+    }
 
-	public void stop(StopContext context) {
+    public void stop(StopContext context) {
 
-	}
+    }
 
-	public SocketBindingManager getValue() throws IllegalStateException {
-		return this;
-	}
+    public SocketBindingManager getValue() throws IllegalStateException {
+        return this;
+    }
 
-	public int getPortOffset() {
-		return portOffSet;
-	}
+    public int getPortOffset() {
+        return portOffSet;
+    }
 
-	/**
-	 * Get the managed server socket factory.
-	 *
-	 * @return the server socket factory
-	 */
-	public ServerSocketFactory getServerSocketFactory() {
-		return serverSocketFactory;
-	}
+    /**
+     * Get the managed server socket factory.
+     *
+     * @return the server socket factory
+     */
+    public ServerSocketFactory getServerSocketFactory() {
+        return serverSocketFactory;
+    }
 
-	/**
-	 * Get the socket factory.
-	 *
-	 * @return the socket factory
-	 */
-	public SocketFactory getSocketFactory() {
-		return socketFactory;
-	}
+    /**
+     * Get the socket factory.
+     *
+     * @return the socket factory
+     */
+    public SocketFactory getSocketFactory() {
+        return socketFactory;
+    }
 
-	/**
-	 * Create a datagram socket.
-	 *
-	 * @param address the socket address
-	 * @return the datagram socket
-	 * @throws SocketException
-	 */
-	public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException {
-		return new ManagedDatagramSocketBinding(this, address);
-	}
+    /**
+     * Create a datagram socket.
+     *
+     * @param address the socket address
+     * @return the datagram socket
+     * @throws SocketException
+     */
+    public DatagramSocket createDatagramSocket(SocketAddress address) throws SocketException {
+        return new ManagedDatagramSocketBinding(this, address);
+    }
 
-	/**
-	 * Create a multicast socket.
-	 *
-	 * @param address the socket address
-	 * @return the multicast socket
-	 * @throws IOException
-	 */
-	public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
-		return new ManagedMulticastSocketBinding(this, address);
-	}
+    /**
+     * Create a multicast socket.
+     *
+     * @param address the socket address
+     * @return the multicast socket
+     * @throws IOException
+     */
+    public MulticastSocket createMulticastSocket(SocketAddress address) throws IOException {
+        return new ManagedMulticastSocketBinding(this, address);
+    }
 
-	/**
-	 * @return the registered bindings
-	 */
-	public Collection<ManagedBinding> listActiveBindings() {
-		return managedBindings.values();
-	}
+    /**
+     * @return the registered bindings
+     */
+    public Collection<ManagedBinding> listActiveBindings() {
+        return managedBindings.values();
+    }
 
-	/**
-	 * Register an active socket binding.
-	 *
-	 * @param binding the managed binding
-	 * @param bindingName the binding name
-	 */
-	public Closeable registerBinding(ManagedBinding binding) {
-		managedBindings.put(binding.getBindAddress(), binding);
-		return binding;
-	}
+    /**
+     * Register an active socket binding.
+     *
+     * @param binding the managed binding
+     * @param bindingName the binding name
+     */
+    public Closeable registerBinding(ManagedBinding binding) {
+        managedBindings.put(binding.getBindAddress(), binding);
+        return binding;
+    }
 
-	public Closeable registerSocket(DatagramSocket socket) {
-		return registerBinding(new WrappedManagedDatagramSocket(socket));
-	}
-	public Closeable registerSocket(ServerSocket socket) {
-		return registerBinding(new WrappedManagedServerSocket(socket));
-	}
-	public Closeable registerSocket(Socket socket) {
-		return registerBinding(new WrappedManagedSocket(socket));
-	}
-	public Closeable registerChannel(DatagramChannel channel) {
-		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
-	}
-	public Closeable registerChannel(ServerSocketChannel channel) {
-		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
-	}
-	public Closeable registerChannel(SocketChannel channel) {
-		return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
-	}
+    public Closeable registerSocket(DatagramSocket socket) {
+        return registerBinding(new WrappedManagedDatagramSocket(socket));
+    }
+    public Closeable registerSocket(ServerSocket socket) {
+        return registerBinding(new WrappedManagedServerSocket(socket));
+    }
+    public Closeable registerSocket(Socket socket) {
+        return registerBinding(new WrappedManagedSocket(socket));
+    }
+    public Closeable registerChannel(DatagramChannel channel) {
+        return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
+    }
+    public Closeable registerChannel(ServerSocketChannel channel) {
+        return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
+    }
+    public Closeable registerChannel(SocketChannel channel) {
+        return registerBinding((InetSocketAddress) channel.socket().getLocalSocketAddress(), channel);
+    }
 
-	/**
-	 * Unregister a socket binding.
-	 *
-	 * @param binding the managed socket binding
-	 */
-	public void unregisterBinding(ManagedBinding binding) {
-		unregisterBinding(binding.getBindAddress());
-	}
+    /**
+     * Unregister a socket binding.
+     *
+     * @param binding the managed socket binding
+     */
+    public void unregisterBinding(ManagedBinding binding) {
+        unregisterBinding(binding.getBindAddress());
+    }
 
-	public void unregisterSocket(DatagramSocket socket) {
-		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
-	}
-	public void unregisterSocket(ServerSocket socket) {
-		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
-	}
-	public void unregisterSocket(Socket socket) {
-		unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
-	}
-	public void unregisterChannel(DatagramChannel channel) {
-		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
-	}
-	public void unregisterChannel(ServerSocketChannel channel) {
-		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
-	}
-	public void unregisterChannel(SocketChannel channel) {
-		unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
-	}
+    public void unregisterSocket(DatagramSocket socket) {
+        unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
+    }
+    public void unregisterSocket(ServerSocket socket) {
+        unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
+    }
+    public void unregisterSocket(Socket socket) {
+        unregisterBinding((InetSocketAddress) socket.getLocalSocketAddress());
+    }
+    public void unregisterChannel(DatagramChannel channel) {
+        unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+    }
+    public void unregisterChannel(ServerSocketChannel channel) {
+        unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+    }
+    public void unregisterChannel(SocketChannel channel) {
+        unregisterBinding((InetSocketAddress) channel.socket().getLocalSocketAddress());
+    }
 
-	Closeable registerBinding(InetSocketAddress address, Closeable closeable) {
-		return registerBinding(new CloseableManagedBinding(address, closeable));
-	}
+    Closeable registerBinding(InetSocketAddress address, Closeable closeable) {
+        return registerBinding(new CloseableManagedBinding(address, closeable));
+    }
 
-	void unregisterBinding(InetSocketAddress address) {
-		managedBindings.remove(address);
-	}
+    void unregisterBinding(InetSocketAddress address) {
+        managedBindings.remove(address);
+    }
 
-	class ManagedSocketFactory extends SocketFactory {
+    class ManagedSocketFactory extends SocketFactory {
 
-		public Socket createSocket() {
-			return new ManagedSocketBinding(SocketBindingManagerService.this);
-		}
+        public Socket createSocket() {
+            return new ManagedSocketBinding(SocketBindingManagerService.this);
+        }
 
-		public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
-			return createSocket(InetAddress.getByName(host), port);
-		}
+        public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
+            return createSocket(InetAddress.getByName(host), port);
+        }
 
-		public Socket createSocket(final InetAddress host, final int port) throws IOException {
-			final Socket socket = createSocket();
-			socket.connect(new InetSocketAddress(host, port));
-			return socket;
-		}
+        public Socket createSocket(final InetAddress host, final int port) throws IOException {
+            final Socket socket = createSocket();
+            socket.connect(new InetSocketAddress(host, port));
+            return socket;
+        }
 
-		public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException, UnknownHostException {
-			return createSocket(InetAddress.getByName(host), port, localHost, localPort);
-		}
+        public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException, UnknownHostException {
+            return createSocket(InetAddress.getByName(host), port, localHost, localPort);
+        }
 
-		public Socket createSocket(final InetAddress address, final int port, final InetAddress localAddress, final int localPort) throws IOException {
-	        final Socket socket = createSocket();
-	        socket.bind(new InetSocketAddress(localAddress, localPort));
-	        socket.connect(new InetSocketAddress(address, port));
-	        return socket;
-		}
-	}
+        public Socket createSocket(final InetAddress address, final int port, final InetAddress localAddress, final int localPort) throws IOException {
+            final Socket socket = createSocket();
+            socket.bind(new InetSocketAddress(localAddress, localPort));
+            socket.connect(new InetSocketAddress(address, port));
+            return socket;
+        }
+    }
 
-	class ManagedServerSocketFactory extends ServerSocketFactory {
+    class ManagedServerSocketFactory extends ServerSocketFactory {
 
-	    public ServerSocket createServerSocket() throws IOException {
-	        return new ManagedServerSocketBinding(SocketBindingManagerService.this);
-	    }
+        public ServerSocket createServerSocket() throws IOException {
+            return new ManagedServerSocketBinding(SocketBindingManagerService.this);
+        }
 
-	    public ServerSocket createServerSocket(final int port) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(port));
-	        return serverSocket;
-	    }
+        public ServerSocket createServerSocket(final int port) throws IOException {
+            final ServerSocket serverSocket = createServerSocket();
+            serverSocket.bind(new InetSocketAddress(port));
+            return serverSocket;
+        }
 
-	    public ServerSocket createServerSocket(final int port, final int backlog) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(port), backlog);
-	        return serverSocket;
-	    }
+        public ServerSocket createServerSocket(final int port, final int backlog) throws IOException {
+            final ServerSocket serverSocket = createServerSocket();
+            serverSocket.bind(new InetSocketAddress(port), backlog);
+            return serverSocket;
+        }
 
-	    public ServerSocket createServerSocket(final int port, final int backlog, final InetAddress ifAddress) throws IOException {
-	        final ServerSocket serverSocket = createServerSocket();
-	        serverSocket.bind(new InetSocketAddress(ifAddress, port), backlog);
-	        return serverSocket;
-	    }
-	}
+        public ServerSocket createServerSocket(final int port, final int backlog, final InetAddress ifAddress) throws IOException {
+            final ServerSocket serverSocket = createServerSocket();
+            serverSocket.bind(new InetSocketAddress(ifAddress, port), backlog);
+            return serverSocket;
+        }
+    }
 
-	class CloseableManagedBinding implements ManagedBinding {
-		private final InetSocketAddress address;
-		private final Closeable closeable;
-		public CloseableManagedBinding(final InetSocketAddress address, final Closeable closeable) {
-			this.address = address;
-			this.closeable = closeable;
-		}
-		public InetSocketAddress getBindAddress() {
-			return address;
-		}
-		public void close() throws IOException {
-			try {
-				closeable.close();
-			} finally {
-				unregisterBinding(address);
-			}
-		}
-	}
+    class CloseableManagedBinding implements ManagedBinding {
+        private final InetSocketAddress address;
+        private final Closeable closeable;
+        public CloseableManagedBinding(final InetSocketAddress address, final Closeable closeable) {
+            this.address = address;
+            this.closeable = closeable;
+        }
+        public InetSocketAddress getBindAddress() {
+            return address;
+        }
+        public void close() throws IOException {
+            try {
+                closeable.close();
+            } finally {
+                unregisterBinding(address);
+            }
+        }
+    }
 
-	class WrappedManagedDatagramSocket implements ManagedBinding {
-		private final DatagramSocket socket;
-		public WrappedManagedDatagramSocket(final DatagramSocket socket) {
-			this.socket = socket;
-		}
-		public InetSocketAddress getBindAddress() {
-			return (InetSocketAddress) socket.getLocalSocketAddress();
-		}
-		public void close() throws IOException {
-			try {
-				socket.close();
-			} finally {
-				unregisterBinding(getBindAddress());
-			}
-		}
-	}
+    class WrappedManagedDatagramSocket implements ManagedBinding {
+        private final DatagramSocket socket;
+        public WrappedManagedDatagramSocket(final DatagramSocket socket) {
+            this.socket = socket;
+        }
+        public InetSocketAddress getBindAddress() {
+            return (InetSocketAddress) socket.getLocalSocketAddress();
+        }
+        public void close() throws IOException {
+            try {
+                socket.close();
+            } finally {
+                unregisterBinding(getBindAddress());
+            }
+        }
+    }
 
-	class WrappedManagedSocket implements ManagedBinding {
-		private final Socket socket;
-		public WrappedManagedSocket(final Socket socket) {
-			this.socket = socket;
-		}
-		public InetSocketAddress getBindAddress() {
-			return (InetSocketAddress) socket.getLocalSocketAddress();
-		}
-		public void close() throws IOException {
-			try {
-				socket.close();
-			} finally {
-				unregisterBinding(getBindAddress());
-			}
-		}
-	}
+    class WrappedManagedSocket implements ManagedBinding {
+        private final Socket socket;
+        public WrappedManagedSocket(final Socket socket) {
+            this.socket = socket;
+        }
+        public InetSocketAddress getBindAddress() {
+            return (InetSocketAddress) socket.getLocalSocketAddress();
+        }
+        public void close() throws IOException {
+            try {
+                socket.close();
+            } finally {
+                unregisterBinding(getBindAddress());
+            }
+        }
+    }
 
-	class WrappedManagedServerSocket implements ManagedBinding {
-		private final ServerSocket socket;
-		public WrappedManagedServerSocket(final ServerSocket socket) {
-			this.socket = socket;
-		}
-		public InetSocketAddress getBindAddress() {
-			return (InetSocketAddress) socket.getLocalSocketAddress();
-		}
-		public void close() throws IOException {
-			try {
-				socket.close();
-			} finally {
-				unregisterBinding(getBindAddress());
-			}
-		}
-	}
+    class WrappedManagedServerSocket implements ManagedBinding {
+        private final ServerSocket socket;
+        public WrappedManagedServerSocket(final ServerSocket socket) {
+            this.socket = socket;
+        }
+        public InetSocketAddress getBindAddress() {
+            return (InetSocketAddress) socket.getLocalSocketAddress();
+        }
+        public void close() throws IOException {
+            try {
+                socket.close();
+            } finally {
+                unregisterBinding(getBindAddress());
+            }
+        }
+    }
 
 }
 

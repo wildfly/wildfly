@@ -29,30 +29,30 @@ import java.net.NetworkInterface;
  */
 public final class NetworkInterfaceBinding {
 
-	private final InetAddress address;
-	private final NetworkInterface networkInterface;
+    private final InetAddress address;
+    private final NetworkInterface networkInterface;
 
-	NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
-		this.address = address;
-		this.networkInterface = networkInterface;
-	}
+    NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
+        this.address = address;
+        this.networkInterface = networkInterface;
+    }
 
-	/**
-	 * Get the network address.
-	 *
-	 * @return the network address
-	 */
-	public InetAddress getAddress() {
-		return this.address;
-	}
+    /**
+     * Get the network address.
+     *
+     * @return the network address
+     */
+    public InetAddress getAddress() {
+        return this.address;
+    }
 
-	/**
-	 * Get the network interface.
-	 *
-	 * @return the network interface
-	 */
-	public NetworkInterface getNetworkInterface() {
-		return this.networkInterface;
-	}
+    /**
+     * Get the network interface.
+     *
+     * @return the network interface
+     */
+    public NetworkInterface getNetworkInterface() {
+        return this.networkInterface;
+    }
 
 }

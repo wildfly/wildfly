@@ -426,7 +426,7 @@ public final class Standalone extends AbstractModel<Standalone> {
 
         // TODO move service binding manager to somewhere else?
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-        		new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
+                new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
 
         // Activate socket bindings
         socketBindings.activate(context);

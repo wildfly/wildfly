@@ -383,8 +383,8 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
 
     public void activate(ServiceActivatorContext activatorContext) {
-    	// create the binding service
-    	SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
+        // create the binding service
+        SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
     }
 
 }

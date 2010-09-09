@@ -128,7 +128,7 @@ public class ServerEnvironment {
 
     public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
-    	this.standalone = standalone;
+        this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -315,8 +315,8 @@ public class ServerEnvironment {
     }
 
     public boolean isStandalone() {
-		return standalone;
-	}
+        return standalone;
+    }
 
     /**
      * Get a File from configuration.

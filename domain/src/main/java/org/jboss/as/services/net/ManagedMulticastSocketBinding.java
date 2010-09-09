@@ -32,30 +32,30 @@ import java.net.SocketException;
  */
 class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {
 
-	private final SocketBindingManager socketBindings;
+    private final SocketBindingManager socketBindings;
 
-	ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
-		super(address);
-		this.socketBindings = socketBindings;
-	}
+    ManagedMulticastSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws IOException {
+        super(address);
+        this.socketBindings = socketBindings;
+    }
 
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
+    public InetSocketAddress getBindAddress() {
+        return (InetSocketAddress) getLocalSocketAddress();
+    }
 
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		this.socketBindings.registerBinding(this);
-	}
+    public synchronized void bind(SocketAddress addr) throws SocketException {
+        super.bind(addr);
+        this.socketBindings.registerBinding(this);
+    }
 
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
+    public void close() {
+        try {
+            super.close();
+        } finally {
+            socketBindings.unregisterBinding(this);
+        }
 
-	}
+    }
 
 }
 

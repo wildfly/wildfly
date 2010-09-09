@@ -43,11 +43,11 @@ import org.jboss.msc.service.StartException;
  */
 public class Server extends AbstractServer {
 
-	private ServerCommunicationHandler serverCommunicationHandler;
+    private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
 
     public Server(ServerEnvironment environment) {
-    	super(environment);
+        super(environment);
     }
 
     public void start() {
@@ -57,12 +57,12 @@ public class Server extends AbstractServer {
     }
 
     public void start(Standalone config) throws ServerStartException {
-    	try {
-    		super.start(config);
-    	} catch(ServerStartException e) {
-    		sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
-    		throw e;
-    	}
+        try {
+            super.start(config);
+        } catch(ServerStartException e) {
+            sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
+            throw e;
+        }
     }
 
     public void stop() {
@@ -71,7 +71,7 @@ public class Server extends AbstractServer {
     }
 
     ServerStartupListener.Callback createListenerCallback() {
-    	return new ServerStartupListener.Callback() {
+        return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);

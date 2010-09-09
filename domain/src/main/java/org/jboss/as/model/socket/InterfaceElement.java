@@ -224,7 +224,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     public void activate(ServiceActivatorContext context) {
         log.info("Activating interface element:" + name);
         context.getBatchBuilder().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()),
-        		new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
+                new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
     }
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {

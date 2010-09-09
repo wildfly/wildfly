@@ -39,82 +39,82 @@ import org.jboss.msc.service.StopContext;
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
 
-	/** The service base name. */
-	public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
+    /** The service base name. */
+    public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
 
-	private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
+    private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
 
-	/** The interface binding. */
-	private NetworkInterfaceBinding interfaceBinding;
+    /** The interface binding. */
+    private NetworkInterfaceBinding interfaceBinding;
 
-	/** The network interface element. */
-	private final InterfaceElement interfaceElement;
+    /** The network interface element. */
+    private final InterfaceElement interfaceElement;
 
-	public NetworkInterfaceService(final InterfaceElement element) {
-		this.interfaceElement = element;
-	}
+    public NetworkInterfaceService(final InterfaceElement element) {
+        this.interfaceElement = element;
+    }
 
-	public synchronized void start(StartContext arg0) throws StartException {
-		try {
-			if(interfaceElement.getAddress() != null) {
-				final InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
-				final NetworkInterface net = NetworkInterface.getByInetAddress(address);
-				this.interfaceBinding = new NetworkInterfaceBinding(net, address);
-			} else {
-				this.interfaceBinding = resolveInterface(interfaceElement);
-			}
-		} catch(Exception e) {
-			throw new StartException(e);
-		}
-		if(this.interfaceBinding == null) {
-			throw new StartException("failed to resolve interface for " + interfaceElement.getName()
-					+ ", " + interfaceElement.getLocation());
-		}
-	}
+    public synchronized void start(StartContext arg0) throws StartException {
+        try {
+            if(interfaceElement.getAddress() != null) {
+                final InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
+                final NetworkInterface net = NetworkInterface.getByInetAddress(address);
+                this.interfaceBinding = new NetworkInterfaceBinding(net, address);
+            } else {
+                this.interfaceBinding = resolveInterface(interfaceElement);
+            }
+        } catch(Exception e) {
+            throw new StartException(e);
+        }
+        if(this.interfaceBinding == null) {
+            throw new StartException("failed to resolve interface for " + interfaceElement.getName()
+                    + ", " + interfaceElement.getLocation());
+        }
+    }
 
-	public synchronized void stop(StopContext arg0) {
-		this.interfaceBinding = null;
-	}
+    public synchronized void stop(StopContext arg0) {
+        this.interfaceBinding = null;
+    }
 
-	public synchronized NetworkInterfaceBinding getValue() throws IllegalStateException {
-		final NetworkInterfaceBinding binding = this.interfaceBinding;
-		if(binding == null) {
-			throw new IllegalStateException();
-		}
-		return binding;
-	}
+    public synchronized NetworkInterfaceBinding getValue() throws IllegalStateException {
+        final NetworkInterfaceBinding binding = this.interfaceBinding;
+        if(binding == null) {
+            throw new IllegalStateException();
+        }
+        return binding;
+    }
 
-	static NetworkInterfaceBinding resolveInterface(final InterfaceElement element) throws SocketException {
-		final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-		while (networkInterfaces.hasMoreElements()) {
-			final NetworkInterface networkInterface = networkInterfaces.nextElement();
-			final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-			while (interfaceAddresses.hasMoreElements()) {
-				final InetAddress address = interfaceAddresses.nextElement();
-				if (element.getInterfaceCriteria().isAcceptable(networkInterface, address)) {
-					final InetAddress resolved = getInterfaceAddress(networkInterface);
-					if (resolved != null) {
-						return new NetworkInterfaceBinding(networkInterface, resolved);
-					}
-				}
-			}
-		}
-		return null;
-	}
+    static NetworkInterfaceBinding resolveInterface(final InterfaceElement element) throws SocketException {
+        final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+            final NetworkInterface networkInterface = networkInterfaces.nextElement();
+            final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
+            while (interfaceAddresses.hasMoreElements()) {
+                final InetAddress address = interfaceAddresses.nextElement();
+                if (element.getInterfaceCriteria().isAcceptable(networkInterface, address)) {
+                    final InetAddress resolved = getInterfaceAddress(networkInterface);
+                    if (resolved != null) {
+                        return new NetworkInterfaceBinding(networkInterface, resolved);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-	static InetAddress getInterfaceAddress(final NetworkInterface networkInterface) {
-		final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-		while(interfaceAddresses.hasMoreElements()) {
-			final InetAddress address = interfaceAddresses.nextElement();
-			// prefer IPv4 stack
-			if(preferIPv4Stack && address instanceof Inet4Address) {
-				return address;
-			} else if (! preferIPv4Stack) {
-				return address;
-			}
-		}
-		return null;
-	}
+    static InetAddress getInterfaceAddress(final NetworkInterface networkInterface) {
+        final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
+        while(interfaceAddresses.hasMoreElements()) {
+            final InetAddress address = interfaceAddresses.nextElement();
+            // prefer IPv4 stack
+            if(preferIPv4Stack && address instanceof Inet4Address) {
+                return address;
+            } else if (! preferIPv4Stack) {
+                return address;
+            }
+        }
+        return null;
+    }
 
 }
 

@@ -83,8 +83,8 @@ public final class Main {
                 abort(null);
             } else {
                 final DomainController domainController = new DomainController(config);
-            	// Start the domain controller.
-            	domainController.start();
+                // Start the domain controller.
+                domainController.start();
             }
         } catch (Throwable t) {
             abort(t);

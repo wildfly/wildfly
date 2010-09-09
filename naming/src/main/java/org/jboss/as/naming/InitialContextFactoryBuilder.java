@@ -60,13 +60,13 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
     }
 
     private ClassLoader getContextClassLoader() {
-	    return AccessController.doPrivileged(
+        return AccessController.doPrivileged(
             new PrivilegedAction<ClassLoader>() {
                 public ClassLoader run() {
                     return Thread.currentThread().getContextClassLoader();
                 }
             }
-	    );
+        );
     }
 
 }

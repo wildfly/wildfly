@@ -31,28 +31,28 @@ import java.net.SocketAddress;
  */
 class ManagedSocketBinding extends Socket implements ManagedBinding {
 
-	private final SocketBindingManager socketBindings;
+    private final SocketBindingManager socketBindings;
 
-	ManagedSocketBinding(final SocketBindingManager socketBindings) {
-		this.socketBindings = socketBindings;
-	}
+    ManagedSocketBinding(final SocketBindingManager socketBindings) {
+        this.socketBindings = socketBindings;
+    }
 
-	public InetSocketAddress getBindAddress() {
-		return InetSocketAddress.class.cast(getLocalAddress());
-	}
+    public InetSocketAddress getBindAddress() {
+        return InetSocketAddress.class.cast(getLocalAddress());
+    }
 
-	public void bind(SocketAddress bindpoint) throws IOException {
-		super.bind(bindpoint);
-		socketBindings.registerBinding(this);
-	}
+    public void bind(SocketAddress bindpoint) throws IOException {
+        super.bind(bindpoint);
+        socketBindings.registerBinding(this);
+    }
 
-	public synchronized void close() throws IOException {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
+    public synchronized void close() throws IOException {
+        try {
+            super.close();
+        } finally {
+            socketBindings.unregisterBinding(this);
+        }
+    }
 
 }
 

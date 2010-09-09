@@ -32,17 +32,17 @@ import java.net.InetSocketAddress;
  */
 public interface ManagedBinding extends Closeable {
 
-	/**
-	 * Get the bind address.
-	 *
-	 * @return the bind address.
-	 */
-	InetSocketAddress getBindAddress();
+    /**
+     * Get the bind address.
+     *
+     * @return the bind address.
+     */
+    InetSocketAddress getBindAddress();
 
-	/**
-	 * Close and unregister this binding.
-	 */
-	void close() throws IOException;
+    /**
+     * Close and unregister this binding.
+     */
+    void close() throws IOException;
 
 }
 

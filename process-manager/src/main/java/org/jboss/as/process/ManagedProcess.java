@@ -511,13 +511,13 @@ final class ManagedProcess {
     }
 
     private class ProcessMonitor implements Runnable {
-    	final Process process;
+        final Process process;
 
-    	ProcessMonitor(Process process){
-    		this.process = process;
-    	}
+        ProcessMonitor(Process process){
+            this.process = process;
+        }
 
-		@Override
+        @Override
         public void run() {
             boolean respawn = false;
             int exitCode = 0;

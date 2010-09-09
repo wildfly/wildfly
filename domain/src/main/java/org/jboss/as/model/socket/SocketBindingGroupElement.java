@@ -271,9 +271,9 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
 
     /** {@inheritDoc} */
     public void activate(ServiceActivatorContext serviceActivatorContext) {
-    	for(SocketBindingElement element : getAllSocketBindings()) {
-    		element.activate(serviceActivatorContext);
-    	}
+        for(SocketBindingElement element : getAllSocketBindings()) {
+            element.activate(serviceActivatorContext);
+        }
     }
 
     /* (non-Javadoc)

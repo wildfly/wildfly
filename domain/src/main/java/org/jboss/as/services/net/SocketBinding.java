@@ -40,120 +40,120 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SocketBinding {
 
-	public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
+    public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
 
-	private final SocketBindingElement element;
-	private final NetworkInterfaceBinding networkInterface;
-	private final SocketBindingManager socketBindings;
+    private final SocketBindingElement element;
+    private final NetworkInterfaceBinding networkInterface;
+    private final SocketBindingManager socketBindings;
 
-	SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
-			SocketBindingManager socketBindings) {
-		this.element = element;
-		this.socketBindings = socketBindings;
-		this.networkInterface = networkInterface;
-	}
+    SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
+            SocketBindingManager socketBindings) {
+        this.element = element;
+        this.socketBindings = socketBindings;
+        this.networkInterface = networkInterface;
+    }
 
-	/**
-	 * Get the socket binding manager.
-	 *
-	 * @return the socket binding manger
-	 */
-	public SocketBindingManager getSocketBindings() {
-		return socketBindings;
-	}
+    /**
+     * Get the socket binding manager.
+     *
+     * @return the socket binding manger
+     */
+    public SocketBindingManager getSocketBindings() {
+        return socketBindings;
+    }
 
-	/**
-	 * Get the socket address.
-	 *
-	 * @return the socket address
-	 */
-	public InetSocketAddress getSocketAddress() {
-		int port = element.getPort();
-		if(port > 0 && element.isFixedPort() == false) {
-			port += socketBindings.getPortOffset();
-		}
-		return new InetSocketAddress(networkInterface.getAddress(), port);
-	}
+    /**
+     * Get the socket address.
+     *
+     * @return the socket address
+     */
+    public InetSocketAddress getSocketAddress() {
+        int port = element.getPort();
+        if(port > 0 && element.isFixedPort() == false) {
+            port += socketBindings.getPortOffset();
+        }
+        return new InetSocketAddress(networkInterface.getAddress(), port);
+    }
 
-	/**
-	 * Get the multicast socket address.
-	 *
-	 * @return
-	 */
-	public InetSocketAddress getMulticastSocketAddress() {
-		if(element.getMulticastAddress() == null) {
-			throw new IllegalStateException("no multicast binding: " + element.getName()
-					+ ", " + element.getLocation());
-		}
-		return new InetSocketAddress(element.getMulticastAddress(), element.getMulticastPort());
-	}
+    /**
+     * Get the multicast socket address.
+     *
+     * @return
+     */
+    public InetSocketAddress getMulticastSocketAddress() {
+        if(element.getMulticastAddress() == null) {
+            throw new IllegalStateException("no multicast binding: " + element.getName()
+                    + ", " + element.getLocation());
+        }
+        return new InetSocketAddress(element.getMulticastAddress(), element.getMulticastPort());
+    }
 
-	/**
-	 * Create and bind a socket.
-	 *
-	 * @return the socket
-	 * @throws IOException
-	 */
-	public Socket createSocket() throws IOException {
-		final Socket socket = getSocketFactory().createSocket();
-		socket.bind(getSocketAddress());
-		return socket;
-	}
+    /**
+     * Create and bind a socket.
+     *
+     * @return the socket
+     * @throws IOException
+     */
+    public Socket createSocket() throws IOException {
+        final Socket socket = getSocketFactory().createSocket();
+        socket.bind(getSocketAddress());
+        return socket;
+    }
 
-	/**
-	 * Create and bind a server socket
-	 *
-	 * @return the server socket
-	 * @throws IOException
-	 */
-	public ServerSocket createServerSocket() throws IOException {
-		final ServerSocket socket = getServerSocketFactory().createServerSocket();
-		socket.bind(getSocketAddress());
-		return socket;
-	}
+    /**
+     * Create and bind a server socket
+     *
+     * @return the server socket
+     * @throws IOException
+     */
+    public ServerSocket createServerSocket() throws IOException {
+        final ServerSocket socket = getServerSocketFactory().createServerSocket();
+        socket.bind(getSocketAddress());
+        return socket;
+    }
 
-	/**
-	 * Create and bind a server socket.
-	 *
-	 * @param backlog the backlog
-	 * @return the server socket
-	 * @throws IOException
-	 */
-	public ServerSocket createServerSocket(int backlog) throws IOException {
-		final ServerSocket socket = getServerSocketFactory().createServerSocket();
-		socket.bind(getSocketAddress(), backlog);
-		return socket;
-	}
+    /**
+     * Create and bind a server socket.
+     *
+     * @param backlog the backlog
+     * @return the server socket
+     * @throws IOException
+     */
+    public ServerSocket createServerSocket(int backlog) throws IOException {
+        final ServerSocket socket = getServerSocketFactory().createServerSocket();
+        socket.bind(getSocketAddress(), backlog);
+        return socket;
+    }
 
-	/**
-	 * Create and bind a datagrap socket.
-	 *
-	 * @return the datagram socket
-	 * @throws SocketException
-	 */
-	public DatagramSocket createDatagramSocket() throws SocketException {
-		return new ManagedDatagramSocketBinding(socketBindings, getSocketAddress());
-	}
+    /**
+     * Create and bind a datagrap socket.
+     *
+     * @return the datagram socket
+     * @throws SocketException
+     */
+    public DatagramSocket createDatagramSocket() throws SocketException {
+        return new ManagedDatagramSocketBinding(socketBindings, getSocketAddress());
+    }
 
-	/**
-	 * Create and bind a multicast socket. This will also join the given
-	 * multicast address.
-	 *
-	 * @return the multicast socket
-	 * @throws IOException
-	 */
-	public MulticastSocket createMulticastSocket() throws IOException {
-		final MulticastSocket socket = new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
-		socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
-		return socket;
-	}
+    /**
+     * Create and bind a multicast socket. This will also join the given
+     * multicast address.
+     *
+     * @return the multicast socket
+     * @throws IOException
+     */
+    public MulticastSocket createMulticastSocket() throws IOException {
+        final MulticastSocket socket = new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
+        socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
+        return socket;
+    }
 
-	SocketFactory getSocketFactory() {
-		return socketBindings.getSocketFactory();
-	}
+    SocketFactory getSocketFactory() {
+        return socketBindings.getSocketFactory();
+    }
 
-	ServerSocketFactory getServerSocketFactory() {
-		return socketBindings.getServerSocketFactory();
-	}
+    ServerSocketFactory getServerSocketFactory() {
+        return socketBindings.getServerSocketFactory();
+    }
 
 }

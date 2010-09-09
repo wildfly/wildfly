@@ -102,7 +102,7 @@ public final class ServerMaker {
 //        // Write commands and responses to here
 //        final OutputStream outputStream = process.getOutputStream();
 
-	    String serverProcessName = getServerProcessName(serverName);
+        String serverProcessName = getServerProcessName(serverName);
         List<String> command = getServerLaunchCommand(serverName, serverProcessName, jvmElement, serverConfig.getSystemProperties());
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
         processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
@@ -152,7 +152,7 @@ public final class ServerMaker {
     }
 
     public DomainControllerProcess makeDomainController(final JvmElement jvmElement) throws IOException {
-	    final String serverProcessName = DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME;
+        final String serverProcessName = DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME;
         final List<String> command = new ArrayList<String>();
         command.add(getJavaCommand(jvmElement));
         final Map<String, String> sysProps = appendJavaOptions(jvmElement, command);
