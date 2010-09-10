@@ -21,13 +21,17 @@
  */
 package org.jboss.test.as.protocol.support.server.manager;
 
+import java.io.File;
 import java.net.InetAddress;
 
+import org.jboss.as.model.Domain;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.manager.Main;
 import org.jboss.as.server.manager.ServerManager;
+import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.test.as.protocol.support.process.MockProcessManager;
 import org.jboss.test.as.protocol.support.process.NoopExiter;
+import org.jboss.test.as.protocol.support.xml.ConfigParser;
 
 /**
  *
@@ -52,7 +56,10 @@ public class ServerManagerStarter {
 
         };
 
-        return Main.create(args, System.in, System.out, System.err, new NoopExiter());
+        ServerManager manager = Main.create(args, System.in, System.out, System.err, new NoopExiter());
+        Domain domain = ConfigParser.parseDomain(new File(System.getProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR)));
+        manager.setDomain(domain);
+        return manager;
     }
 
 

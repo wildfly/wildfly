@@ -46,10 +46,6 @@ import org.jboss.test.as.protocol.test.base.ServerManagerTest;
  */
 public class ServerManagerTestModule extends AbstractProtocolTestModule implements ServerManagerTest {
 
-    private void setDomainConfigDir(String name) throws URISyntaxException {
-        addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
-    }
-
     @Override
     public void testStartServerManagerNoConfig() throws Exception {
         MockProcessManager pm = MockProcessManager.create(2);
@@ -63,7 +59,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
     @Override
     public void testStartStopServerManager() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(2);
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 Servers
         setDomainConfigDir("standard");
         ServerManagerStarter.createServerManager(pm);
         pm.waitForServerManager();
@@ -125,7 +121,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
     @Override
     public void testServerStartFailedAndGetsRespawned() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(2);
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 servers
         setDomainConfigDir("standard");
         ServerManagerStarter.createServerManager(pm);
         pm.waitForServerManager();
@@ -179,7 +175,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
 
     public void testServerStartFailedAndRespawnExpires() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(2);
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 Servers
         setDomainConfigDir("standard");
         ServerManagerStarter.createServerManager(pm);
         pm.waitForServerManager();
@@ -237,7 +233,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
     @Override
     public void testServerCrashedAfterStartGetsRespawned() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(2);
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 Servers
         setDomainConfigDir("standard");
         ServerManagerStarter.createServerManager(pm);
         pm.waitForServerManager();
@@ -328,4 +324,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         }
         checkProcessManagerConnection(pm, name, false);
     }
+
+    private void setDomainConfigDir(String name) throws URISyntaxException {
+        addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
+    }
+
 }

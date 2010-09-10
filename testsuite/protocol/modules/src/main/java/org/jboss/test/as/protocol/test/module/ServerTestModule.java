@@ -21,30 +21,23 @@
  */
 package org.jboss.test.as.protocol.test.module;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.InetAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.stream.XMLInputFactory;
 
 import junit.framework.Assert;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.model.Domain;
 import org.jboss.as.model.Host;
-import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.server.AbstractServer;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
-import org.jboss.as.server.manager.StandardElementReaderRegistrar;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
-import org.jboss.staxmapper.XMLMapper;
 import org.jboss.test.as.protocol.support.process.MockProcessManager;
 import org.jboss.test.as.protocol.support.process.MockProcessManager.NewConnectionListener;
 import org.jboss.test.as.protocol.support.server.ServerStarter;
@@ -52,6 +45,7 @@ import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManager
 import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManagerCommunicationListener;
 import org.jboss.test.as.protocol.support.server.manager.MockServerManager;
 import org.jboss.test.as.protocol.support.server.manager.MockServerManagerMessageHandler;
+import org.jboss.test.as.protocol.support.xml.ConfigParser;
 import org.jboss.test.as.protocol.test.base.ServerTest;
 
 /**
@@ -62,8 +56,6 @@ import org.jboss.test.as.protocol.test.base.ServerTest;
  * @version $Revision: 1.1 $
  */
 public class ServerTestModule extends AbstractProtocolTestModule implements ServerTest {
-
-    StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
 
     @Override
     public void testServerStartStop() throws Exception {
@@ -116,39 +108,12 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
     }
 
     private Standalone getServer(String cfgDir, String serverName) throws Exception {
-        Domain domain = parseDomain(cfgDir);
-        Host host = parseHost(cfgDir);
+        File file = new File(findDomainConfigsDir(cfgDir));
+        Domain domain = ConfigParser.parseDomain(file);
+        Host host = ConfigParser.parseHost(file);
         ServerElement el = host.getServer(serverName);
         Assert.assertNotNull(el);
         return new Standalone(domain, host, serverName);
-    }
-
-    private Host parseHost(String cfgDir) throws Exception {
-        XMLMapper mapper = XMLMapper.Factory.create();
-        extensionRegistrar.registerStandardHostReaders(mapper);
-        return parseXml(cfgDir, "host.xml", mapper, Host.class);
-    }
-
-    private Domain parseDomain(String cfgDir) throws Exception {
-        XMLMapper mapper = XMLMapper.Factory.create();
-        extensionRegistrar.registerStandardDomainReaders(mapper);
-        return parseXml(cfgDir, "domain.xml", mapper, Domain.class);
-    }
-
-    private <T> T parseXml(String cfgDir, String name, XMLMapper mapper, Class<T> type) throws Exception {
-        File file = new File(findDomainConfigsDir(cfgDir), name);
-        if (!file.exists())
-            throw new IllegalStateException("File " + file.getAbsolutePath() + " does not exist.");
-
-        try {
-            ParseResult<T> parseResult = new ParseResult<T>();
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(file))));
-            return parseResult.getResult();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Caught exception during processing of " + name, e);
-        }
     }
 
     private static class QueuedNewConnectionListener implements NewConnectionListener {
