@@ -177,16 +177,16 @@ public abstract class AbstractProcess {
      * Callback for when the process receives a <code>down()</code> call.
      */
     protected void down(String downProcessName) {
-    	
+
     }
-    
+
     /**
      * Callback for when the process receives a <code>shutdownServers()</code> call.
      */
     protected void shutdownServers() {
-    	
+
     }
-    
+
     /**
      * Send a message to another process via the slave
      *
@@ -292,7 +292,7 @@ public abstract class AbstractProcess {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Sends the SERVERS_SHUTDOWN message to the PM via the slave
      * (This will only be sent by the ServerManager process)

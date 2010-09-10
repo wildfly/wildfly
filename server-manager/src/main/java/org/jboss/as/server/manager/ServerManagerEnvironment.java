@@ -99,13 +99,14 @@ public class ServerManagerEnvironment {
     private final File domainLogDir;
     private final File domainServersDir;
     private final File domainTempDir;
+    private final boolean isRestart;
 
 
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
 
-    public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
+    public ServerManagerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress, Integer serverManagerPort) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
@@ -147,6 +148,7 @@ public class ServerManagerEnvironment {
         this.processManagerAddress = processManagerAddress;
         this.serverManagerAddress = serverManagerAddress;
         this.serverManagerPort = serverManagerPort;
+        this.isRestart = isRestart;
 
         File home = getFileFromProperty(HOME_DIR);
         if (home == null) {
@@ -283,6 +285,14 @@ public class ServerManagerEnvironment {
         return serverManagerPort;
     }
 
+    /**
+     * Gets whether this was a restarted server manager
+     *
+     * @return if it was restarted
+     */
+    public boolean isRestart() {
+        return isRestart;
+    }
 
     public File getHomeDir() {
         return homeDir;

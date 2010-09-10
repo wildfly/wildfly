@@ -28,6 +28,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.model.Standalone;
+import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
@@ -241,6 +242,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         checkProcessManagerConnection(pm, "ServerManager", true);
 
         pm.waitForAddedProcesses();
+        pm.waitForStartedProcesses();
         MockManagedProcess svr1 = pm.getProcess("Server:server-one");
         Assert.assertNotNull(svr1);
         MockManagedProcess svr2 = pm.getProcess("Server:server-two");
@@ -288,6 +290,43 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         }
         Assert.assertEquals(addCount, pm.getAddCount());
         Assert.assertEquals(removeCount, pm.getRemoveCount());
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception {
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 servers
+        setDomainConfigDir("standard");
+        ServerManager sm = ServerManagerStarter.createServerManager(pm);
+        pm.waitForServerManager();
+
+        checkProcessManagerConnection(pm, "ServerManager", true);
+        pm.waitForAddedProcesses();
+        pm.waitForStartedProcesses();
+
+        MockManagedProcess svr1 = pm.getProcess("Server:server-one");
+        Assert.assertNotNull(svr1);
+        MockManagedProcess svr2 = pm.getProcess("Server:server-two");
+        Assert.assertNotNull(svr2);
+
+        svr1.waitForStart();
+        svr2.waitForStart();
+
+        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        Assert.assertEquals("server-one", cfg1.getServerName());
+        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        Assert.assertEquals("server-two", cfg2.getServerName());
+
+        Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
+
+        svr1.getCommunicationHandler().sendMessage(ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null));
+        svr2.getCommunicationHandler().sendMessage(ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null));
+
+        pm.resetReconnectServers();
+        sm.stop();
+
+        sm = ServerManagerStarter.createServerManager(pm, true);
+        pm.waitForReconnectServers();
+        sm.stop();
+
     }
 
     private ServerManagerProtocolCommand.Command assertReadCommand(ServerManagerProtocolCommand expected, MockServerSideMessageHandler handler) throws Exception {

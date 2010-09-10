@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 /**
  * The real code is in org.jboss.test.as.protocol.test.module.ServerManagerTestModule
  * which is loaded using the jboss-modules classloader
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -43,7 +43,7 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
 	public void testStartServerManagerNoConfig() throws Exception {
 		getTestInstance().testStartServerManagerNoConfig();
 	}
-	
+
 	@Test
 	public void testStartStopServerManager() throws Exception {
 		getTestInstance().testStartStopServerManager();
@@ -63,4 +63,9 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
     public void testServerCrashedAfterStartGetsRespawned() throws Exception {
 		getTestInstance().testServerCrashedAfterStartGetsRespawned();
     }
+
+	@Test
+	public void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception {
+	    getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager();
+	}
 }

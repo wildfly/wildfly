@@ -27,8 +27,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,6 +72,8 @@ public class MockProcessManager implements Master{
     volatile CountDownLatch startLatch;
     volatile CountDownLatch stopLatch;
     volatile CountDownLatch removeLatch;
+    volatile BlockingQueue<String> reconnectServers = new LinkedBlockingQueue<String>();
+
     volatile NewConnectionListener newConnectionListener;
 
     private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
@@ -131,6 +135,7 @@ public class MockProcessManager implements Master{
         return serverManager;
     }
 
+
     public void waitForAddedProcesses() {
         waitForLatch(addLatch);
     }
@@ -147,6 +152,13 @@ public class MockProcessManager implements Master{
         waitForLatch(stopLatch);
     }
 
+    public String waitForReconnectServers() throws InterruptedException {
+        String info = reconnectServers.poll(10, TimeUnit.SECONDS);
+        if (info == null)
+            throw new RuntimeException("Read timed out");
+        return info;
+    }
+
     public void resetAddLatch(int count) {
         addLatch = new CountDownLatch(count);
     }
@@ -161,6 +173,10 @@ public class MockProcessManager implements Master{
 
     public void resetRemoveLatch(int count) {
         removeLatch = new CountDownLatch(count);
+    }
+
+    public void resetReconnectServers() {
+        reconnectServers.clear();
     }
 
     public int getAddCount() {
@@ -255,6 +271,11 @@ public class MockProcessManager implements Master{
     public void downServer(String serverName) {
     }
 
+    @Override
+    public void reconnectServersToServerManager(String smAddress, String smPort) {
+        reconnectServers.add(smAddress + ":" + smPort);
+    }
+
     class ProcessManagerSocketHandler implements SocketHandler {
 
         @Override
@@ -295,10 +316,6 @@ public class MockProcessManager implements Master{
 
     public interface NewConnectionListener{
         void acceptedConnection(String processName, SocketConnection conn);
-    }
-
-    @Override
-    public void reconnectServersToServerManager(String smAddress, String smPort) {
     }
 
 }

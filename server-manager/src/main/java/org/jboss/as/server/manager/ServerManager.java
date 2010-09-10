@@ -172,6 +172,18 @@ public class ServerManager {
     }
 
     /**
+     * Sends the RECONNECT_SERVERS <SM_ADDRESS> <SM_PORT> command to the
+     * servers following a restart of the server manager
+     */
+    private void reconnectServers() {
+        try {
+            processManagerSlave.reconnectServers(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
+        } catch (IOException e) {
+            log.error("Failed to send RECONNECT_SERVERS", e);
+        }
+    }
+
+    /**
      * Callback for when we receive the SERVER_AVAILABLE message from a Server
      *
      * @param serverName the name of the server
@@ -465,7 +477,11 @@ public class ServerManager {
     public void setDomain(final DomainModel domain) {
         this.domainConfig = domain;
         if(serversStarted.compareAndSet(false, true)) {
-            startServers();
+            if (!environment.isRestart()) {
+                startServers();
+            } else {
+                reconnectServers();
+            }
         }
     }
 

@@ -23,6 +23,7 @@ package org.jboss.test.as.protocol.support.server.manager;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Arrays;
 
 import org.jboss.as.model.Domain;
 import org.jboss.as.process.CommandLineConstants;
@@ -40,8 +41,11 @@ import org.jboss.test.as.protocol.support.xml.ConfigParser;
  */
 public class ServerManagerStarter {
 
-
     public static ServerManager createServerManager(MockProcessManager pm) throws Exception{
+        return createServerManager(pm, false);
+    }
+
+    public static ServerManager createServerManager(MockProcessManager pm, boolean restart) throws Exception{
         String[] args = new String[] {
                 CommandLineConstants.INTERPROCESS_NAME,
                 "ServerManager",
@@ -53,14 +57,17 @@ public class ServerManagerStarter {
                 InetAddress.getLocalHost().getHostAddress(),
                 CommandLineConstants.INTERPROCESS_SM_PORT,
                 "0"
-
         };
+
+        if (restart) {
+            int length = args.length;
+            args = Arrays.copyOf(args,  length + 1);
+            args[length] = CommandLineConstants.RESTART_SERVER_MANAGER;
+        }
 
         ServerManager manager = Main.create(args, System.in, System.out, System.err, new NoopExiter());
         Domain domain = ConfigParser.parseDomain(new File(System.getProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR)));
         manager.setDomain(domain);
         return manager;
     }
-
-
 }

@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 /**
  * The real code is in org.jboss.test.as.protocol.test.module.DirectProtocolListenerAndHandlerTestModule
  * which is loaded using the jboss-modules classloader
- * 
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
@@ -43,7 +43,7 @@ public class DirectProtocolListenerAndHandlerTestCase extends AbstractProtocolTe
 	public void testDirectProtocolListenerAndHandler() throws Exception{
 		getTestInstance().testDirectProtocolListenerAndHandler();
 	}
-	
+
 }
 
 

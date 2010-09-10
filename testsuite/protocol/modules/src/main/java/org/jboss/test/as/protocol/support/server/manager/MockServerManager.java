@@ -42,13 +42,13 @@ public class MockServerManager extends ServerManager {
     }
 
     public static MockServerManager create() throws Exception {
-        return new MockServerManager(new MockServerManagerEnvironment());
+        return new MockServerManager(new MockServerManagerEnvironment(false));
     }
 
     static class MockServerManagerEnvironment extends ServerManagerEnvironment {
 
-        public MockServerManagerEnvironment() throws Exception{
-            super(new Properties(), System.in, System.out, System.err, "Test", InetAddress.getLocalHost(), 0, InetAddress.getLocalHost(), 0);
+        public MockServerManagerEnvironment(boolean isRestart) throws Exception{
+            super(new Properties(), false, System.in, System.out, System.err, "Test", InetAddress.getLocalHost(), 0, InetAddress.getLocalHost(), 0);
         }
 
     }

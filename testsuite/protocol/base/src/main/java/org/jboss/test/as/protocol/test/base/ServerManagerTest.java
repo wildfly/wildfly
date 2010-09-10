@@ -39,4 +39,6 @@ public interface ServerManagerTest extends BaseTest{
 
     void testServerCrashedAfterStartGetsRespawned() throws Exception;
     //More tests for server crashing in different states
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception;
 }

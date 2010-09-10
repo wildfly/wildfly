@@ -58,7 +58,7 @@ public class CommandLineConstants {
 
     /** Passed in when the server manager is respawned by PM */
     public static final String RESTART_SERVER_MANAGER = "-restarted-server-manager";
-    
+
     /** Output usage */
     public static final String HELP = "-help";
 }

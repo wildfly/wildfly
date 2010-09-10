@@ -204,7 +204,8 @@ public final class ProcessOutputStreamHandler implements Runnable {
                                 status = StreamUtils.readStatus(inputStream);
                             }
                             break;
-                        } case RECONNECT_SERVERS : {
+                        }
+                        case RECONNECT_SERVERS : {
                             status = StreamUtils.readWord(inputStream, b);
                             if (status != Status.MORE) {
                                 break;
