@@ -22,16 +22,27 @@
 
 package org.jboss.as.model;
 
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.module.TempFileProviderService;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -41,14 +52,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
@@ -231,7 +234,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
             final BatchBuilder batchBuilder = context.getBatchBuilder();
             // Create deployment service
             final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-            batchBuilder.addService(deploymentServiceName, new DeploymentService());
+            BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, new DeploymentService());
 
             // Create a sub-batch for this deployment
             final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
@@ -243,7 +246,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
             deploymentSubBatch.addListener(new DeploymentFailureListener(deploymentServiceName));
 
             // Create the deployment unit context
-            final DeploymentUnitContextImpl deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch);
+            final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch, serviceBuilder);
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, new MountHandle(handle));
 

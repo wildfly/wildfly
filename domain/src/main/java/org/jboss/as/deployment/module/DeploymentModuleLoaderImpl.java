@@ -63,8 +63,7 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
     }
 
     @Override
-    public void removeModule(ModuleIdentifier moduleIdentifier) {
-        // TODO: Determine how to enable module removal from this loader...
-        throw new UnsupportedOperationException();
+    public void removeModule(Module module) {
+        unloadModuleLocal(module);
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.deployment.module;
 
+import java.io.IOException;
+
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -33,13 +35,15 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.modules.PathFilters;
-
-import java.io.IOException;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.StartException;
 
 /**
  * Processor responsible for creating a module for the deployment and attach it to the deployment.
  *
  * @author John E. Bailey
+ * @author Jason T. Greene
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(102L);
@@ -85,8 +89,43 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
             context.putAttachment(MODULE_ATTACHMENT_KEY, module);
+            context.getBatchServiceBuilder().addListener(new ModuleRemoveListener(deploymentModuleLoader, module));
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }
+    }
+
+    static class ModuleRemoveListener implements ServiceListener<Void> {
+        ModuleRemoveListener(DeploymentModuleLoader deploymentModuleLoader, Module module) {
+            this.deploymentModuleLoader = deploymentModuleLoader;
+            this.module = module;
+        }
+
+        private DeploymentModuleLoader deploymentModuleLoader;
+        private Module module;
+
+        @Override
+        public void serviceStopped(ServiceController<? extends Void> controller) {
+            deploymentModuleLoader.removeModule(module);
+        }
+
+        public void listenerAdded(ServiceController<? extends Void> controller) {
+        }
+
+        public void serviceStarting(ServiceController<? extends Void> controller) {
+        }
+
+        public void serviceStarted(ServiceController<? extends Void> controller) {
+        }
+
+        public void serviceFailed(ServiceController<? extends Void> controller, StartException reason) {
+        }
+
+        public void serviceStopping(ServiceController<? extends Void> controller) {
+        }
+
+        public void serviceRemoved(ServiceController<? extends Void> controller) {
+        }
+
     }
 }

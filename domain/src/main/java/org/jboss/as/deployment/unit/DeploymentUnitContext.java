@@ -24,6 +24,7 @@ package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.Attachable;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 
 /**
  * The deployment unit context.  Instances of this interface are passed to each domain deployment on the server in order to serve
@@ -42,6 +43,13 @@ public interface DeploymentUnitContext extends Attachable {
      * @return the simple name
      */
     String getName();
+
+    /**
+     * Gets the batch service builder for the deployment service associated with this context
+     *
+     * @return the batch service builder
+     */
+    BatchServiceBuilder<Void> getBatchServiceBuilder();
 
     /**
      * The batch builder for this deployment item execution.

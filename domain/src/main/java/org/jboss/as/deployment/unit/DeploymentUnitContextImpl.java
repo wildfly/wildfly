@@ -24,6 +24,7 @@ package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.SimpleAttachable;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 
 /**
  * Default implementation for DeploymentUnitContext.
@@ -33,6 +34,7 @@ import org.jboss.msc.service.BatchBuilder;
 public class DeploymentUnitContextImpl extends SimpleAttachable implements DeploymentUnitContext {
     private final String name;
     private final BatchBuilder batchBuilder;
+    private final BatchServiceBuilder<Void> serviceBuilder;
 
     /**
      * Construct new instance.
@@ -40,9 +42,10 @@ public class DeploymentUnitContextImpl extends SimpleAttachable implements Deplo
      * @param name The deployment unit name.
      * @param batchBuilder The batch builder
      */
-    public DeploymentUnitContextImpl(String name, BatchBuilder batchBuilder) {
+    public DeploymentUnitContextImpl(String name, BatchBuilder batchBuilder, BatchServiceBuilder<Void> serviceBuilder) {
         this.name = name;
         this.batchBuilder = batchBuilder;
+        this.serviceBuilder = serviceBuilder;
     }
 
     /** {@inheritDoc} */
@@ -53,5 +56,10 @@ public class DeploymentUnitContextImpl extends SimpleAttachable implements Deplo
     /** {@inheritDoc} */
     public BatchBuilder getBatchBuilder() {
         return batchBuilder;
+    }
+
+    /** {@inheritDoc} */
+    public BatchServiceBuilder<Void> getBatchServiceBuilder() {
+        return serviceBuilder;
     }
 }
