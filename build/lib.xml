@@ -65,11 +65,8 @@
         <attribute name="slot"/>
         <![CDATA[
             name = attributes.get("name");
-            last = name.lastIndexOf('.');
-            group = name.substring(0, last);
-            artifact = name.substring(last + 1);
-            group = group.replace(".", "/");
-            project.setProperty("current.module.path", group + "/" + artifact + "/" + attributes.get("slot"));
+            name = name.replace(".", "/");
+            project.setProperty("current.module.path", name + "/" + attributes.get("slot"));
         ]]>
     </scriptdef>
     
