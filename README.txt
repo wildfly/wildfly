@@ -59,5 +59,7 @@ The following steps are recommended:
 4. launch eclipse and install the m2eclipse plugin, and make sure it uses your repo configs
 5. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted set forbidden reference to WARNING
 6. In eclipse preferences Java->Code Style, import the cleanup, templates, and formatter configs in ide-configs/eclipse
-7. Use import on the root pom, which will pull in all modules
-8. Wait (m2eclipse takes awhile on initial import, especially if you did not do step 3)
+7. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
+   and deselect all actions except for "Remove trailing whitespace"
+8. Use import on the root pom, which will pull in all modules
+9. Wait (m2eclipse takes awhile on initial import, especially if you did not do step 3)
