@@ -25,14 +25,12 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <domain-controller>
-       <local group="main-server-group"/>
+       <local interface="public" port="9999">
+           <jvm name="icedtea1">
+               <heap size="64m" max-size="512m"/>
+           </jvm>
+       </local>
     </domain-controller>
-
-    <interfaces>
-        <interface name="public3">
-            <inet-address value="10.0.0.1"/>
-        </interface>
-    </interfaces>
 
     <jvms>
         <!-- all jvm settings e.g. sys props, -->
@@ -48,14 +46,6 @@
 
     <servers>
         <server name="server-one" group="main-server-group">
-
-            <interface-specs>
-                <!-- public4 address wasn't defined in domain or host so
-                     we have to define it at server level -->
-                <interface name="public4">
-                    <inet-address value="192.168.100.1"/>
-                </interface>
-            </interface-specs>
 
             <!-- server-one inherits the default socket-group declared in the server-group -->
             
@@ -79,14 +69,6 @@
         </server>
         <server name="server-two" group="main-server-group" start="true">
 
-            <interface-specs>
-                <!-- public4 address wasn't defined in domain or host so
-                     we have to define it at server level -->
-                <interface name="public4">
-                    <inet-address value="192.168.100.3"/>
-                </interface>
-            </interface-specs>
-            
             <!-- server-two avoids port conflicts by incrementing the ports in 
                  the default socket-group declared in the server-group -->
             <socket-binding-group ref="standard-clustered-sockets" port-offset="150"/>
@@ -112,20 +94,6 @@
             <!-- server-three inherits the default socket-group declared in 
                  the server-group but avoids port conflicts with server-one
                  by using a different IP for the relevant interfaces -->
-            <interface-specs>
-                <interface name="external">
-                    <inet-address value="4.5.6.7"/>
-                </interface>
-                <interface name="internal">
-                    <inet-address value="10.0.0.3"/>
-                </interface>
-                <!-- public4 address wasn't defined in domain or host so
-                     we have to define it at server level -->
-                <interface name="public4">
-                    <inet-address value="192.168.100.3"/>
-                </interface>
-            </interface-specs>
-
             <jvm name="icedtea1">            
                <heap size="64m" max-size="512m"/>
 
