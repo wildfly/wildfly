@@ -77,11 +77,6 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
 //    }
 
 
-    @Override
-    protected void shutdown() {
-        super.shutdown();
-    }
-
     public Runnable getController() {
         return controller;
     }
@@ -97,6 +92,7 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
                     handler.handleMessage(bytes);
                 }
             } catch (IOException e) {
+                e.printStackTrace();
             }finally {
                 shutdown();
             }
@@ -104,24 +100,15 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
 
         void shutdown() {
             if (!shutdown.getAndSet(true)) {
+                DirectServerCommunicationHandler.this.shutdown();
 
-                try {
-                    DirectServerCommunicationHandler.this.handler.shutdown();
-                }
-                catch (Throwable t) {
-                    t.printStackTrace(System.err);
-                }
-                finally {
-                    DirectServerCommunicationHandler.this.shutdown();
-
-                    final Thread thread = new Thread(new Runnable() {
-                        public void run() {
-                            SystemExiter.exit(0);
-                        }
-                    });
-                    thread.setName("Exit thread");
-                    thread.start();
-                }
+                final Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        SystemExiter.exit(0);
+                    }
+                });
+                thread.setName("Exit thread");
+                thread.start();
             }
         }
     }

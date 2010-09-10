@@ -26,6 +26,8 @@
 package org.jboss.as.server;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,7 +56,7 @@ public class Server extends AbstractServer {
     }
 
     public void start() {
-        launchCommunicationHandler();
+        launchCommunicationHandlers();
         sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
         log.info("Server Available to start");
     }
@@ -78,6 +80,25 @@ public class Server extends AbstractServer {
         processManagerCommunicationHandler.shutdown();
     }
 
+    public void reconnectToServerManager(String host, String port) {
+        InetAddress addr;
+        try {
+            addr = InetAddress.getByName(host);
+        } catch (UnknownHostException e) {
+            log.errorf("Could not parse %s into a host", host);
+            return;
+        }
+        Integer portNumber;
+        try {
+            portNumber = Integer.valueOf(port);
+        } catch (NumberFormatException e) {
+            log.errorf("Could not parse %s into a port", port);
+            return;
+        }
+        this.serverCommunicationHandler = new DirectServerCommunicationHandler(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
+        this.serverCommunicationHandler.start();
+    }
+
     @Override
     ServerStartupListener.Callback createListenerCallback() {
         return new ServerStartupListener.Callback() {
@@ -98,10 +119,12 @@ public class Server extends AbstractServer {
         };
     }
 
-    private void launchCommunicationHandler() {
-        this.processManagerCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getProcessManagerCommunicationHandler(getEnvironment(), messageHandler);
+
+    private void launchCommunicationHandlers() {
+        ServerEnvironment env = getEnvironment();
+        this.processManagerCommunicationHandler = new ProcessManagerServerCommunicationHandler(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
         this.processManagerCommunicationHandler.start();
-        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
+        this.serverCommunicationHandler = new DirectServerCommunicationHandler(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
         this.serverCommunicationHandler.start();
     }
 

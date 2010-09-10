@@ -64,4 +64,8 @@ public class MockServerSideMessageHandler implements Handler{
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void reconnectServer(String addr, String port) {
+    }
 }

@@ -139,6 +139,19 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                                 }
                                 break;
                             }
+                            case RECONNECT_SERVER_MANAGER : {
+                                if (status == Status.MORE) {
+                                    status = StreamUtils.readWord(input, b);
+                                    final String address = b.toString();
+                                    if (status != Status.MORE) {
+                                        // else it was end of stream, so only a partial was received
+                                        return;
+                                    }
+                                    status = StreamUtils.readWord(input, b);
+                                    final String port = b.toString();
+                                    handler.reconnectServer(address, port);
+                                }
+                            }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...

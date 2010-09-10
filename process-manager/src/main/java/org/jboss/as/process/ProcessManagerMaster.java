@@ -351,6 +351,34 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
         }
     }
 
+    @Override
+    public void reconnectServersToServerManager(String smAddress, String smPort) {
+        try {
+            InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            log.error("Invalid address " + smAddress, e);
+            return;
+        }
+        int port;
+        try {
+             port = Integer.valueOf(smPort);
+        } catch (NumberFormatException e) {
+            log.error("Port should be a number " + smPort);
+             return;
+        }
+        synchronized (processes) {
+            for (ManagedProcess process : processes.values()) {
+                if (!process.getProcessName().equals(SERVER_MANAGER_PROCESS_NAME)) {
+                    try {
+                        process.reconnectToServerManager(smAddress, port);
+                    } catch (IOException e) {
+                        log.warnf("Could not send RECONNECT_SERVER_MANAGER command to " + process.getProcessName());
+                    }
+                }
+            }
+        }
+    }
+
     void registerStopProcessListener(final String name, final StopProcessListener listener) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {

@@ -27,6 +27,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
@@ -56,6 +58,8 @@ public class MockDirectServerManagerCommunicationListener {
 
     private final MockServerManagerMessageHandler messageHandler;
 
+    private volatile CountDownLatch newConnectionLatch = new CountDownLatch(1);
+
     private final Map<String, MockDirectServerManagerCommunicationHandler> handlers = new ConcurrentHashMap<String, MockDirectServerManagerCommunicationHandler>();
 
     private MockDirectServerManagerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog, MockServerManagerMessageHandler messageHandler) throws IOException {
@@ -74,6 +78,10 @@ public class MockDirectServerManagerCommunicationListener {
         socketListener.start();
     }
 
+    public void shutdown() {
+        socketListener.shutdown();
+    }
+
     public int getSmPort() {
         return socketListener.getPort();
     }
@@ -81,6 +89,15 @@ public class MockDirectServerManagerCommunicationListener {
 
     public MockDirectServerManagerCommunicationHandler getManagerHandler(String processName) {
         return handlers.get(processName);
+    }
+
+    public void resetNewConnectionLatch(int count) {
+        newConnectionLatch = new CountDownLatch(count);
+    }
+
+    public void waitForNewConnection() throws InterruptedException {
+        if (!newConnectionLatch.await(10, TimeUnit.SECONDS))
+            throw new RuntimeException("New connection latch timed out");
     }
 
     class ServerAcceptor implements SocketHandler {
@@ -108,6 +125,8 @@ public class MockDirectServerManagerCommunicationListener {
             log.infof("Server acceptor: connected server %s", processName);
             MockDirectServerManagerCommunicationHandler handler = MockDirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, messageHandler);
             handlers.put(processName, handler);
+
+            newConnectionLatch.countDown();
         }
     }
 }

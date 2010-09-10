@@ -78,7 +78,7 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
         }
     }
 
-    void shutdown() {
+    protected void shutdown() {
         inputHandler.shutdown();
     }
 

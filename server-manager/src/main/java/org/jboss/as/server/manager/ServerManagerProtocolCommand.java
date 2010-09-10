@@ -47,6 +47,7 @@ public enum ServerManagerProtocolCommand {
     START_SERVER((byte)1, true),
     /** Message sent from ServerManager to Server. No data */
     STOP_SERVER((byte)2),
+
     //The Server->SM commands
     /** Message sent from Server to ServerManager when the server is started. No data */
     SERVER_STARTED((byte)51),

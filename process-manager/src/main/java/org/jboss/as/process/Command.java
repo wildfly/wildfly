@@ -62,6 +62,12 @@ public enum Command {
     /** All the known servers have been shut down (SM->PM) */
     SERVERS_SHUTDOWN,
 
+    /** The SM has been restarted, tell all server processes to reconnect (SM->PM)*/
+    RECONNECT_SERVERS,
+
+    /** Reconnect to the SM (PM->SM) */
+    RECONNECT_SERVER_MANAGER,
+
     /** Receive a message from another process or process manager (PM->Process) */
     MSG,
 

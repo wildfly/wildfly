@@ -127,24 +127,27 @@ public final class SocketListener {
         @Override
         public void run() {
             log.infof("%s listening on %d", name, serverSocket.getLocalPort());
-            while (!shutdown.get()) {
                 try {
-                    Socket socket = serverSocket.accept();
-                    executor.execute(new AcceptorTask(socket));
+                    while (!shutdown.get()) {
+                        Socket socket = serverSocket.accept();
+                        executor.execute(new AcceptorTask(socket));
+                    }
                 } catch (SocketException e) {
                     log.infof("%s server socket was closed", name);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    shutdown();
                 }
-            }
         }
 
         private void shutdown() {
-            shutdown.set(true);
+            if (shutdown.getAndSet(true))
+                return;
             try {
                 log.infof("%s closing server socket %d", name, getPort());
                 serverSocket.close();
-                log.infof("%s closing server socket %d", name, getPort());
+                log.infof("%s closed server socket %d", name, getPort());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

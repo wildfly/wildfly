@@ -1,4 +1,4 @@
-/*
+    /*
  * JBoss, Home of Professional Open Source.
  * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -93,6 +93,8 @@ public abstract class ServerCommunicationHandler {
         void handleMessage(List<String> message);
 
         void shutdown();
+
+        void reconnectServer(String addr, String port);
     }
 
 }

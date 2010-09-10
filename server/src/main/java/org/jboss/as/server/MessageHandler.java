@@ -39,6 +39,7 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry
  * @author John E. Bailey
+ * @author Kabir Khan
  */
 class MessageHandler implements ServerCommunicationHandler.Handler {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
@@ -96,5 +97,10 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
     @Override
     public void shutdown() {
         server.stop();
+    }
+
+    @Override
+    public void reconnectServer(String addr, String port) {
+        server.reconnectToServerManager(addr, port);
     }
 }

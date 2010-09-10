@@ -204,6 +204,16 @@ public final class ProcessOutputStreamHandler implements Runnable {
                                 status = StreamUtils.readStatus(inputStream);
                             }
                             break;
+                        } case RECONNECT_SERVERS : {
+                            status = StreamUtils.readWord(inputStream, b);
+                            if (status != Status.MORE) {
+                                break;
+                            }
+                            final String smAddress = b.toString();
+                            status = StreamUtils.readWord(inputStream, b);
+                            final String smPort = b.toString();
+                            master.reconnectServersToServerManager(smAddress, smPort);
+                            break;
                         }
                     }
                 } catch (IllegalArgumentException e) {
@@ -234,6 +244,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
         void broadcastMessage(final String sender, final byte[] msg);
         void serversShutdown();
         void downServer(String serverName);
+        void reconnectServersToServerManager(String smAddress, String smPort);
     }
 
     public interface Managed {

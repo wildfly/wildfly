@@ -203,6 +203,22 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         }
     }
 
+    void reconnectToServerManager (String addr, int port) throws IOException {
+        synchronized (this) {
+            if (!start)
+                return;
+            StringBuilder sb = new StringBuilder();
+            sb.append(Command.RECONNECT_SERVER_MANAGER);
+            sb.append('\0');
+            sb.append(addr);
+            sb.append('\0');
+            sb.append(port);
+            sb.append('\n');
+            StreamUtils.writeString(commandStream, sb.toString());
+            commandStream.flush();
+        }
+    }
+
     private void checkServerManager() {
         if (!ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME.equals(processName))
             throw new IllegalStateException("Attempt to send SHUTDOWN_SERVERS on a ManagedProcess that is not " + ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME + ": " + processName);

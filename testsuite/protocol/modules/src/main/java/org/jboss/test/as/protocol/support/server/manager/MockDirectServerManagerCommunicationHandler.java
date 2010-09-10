@@ -45,4 +45,9 @@ public class MockDirectServerManagerCommunicationHandler extends DirectServerCom
     public boolean isClosed() {
         return super.isClosed();
     }
+
+    public void shutdown() {
+        super.shutdown();
+    }
+
 }

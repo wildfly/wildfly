@@ -23,6 +23,7 @@ package org.jboss.test.as.protocol.test;
 
 import org.jboss.test.as.protocol.test.base.ServerTest;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * The real code is in org.jboss.test.as.protocol.test.module.ServerTestModule
@@ -31,6 +32,7 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
+@RunWith(LoggingTestRunner.class)
 public class ServerTestCase extends AbstractProtocolTest<ServerTest> implements ServerTest {
 
 	public ServerTestCase() {
@@ -41,6 +43,12 @@ public class ServerTestCase extends AbstractProtocolTest<ServerTest> implements 
 	@Override
     public void testServerStartStop() throws Exception {
 		getTestInstance().testServerStartStop();
+    }
+
+	@Test
+	@Override
+    public void testServerManagerCrashed() throws Exception {
+		getTestInstance().testServerManagerCrashed();
     }
 }
 

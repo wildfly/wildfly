@@ -297,4 +297,8 @@ public class MockProcessManager implements Master{
         void acceptedConnection(String processName, SocketConnection conn);
     }
 
+    @Override
+    public void reconnectServersToServerManager(String smAddress, String smPort) {
+    }
+
 }

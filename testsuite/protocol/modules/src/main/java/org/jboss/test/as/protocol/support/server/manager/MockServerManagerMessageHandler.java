@@ -22,7 +22,9 @@
 package org.jboss.test.as.protocol.support.server.manager;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.ProcessManagerSlave.Handler;
@@ -34,13 +36,11 @@ import org.jboss.as.process.ProcessManagerSlave.Handler;
  */
 public class MockServerManagerMessageHandler implements Handler{
 
-    private volatile CountDownLatch latch = new CountDownLatch(1);
-    private volatile byte[] bytes;
+    private BlockingQueue<byte[]> messages = new LinkedBlockingQueue<byte[]>();
 
     @Override
     public void handleMessage(String sourceProcessName, byte[] message) {
-        bytes = message;
-        latch.countDown();
+        messages.add(message);
     }
 
     @Override
@@ -53,13 +53,12 @@ public class MockServerManagerMessageHandler implements Handler{
 
     public byte[] awaitAndReadMessage() {
         try {
-            latch.await(10, TimeUnit.SECONDS);
-            latch = new CountDownLatch(1);
+            byte[] bytes = messages.poll(10, TimeUnit.SECONDS);
+            if (bytes == null)
+                throw new RuntimeException("Read timed out");
             return bytes;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        } finally {
-            bytes = null;
         }
     }
 

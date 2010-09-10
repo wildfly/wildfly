@@ -21,6 +21,7 @@
  */
 package org.jboss.test.as.protocol.test.base;
 
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -28,5 +29,7 @@ package org.jboss.test.as.protocol.test.base;
  */
 public interface ServerTest extends BaseTest {
 
-    void testServerStartStop() throws Exception ;
+    void testServerStartStop() throws Exception;
+
+    void testServerManagerCrashed() throws Exception;
 }
