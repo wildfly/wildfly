@@ -80,7 +80,7 @@ class ServerDeploymentStartStopHandler {
             final BatchBuilder batchBuilder, final ServiceContainer serviceContainer,
             final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
-            ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
+            ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             // Add a listener so we can get ahold of the DeploymentService
             batchBuilder.addListener(new DeploymentServiceTracker<P>(resultHandler, param));
 
@@ -94,7 +94,7 @@ class ServerDeploymentStartStopHandler {
     <P> void redeploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
             final ServiceContainer serviceContainer, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
-            ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
+            ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             @SuppressWarnings("unchecked")
             final ServiceController<DeploymentService> controller = (ServiceController<DeploymentService>) serviceContainer.getService(deploymentServiceName);
             if(controller != null && controller.getMode() != ServiceController.Mode.REMOVE) {
@@ -126,7 +126,7 @@ class ServerDeploymentStartStopHandler {
     <P> void undeploy(final String deploymentName, final ServiceContainer serviceContainer,
             final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
-            ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
+            ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             @SuppressWarnings("unchecked")
             final ServiceController<DeploymentService> controller = (ServiceController<DeploymentService>) serviceContainer.getService(deploymentServiceName);
             if(controller != null) {
@@ -205,10 +205,6 @@ class ServerDeploymentStartStopHandler {
         @SuppressWarnings("unchecked")
         ServiceController<ServerDeploymentRepository> serviceController = (ServiceController<ServerDeploymentRepository>) serviceContainer.getRequiredService(ServerDeploymentRepository.SERVICE_NAME);
         return serviceController.getValue();
-    }
-
-    private static ServiceName getDeploymentServiceName(String deploymentName) {
-        return DeploymentService.SERVICE_NAME.append(deploymentName.replace('.', '_'));
     }
 
 //    private static String getFullyQualifiedDeploymentPath(String name) {

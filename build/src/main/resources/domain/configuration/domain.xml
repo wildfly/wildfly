@@ -36,15 +36,16 @@
                             urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd">
 
     <extensions>
-        <extension module="org.jboss.as.threads"/>
-        <extension module="org.jboss.as.remoting"/>
-        <extension module="org.jboss.as.transactions"/>
-        <extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
-        <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
-        <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.osgi"/>
+        <extension module="org.jboss.as.remoting"/>
+        <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.threads"/>
+        <extension module="org.jboss.as.transactions"/>
     </extensions>
 
     <profiles>
@@ -78,6 +79,27 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
+            <subsystem xmlns="urn:jboss:domain:osgi:1.0">
+                <properties>
+                    <property name="org.jboss.osgi.system.modules">
+                        org.apache.log4j 
+                    </property>
+                    <property name="org.osgi.framework.system.packages.extra">
+                        org.apache.log4j;version=1.2,
+                        org.jboss.logging;version=3.0,
+                        org.jboss.osgi.deployment.deployer;version=1.0,
+                        org.jboss.osgi.deployment.interceptor;version=1.0,
+                        org.jboss.osgi.spi;version=1.0,
+                        org.jboss.osgi.spi.capability;version=1.0,
+                        org.jboss.osgi.spi.util;version=1.0,
+                        org.jboss.osgi.testing;version=1.0
+                    </property>
+                </properties>
+                <modules>
+                    <module identifier="org.osgi.compendium"/>
+                    <module identifier="org.jboss.osgi.common" start="true"/>
+                </modules>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
                 <persistence-enabled>false</persistence-enabled>
                 <journal-type>NIO</journal-type>

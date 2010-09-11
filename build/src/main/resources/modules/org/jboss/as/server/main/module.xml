@@ -45,6 +45,7 @@
         <module name="org.jboss.as.domain"/>
         <module name="org.jboss.as.logging"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.osgi"/>
         <module name="org.jboss.as.process-manager"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>

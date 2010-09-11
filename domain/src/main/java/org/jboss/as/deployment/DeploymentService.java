@@ -24,7 +24,6 @@ package org.jboss.as.deployment;
 
 import java.io.Closeable;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,14 +32,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFSUtils;
 
 /**
- * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
- * The life-cycle of this service should be used to control the life-cycle of the deployment.
+ * Service that represents a deployment. Should be used as a dependency for all services registered for the deployment. The
+ * life-cycle of this service should be used to control the life-cycle of the deployment.
  *
  * @author John E. Bailey
  */
 public class DeploymentService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
-    private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
     private final Closeable deploymentMount;
 
@@ -51,8 +49,12 @@ public class DeploymentService implements Service<Void> {
         this.deploymentMount = deploymentMount;
     }
 
+    public static ServiceName getServiceName(String deploymentName) {
+        return DeploymentService.SERVICE_NAME.append(deploymentName.replace('.', '_'));
+    }
+
     /**
-     * Start the deployment.  This will re-mount the deployment root if service is restarted.
+     * Start the deployment. This will re-mount the deployment root if service is restarted.
      *
      * @param context The start context
      * @throws StartException if any problems occur
@@ -61,7 +63,7 @@ public class DeploymentService implements Service<Void> {
     }
 
     /**
-     * Stop the deployment.  This will close the virtual file mount.
+     * Stop the deployment. This will close the virtual file mount.
      *
      * @param context The stop context
      */

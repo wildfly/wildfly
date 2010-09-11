@@ -54,6 +54,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
+        
+        <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.1_spec</artifactId>
         </dependency>
@@ -104,16 +109,16 @@
         </dependency>
 
         <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
+            <groupId>org.jboss.osgi</groupId>
+            <artifactId>jboss-osgi-spi</artifactId>
         </dependency>
-
+        
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>

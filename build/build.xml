@@ -158,7 +158,9 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="org.apache.log4j">
+    	<module-def name="org.apache.commons.logging"/>
+    	
+    	<module-def name="org.apache.log4j">
             <maven-resource group="log4j" artifact="log4j"/>
         </module-def>
 
@@ -214,6 +216,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-naming"/>
         </module-def>
 
+        <module-def name="org.jboss.as.osgi">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi"/>
+        </module-def>
+
         <module-def name="org.jboss.as.process-manager">
             <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
         </module-def>
@@ -248,8 +254,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.jandex">
-            <maven-resource group="org.jboss" artifact="jandex"/>
+        <module-def name="org.jboss.common-core">
+            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
         </module-def>
 
         <module-def name="org.jboss.integration.jboss-jca-spi">
@@ -272,6 +278,10 @@
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-impl"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-deployers-common"/>
             <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-validator"/>
+        </module-def>
+    	
+        <module-def name="org.jboss.jandex">
+            <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
 
         <module-def name="org.jboss.jts">
@@ -312,6 +322,34 @@
             <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
         
+        <module-def name="org.jboss.osgi.common">
+            <maven-resource group="org.jboss.osgi.common" artifact="jboss-osgi-common"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.deployment">
+            <maven-resource group="org.jboss.osgi.deployment" artifact="jboss-osgi-deployment"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.framework">
+            <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.spi">
+            <maven-resource group="org.jboss.osgi" artifact="jboss-osgi-spi"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.resolver">
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-api"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
+            <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.vfs">
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jboss-osgi-vfs"/>
+            <maven-resource group="org.jboss.osgi.vfs" artifact="jboss-osgi-vfs30"/>
+        </module-def>
+        
         <module-def name="org.jboss.remoting3">
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
@@ -320,12 +358,12 @@
             <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.stdio">
-            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        <module-def name="org.jboss.staxmapper">
+            <maven-resource group="org.jboss" artifact="staxmapper"/>
         </module-def>
 
-        <module-def name="org.jboss.xnio">
-            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        <module-def name="org.jboss.stdio">
+            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
         </module-def>
 
         <module-def name="org.jboss.xnio.nio">
@@ -336,19 +374,23 @@
             <maven-resource group="org.jboss" artifact="jboss-vfs"/>
         </module-def>
 
-        <module-def name="org.jboss.common-core">
-            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
+        <module-def name="org.jboss.xnio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
         </module-def>
-        
-        <module-def name="org.jboss.staxmapper">
-            <maven-resource group="org.jboss" artifact="staxmapper"/>
+
+        <module-def name="org.osgi.core">
+            <maven-resource group="org.osgi" artifact="org.osgi.core"/>
+        </module-def>
+
+        <module-def name="org.osgi.compendium">
+            <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="jboss-security-spi"/>
             <maven-resource group="org.picketbox" artifact="jbosssx"/>
             <maven-resource group="org.picketbox" artifact="picketbox-bare"/>
-        </module-def>
+            </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">
             <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>

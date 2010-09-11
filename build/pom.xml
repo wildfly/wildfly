@@ -125,6 +125,11 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
+            <artifactId>jboss-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
         </dependency>
 
@@ -133,6 +138,11 @@
             <artifactId>staxmapper</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-osgi-bundle</artifactId>
+        </dependency>
+            
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-connector</artifactId>
@@ -181,6 +191,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-osgi</artifactId>
         </dependency>
 
         <dependency>
@@ -330,8 +345,28 @@
         <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
-           </dependency>
+        </dependency>
 
+        <dependency>
+            <groupId>org.jboss.osgi.common</groupId>
+            <artifactId>jboss-osgi-common</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.osgi.framework</groupId>
+            <artifactId>jbosgi-framework-core</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.osgi.resolver</groupId>
+            <artifactId>jbosgi-resolver-felix</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.osgi.vfs</groupId>
+            <artifactId>jboss-osgi-vfs30</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
             <artifactId>jboss-remoting</artifactId>

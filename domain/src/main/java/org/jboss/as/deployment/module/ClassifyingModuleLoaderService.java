@@ -24,6 +24,7 @@ package org.jboss.as.deployment.module;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.jboss.modules.ClassifyingModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
@@ -42,6 +43,13 @@ public class ClassifyingModuleLoaderService implements Service<ClassifyingModule
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("classifying", "module", "loader");
     private ClassifyingModuleLoader classifyingModuleLoader;
     private final Map<String, ModuleLoader> delegates = new HashMap<String, ModuleLoader>();
+
+    /**
+     * Gets the module loader
+     */
+    public ModuleLoader getModuleLoader() {
+        return classifyingModuleLoader;
+    }
 
     /**
      * Creates the classifying module loader with the current set of delegates, and registers a module
