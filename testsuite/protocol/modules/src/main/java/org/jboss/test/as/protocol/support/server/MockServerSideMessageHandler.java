@@ -55,8 +55,12 @@ public class MockServerSideMessageHandler implements Handler{
     }
 
     public byte[] awaitAndReadMessage() {
+        return awaitAndReadMessage(10000);
+    }
+
+    public byte[] awaitAndReadMessage(int timeoutMs) {
         try {
-            byte[] bytes = data.poll(10, TimeUnit.SECONDS);
+            byte[] bytes = data.poll(timeoutMs, TimeUnit.MILLISECONDS);
             if (bytes == null)
                 throw new RuntimeException("Read timed out");
             return bytes;

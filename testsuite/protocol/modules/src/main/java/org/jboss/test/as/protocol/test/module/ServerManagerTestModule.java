@@ -296,7 +296,35 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         Assert.assertEquals(removeCount, pm.getRemoveCount());
     }
 
-    public void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception {
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.STARTING, false);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.STARTED, false);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.STOPPING, false);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StoppedDoesNotGetStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.STARTED, false);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_BootingGetsStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.BOOTING, true);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_AvailableGetsStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.AVAILABLE, true);
+    }
+
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_FailedGetsStarted() throws Exception {
+        testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.FAILED, true);
+    }
+
+    private void testServersGetReconnectMessageFollowingRestartedServerManager(ServerState state, boolean receiveConfig) throws Exception {
         MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 servers
         setDomainConfigDir("standard");
         ServerManager sm = ServerManagerStarter.createServerManager(pm);
@@ -332,15 +360,8 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
         Assert.assertEquals(0, sm.getServers().size());
 
-        MockManagedProcess proc1 = pm.getProcess("Server:server-one");
-        MockManagedProcess proc2 = pm.getProcess("Server:server-two");
-
-        proc1.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
-        proc2.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
-
-
-//        svr1.getCommunicationHandler().sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, ServerState.STARTED));
-//        svr2.getCommunicationHandler().sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, ServerState.STARTED));
+        svr1.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
+        svr2.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, state);
 
         Map<String, Server> servers = waitForServerManagerServers(sm, 2, 5000);
         Server one = servers.get("Server:server-one");
@@ -348,10 +369,23 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         Assert.assertSame(ServerState.STARTED, one.getState());
         Server two = servers.get("Server:server-two");
         Assert.assertNotNull(two);
-        Assert.assertSame(ServerState.STARTED, two.getState());
+
+
+        if (!receiveConfig) {
+            try {
+                svr2.getMessageHandler().awaitAndReadMessage(500);
+                Assert.fail("Should not have received a command");
+            } catch (RuntimeException expected) {
+            }
+            Assert.assertSame(state, two.getState());
+
+        } else {
+            cfg2 = readStartCommand(svr2.getMessageHandler());
+            Assert.assertEquals("server-two", cfg2.getServerName());
+        }
+
 
         sm.stop();
-
     }
 
     private int parsePort(String newAddressAndPort) throws Exception {

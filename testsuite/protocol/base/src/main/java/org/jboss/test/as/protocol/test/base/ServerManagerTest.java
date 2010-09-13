@@ -22,6 +22,7 @@
 package org.jboss.test.as.protocol.test.base;
 
 
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -40,5 +41,17 @@ public interface ServerManagerTest extends BaseTest{
     void testServerCrashedAfterStartGetsRespawned() throws Exception;
     //More tests for server crashing in different states
 
-    void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception;
+    void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_StoppedDoesNotGetStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_BootingGetsStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_AvailableGetsStarted() throws Exception;
+
+    void testServersGetReconnectMessageFollowingRestartedServerManager_FailedGetsStarted() throws Exception;
 }

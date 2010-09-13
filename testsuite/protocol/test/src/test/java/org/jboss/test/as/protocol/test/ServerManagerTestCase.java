@@ -65,7 +65,37 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
     }
 
 	@Test
-	public void testServersGetReconnectMessageFollowingRestartedServerManager() throws Exception {
-	    getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager();
+	public void testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted() throws Exception {
+	    getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted();
 	}
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_AvailableGetsStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_AvailableGetsStarted();
+    }
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_BootingGetsStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_BootingGetsStarted();
+    }
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_FailedGetsStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_FailedGetsStarted();
+    }
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted();
+    }
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StoppedDoesNotGetStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StoppedDoesNotGetStarted();
+    }
+
+	@Test
+    public void testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted() throws Exception {
+        getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted();
+    }
 }

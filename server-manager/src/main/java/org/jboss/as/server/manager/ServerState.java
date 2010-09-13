@@ -28,28 +28,38 @@ package org.jboss.as.server.manager;
  */
 public enum ServerState {
     /** We have told the PM to start the server and are waiting for the SERVER_AVAILABLE message back from the server */
-    BOOTING,
+    BOOTING (true),
 
     /** The server has sent the available command back to the SERVER_MANAGER */
-    AVAILABLE,
+    AVAILABLE (true),
 
     /** We have received the SERVER_AVAILABLE message from the server process and have sent the config
      *  to the server and are waiting for the SERVER_STARTED or SERVER_FAILED message */
-    STARTING,
+    STARTING (false),
 
     /** The server sent back the SERVER_STARTED message and is up and running */
-    STARTED,
+    STARTED (false),
 
     /** We have told the server to stop and are waiting for the SERVER_STOPPED message */
-    STOPPING,
+    STOPPING (false),
 
     /** We have received the SERVER_STOPPED message */
-    STOPPED,
+    STOPPED (false),
 
     /** We have received the SERVER_START_FAILED message */
-    FAILED,
+    FAILED (true),
 
     /** We have tried to restart the server several times and received the SERVER_START_FAILED message
      * more times than defined in the max respawn policy */
-    MAX_FAILED
+    MAX_FAILED (false);
+
+    private final boolean restartOnReconnect;
+
+    private ServerState(boolean restartedReconnect) {
+        this.restartOnReconnect = restartedReconnect;
+    }
+
+    boolean isRestartOnReconnect() {
+        return restartOnReconnect;
+    }
 }

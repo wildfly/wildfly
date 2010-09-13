@@ -352,6 +352,15 @@ public class ServerManager {
             server.setCommunicationHandler(handler);
         }
         server.setState(state);
+
+        if (state.isRestartOnReconnect()) {
+            try {
+                server.start();
+            } catch (IOException e) {
+                log.errorf(e, "Could not start reconnected server %s", server.getServerProcessName());
+            }
+            server.setState(ServerState.STARTING);
+        }
     }
 
     private void respawn(Server server){
@@ -608,8 +617,8 @@ public class ServerManager {
     }
 
     private static class ShutdownLatch {
-        private Set<String> waitingForServers = Collections.synchronizedSet(new HashSet<String>());
-        private CountDownLatch done = new CountDownLatch(1);
+        private final Set<String> waitingForServers = Collections.synchronizedSet(new HashSet<String>());
+        private final CountDownLatch done = new CountDownLatch(1);
         private CountDownLatch waitFor;
 
         synchronized void add(String serverName) {
