@@ -31,5 +31,5 @@ public interface ServerTest extends BaseTest {
 
     void testServerStartStop() throws Exception;
 
-    void testServerManagerCrashed() throws Exception;
+    void testServersReconnectToRestartedServerManager() throws Exception;
 }

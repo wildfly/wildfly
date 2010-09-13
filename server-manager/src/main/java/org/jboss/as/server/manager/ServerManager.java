@@ -150,10 +150,7 @@ public class ServerManager {
                 JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
 
-                    //TODO JBAS-8390 Read respawn policy from host or domain?
-                    RespawnPolicy respawnPolicy = RespawnPolicy.DefaultRespawnPolicy.INSTANCE;
-
-                    Server server = serverMaker.makeServer(serverConf, jvmElement, respawnPolicy);
+                    Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
                     servers.put(getServerProcessName(serverConf), server);
 
                     //Now that the server is in the servers map we can start it
@@ -169,6 +166,11 @@ public class ServerManager {
 //        finally {
 //            hostLock.unlock();
 //        }
+    }
+
+    private RespawnPolicy getRespawnPolicy(ServerModel serverConf) {
+        //TODO JBAS-8390 Read respawn policy from host or domain?
+        return RespawnPolicy.DefaultRespawnPolicy.INSTANCE;
     }
 
     /**
@@ -197,6 +199,7 @@ public class ServerManager {
             }
             checkState(server, ServerState.BOOTING);
 
+            server.setState(ServerState.AVAILABLE);
             log.infof("Sending config to server %s", serverName);
             server.start();
             server.setState(ServerState.STARTING);
@@ -312,6 +315,43 @@ public class ServerManager {
         checkState(server, ServerState.STARTING);
         server.setState(ServerState.FAILED);
         respawn(server);
+    }
+
+    void reconnectedServer(String serverName, ServerState state) {
+        Server server = servers.get(serverName);
+        if (server == null) {
+            DirectServerCommunicationHandler handler = directServerCommunicationListener.getHandlerWaitingForReconnect(serverName);
+            if (handler == null) {
+                log.errorf("No server and no connection found for reconnected server %s", serverName);
+                return;
+            }
+
+            ServerElement svr = null;
+            for (ServerElement serverEl : hostConfig.getServers()) {
+                if (getServerProcessName(serverEl.getName()).equals(serverName)) {
+                    svr = serverEl;
+                    break;
+                }
+            }
+            if (svr == null) {
+                log.errorf("No config found for reconnected server %s");
+                return;
+            }
+
+            ServerModel serverConf = new ServerModel(domainConfig, hostConfig, svr.getName());
+            JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, svr.getName());
+            CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
+            ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
+            try {
+                server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
+            } catch (IOException e) {
+                log.errorf(e, "Could not create a Server instance for reconnected server %s", serverName);
+                return;
+            }
+            servers.put(getServerProcessName(serverConf), server);
+            server.setCommunicationHandler(handler);
+        }
+        server.setState(state);
     }
 
     private void respawn(Server server){
@@ -547,7 +587,11 @@ public class ServerManager {
     }
 
     static String getServerProcessName(ServerModel serverConfig) {
-        return ServerMaker.SERVER_PROCESS_NAME_PREFIX + serverConfig.getServerName();
+        return getServerProcessName(serverConfig.getServerName());
+    }
+
+    static String getServerProcessName(String name) {
+        return ServerMaker.SERVER_PROCESS_NAME_PREFIX + name;
     }
 
     private void checkState(Server server, ServerState expected) {
@@ -555,7 +599,12 @@ public class ServerManager {
         if (state != expected) {
             log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
         }
+    }
 
+    public Map<String, Server> getServers() {
+        synchronized (servers) {
+            return Collections.unmodifiableMap(servers);
+        }
     }
 
     private static class ShutdownLatch {

@@ -47,8 +47,8 @@ public class ServerTestCase extends AbstractProtocolTest<ServerTest> implements 
 
 	@Test
 	@Override
-    public void testServerManagerCrashed() throws Exception {
-		getTestInstance().testServerManagerCrashed();
+    public void testServersReconnectToRestartedServerManager() throws Exception {
+		getTestInstance().testServersReconnectToRestartedServerManager();
     }
 }
 

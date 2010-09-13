@@ -85,6 +85,16 @@ class MessageHandler implements Handler {
             case SERVER_STOPPED:
                 serverManager.stoppedServer(sourceProcessName);
                 break;
+            case SERVER_RECONNECT_STATUS:
+                ServerState state;
+                try {
+                    state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
+                } catch (Exception e) {
+                    log.error("Could not unmarshal server state for SERVER_RECONNECT_STATUS message", e);
+                    return;
+                }
+                serverManager.reconnectedServer(sourceProcessName, state);
+                break;
             default:
                 if (log.isTraceEnabled())
                     log.warn("Received unknown command for " + sourceProcessName + ":" + Arrays.asList(message));

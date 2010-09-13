@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerState;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -51,20 +53,26 @@ public class Server extends AbstractServer {
 
     private final MessageHandler messageHandler = new MessageHandler(this);
 
+    private volatile ServerState state;
+
     public Server(ServerEnvironment environment) {
         super(environment);
+        state = ServerState.BOOTING;
     }
 
     public void start() {
         launchCommunicationHandlers();
         sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        state = ServerState.AVAILABLE;
         log.info("Server Available to start");
     }
 
     public void start(ServerModel config) throws ServerStartException {
         try {
+            state = ServerState.STARTING;
             super.start(config);
         } catch(ServerStartException e) {
+            state = ServerState.FAILED;
             sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
             throw e;
         }
@@ -73,8 +81,10 @@ public class Server extends AbstractServer {
     public void stop() {
         if (stopping.getAndSet(true))
             return;
+        state = ServerState.STOPPING;
         super.stop();
         sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
+        state = ServerState.STOPPED;
         log.info("Server stopped");
         serverCommunicationHandler.shutdown();
         processManagerCommunicationHandler.shutdown();
@@ -97,6 +107,7 @@ public class Server extends AbstractServer {
         }
         this.serverCommunicationHandler = new DirectServerCommunicationHandler(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
         this.serverCommunicationHandler.start();
+        sendMessage(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state);
     }
 
     @Override
@@ -105,8 +116,10 @@ public class Server extends AbstractServer {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
+                    state = ServerState.STARTED;
                     sendMessage(ServerManagerProtocolCommand.SERVER_STARTED);
                 } else {
+                    state = ServerState.FAILED;
                     sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
                     final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
@@ -134,6 +147,14 @@ public class Server extends AbstractServer {
             serverCommunicationHandler.sendMessage(bytes);
         } catch (IOException e) {
             log.error("Failed to send message to Server Manager [" + command + "]", e);
+        }
+    }
+
+    private void sendMessage(ServerManagerProtocolCommand command, Object data) {
+        try {
+            serverCommunicationHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(command, data));
+        } catch (IOException e) {
+            log.error("Failed to send message to Server Manager [" + command + ":" + data + "]", e);
         }
     }
 }

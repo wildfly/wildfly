@@ -49,14 +49,16 @@ public enum ServerManagerProtocolCommand {
     STOP_SERVER((byte)2),
 
     //The Server->SM commands
-    /** Message sent from Server to ServerManager when the server is started. No data */
-    SERVER_STARTED((byte)51),
-    /** Message sent from Server to ServerManager when the server is stopped. No data */
-    SERVER_STOPPED((byte)52),
     /** Message sent from Server to ServerManager when the server is available. No data */
-    SERVER_AVAILABLE((byte)53),
+    SERVER_AVAILABLE((byte)51),
+    /** Message sent from Server to ServerManager when the server is started. No data */
+    SERVER_STARTED((byte)52),
+    /** Message sent from Server to ServerManager when the server is stopped. No data */
+    SERVER_STOPPED((byte)53),
     /** Message sent from Server to ServerManager when the server could not start normally. No data */
-    SERVER_START_FAILED((byte)54);
+    SERVER_START_FAILED((byte)54),
+    /** Message sent from Server to ServerManager containing the status of the server when the server is reconnected to SM */
+    SERVER_RECONNECT_STATUS((byte)55, true);
 
     private static final Map<Byte, ServerManagerProtocolCommand> COMMANDS;
     static {
@@ -67,6 +69,7 @@ public enum ServerManagerProtocolCommand {
         cmds.put(SERVER_STOPPED.getId(), SERVER_STOPPED);
         cmds.put(SERVER_AVAILABLE.getId(), SERVER_AVAILABLE);
         cmds.put(SERVER_START_FAILED.getId(), SERVER_START_FAILED);
+        cmds.put(SERVER_RECONNECT_STATUS.getId(), SERVER_RECONNECT_STATUS);
         COMMANDS = Collections.unmodifiableMap(cmds);
     }
 

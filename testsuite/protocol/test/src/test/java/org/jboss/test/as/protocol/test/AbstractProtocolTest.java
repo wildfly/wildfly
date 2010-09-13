@@ -85,12 +85,11 @@ public abstract class AbstractProtocolTest <T extends BaseTest>{
 		if (modularizedTestInstance == null) {
 			modularizedTestInstance = initializeModularizedTestInstance();
 		}
+
 		return modularizedTestInstance;
 	}
 
 	private T initializeModularizedTestInstance() throws Exception {
-		LocalModuleLoader moduleLoader = new LocalModuleLoader(MODULE_ROOTS);
-		Module.setModuleLoaderSelector(new SimpleModuleLoaderSelector(moduleLoader));
 		ModuleIdentifier id = ModuleIdentifier.fromString("org.jboss.as.jboss-as-testsuite-protocol-modules");
 		Module module = moduleLoader.loadModule(id);
 

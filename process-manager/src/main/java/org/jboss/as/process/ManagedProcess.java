@@ -177,7 +177,7 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     }
 
     boolean shutdownServers() throws IOException {
-        checkServerManager();
+        checkServerManager(Command.SHUTDOWN_SERVERS);
         synchronized (this) {
             if (!start)
                 return false;
@@ -189,7 +189,7 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     }
 
     void down(String stoppedProcessName) throws IOException {
-        checkServerManager();
+        checkServerManager(Command.DOWN);
         synchronized (this) {
             if (!start)
                 return;
@@ -219,9 +219,11 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         }
     }
 
-    private void checkServerManager() {
+
+    private void checkServerManager(Command cmd) {
         if (!ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME.equals(processName))
-            throw new IllegalStateException("Attempt to send SHUTDOWN_SERVERS on a ManagedProcess that is not " + ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME + ": " + processName);
+            throw new IllegalStateException("Attempt to send " + cmd +
+                    " on a ManagedProcess that is not " + ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME + ": " + processName);
     }
 
     private void respawn() {

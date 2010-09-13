@@ -21,17 +21,21 @@
  */
 package org.jboss.test.as.protocol.test.module;
 
+import java.net.InetAddress;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.model.Standalone;
+import org.jboss.as.server.manager.Server;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerState;
 import org.jboss.test.as.protocol.support.process.MockManagedProcess;
 import org.jboss.test.as.protocol.support.process.MockProcessManager;
 import org.jboss.test.as.protocol.support.server.MockServerSideMessageHandler;
@@ -324,9 +328,38 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         sm.stop();
 
         sm = ServerManagerStarter.createServerManager(pm, true);
-        pm.waitForReconnectServers();
+        int newSmPort = parsePort(pm.waitForReconnectServers());
+
+        Assert.assertEquals(0, sm.getServers().size());
+
+        MockManagedProcess proc1 = pm.getProcess("Server:server-one");
+        MockManagedProcess proc2 = pm.getProcess("Server:server-two");
+
+        proc1.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
+        proc2.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
+
+
+//        svr1.getCommunicationHandler().sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, ServerState.STARTED));
+//        svr2.getCommunicationHandler().sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, ServerState.STARTED));
+
+        Map<String, Server> servers = waitForServerManagerServers(sm, 2, 5000);
+        Server one = servers.get("Server:server-one");
+        Assert.assertNotNull(one);
+        Assert.assertSame(ServerState.STARTED, one.getState());
+        Server two = servers.get("Server:server-two");
+        Assert.assertNotNull(two);
+        Assert.assertSame(ServerState.STARTED, two.getState());
+
         sm.stop();
 
+    }
+
+    private int parsePort(String newAddressAndPort) throws Exception {
+        Assert.assertNotNull(newAddressAndPort);
+        String[] parts = newAddressAndPort.split(":");
+        Assert.assertEquals(2, parts.length);
+        Assert.assertEquals(InetAddress.getLocalHost().getHostAddress(), parts[0]);
+        return Integer.parseInt(parts[1]);
     }
 
     private ServerManagerProtocolCommand.Command assertReadCommand(ServerManagerProtocolCommand expected, MockServerSideMessageHandler handler) throws Exception {
@@ -366,6 +399,17 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
     private void setDomainConfigDir(String name) throws URISyntaxException {
         addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
+    }
+
+    private Map<String, Server> waitForServerManagerServers(ServerManager sm, int count, int timeoutMs) throws Exception {
+        long end = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < end) {
+            if (sm.getServers().size() == count)
+                return sm.getServers();
+            Thread.sleep(200);
+        }
+        Assert.fail("Only got " + sm.getServers().size() + " expected " + count);
+        return sm.getServers();
     }
 
 }

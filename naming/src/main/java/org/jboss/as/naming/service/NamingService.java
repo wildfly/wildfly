@@ -62,7 +62,8 @@ public class NamingService implements Service<NamingStore> {
      * @throws StartException If any errors occur setting up the naming server
      */
     public synchronized void start(StartContext context) throws StartException {
-        log.info("Starting Naming Service");
+        log.info("Starting Naming Service ");
+        System.err.println("---->Starting Naming Service " + this);
         try {
             if(supportEvents)
                 namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
@@ -80,6 +81,7 @@ public class NamingService implements Service<NamingStore> {
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
+        System.err.println("---->Stopping Naming Service " + this);
         NamingContext.setActiveNamingStore(null);
         try {
             namingStore.close();

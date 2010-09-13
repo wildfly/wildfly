@@ -30,6 +30,9 @@ public enum ServerState {
     /** We have told the PM to start the server and are waiting for the SERVER_AVAILABLE message back from the server */
     BOOTING,
 
+    /** The server has sent the available command back to the SERVER_MANAGER */
+    AVAILABLE,
+
     /** We have received the SERVER_AVAILABLE message from the server process and have sent the config
      *  to the server and are waiting for the SERVER_STARTED or SERVER_FAILED message */
     STARTING,

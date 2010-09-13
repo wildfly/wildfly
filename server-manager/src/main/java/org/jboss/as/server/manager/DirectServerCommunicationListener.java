@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
@@ -47,6 +50,8 @@ class DirectServerCommunicationListener{
     private final SocketListener socketListener;
 
     private final ServerManager serverManager;
+
+    private Map<String, DirectServerCommunicationHandler> handlersWaitingForReconnect = Collections.synchronizedMap(new HashMap<String, DirectServerCommunicationHandler>());
 
     DirectServerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog) throws IOException {
         this.serverManager = serverManager;
@@ -75,6 +80,9 @@ class DirectServerCommunicationListener{
         return socketListener.getAddress();
     }
 
+    DirectServerCommunicationHandler getHandlerWaitingForReconnect(String serverName) {
+        return handlersWaitingForReconnect.remove(serverName);
+    }
 
     class ServerAcceptor implements SocketHandler {
 
@@ -99,12 +107,16 @@ class DirectServerCommunicationListener{
             String processName = sb.toString();
 
             Server server = serverManager.getServer(processName);
-            if (server == null) {
-                throw new InitialSocketRequestException("Server acceptor: received connect command for unknown process '" + sb.toString() + "'");
+
+            if (server != null) {
+                server.setCommunicationHandler(DirectServerCommunicationHandler.create(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager)));
+            } else {
+                //TODO some handling for when the server is null and the remote server never sends the SERVER_RECONNECT_STATUS message
+                //so that the handler gets closed down
+                DirectServerCommunicationHandler handler = new DirectServerCommunicationHandler(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager));
+                handlersWaitingForReconnect.put(processName, handler);
+                handler.start();
             }
-            log.infof("Server acceptor: connected server %s", processName);
-            DirectServerCommunicationHandler handler = DirectServerCommunicationHandler.create(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager));
-            server.setCommunicationHandler(handler);
         }
     }
 }

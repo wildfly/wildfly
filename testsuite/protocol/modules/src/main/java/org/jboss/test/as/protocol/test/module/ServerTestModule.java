@@ -39,6 +39,7 @@ import org.jboss.as.model.Standalone;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerState;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
 import org.jboss.test.as.protocol.support.process.MockProcessManager;
 import org.jboss.test.as.protocol.support.process.MockProcessManager.NewConnectionListener;
@@ -88,7 +89,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
     }
 
     @Override
-    public void testServerManagerCrashed() throws Exception {
+    public void testServersReconnectToRestartedServerManager() throws Exception {
         MockProcessManager pm = MockProcessManager.create(1);
         Standalone cfg = getServer("standard", "server-one");
 
@@ -112,18 +113,31 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         managerHandler.shutdown();
         managerListener.shutdown();
 
+        //Restart SM
+        serverManager = MockServerManager.create();
+        managerMessageHandler = new MockServerManagerMessageHandler();
         managerListener = MockDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
 
         Assert.assertTrue(pmServerconnection.isOpen());
 
+        //RECONNECT_SERVER_MANAGER to process from PM
         managerListener.resetNewConnectionLatch(1);
         reconnectServerToServerManager(pmServerconnection, InetAddress.getLocalHost(), managerListener.getSmPort());
         MockDirectServerManagerCommunicationHandler handler2 = managerListener.getManagerHandler("Server:server-one");
         managerListener.waitForNewConnection();
         Assert.assertNotSame(managerHandler, handler2);
 
+        ServerManagerProtocolCommand.Command cmd = assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS);
+        ServerState state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
+        Assert.assertSame(ServerState.STARTED, state);
 
-        //waitForClose(handler, 5000);
+
+        managerHandler = managerListener.getManagerHandler("Server:server-one");
+        Assert.assertNotNull(managerHandler);
+        managerHandler.sendMessage(ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null));
+        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STOPPED);
+
+        waitForClose(managerHandler, 5000);
     }
 
     public void reconnectServerToServerManager(SocketConnection pmConnection, InetAddress addr, int port) throws IOException {

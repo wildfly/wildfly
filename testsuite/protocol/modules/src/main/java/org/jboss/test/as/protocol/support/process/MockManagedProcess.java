@@ -37,6 +37,8 @@ import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.process.ProcessOutputStreamHandler.Master;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerState;
 import org.jboss.test.as.protocol.support.server.MockDirectServerSideCommunicationHandler;
 import org.jboss.test.as.protocol.support.server.MockServerSideMessageHandler;
 
@@ -187,6 +189,13 @@ public class MockManagedProcess implements Managed{
             StreamUtils.writeString(output, sb.toString());
             output.flush();
         }
+    }
+
+    public void reconnnectAndSendReconnectStatus(InetAddress smAddress, int smPort, ServerState state) throws IOException {
+        this.smAddress = smAddress;
+        this.smPort = smPort;
+        handler = MockDirectServerSideCommunicationHandler.create(processName, smAddress, smPort, messageHandler);
+        handler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state));
     }
 
     public MockServerSideMessageHandler getMessageHandler() {

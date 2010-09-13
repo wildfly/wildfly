@@ -104,7 +104,7 @@ public final class Server {
 //        this.communicationHandler = communicationHandler;
     }
 
-    ServerState getState() {
+    public ServerState getState() {
         return state;
     }
 
