@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.service;
 
+import javax.naming.NamingException;
+
 import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingEventCoordinator;
@@ -32,8 +34,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.naming.NamingException;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server.
@@ -63,7 +63,6 @@ public class NamingService implements Service<NamingStore> {
      */
     public synchronized void start(StartContext context) throws StartException {
         log.info("Starting Naming Service ");
-        System.err.println("---->Starting Naming Service " + this);
         try {
             if(supportEvents)
                 namingStore = new InMemoryNamingStore(new NamingEventCoordinator());
@@ -81,7 +80,6 @@ public class NamingService implements Service<NamingStore> {
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
-        System.err.println("---->Stopping Naming Service " + this);
         NamingContext.setActiveNamingStore(null);
         try {
             namingStore.close();
