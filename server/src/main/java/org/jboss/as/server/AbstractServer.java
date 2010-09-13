@@ -27,6 +27,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistryException;
 
 /**

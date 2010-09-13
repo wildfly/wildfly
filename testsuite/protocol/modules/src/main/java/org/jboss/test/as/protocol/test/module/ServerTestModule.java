@@ -86,6 +86,8 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STOPPED);
 
         waitForClose(managerHandler, 5000);
+
+        waitForServerToClose();
     }
 
     @Override
@@ -138,6 +140,13 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STOPPED);
 
         waitForClose(managerHandler, 5000);
+        waitForServerToClose();
+    }
+
+    private void waitForServerToClose() throws Exception {
+        //Hack wait for server to finish
+        System.gc();
+        Thread.sleep(2000);
     }
 
     public void reconnectServerToServerManager(SocketConnection pmConnection, InetAddress addr, int port) throws IOException {
