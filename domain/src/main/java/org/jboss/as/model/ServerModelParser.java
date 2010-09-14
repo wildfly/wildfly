@@ -32,28 +32,28 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
- * for {@code &lt;domain&gt;} root elements.
+ * for {@code &lt;standalone&gt;} root elements.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Brian Stansberry
  */
-public final class DomainParser implements XMLElementReader<ParseResult<Domain>>, XMLStreamConstants {
+public final class ServerModelParser implements XMLElementReader<ParseResult<ServerModel>>, XMLStreamConstants {
 
-    private DomainParser() {
+    private ServerModelParser() {
     }
 
-    private static final DomainParser INSTANCE = new DomainParser();
+    private static final ServerModelParser INSTANCE = new ServerModelParser();
 
     /**
      * Get the instance.
      *
      * @return the instance
      */
-    public static DomainParser getInstance() {
+    public static ServerModelParser getInstance() {
         return INSTANCE;
     }
 
     /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Domain> value) throws XMLStreamException {
-        value.setResult(new Domain(reader));
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ServerModel> value) throws XMLStreamException {
+        value.setResult(new ServerModel(reader));
     }
 }

@@ -24,7 +24,7 @@ package org.jboss.as.server.manager;
 
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerSlave;
 
@@ -70,7 +70,7 @@ public final class ServerMaker {
         this.messageHandler = messageHandler;
     }
 
-    public Server makeServer(Standalone serverConfig, JvmElement jvmElement) throws IOException {
+    public Server makeServer(ServerModel serverConfig, JvmElement jvmElement) throws IOException {
         final String serverName = serverConfig.getServerName();
 //        final List<String> args = new ArrayList<String>();
 //        if (false) {

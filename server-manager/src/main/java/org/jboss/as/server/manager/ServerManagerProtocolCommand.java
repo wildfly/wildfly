@@ -28,25 +28,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.model.Standalone;
-
-
 /**
- * Commands from the server manager to a server.
- * These commands will be sent via the ProcessManager as MSG_BYTES. The format of the bytes is:<br>
- * 0 byte: message id
- * 0..n bytes: The data that goes with the command
- * <p>
- * Checksums and length of data are handled at the ManagedProcess/MessageHandler level
- *
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
- */
+* Commands from the server manager to a server.
+* These commands will be sent via the ProcessManager as MSG_BYTES. The format of the bytes is:<br>
+* 0 byte: message id
+* 0..n bytes: The data that goes with the command
+* <p>
+* Checksums and length of data are handled at the ManagedProcess/MessageHandler level
+*
+*
+* @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+* @version $Revision: 1.1 $
+*/
 public enum ServerManagerProtocolCommand {
 
     //The SM->Server commands
-    /** Message sent from ServerManager to Server containing the bytes of a {@link Standalone} */
+    /** Message sent from ServerManager to Server containing the bytes of a {@link org.jboss.as.model.ServerModel} */
     START_SERVER((byte)1, true),
     /** Message sent from ServerManager to Server. No data */
     STOP_SERVER((byte)2),

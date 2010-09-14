@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Host;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.LocalDomainControllerElement;
 
 import java.io.Serializable;
@@ -35,7 +35,7 @@ import java.io.Serializable;
 public class DomainControllerConfig implements Serializable {
     private static final long serialVersionUID = -6619852348761199970L;
     private LocalDomainControllerElement domainControllerElement;
-    private Host host;
+    private HostModel host;
 
     /**
      * Default construct.
@@ -49,7 +49,7 @@ public class DomainControllerConfig implements Serializable {
      * @param domainControllerElement The local domain controller element
      * @param host The host config
      */
-    public DomainControllerConfig(final LocalDomainControllerElement domainControllerElement, final Host host) {
+    public DomainControllerConfig(final LocalDomainControllerElement domainControllerElement, final HostModel host) {
         this.domainControllerElement = domainControllerElement;
         this.host = host;
     }
@@ -68,7 +68,7 @@ public class DomainControllerConfig implements Serializable {
      *
      * @return The host config
      */
-    public Host getHost() {
+    public HostModel getHost() {
         return host;
     }
 }

@@ -3,7 +3,7 @@
  */
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Host;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.process.ProcessManagerSlave;
 
 /**
@@ -19,7 +19,7 @@ public final class ProcessManagerSlaveFactory {
         return INSTANCE;
     }
 
-    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment environment, Host host, MessageHandler handler) {
+    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment environment, HostModel host, MessageHandler handler) {
         return new ProcessManagerSlave(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
     }
 

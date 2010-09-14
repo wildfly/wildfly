@@ -26,9 +26,9 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.Extension;
-import org.jboss.as.model.DomainParser;
+import org.jboss.as.model.DomainModelParser;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.HostParser;
+import org.jboss.as.model.HostModelParser;
 import org.jboss.as.model.Namespace;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
@@ -64,7 +64,7 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     public synchronized void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException {
 
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
-            mapper.registerRootElement(new QName(ns.getUriString(), Element.DOMAIN.getLocalName()), DomainParser.getInstance());
+            mapper.registerRootElement(new QName(ns.getUriString(), Element.DOMAIN.getLocalName()), DomainModelParser.getInstance());
         }
 
         registerExtensions(mapper);
@@ -77,7 +77,7 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     public synchronized void registerStandardHostReaders(XMLMapper mapper) throws ModuleLoadException {
 
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
-            mapper.registerRootElement(new QName(ns.getUriString(), Element.HOST.getLocalName()), HostParser.getInstance());
+            mapper.registerRootElement(new QName(ns.getUriString(), Element.HOST.getLocalName()), HostModelParser.getInstance());
         }
 
         registerExtensions(mapper);

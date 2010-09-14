@@ -33,7 +33,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelRootElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.Domain;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.NamespaceAttribute;
 import org.jboss.as.model.ParseResult;
@@ -42,7 +41,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A fake root element for the domain xsd, equivalent to {@link Domain}.
+ * A fake root element for the domain xsd, equivalent to {@link org.jboss.as.model.DomainModel}.
  *
  * @author Brian Stansberry
  */

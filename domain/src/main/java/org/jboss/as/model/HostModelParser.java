@@ -32,28 +32,28 @@ import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
- * for {@code &lt;standalone&gt;} root elements.
+ * for {@code &lt;host&gt;} root elements.
  *
- * @author Brian Stansberry
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class StandaloneParser implements XMLElementReader<ParseResult<Standalone>>, XMLStreamConstants {
+public final class HostModelParser implements XMLElementReader<ParseResult<HostModel>>, XMLStreamConstants {
 
-    private StandaloneParser() {
+    private HostModelParser() {
     }
 
-    private static final StandaloneParser INSTANCE = new StandaloneParser();
+    private static final HostModelParser INSTANCE = new HostModelParser();
 
     /**
      * Get the instance.
      *
      * @return the instance
      */
-    public static StandaloneParser getInstance() {
+    public static HostModelParser getInstance() {
         return INSTANCE;
     }
 
     /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<Standalone> value) throws XMLStreamException {
-        value.setResult(new Standalone(reader));
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<HostModel> value) throws XMLStreamException {
+        value.setResult(new HostModel(reader));
     }
 }

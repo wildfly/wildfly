@@ -42,7 +42,7 @@ import java.util.TreeMap;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Host extends AbstractModel<Host> {
+public final class HostModel extends AbstractModel<HostModel> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
@@ -64,7 +64,7 @@ public final class Host extends AbstractModel<Host> {
      * @param location the declaration location of the host element
      * @param elementName the name of this host element
      */
-    public Host(final Location location, final QName elementName) {
+    public HostModel(final Location location, final QName elementName) {
         super(location, elementName);
         this.schemaLocation = null;
     }
@@ -75,7 +75,7 @@ public final class Host extends AbstractModel<Host> {
      * @param reader the reader from which to build this element
      * @throws XMLStreamException if an error occurs
      */
-    public Host(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public HostModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle namespaces
         namespaces.putAll(readNamespaces(reader));
@@ -144,7 +144,7 @@ public final class Host extends AbstractModel<Host> {
     /**
      * Gets the host level configuration for the interface with the given <code>name</name>.
      * This configuration can override any configuration for an interface
-     * with the same name at the {@link Domain#getInterface(String) domain level}.
+     * with the same name at the {@link DomainModel#getInterface(String) domain level}.
      * In turn, the details of the configuration of this interface can be overridden at the
      * {@link ServerElement#getInterfaces() server level}.
      *
@@ -197,7 +197,7 @@ public final class Host extends AbstractModel<Host> {
     /**
      * Gets any system properties defined at the host level. These properties
      * can extend and override any properties declared at the
-     * {@link Domain#getSystemProperties() domain level} or the
+     * {@link DomainModel#getSystemProperties() domain level} or the
      * {@link ServerGroupElement server group level} and may in turn be extended
      * or overridden by any properties declared at the
      * {@link ServerElement#getSystemProperties() server level}.
@@ -243,14 +243,14 @@ public final class Host extends AbstractModel<Host> {
     }
 
     /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<Host>> target, final Host other) {
+    protected void appendDifference(final Collection<AbstractModelUpdate<HostModel>> target, final HostModel other) {
         // FIXME implement appendDifference
         throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
-    protected Class<Host> getElementClass() {
-        return Host.class;
+    protected Class<HostModel> getElementClass() {
+        return HostModel.class;
     }
 
     /** {@inheritDoc} */

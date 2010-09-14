@@ -22,8 +22,8 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.model.Domain;
-import org.jboss.as.model.Host;
+import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.socket.ServerInterfaceElement;
@@ -64,7 +64,7 @@ public class DomainController {
     private ProcessCommunicationHandler communicationHandler;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
-    private Domain domainConfig;
+    private DomainModel domainConfig;
 
     /**
      * Create an instance with an environment.
@@ -96,7 +96,7 @@ public class DomainController {
         domainConfig = parseDomain();
 
         final LocalDomainControllerElement localDomainControllerElement = domainControllerConfig.getDomainControllerElement();
-        final Host hostConfig = domainControllerConfig.getHost();
+        final HostModel hostConfig = domainControllerConfig.getHost();
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
 
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
@@ -140,7 +140,7 @@ public class DomainController {
         serviceContainer.shutdown();
     }
 
-    public Domain getDomain() {
+    public DomainModel getDomain() {
         return domainConfig;
     }
 
@@ -150,7 +150,7 @@ public class DomainController {
         t.start();
     }
 
-    private Domain parseDomain() {
+    private DomainModel parseDomain() {
         final File domainXML = new File(environment.getDomainConfigurationDir(), "domain.xml");
         if (!domainXML.exists()) {
             throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
@@ -162,7 +162,7 @@ public class DomainController {
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
-            final ParseResult<Domain> parseResult = new ParseResult<Domain>();
+            final ParseResult<DomainModel> parseResult = new ParseResult<DomainModel>();
             mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
             return parseResult.getResult();
         } catch (RuntimeException e) {

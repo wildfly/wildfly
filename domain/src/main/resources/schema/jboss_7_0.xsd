@@ -65,7 +65,7 @@
   </xs:element>
 
   
-  <xs:element name="standalone">
+  <xs:element name="server">
     <xs:complexType>
       <xs:sequence>
           <xs:element name="name" type="xs:string"/>

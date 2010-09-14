@@ -22,7 +22,7 @@
 
 package org.jboss.as.server;
 
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
@@ -38,7 +38,7 @@ public abstract class AbstractServer {
 
     static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-    private Standalone config;
+    private ServerModel config;
     private ServiceContainer serviceContainer;
     private final ServerEnvironment environment;
 
@@ -63,7 +63,7 @@ public abstract class AbstractServer {
      *
      * @return the standalone configuration
      */
-    public Standalone getConfig() {
+    public ServerModel getConfig() {
         if(config == null) {
             throw new IllegalStateException("null configuration");
         }
@@ -83,7 +83,7 @@ public abstract class AbstractServer {
      * @param config the server
      * @throws ServerStartException
      */
-    void start(final Standalone config) throws ServerStartException {
+    void start(final ServerModel config) throws ServerStartException {
         if(config == null)  {
             throw new IllegalArgumentException("null standalone config");
         }

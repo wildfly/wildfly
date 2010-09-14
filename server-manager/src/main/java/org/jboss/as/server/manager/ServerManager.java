@@ -25,16 +25,16 @@
  */
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Domain;
+import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.Host;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupElement;
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
@@ -77,8 +77,8 @@ public class ServerManager {
     private final File hostXML;
     private final MessageHandler messageHandler;
     private ProcessManagerSlave processManagerSlave;
-    private Host hostConfig;
-    private Domain domainConfig;
+    private HostModel hostConfig;
+    private DomainModel domainConfig;
     private DomainControllerProcess localDomainControllerProcess;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
@@ -133,7 +133,7 @@ public class ServerManager {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
                 log.info("Starting server " + serverEl.getName());
-                Standalone serverConf = new Standalone(domainConfig, hostConfig, serverEl.getName());
+                ServerModel serverConf = new ServerModel(domainConfig, hostConfig, serverEl.getName());
                 JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
                     Server server = serverMaker.makeServer(serverConf, jvmElement);
@@ -246,11 +246,11 @@ public class ServerManager {
         registerWithDomainController();
     }
 
-    Host getHostConfig() {
+    HostModel getHostConfig() {
         return hostConfig;
     }
 
-    private Host parseHost() {
+    private HostModel parseHost() {
 
         if (!hostXML.exists()) {
             throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " does not exist.");
@@ -262,7 +262,7 @@ public class ServerManager {
         try {
             XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardHostReaders(mapper);
-            ParseResult<Host> parseResult = new ParseResult<Host>();
+            ParseResult<HostModel> parseResult = new ParseResult<HostModel>();
             mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
             return parseResult.getResult();
         } catch (RuntimeException e) {
@@ -278,7 +278,7 @@ public class ServerManager {
      *
      * @param domain The domain configuration
      */
-    public void setDomain(final Domain domain) {
+    public void setDomain(final DomainModel domain) {
         this.domainConfig = domain;
         if(serversStarted.compareAndSet(false, true)) {
             startServers();
@@ -294,7 +294,7 @@ public class ServerManager {
      * @param serverName the name of the server
      * @return the JVM configuration object
      */
-    private JvmElement getServerJvmElement(Domain domain, Host host, String serverName) {
+    private JvmElement getServerJvmElement(DomainModel domain, HostModel host, String serverName) {
 
         ServerElement server = host.getServer(serverName);
         if (server == null)
@@ -334,7 +334,7 @@ public class ServerManager {
      * @param dcJvmElement the domain controller jvm element
      * @return the JVM configuration object
      */
-    private JvmElement getDomainControllerJvmElement(final Host host, final JvmElement dcJvmElement) {
+    private JvmElement getDomainControllerJvmElement(final HostModel host, final JvmElement dcJvmElement) {
         final JvmElement hostVM = host.getJvm(dcJvmElement.getName());
         if(hostVM == null) {
             return dcJvmElement;

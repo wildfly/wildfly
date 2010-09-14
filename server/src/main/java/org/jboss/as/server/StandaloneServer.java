@@ -22,7 +22,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.model.ParseResult;
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
@@ -56,7 +56,7 @@ public class StandaloneServer extends AbstractServer {
         if(! standalone.canWrite() ) {
             throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writeable.");
         }
-        final ParseResult<Standalone> parseResult = new ParseResult<Standalone>();
+        final ParseResult<ServerModel> parseResult = new ParseResult<ServerModel>();
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardStandaloneReaders(mapper);

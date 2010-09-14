@@ -38,7 +38,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A server group within a {@link Domain}.
+ * A server group within a {@link DomainModel}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -160,7 +160,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
      * Gets the default jvm configuration for servers in this group. Which jvm to
      * use can be overridden at the {@link ServerElement#getJvm() server level}.
      * The details of the configuration of this jvm can be overridden at the
-     * @{link {@link Host#getJvm(String) host level} or at the
+     * @{link {@link HostModel#getJvm(String) host level} or at the
      * {@link ServerElement#getJvm() server level}.
      *
      * @return the jvm configuration, or <code>null</code> if there is none
@@ -180,7 +180,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     /**
      * Gets the default
-     * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
+     * {@link DomainModel#getSocketBindingGroup(String) domain-level socket binding group}
      * assignment for this server group.
      *
      * @return the socket binding group reference, or <code>null</code>
@@ -191,7 +191,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     /**
      * Sets the default
-     * {@link Domain#getSocketBindingGroup(String) domain-level socket binding group}
+     * {@link DomainModel#getSocketBindingGroup(String) domain-level socket binding group}
      * assignment for this server group.
      *
      * param ref the socket binding group reference, or <code>null</code>
@@ -218,9 +218,9 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     /**
      * Gets any system properties defined at the server group level for this
      * server group. These properties can extend and override any properties
-     * declared at the {@link Domain#getSystemProperties() domain level} and
+     * declared at the {@link DomainModel#getSystemProperties() domain level} and
      * may in turn be extended or overridden by any properties declared at the
-     * {@link Host#getSystemProperties() host level} or the
+     * {@link HostModel#getSystemProperties() host level} or the
      * {@link ServerElement#getSystemProperties() server level}.
      *
      * @return the system properties, or <code>null</code> if there are none

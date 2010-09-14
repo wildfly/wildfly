@@ -40,7 +40,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * An individual server on a {@link Host}.
+ * An individual server on a {@link HostModel}.
  *
  * @author Brian Stansberry
  */
@@ -227,7 +227,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     /**
      * Gets any system properties defined at the server level. These properties
      * can extend and override any properties declared at the
-     * {@link Domain#getSystemProperties() domain level}, the
+     * {@link DomainModel#getSystemProperties() domain level}, the
      * {@link ServerGroupElement server group level} or the
      * {@link ServerElement#getSystemProperties() server level}.
      *

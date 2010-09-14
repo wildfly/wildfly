@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<standalone xmlns="urn:jboss:domain:1.0"
+<server xmlns="urn:jboss:domain:1.0"
         xmlns:remoting="urn:jboss:domain:remoting:1.0"
         xmlns:threads="urn:jboss:domain:threads:1.0"
         xmlns:txn="urn:jboss:domain:transactions:1.0"
@@ -73,4 +73,4 @@
     <deployments>
     </deployments>
 
-</standalone>
+</server>

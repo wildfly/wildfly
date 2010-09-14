@@ -28,7 +28,7 @@ package org.jboss.as.server;
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
@@ -71,9 +71,9 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         }
         switch (cmd.getCommand()) {
         case START_SERVER:
-            Standalone standalone = null;
+            ServerModel standalone = null;
             try {
-                standalone = ServerManagerProtocolUtils.unmarshallCommandData(Standalone.class, cmd);
+                standalone = ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, cmd);
             } catch (Exception e) {
                 logger.error("Error reading standalone", e);
                 return;

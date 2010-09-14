@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.Domain;
+import org.jboss.as.model.DomainModel;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -109,7 +109,7 @@ public class DomainControllerClientProtocol {
         DOMAIN_UPDATE((byte) 1) {
             protected void execute(final DomainControllerClientService domainControllerClientService, final Unmarshaller unmarshaller) throws Exception {
                 log.info("Received domain update from domain controller");
-                final Domain domain = unmarshaller.readObject(Domain.class);
+                final DomainModel domain = unmarshaller.readObject(DomainModel.class);
                 domainControllerClientService.serverManager.setDomain(domain);
             }
         },;

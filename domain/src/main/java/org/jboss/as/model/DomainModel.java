@@ -48,7 +48,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Domain extends AbstractModel<Domain> {
+public final class DomainModel extends AbstractModel<DomainModel> {
 
     private static final long serialVersionUID = 5516070442013067881L;
 
@@ -69,7 +69,7 @@ public final class Domain extends AbstractModel<Domain> {
      * @param location the declaration location of the element
      * @param elementName the element name of this domain element
      */
-    public Domain(final Location location, final QName elementName) {
+    public DomainModel(final Location location, final QName elementName) {
         super(location, elementName);
         this.schemaLocation = null;
     }
@@ -80,7 +80,7 @@ public final class Domain extends AbstractModel<Domain> {
      * @param reader the reader from which to build this element
      * @throws XMLStreamException if an error occurs
      */
-    public Domain(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public DomainModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // Handle namespaces
         namespaces.putAll(readNamespaces(reader));
@@ -161,7 +161,7 @@ public final class Domain extends AbstractModel<Domain> {
     /**
      * Gets the domain-level configuration for a particular interface. Note that
      * this configuration can be overridden at the {@link ServerGroupElement server group}
-     * {@link Host host} or {@link ServerElement server} levels.
+     * {@link HostModel host} or {@link ServerElement server} levels.
      *
      * @param name the name of the interface
      * @return the interface configuration, or <code>null</code> if no interface
@@ -218,7 +218,7 @@ public final class Domain extends AbstractModel<Domain> {
      * Gets any system properties defined at the domain level. These properties
      * may be extended or overridden by any properties declared at the
      * {@link ServerGroupElement#getSystemProperties() server group level}, the
-     * {@link Host#getSystemProperties() host level} or the
+     * {@link HostModel#getSystemProperties() host level} or the
      * {@link ServerElement#getSystemProperties() server level}.
      *
      * @return the system properties, or <code>null</code> if there are none
@@ -257,91 +257,91 @@ public final class Domain extends AbstractModel<Domain> {
     }
 
     /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<Domain>> target, final Domain other) {
+    protected void appendDifference(final Collection<AbstractModelUpdate<DomainModel>> target, final DomainModel other) {
 
-        calculateDifference(target, safeCopyMap(namespaces), safeCopyMap(other.namespaces), new DifferenceHandler<String, NamespaceAttribute, Domain>() {
+        calculateDifference(target, safeCopyMap(namespaces), safeCopyMap(other.namespaces), new DifferenceHandler<String, NamespaceAttribute, DomainModel>() {
 
             @Override
-            public void handleAdd(Collection<AbstractModelUpdate<Domain>> target, String name,
+            public void handleAdd(Collection<AbstractModelUpdate<DomainModel>> target, String name,
                     NamespaceAttribute newElement) {
                 throw new UnsupportedOperationException("implement me");
             }
 
             @Override
-            public void handleChange(Collection<AbstractModelUpdate<Domain>> target, String name,
+            public void handleChange(Collection<AbstractModelUpdate<DomainModel>> target, String name,
                     NamespaceAttribute oldElement, NamespaceAttribute newElement) {
                 throw new UnsupportedOperationException("implement me");
             }
 
             @Override
-            public void handleRemove(Collection<AbstractModelUpdate<Domain>> target, String name,
+            public void handleRemove(Collection<AbstractModelUpdate<DomainModel>> target, String name,
                     NamespaceAttribute oldElement) {
                 throw new UnsupportedOperationException("implement me");
             }
 
         });
 
-        calculateDifference(target, safeCopyMap(extensions), safeCopyMap(other.extensions), new DifferenceHandler<String, ExtensionElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement newElement) {
+        calculateDifference(target, safeCopyMap(extensions), safeCopyMap(other.extensions), new DifferenceHandler<String, ExtensionElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ExtensionElement newElement) {
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ExtensionElement oldElement) {
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ExtensionElement oldElement, final ExtensionElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ExtensionElement oldElement, final ExtensionElement newElement) {
                 // not possible
                 throw new IllegalStateException();
             }
         });
 
-        calculateDifference(target, safeCopyMap(profiles), safeCopyMap(other.profiles), new DifferenceHandler<String, ProfileElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement newElement) {
+        calculateDifference(target, safeCopyMap(profiles), safeCopyMap(other.profiles), new DifferenceHandler<String, ProfileElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ProfileElement newElement) {
                 // todo add-profile
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ProfileElement oldElement) {
                 // todo remove-profile
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ProfileElement oldElement, final ProfileElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ProfileElement oldElement, final ProfileElement newElement) {
                 // todo change profile
                 throw new UnsupportedOperationException("implement me");
             }
         });
 
-        calculateDifference(target, safeCopyMap(interfaces), safeCopyMap(other.interfaces), new DifferenceHandler<String, InterfaceElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement newElement) {
+        calculateDifference(target, safeCopyMap(interfaces), safeCopyMap(other.interfaces), new DifferenceHandler<String, InterfaceElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final InterfaceElement newElement) {
                 // todo add-interface
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final InterfaceElement oldElement) {
                 // todo remove-interface
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final InterfaceElement oldElement, final InterfaceElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final InterfaceElement oldElement, final InterfaceElement newElement) {
                 // todo change interface
                 throw new UnsupportedOperationException("implement me");
             }
         });
 
-        calculateDifference(target, safeCopyMap(bindingGroups), safeCopyMap(other.bindingGroups), new DifferenceHandler<String, SocketBindingGroupElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement newElement) {
+        calculateDifference(target, safeCopyMap(bindingGroups), safeCopyMap(other.bindingGroups), new DifferenceHandler<String, SocketBindingGroupElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final SocketBindingGroupElement newElement) {
                 // todo add binding group
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final SocketBindingGroupElement oldElement) {
                 // todo remove binding group
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final SocketBindingGroupElement oldElement, final SocketBindingGroupElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final SocketBindingGroupElement oldElement, final SocketBindingGroupElement newElement) {
                 // todo change binding group
                 throw new UnsupportedOperationException("implement me");
             }
@@ -350,35 +350,35 @@ public final class Domain extends AbstractModel<Domain> {
         // todo enclosing diff item
         systemProperties.appendDifference(null, other.systemProperties);
 
-        calculateDifference(target, safeCopyMap(deployments), safeCopyMap(other.deployments), new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
+        calculateDifference(target, safeCopyMap(deployments), safeCopyMap(other.deployments), new DifferenceHandler<DeploymentUnitKey, DeploymentUnitElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final DeploymentUnitKey key, final DeploymentUnitElement newElement) {
                 // todo deploy
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement) {
                 // todo undeploy
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final DeploymentUnitKey key, final DeploymentUnitElement oldElement, final DeploymentUnitElement newElement) {
                 // todo redeploy...? or maybe just modify stuff
                 throw new UnsupportedOperationException("implement me");
             }
         });
 
-        calculateDifference(target, safeCopyMap(serverGroups), safeCopyMap(other.serverGroups), new DifferenceHandler<String, ServerGroupElement, Domain>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement newElement) {
+        calculateDifference(target, safeCopyMap(serverGroups), safeCopyMap(other.serverGroups), new DifferenceHandler<String, ServerGroupElement, DomainModel>() {
+            public void handleAdd(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ServerGroupElement newElement) {
                 // todo add-server-group operation
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleRemove(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement) {
+            public void handleRemove(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ServerGroupElement oldElement) {
                 // todo remove-server-group operation
                 throw new UnsupportedOperationException("implement me");
             }
 
-            public void handleChange(final Collection<AbstractModelUpdate<Domain>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
+            public void handleChange(final Collection<AbstractModelUpdate<DomainModel>> target, final String name, final ServerGroupElement oldElement, final ServerGroupElement newElement) {
                 // todo update-server-group operation
                 oldElement.appendDifference(null, newElement);
             }
@@ -386,8 +386,8 @@ public final class Domain extends AbstractModel<Domain> {
     }
 
     /** {@inheritDoc} */
-    protected Class<Domain> getElementClass() {
-        return Domain.class;
+    protected Class<DomainModel> getElementClass() {
+        return DomainModel.class;
     }
 
     /** {@inheritDoc} */

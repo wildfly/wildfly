@@ -24,7 +24,7 @@ package org.jboss.as.server.manager;
 
 import java.io.IOException;
 
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
@@ -88,7 +88,7 @@ public final class Server {
         this.communicationHandler = communicationHandler;
     }
 
-    public void start(Standalone serverConf) throws IOException {
+    public void start(ServerModel serverConf) throws IOException {
         sendCommand(ServerManagerProtocolCommand.START_SERVER, serverConf);
     }
 

@@ -28,7 +28,7 @@ package org.jboss.as.server;
 import org.jboss.as.Extension;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
-import org.jboss.as.model.StandaloneParser;
+import org.jboss.as.model.ServerModelParser;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
@@ -59,7 +59,7 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     public synchronized void registerStandardStandaloneReaders(XMLMapper mapper) throws ModuleLoadException {
 
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
-            mapper.registerRootElement(new QName(ns.getUriString(), Element.STANDALONE.getLocalName()), StandaloneParser.getInstance());
+            mapper.registerRootElement(new QName(ns.getUriString(), Element.SERVER.getLocalName()), ServerModelParser.getInstance());
         }
 
         registerExtensions(mapper);

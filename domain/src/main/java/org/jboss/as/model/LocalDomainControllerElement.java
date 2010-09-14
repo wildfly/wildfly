@@ -36,7 +36,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 /**
- * An locally configured domain controller on a {@link Host}.
+ * An locally configured domain controller on a {@link HostModel}.
  *
  * @author Brian Stansberry
  */

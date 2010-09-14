@@ -28,7 +28,7 @@ package org.jboss.as.server;
 import java.io.IOException;
 import java.util.Map;
 
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -55,7 +55,7 @@ public class Server extends AbstractServer {
         log.info("Server Available to start");
     }
 
-    public void start(Standalone config) throws ServerStartException {
+    public void start(ServerModel config) throws ServerStartException {
         try {
             super.start(config);
         } catch(ServerStartException e) {

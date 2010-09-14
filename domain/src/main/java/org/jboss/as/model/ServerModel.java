@@ -59,7 +59,7 @@ import java.util.TreeMap;
  * @author Brian Stansberry
  *
  */
-public final class Standalone extends AbstractModel<Standalone> {
+public final class ServerModel extends AbstractModel<ServerModel> {
 
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
@@ -82,7 +82,7 @@ public final class Standalone extends AbstractModel<Standalone> {
      * @param location the declaration location of this standalone element
      * @param elementName the element name of this standalone element
      */
-    protected Standalone(final Location location, final QName elementName) {
+    protected ServerModel(final Location location, final QName elementName) {
         super(location, elementName);
         // FIXME implement or remove Location-based constructor
         throw new UnsupportedOperationException("implement me");
@@ -94,7 +94,7 @@ public final class Standalone extends AbstractModel<Standalone> {
      * @param reader the reader from which to build this element
      * @throws XMLStreamException if an error occurs
      */
-    public Standalone(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public ServerModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
 
         this.portOffset = 0;
@@ -183,7 +183,7 @@ public final class Standalone extends AbstractModel<Standalone> {
      * @param serverName the name of the server to initialize
      * @return the standalone server model
      */
-    public Standalone(final Domain domain, final Host host, final String serverName) {
+    public ServerModel(final DomainModel domain, final HostModel host, final String serverName) {
         super(null, null);
         if (domain == null) {
             throw new IllegalArgumentException("domain is null");
@@ -307,14 +307,14 @@ public final class Standalone extends AbstractModel<Standalone> {
     }
 
     /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<Standalone>> target, final Standalone other) {
+    protected void appendDifference(final Collection<AbstractModelUpdate<ServerModel>> target, final ServerModel other) {
         // FIXME implement appendDifference
         throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */
-    protected Class<Standalone> getElementClass() {
-        return Standalone.class;
+    protected Class<ServerModel> getElementClass() {
+        return ServerModel.class;
     }
 
     /** {@inheritDoc} */
