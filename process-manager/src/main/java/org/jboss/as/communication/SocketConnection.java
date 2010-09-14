@@ -81,9 +81,10 @@ public class SocketConnection {
             throw new IllegalArgumentException("port is null");
         }
 
+        Socket socket = null;
         try {
             log.infof("Trying to connect to %s on port %d", addr, port);
-            Socket socket = new Socket(addr, port);
+            socket = new Socket(addr, port);
             SocketConnection conn = new SocketConnection(socket);
 
             String request = createInitalRequest(initialRequestElements);
@@ -93,6 +94,12 @@ public class SocketConnection {
                 conn.sendInitialRequest(request);
             return conn;
         } catch (IOException e) {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ignore) {
+                }
+            }
             throw new RuntimeException(e);
         }
         //Duplicate code - ServerCommunicationHandler - END

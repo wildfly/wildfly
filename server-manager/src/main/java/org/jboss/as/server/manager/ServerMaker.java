@@ -242,10 +242,12 @@ public final class ServerMaker {
         command.add(communicationVariables.getProcessManagerPort());
         command.add(CommandLineConstants.INTERPROCESS_NAME);
         command.add(serverProcessName);
-        command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
-        command.add(communicationVariables.getServerManagerAddress());
-        command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
-        command.add(communicationVariables.getServerManagerPort());
+        if (!DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(serverProcessName)) {
+            command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
+            command.add(communicationVariables.getServerManagerAddress());
+            command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
+            command.add(communicationVariables.getServerManagerPort());
+        }
 
         // Pass through as args to main any sys props that are read at primordial boot
         Map<String, String> sysProps = null;

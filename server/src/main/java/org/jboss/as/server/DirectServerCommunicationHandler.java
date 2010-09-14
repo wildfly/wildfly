@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -45,10 +46,12 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
         super(processName, addr, port, handler);
     }
 
+    @Override
     public void sendMessage(final List<String> message) throws IOException {
         throw new IllegalArgumentException("String communication is not enabled");
     }
 
+    @Override
     public void sendMessage(final byte[] message) throws IOException {
         OutputStream output = getOutput();
         StreamUtils.writeInt(output, message.length);
@@ -77,6 +80,7 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
 //    }
 
 
+    @Override
     public Runnable getController() {
         return controller;
     }
@@ -91,6 +95,8 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
                     byte[] bytes = StreamUtils.readBytesWithLength(input);
                     handler.handleMessage(bytes);
                 }
+            } catch (EOFException e) {
+                logger.debug("EOF received");
             } catch (IOException e) {
                 e.printStackTrace();
             }finally {

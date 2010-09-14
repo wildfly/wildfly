@@ -22,21 +22,21 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.process.Command;
-import org.jboss.as.process.Status;
-import org.jboss.as.process.StreamUtils;
-import org.jboss.logging.Logger;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.communication.SocketConnection;
+import org.jboss.as.process.Command;
+import org.jboss.as.process.Status;
+import org.jboss.as.process.StreamUtils;
+import org.jboss.logging.Logger;
 
 /**
  * TODO: We need to establish a full protocol.
@@ -49,11 +49,10 @@ public class ProcessCommunicationHandler {
     private final Handler handler;
     private final InputStream input;
     private final OutputStream output;
-    private final Socket socket;
+    private final SocketConnection socketConnection;
     private final Runnable controller = new Controller();
 
     public ProcessCommunicationHandler(InetAddress addr, Integer port, final Handler handler){
-        //TODO Duplicate code - ProcessManagerSlave
         if (addr == null) {
             throw new IllegalArgumentException("addr is null");
         }
@@ -64,50 +63,10 @@ public class ProcessCommunicationHandler {
             throw new IllegalArgumentException("handler is null");
         }
 
-        try {
-            this.socket = new Socket(addr, port);
-            this.input = new BufferedInputStream(socket.getInputStream());
-            this.output = new BufferedOutputStream(socket.getOutputStream());
-            this.handler = handler;
-
-            logger.infof("%s connected to process manager on port %d", DomainController.DOMAIN_CONTROLLER_PROCESS_NAME, socket.getLocalPort());
-
-            //Send start signal to ProcessManager so it can associate our socket with the correct ManagedProcess
-            StringBuilder sb = new StringBuilder(256);
-            sb.append("STARTED");
-            sb.append('\0');
-            sb.append(DomainController.DOMAIN_CONTROLLER_PROCESS_NAME);
-            sb.append('\n');
-
-            synchronized (output) {
-                StreamUtils.writeString(output, sb.toString());
-                output.flush();
-            }
-        } catch (IOException e) {
-            if (this.socket != null) {
-                closeSocket();
-            }
-            throw new RuntimeException(e);
-        }
-        //Duplicate code - ProcessManagerSlave - END
-    }
-
-    private void closeSocket() {
-        try {
-            socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.socketConnection = SocketConnection.connect(addr, port, "CONNECTED", DomainController.DOMAIN_CONTROLLER_PROCESS_NAME);
+        this.input = new BufferedInputStream(socketConnection.getInputStream());
+        this.output = new BufferedOutputStream(socketConnection.getOutputStream());
+        this.handler = handler;
     }
 
      public void sendMessage(final List<String> message) throws IOException {
@@ -220,8 +179,8 @@ public class ProcessCommunicationHandler {
                 t.printStackTrace(System.err);
             }
             finally {
-                if (socket != null) {
-                    closeSocket();
+                if (socketConnection != null) {
+                    socketConnection.close();
                 }
 
                 final Thread thread = new Thread(new Runnable() {

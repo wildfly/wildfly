@@ -29,11 +29,11 @@ package org.jboss.as.server.manager;
  */
 public class CommunicationVariables {
     private final ServerManagerEnvironment env;
-    private final DirectServerCommunicationListener listener;
+    private final ServerManager manager;
 
-    public CommunicationVariables(ServerManagerEnvironment env, DirectServerCommunicationListener listener) {
+    public CommunicationVariables(ServerManagerEnvironment env, ServerManager manager) {
         this.env = env;
-        this.listener = listener;
+        this.manager = manager;
     }
 
     public String getProcessManagerAddress() {
@@ -45,10 +45,10 @@ public class CommunicationVariables {
     }
 
     public String getServerManagerAddress() {
-        return listener.getSmAddress().getHostAddress();
+        return manager.getDirectServerCommunicationListener().getSmAddress().getHostAddress();
     }
 
     public String getServerManagerPort() {
-        return String.valueOf(listener.getSmPort());
+        return String.valueOf(manager.getDirectServerCommunicationListener().getSmPort());
     }
 }

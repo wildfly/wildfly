@@ -82,11 +82,12 @@ public class ServerManager {
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
-    private ProcessManagerSlave processManagerSlave;
+    private volatile ProcessManagerSlave processManagerSlave;
+    private volatile DirectServerCommunicationListener directServerCommunicationListener;
     private HostModel hostConfig;
     private DomainModel domainConfig;
-    private DirectServerCommunicationListener directServerCommunicationListener;
-    private DomainControllerProcess localDomainControllerProcess;
+    private volatile DomainControllerProcess localDomainControllerProcess;
+    private volatile ServerMaker serverMaker;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
 
@@ -127,6 +128,8 @@ public class ServerManager {
         // creates a daemon thread to keep this process alive
         launchProcessManagerSlave();
 
+        initializeServerMaker();
+
         if (hostConfig.getLocalDomainControllerElement() != null) {
             initiateDomainController();
         } else {
@@ -135,13 +138,16 @@ public class ServerManager {
         }
     }
 
+    private void initializeServerMaker() {
+        CommunicationVariables variables = new CommunicationVariables(environment, this);
+        this.serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
+    }
+
     public void startServers() {
 
         // TODO figure out concurrency controls
 //        hostLock.lock(); // should this be domainLock?
 //        try {
-        CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
-        ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
@@ -276,7 +282,8 @@ public class ServerManager {
             return;
         }
         checkState(server, ServerState.STOPPING);
-        shutdownLatch.remove(serverName);
+        if (shutdownLatch != null)
+            shutdownLatch.remove(serverName);
 
         try {
             processManagerSlave.stopProcess(serverName);
@@ -340,8 +347,6 @@ public class ServerManager {
 
             ServerModel serverConf = new ServerModel(domainConfig, hostConfig, svr.getName());
             JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, svr.getName());
-            CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
-            ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
             try {
                 server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
             } catch (IOException e) {
@@ -474,8 +479,6 @@ public class ServerManager {
 
     private void initiateDomainController() {
         final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
-        CommunicationVariables variables = new CommunicationVariables(environment, directServerCommunicationListener);
-        final ServerMaker serverMaker = new ServerMaker(environment, processManagerSlave, messageHandler, variables);
         final DomainControllerConfig config = new DomainControllerConfig(localDomainControllerElement, hostConfig);
         try {
             log.info("Starting local domain controller");
@@ -614,6 +617,10 @@ public class ServerManager {
         synchronized (servers) {
             return Collections.unmodifiableMap(servers);
         }
+    }
+
+    DirectServerCommunicationListener getDirectServerCommunicationListener() {
+        return directServerCommunicationListener;
     }
 
     private static class ShutdownLatch {

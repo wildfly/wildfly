@@ -144,11 +144,8 @@ public final class Main {
                     }
                     System.setProperty(name, value);
                 } else {
-                    System.out.println("KABIR invalid " + arg);
-                    continue;
-                    //Put back in
-//                    System.err.printf("Invalid option '%s'\n", arg);
-//                    return null;
+                    System.err.printf("Invalid option '%s'\n", arg);
+                    return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf("Argument expected for option %s\n", arg);
