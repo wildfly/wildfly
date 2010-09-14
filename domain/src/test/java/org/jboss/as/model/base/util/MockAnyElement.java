@@ -4,7 +4,6 @@
 package org.jboss.as.model.base.util;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -80,12 +79,4 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
     public void activate(ServiceActivatorContext context) {
         // no-op
     }
-
-    @Override
-    public Collection<String> getReferencedSocketBindings() {
-        return Collections.emptySet();
-    }
-
-
-
 }

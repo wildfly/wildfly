@@ -105,12 +105,7 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
 
    }
 
-   @Override
-   public Collection<String> getReferencedSocketBindings() {
-      return null;
-   }
-
-   @Override
+    @Override
    public long elementHash() {
       return 42;
    }

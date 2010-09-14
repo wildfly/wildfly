@@ -40,7 +40,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -178,15 +177,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             element.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
-    }
-
-    /** {@inheritDoc} */
-    public Collection<String> getReferencedSocketBindings() {
-        final HashSet<String> set = new HashSet<String>();
-        for (ConnectorElement element : connectors.values()) {
-            set.add(element.getSocketBinding());
-        }
-        return set;
     }
 
     /** {@inheritDoc} */

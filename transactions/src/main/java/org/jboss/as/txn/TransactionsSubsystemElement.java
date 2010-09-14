@@ -145,8 +145,4 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(coreEnvironmentElement.getBindingRef()), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
         transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
-
-    public Collection<String> getReferencedSocketBindings() {
-        return null;
-    }
 }

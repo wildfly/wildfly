@@ -139,10 +139,6 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         }
     }
 
-    public Collection<String> getReferencedSocketBindings() {
-        return null;
-    }
-
     public long elementHash() {
         long hash = 0L;
         hash = calculateElementHashOf(threadFactories.values(), hash);

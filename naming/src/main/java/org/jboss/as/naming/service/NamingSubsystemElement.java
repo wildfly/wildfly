@@ -177,11 +177,6 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
             .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector());
     }
 
-    /** {@inheritDoc} */
-    public Collection<String> getReferencedSocketBindings() {
-        return null;
-    }
-
     public boolean isSupportEvents() {
         return supportEvents;
     }

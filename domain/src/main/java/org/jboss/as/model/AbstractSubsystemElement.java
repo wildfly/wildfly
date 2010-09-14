@@ -65,12 +65,4 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
      * @param context the service activation context
      */
     public abstract void activate(final ServiceActivatorContext context);
-
-    /**
-     * Get the collection of all socket bindings referenced by this container.  Used to validate
-     * the domain model.
-     *
-     * @return the collection of socket bindings
-     */
-    public abstract Collection<String> getReferencedSocketBindings();
 }
