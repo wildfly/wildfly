@@ -184,6 +184,26 @@ public class ServerManager {
      * servers following a restart of the server manager
      */
     private void reconnectServers() {
+        //Create the server proxies
+        for (ServerElement serverEl : hostConfig.getServers()) {
+            // TODO take command line input on what servers to start
+            if (serverEl.isStart()) {
+                log.info("Creating reconnected server " + serverEl.getName());
+                ServerModel serverConf = new ServerModel(domainConfig, hostConfig, serverEl.getName());
+                JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
+                try {
+
+                    Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
+                    servers.put(getServerProcessName(serverConf), server);
+                } catch (IOException e) {
+                    // FIXME handle failure to start server
+                    log.error("Failed to start server " + serverEl.getName(), e);
+                }
+            }
+            else log.info("Server " + serverEl.getName() + " is configured to not be started");
+        }
+
+        //Tell PM to tell servers to reconnect
         try {
             processManagerSlave.reconnectServers(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
         } catch (IOException e) {
@@ -327,35 +347,10 @@ public class ServerManager {
     void reconnectedServer(String serverName, ServerState state) {
         Server server = servers.get(serverName);
         if (server == null) {
-            DirectServerCommunicationHandler handler = directServerCommunicationListener.getHandlerWaitingForReconnect(serverName);
-            if (handler == null) {
-                log.errorf("No server and no connection found for reconnected server %s", serverName);
-                return;
-            }
-
-            ServerElement svr = null;
-            for (ServerElement serverEl : hostConfig.getServers()) {
-                if (getServerProcessName(serverEl.getName()).equals(serverName)) {
-                    svr = serverEl;
-                    break;
-                }
-            }
-            if (svr == null) {
-                log.errorf("No config found for reconnected server %s");
-                return;
-            }
-
-            ServerModel serverConf = new ServerModel(domainConfig, hostConfig, svr.getName());
-            JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, svr.getName());
-            try {
-                server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
-            } catch (IOException e) {
-                log.errorf(e, "Could not create a Server instance for reconnected server %s", serverName);
-                return;
-            }
-            servers.put(getServerProcessName(serverConf), server);
-            server.setCommunicationHandler(handler);
+            log.errorf("No server found for reconnected server %s", serverName);
+            return;
         }
+
         server.setState(state);
 
         if (state.isRestartOnReconnect()) {

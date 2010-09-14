@@ -145,6 +145,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
 
     private void waitForServerToClose() throws Exception {
         //Hack wait for server to finish
+        System.out.println("HACK!!! Waiting 2s for server to stop");
         System.gc();
         Thread.sleep(2000);
     }

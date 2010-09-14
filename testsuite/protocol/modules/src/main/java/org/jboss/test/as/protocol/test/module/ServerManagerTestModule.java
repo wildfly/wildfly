@@ -358,15 +358,11 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         sm = ServerManagerStarter.createServerManager(pm, true);
         int newSmPort = parsePort(pm.waitForReconnectServers());
 
-        Assert.assertEquals(0, sm.getServers().size());
-
         svr1.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
         svr2.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, state);
 
-        Map<String, Server> servers = waitForServerManagerServers(sm, 2, 5000);
-        Server one = servers.get("Server:server-one");
-        Assert.assertNotNull(one);
-        Assert.assertSame(ServerState.STARTED, one.getState());
+
+        Map<String, Server> servers = checkServerManagerServers(sm, 5000, new ServerManagerCheck("Server:server-one", ServerState.STARTED));
         Server two = servers.get("Server:server-two");
         Assert.assertNotNull(two);
 
@@ -377,7 +373,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 Assert.fail("Should not have received a command");
             } catch (RuntimeException expected) {
             }
-            Assert.assertSame(state, two.getState());
+            checkServerManagerServers(sm, 5000, new ServerManagerCheck("Server:server-two", state));
 
         } else {
             cfg2 = readStartCommand(svr2.getMessageHandler());
@@ -435,15 +431,48 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
     }
 
-    private Map<String, Server> waitForServerManagerServers(ServerManager sm, int count, int timeoutMs) throws Exception {
+    private Map<String, Server> checkServerManagerServers(ServerManager sm, int timeoutMs, ServerManagerCheck...checks) throws Exception {
         long end = System.currentTimeMillis() + timeoutMs;
         while (System.currentTimeMillis() < end) {
-            if (sm.getServers().size() == count)
-                return sm.getServers();
-            Thread.sleep(200);
+            Map<String, Server> servers = sm.getServers();
+
+            boolean allMatched = true;
+            for (ServerManagerCheck check : checks) {
+                Server server = servers.get(check.getServerName());
+                if (server == null || server.getState() != check.getState()) {
+                    allMatched = false;
+                    break;
+                }
+            }
+            if (allMatched)
+                break;
         }
-        Assert.fail("Only got " + sm.getServers().size() + " expected " + count);
-        return sm.getServers();
+
+        Map<String, Server> servers = sm.getServers();
+        for (ServerManagerCheck check : checks) {
+            Server server = servers.get(check.getServerName());
+            Assert.assertNotNull(server);
+            Assert.assertSame(check.getState(), server.getState());
+        }
+        return servers;
     }
 
+    private static class ServerManagerCheck {
+        String serverName;
+        ServerState state;
+
+        public ServerManagerCheck(String serverName, ServerState state) {
+            super();
+            this.serverName = serverName;
+            this.state = state;
+        }
+
+        public String getServerName() {
+            return serverName;
+        }
+
+        public ServerState getState() {
+            return state;
+        }
+    }
 }
