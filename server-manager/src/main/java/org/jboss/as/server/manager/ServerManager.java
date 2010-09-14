@@ -272,7 +272,7 @@ public class ServerManager {
     void stoppedServer(String serverName) {
         Server server = servers.get(serverName);
         if (server == null) {
-            log.errorf("No server called %s exists", serverName);
+            log.errorf("No server called %s exists for stop", serverName);
             return;
         }
         checkState(server, ServerState.STOPPING);
@@ -294,7 +294,7 @@ public class ServerManager {
     void startedServer(String serverName) {
         Server server = servers.get(serverName);
         if (server == null) {
-            log.errorf("No server called %s exists", serverName);
+            log.errorf("No server called %s exists for start", serverName);
             return;
         }
         checkState(server, ServerState.STARTING);

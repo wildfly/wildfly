@@ -22,14 +22,6 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.stdio.LoggingOutputStream;
-import org.jboss.stdio.NullInputStream;
-import org.jboss.stdio.SimpleStdioContextSelector;
-import org.jboss.stdio.StdioContext;
-
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -38,6 +30,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
+
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
 
 /**
  * The main-class entry point for the domain controller server.
@@ -113,14 +113,14 @@ public final class Main {
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
             try {
-                if (CommandLineConstants.INTERPROCESS_PORT.equals(arg)) {
+                if (CommandLineConstants.INTERPROCESS_PM_PORT.equals(arg)) {
                     try {
                         pmPort = Integer.valueOf(args[++i]);
                     } catch (NumberFormatException e) {
                         System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PORT, args[i]);
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_ADDRESS.equals(arg)) {
+                } else if (CommandLineConstants.INTERPROCESS_PM_ADDRESS.equals(arg)) {
                     try {
                         pmAddress = InetAddress.getByName(args[++i]);
                     } catch (UnknownHostException e) {
@@ -144,8 +144,11 @@ public final class Main {
                     }
                     System.setProperty(name, value);
                 } else {
-                    System.err.printf("Invalid option '%s'\n", arg);
-                    return null;
+                    System.out.println("KABIR invalid " + arg);
+                    continue;
+                    //Put back in
+//                    System.err.printf("Invalid option '%s'\n", arg);
+//                    return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf("Argument expected for option %s\n", arg);

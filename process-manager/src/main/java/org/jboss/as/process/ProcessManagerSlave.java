@@ -22,8 +22,6 @@
 
 package org.jboss.as.process;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,7 +50,6 @@ public final class ProcessManagerSlave {
     private final Controller controller = new Controller();
 
     public ProcessManagerSlave(String processName, InetAddress addr, Integer port, Handler handler) {
-        //TODO Duplicate code - ServerCommunicationHandler
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -60,8 +57,8 @@ public final class ProcessManagerSlave {
             throw new IllegalArgumentException("handler is null");
         }
         this.socketConnection = SocketConnection.connect(addr, port, "CONNECTED", processName);
-        this.input = new BufferedInputStream(socketConnection.getInputStream());
-        this.output = new BufferedOutputStream(socketConnection.getOutputStream());
+        this.input = socketConnection.getInputStream();
+        this.output = socketConnection.getOutputStream();
         this.handler = handler;
     }
 
