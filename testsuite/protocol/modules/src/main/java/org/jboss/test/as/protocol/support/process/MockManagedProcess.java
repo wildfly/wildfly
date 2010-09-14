@@ -118,7 +118,6 @@ public class MockManagedProcess implements Managed{
     }
 
     void start() {
-        System.out.println("-----------> Starting " + processName + " " + this);
         synchronized (this) {
             if (start)
                 return;

@@ -43,18 +43,20 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
     private final String serverName;
     private final Handler messageHandler;
     private final InputStreamHandler inputHandler;
+    private final ShutdownListener shutdownListener;
 
-    protected DirectServerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler) {
+    protected DirectServerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
         this.socketConnection = socketConnection;
         this.output = socketConnection.getOutputStream();
         this.input = socketConnection.getInputStream();
         this.serverName = serverName;
         this.messageHandler = messageHandler;
         this.inputHandler = new InputStreamHandler();
+        this.shutdownListener = shutdownListener;
     }
 
-    static DirectServerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler) {
-        DirectServerCommunicationHandler handler = new DirectServerCommunicationHandler(socketConnection, serverName, messageHandler);
+    static DirectServerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+        DirectServerCommunicationHandler handler = new DirectServerCommunicationHandler(socketConnection, serverName, messageHandler, shutdownListener);
         handler.start();
         return handler;
     }
@@ -105,7 +107,13 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
         void shutdown() {
             if (!shutdown.getAndSet(true)) {
                 socketConnection.close();
+                if (shutdownListener != null)
+                    shutdownListener.connectionClosed(serverName);
             }
         }
+    }
+
+    public interface ShutdownListener {
+        void connectionClosed(String processName);
     }
 }

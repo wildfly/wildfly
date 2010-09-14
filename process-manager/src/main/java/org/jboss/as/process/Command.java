@@ -65,6 +65,9 @@ public enum Command {
     /** The SM has been restarted, tell all server processes to reconnect (SM->PM)*/
     RECONNECT_SERVERS,
 
+    /** The SM detected a server's connection went down, tell it to reconnect (SM->PM)*/
+    RECONNECT_SERVER,
+
     /** Reconnect to the SM (PM->SM) */
     RECONNECT_SERVER_MANAGER,
 

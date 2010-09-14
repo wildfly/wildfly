@@ -32,20 +32,22 @@ import org.jboss.as.server.manager.DirectServerCommunicationHandler;
  */
 public class MockDirectServerManagerCommunicationHandler extends DirectServerCommunicationHandler {
 
-    private MockDirectServerManagerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler) {
-        super(socketConnection, serverName, messageHandler);
+    private MockDirectServerManagerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+        super(socketConnection, serverName, messageHandler, shutdownListener);
     }
 
-    public static MockDirectServerManagerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler) {
-        MockDirectServerManagerCommunicationHandler handler = new MockDirectServerManagerCommunicationHandler(socketConnection, serverName, messageHandler);
+    public static MockDirectServerManagerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+        MockDirectServerManagerCommunicationHandler handler = new MockDirectServerManagerCommunicationHandler(socketConnection, serverName, messageHandler, shutdownListener);
         handler.start();
         return handler;
     }
 
+    @Override
     public boolean isClosed() {
         return super.isClosed();
     }
 
+    @Override
     public void shutdown() {
         super.shutdown();
     }

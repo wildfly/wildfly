@@ -216,6 +216,22 @@ public final class ProcessOutputStreamHandler implements Runnable {
                             master.reconnectServersToServerManager(smAddress, smPort);
                             break;
                         }
+                        case RECONNECT_SERVER: {
+                            status = StreamUtils.readWord(inputStream, b);
+                            if (status != Status.MORE) {
+                                break;
+                            }
+                            final String serverName = b.toString();
+                            status = StreamUtils.readWord(inputStream, b);
+                            if (status != Status.MORE) {
+                                break;
+                            }
+                            final String smAddress = b.toString();
+                            status = StreamUtils.readWord(inputStream, b);
+                            final String smPort = b.toString();
+                            master.reconnectProcessToServerManager(serverName, smAddress, smPort);
+                            break;
+                        }
                     }
                 } catch (IllegalArgumentException e) {
                     // unknown command...
@@ -246,6 +262,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
         void serversShutdown();
         void downServer(String serverName);
         void reconnectServersToServerManager(String smAddress, String smPort);
+        void reconnectProcessToServerManager(String server, String smAddress, String smPort);
     }
 
     public interface Managed {

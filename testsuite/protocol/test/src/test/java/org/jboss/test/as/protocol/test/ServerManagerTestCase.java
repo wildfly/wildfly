@@ -98,4 +98,9 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
     public void testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted() throws Exception {
         getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StoppingDoesNotGetStarted();
     }
+
+    @Test
+    public void testServerGetsReconnectedFollowingBrokenConnection() throws Exception {
+        getTestInstance().testServerGetsReconnectedFollowingBrokenConnection();
+    }
 }

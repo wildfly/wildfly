@@ -55,6 +55,7 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
@@ -74,7 +75,7 @@ import org.jboss.staxmapper.XMLMapper;
  *
  * @author Brian Stansberry
  */
-public class ServerManager {
+public class ServerManager implements ShutdownListener {
 
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
 
@@ -210,6 +211,33 @@ public class ServerManager {
             log.error("Failed to send RECONNECT_SERVERS", e);
         }
     }
+
+    /**
+     * The connection from a server to SM was closed
+     */
+    @Override
+    public void connectionClosed(String processName) {
+        Server server = servers.get(processName);
+
+        if (server == null) {
+            log.errorf("No server called %s with a closed connection", processName);
+            return;
+        }
+
+        ServerState state = server.getState();
+        if (state == ServerState.STOPPED || state == ServerState.STOPPING || state == ServerState.MAX_FAILED) {
+            log.debugf("Ignoring closed connection for server %s in the %s state", processName, state);
+            return;
+        }
+
+        log.infof("Server %s connection was closed, tell it to reconnect", processName);
+        try {
+            processManagerSlave.reconnectServer(processName, directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
+        } catch (IOException e) {
+            log.error("Failed to send RECONNECT_SERVERS", e);
+        }
+    }
+
 
     /**
      * Callback for when we receive the SERVER_AVAILABLE message from a Server
@@ -648,4 +676,5 @@ public class ServerManager {
             }
         }
     }
+
 }

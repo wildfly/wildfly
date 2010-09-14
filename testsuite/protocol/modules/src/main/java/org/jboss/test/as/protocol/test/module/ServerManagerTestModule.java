@@ -384,12 +384,72 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         sm.stop();
     }
 
+
+    @Override
+    public void testServerGetsReconnectedFollowingBrokenConnection() throws Exception {
+        MockProcessManager pm = MockProcessManager.create(3); //1 DC + 2 Servers
+        setDomainConfigDir("standard");
+        ServerManager sm = ServerManagerStarter.createServerManager(pm);
+        pm.waitForServerManager();
+
+        checkProcessManagerConnection(pm, "ServerManager", true);
+        pm.waitForAddedProcesses();
+        pm.waitForStartedProcesses();
+
+        MockManagedProcess svr1 = pm.getProcess("Server:server-one");
+        Assert.assertNotNull(svr1);
+        MockManagedProcess svr2 = pm.getProcess("Server:server-two");
+        Assert.assertNotNull(svr2);
+
+        svr1.waitForStart();
+        svr2.waitForStart();
+
+        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        Assert.assertEquals("server-one", cfg1.getServerName());
+        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        Assert.assertEquals("server-two", cfg2.getServerName());
+
+        Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
+
+        svr1.getCommunicationHandler().sendMessage(ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null));
+        svr2.getCommunicationHandler().sendMessage(ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null));
+
+        pm.resetReconnectServers();
+
+        //Close the SM connection
+        svr2.getCommunicationHandler().shutdown();
+
+        int newSmPort = parsePort("Server:server-two", pm.waitForReconnectServers());
+
+        svr2.reconnnectAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.AVAILABLE);
+
+        cfg2 = readStartCommand(svr2.getMessageHandler());
+        Assert.assertEquals("server-two", cfg2.getServerName());
+
+        try {
+            svr1.getMessageHandler().awaitAndReadMessage(500);
+            Assert.fail("Should not have any messages for server one");
+        } catch (Exception expected) {
+        }
+
+        sm.stop();
+    }
+
+
     private int parsePort(String newAddressAndPort) throws Exception {
         Assert.assertNotNull(newAddressAndPort);
         String[] parts = newAddressAndPort.split(":");
         Assert.assertEquals(2, parts.length);
         Assert.assertEquals(InetAddress.getLocalHost().getHostAddress(), parts[0]);
         return Integer.parseInt(parts[1]);
+    }
+
+    private int parsePort(String expectedServerName, String processNameAddressAndPort) throws Exception {
+        Assert.assertNotNull(processNameAddressAndPort);
+        String[] parts = processNameAddressAndPort.split(MockProcessManager.SERVER_NAME_AND_CONNECTION_SEPARATOR);
+        Assert.assertEquals(2, parts.length);
+        Assert.assertEquals(expectedServerName, parts[0]);
+        return parsePort(parts[1]);
     }
 
     private ServerManagerProtocolCommand.Command assertReadCommand(ServerManagerProtocolCommand expected, MockServerSideMessageHandler handler) throws Exception {

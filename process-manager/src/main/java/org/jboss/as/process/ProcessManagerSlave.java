@@ -225,6 +225,22 @@ public final class ProcessManagerSlave {
         }
     }
 
+    public void reconnectServer(String serverName, InetAddress addr, int port) throws IOException {
+        synchronized (output) {
+            StringBuilder b = new StringBuilder();
+            b.append(Command.RECONNECT_SERVER);
+            b.append('\0');
+            b.append(serverName);
+            b.append('\0');
+            b.append(addr.getHostAddress());
+            b.append('\0');
+            b.append(port);
+            b.append('\n');
+            StreamUtils.writeString(output, b.toString());
+            output.flush();
+        }
+    }
+
     private final class Controller implements Runnable {
 
         private final AtomicBoolean shutdown = new AtomicBoolean(false);

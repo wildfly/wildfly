@@ -78,6 +78,8 @@ public class MockProcessManager implements Master{
 
     private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
 
+    public static final String SERVER_NAME_AND_CONNECTION_SEPARATOR = "%";
+
 
     private MockProcessManager(int expectedProcessCount) {
         this.expectedProcessCount = expectedProcessCount;
@@ -276,6 +278,12 @@ public class MockProcessManager implements Master{
         reconnectServers.add(smAddress + ":" + smPort);
     }
 
+
+    @Override
+    public void reconnectProcessToServerManager(String server, String smAddress, String smPort) {
+        reconnectServers.add(server + SERVER_NAME_AND_CONNECTION_SEPARATOR + smAddress + ":" + smPort);
+    }
+
     class ProcessManagerSocketHandler implements SocketHandler {
 
         @Override
@@ -317,5 +325,4 @@ public class MockProcessManager implements Master{
     public interface NewConnectionListener{
         void acceptedConnection(String processName, SocketConnection conn);
     }
-
 }

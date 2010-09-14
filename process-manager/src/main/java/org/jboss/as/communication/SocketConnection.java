@@ -102,7 +102,6 @@ public class SocketConnection {
             }
             throw new RuntimeException(e);
         }
-        //Duplicate code - ServerCommunicationHandler - END
     }
 
     private static String createInitalRequest(String...initialRequestElements) {

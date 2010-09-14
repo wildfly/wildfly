@@ -38,6 +38,7 @@ import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.server.DirectServerCommunicationHandler;
 import org.jboss.as.server.manager.ServerManager;
+import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
 import org.jboss.logging.Logger;
 
 /**
@@ -47,7 +48,7 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MockDirectServerManagerCommunicationListener {
+public class MockDirectServerManagerCommunicationListener implements ShutdownListener {
 
     private final Logger log = Logger.getLogger(MockDirectServerManagerCommunicationListener.class);
 
@@ -100,6 +101,10 @@ public class MockDirectServerManagerCommunicationListener {
             throw new RuntimeException("New connection latch timed out");
     }
 
+    @Override
+    public void connectionClosed(String processName) {
+    }
+
     class ServerAcceptor implements SocketHandler {
 
         @Override
@@ -123,7 +128,7 @@ public class MockDirectServerManagerCommunicationListener {
             String processName = sb.toString();
 
             log.infof("Server acceptor: connected server %s", processName);
-            MockDirectServerManagerCommunicationHandler handler = MockDirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, messageHandler);
+            MockDirectServerManagerCommunicationHandler handler = MockDirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, messageHandler, MockDirectServerManagerCommunicationListener.this);
             handlers.put(processName, handler);
 
             newConnectionLatch.countDown();
