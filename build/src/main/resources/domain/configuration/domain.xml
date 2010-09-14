@@ -36,12 +36,6 @@
         <extension module="org.foo:blah"/>
     </extensions>-->
 
-    <!-- The domain manager/server bootstrap configuration
-    <domain-configuration>
-        <bootstrapURI>http://bootstrap.uri</bootstrapURI>
-    </domain-configuration>
-    -->
-
     <profiles>
         <profile name="something">
             <threads:subsystem>
@@ -73,16 +67,12 @@
     -->
     <interfaces>
 
-        <interface name="default">
+        <interface name="loopback">
             <!--  Here we directly state the IP address -->
             <inet-address value="127.0.0.1"/>
         </interface>
         <interface name="external">
-            <!--  
-                Here we name the NIC; the IP address associated with NIC whose
-                byte representation has the lowest
-            -->
-            <nic name="eth1"/>
+            <inet-address value="0.0.0.0"/>
         </interface>
         <interface name="internal">
             <!-- 
@@ -106,11 +96,17 @@
                 <subnet-match value="192.168.0.0/16"/>
             </any>
         </interface>
+        <interface name="public3">
+            <!--  
+                Here we name the NIC; the IP address associated with NIC whose
+                byte representation has the lowest
+            -->
+            <nic name="eth1"/>
+        </interface>
         <!-- 
-             For these next two, no address selection criteria is provided, so 
+             For this one, no address selection criteria is provided, so 
              an override at the host or server level is required. 
         -->
-        <interface name="public3"/>
         <interface name="public4"/>
     </interfaces>
 
@@ -122,7 +118,7 @@
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="txn-socket-process-id" port="4714"/>
+            <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
          </socket-binding-group>
          <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
             <include socket-binding-group="standard-sockets"/>
@@ -156,15 +152,6 @@
 
            <socket-binding-group ref="standard-clustered-sockets"/>
 
-<!--       TODO this has to be clarified
-           <cluster default-multicast-address="230.0.0.4">
-             <group-communication-config name="udp">
-                 <udp-tranpsort socket="cluster-udp"/>
-             </group-communication-config>  
-             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
-             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
-           </cluster>
--->
             <deployments>
             </deployments>
 
