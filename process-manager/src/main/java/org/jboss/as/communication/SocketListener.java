@@ -51,9 +51,18 @@ public final class SocketListener {
 
     private volatile ServerSocketListener serverSocketListener;
 
-    private SocketListener(String name, SocketHandler initialRequestHandler, InetAddress address, int port, int backlog) {
+    private SocketListener(String name, SocketHandler socketHandler, InetAddress address, int port, int backlog) {
+        if (name == null) {
+            throw new IllegalArgumentException("Null name");
+        }
+        if (socketHandler == null) {
+            throw new IllegalArgumentException("Null socketHandler");
+        }
+        if (address == null) {
+            throw new IllegalArgumentException("Null address");
+        }
         this.name = name;
-        this.socketHandler = initialRequestHandler;
+        this.socketHandler = socketHandler;
         this.address = address;
         this.port = port;
         this.backlog = backlog;

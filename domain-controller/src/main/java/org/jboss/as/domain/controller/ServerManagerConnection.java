@@ -22,15 +22,12 @@
 
 package org.jboss.as.domain.controller;
 
-import org.jboss.as.model.HostModel;
-import org.jboss.logging.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
+
+import org.jboss.as.communication.SocketConnection;
+import org.jboss.as.model.HostModel;
+import org.jboss.logging.Logger;
 
 /**
  * Responsible for managing the communication with a single server manager instance.
@@ -41,7 +38,7 @@ public class ServerManagerConnection implements Runnable {
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
 
     private final String id;
-    private final Socket socket;
+    private final SocketConnection socketConnection;
     private final InputStream socketIn;
     private final OutputStream socketOut;
     private final ServerManagerCommunicationService communicationService;
@@ -55,27 +52,22 @@ public class ServerManagerConnection implements Runnable {
      * @param id The server manager identifier
      * @param domainController The domain controller
      * @param communicationService The communication service
-     * @param socket The server managers socket
+     * @param socketConnection The server managers socket
      */
-    public ServerManagerConnection(final String id, final DomainController domainController, final ServerManagerCommunicationService communicationService, final Socket socket) {
+    public ServerManagerConnection(final String id, final DomainController domainController, final ServerManagerCommunicationService communicationService, final SocketConnection socketConnection) {
         this.id = id;
         this.domainController = domainController;
         this.communicationService = communicationService;
-        this.socket = socket;
-        try {
-            this.socketIn = new BufferedInputStream(socket.getInputStream());
-            this.socketOut = new BufferedOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            closeSocket();
-            throw new RuntimeException(e);
-        }
+        this.socketConnection = socketConnection;
+        this.socketIn = socketConnection.getInputStream();
+        this.socketOut = socketConnection.getOutputStream();
     }
 
     @Override
     public void run() {
         try {
             for (;;) {
-                if(!socket.isConnected())
+                if(!socketConnection.isConnected())
                     break;
                 ServerManagerConnectionProtocol.IncomingCommand.processNext(this, socketIn);
             }
@@ -83,7 +75,7 @@ public class ServerManagerConnection implements Runnable {
             log.error(t);
             throw new RuntimeException(t);
         } finally {
-            closeSocket();
+            socketConnection.close();
         }
     }
 
@@ -121,24 +113,5 @@ public class ServerManagerConnection implements Runnable {
 
     DomainController getDomainController() {
         return domainController;
-    }
-
-     private void closeSocket() {
-        if(socket == null) return;
-        try {
-            socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
