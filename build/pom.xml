@@ -364,6 +364,19 @@
         </dependency>
 
         <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-resources</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
         </dependency>

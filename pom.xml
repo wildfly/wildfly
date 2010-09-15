@@ -97,6 +97,7 @@
         <version.org.jboss.threads.jboss-threads>2.0.0.CR5</version.org.jboss.threads.jboss-threads>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
+        <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
     </properties>
@@ -119,6 +120,7 @@
         <module>managedbeans</module>
         <module>build</module>
         <module>testsuite</module>
+        <module>messaging</module>
     </modules>
 
     <build>
@@ -896,7 +898,23 @@
                 <artifactId>xnio-nio</artifactId>
                 <version>${version.org.jboss.xnio.xnio-nio}</version>
             </dependency>
-      
+
+            <dependency>
+              <groupId>org.hornetq</groupId>
+              <artifactId>hornetq-resources</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.hornetq</groupId>
+              <artifactId>hornetq-core</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jms</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
