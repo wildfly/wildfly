@@ -32,10 +32,10 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.model.Domain;
-import org.jboss.as.model.Host;
+import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
@@ -63,7 +63,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
     @Override
     public void testServerStartStop() throws Exception {
         MockProcessManager pm = MockProcessManager.create(1);
-        Standalone cfg = getServer("standard", "server-one");
+        ServerModel cfg = getServer("standard", "server-one");
 
         MockServerManager serverManager = MockServerManager.create();
         MockServerManagerMessageHandler managerMessageHandler = new MockServerManagerMessageHandler();
@@ -93,7 +93,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
     @Override
     public void testServersReconnectToRestartedServerManager() throws Exception {
         MockProcessManager pm = MockProcessManager.create(1);
-        Standalone cfg = getServer("standard", "server-one");
+        ServerModel cfg = getServer("standard", "server-one");
 
         MockServerManager serverManager = MockServerManager.create();
         MockServerManagerMessageHandler managerMessageHandler = new MockServerManagerMessageHandler();
@@ -184,13 +184,13 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         Assert.assertTrue(serverHandler.isClosed());
     }
 
-    private Standalone getServer(String cfgDir, String serverName) throws Exception {
+    private ServerModel getServer(String cfgDir, String serverName) throws Exception {
         File file = new File(findDomainConfigsDir(cfgDir));
-        Domain domain = ConfigParser.parseDomain(file);
-        Host host = ConfigParser.parseHost(file);
+        DomainModel domain = ConfigParser.parseDomain(file);
+        HostModel host = ConfigParser.parseHost(file);
         ServerElement el = host.getServer(serverName);
         Assert.assertNotNull(el);
-        return new Standalone(domain, host, serverName);
+        return new ServerModel(domain, host, serverName);
     }
 
     private static class QueuedNewConnectionListener implements NewConnectionListener {

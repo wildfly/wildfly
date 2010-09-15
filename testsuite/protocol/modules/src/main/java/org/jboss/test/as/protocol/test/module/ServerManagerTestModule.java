@@ -29,7 +29,7 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.model.Standalone;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.Server;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
@@ -83,9 +83,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         svr1.getCommunicationHandler().sendMessage(ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null));
@@ -142,9 +142,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForStart();
         svr2.waitForStart();
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
@@ -196,9 +196,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForStart();
         svr2.waitForStart();
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
@@ -255,9 +255,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForStart();
         svr2.waitForStart();
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
@@ -342,9 +342,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForStart();
         svr2.waitForStart();
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
@@ -404,9 +404,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForStart();
         svr2.waitForStart();
 
-        Standalone cfg1 = readStartCommand(svr1.getMessageHandler());
+        ServerModel cfg1 = readStartCommand(svr1.getMessageHandler());
         Assert.assertEquals("server-one", cfg1.getServerName());
-        Standalone cfg2 = readStartCommand(svr2.getMessageHandler());
+        ServerModel cfg2 = readStartCommand(svr2.getMessageHandler());
         Assert.assertEquals("server-two", cfg2.getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
@@ -460,9 +460,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         return cmd;
     }
 
-    private Standalone readStartCommand(MockServerSideMessageHandler handler) throws Exception {
+    private ServerModel readStartCommand(MockServerSideMessageHandler handler) throws Exception {
         ServerManagerProtocolCommand.Command cmd = assertReadCommand(ServerManagerProtocolCommand.START_SERVER, handler);
-        Standalone cfg = ServerManagerProtocolUtils.unmarshallCommandData(Standalone.class, cmd);
+        ServerModel cfg = ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, cmd);
         Assert.assertNotNull(cfg);
         return cfg;
     }

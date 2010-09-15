@@ -25,7 +25,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.Arrays;
 
-import org.jboss.as.model.Domain;
+import org.jboss.as.model.DomainModel;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.manager.Main;
 import org.jboss.as.server.manager.ServerManager;
@@ -66,7 +66,7 @@ public class ServerManagerStarter {
         }
 
         ServerManager manager = Main.create(args, System.in, System.out, System.err, new NoopExiter());
-        Domain domain = ConfigParser.parseDomain(new File(System.getProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR)));
+        DomainModel domain = ConfigParser.parseDomain(new File(System.getProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR)));
         manager.setDomain(domain);
         return manager;
     }

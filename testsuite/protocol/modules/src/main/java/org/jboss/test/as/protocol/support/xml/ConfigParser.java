@@ -27,8 +27,8 @@ import java.io.FileReader;
 
 import javax.xml.stream.XMLInputFactory;
 
-import org.jboss.as.model.Domain;
-import org.jboss.as.model.Host;
+import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.server.manager.StandardElementReaderRegistrar;
 import org.jboss.staxmapper.XMLMapper;
@@ -41,16 +41,16 @@ import org.jboss.staxmapper.XMLMapper;
 public class ConfigParser {
     static StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
 
-    public static Host parseHost(File cfgDir) throws Exception {
+    public static HostModel parseHost(File cfgDir) throws Exception {
         XMLMapper mapper = XMLMapper.Factory.create();
         extensionRegistrar.registerStandardHostReaders(mapper);
-        return parseXml(cfgDir, "host.xml", mapper, Host.class);
+        return parseXml(cfgDir, "host.xml", mapper, HostModel.class);
     }
 
-    public static Domain parseDomain(File cfgDir) throws Exception {
+    public static DomainModel parseDomain(File cfgDir) throws Exception {
         XMLMapper mapper = XMLMapper.Factory.create();
         extensionRegistrar.registerStandardDomainReaders(mapper);
-        return parseXml(cfgDir, "domain.xml", mapper, Domain.class);
+        return parseXml(cfgDir, "domain.xml", mapper, DomainModel.class);
     }
 
     private static <T> T parseXml(File cfgDir, String name, XMLMapper mapper, Class<T> type) throws Exception {
