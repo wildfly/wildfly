@@ -58,6 +58,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     * Construct a new instance.
     *
     * @param reader the reader from which the subsystem element should be read
+    * @throws XMLStreamException
     */
    public MessagingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
       super(reader);
@@ -114,11 +115,6 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
       final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(JBOSS_MESSAGING, hqservice);
       serviceBuilder.setLocation(getLocation());
       serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
-   }
-
-   @Override
-   public Collection<String> getReferencedSocketBindings() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
    }
 
 }
