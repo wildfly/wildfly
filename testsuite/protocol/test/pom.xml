@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-testsuite</artifactId>
         <version>7.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
@@ -38,10 +38,18 @@
 
     <name>JBoss Application Server: Test Suite: Protocol Tests</name>
     
-    <properties>
-        <!-- This part of the testuite we want to execute by default. -->
-        <skipExecUnitTests>false</skipExecUnitTests>
-    </properties>
+    <profiles>
+        <!-- Enable the integration-tests profile to execute this module's tests -->
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipExecUnitTests>false</skipExecUnitTests>
+            </properties>
+        </profile>
+    </profiles>  
     
     <dependencies>
       <dependency>

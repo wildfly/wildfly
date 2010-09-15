@@ -38,10 +38,18 @@
 
     <name>JBoss Application Server: Test Suite: Protocol Aggregator</name>
     
-    <properties>
-        <!-- This part of the testuite we want to execute by default. -->
-        <skipExecUnitTests>false</skipExecUnitTests>
-    </properties>
+    <profiles>
+        <!-- Enable the integration-tests profile to execute this module's tests -->
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipExecUnitTests>false</skipExecUnitTests>
+            </properties>
+        </profile>
+    </profiles>  
 
     <modules>
         <module>base</module>
