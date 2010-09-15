@@ -45,6 +45,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-domain</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>

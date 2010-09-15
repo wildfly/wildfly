@@ -60,7 +60,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
-            <xs:element name="sub-handlers" type="handlersType" minOccurs="0"/>
+            <xs:element name="subhandlers" type="handlersType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="optional"/>
@@ -219,16 +219,6 @@
     <xs:complexType name="filterType">
         <xs:annotation>
             <xs:documentation>
-                Defines a named logging filter.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:group ref="simpleFilterGroup"/>
-        <xs:attribute name="name" use="optional"/>
-    </xs:complexType>
-
-    <xs:complexType name="simpleFilterType">
-        <xs:annotation>
-            <xs:documentation>
                 Defines a simple filter type.
             </xs:documentation>
         </xs:annotation>
@@ -253,13 +243,12 @@
             <xs:element name="any" type="multiFilterType"/>
             <xs:element name="accept"/>
             <xs:element name="deny"/>
-            <xs:element name="not" type="simpleFilterType"/>
+            <xs:element name="not" type="filterType"/>
             <xs:element name="match" type="regexFilterType"/>
             <xs:element name="replace" type="replaceFilterType"/>
             <xs:element name="level" type="levelFilterType"/>
             <xs:element name="level-range" type="levelRangeFilterType"/>
             <xs:element name="change-level" type="levelChangeFilterType"/>
-            <xs:element name="filter-ref" type="refType"/>
         </xs:choice>
     </xs:group>
 
@@ -290,7 +279,7 @@
                 numerical match; two differently-named levels with the same numeric value will be considered equal.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="level" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="levelRangeFilterType">
@@ -313,7 +302,7 @@
                 A level change filter.  This filter modifies the log message and always returns true.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="level" type="xs:string" use="required"/>
+        <xs:attribute name="new-level" type="xs:string" use="required"/>
     </xs:complexType>
 
     <!-- Formatters -->
@@ -338,7 +327,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="pattern" type="xs:string" use="required"/>
-        <xs:attribute name="name" type="xs:string" use="optional"/>
     </xs:complexType>
 
 </xs:schema>

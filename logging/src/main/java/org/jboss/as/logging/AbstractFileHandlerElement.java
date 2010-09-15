@@ -20,37 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.logging;
+
+import javax.xml.namespace.QName;
 
 /**
- * Used to override System.exit() calls. For our tests we don't
- * want System.exit to have any effect.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class SystemExiter {
-    private static Exiter exiter;
+public abstract class AbstractFileHandlerElement<E extends AbstractFileHandlerElement<E>> extends AbstractHandlerElement<E> {
 
-    public static void initialize(Exiter exiter) {
-        SystemExiter.exiter = exiter;
+    private static final long serialVersionUID = -9214638141059862173L;
+
+    private String fileName;
+    private boolean append = true;
+
+    protected AbstractFileHandlerElement(final String name, final QName elementName) {
+        super(name, elementName);
     }
 
-    public static void exit(int status) {
-        getExiter().exit(status);
+    public String getFileName() {
+        return fileName;
     }
 
-    private static Exiter getExiter() {
-        return exiter == null ? new DefaultExiter() : exiter;
+    public boolean isAppend() {
+        return append;
     }
 
-    public interface Exiter {
-        void exit(int status);
+    void setFileName(final String fileName) {
+        this.fileName = fileName;
     }
 
-    private static class DefaultExiter implements Exiter{
-        public void exit(int status) {
-            System.exit(status);
-        }
+    public void setAppend(final boolean append) {
+        this.append = append;
     }
 }

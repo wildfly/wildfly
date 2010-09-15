@@ -20,37 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.logging;
+
+import org.jboss.logmanager.filters.RegexFilter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+
+import java.util.logging.Filter;
 
 /**
- * Used to override System.exit() calls. For our tests we don't
- * want System.exit to have any effect.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class SystemExiter {
-    private static Exiter exiter;
+public final class PatternFilterType extends FilterType {
 
-    public static void initialize(Exiter exiter) {
-        SystemExiter.exiter = exiter;
+    private final String pattern;
+
+    public PatternFilterType(final String pattern) {
+        this.pattern = pattern;
     }
 
-    public static void exit(int status) {
-        getExiter().exit(status);
+    public Filter createFilterInstance() {
+        return new RegexFilter(pattern);
     }
 
-    private static Exiter getExiter() {
-        return exiter == null ? new DefaultExiter() : exiter;
-    }
-
-    public interface Exiter {
-        void exit(int status);
-    }
-
-    private static class DefaultExiter implements Exiter{
-        public void exit(int status) {
-            System.exit(status);
-        }
+    public void writeContent(final XMLExtendedStreamWriter writer) throws XMLStreamException {
+        writer.writeEmptyElement(Element.PATTERN_FORMATTER.getLocalName());
+        writer.writeAttribute(Attribute.PATTERN.getLocalName(), pattern);
     }
 }

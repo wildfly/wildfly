@@ -43,7 +43,7 @@ import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 
 /**
- * The main-class entry point for server instances.
+ * The main-class entry point for standalone server instances.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author John Bailey

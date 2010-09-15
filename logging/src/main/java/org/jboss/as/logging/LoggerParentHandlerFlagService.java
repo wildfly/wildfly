@@ -20,37 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.logging;
+
+import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * Used to override System.exit() calls. For our tests we don't
- * want System.exit to have any effect.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class SystemExiter {
-    private static Exiter exiter;
+final class LoggerParentHandlerFlagService extends AbstractLoggerService {
+    private boolean setting;
 
-    public static void initialize(Exiter exiter) {
-        SystemExiter.exiter = exiter;
+    protected LoggerParentHandlerFlagService(final String name) {
+        super(name);
     }
 
-    public static void exit(int status) {
-        getExiter().exit(status);
-    }
-
-    private static Exiter getExiter() {
-        return exiter == null ? new DefaultExiter() : exiter;
-    }
-
-    public interface Exiter {
-        void exit(int status);
-    }
-
-    private static class DefaultExiter implements Exiter{
-        public void exit(int status) {
-            System.exit(status);
+    public synchronized void setFlag(final boolean setting) {
+        if (setting != this.setting) {
+            this.setting = setting;
+            final Logger logger = getLogger();
+            if (logger != null) {
+                logger.setUseParentHandlers(setting);
+            }
         }
+    }
+
+    protected void start(final StartContext context, final Logger logger) throws StartException {
+        logger.setUseParentHandlers(setting);
+    }
+
+    protected void stop(final StopContext context, final Logger logger) {
+        logger.setUseParentHandlers(true);
     }
 }

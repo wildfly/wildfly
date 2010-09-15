@@ -20,37 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.logging;
+
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+
+import javax.xml.namespace.QName;
+
+import java.util.logging.Handler;
 
 /**
- * Used to override System.exit() calls. For our tests we don't
- * want System.exit to have any effect.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class SystemExiter {
-    private static Exiter exiter;
+public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandlerElement<PeriodicRotatingFileHandlerElement> {
 
-    public static void initialize(Exiter exiter) {
-        SystemExiter.exiter = exiter;
+    private static final long serialVersionUID = -9165961552395250206L;
+
+    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
+
+    private String suffix;
+
+    protected PeriodicRotatingFileHandlerElement(final String name) {
+        super(name, ELEMENT_NAME);
     }
 
-    public static void exit(int status) {
-        getExiter().exit(status);
+    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
+        return null;
     }
 
-    private static Exiter getExiter() {
-        return exiter == null ? new DefaultExiter() : exiter;
+    protected Class<PeriodicRotatingFileHandlerElement> getElementClass() {
+        return PeriodicRotatingFileHandlerElement.class;
     }
 
-    public interface Exiter {
-        void exit(int status);
-    }
-
-    private static class DefaultExiter implements Exiter{
-        public void exit(int status) {
-            System.exit(status);
-        }
+    void setSuffix(final String suffix) {
+        this.suffix = suffix;
     }
 }
