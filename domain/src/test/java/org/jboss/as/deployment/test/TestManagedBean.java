@@ -30,4 +30,6 @@ import java.io.Serializable;
  */
 @ManagedBean("TestBean")
 public class TestManagedBean implements Serializable {
+
+    private static final long serialVersionUID = -7112632338371724701L;
 }

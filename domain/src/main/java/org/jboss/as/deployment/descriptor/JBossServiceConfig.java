@@ -30,6 +30,7 @@ import java.io.Serializable;
  * @author John E. Bailey
  */
 public class JBossServiceConfig implements Serializable {
+    private static final long serialVersionUID = -1118010052087288568L;
     private String name;
     private String code;
     private String[] aliases;

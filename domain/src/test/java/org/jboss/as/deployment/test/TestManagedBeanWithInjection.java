@@ -39,6 +39,7 @@ import java.io.Serializable;
 @Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
 @Interceptors({TestInterceptor.class})
 public class TestManagedBeanWithInjection implements Serializable {
+    private static final long serialVersionUID = -4560040427085159721L;
     @Resource private TestManagedBean other;
 
     @PostConstruct

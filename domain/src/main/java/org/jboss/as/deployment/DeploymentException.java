@@ -28,6 +28,8 @@ package org.jboss.as.deployment;
  * @author John E. Bailey
  */
 public class DeploymentException extends Exception {
+    private static final long serialVersionUID = -4609617514440543548L;
+
     /**
      * Constructs a {@code DeploymentUnitProcessingException} with no detail message. The cause is not initialized, and may
      * subsequently be initialized by a call to {@link #initCause(Throwable) initCause}.

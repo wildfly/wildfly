@@ -26,6 +26,8 @@ package org.jboss.as.server;
  * @author John E. Bailey
  */
 public class ServerStartException extends Exception {
+    private static final long serialVersionUID = 7991468792402261287L;
+
     public ServerStartException(String message) {
         super(message);
     }

@@ -37,6 +37,7 @@ import java.util.Collection;
  * @author John E. Bailey
  */
 public class CoordinatorEnvironmentElement extends AbstractModelElement<CoordinatorEnvironmentElement> {
+    private static final long serialVersionUID = 1529819848549301247L;
     private boolean enableStatistics;
     private int defaultTimeout = 300;
 

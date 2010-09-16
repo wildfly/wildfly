@@ -37,6 +37,7 @@ import java.util.Collection;
  * @author John E. Bailey
  */
 public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectStoreEnvironmentElement> {
+    private static final long serialVersionUID = 5036917797026753281L;
     private String directory = "/tmp/tx-object-store";
 
     protected ObjectStoreEnvironmentElement(final Location location) throws XMLStreamException {

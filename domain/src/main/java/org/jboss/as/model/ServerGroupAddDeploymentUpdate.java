@@ -29,6 +29,7 @@ package org.jboss.as.model;
  */
 public class ServerGroupAddDeploymentUpdate extends AbstractModelUpdate<ServerGroupElement> {
 
+    private static final long serialVersionUID = -5275795083851579399L;
     private final DeploymentUnitKey key;
 
     public ServerGroupAddDeploymentUpdate(final String fileName, final byte[] sha1Hash) {

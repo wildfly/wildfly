@@ -28,6 +28,8 @@ package org.jboss.as.deployment.naming;
  * @author John E. Bailey
  */
 public class DuplicateBindingException extends Exception {
+    private static final long serialVersionUID = 131033218044790395L;
+
     public DuplicateBindingException(final String message) {
         super(message);
     }

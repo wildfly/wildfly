@@ -37,6 +37,7 @@ import java.util.Collections;
  * @author John E. Bailey
  */
 public class CoreEnvironmentElement extends AbstractModelElement<CoreEnvironmentElement> {
+    private static final long serialVersionUID = 968449300391525909L;
     private String nodeIdentifier = "1";
     private String bindingRef;
     private int maxPorts = 10;

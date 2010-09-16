@@ -37,6 +37,7 @@ import java.util.Collections;
  * @author John E. Bailey
  */
 public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnvironmentElement> {
+    private static final long serialVersionUID = 5692042397037757306L;
     private String bindingRef;
     private String statusBindingRef;
 
