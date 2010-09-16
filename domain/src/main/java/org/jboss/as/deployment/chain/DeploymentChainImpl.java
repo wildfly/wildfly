@@ -75,9 +75,7 @@ public class DeploymentChainImpl implements DeploymentChain {
 
     @Override
     public String toString() {
-        return "DeploymentChainImpl{" +
-            "processors=" + (orderedProcessors == null ? null : Arrays.asList(orderedProcessors)) +
-            '}';
+        return "DeploymentChainImpl{processors=" + orderedProcessors + "}";
     }
 
     private static class OrderedProcessor implements Comparable<OrderedProcessor> {
