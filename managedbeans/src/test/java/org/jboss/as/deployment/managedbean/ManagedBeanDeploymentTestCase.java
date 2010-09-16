@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.managedbean;
 
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
-import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
-import org.jboss.as.deployment.managedbean.ManagedBeanService;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
+import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProcessor;
+import org.jboss.as.deployment.managedbean.processors.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
@@ -37,9 +37,6 @@ import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.test.MockContext;
-import org.jboss.as.deployment.test.PassthroughService;
-import org.jboss.as.deployment.test.TestManagedBean;
-import org.jboss.as.deployment.test.TestManagedBeanWithInjection;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
@@ -50,8 +47,6 @@ import org.junit.Test;
 import javax.naming.Context;
 import javax.naming.LinkRef;
 
-import static org.jboss.as.deployment.TestUtils.copyResource;
-import static org.jboss.as.deployment.TestUtils.getResource;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -60,7 +55,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author John E. Bailey
  */
-public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
+public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     private static final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.managedbean");
     private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
 
@@ -139,9 +134,9 @@ public class ManagedBeanDeploymentTestCase extends AbstractDeploymentTest {
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource(ManagedBeanDeploymentTestCase.class, path));
-        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestManagedBean.class", path, "org/jboss/as/deployment/test");
-        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestManagedBeanWithInjection.class", path, "org/jboss/as/deployment/test");
-        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/test/TestInterceptor.class", path, "org/jboss/as/deployment/test");
+        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/managedbean/TestManagedBean.class", path, "org/jboss/as/deployment/managedbean");
+        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/managedbean/TestManagedBeanWithInjection.class", path, "org/jboss/as/deployment/managedbean");
+        copyResource(ManagedBeanDeploymentTestCase.class, "/org/jboss/as/deployment/managedbean/TestInterceptor.class", path, "org/jboss/as/deployment/managedbean");
         return virtualFile;
     }
 }

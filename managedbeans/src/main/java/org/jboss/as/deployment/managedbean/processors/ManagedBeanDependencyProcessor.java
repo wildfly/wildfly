@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.managedbean.processors;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDependencies;

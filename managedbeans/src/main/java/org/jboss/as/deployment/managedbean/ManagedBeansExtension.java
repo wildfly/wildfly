@@ -20,23 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.managedbean;
 
-import javax.annotation.Resource;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import javax.xml.namespace.QName;
+import org.jboss.as.Extension;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
+ * Domain extension used to initialize the managed bean subsystem element handlers.
+ *
  * @author John E. Bailey
  */
-@Interceptor
-public class TestInterceptor {
-    @Resource(name="baz")
-    private TestManagedBean other;
+public class ManagedBeansExtension implements Extension {
 
-    @AroundInvoke
-    public Object intercept(InvocationContext context) throws Exception {
-        return context.proceed();
+    /**
+     * Register the naming element handlers.
+     *
+     * @param mapper the mapper
+     */
+    public void registerElementHandlers(final XMLMapper mapper) {
+        mapper.registerRootElement(new QName("urn:jboss:domain:managedbeans:1.0", "subsystem"), new ManagedBeanSubsystemElementParser());
+    }
+
+    /**
+     * Activate the extension.
+     *
+     * @param context the service activation context
+     */
+    public void activate(final ServiceActivatorContext context) {
     }
 }

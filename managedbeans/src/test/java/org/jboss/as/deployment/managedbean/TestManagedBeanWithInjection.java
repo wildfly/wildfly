@@ -20,16 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.managedbean;
 
 import javax.annotation.ManagedBean;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.interceptor.Interceptors;
 import java.io.Serializable;
 
 /**
  * @author John E. Bailey
  */
-@ManagedBean("TestBean")
-public class TestManagedBean implements Serializable {
+@ManagedBean("TestBeanWithInjection")
+@Resources({
+    @Resource(name="bar", type=TestManagedBean.class, mappedName="TestBean")
+})
+@Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
+@Interceptors({TestInterceptor.class})
+public class TestManagedBeanWithInjection implements Serializable {
+    private static final long serialVersionUID = -4560040427085159721L;
+    @Resource private TestManagedBean other;
 
-    private static final long serialVersionUID = -7112632338371724701L;
+    @PostConstruct
+    private void printMessage() {
+        System.out.println("Test manage bean started: " + other);
+    }
+
+    public TestManagedBean getOther() {
+        return other;
+    }
 }

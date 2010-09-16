@@ -112,6 +112,7 @@
         <module>logging</module>
         <module>transactions</module>
         <module>naming</module>
+        <module>managedbeans</module>
         <module>build</module>
         <module>testsuite</module>
     </modules>
@@ -224,6 +225,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-managed-beans</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

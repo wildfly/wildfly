@@ -20,10 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.managedbean;
+package org.jboss.as.deployment.managedbean.container;
 
-import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
-import org.jboss.as.deployment.managedbean.container.ManagedBeanRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

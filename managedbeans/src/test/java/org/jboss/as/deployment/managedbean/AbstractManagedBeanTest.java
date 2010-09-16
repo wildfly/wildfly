@@ -20,10 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.deployment.managedbean;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.modules.Module;
@@ -31,30 +38,25 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.jboss.as.deployment.TestUtils.getResource;
-import static org.junit.Assert.fail;
-
 /**
- * Abstract test base for deployment tests.
+ * Abstract test base for managed bean tests.
  *
  * @author John E. Bailey
  */
-public abstract class AbstractDeploymentTest {
+public abstract class AbstractManagedBeanTest {
     protected static final byte[] BLANK_SHA1 = new byte[20];
 
     protected ServiceContainer serviceContainer;
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractDeploymentTest.class, "/test")).getPathName());
+        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractManagedBeanTest.class, "/test")).getPathName());
         Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
 
         serviceContainer = ServiceContainer.Factory.create();
@@ -112,11 +114,43 @@ public abstract class AbstractDeploymentTest {
         void execute(final BatchBuilder batchBuilder) throws Exception;
     }
 
-    public static URL getResource(final Class<?> testClass, final String path) throws Exception {
+    protected URL getResource(final Class<?> testClass, final String path) throws Exception {
         return testClass.getResource(path);
     }
 
-    public static File getResourceFile(final Class<?> testClass, final String path) throws Exception {
+    protected File getResourceFile(final Class<?> testClass, final String path) throws Exception {
         return new File(getResource(testClass, path).toURI());
+    }
+
+    protected void copyResource(final Class<?> testClass, final String inputResource, final String outputBase, final String outputPath) throws Exception {
+        final File resource = getResourceFile(testClass, inputResource);
+        final File outputDirectory = new File(getResourceFile(testClass, outputBase), outputPath);
+
+        if (!resource.exists())
+            throw new IllegalArgumentException("Resource does not exist");
+        if (outputDirectory.exists() && outputDirectory.isFile())
+            throw new IllegalArgumentException("OutputDirectory must be a directory");
+        if (!outputDirectory.exists()) {
+            if (!outputDirectory.mkdirs())
+                throw new RuntimeException("Failed to create output directory");
+        }
+        final File outputFile = new File(outputDirectory, resource.getName());
+        final InputStream in = new FileInputStream(resource);
+        try {
+            final OutputStream out = new FileOutputStream(outputFile);
+            try {
+                final byte[] b = new byte[8192];
+                int c;
+                while ((c = in.read(b)) != -1) {
+                    out.write(b, 0, c);
+                }
+                out.close();
+                in.close();
+            } finally {
+                VFSUtils.safeClose(out);
+            }
+        } finally {
+            VFSUtils.safeClose(in);
+        }
     }
 }
