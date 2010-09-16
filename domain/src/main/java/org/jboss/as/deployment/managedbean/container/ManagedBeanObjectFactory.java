@@ -68,10 +68,9 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
      * @param serviceName The service name for the manage bean service
      * @return A reference instance
      */
-    public static final Reference createReference(final Class<?> managedBeanClass, final ServiceName serviceName) {
+    public static Reference createReference(final Class<?> managedBeanClass, final ServiceName serviceName) {
         final RefAddr refAddr = new ManagedBeanObjectFactory.ServiceNameRefAdr(serviceName);
-        final Reference reference = new Reference(managedBeanClass.getName(), refAddr, ManagedBeanObjectFactory.class.getName(), null);
-        return reference;
+        return new Reference(managedBeanClass.getName(), refAddr, ManagedBeanObjectFactory.class.getName(), null);
     }
 
     public static final class ServiceNameRefAdr extends RefAddr {

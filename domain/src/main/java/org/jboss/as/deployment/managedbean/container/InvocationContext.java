@@ -32,6 +32,8 @@ import java.util.Map;
  * Implementation of {@link javax.interceptor.InvocationContext} which supports the execution of managed bean method invocations
  * with an associated interceptor chain.  Uses a simple iterator to manage stepping through the interceptor chain.
  *
+ * @param <T> The target object type
+ *
  * @author John E. Bailey
  */
 public class InvocationContext<T> implements javax.interceptor.InvocationContext {

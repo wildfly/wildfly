@@ -29,6 +29,8 @@ import org.jboss.msc.value.InjectedValue;
  * Helper object used to coordinate resource injection.  This class will hold onto an injector and an injected value
  * to apply at injection time.
  *
+ * @param <T> The value type being injected
+ *
  * @author John E. Bailey
  */
 public abstract class ResourceInjection <T> {
@@ -45,6 +47,8 @@ public abstract class ResourceInjection <T> {
 
     /**
      * Run the injection by passing the injected value into the injector.
+     *
+     * @param target The target object to inject
      */
     public void inject(final Object target) {
         final Injector<T> injector = getInjector(target);

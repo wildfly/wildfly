@@ -32,6 +32,8 @@ import java.lang.reflect.Method;
 /**
  * Resource injection capable of executing the resource injection using a Method instance.
  *
+ * @param <T> The value type being injected
+ *
  * @author John E. Bailey
  */
 public class MethodResourceInjection<T> extends ResourceInjection<T> {

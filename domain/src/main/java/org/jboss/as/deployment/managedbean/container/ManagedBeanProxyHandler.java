@@ -47,10 +47,16 @@ public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements
         final ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(managedBeanClass);
 
-        Class<T> c = proxyFactory.createClass();
-        T proxy = c.newInstance();
+        final Class<? extends T> type = castClass(proxyFactory.createClass(), managedBeanClass);
+        T proxy = type.newInstance();
         ((ProxyObject)proxy).setHandler(handler);
         return proxy;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<? extends T> castClass(final Class<?> rawClass, final Class<T> expectedParent) {
+        assert expectedParent.isAssignableFrom(rawClass);
+        return (Class<? extends T>) rawClass;
     }
 
     /**

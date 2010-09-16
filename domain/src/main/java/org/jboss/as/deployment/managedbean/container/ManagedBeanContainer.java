@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Container responsible for holding onto the components necessary for creating instance of managed beans.
  *
+ * @param <T> The managed bean object type
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanContainer<T> {
@@ -36,7 +38,7 @@ public class ManagedBeanContainer<T> {
     private final List<Method> postConstructMethods;
     private final List<Method> preDestroyMethods;
     private final List<ResourceInjection<?>> resourceInjections;
-    private final List<ManagedBeanInterceptor> interceptors;
+    private final List<ManagedBeanInterceptor<?>> interceptors;
 
     /**
      * Construct with managed bean configuration.
@@ -47,7 +49,7 @@ public class ManagedBeanContainer<T> {
      * @param resourceInjections The resource injections
      * @param interceptors The manged bean interceptors
      */
-    public ManagedBeanContainer(final Class<T> beanClass, final List<Method> postConstructMethods, final List<Method> preDestroyMethods, final List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor> interceptors) {
+    public ManagedBeanContainer(final Class<T> beanClass, final List<Method> postConstructMethods, final List<Method> preDestroyMethods, final List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
         this.beanClass = beanClass;
         this.postConstructMethods = postConstructMethods;
         this.preDestroyMethods = preDestroyMethods;
@@ -70,7 +72,7 @@ public class ManagedBeanContainer<T> {
             throw new RuntimeException("Failed to instantiate instance of MangedBean: " + beanClass);
         }
         // Execute the injections
-        for (ResourceInjection resourceInjection : resourceInjections) {
+        for (ResourceInjection<?> resourceInjection : resourceInjections) {
             resourceInjection.inject(managedBean);
         }
         // Execute the post construct life-cycle
@@ -94,8 +96,6 @@ public class ManagedBeanContainer<T> {
                     throw new RuntimeException("Failed to create instance of interceptor " + managedBeanInterceptor.toString(), t);
                 }
             }
-
-            final T proxy;
             try {
                 managedBean = ManagedBeanProxyHandler.createProxy(beanClass, managedBean, aroundInvokeInterceptors);
             } catch (Throwable t) {

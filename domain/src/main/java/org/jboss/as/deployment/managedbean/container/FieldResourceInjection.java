@@ -32,6 +32,8 @@ import java.lang.reflect.Field;
 /**
  * Resource injection capable of executing the resource injection using a Field instance.
  *
+ * @param <T> The value type being injected
+ *
  * @author John E. Bailey
  */
 public class FieldResourceInjection<T> extends ResourceInjection<T> {

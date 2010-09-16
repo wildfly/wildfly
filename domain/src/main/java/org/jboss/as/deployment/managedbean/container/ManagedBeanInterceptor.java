@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Container to store an interceptor and its resource injections.
  *
+ * @param <T> The managed bean interceptor type
+ *
  * @author John E. Bailey
  */
 public class ManagedBeanInterceptor<T> {
@@ -65,7 +67,7 @@ public class ManagedBeanInterceptor<T> {
             this.aroundInvokeMethod = aroundInvokeMethod;
         }
 
-        Object intercept(final InvocationContext invocationContext) throws Exception {
+        Object intercept(final InvocationContext<?> invocationContext) throws Exception {
             return aroundInvokeMethod.invoke(target, invocationContext);
         }
     }
