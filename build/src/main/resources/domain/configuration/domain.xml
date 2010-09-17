@@ -25,18 +25,16 @@
         xmlns:threads="urn:jboss:domain:threads:1.0"
         xmlns:txn="urn:jboss:domain:transactions:1.0"
         xmlns:naming="urn:jboss:domain:naming:1.0"
-        xmlns:managedbeans="urn:jboss:domain:managedbeans:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:transactions:1.0 jboss-transactions.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:managedbeans:1.0 jboss-managedbeans.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
-    <!--<extensions>
-        <extension module="org.foo:blah"/>
-    </extensions>-->
+    <extensions>
+        <extension module="org.jboss.as.managed-beans"/>
+    </extensions>
 
     <profiles>
         <profile name="something">
@@ -52,7 +50,7 @@
                 <txn:core-environment socket-binding="txn-socket-process-id"/>
             </txn:subsystem>
             <remoting:subsystem thread-pool="remoting"/>
-            <managedbeans:subsystem/>
+            <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         </profile>
 
         <profile name="something2">

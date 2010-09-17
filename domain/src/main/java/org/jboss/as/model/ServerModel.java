@@ -450,19 +450,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         }
     }
 
-    private void registerExtensionHandlers(ExtensionElement extensionElement, final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final String module = extensionElement.getModule();
-        try {
-            for (Extension extension : Module.loadService(module, Extension.class)) {
-                // FIXME - as soon as we can get a mapper from a reader...
-//                extension.registerElementHandlers(reader.getMapper());
-                throw new UnsupportedOperationException("implement registerExtensionHandlers");
-            }
-        } catch (ModuleLoadException e) {
-            throw new XMLStreamException("Failed to load module", e);
-        }
-    }
-
     private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -475,8 +462,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                                 throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
                             }
                             extensions.put(extension.getModule(), extension);
-                            // load the extension so it can register handlers
-                            registerExtensionHandlers(extension, reader);
                             break;
                         }
                         default: throw unexpectedElement(reader);

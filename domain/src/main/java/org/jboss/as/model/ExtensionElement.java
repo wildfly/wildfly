@@ -26,9 +26,13 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.Extension;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A model extension element.
@@ -56,8 +60,16 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         super(reader);
         // Handle attributes
         this.module = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
-        // Handle elements
-        requireNoContent(reader);
+
+        // Register element handlers for this extension
+        try {
+            final XMLMapper xmlMapper = reader.getXMLMapper();
+            for (Extension extension : Module.loadService(module, Extension.class)) {
+                extension.registerElementHandlers(xmlMapper);
+            }
+        } catch (ModuleLoadException e) {
+            throw new XMLStreamException("Failed to load module", e);
+        }
     }
 
     /**
