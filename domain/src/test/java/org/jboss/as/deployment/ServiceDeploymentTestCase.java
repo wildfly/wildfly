@@ -52,7 +52,9 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
-    private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
+    private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=test,type=service");
+    private static final ServiceName TEST_TWO_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=testTwo,type=service");
+    private static final ServiceName TEST_THREE_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=testThree,type=service");
 
     @BeforeClass
     public static void setupChain() {
@@ -77,14 +79,14 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
     public void testDeployment() throws Exception {
         executeDeployment(initializeDeployment("/test/serviceXmlDeployment.jar"));
 
-        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME);
+        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME.append("createDestroy"));
         assertNotNull(testServiceController);
         assertEquals(ServiceController.State.UP, testServiceController.getState());
         final LegacyService legacyService = (LegacyService)testServiceController.getValue();
         assertNotNull(legacyService);
         assertEquals("Test Value", legacyService.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_SERVICE_NAME.append("second"));
+        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_TWO_SERVICE_NAME.append("createDestroy"));
         assertNotNull(testServiceControllerTwo);
         assertEquals(ServiceController.State.UP, testServiceControllerTwo.getState());
         final LegacyService legacyServiceTwo = (LegacyService)testServiceControllerTwo.getValue();
@@ -92,7 +94,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         assertEquals(legacyService, legacyServiceTwo.getOther());
         assertEquals("Test Value - more value", legacyServiceTwo.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_SERVICE_NAME.append("third"));
+        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_THREE_SERVICE_NAME.append("createDestroy"));
         assertNotNull(testServiceControllerThree);
         assertEquals(ServiceController.State.UP, testServiceControllerThree.getState());
         final LegacyService legacyServiceThree = (LegacyService)testServiceControllerThree.getValue();

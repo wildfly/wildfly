@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.service;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -31,11 +32,12 @@ import org.jboss.msc.value.Value;
 import java.lang.reflect.Method;
 
 /**
- * Service wrapper for legacy JBoss services configured using jboss-service.xml.
+ * Service wrapper for legacy JBoss services that controls the service start and stop lifecycle.
  *
  * @author John E. Bailey
  */
-public class JBossService<T> implements Service<T> {
+public class StartStopService<T> implements Service<T> {
+    private static final Logger log = Logger.getLogger("org.jboss.as.service");
     private final Value<T> serviceValue;
 
     /**
@@ -43,7 +45,7 @@ public class JBossService<T> implements Service<T> {
      *
      * @param serviceValue The service value
      */
-    public JBossService(Value<T> serviceValue) {
+    public StartStopService(Value<T> serviceValue) {
         this.serviceValue = serviceValue;
     }
 
@@ -51,11 +53,11 @@ public class JBossService<T> implements Service<T> {
     public void start(StartContext context) throws StartException {
         final T service = getValue();
         // Handle Start
+        log.info("Starting Service: " + context.getController().getName());
         try {
-            Method startMethod = service.getClass().getMethod("start");
+            final Method startMethod = service.getClass().getMethod("start");
             startMethod.invoke(service);
         } catch(NoSuchMethodException e) {
-            // Log warning ???
         } catch(Exception e) {
             throw new StartException("Failed to execute legacy service start", e);
         }
@@ -65,11 +67,13 @@ public class JBossService<T> implements Service<T> {
     public void stop(StopContext context) {
         final T service = getValue();
         // Handle Stop
+        log.info("Stopping Service: " + context.getController().getName());
         try {
             Method startMethod = service.getClass().getMethod("stop");
             startMethod.invoke(service);
-        } catch(Exception e) {
-            // Log warning ???
+        } catch(NoSuchMethodException e) {
+        }  catch(Exception e) {
+            throw new IllegalStateException("Failed to execute legacy service stop", e);
         }
     }
 

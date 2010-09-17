@@ -23,24 +23,24 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
-    <mbean name="jboss.test.service" code="org.jboss.as.deployment.test.LegacyService">
+    <mbean name="jboss:name=test,type=service" code="org.jboss.as.deployment.test.LegacyService">
         <constructor>
             <arg value="Test Value" type="java.lang.String"/>
         </constructor>
     </mbean>
 
-    <mbean name="jboss.test.service.second" code="org.jboss.as.deployment.test.LegacyService">
-        <depends optional-attribute-name="other">jboss.test.service</depends>
+    <mbean name="jboss:name=testTwo,type=service" code="org.jboss.as.deployment.test.LegacyService">
+        <depends optional-attribute-name="other">jboss:name=test,type=service</depends>
         <attribute name="somethingElse">
-            <value-factory bean="jboss.test.service" method="appendSomethingElse">
+            <value-factory bean="jboss:name=test,type=service" method="appendSomethingElse">
                 <parameter class="java.lang.String">more value</parameter>    
             </value-factory>
         </attribute>
     </mbean>
 
-    <mbean name="jboss.test.service.third" code="org.jboss.as.deployment.test.LegacyService">
+    <mbean name="jboss:name=testThree,type=service" code="org.jboss.as.deployment.test.LegacyService">
         <attribute name="other">
-            <inject bean="jboss.test.service.second" property="other"/>
+            <inject bean="jboss:name=testTwo,type=service" property="other"/>
         </attribute>
         <attribute name="somethingElse">Another test value</attribute>
     </mbean>
