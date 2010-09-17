@@ -22,21 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.transactions">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.messaging">
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.domain"/>
-        <module name="org.jboss.integration.jboss-transaction-spi"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.jts"/>
-        <module name="org.jboss.jts.integration"/>
+        <module name="org.hornetq"/>
         <module name="system"/>
     </dependencies>
 </module>

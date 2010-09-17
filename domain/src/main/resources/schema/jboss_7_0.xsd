@@ -25,7 +25,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns="urn:jboss:domain:1.0"
   targetNamespace="urn:jboss:domain:1.0"
-  elementFormDefault="qualified"
+  elementFormDefault="unqualified"
   attributeFormDefault="unqualified"
 >
 

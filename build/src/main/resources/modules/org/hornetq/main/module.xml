@@ -22,13 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.messaging">
+<module xmlns="urn:jboss:module:1.0" name="org.hornetq">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="javax.jms.api" />
         <module name="org.hornetq"/>
-        <module name="javax.jms
     </dependencies>
 </module>
