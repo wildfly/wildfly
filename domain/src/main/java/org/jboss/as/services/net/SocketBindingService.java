@@ -47,7 +47,9 @@ public class SocketBindingService implements Service<SocketBinding> {
     }
 
     public synchronized void start(StartContext arg0) throws StartException {
-        this.binding = new SocketBinding(element, interfaceBinding.getValue(), socketBindings.getValue());
+        this.binding = new SocketBinding(element.getName(), element.getPort(), element.isFixedPort(),
+           element.getMulticastAddress(), element.getMulticastPort(),
+           interfaceBinding.getValue(), socketBindings.getValue());
     }
 
     public synchronized void stop(StopContext arg0) {

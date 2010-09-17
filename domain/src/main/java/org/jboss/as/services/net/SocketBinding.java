@@ -23,6 +23,7 @@ package org.jboss.as.services.net;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
@@ -32,12 +33,11 @@ import java.net.SocketException;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
-import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * An encapsulation of socket binding related information.
- * 
+ *
  * @author Emanuel Muckenhuber
  * @version $Id$
  */
@@ -45,13 +45,22 @@ public class SocketBinding {
 
     public static final ServiceName JBOSS_BINDING_NAME = ServiceName.JBOSS.append("binding");
 
-    private final SocketBindingElement element;
+    private final String name;
+    private int port;
+    private boolean isFixedPort;
+    private InetAddress multicastAddress;
+    private int multicastPort;
     private final NetworkInterfaceBinding networkInterface;
     private final SocketBindingManager socketBindings;
 
-    SocketBinding(final SocketBindingElement element, final NetworkInterfaceBinding networkInterface,
-            SocketBindingManager socketBindings) {
-        this.element = element;
+    SocketBinding(final String name, int port, boolean isFixedPort,
+                  InetAddress multicastAddress, int multicastPort,
+                  final NetworkInterfaceBinding networkInterface, SocketBindingManager socketBindings) {
+        this.name = name;
+        this.port = port;
+        this.isFixedPort = isFixedPort;
+        this.multicastAddress = multicastAddress;
+        this.multicastPort = multicastPort;
         this.socketBindings = socketBindings;
         this.networkInterface = networkInterface;
     }
@@ -61,7 +70,7 @@ public class SocketBinding {
     * @return the SocketBinding configuration name
     */
    public String getName() {
-      return element.getName();
+      return name;
    }
 
     /**
@@ -79,8 +88,8 @@ public class SocketBinding {
      * @return the socket address
      */
     public InetSocketAddress getSocketAddress() {
-        int port = element.getPort();
-        if(port > 0 && element.isFixedPort() == false) {
+        int port = this.port;
+        if(port > 0 && isFixedPort == false) {
             port += socketBindings.getPortOffset();
         }
         return new InetSocketAddress(networkInterface.getAddress(), port);
@@ -92,11 +101,10 @@ public class SocketBinding {
      * @return
      */
     public InetSocketAddress getMulticastSocketAddress() {
-        if(element.getMulticastAddress() == null) {
-            throw new IllegalStateException("no multicast binding: " + element.getName()
-                    + ", " + element.getLocation());
+        if(multicastAddress == null) {
+            throw new IllegalStateException("no multicast binding: " + name);
         }
-        return new InetSocketAddress(element.getMulticastAddress(), element.getMulticastPort());
+        return new InetSocketAddress(multicastAddress, multicastPort);
     }
 
     /**
