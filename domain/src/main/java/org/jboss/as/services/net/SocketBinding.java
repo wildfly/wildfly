@@ -36,7 +36,10 @@ import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * An encapsulation of socket binding related information.
+ * 
  * @author Emanuel Muckenhuber
+ * @version $Id$
  */
 public class SocketBinding {
 
@@ -52,6 +55,14 @@ public class SocketBinding {
         this.socketBindings = socketBindings;
         this.networkInterface = networkInterface;
     }
+
+   /**
+    * Return the name of the SocketBinding used in the configuration
+    * @return the SocketBinding configuration name
+    */
+   public String getName() {
+      return element.getName();
+   }
 
     /**
      * Get the socket binding manager.
