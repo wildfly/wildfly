@@ -133,7 +133,7 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" $JAVA_OPTS \
-         -Dorg.jboss.boot.log.file=$JBOSS_HOME/server/logs/boot.log \
+         -Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/logs/boot.log \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \

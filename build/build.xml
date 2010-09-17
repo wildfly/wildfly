@@ -33,7 +33,7 @@
                 <include name="domain/**"/>
             </fileset>
             <fileset dir="src/main/resources">
-                <include name="server/**"/>
+                <include name="standalone/**"/>
             </fileset>
         </copy>
         <chmod perm="+x">

@@ -187,7 +187,7 @@ public class ServerEnvironment {
 
         tmp = getFileFromProperty(SERVER_BASE_DIR);
         if (tmp == null) {
-            tmp = new File(this.homeDir, "server");
+            tmp = new File(this.homeDir, "standalone");
         }
         this.serverBaseDir = tmp;
         System.setProperty(SERVER_BASE_DIR, this.serverBaseDir.getAbsolutePath());
