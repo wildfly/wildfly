@@ -49,21 +49,25 @@ public final class PropertyRemove extends AbstractPropertyUpdate {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
         return new PropertyAdd(name, original.getProperty(name));
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final PropertiesElement element) throws UpdateFailedException {
         element.removeProperty(name);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final Properties properties) throws UpdateFailedException {
         properties.remove(name);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final Map<? super String, ? super String> map) {
         map.remove(name);
     }

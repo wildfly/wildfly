@@ -48,9 +48,35 @@ public interface UpdateResultHandler<R, P> {
     void handleFailure(Throwable cause, P param);
 
     /**
+     * Handle cancellation of the update.
+     *
+     * @param param the parameter passed in to the update method
+     */
+    void handleCancellation(P param);
+
+    /**
      * Handle a timeout in applying the update.
      *
      * @param param the parameter passed in to the update method
      */
     void handleTimeout(P param);
+
+    /**
+     * Handle a successful rollback of the update.
+     *
+     * @param param the parameter passed in to the update method
+     */
+    void handleRollbackSuccess(P param);
+
+    /**
+     * Handle a failed rollback of the update.
+     *
+     * @param cause the cause of the failure
+     * @param param the parameter passed in to the update method
+     */
+    void handleRollbackFailure(Throwable cause, P param);
+
+    void handleRollbackCancellation(P param);
+
+    void handleRollbackTimeout(P param);
 }

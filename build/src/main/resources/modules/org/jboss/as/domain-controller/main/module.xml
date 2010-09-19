@@ -38,6 +38,7 @@
         <module name="org.jboss.logmanager"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.stdio"/>
+        <module name="org.jboss.as.deployment-client"/>
         <module name="org.jboss.as.domain"/>
         <module name="system"/>
     </dependencies>

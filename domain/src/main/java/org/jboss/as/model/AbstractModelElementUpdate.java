@@ -58,10 +58,14 @@ public abstract class AbstractModelElementUpdate<E extends AbstractModelElement<
 
     /**
      * Get an update which would revert (compensate for) this update.  This method may only be called before the update
-     * is applied to the target element.
+     * is applied to the target element. May return {@code null} if the state of
+     * {@code original} is such that no compensating update is possible (e.g.
+     * if this update is intended to remove something from {@code original}
+     * that does not exist).
      *
      * @param original the original element
-     * @return the compensating update
+     * @return the compensating update, or {@code null} if no compensating update
+     *           is possible
      */
     protected abstract AbstractModelElementUpdate<E> getCompensatingUpdate(E original);
 }

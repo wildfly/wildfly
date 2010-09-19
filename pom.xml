@@ -105,6 +105,7 @@
 
     <modules>
         <module>build-config</module>
+        <module>deployment-client</module>
         <module>domain</module>
         <module>connector</module>
         <module>server-manager</module>
@@ -208,6 +209,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-deployment-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

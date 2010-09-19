@@ -22,71 +22,67 @@
 
 package org.jboss.as.model;
 
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
-
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.deployment.DeploymentFailureListener;
-import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.module.MountHandle;
-import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceActivator;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * A deployment which is mapped into a {@link ServerGroupElement}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> implements ServiceActivator {
+public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> {
     private static final long serialVersionUID = -7282640684801436543L;
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
-    private final DeploymentUnitKey key;
+
+
+    private final String uniqueName;
+    private final String runtimeName;
+    private final byte[] sha1Hash;
     private boolean start;
 
     /**
      * Construct a new instance.
      *
-     * @param deploymentName the name of the deployment unit
-     * @param deploymentHash the hash of the deployment unit
+     * @param uniqueName the name of the deployment unit
+     * @param runtimeName file name of the deployment unit
+     * @param sha1Hash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final String deploymentName, final byte[] deploymentHash, final boolean start) {
-        if (deploymentName == null) {
-            throw new IllegalArgumentException("deploymentName is null");
+    public ServerGroupDeploymentElement(final String uniqueName,
+            final String runtimeName,
+            final byte[] sha1Hash,
+            final boolean start) {
+        if (uniqueName == null) {
+            throw new IllegalArgumentException("uniqueName is null");
         }
-        if (deploymentHash == null) {
-            throw new IllegalArgumentException("deploymentHash is null");
+        if (runtimeName == null) {
+            throw new IllegalArgumentException("runtimeName is null");
         }
-        if (deploymentHash.length != 20) {
-            throw new IllegalArgumentException("deploymentHash is not a valid length");
+        if (sha1Hash.length != 20) {
+            throw new IllegalArgumentException("sha1Hash is not a valid length");
         }
-        this.key = new DeploymentUnitKey(deploymentName, deploymentHash);
+        this.uniqueName = uniqueName;
+        this.runtimeName = runtimeName;
+        this.sha1Hash = sha1Hash;
         this.start = start;
     }
 
-    public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public ServerGroupDeploymentElement(XMLExtendedStreamReader reader, final RefResolver<String, DeploymentRepositoryElement> repositoryResolver) throws XMLStreamException {
+        super();
+        if (repositoryResolver == null) {
+            throw new IllegalArgumentException("repositoryResolver is null");
+        }
+
         // Handle attributes
-        String fileName = null;
-        byte[] sha1Hash = null;
+        String uniqueInput = null;
+        String runtimeInput = null;
+        byte[] hashInput = null;
         String start = null;
         final int count = reader.getAttributeCount();
         for(int i = 0; i < count; i++) {
@@ -97,12 +93,16 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NAME: {
-                        fileName = value;
+                        uniqueInput = value;
+                        break;
+                    }
+                    case RUNTIME_NAME: {
+                        runtimeInput = value;
                         break;
                     }
                     case SHA1: {
                         try {
-                            sha1Hash = hexStringToByteArray(value);
+                            hashInput = hexStringToByteArray(value);
                         }
                         catch (Exception e) {
                             throw new XMLStreamException("Value " + value +
@@ -120,14 +120,19 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                 }
             }
         }
-        if (fileName == null) {
+        if (uniqueInput == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        if (sha1Hash == null) {
+        if (runtimeInput == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+        }
+        if (hashInput == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
 
-        this.key = new DeploymentUnitKey(fileName, sha1Hash);
+        this.uniqueName = uniqueInput;
+        this.runtimeName = runtimeInput;
+        this.sha1Hash = hashInput;
         this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
         requireNoContent(reader);
@@ -136,21 +141,21 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     /**
-     * Gets the identifier of this deployment that's suitable for use as a map key.
+     * Gets the unique identifier of this deployment.
      *
      * @return the key
      */
-    public DeploymentUnitKey getKey() {
-        return key;
+    public String getUniqueName() {
+        return uniqueName;
     }
 
     /**
-     * Gets the name of the deployment.
+     * Gets the name by which the deployment is known within a running server.
      *
-     * @return the name
+     * @return the runtime name
      */
-    public String getName() {
-        return key.getName();
+    public String getRuntimeName() {
+        return runtimeName;
     }
 
     /**
@@ -159,7 +164,18 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      * @return the hash
      */
     public byte[] getSha1Hash() {
-        return key.getSha1Hash();
+        byte[] copy = new byte[sha1Hash.length];
+        System.arraycopy(sha1Hash, 0, copy, 0, sha1Hash.length);
+        return copy;
+    }
+
+    /**
+     * Gets the sha1 hash of the deployment in string form.
+     *
+     * @return the hash
+     */
+    public String getSha1HashAsHexString() {
+        return bytesToHexString(sha1Hash);
     }
 
     /**
@@ -185,7 +201,9 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     /** {@inheritDoc} */
     @Override
     public long elementHash() {
-        long hash = key.elementHash();
+        long hash = uniqueName.hashCode();
+        hash = Long.rotateLeft(hash, 1) ^ runtimeName.hashCode() & 0xffffffffL;
+        hash = Long.rotateLeft(hash, 1) ^ AbstractModelElement.calculateElementHashOf(sha1Hash);
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
         return hash;
     }
@@ -199,69 +217,55 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     /** {@inheritDoc} */
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
-        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), uniqueName);
+        streamWriter.writeAttribute(Attribute.RUNTIME_NAME.getLocalName(), runtimeName);
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), getSha1HashAsHexString());
         if (!this.start) streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
 
         streamWriter.writeEndElement();
     }
 
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        final String deploymentName = key.getName().replace('.', '_');
-        log.infof("Activating deployment: %s", key.getName());
-
-        final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(key.getName()));
-        if (!deploymentRoot.exists())
-            throw new RuntimeException("Deployment root does not exist." + deploymentRoot);
-
-        Closeable handle = null;
-        try {
-            // Mount virtual file
-            try {
-                if(deploymentRoot.isFile())
-                    handle = VFS.mountZip(deploymentRoot, deploymentRoot, TempFileProviderService.provider());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to mount deployment archive", e);
-            }
-
-            final BatchBuilder batchBuilder = context.getBatchBuilder();
-            // Create deployment service
-            final ServiceName deploymentServiceName = DeploymentService.SERVICE_NAME.append(deploymentName);
-            BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, new DeploymentService());
-
-            // Create a sub-batch for this deployment
-            final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
-
-            // Setup a batch level dependency on deployment service
-            deploymentSubBatch.addDependency(deploymentServiceName);
-
-            // Add a deployment failure listener to the batch
-            deploymentSubBatch.addListener(new DeploymentFailureListener(deploymentServiceName));
-
-            // Create the deployment unit context
-            final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentName, deploymentSubBatch, serviceBuilder);
-            attachVirtualFile(deploymentUnitContext, deploymentRoot);
-            deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, new MountHandle(handle));
-
-            // Execute the deployment chain
-            final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;
-            final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentRoot);
-            log.debugf("Executing deployment '%s' with chain: %s", key.getName(), deploymentChain);
-            if(deploymentChain == null)
-                throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);
-            try {
-                deploymentChain.processDeployment(deploymentUnitContext);
-            } catch (DeploymentUnitProcessingException e) {
-                throw new RuntimeException("Failed to process deployment chain.", e);
-            }
-        } catch(Throwable t) {
-            VFSUtils.safeClose(handle);
-            throw new RuntimeException("Failed to activate deployment unit " + key.getName(), t);
-        }
+//    @Override
+    public void activate(final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
+        // TODO move this into an update class
+        ServerDeploymentStartStopHandler support = new ServerDeploymentStartStopHandler();
+        support.deploy(uniqueName, runtimeName, sha1Hash, context.getBatchBuilder(), serviceContainer, NoOpUpdateResultHandler.INSTANCE, null);
     }
 
-    private String getFullyQualifiedDeploymentPath(final String fileName) {
-        return System.getProperty("jboss.server.deploy.dir") + "/" + fileName;
+    private static class NoOpUpdateResultHandler implements UpdateResultHandler<ServerDeploymentActionResult, Void> {
+
+        private static final NoOpUpdateResultHandler INSTANCE = new NoOpUpdateResultHandler();
+        @Override
+        public void handleFailure(Throwable cause, Void param) {
+        }
+
+        @Override
+        public void handleSuccess(ServerDeploymentActionResult result, Void param) {
+        }
+
+        @Override
+        public void handleTimeout(Void param) {
+        }
+
+        @Override
+        public void handleCancellation(Void param) {
+        }
+
+        @Override
+        public void handleRollbackFailure(Throwable cause, Void param) {
+        }
+
+        @Override
+        public void handleRollbackSuccess(Void param) {
+        }
+
+        @Override
+        public void handleRollbackCancellation(Void param) {
+        }
+
+        @Override
+        public void handleRollbackTimeout(Void param) {
+        }
+
     }
 }

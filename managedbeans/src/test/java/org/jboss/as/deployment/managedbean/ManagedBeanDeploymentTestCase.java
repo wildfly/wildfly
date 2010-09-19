@@ -82,6 +82,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
 
     @Override
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        super.setupServices(batchBuilder);
         deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);

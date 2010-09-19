@@ -46,12 +46,17 @@ import junit.framework.TestCase;
  * @version $Revision: 1.1 $
  */
 public class XMLValidationUnitTestCase extends TestCase {
+
    public void testHost() throws Exception {
       parseXml("host-example.xml");
    }
 
    public void testDomain() throws Exception {
       parseXml("jboss-domain-example.xml");
+   }
+
+   public void testStandalone() throws Exception {
+      parseXml("standalone-example.xml");
    }
 
    private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, SAXNotRecognizedException,

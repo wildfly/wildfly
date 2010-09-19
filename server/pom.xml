@@ -51,6 +51,10 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-deployment-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
         <dependency>

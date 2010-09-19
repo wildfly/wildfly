@@ -46,19 +46,23 @@ public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsys
         this.newElement = newElement;
     }
 
+    @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 
+    @Override
     protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<RemotingSubsystemElement> getModelElementType() {
         return RemotingSubsystemElement.class;
     }
 
+    @Override
     protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
     }
 }

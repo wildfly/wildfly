@@ -75,6 +75,7 @@
           <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
           <xs:element name="ssls" type="sslsType" minOccurs="0" maxOccurs="1"/>
           <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="deployment-repository" type="standalone-deployment-repositoryType" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="deployments" type="mapped-deploymentsType"  minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
     </xs:complexType>
@@ -238,7 +239,17 @@
     </xs:annotation>
     <xs:attribute name="name" use="required">
       <xs:annotation>
-        <xs:documentation>Name of the deployment</xs:documentation>
+        <xs:documentation>Unique identifier of the deployment. Must be unique across all deployments.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="runtime-name" use="required">
+      <xs:annotation>
+        <xs:documentation>Name by which the deployment will be known within a running server.of the deployment. 
+        Does not need to be unique across all deployments in the domain, although it must be unique within
+        an individual server. For example, two different deployments running on different servers in
+        the domain could both have a 'runtime-name' of 'example.war', with one having a 'name'
+        of 'example.war_v1' and another with an 'name' of 'example.war_v2'.
+        </xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sha1" use="required">
@@ -274,11 +285,41 @@
         <xs:extension base="mapped-deploymentType">
             <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
               <xs:annotation>
-                <xs:documentation>Whether the deployment is allowed.</xs:documentation>
+                <xs:documentation>Whether the mapping the deployment to a server group is allowed.</xs:documentation>
               </xs:annotation>
             </xs:attribute>
         </xs:extension>
     </xs:complexContent>
+  </xs:complexType>  
+  
+  <xs:complexType name="standalone-deployment-repositoryType">
+    <xs:annotation>
+      <xs:documentation>Allows configuration of an additional location where deployment
+      content can be stored.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="path" use="optional" default="standalone/deploy">
+      <xs:annotation>
+        <xs:documentation>Filesystem path indicating the location where deployment content should
+        be stored. Either an absolute or relative path; if relative it is relative
+        to the root of the JBoss AS installation. Location must be writable by
+        the user that owns the JBoss AS process. Default is 'server/deploy'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+        <xs:annotation>
+          <xs:documentation>Periodic interval, in milliseconds, at which the repository
+          should be scanned for changes. A value of less than 1 indicates the
+          repository should only be scanned at initial startup.</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="scan-enabled" type="boolean" use="optional" default="true">
+        <xs:annotation>
+          <xs:documentation>
+             Flag indicating that all scanning (including initial scanning at startup)
+             should be disabled.
+          </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
 <!-- TODO this is not used anywhere yet -->

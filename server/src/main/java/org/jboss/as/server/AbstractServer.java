@@ -23,6 +23,10 @@
 package org.jboss.as.server;
 
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
+import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
+import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
+import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
@@ -98,10 +102,11 @@ public abstract class AbstractServer {
             final ServerStartBatchBuilder subsystemBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
             subsystemBatchBuilder.addListener(listener);
 
+            // Activate core services not configured via ServerModel
             // TODO move creation of serviceContainer and installation of these
             // kinds of core services that aren't configured via the ServerModel
             // into whatever creates the ServerModel
-            ServerEnvironmentService.addService(environment, subsystemBatchBuilder);
+            activateCoreServices(config, subsystemBatchBuilder);
 
             final ServiceActivatorContext subsystemActivatorContext = new ServiceActivatorContextImpl(subsystemBatchBuilder);
             config.activateSubsystems(subsystemActivatorContext);
@@ -113,7 +118,7 @@ public abstract class AbstractServer {
                     deploymentBatchBuilder.addListener(listener);
                     final ServiceActivatorContext deploymentActivatorContext = new ServiceActivatorContextImpl(deploymentBatchBuilder);
                     listener.startBatch(null);
-                    config.activateDeployments(deploymentActivatorContext);
+                    config.activateDeployments(deploymentActivatorContext, serviceContainer);
                     listener.finish(); // We have finished adding everything for the server start
                     try {
                         deploymentBatchBuilder.install();
@@ -145,6 +150,16 @@ public abstract class AbstractServer {
     }
 
     abstract ServerStartupListener.Callback createListenerCallback();
+
+    private void activateCoreServices(ServerModel serverConfiguration, ServerStartBatchBuilder batchBuilder) throws ServiceRegistryException {
+        log.info("Activating core services");
+        ServerEnvironmentService.addService(environment, batchBuilder);
+        ServerDeploymentRepositoryImpl.addService(batchBuilder);
+        ShutdownHandlerImpl.addService(batchBuilder);
+        ServerConfigurationPersisterImpl.addService(serverConfiguration, batchBuilder);
+        ServerDeploymentManagerImpl.addService(serverConfiguration, serviceContainer, batchBuilder);
+        ServerModelService.addService(serverConfiguration, batchBuilder);
+    }
 
 }
 

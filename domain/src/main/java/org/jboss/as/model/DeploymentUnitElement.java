@@ -24,7 +24,6 @@ package org.jboss.as.model;
 
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -41,23 +40,30 @@ import java.util.Collections;
 public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> implements ServiceActivator {
 
     private static final long serialVersionUID = 5335163070198512362L;
-    private static final ServiceName MOUNT_SERVICE_NAME = ServiceName.JBOSS.append("mounts");
 
-    private final DeploymentUnitKey key;
+    private final String uniqueName;
+    private final String runtimeName;
+    private final byte[] sha1Hash;
     private boolean allowed;
     private boolean start;
 
-    public DeploymentUnitElement(final String fileName,
-                                 final byte[] sha1Hash, final boolean allowed, final boolean start) {
-        this.key = new DeploymentUnitKey(fileName, sha1Hash);
+    public DeploymentUnitElement(final String uniqueName,
+                                 final String runtimeName,
+                                 final byte[] sha1Hash,
+                                 final boolean allowed,
+                                 final boolean start) {
+        this.uniqueName = uniqueName;
+        this.runtimeName = runtimeName;
+        this.sha1Hash = sha1Hash;
         this.allowed = allowed;
         this.start = start;
     }
 
     public DeploymentUnitElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         // Handle attributes
-        String fileName = null;
-        byte[] sha1Hash = null;
+        String uniqueInput = null;
+        String runtimeInput = null;
+        byte[] sha1Input = null;
         String allowed = null;
         String start = null;
         final int count = reader.getAttributeCount();
@@ -69,12 +75,16 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NAME: {
-                        fileName = value;
+                        uniqueInput = value;
+                        break;
+                    }
+                    case RUNTIME_NAME: {
+                        runtimeInput = value;
                         break;
                     }
                     case SHA1: {
                         try {
-                            sha1Hash = hexStringToByteArray(value);
+                            sha1Input = hexStringToByteArray(value);
                         }
                         catch (Exception e) {
                            throw new XMLStreamException("Value " + value +
@@ -96,13 +106,18 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                 }
             }
         }
-        if (fileName == null) {
+        if (uniqueInput == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        if (sha1Hash == null) {
+        if (runtimeInput == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+        }
+        if (sha1Input == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.key = new DeploymentUnitKey(fileName, sha1Hash);
+        this.uniqueName = uniqueInput;
+        this.runtimeName = runtimeInput;
+        this.sha1Hash = sha1Input;
         this.allowed = allowed == null ? true : Boolean.valueOf(allowed);
         this.start = start == null ? true : Boolean.valueOf(start);
 
@@ -111,11 +126,11 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     }
 
     /**
-     * Gets the identifier of this deployment that's suitable for use as a map key.
-     * @return the key
+     * Gets the unique identifier of this deployment.
+     * @return the uniq
      */
-    public DeploymentUnitKey getKey() {
-        return key;
+    public String getUniqueName() {
+        return uniqueName;
     }
 
     /**
@@ -123,8 +138,8 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
      *
      * @return the name
      */
-    public String getName() {
-        return key.getName();
+    public String getRuntimeName() {
+        return runtimeName;
     }
 
     /**
@@ -133,7 +148,18 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
      * @return the hash
      */
     public byte[] getSha1Hash() {
-        return key.getSha1Hash();
+        byte[] copy = new byte[sha1Hash.length];
+        System.arraycopy(sha1Hash, 0, copy, 0, sha1Hash.length);
+        return copy;
+    }
+
+    /**
+     * Gets the sha1 hash of the deployment in string form.
+     *
+     * @return the hash
+     */
+    public String getSha1HashAsHexString() {
+        return bytesToHexString(sha1Hash);
     }
 
     /**
@@ -181,20 +207,26 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     public void activate(ServiceActivatorContext serviceActivatorContext) {
     }
 
+    @Override
     public long elementHash() {
-        long hash = key.elementHash();
+        long hash = uniqueName.hashCode();
+        hash = Long.rotateLeft(hash, 1) ^ runtimeName.hashCode() & 0xffffffffL;
+        hash = Long.rotateLeft(hash, 1) ^ AbstractModelElement.calculateElementHashOf(sha1Hash);
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowed).hashCode() & 0xffffffffL;
         return hash;
     }
 
+    @Override
     protected Class<DeploymentUnitElement> getElementClass() {
         return DeploymentUnitElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
-        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), uniqueName);
+        streamWriter.writeAttribute(Attribute.RUNTIME_NAME.getLocalName(), runtimeName);
+        streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), bytesToHexString(sha1Hash));
         streamWriter.writeEndElement();
     }
 }

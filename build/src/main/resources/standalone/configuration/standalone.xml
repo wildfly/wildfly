@@ -146,7 +146,9 @@
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
-
+    
+    <deployment-repository scan-interval="5000"/>
+    
     <deployments>
     </deployments>
 

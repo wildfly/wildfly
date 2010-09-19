@@ -173,6 +173,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
+        <module-def name="org.jboss.as.deployment-client">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-client"/>
+        </module-def>
+
         <module-def name="org.jboss.as.domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
