@@ -30,6 +30,8 @@ import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
@@ -68,6 +70,10 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
                 }
             }
         );
+    }
+
+    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        batchBuilder.addService(MBeanServerService.MBEAN_SERVER_SERVICE_NAME, new MBeanServerService());
     }
 
     @Test

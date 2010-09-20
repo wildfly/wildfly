@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import javax.management.MBeanServer;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
@@ -32,6 +33,8 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.jmx.MBeanRegistrationService;
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -175,6 +178,11 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
 
+        // Add service to register the bean in the mbean server
+        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService(serviceName);
+        batchBuilder.addService(MBeanRegistrationService.SERVICE_NAME.append(serviceName), mbeanRegistrationService)
+            .addDependency(MBeanServerService.MBEAN_SERVER_SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
+            .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector());
     }
 
     private Injector<Object> getPropertyInjector(final Value<Class<?>> classValue, final String propertyName, final CreateDestroyService<?> startStopService, final Value<?> value) {

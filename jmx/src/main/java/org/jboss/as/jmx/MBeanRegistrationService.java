@@ -28,6 +28,7 @@ import javax.management.ObjectName;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -41,10 +42,20 @@ import org.jboss.msc.value.Value;
  */
 public class MBeanRegistrationService<T> implements Service<Void> {
     private static final Logger log = Logger.getLogger("org.jboss.as.jmx");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "registration");
     private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<T> value = new InjectedValue<T>();
     private final String name;
     private ObjectName objectName;
-    private final Value<T> value;
+
+    /**
+     * Create an instance.
+     *
+     * @param name The name to use as an ObjectName
+     */
+    public MBeanRegistrationService(final String name) {
+        this.name = name;
+    }
 
     /**
      * Create an instance.
@@ -54,7 +65,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
      */
     public MBeanRegistrationService(final String name, final Value<T> value) {
         this.name = name;
-        this.value = value;
+        this.value.inject(value.getValue());
     }
 
     /**
@@ -73,6 +84,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
         }
 
         try {
+            log.debugf("Registering [%s] with name [%s]", value, objectName);
             mBeanServer.registerMBean(value, objectName);
         } catch (Exception e) {
             throw new StartException("Failed to register mbean [" + name + "]", e);
@@ -101,7 +113,11 @@ public class MBeanRegistrationService<T> implements Service<Void> {
         return null;
     }
 
-    public Injector<MBeanServer> getMBeanServerValue() {
+    public Injector<MBeanServer> getMBeanServerInjector() {
         return mBeanServerValue;
+    }
+
+    public Injector<T> getValueInjector() {
+        return value;
     }
 }

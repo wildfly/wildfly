@@ -23,39 +23,7 @@
 package org.jboss.as.service;
 
 /**
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class LegacyService implements LegacyServiceMBean {
-    private LegacyService other;
-    private String somethingElse;
-
-    public LegacyService() {
-    }
-
-    public LegacyService(String somethingElse) {
-        this.somethingElse = somethingElse;
-    }
-
-    public void setOther(LegacyService other) {
-        this.other = other;
-    }
-
-    public LegacyService getOther() {
-        return other;
-    }
-
-    public String getSomethingElse() {
-        return somethingElse;
-    }
-
-    public String appendSomethingElse(String more) {
-        return somethingElse + " - " + more;
-    }
-
-    public void setSomethingElse(String somethingElse) {
-        this.somethingElse = somethingElse;
-    }
-
-    public void start() {
-    }
+public interface LegacyServiceMBean {
 }
