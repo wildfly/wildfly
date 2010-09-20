@@ -97,6 +97,12 @@ public abstract class AbstractServer {
             // Activate subsystems
             final ServerStartBatchBuilder subsystemBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
             subsystemBatchBuilder.addListener(listener);
+
+            // TODO move creation of serviceContainer and installation of these
+            // kinds of core services that aren't configured via the ServerModel
+            // into whatever creates the ServerModel
+            ServerEnvironmentService.addService(environment, subsystemBatchBuilder);
+
             final ServiceActivatorContext subsystemActivatorContext = new ServiceActivatorContextImpl(subsystemBatchBuilder);
             config.activateSubsystems(subsystemActivatorContext);
             listener.startBatch(new Runnable() {
