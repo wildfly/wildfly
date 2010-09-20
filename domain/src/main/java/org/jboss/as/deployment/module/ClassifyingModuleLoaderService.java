@@ -51,7 +51,7 @@ public class ClassifyingModuleLoaderService implements Service<ClassifyingModule
      *
      * @param context The start context
      */
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         classifyingModuleLoader = new ClassifyingModuleLoader(delegates, Module.getCurrentLoader());
         Module.setModuleLoaderSelector(new SimpleModuleLoaderSelector(classifyingModuleLoader));
     }
