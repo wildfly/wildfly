@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.deployment.managedbean;
 
 import javax.naming.Binding;
 import javax.naming.CompositeName;
