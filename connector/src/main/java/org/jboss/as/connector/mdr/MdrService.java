@@ -20,31 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.connector.mdr;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * A ConnectorServices.
+ * A MdrService. it provide access to IronJacamar's metadata repository
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public final class ConnectorServices {
+final class MdrService implements Service<MetadataRepository> {
 
-    public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
+    private final MetadataRepository value;
 
     /**
-     * convenient method to check notNull of value
-     * @param <T> type of the value
-     * @param value the value
-     * @return the value or throw an {@link IllegalStateException} if value is
-     *         null (a.k.a. service not started)
+     * Create instance
      */
-    public static <T> T notNull(T value) {
-        if (value == null)
-            throw new IllegalStateException("Service not started");
-        return value;
+    public MdrService() {
+        this.value = new SimpleMetadataRepository();
     }
 
-    private ConnectorServices() {
+    @Override
+    public MetadataRepository getValue() throws IllegalStateException {
+        return MdrServices.notNull(value);
     }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+
+    }
+
+    @Override
+    public void stop(StopContext context) {
+
+    }
+
 }

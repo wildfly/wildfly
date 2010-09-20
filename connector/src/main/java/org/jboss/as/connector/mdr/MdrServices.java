@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.connector.mdr;
 
 import org.jboss.msc.service.ServiceName;
 
@@ -28,9 +28,10 @@ import org.jboss.msc.service.ServiceName;
  * A ConnectorServices.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public final class ConnectorServices {
+public final class MdrServices {
 
-    public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
+    /** MDR service name **/
+    public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
 
     /**
      * convenient method to check notNull of value
@@ -45,6 +46,6 @@ public final class ConnectorServices {
         return value;
     }
 
-    private ConnectorServices() {
+    private MdrServices() {
     }
 }

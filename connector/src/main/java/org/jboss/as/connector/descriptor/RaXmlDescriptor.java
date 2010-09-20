@@ -20,31 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.connector.descriptor;
 
-import org.jboss.msc.service.ServiceName;
+import java.io.Serializable;
+
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 
 /**
- * A ConnectorServices.
+ * A RaXmlDescriptor.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public final class ConnectorServices {
+public final class RaXmlDescriptor implements Serializable {
 
-    public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
+    private static final long serialVersionUID = 3148478338698997486L;
+
+    public static final AttachmentKey<RaXmlDescriptor> ATTACHMENT_KEY = AttachmentKey.create(RaXmlDescriptor.class);
+
+    private final ResourceAdapters resourceAdapters;
 
     /**
-     * convenient method to check notNull of value
-     * @param <T> type of the value
-     * @param value the value
-     * @return the value or throw an {@link IllegalStateException} if value is
-     *         null (a.k.a. service not started)
+     * Create a new RaXmlDescriptor.
+     * @param resourceAdapters
      */
-    public static <T> T notNull(T value) {
-        if (value == null)
-            throw new IllegalStateException("Service not started");
-        return value;
+    public RaXmlDescriptor(ResourceAdapters resourceAdapters) {
+        super();
+        this.resourceAdapters = resourceAdapters;
     }
 
-    private ConnectorServices() {
+    /**
+     * Get the resource adapters.
+     * @return the resource adapters.
+     */
+    public ResourceAdapters getResourceAdapters() {
+        return resourceAdapters;
     }
+
 }

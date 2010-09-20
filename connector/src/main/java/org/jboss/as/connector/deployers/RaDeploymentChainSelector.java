@@ -20,31 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.connector.deployers;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * A ConnectorServices.
+ * A RarDeploymentChainSelector. Deployment chain selector which determines
+ * whether the rar deployment chain should handle this deployment.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public final class ConnectorServices {
-
-    public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
+public class RaDeploymentChainSelector implements DeploymentChainProvider.Selector {
+    private static final String ARCHIVE_EXTENSION = ".rar";
 
     /**
-     * convenient method to check notNull of value
-     * @param <T> type of the value
-     * @param value the value
-     * @return the value or throw an {@link IllegalStateException} if value is
-     *         null (a.k.a. service not started)
+     * Determine where this deployment is supported by rar deployer chain.
+     * @param virtualFile The deployment file
+     * @return true if this is s service deployment, and false if not
      */
-    public static <T> T notNull(T value) {
-        if (value == null)
-            throw new IllegalStateException("Service not started");
-        return value;
-    }
-
-    private ConnectorServices() {
+    @Override
+    public boolean supports(final VirtualFile virtualFile) {
+        return virtualFile.getName().toLowerCase().endsWith(ARCHIVE_EXTENSION);
     }
 }

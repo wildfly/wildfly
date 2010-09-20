@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id $ -->
+
+<connector xmlns="http://java.sun.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
+           version="1.6" metadata-complete="false">
+
+   <vendor-name>Red Hat Middleware LLC</vendor-name>
+   <eis-type>Test RA</eis-type>
+   <resourceadapter-version>0.1</resourceadapter-version>
+
+   <resourceadapter>
+      <resourceadapter-class>org.jboss.jca.test.deployers.spec.rars.ra16annoactiv.TestResourceAdapter</resourceadapter-class>
+
+      <outbound-resourceadapter>
+         <connection-definition>
+            <managedconnectionfactory-class>org.jboss.jca.test.deployers.spec.rars.ra16annoactiv.TestManagedConnectionFactory</managedconnectionfactory-class>
+
+            <connectionfactory-interface>javax.resource.spi.ManagedConnection</connectionfactory-interface>
+            <connectionfactory-impl-class>org.jboss.jca.test.deployers.spec.rars.ra16annoactiv.TestManagedConnection</connectionfactory-impl-class>
+            <connection-interface>org.jboss.jca.test.deployers.spec.rars.TestConnectionInterface</connection-interface>
+            <connection-impl-class>org.jboss.jca.test.deployers.spec.rars.TestConnection</connection-impl-class>
+         </connection-definition>
+         <!-- overwrite -->
+     
+         <transaction-support>LocalTransaction</transaction-support>
+         <reauthentication-support>false</reauthentication-support>
+      </outbound-resourceadapter>
+      <inbound-resourceadapter>
+         <messageadapter>        
+            <messagelistener>
+               <messagelistener-type>org.jboss.jca.test.deployers.spec.rars.MessageListener</messagelistener-type>
+               <activationspec>
+                  <activationspec-class>org.jboss.jca.test.deployers.spec.rars.ra16annoactiv.TestActivationSpec</activationspec-class>
+               </activationspec>
+            </messagelistener>
+         </messageadapter>
+      </inbound-resourceadapter>
+   </resourceadapter>
+</connector>
