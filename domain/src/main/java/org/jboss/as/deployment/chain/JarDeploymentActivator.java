@@ -28,8 +28,6 @@ import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
-import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.msc.service.BatchBuilder;
@@ -45,7 +43,7 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class JarDeploymentActivator implements ServiceActivator {
-    public static final long JAR_DEPLOYMENT_CHAIN_PRIORITY = 1000000L;
+    public static final long JAR_DEPLOYMENT_CHAIN_PRIORITY = 1000000000L;
     public static final ServiceName JAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("jar");
 
     /**
@@ -67,9 +65,7 @@ public class JarDeploymentActivator implements ServiceActivator {
         addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
     }
 
     private <T extends DeploymentUnitProcessor> void addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment;
+package org.jboss.as.service;
 
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
@@ -30,9 +30,6 @@ import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
-import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
-import org.jboss.as.deployment.test.LegacyService;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
@@ -40,8 +37,6 @@ import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.jboss.as.deployment.TestUtils.copyResource;
-import static org.jboss.as.deployment.TestUtils.getResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -50,7 +45,7 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author John E. Bailey
  */
-public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
+public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
 
     private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=test,type=service");
     private static final ServiceName TEST_TWO_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=testTwo,type=service");
@@ -79,14 +74,14 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
     public void testDeployment() throws Exception {
         executeDeployment(initializeDeployment("/test/serviceXmlDeployment.jar"));
 
-        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME.append("createDestroy"));
+        final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME.append("start"));
         assertNotNull(testServiceController);
         assertEquals(ServiceController.State.UP, testServiceController.getState());
         final LegacyService legacyService = (LegacyService)testServiceController.getValue();
         assertNotNull(legacyService);
         assertEquals("Test Value", legacyService.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_TWO_SERVICE_NAME.append("createDestroy"));
+        final ServiceController<?> testServiceControllerTwo = serviceContainer.getService(TEST_TWO_SERVICE_NAME.append("start"));
         assertNotNull(testServiceControllerTwo);
         assertEquals(ServiceController.State.UP, testServiceControllerTwo.getState());
         final LegacyService legacyServiceTwo = (LegacyService)testServiceControllerTwo.getValue();
@@ -94,7 +89,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         assertEquals(legacyService, legacyServiceTwo.getOther());
         assertEquals("Test Value - more value", legacyServiceTwo.getSomethingElse());
 
-        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_THREE_SERVICE_NAME.append("createDestroy"));
+        final ServiceController<?> testServiceControllerThree = serviceContainer.getService(TEST_THREE_SERVICE_NAME.append("start"));
         assertNotNull(testServiceControllerThree);
         assertEquals(ServiceController.State.UP, testServiceControllerThree.getState());
         final LegacyService legacyServiceThree = (LegacyService)testServiceControllerThree.getValue();
@@ -105,7 +100,7 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource(ServiceDeploymentTestCase.class, path));
-        copyResource(ServiceDeploymentTestCase.class, "/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
+        copyResource(ServiceDeploymentTestCase.class, "/org/jboss/as/service/LegacyService.class", path, "org/jboss/as/service");
         return virtualFile;
     }
 }

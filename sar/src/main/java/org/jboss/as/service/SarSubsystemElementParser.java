@@ -20,42 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.test;
+package org.jboss.as.service;
+
+import javax.xml.stream.XMLStreamException;
+import org.jboss.as.model.ParseResult;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * @author John E. Bailey
+ * Element parser used to parse the SAR subsystem.
+ *
+ * @author John Bailey
  */
-public class LegacyService {
-    private LegacyService other;
-    private String somethingElse;
+public class SarSubsystemElementParser implements XMLElementReader<ParseResult<? super SarSubsystemElement>> {
 
-    public LegacyService() {
-    }
-
-    public LegacyService(String somethingElse) {
-        this.somethingElse = somethingElse;
-    }
-
-    public void setOther(LegacyService other) {
-        this.other = other;
-    }
-
-    public LegacyService getOther() {
-        return other;
-    }
-
-    public String getSomethingElse() {
-        return somethingElse;
-    }
-
-    public String appendSomethingElse(String more) {
-        return somethingElse + " - " + more;
-    }
-
-    public void setSomethingElse(String somethingElse) {
-        this.somethingElse = somethingElse;
-    }
-
-    public void start() {
+    /** {@inheritDoc} */
+    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final ParseResult<? super SarSubsystemElement> result) throws XMLStreamException {
+        result.setResult(new SarSubsystemElement(xmlExtendedStreamReader));
     }
 }

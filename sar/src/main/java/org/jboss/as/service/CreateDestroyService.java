@@ -1,4 +1,4 @@
-package org.jboss.as.deployment.service;
+package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import org.jboss.logging.Logger;
@@ -26,11 +26,11 @@ public class CreateDestroyService<T> implements Service<T> {
         this.serviceValue = serviceValue;
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
         final T service = getValue();
         // Handle create
-        log.info("Creating Service: " + context.getController().getName());
+        log.debugf("Creating Service: %s", context.getController().getName());
         try {
             Method startMethod = service.getClass().getMethod("create");
             startMethod.invoke(service);
@@ -40,21 +40,21 @@ public class CreateDestroyService<T> implements Service<T> {
         }
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public void stop(StopContext context) {
         final T service = getValue();
         // Handle destroy
-        log.info("Destroying Service: " + context.getController().getName());
+        log.debugf("Destroying Service: %s", context.getController().getName());
         try {
             Method startMethod = service.getClass().getMethod("destroy");
             startMethod.invoke(service);
         } catch(NoSuchMethodException e) {
         } catch(Exception e) {
-            throw new IllegalStateException("Failed to execute legacy service destroy", e);
+            log.error("Failed to execute legacy service destroy", e);
         }
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public T getValue() throws IllegalStateException {
         return serviceValue.getValue();
     }

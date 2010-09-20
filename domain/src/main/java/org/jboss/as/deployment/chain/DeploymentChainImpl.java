@@ -75,7 +75,7 @@ public class DeploymentChainImpl implements DeploymentChain {
 
     @Override
     public String toString() {
-        return "DeploymentChainImpl{processors=" + orderedProcessors + "}";
+        return "DeploymentChainImpl{name='" + name + "' processors=" + orderedProcessors + "}";
     }
 
     private static class OrderedProcessor implements Comparable<OrderedProcessor> {
@@ -107,6 +107,10 @@ public class DeploymentChainImpl implements DeploymentChain {
             int result = processor != null ? processor.hashCode() : 0;
             result = 31 * result + (int) (processingOrder ^ (processingOrder >>> 32));
             return result;
+        }
+
+        public String toString() {
+            return processingOrder + " => " + processor;
         }
     }
 }

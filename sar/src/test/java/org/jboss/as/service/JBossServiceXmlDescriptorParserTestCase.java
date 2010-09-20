@@ -20,10 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.descriptor;
+package org.jboss.as.service;
 
-import org.jboss.as.deployment.TestUtils;
-import org.jboss.as.deployment.test.LegacyService;
+import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
+import org.jboss.as.deployment.descriptor.JBossServiceConfig;
+import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
+import org.jboss.as.deployment.descriptor.JBossServiceDependencyConfig;
+import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Before;
@@ -37,7 +41,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.jboss.as.deployment.TestUtils.getResourceFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -47,7 +50,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author John E. Bailey
  */
-public class JBossServiceXmlDescriptorParserTestCase {
+public class JBossServiceXmlDescriptorParserTestCase extends AbstractSarDeploymentTest {
 
     private JBossServiceXmlDescriptorParser parser;
     private XMLMapper xmlMapper;

@@ -60,7 +60,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public final class ServerGroupDeploymentElement extends AbstractModelElement<ServerGroupDeploymentElement> implements ServiceActivator {
     private static final long serialVersionUID = -7282640684801436543L;
-    private static final Logger log = Logger.getLogger("org.jboss.as.model");
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     private final DeploymentUnitKey key;
     private boolean start;
@@ -215,7 +215,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     @Override
     public void activate(final ServiceActivatorContext context) {
         final String deploymentName = key.getName().replace('.', '_');
-        log.info("Activating deployment: " + key.getName());
+        log.infof("Activating deployment: %s", key.getName());
 
         final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(key.getName()));
         if (!deploymentRoot.exists())
@@ -253,6 +253,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
             // Execute the deployment chain
             final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;
             final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentRoot);
+            log.debugf("Executing deployment '%s' with chain: %s", key.getName(), deploymentChain);
             if(deploymentChain == null)
                 throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);
             try {

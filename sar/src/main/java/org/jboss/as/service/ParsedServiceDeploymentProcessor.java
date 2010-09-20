@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.service;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
@@ -68,8 +68,8 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
     public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
     private static final ServiceName MBEAN_SERVICE_NAME_BASE = ServiceName.JBOSS.append("mbean","service");
-    private static final String CREATE_DESTROY_SUFFIX = "createDestroy";
-    private static final String START_STOP_SUFFIX = "startStop";
+    private static final String CREATE_SUFFIX = "create";
+    private static final String START_SUFFIX = "start";
 
     /**
      * Process a deployment for JbossService confguration.  Will install a {@Code JBossService} for each configured service.
@@ -121,17 +121,17 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final StartStopService<Object> startStopService = new StartStopService<Object>(constructedValue);
 
         final String serviceName = serviceConfig.getName();
-        final ServiceName createDestroyServiceName = convert(serviceName).append(CREATE_DESTROY_SUFFIX);
+        final ServiceName createDestroyServiceName = convert(serviceName).append(CREATE_SUFFIX);
         final BatchServiceBuilder<?> createDestroyServiceBuilder = batchBuilder.addService(createDestroyServiceName, createDestroyService);
-        final ServiceName startStopServiceName = convert(serviceName).append(START_STOP_SUFFIX);
+        final ServiceName startStopServiceName = convert(serviceName).append(START_SUFFIX);
         final BatchServiceBuilder<?> startStopServiceBuilder = batchBuilder.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();
         if(dependencyConfigs != null) {
             for(JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
-                final ServiceName dependencyCreateDestroyServiceName = convert(dependencyConfig.getDependencyName()).append(CREATE_DESTROY_SUFFIX);
-                final ServiceName dependencyStartStopServiceName = convert(dependencyConfig.getDependencyName()).append(START_STOP_SUFFIX);
+                final ServiceName dependencyCreateDestroyServiceName = convert(dependencyConfig.getDependencyName()).append(CREATE_SUFFIX);
+                final ServiceName dependencyStartStopServiceName = convert(dependencyConfig.getDependencyName()).append(START_SUFFIX);
                 final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
                 if(optionalAttributeName != null) {
                     createDestroyServiceBuilder.addDependency(dependencyCreateDestroyServiceName, getPropertyInjector(classValue, optionalAttributeName, createDestroyService, Values.injectedValue()));
@@ -154,8 +154,8 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
                     if(propertyName != null) {
                         valueToInject = cached(new MethodValue<Object>(new LookupGetMethodValue(classValue, propertyName), valueToInject, Values.<Object>emptyList()));
                     }
-                    createDestroyServiceBuilder.addDependency(convert(inject.getBeanName()).append(CREATE_DESTROY_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
-                    startStopServiceBuilder.addDependencies(convert(inject.getBeanName()).append(START_STOP_SUFFIX));
+                    createDestroyServiceBuilder.addDependency(convert(inject.getBeanName()).append(CREATE_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
+                    startStopServiceBuilder.addDependencies(convert(inject.getBeanName()).append(START_SUFFIX));
                 } else if(valueFactory != null) {
                     final String methodName = valueFactory.getMethodName();
                     final JBossServiceAttributeConfig.ValueFactoryParameter[] parameters = valueFactory.getParameters();
@@ -167,8 +167,8 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
                         paramValues.add(cached(new ArgumentValue(attributeTypeValue, parameter.getValue())));
                     }
                     final Value<?> valueToInject = cached(new MethodValue(new LookupMethodValue(classValue, methodName, paramTypes), Values.injectedValue(), paramValues));
-                    createDestroyServiceBuilder.addDependency(convert(valueFactory.getBeanName()).append(CREATE_DESTROY_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
-                    startStopServiceBuilder.addDependencies(convert(valueFactory.getBeanName()).append(START_STOP_SUFFIX));
+                    createDestroyServiceBuilder.addDependency(convert(valueFactory.getBeanName()).append(CREATE_SUFFIX), getPropertyInjector(classValue, attributeName, createDestroyService, valueToInject));
+                    startStopServiceBuilder.addDependencies(convert(valueFactory.getBeanName()).append(START_SUFFIX));
                 } else {
                     createDestroyServiceBuilder.addInjectionValue(getPropertyInjector(classValue, attributeName, createDestroyService, Values.injectedValue()), cached(new AttributeValue(classValue, attributeName, attributeConfig.getValue())));
                 }

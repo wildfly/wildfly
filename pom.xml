@@ -112,6 +112,7 @@
         <module>logging</module>
         <module>transactions</module>
         <module>naming</module>
+        <module>sar</module>
         <module>managedbeans</module>
         <module>build</module>
         <module>testsuite</module>
@@ -249,6 +250,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-remoting</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-sar</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

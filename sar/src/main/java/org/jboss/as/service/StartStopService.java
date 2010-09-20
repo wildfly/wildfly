@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.service;
 
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -49,11 +49,11 @@ public class StartStopService<T> implements Service<T> {
         this.serviceValue = serviceValue;
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
         final T service = getValue();
         // Handle Start
-        log.info("Starting Service: " + context.getController().getName());
+        log.debugf("Starting Service: %s", context.getController().getName());
         try {
             final Method startMethod = service.getClass().getMethod("start");
             startMethod.invoke(service);
@@ -63,21 +63,21 @@ public class StartStopService<T> implements Service<T> {
         }
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public void stop(StopContext context) {
         final T service = getValue();
         // Handle Stop
-        log.info("Stopping Service: " + context.getController().getName());
+        log.debugf("Stopping Service: %s", context.getController().getName());
         try {
             Method startMethod = service.getClass().getMethod("stop");
             startMethod.invoke(service);
         } catch(NoSuchMethodException e) {
         }  catch(Exception e) {
-            throw new IllegalStateException("Failed to execute legacy service stop", e);
+            log.error("Failed to execute legacy service stop", e);
         }
     }
 
-    /** {@inheritDoc */
+    /** {@inheritDoc} */
     public T getValue() throws IllegalStateException {
         return serviceValue.getValue();
     }

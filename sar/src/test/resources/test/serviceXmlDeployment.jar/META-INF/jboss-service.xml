@@ -23,13 +23,13 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
-    <mbean name="jboss:name=test,type=service" code="org.jboss.as.deployment.test.LegacyService">
+    <mbean name="jboss:name=test,type=service" code="org.jboss.as.service.LegacyService">
         <constructor>
             <arg value="Test Value" type="java.lang.String"/>
         </constructor>
     </mbean>
 
-    <mbean name="jboss:name=testTwo,type=service" code="org.jboss.as.deployment.test.LegacyService">
+    <mbean name="jboss:name=testTwo,type=service" code="org.jboss.as.service.LegacyService">
         <depends optional-attribute-name="other">jboss:name=test,type=service</depends>
         <attribute name="somethingElse">
             <value-factory bean="jboss:name=test,type=service" method="appendSomethingElse">
@@ -38,7 +38,7 @@
         </attribute>
     </mbean>
 
-    <mbean name="jboss:name=testThree,type=service" code="org.jboss.as.deployment.test.LegacyService">
+    <mbean name="jboss:name=testThree,type=service" code="org.jboss.as.service.LegacyService">
         <attribute name="other">
             <inject bean="jboss:name=testTwo,type=service" property="other"/>
         </attribute>
