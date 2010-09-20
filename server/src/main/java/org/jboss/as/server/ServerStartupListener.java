@@ -44,6 +44,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
     private volatile int totalServices;
     private volatile int startedServices;
+    private volatile int startedOnDemandServices;
     private volatile int count = 0;
     private final long start = System.currentTimeMillis();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
@@ -56,6 +57,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> countUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "count");
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> totalServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "totalServices");
     private static final AtomicIntegerFieldUpdater<ServerStartupListener> startedServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "startedServices");
+    private static final AtomicIntegerFieldUpdater<ServerStartupListener> startedOnDemandServicesUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerStartupListener.class, "startedOnDemandServices");
 
     /**
      * Construct new instance with a callback listener.
@@ -77,6 +79,9 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     /** {@inheritDoc} */
     public void serviceStarted(final ServiceController<? extends Object> serviceController) {
         startedServicesUpdater.incrementAndGet(this);
+        if(expectedOnDemandServices.contains(serviceController.getName())) {
+            startedOnDemandServicesUpdater.incrementAndGet(this);
+        }
         if (!expectedOnDemandServices.contains(serviceController.getName()) && countUpdater.decrementAndGet(this) == 0) {
             batchComplete();
         }
@@ -121,7 +126,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
         }
         if(finished && callbackRan.compareAndSet(false, true)) {
             final long end = System.currentTimeMillis();
-            finishCallback.run(serviceFailures, end - start, totalServices, expectedOnDemandServices.size(), startedServices);
+            finishCallback.run(serviceFailures, end - start, totalServices, expectedOnDemandServices.size() - startedOnDemandServicesUpdater.get(this), startedServices);
         }
     }
 
