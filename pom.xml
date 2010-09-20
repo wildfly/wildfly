@@ -112,6 +112,7 @@
         <module>logging</module>
         <module>transactions</module>
         <module>naming</module>
+        <module>jmx</module>
         <module>sar</module>
         <module>managedbeans</module>
         <module>build</module>
@@ -238,6 +239,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-naming</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -1,0 +1,107 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.jmx;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+
+/**
+ * Service used to register and unregister an mbean with an mbean server.
+ *
+ * @author John Bailey
+ */
+public class MBeanRegistrationService<T> implements Service<Void> {
+    private static final Logger log = Logger.getLogger("org.jboss.as.jmx");
+    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final String name;
+    private ObjectName objectName;
+    private final Value<T> value;
+
+    /**
+     * Create an instance.
+     *
+     * @param name The name to use as an ObjectName
+     * @param value The object to register
+     */
+    public MBeanRegistrationService(final String name, final Value<T> value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    /**
+     * Register the mbean with the mbean server.
+     *
+     * @param context The start context
+     * @throws StartException If any registration problems occur
+     */
+    public synchronized void start(final StartContext context) throws StartException {
+        final MBeanServer mBeanServer = mBeanServerValue.getValue();
+        final T value = this.value.getValue();
+        try {
+            objectName = new ObjectName(name);
+        } catch (MalformedObjectNameException e) {
+            throw new StartException("Failed to register mbean [" + name + "]", e);
+        }
+
+        try {
+            mBeanServer.registerMBean(value, objectName);
+        } catch (Exception e) {
+            throw new StartException("Failed to register mbean [" + name + "]", e);
+        }
+    }
+
+    /**
+     * Unregister the mbean from the mbean server.
+     *
+     * @param context The stop context
+     */
+    public synchronized void stop(StopContext context) {
+        if(objectName == null){
+            log.warn("No ObjectName available to unregister");
+        }
+        final MBeanServer mBeanServer = mBeanServerValue.getValue();
+        try {
+            mBeanServer.unregisterMBean(objectName);
+        } catch (Exception e) {
+            log.errorf(e, "Failed to unregister [%s]", objectName);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public Void getValue() throws IllegalStateException {
+        return null;
+    }
+
+    public Injector<MBeanServer> getMBeanServerValue() {
+        return mBeanServerValue;
+    }
+}

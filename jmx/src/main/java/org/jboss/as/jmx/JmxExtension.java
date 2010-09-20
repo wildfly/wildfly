@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.service;
+package org.jboss.as.jmx;
 
 import javax.xml.namespace.QName;
 import org.jboss.as.Extension;
@@ -28,26 +28,18 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * Extension used to enable SAR deployments.
+ * JMX Extension
  *
  * @author John Bailey
  */
-public class SarExtension implements Extension {
+public class JmxExtension implements Extension {
 
-    /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
-     */
+    /** {@inheritDoc} */
     public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:sar:1.0", "subsystem"), new SarSubsystemElementParser());
+        mapper.registerRootElement(new QName("urn:jboss:domain:jmx:1.0", "subsystem"), new JmxSubsystemElementParser());
     }
 
-    /**
-     * Activate the extension.
-     *
-     * @param context the service activation context
-     */
+    /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
     }
 }

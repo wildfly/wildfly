@@ -20,34 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.service;
+package org.jboss.as.jmx;
 
-import javax.xml.namespace.QName;
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
+import java.lang.management.ManagementFactory;
+import javax.management.MBeanServer;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * Extension used to enable SAR deployments.
+ * Basic service managing an MBeanServer instance.
+ * Note:  Just using the platform mbean server for now.
  *
  * @author John Bailey
  */
-public class SarExtension implements Extension {
+public class MBeanServerService implements Service<MBeanServer> {
+    public static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
-    /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
-     */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:sar:1.0", "subsystem"), new SarSubsystemElementParser());
+    private MBeanServer mBeanServer;
+
+    /** {@inheritDoc} */
+    public synchronized void start(final StartContext context) throws StartException {
+        mBeanServer = ManagementFactory.getPlatformMBeanServer();
     }
 
-    /**
-     * Activate the extension.
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    /** {@inheritDoc} */
+    public synchronized void stop(final StopContext context) {
+        mBeanServer = null;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized MBeanServer getValue() throws IllegalStateException {
+        return mBeanServer;
     }
 }

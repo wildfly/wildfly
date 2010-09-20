@@ -20,34 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.service;
+package org.jboss.as.jmx;
 
-import javax.xml.namespace.QName;
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
+import javax.xml.stream.XMLStreamException;
+import org.jboss.as.model.ParseResult;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Extension used to enable SAR deployments.
+ * JMX subsystem parser.
  *
  * @author John Bailey
  */
-public class SarExtension implements Extension {
+class JmxSubsystemElementParser implements XMLElementReader<ParseResult<? super JmxSubsystemElement>> {
 
-    /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
-     */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:sar:1.0", "subsystem"), new SarSubsystemElementParser());
-    }
-
-    /**
-     * Activate the extension.
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    /** {@inheritDoc} */
+    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final ParseResult<? super JmxSubsystemElement> result) throws XMLStreamException {
+        result.setResult(new JmxSubsystemElement(xmlExtendedStreamReader));
     }
 }

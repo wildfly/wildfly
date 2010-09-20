@@ -171,6 +171,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jmx">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
+        </module-def>
+
         <module-def name="org.jboss.as.logging">
             <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
         </module-def>
