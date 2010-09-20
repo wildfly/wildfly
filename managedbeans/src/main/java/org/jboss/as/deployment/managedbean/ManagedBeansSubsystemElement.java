@@ -58,5 +58,6 @@ final class ManagedBeansSubsystemElement extends AbstractSubsystemElement<Manage
 
     /** @inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEndElement();
     }
 }
