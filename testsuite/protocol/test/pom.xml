@@ -30,6 +30,7 @@
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-testsuite</artifactId>
         <version>7.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
