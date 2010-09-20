@@ -50,7 +50,7 @@ public class StandaloneServer extends AbstractServer {
     }
 
     public void start() throws ServerStartException {
-        final File standalone = new File(getEnvironment().getDomainConfigurationDir(), STANDALONE_XML);
+        final File standalone = new File(getEnvironment().getServerConfigurationDir(), STANDALONE_XML);
         if(! standalone.isFile()) {
             throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
         }

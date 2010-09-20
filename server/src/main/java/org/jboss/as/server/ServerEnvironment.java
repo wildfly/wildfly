@@ -321,27 +321,27 @@ public class ServerEnvironment {
         return modulesDir;
     }
 
-    public File getDomainBaseDir() {
+    public File getServerBaseDir() {
         return serverBaseDir;
     }
 
-    public File getDomainConfigurationDir() {
+    public File getServerConfigurationDir() {
         return serverConfigurationDir;
     }
 
-    public File getDomainDataDir() {
+    public File getServerDataDir() {
         return serverDataDir;
     }
 
-    public File getDomainDeployDir() {
+    public File getServerDeployDir() {
         return serverDeployDir;
     }
 
-    public File getDomainLogDir() {
+    public File getServerLogDir() {
         return serverLogDir;
     }
 
-    public File getDomainTempDir() {
+    public File getServerTempDir() {
         return serverTempDir;
     }
 
