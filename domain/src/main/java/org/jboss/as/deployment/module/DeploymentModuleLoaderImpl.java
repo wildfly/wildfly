@@ -26,7 +26,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.msc.service.ServiceName;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,8 +36,6 @@ import java.util.concurrent.ConcurrentMap;
  * @author John E. Bailey
  */
 public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "module", "loader");
-    public static final long SELECTOR_PRIORITY = 100000L;
     private final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = new ConcurrentHashMap<ModuleIdentifier, ModuleSpec>();
 
     public DeploymentModuleLoaderImpl() {

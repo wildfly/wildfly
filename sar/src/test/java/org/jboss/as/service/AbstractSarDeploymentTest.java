@@ -31,7 +31,6 @@ import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
@@ -57,7 +56,6 @@ public abstract class AbstractSarDeploymentTest {
     @Before
     public void setup() throws Exception {
         System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractSarDeploymentTest.class, "/test")).getPathName());
-        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
 
         serviceContainer = ServiceContainer.Factory.create();
 

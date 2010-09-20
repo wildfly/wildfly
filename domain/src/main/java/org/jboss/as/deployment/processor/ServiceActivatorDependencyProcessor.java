@@ -20,43 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.module;
+package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
+import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment unit processor responsible for attaching the default deployment module loader to the context.
- * @author John E. Bailey
+ * Deployment processor that adds required dependencies for executing service activators.
+ *
+ * @author John Bailey
  */
-public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
-
-    static final AttachmentKey<DeploymentModuleLoader> ATTACHMENT_KEY = new AttachmentKey<DeploymentModuleLoader>(DeploymentModuleLoader.class);
-
-    private final Value<DeploymentModuleLoader> deploymentModuleLoader;
-
-    public DeploymentModuleLoaderProcessor(final DeploymentModuleLoader deploymentModuleLoader) {
-        this.deploymentModuleLoader = Values.immediateValue(deploymentModuleLoader);
-    }
-
-    public DeploymentModuleLoaderProcessor(final Value<DeploymentModuleLoader> deploymentModuleLoader) {
-        this.deploymentModuleLoader = deploymentModuleLoader;
-    }
+public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+    private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
+    private static final ModuleConfig.Dependency MSC_DEP = new ModuleConfig.Dependency(ModuleIdentifier.create("org.jboss.msc"), true, false, false);
 
     /**
-     * If there isn't currently a deployment module loader, attach the default loader.
-     *
+     * Add the dependencies if the deployment contains a service activator loader entry.
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ATTACHMENT_KEY) == null)
-            context.putAttachment(ATTACHMENT_KEY, deploymentModuleLoader.getValue());
+        final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
+        if(deploymentRoot == null)
+            return;
+        if(deploymentRoot.getChild(SERVICE_ACTIVATOR_PATH).exists()) {
+            context.putAttachment(ServiceActivatorMarker.ATTACHMENT_KEY, new ServiceActivatorMarker());
+            ModuleDependencies.addDependency(context, MSC_DEP);
+        }
     }
 }

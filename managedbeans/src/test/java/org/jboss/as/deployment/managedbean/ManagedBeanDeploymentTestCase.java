@@ -29,6 +29,7 @@ import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanDeploymentProcessor;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
@@ -56,7 +57,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     private static final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.managedbean");
-    private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
+    private static DeploymentModuleLoaderProcessor deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
 
     Context javaContext;
 
@@ -82,7 +83,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     @Override
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
         deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
-        deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor();
+        deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
 
         javaContext = new MockContext();

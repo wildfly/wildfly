@@ -20,25 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.module;
+package org.jboss.as.deployment.processor;
 
-import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.ModuleLoaderSelector;
+import org.jboss.as.deployment.AttachmentKey;
 
 /**
- * Module loader selector that returns the current deployment module loader.
+ * Marker file used to identify deployments that contain service activators.
  *
  * @author John Bailey
  */
-public class DeploymentModuleLoaderSelector implements ModuleLoaderSelector {
-
-    public static ThreadLocal<DeploymentModuleLoader> CURRENT_MODULE_LOADER = new ThreadLocal<DeploymentModuleLoader>();
-
-    @Override
-    public ModuleLoader getCurrentLoader() {
-        final ModuleLoader currentModuleLoader = CURRENT_MODULE_LOADER.get();
-        if(currentModuleLoader != null)
-            return currentModuleLoader;
-        return ModuleLoaderSelector.DEFAULT.getCurrentLoader();
-    }
+public class ServiceActivatorMarker {
+    static final AttachmentKey<ServiceActivatorMarker> ATTACHMENT_KEY = new AttachmentKey<ServiceActivatorMarker>(ServiceActivatorMarker.class);
 }

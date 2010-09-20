@@ -52,7 +52,7 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
             return;
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         final MountHandle deploymentRootMountHandler = context.getAttachment(MountHandle.ATTACHMENT_KEY);
-        final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("org.jboss.deployments" + "." + deploymentRoot.getName());
+        final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentRoot.getName());
         final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot, deploymentRootMountHandler)};
         final ModuleDependencies dependenciesAttachment = getAttachedDependencies(context);
         final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;

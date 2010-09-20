@@ -23,11 +23,10 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
 
 /**
  * Service used to wrap a deployment module loader as a service.
@@ -35,14 +34,12 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class DeploymentModuleLoaderService implements Service<DeploymentModuleLoader> {
-    private final Value<DeploymentModuleLoader> deploymentModuleLoaderValue;
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "module", "loader");
 
-    public DeploymentModuleLoaderService(Value<DeploymentModuleLoader> deploymentModuleLoaderValue) {
-        this.deploymentModuleLoaderValue = deploymentModuleLoaderValue;
-    }
+    private final DeploymentModuleLoader deploymentModuleLoader;
 
-    public DeploymentModuleLoaderService(DeploymentModuleLoader deploymentModuleLoader) {
-        this.deploymentModuleLoaderValue = Values.immediateValue(deploymentModuleLoader);
+    public DeploymentModuleLoaderService(final DeploymentModuleLoader deploymentModuleLoader) {
+        this.deploymentModuleLoader = deploymentModuleLoader;
     }
 
     @Override
@@ -55,6 +52,6 @@ public class DeploymentModuleLoaderService implements Service<DeploymentModuleLo
 
     @Override
     public DeploymentModuleLoader getValue() throws IllegalStateException {
-        return deploymentModuleLoaderValue.getValue();
+        return deploymentModuleLoader;
     }
 }

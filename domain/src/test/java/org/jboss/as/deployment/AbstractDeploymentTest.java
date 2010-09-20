@@ -24,9 +24,7 @@ package org.jboss.as.deployment;
 
 import java.io.File;
 import java.net.URL;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
 import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -55,7 +53,6 @@ public abstract class AbstractDeploymentTest {
     @Before
     public void setup() throws Exception {
         System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractDeploymentTest.class, "/test")).getPathName());
-        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
 
         serviceContainer = ServiceContainer.Factory.create();
 

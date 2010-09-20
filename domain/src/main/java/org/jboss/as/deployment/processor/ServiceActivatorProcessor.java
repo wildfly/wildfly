@@ -20,43 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.module;
+package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceActivatorContextImpl;
 
 /**
- * Deployment unit processor responsible for attaching the default deployment module loader to the context.
- * @author John E. Bailey
+ * Deployment processor responsible for executing any ServiceActivator instances for a deployment.
+ *
+ * @author John Bailey
  */
-public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
-
-    static final AttachmentKey<DeploymentModuleLoader> ATTACHMENT_KEY = new AttachmentKey<DeploymentModuleLoader>(DeploymentModuleLoader.class);
-
-    private final Value<DeploymentModuleLoader> deploymentModuleLoader;
-
-    public DeploymentModuleLoaderProcessor(final DeploymentModuleLoader deploymentModuleLoader) {
-        this.deploymentModuleLoader = Values.immediateValue(deploymentModuleLoader);
-    }
-
-    public DeploymentModuleLoaderProcessor(final Value<DeploymentModuleLoader> deploymentModuleLoader) {
-        this.deploymentModuleLoader = deploymentModuleLoader;
-    }
+public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(50L);
 
     /**
-     * If there isn't currently a deployment module loader, attach the default loader.
+     * If the deployment has a module attached it will ask the module to load the ServiceActivator services.
      *
      * @param context the deployment unit context
-     * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if(context.getAttachment(ATTACHMENT_KEY) == null)
-            context.putAttachment(ATTACHMENT_KEY, deploymentModuleLoader.getValue());
+        if(context.getAttachment(ServiceActivatorMarker.ATTACHMENT_KEY) == null)
+            return; // Skip it if it has not been marked
+
+        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        if (module == null)
+            return; // Skip deployments with no module
+
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(context.getBatchBuilder());
+        for(ServiceActivator serviceActivator : module.loadService(ServiceActivator.class)) {
+            serviceActivator.activate(serviceActivatorContext);
+        }
     }
 }

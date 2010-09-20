@@ -24,6 +24,10 @@ package org.jboss.as.model;
 
 import org.jboss.as.Extension;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
+import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
+import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
@@ -431,7 +435,13 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         // Activate socket bindings
         socketBindings.activate(context);
 
-        // Activate deployments
+        // Activate deployment module loader
+        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
+
+        final DeploymentModuleLoaderService deploymentModuleLoaderService = new DeploymentModuleLoaderService(new DeploymentModuleLoaderImpl());
+        batchBuilder.addService(DeploymentModuleLoaderService.SERVICE_NAME, deploymentModuleLoaderService)
+            .addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, new ClassifyingModuleLoaderInjector("deployment", deploymentModuleLoaderService));
+
         new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
     }
 
