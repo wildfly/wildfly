@@ -20,45 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
-
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.UpdateFailedException;
+package org.jboss.as.model;
 
 /**
- * Add a connector to a remoting container.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
+public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
+    private static final long serialVersionUID = 8526537198264820276L;
 
-    private static final long serialVersionUID = -2278776744412864865L;
+    private final String name;
+    private final String profile;
+    private final JvmElement jvm;
 
-    private final ConnectorElement newElement;
+    public ServerGroupAdd(final String name, final String profile, final JvmElement jvm) {
+        this.name = name;
+        this.profile = profile;
+        this.jvm = jvm;
+    }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param newElement the connector element to add
-     */
-    public AddConnectorUpdate(final ConnectorElement newElement) {
-        this.newElement = newElement;
+    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
+    }
+
+    protected AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original) {
+        return null;
     }
 
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
-    }
-
-    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    protected Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
-    }
-
-    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
     }
 }

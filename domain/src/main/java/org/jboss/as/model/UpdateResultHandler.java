@@ -23,27 +23,34 @@
 package org.jboss.as.model;
 
 /**
- * An update to an element in the model.
+ * The result of applying an update to a running server.
  *
- * @param <E> the element type that this update applies to
- * @param <R> the type of result that is returned by this update type
+ * @param <P> the type of the parameter to pass to the handler instance
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>, R> extends AbstractModelElementUpdate<E> {
-
-    private static final long serialVersionUID = -46837337005143198L;
-
-    protected AbstractModelUpdate() {
-    }
+public interface UpdateResultHandler<R, P> {
 
     /**
-     * Get the server model update which corresponds to this model update, if any.
+     * Handle successful application of the update.
      *
-     * @return the server model update
+     * @param result the update result, if any
+     * @param param the parameter passed in to the update method
      */
-    protected abstract AbstractServerModelUpdate<R> getServerModelUpdate();
+    void handleSuccess(R result, P param);
 
-    /** {@inheritDoc} */
-    protected abstract AbstractModelUpdate<E, ?> getCompensatingUpdate(E original);
+    /**
+     * Handle a failure to apply the update.
+     *
+     * @param cause the cause of the failure
+     * @param param the parameter passed in to the update method
+     */
+    void handleFailure(Throwable cause, P param);
+
+    /**
+     * Handle a timeout in applying the update.
+     *
+     * @param param the parameter passed in to the update method
+     */
+    void handleTimeout(P param);
 }

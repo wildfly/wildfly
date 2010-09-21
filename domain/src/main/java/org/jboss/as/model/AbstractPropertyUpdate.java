@@ -20,45 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as.model;
 
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.UpdateFailedException;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * Add a connector to a remoting container.
+ * An update which applies to a property list.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
+public abstract class AbstractPropertyUpdate extends AbstractModelElementUpdate<PropertiesElement> {
 
-    private static final long serialVersionUID = -2278776744412864865L;
-
-    private final ConnectorElement newElement;
+    private static final long serialVersionUID = -988127260524571932L;
 
     /**
      * Construct a new instance.
-     *
-     * @param newElement the connector element to add
      */
-    public AddConnectorUpdate(final ConnectorElement newElement) {
-        this.newElement = newElement;
-    }
-
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return null;
-    }
-
-    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
-        return null;
+    protected AbstractPropertyUpdate() {
     }
 
     /** {@inheritDoc} */
-    protected Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
+    protected final Class<PropertiesElement> getModelElementType() {
+        return PropertiesElement.class;
     }
 
-    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
-    }
+    /** {@inheritDoc} */
+    protected abstract void applyUpdate(PropertiesElement element) throws UpdateFailedException;
+
+    /**
+     * Apply this update to an actual set of properties.
+     *
+     * @param properties the properties to apply the update to
+     * @throws UpdateFailedException if the update fails for some reason
+     */
+    protected abstract void applyUpdate(Properties properties) throws UpdateFailedException;
+
+    /**
+     * Apply this update to a plain map.
+     *
+     * @param map the map
+     */
+    protected abstract void applyUpdate(Map<? super String, ? super String> map);
+
+    /** {@inheritDoc} */
+    protected abstract AbstractPropertyUpdate getCompensatingUpdate(PropertiesElement original);
 }

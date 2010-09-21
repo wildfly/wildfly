@@ -22,34 +22,72 @@
 
 package org.jboss.as.model;
 
+import java.util.Map;
+import java.util.Properties;
+
 /**
+ * An update which adds a property to a property list.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PropertyAdd extends AbstractModelUpdate<PropertiesElement> {
+public final class PropertyAdd extends AbstractPropertyUpdate {
 
     private static final long serialVersionUID = 5040034824081445679L;
 
     private final String name;
     private final String value;
 
+    /**
+     * Construct a new instance.
+     *
+     * @param name the property name
+     * @param value the property value
+     */
     public PropertyAdd(final String name, final String value) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value is null");
+        }
         this.name = name;
         this.value = value;
     }
 
-    protected Class<PropertiesElement> getModelElementType() {
-        return PropertiesElement.class;
+    /** {@inheritDoc} */
+    protected void applyUpdate(final PropertiesElement element) {
+        element.addProperty(name, value);
     }
 
-    protected AbstractModelUpdate<PropertiesElement> applyUpdate(final PropertiesElement element) {
-        element.addProperty(name, value);
+    /** {@inheritDoc} */
+    protected void applyUpdate(final Properties properties) throws UpdateFailedException {
+        properties.setProperty(name, value);
+    }
+
+    /** {@inheritDoc} */
+    protected void applyUpdate(final Map<? super String, ? super String> map) {
+        map.put(name, value);
+    }
+
+    /** {@inheritDoc} */
+    protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
         return new PropertyRemove(name);
     }
 
+    /**
+     * Get the property name to be added.
+     *
+     * @return the property name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the property value to be added.
+     *
+     * @return the property value
+     */
     public String getValue() {
         return value;
     }

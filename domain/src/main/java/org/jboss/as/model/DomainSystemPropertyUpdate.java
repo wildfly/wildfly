@@ -20,45 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
-
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.UpdateFailedException;
+package org.jboss.as.model;
 
 /**
- * Add a connector to a remoting container.
+ * An update which modifies the domain's system properties.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
+public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
+    private static final long serialVersionUID = -3412272237934071396L;
 
-    private static final long serialVersionUID = -2278776744412864865L;
-
-    private final ConnectorElement newElement;
+    private final AbstractPropertyUpdate propertyUpdate;
 
     /**
      * Construct a new instance.
      *
-     * @param newElement the connector element to add
+     * @param propertyUpdate the property update to apply
      */
-    public AddConnectorUpdate(final ConnectorElement newElement) {
-        this.newElement = newElement;
-    }
-
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return null;
-    }
-
-    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
-        return null;
+    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
+        this.propertyUpdate = propertyUpdate;
     }
 
     /** {@inheritDoc} */
-    protected Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
+    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
+        propertyUpdate.applyUpdate(element.getSystemProperties());
     }
 
-    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
+    /** {@inheritDoc} */
+    protected DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
+        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
+    }
+
+    /** {@inheritDoc} */
+    protected ServerSystemPropertyUpdate getServerModelUpdate() {
+        return new ServerSystemPropertyUpdate(propertyUpdate);
     }
 }

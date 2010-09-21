@@ -153,11 +153,6 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         streamWriter.writeEndElement();
     }
 
-    /** {@inheritDoc} */
-    public ConnectorElement clone() {
-        return super.clone();
-    }
-
     /**
      * Get the name of this connector.
      *

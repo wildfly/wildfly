@@ -23,28 +23,30 @@
 package org.jboss.as.model;
 
 /**
- * Update used when adding a deployment unit to a server group.
+ * An update to the domain model.
  *
- * @author John E. Bailey
+ * @param <R> the type of result that is returned by this update type
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ServerGroupAddDeploymentUpdate extends AbstractModelUpdate<ServerGroupElement> {
+public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<DomainModel, R> {
 
-    private static final long serialVersionUID = -5275795083851579399L;
-    private final DeploymentUnitKey key;
+    private static final long serialVersionUID = 6933648919212398600L;
 
-    public ServerGroupAddDeploymentUpdate(final String fileName, final byte[] sha1Hash) {
-        this.key = new DeploymentUnitKey(fileName, sha1Hash);
+    /**
+     * Construct a new instance.
+     */
+    protected AbstractDomainModelUpdate() {
     }
 
-    @Override
-    protected Class<ServerGroupElement> getModelElementType() {
-        return ServerGroupElement.class;
+    /** {@inheritDoc} */
+    protected final Class<DomainModel> getModelElementType() {
+        return DomainModel.class;
     }
 
-    @Override
-    protected AbstractModelUpdate<ServerGroupElement> applyUpdate(ServerGroupElement serverGroup) {
-        return null; // TODO: return a deployment removal update
-    }
+    /** {@inheritDoc} */
+    protected abstract void applyUpdate(final DomainModel element) throws UpdateFailedException;
 
-
+    /** {@inheritDoc} */
+    protected abstract AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original);
 }

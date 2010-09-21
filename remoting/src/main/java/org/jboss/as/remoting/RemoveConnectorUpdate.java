@@ -23,13 +23,15 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.UpdateFailedException;
 
 /**
  * An update which removes a connector from the remoting container.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement> {
+public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
 
     private static final long serialVersionUID = -8965990593053845956L;
 
@@ -52,8 +54,14 @@ public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSub
         return RemotingSubsystemElement.class;
     }
 
-    /** {@inheritDoc} */
-    protected AbstractModelUpdate<RemotingSubsystemElement> applyUpdate(final RemotingSubsystemElement element) {
-        return new AddConnectorUpdate(element.removeConnector(name).clone());
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
+    }
+
+    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
+        return null;
+    }
+
+    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
     }
 }

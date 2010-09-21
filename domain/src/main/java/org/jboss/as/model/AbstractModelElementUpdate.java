@@ -22,50 +22,46 @@
 
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import java.io.Serializable;
 
 /**
- * A controlled object model which is related to an XML representation.  Such an object model can be serialized to
- * XML or to binary.
+ * An update to an element in the model.
  *
- * @param <M> the concrete model type
+ * @param <E> the element type that this update applies to
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractModel<M extends AbstractModel<M>> extends AbstractModelRootElement<M> {
+public abstract class AbstractModelElementUpdate<E extends AbstractModelElement<E>> implements Serializable {
 
-    private static final long serialVersionUID = 66064050420378211L;
-
-    /**
-     * Construct a new instance.
-     *
-     * @param elementName the root element name
-     */
-    protected AbstractModel(final QName elementName) {
-        super(elementName);
-    }
+    private static final long serialVersionUID = -46837337005143198L;
 
     /**
      * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
      */
-    protected AbstractModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+    protected AbstractModelElementUpdate() {
     }
 
     /**
-     * Apply an update to this model.
+     * Get the class of the model element that this update type applies to.
      *
-     * @param update the update to apply
-     * @param <R> the update's result type
-     * @throws UpdateFailedException if an error occurs
+     * @return the model element type class
      */
-    public <R> void update(AbstractModelUpdate<M, R> update) throws UpdateFailedException {
-        update.applyUpdate(cast());
-    }
+    protected abstract Class<E> getModelElementType();
+
+    /**
+     * Apply this update to the given model element.
+     *
+     * @param element the element to which the update should be applied
+     * @throws UpdateFailedException if the update failed
+     */
+    protected abstract void applyUpdate(E element) throws UpdateFailedException;
+
+    /**
+     * Get an update which would revert (compensate for) this update.  This method may only be called before the update
+     * is applied to the target element.
+     *
+     * @param original the original element
+     * @return the compensating update
+     */
+    protected abstract AbstractModelElementUpdate<E> getCompensatingUpdate(E original);
 }

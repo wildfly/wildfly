@@ -9,7 +9,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -26,10 +25,8 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
     private int portOffset;
 
     /**
-     * @param location
      */
-    public SocketBindingGroupRefElement(Location location, final String ref) {
-        super();
+    public SocketBindingGroupRefElement(final String ref) {
         this.ref  =ref;
     }
 
@@ -38,7 +35,6 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
      * @throws XMLStreamException
      */
     public SocketBindingGroupRefElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super();
         // Handle attributes
         String name = null;
         int offset = 0;
@@ -56,7 +52,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
                     }
                     case PORT_OFFSET: {
                         try {
-                            offset = Integer.valueOf(value);
+                            offset = Integer.parseInt(value);
                             if (offset < 0) {
                                 throw new XMLStreamException(offset + " is not a valid " +
                                         attribute.getLocalName() + " -- must be greater than zero",

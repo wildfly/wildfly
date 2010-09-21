@@ -31,16 +31,13 @@ import javax.xml.stream.XMLStreamException;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -425,19 +422,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     public final E cast(Object other) {
         return getElementClass().cast(other);
-    }
-
-    /**
-     * Base clone method.
-     *
-     * @return the clone
-     */
-    protected E clone() {
-        try {
-            return cast(super.clone());
-        } catch (CloneNotSupportedException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     /**

@@ -22,58 +22,51 @@
 
 package org.jboss.as.model;
 
-import java.util.Map;
-import java.util.Properties;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
- * An update which removes a property from the property list.
+ * An update which modifies the server's system properties.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PropertyRemove extends AbstractPropertyUpdate {
+public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<Void> {
 
-    private static final long serialVersionUID = 5040034824081445679L;
+    private static final long serialVersionUID = 7462989455163230095L;
 
-    private final String name;
+    private final AbstractPropertyUpdate propertyUpdate;
 
     /**
      * Construct a new instance.
      *
-     * @param name the property name to remove
+     * @param propertyUpdate the property update to apply
      */
-    public PropertyRemove(final String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name is null");
+    public ServerSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
+        this.propertyUpdate = propertyUpdate;
+    }
+
+    /** {@inheritDoc} */
+    public boolean requiresRestart() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
+        propertyUpdate.applyUpdate(element.getSystemProperties());
+    }
+
+    /** {@inheritDoc} */
+    public <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<Void, P> resultHandler, final P param) {
+        try {
+            propertyUpdate.applyUpdate(System.getProperties());
+        } catch (UpdateFailedException e) {
+            resultHandler.handleFailure(e, param);
+            return;
         }
-        this.name = name;
+        resultHandler.handleSuccess(null, param);
     }
 
     /** {@inheritDoc} */
-    protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
-        return new PropertyAdd(name, original.getProperty(name));
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(final PropertiesElement element) throws UpdateFailedException {
-        element.removeProperty(name);
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(final Properties properties) throws UpdateFailedException {
-        properties.remove(name);
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(final Map<? super String, ? super String> map) {
-        map.remove(name);
-    }
-
-    /**
-     * Get the name of the property to remove.
-     *
-     * @return the property name
-     */
-    public String getName() {
-        return name;
+    protected ServerSystemPropertyUpdate getCompensatingUpdate(final ServerModel original) {
+        return new ServerSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 }
