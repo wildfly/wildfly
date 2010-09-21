@@ -50,7 +50,6 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
      * Standard modules that include parsing {@link Extension}s.
      */
     private static final List<String> EXTENSION_MODULES = Arrays.asList(new String[] {
-            "org.jboss.as.logging",
             "org.jboss.as.threads",
             "org.jboss.as.remoting",
             "org.jboss.as.transactions",
