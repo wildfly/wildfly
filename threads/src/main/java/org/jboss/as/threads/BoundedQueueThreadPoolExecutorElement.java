@@ -26,7 +26,6 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -51,8 +50,8 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
     private ScaledCount queueLength;
     private ScaledCount coreThreads;
 
-    public BoundedQueueThreadPoolExecutorElement(final Location location, final String name) {
-        super(location, name);
+    public BoundedQueueThreadPoolExecutorElement(final String name) {
+        super(name);
     }
 
     public BoundedQueueThreadPoolExecutorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

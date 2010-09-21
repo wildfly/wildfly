@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
@@ -48,16 +47,14 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
     private boolean allowed;
     private boolean start;
 
-    public DeploymentUnitElement(final Location location, final String fileName,
-            final byte[] sha1Hash, final boolean allowed, final boolean start) {
-        super(location);
+    public DeploymentUnitElement(final String fileName,
+                                 final byte[] sha1Hash, final boolean allowed, final boolean start) {
         this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.allowed = allowed;
         this.start = start;
     }
 
     public DeploymentUnitElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String fileName = null;
         byte[] sha1Hash = null;

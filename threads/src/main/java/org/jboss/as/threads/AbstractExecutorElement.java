@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -67,13 +66,11 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
 
     private PropertiesElement properties;
 
-    protected AbstractExecutorElement(final Location location, final String name) {
-        super(location);
+    protected AbstractExecutorElement(final String name) {
         this.name = name;
     }
 
     protected AbstractExecutorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         name = reader.getAttributeValue(null, "name");
         if (name == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));

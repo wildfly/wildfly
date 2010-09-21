@@ -22,12 +22,8 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -61,11 +57,10 @@ public final class HostModel extends AbstractModel<HostModel> {
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the host element
      * @param elementName the name of this host element
      */
-    public HostModel(final Location location, final QName elementName) {
-        super(location, elementName);
+    public HostModel(final QName elementName) {
+        super(elementName);
         this.schemaLocation = null;
     }
 

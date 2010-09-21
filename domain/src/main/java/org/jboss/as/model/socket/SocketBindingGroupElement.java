@@ -66,7 +66,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     public SocketBindingGroupElement(Location location, final String name, final String defaultInterface,
             final RefResolver<String, InterfaceElement> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) {
-        super(location);
+        super();
 
         if (name == null)
             throw new IllegalArgumentException("name is null");
@@ -106,7 +106,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     public SocketBindingGroupElement(XMLExtendedStreamReader reader,
             final RefResolver<String, InterfaceElement> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) throws XMLStreamException {
-        super(reader);
+        super();
 
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
@@ -195,7 +195,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * @param source
      */
     public SocketBindingGroupElement(SocketBindingGroupElement source) {
-        super(source.getLocation());
+        super();
 
         this.name = source.name;
         this.defaultInterface = source.defaultInterface;
@@ -214,8 +214,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
             SocketBindingGroupElement group = source.includedGroupResolver.resolveRef(entry.getKey());
             if (group == null) {
                 throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +
-                        Element.SOCKET_BINDING_GROUP + " '" +
+                        "' refers to non-existent " + Element.SOCKET_BINDING_GROUP + " '" +
                         entry.getValue().getGroupName() + "'");
             }
             resolvedGroups.put(entry.getKey(), new SocketBindingGroupElement(group));
@@ -255,8 +254,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                 SocketBindingGroupElement group = includedGroupResolver.resolveRef(entry.getKey());
                 if (group == null) {
                     throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
-                            "' at " + entry.getValue().getLocation().toString() + " refers to non-existent " +
-                            Element.SOCKET_BINDING_GROUP + " '" +
+                            "' refers to non-existent " + Element.SOCKET_BINDING_GROUP + " '" +
                             entry.getValue().getGroupName() + "'");
                 }
                 Set<SocketBindingElement> included = group.getAllSocketBindings();

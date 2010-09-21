@@ -28,7 +28,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -81,12 +80,11 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this element
      * @param threadPoolName the name of the thread pool for the remoting subsystem
      * @param elementName the name of the subsystem element
      */
-    public RemotingSubsystemElement(final Location location, final String threadPoolName, final QName elementName) {
-        super(location, elementName);
+    public RemotingSubsystemElement(final String threadPoolName, final QName elementName) {
+        super(elementName);
         if (threadPoolName == null) {
             throw new IllegalArgumentException("threadPoolName is null");
         }
@@ -187,7 +185,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
         serviceBuilder.addDependency(JBOSS_THREAD_SCHEDULED_EXECUTOR.append(threadPoolName), Executor.class, executorInjector);
-        serviceBuilder.setLocation(getLocation());
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);

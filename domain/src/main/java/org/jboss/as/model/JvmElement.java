@@ -8,7 +8,6 @@ import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -29,10 +28,8 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     private PropertiesElement systemProperties;
 
     /**
-     * @param location
      */
-    public JvmElement(Location location, final String name) {
-        super(location);
+    public JvmElement(final String name) {
         this.name = name;
     }
 
@@ -41,7 +38,6 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
      * @throws XMLStreamException
      */
     public JvmElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String name = null;
         String home = null;
@@ -109,7 +105,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
 
     public JvmElement(JvmElement ... toCombine) {
         // FIXME -- hack Location
-        super(new Location("N/A", 0, 0, null));
+        super();
 
         this.name = toCombine[0].getName();
 

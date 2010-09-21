@@ -36,7 +36,7 @@ public abstract class AbstractFormatterElement<E extends AbstractFormatterElemen
     private static final long serialVersionUID = -3445221585479241L;
 
     protected AbstractFormatterElement(final QName elementName) {
-        super(null, elementName);
+        super(elementName);
     }
 
     protected abstract Formatter createFormatter();

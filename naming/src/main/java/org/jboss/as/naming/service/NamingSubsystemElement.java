@@ -28,7 +28,6 @@ import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.value.Values;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -61,11 +60,10 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     /**
      * Create a new instance without a stream reader.
      *
-     * @param location The source location
      * @param supportEvents Should the naming system support events
      */
-    public NamingSubsystemElement(final Location location, final boolean supportEvents) {
-        super(location, new QName("urn:jboss:domain:naming:1.0", "subsystem"));
+    public NamingSubsystemElement(final boolean supportEvents) {
+        super(new QName("urn:jboss:domain:naming:1.0", "subsystem"));
         this.supportEvents = supportEvents;
     }
 

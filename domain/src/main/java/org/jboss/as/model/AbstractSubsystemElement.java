@@ -22,14 +22,12 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
 
 /**
  * The base class of all subsystem elements.
@@ -43,11 +41,10 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this element
      * @param elementName the element name
      */
-    protected AbstractSubsystemElement(final Location location, final QName elementName) {
-        super(location, elementName);
+    protected AbstractSubsystemElement(final QName elementName) {
+        super(elementName);
     }
 
     /**

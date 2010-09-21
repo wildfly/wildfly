@@ -3,7 +3,6 @@
  */
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -36,14 +35,11 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the element
-     * @param includedProfileResolver {@link RefResolver} to use to resolve references
+     * @param includedProfileResolver {@link org.jboss.as.model.RefResolver} to use to resolve references
      *           to included profiles. Should not be used in the constructor
      *           itself as referenced profiles may not have been created yet.
-     *           Cannot be <code>null</code>
      */
-    public ProfileElement(final Location location, final String name, final RefResolver<String, ProfileElement> includedProfileResolver) {
-        super(location);
+    public ProfileElement(final String name, final RefResolver<String, ProfileElement> includedProfileResolver) {
         if (name != null) throw new IllegalArgumentException("name is null");
         this.name = name;
         this.includedProfileResolver = includedProfileResolver;
@@ -62,7 +58,6 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
      * @throws XMLStreamException if an error occurs
      */
     public ProfileElement(XMLExtendedStreamReader reader, final RefResolver<String, ProfileElement> includedProfileResolver) throws XMLStreamException {
-        super(reader);
 
         this.includedProfileResolver = includedProfileResolver;
 
@@ -137,7 +132,6 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
      * @param source
      */
     public ProfileElement(ProfileElement source) {
-        super(source.getLocation());
 
         this.name = source.name;
         synchronized (source.subsystems) {
@@ -153,8 +147,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
             ProfileElement prof = source.includedProfileResolver.resolveRef(entry.getKey());
             if (prof == null) {
                 throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' at " + entry.getValue().getLocation().toString() + " refers to non-existent profile '" +
-                        entry.getValue().getProfile() + "'");
+                        "' refers to non-existent profile '" + entry.getValue().getProfile() + "'");
             }
             resolvedProfiles.put(entry.getKey(), new ProfileElement(prof));
         }
@@ -284,8 +277,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
             ProfileElement prof = includedProfileResolver.resolveRef(includeEl.getProfile());
             if (prof == null) {
                 throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' at " + includeEl.getLocation().toString() + " refers to non-existent profile '" +
-                        includeEl.getProfile() + "'");
+                        "' refers to non-existent profile '" + includeEl.getProfile() + "'");
             }
             prof.activate(context);
         }

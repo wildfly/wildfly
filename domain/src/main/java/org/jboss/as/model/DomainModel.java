@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -31,15 +32,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.Extension;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupIncludeElement;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -66,11 +64,10 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the element
      * @param elementName the element name of this domain element
      */
-    public DomainModel(final Location location, final QName elementName) {
-        super(location, elementName);
+    public DomainModel(final QName elementName) {
+        super(elementName);
         this.schemaLocation = null;
     }
 
@@ -510,6 +507,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
 
         RefResolver<String, ProfileElement> resolver = new SimpleRefResolver<String, ProfileElement>(profiles) ;
+        Map<String, Location> locations = new HashMap<String,javax.xml.stream.Location>();
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -517,11 +515,14 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case PROFILE: {
+                            final Location location = reader.getLocation();
                             final ProfileElement profile = new ProfileElement(reader, resolver);
-                            if (profiles.containsKey(profile.getName())) {
-                                throw new XMLStreamException("Profile " + profile.getName() + " already declared", reader.getLocation());
+                            final String name = profile.getName();
+                            if (profiles.containsKey(name)) {
+                                throw new XMLStreamException("Profile " + name + " already declared", location);
                             }
-                            profiles.put(profile.getName(), profile);
+                            locations.put(name, location);
+                            profiles.put(name, profile);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -540,10 +541,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
             for (ProfileIncludeElement include : profile.getIncludedProfiles()) {
                 ProfileElement included = profiles.get(include.getProfile());
                 if (included == null) {
-                    Location loc = include.getLocation();
-                    throw new XMLStreamException("ParseError at [row,col]:[" +
-                            loc.getLineNumber() + "," + loc.getColumnNumber() +
-                            " Message: Included profile " + include.getProfile() + " not found");
+                    throw new XMLStreamException("Included profile " + include.getProfile() + " not found", locations.get(profile.getName()));
                 }
             }
         }
@@ -575,6 +573,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
         RefResolver<String, SocketBindingGroupElement> groupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(bindingGroups);
         RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
+        Map<String, Location> locations = new HashMap<String, Location>();
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -582,12 +581,15 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SOCKET_BINDING_GROUP: {
+                            final Location location = reader.getLocation();
                             SocketBindingGroupElement group = new SocketBindingGroupElement(reader, intfResolver, groupResolver);
-                            if (bindingGroups.containsKey(group.getName())) {
+                            final String name = group.getName();
+                            if (bindingGroups.containsKey(name)) {
                                 throw new XMLStreamException(element.getLocalName() + " with name " +
-                                        group.getName() + " already declared", reader.getLocation());
+                                        name + " already declared", location);
                             }
-                            bindingGroups.put(group.getName(), group);
+                            bindingGroups.put(name, group);
+                            locations.put(name, location);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -606,14 +608,8 @@ public final class DomainModel extends AbstractModel<DomainModel> {
             for (SocketBindingGroupIncludeElement include : group.getIncludedSocketBindingGroups()) {
                 SocketBindingGroupElement included = bindingGroups.get(include.getGroupName());
                 if (included == null) {
-                    Location loc = include.getLocation();
-                    // TODO
-                    // 1) this isn't the exact correct location (probably c'est la vie
-                    // 2) better to create a javax.xml.stream.Location and let
-                    throw new XMLStreamException("ParseError at [row,col]:[" +
-                            loc.getLineNumber() + "," + loc.getColumnNumber() +
-                            " Message: Included " + Element.SOCKET_BINDING_GROUP.getLocalName() +
-                            " " + include.getGroupName() + " not found");
+                    throw new XMLStreamException("Included " + Element.SOCKET_BINDING_GROUP.getLocalName() +
+                            " " + include.getGroupName() + " not found", locations.get(group.getName()));
                 }
             }
         }

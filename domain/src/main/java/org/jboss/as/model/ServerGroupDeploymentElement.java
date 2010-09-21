@@ -43,7 +43,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
@@ -68,12 +67,10 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this element
      * @param deploymentName the name of the deployment unit
      * @param deploymentHash the hash of the deployment unit
      */
-    public ServerGroupDeploymentElement(final Location location, final String deploymentName, final byte[] deploymentHash, final boolean start) {
-        super(location);
+    public ServerGroupDeploymentElement(final String deploymentName, final byte[] deploymentHash, final boolean start) {
         if (deploymentName == null) {
             throw new IllegalArgumentException("deploymentName is null");
         }
@@ -88,7 +85,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     public ServerGroupDeploymentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String fileName = null;
         byte[] sha1Hash = null;

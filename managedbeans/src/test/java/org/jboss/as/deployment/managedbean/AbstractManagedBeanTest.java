@@ -32,7 +32,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -78,7 +77,7 @@ public abstract class AbstractManagedBeanTest {
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
             public void execute(BatchBuilder batchBuilder) throws Exception {
-                new ServerGroupDeploymentElement(null, deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+                new ServerGroupDeploymentElement(deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
             }
         });
     }

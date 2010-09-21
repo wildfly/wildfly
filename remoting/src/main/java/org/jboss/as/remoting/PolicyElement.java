@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
@@ -48,12 +47,10 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
     private Boolean noPlainText;
     private Boolean passCredentials;
 
-    public PolicyElement(final Location location) {
-        super(location);
+    public PolicyElement() {
     }
 
     public PolicyElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }

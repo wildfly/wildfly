@@ -31,7 +31,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
      * @param location
      */
     public SocketBindingGroupRefElement(Location location, final String ref) {
-        super(location);
+        super();
         this.ref  =ref;
     }
 
@@ -40,7 +40,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
      * @throws XMLStreamException
      */
     public SocketBindingGroupRefElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+        super();
         // Handle attributes
         String name = null;
         int offset = 0;

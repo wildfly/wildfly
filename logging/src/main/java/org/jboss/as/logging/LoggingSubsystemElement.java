@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -51,8 +50,8 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     private final NavigableMap<String, AbstractLoggerElement<?>> loggers = new TreeMap<String, AbstractLoggerElement<?>>();
     private final NavigableMap<String, AbstractHandlerElement<?>> handlers = new TreeMap<String, AbstractHandlerElement<?>>();
 
-    public LoggingSubsystemElement(final Location location, final QName elementName) {
-        super(location, elementName);
+    public LoggingSubsystemElement(final QName elementName) {
+        super(elementName);
     }
 
     public LoggingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

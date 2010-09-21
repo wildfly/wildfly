@@ -31,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -52,8 +51,8 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
 
    private boolean beanValidation;
 
-   public ConnectorSubsystemElement(final Location location) {
-      super(location, new QName("urn:jboss:domain:connector:1.0", "subsystem"));
+   public ConnectorSubsystemElement() {
+      super(new QName("urn:jboss:domain:connector:1.0", "subsystem"));
    }
 
    public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

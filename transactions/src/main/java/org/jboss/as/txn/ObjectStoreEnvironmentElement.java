@@ -24,7 +24,6 @@ package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -40,12 +39,10 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
     private static final long serialVersionUID = 5036917797026753281L;
     private String directory = "/tmp/tx-object-store";
 
-    protected ObjectStoreEnvironmentElement(final Location location) throws XMLStreamException {
-        super(location);
+    protected ObjectStoreEnvironmentElement() throws XMLStreamException {
     }
 
     protected ObjectStoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);

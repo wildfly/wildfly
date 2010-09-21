@@ -24,7 +24,6 @@ package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -41,12 +40,10 @@ public class CoordinatorEnvironmentElement extends AbstractModelElement<Coordina
     private boolean enableStatistics;
     private int defaultTimeout = 300;
 
-    protected CoordinatorEnvironmentElement(final Location location) throws XMLStreamException {
-        super(location);
+    protected CoordinatorEnvironmentElement() throws XMLStreamException {
     }
 
     protected CoordinatorEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);

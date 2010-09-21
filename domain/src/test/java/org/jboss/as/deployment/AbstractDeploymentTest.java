@@ -37,7 +37,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.jboss.as.deployment.TestUtils.getResource;
 import static org.junit.Assert.fail;
 
 /**
@@ -75,7 +74,7 @@ public abstract class AbstractDeploymentTest {
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
             public void execute(BatchBuilder batchBuilder) throws Exception {
-                new ServerGroupDeploymentElement(null, deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+                new ServerGroupDeploymentElement(deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
             }
         });
     }

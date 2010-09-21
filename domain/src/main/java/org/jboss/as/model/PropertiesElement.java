@@ -56,7 +56,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      * @param location the location at which this element was declared
      */
     public PropertiesElement(final Location location, final Element propertyType, final boolean allowNullValue) {
-        super(location);
+        super();
         this.propertyType = propertyType;
         this.allowNullValue = allowNullValue;
     }
@@ -71,7 +71,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     }
 
     public PropertiesElement(final XMLExtendedStreamReader reader, final Element propertyType, boolean allowNullValue) throws XMLStreamException {
-        super(reader);
+        super();
         this.propertyType = propertyType;
         this.allowNullValue = allowNullValue;
         // Handle attributes
@@ -133,7 +133,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     public PropertiesElement(final Element propertyType, boolean allowNullValue, PropertiesElement ... toCombine) {
         // FIXME -- hack Location
-        super(new Location("N/A", 0, 0, null));
+        super();
         this.allowNullValue = allowNullValue;
         this.propertyType = propertyType;
         if (toCombine != null) {

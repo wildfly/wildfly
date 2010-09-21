@@ -39,7 +39,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -68,6 +67,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
+    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
+
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
     private final String serverName;
@@ -83,11 +84,10 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this standalone element
      * @param elementName the element name of this standalone element
      */
-    protected ServerModel(final Location location, final QName elementName) {
-        super(location, elementName);
+    protected ServerModel(final QName elementName) {
+        super(elementName);
         // FIXME implement or remove Location-based constructor
         throw new UnsupportedOperationException("implement me");
     }
@@ -188,7 +188,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
      * @return the standalone server model
      */
     public ServerModel(final DomainModel domain, final HostModel host, final String serverName) {
-        super(null, null);
+        super(ELEMENT_NAME);
         if (domain == null) {
             throw new IllegalArgumentException("domain is null");
         }

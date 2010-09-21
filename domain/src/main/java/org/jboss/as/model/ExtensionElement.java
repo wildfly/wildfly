@@ -29,7 +29,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.Extension;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
@@ -48,16 +47,13 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this element
      * @param module the module identifier of the extension
      */
-    public ExtensionElement(final Location location, final String module) {
-        super(location);
+    public ExtensionElement(final String module) {
         this.module = module;
     }
 
     public ExtensionElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         this.module = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
 

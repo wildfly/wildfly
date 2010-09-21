@@ -82,7 +82,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        final LoggingSubsystemElement subsystemElement = new LoggingSubsystemElement(null, reader.getName());
+        final LoggingSubsystemElement subsystemElement = new LoggingSubsystemElement(reader.getName());
 
         // Elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);

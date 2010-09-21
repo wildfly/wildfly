@@ -65,7 +65,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
      * @throws XMLStreamException if an error occurs
      */
     protected InterfaceElement(XMLExtendedStreamReader reader, boolean criteriaRequired) throws XMLStreamException {
-        super(reader);
+        super();
         // Handle attributes
         String name = null;
         final int count = reader.getAttributeCount();

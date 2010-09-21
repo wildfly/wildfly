@@ -24,7 +24,6 @@ package org.jboss.as.model;
 
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -58,10 +57,8 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the host element
      */
-    public LocalDomainControllerElement(final Location location, final String name, final String interfaceName, final int port) {
-        super(location);
+    public LocalDomainControllerElement(final String name, final String interfaceName, final int port) {
         this.name = name;
         this.interfaceName = interfaceName;
         this.port = port;
@@ -74,7 +71,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
      * @throws XMLStreamException if an error occurs
      */
     public LocalDomainControllerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+        super();
         // Handle attributes
         String name = null;
         String interfaceName = null;

@@ -50,7 +50,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      *           itself. Cannot be <code>null</code>
      */
     public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) {
-        super(location);
+        super();
         this.name = name;
 
         if (interfaceResolver == null)
@@ -72,7 +72,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
-        super(reader);
+        super();
 
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");

@@ -43,7 +43,6 @@ public class CoreEnvironmentElement extends AbstractModelElement<CoreEnvironment
     private int maxPorts = 10;
 
     protected CoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);

@@ -33,7 +33,6 @@ import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -56,17 +55,14 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this element
      * @param name the name of the server group
      */
-    public ServerGroupElement(final Location location, final String name, final String profile) {
-        super(location);
+    public ServerGroupElement(final String name, final String profile) {
         this.name = name;
         this.profile = profile;
     }
 
     public ServerGroupElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String name = null;
         String profile = null;

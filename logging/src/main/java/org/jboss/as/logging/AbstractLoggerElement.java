@@ -28,7 +28,6 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -52,7 +51,6 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
     private FilterElement filter;
 
     AbstractLoggerElement() {
-        super((Location)null);
     }
 
     final BatchServiceBuilder<Logger> addServices(BatchBuilder builder) {

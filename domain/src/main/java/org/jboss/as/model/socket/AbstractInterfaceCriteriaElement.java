@@ -37,7 +37,7 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      * @throws XMLStreamException if an error occurs
      */
     protected AbstractInterfaceCriteriaElement(XMLExtendedStreamReader reader, final Element element) throws XMLStreamException {
-        super(reader);
+        super();
         if (element == null)
             throw new IllegalArgumentException("element is null");
         this.element = element;

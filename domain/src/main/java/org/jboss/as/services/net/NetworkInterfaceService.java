@@ -67,8 +67,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             throw new StartException(e);
         }
         if(this.interfaceBinding == null) {
-            throw new StartException("failed to resolve interface for " + interfaceElement.getName()
-                    + ", " + interfaceElement.getLocation());
+            throw new StartException("failed to resolve interface for " + interfaceElement.getName());
         }
     }
 

@@ -25,7 +25,6 @@ package org.jboss.as.threads;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -48,13 +47,11 @@ public final class ThreadFactoryElement extends AbstractModelElement<ThreadFacto
     private Integer priority;
     private PropertiesElement propertiesElement;
 
-    public ThreadFactoryElement(final Location location, final String name) {
-        super(location);
+    public ThreadFactoryElement(final String name) {
         this.name = name;
     }
 
     public ThreadFactoryElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         String name = null;
         final String myNamespace = reader.getNamespaceURI();
         final int count = reader.getAttributeCount();

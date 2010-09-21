@@ -42,7 +42,6 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
     private String statusBindingRef;
 
     protected RecoveryEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);

@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -41,14 +40,12 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
     private String host;
     private int port;
 
-    public RemoteDomainControllerElement(Location location, final String host, final int port) {
-        super(location);
+    public RemoteDomainControllerElement(final String host, final int port) {
         this.host = host;
         this.port = port;
     }
 
     public RemoteDomainControllerElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
 
         // Handle attributes
         String host = null;

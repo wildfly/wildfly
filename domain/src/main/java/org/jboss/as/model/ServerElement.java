@@ -35,7 +35,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -59,10 +58,8 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the host element
      */
-    public ServerElement(final Location location, final String name, final String serverGroup) {
-        super(location);
+    public ServerElement(final String name, final String serverGroup) {
         this.name = name;
         this.serverGroup = serverGroup;
     }
@@ -74,7 +71,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
      * @throws XMLStreamException if an error occurs
      */
     public ServerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String name = null;
         String group = null;

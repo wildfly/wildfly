@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -45,12 +44,10 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
 
    private boolean failOnWarn = false;
 
-   public ArchiveValidationElement(final Location location) {
-      super(location);
+   public ArchiveValidationElement() {
    }
 
    public ArchiveValidationElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      super(reader);
       final int count = reader.getAttributeCount();
       for (int i = 0; i < count; i++) {
          final String value = reader.getAttributeValue(i);

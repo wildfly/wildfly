@@ -57,7 +57,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
     private PropertiesElement properties;
 
     protected AbstractHandlerElement(final String name, final QName elementName) {
-        super(null, elementName);
+        super(elementName);
         this.name = name;
     }
 

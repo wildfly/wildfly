@@ -28,7 +28,6 @@ import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -56,8 +55,8 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     private CoordinatorEnvironmentElement coordinatorEnvironmentElement;
     private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
 
-    public TransactionsSubsystemElement(final Location location) {
-        super(location, new QName("urn:jboss:domain:transactions:1.0", "subsystem"));
+    public TransactionsSubsystemElement() {
+        super(new QName("urn:jboss:domain:transactions:1.0", "subsystem"));
     }
 
     public TransactionsSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -102,10 +101,10 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
             throw missingRequiredElement(reader, Collections.singleton(Element.CORE_ENVIRONMENT.getLocalName()));
         }
         if(coordinatorEnvironmentElement == null) {
-            coordinatorEnvironmentElement = new CoordinatorEnvironmentElement(getLocation());
+            coordinatorEnvironmentElement = new CoordinatorEnvironmentElement();
         }
         if(objectStoreEnvironmentElement == null) {
-            objectStoreEnvironmentElement = new ObjectStoreEnvironmentElement(getLocation());
+            objectStoreEnvironmentElement = new ObjectStoreEnvironmentElement();
         }
     }
 

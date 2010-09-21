@@ -25,7 +25,6 @@ package org.jboss.as.logging;
 import java.util.Collection;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -42,7 +41,6 @@ public final class FilterElement extends AbstractModelElement<FilterElement> {
     private final FilterType value;
 
     FilterElement(final FilterType value) {
-        super((Location) null);
         this.value = value;
     }
 

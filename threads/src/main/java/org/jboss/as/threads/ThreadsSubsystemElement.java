@@ -25,7 +25,6 @@ package org.jboss.as.threads;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -48,8 +47,8 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     private final NavigableMap<String, ScheduledThreadPoolExecutorElement> scheduledExecutors = new TreeMap<String, ScheduledThreadPoolExecutorElement>();
     private final NavigableMap<String, AbstractExecutorElement<?>> executors = new TreeMap<String, AbstractExecutorElement<?>>();
 
-    protected ThreadsSubsystemElement(final Location location, final QName elementName) {
-        super(location, elementName);
+    protected ThreadsSubsystemElement(final QName elementName) {
+        super(elementName);
     }
 
     protected ThreadsSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

@@ -22,14 +22,13 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -37,7 +36,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -57,27 +55,12 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     private static final long serialVersionUID = 66064050420378211L;
 
     // FIXME make non-transient and final when MSC-16 is fixed
-    private transient Location location;
-    private final Set<AbstractModelElement<?>> children = new LinkedHashSet<AbstractModelElement<?>>(0);
 
     /**
      * Construct a new instance.
-     *
-     * @param location the declaration location of this model element
      */
-    protected AbstractModelElement(final Location location) {
+    protected AbstractModelElement() {
         assert getClass() == getElementClass();
-        this.location = location;
-    }
-
-    /**
-     * Construct a new instance initialized from the given XML stream.
-     *
-     * @param reader the stream reader
-     */
-    protected AbstractModelElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final javax.xml.stream.Location xmlLocation = reader.getLocation();
-        location = new Location("<unknown-TODO>", xmlLocation.getLineNumber(), xmlLocation.getColumnNumber(), null);
     }
 
     /**
@@ -434,15 +417,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     protected abstract void appendDifference(Collection<AbstractModelUpdate<E>> target, E other);
 
-    /**
-     * Get the mutable set of child elements.
-     *
-     * @return the set
-     */
-    protected final Set<AbstractModelElement<?>> getChildren() {
-        return children;
-    }
-
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
         @SuppressWarnings("unchecked")
         public int compare(final Object o1, final Object o2) {
@@ -605,15 +579,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     public abstract void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException;
 
     /**
-     * Get the declaration location of this element.
-     *
-     * @return the declaration location
-     */
-    public final Location getLocation() {
-        return location;
-    }
-
-    /**
      * Determine if this object is the same as the given object.  This is an identity comparison.
      *
      * @param obj the other object
@@ -630,30 +595,5 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     public final int hashCode() {
         return super.hashCode();
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        // FIXME remove when MSC-16 is fixed
-        out.defaultWriteObject();
-        if (location != null) {
-            out.writeBoolean(true);
-            out.writeUTF(location.getFileName());
-            out.writeInt(location.getLineNumber());
-            out.writeInt(location.getColumnNumber());
-        }
-        else {
-            out.writeBoolean(false);
-        }
-    }
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-        // FIXME remove when MSC-16 is fixed
-        in.defaultReadObject();
-        boolean hasLoc = in.readBoolean();
-        if (hasLoc) {
-            String file = in.readUTF();
-            int line = in.readInt();
-            int col = in.readInt();
-            location = new Location(file, line, col, null);
-        }
     }
 }

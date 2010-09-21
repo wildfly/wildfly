@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.marshalling.FieldSetter;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
@@ -54,11 +53,10 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this model
      * @param elementName the root element name
      */
-    protected AbstractModel(final Location location, final QName elementName) {
-        super(location, elementName);
+    protected AbstractModel(final QName elementName) {
+        super(elementName);
     }
 
     /**

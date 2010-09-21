@@ -3,7 +3,6 @@
  */
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -22,15 +21,13 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
 
     private final String profile;
 
-    public ProfileIncludeElement(Location location, final String profile) {
-        super(location);
+    public ProfileIncludeElement(final String profile) {
         if (profile == null)
             throw new IllegalArgumentException("profile is null");
         this.profile = profile;
     }
 
     public ProfileIncludeElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String profile = null;
         final int count = reader.getAttributeCount();

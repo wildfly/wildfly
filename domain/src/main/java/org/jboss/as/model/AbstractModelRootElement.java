@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.namespace.QName;
@@ -42,11 +41,9 @@ public abstract class AbstractModelRootElement<E extends AbstractModelRootElemen
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of this model root element
      * @param elementName the element name
      */
-    protected AbstractModelRootElement(final Location location, final QName elementName) {
-        super(location);
+    protected AbstractModelRootElement(final QName elementName) {
         this.elementName = elementName;
     }
 
@@ -57,7 +54,6 @@ public abstract class AbstractModelRootElement<E extends AbstractModelRootElemen
      * @throws XMLStreamException if an error occurs
      */
     protected AbstractModelRootElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         assert reader.getEventType() == START_ELEMENT;
         elementName = reader.getName();
     }

@@ -44,7 +44,7 @@ public final class RootLoggerElement extends AbstractLoggerElement<RootLoggerEle
     }
 
     BatchServiceBuilder<Logger> createService(final BatchBuilder builder) {
-        return builder.addService(LoggingSubsystemElement.JBOSS_LOGGING.append("logger", "root"), new LoggerLevelService());
+        return builder.addService(LoggingSubsystemElement.JBOSS_LOGGING.append("logger", "root"), new LoggerLevelService(""));
     }
 
     void configureService(final BatchServiceBuilder<Logger> serviceBuilder, final BatchBuilder builder, final AbstractLoggerService loggerService) {

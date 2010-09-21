@@ -29,7 +29,7 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
      * @param location
      */
     public SocketBindingGroupIncludeElement(Location location, final String groupName) {
-        super(location);
+        super();
         this.groupName = groupName;
     }
 
@@ -38,7 +38,7 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
      * @throws XMLStreamException
      */
     public SocketBindingGroupIncludeElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+        super();
         this.groupName = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
     }
 

@@ -27,7 +27,6 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
@@ -63,8 +62,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     private String authenticationProvider;
     private PropertiesElement connectorProperties;
 
-    public ConnectorElement(final Location location, final String name, final String socketBinding) {
-        super(location);
+    public ConnectorElement(final String name, final String socketBinding) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -76,7 +74,6 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     }
 
     public ConnectorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
         // Handle attributes
         String name = null;
         String socketBinding = null;
