@@ -22,7 +22,6 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -32,7 +31,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -118,9 +117,6 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
 
     public boolean isBlocking() {
         return blocking;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<ThreadFactoryExecutorElement>> target, final ThreadFactoryExecutorElement other) {
     }
 
     protected Class<ThreadFactoryExecutorElement> getElementClass() {

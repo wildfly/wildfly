@@ -5,13 +5,11 @@ package org.jboss.as.model.socket;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.RefResolver;
@@ -306,12 +304,6 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SocketBindingElement>> target,
-            SocketBindingElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
-    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#elementHash()

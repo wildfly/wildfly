@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -245,12 +244,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         }
         return cksum;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ServerElement>> target, final ServerElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */

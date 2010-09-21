@@ -10,7 +10,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -161,58 +161,6 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
      */
     public String getName() {
         return name;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<ProfileElement>> target, ProfileElement other) {
-        calculateDifference(target, safeCopyMap(includedProfiles), safeCopyMap(other.includedProfiles),
-                new DifferenceHandler<String, ProfileIncludeElement, ProfileElement>() {
-                    public void handleAdd(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final String name, final ProfileIncludeElement newElement) {
-                        // todo add-included-profile operation YIKES!
-                        throw new UnsupportedOperationException("implement me");
-                    }
-
-                    public void handleRemove(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final String name, final ProfileIncludeElement oldElement) {
-                        // todo remove-included-profile operation YIKES!
-                        throw new UnsupportedOperationException("implement me");
-                    }
-
-                    public void handleChange(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final String name, final ProfileIncludeElement oldElement,
-                            final ProfileIncludeElement newElement) {
-                        // not possible
-                        throw new IllegalStateException();
-                    }
-                });
-        calculateDifference(
-                target,
-                safeCopyMap(subsystems),
-                safeCopyMap(other.subsystems),
-                new DifferenceHandler<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>, ProfileElement>() {
-                    public void handleAdd(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> newElement) {
-                        // todo add-subsystem operation
-                        throw new UnsupportedOperationException("implement me");
-                    }
-
-                    public void handleRemove(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> oldElement) {
-                        // todo remove-subsystem operation
-                        throw new UnsupportedOperationException("implement me");
-                    }
-
-                    public void handleChange(final Collection<AbstractModelUpdate<ProfileElement>> target,
-                            final QName name,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> oldElement,
-                            final AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> newElement) {
-                        // todo update-subsystem operation
-                        throw new UnsupportedOperationException("implement me");
-                    }
-                });
     }
 
     public Set<ProfileIncludeElement> getIncludedProfiles() {

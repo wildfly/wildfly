@@ -22,7 +22,6 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -32,7 +31,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -160,9 +159,6 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
         hash = Long.rotateLeft(hash, 1) ^ queueLength.elementHash();
         if (coreThreads != null) hash = Long.rotateLeft(hash, 1) ^ coreThreads.elementHash();
         return hash;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<BoundedQueueThreadPoolExecutorElement>> target, final BoundedQueueThreadPoolExecutorElement other) {
     }
 
     protected Class<BoundedQueueThreadPoolExecutorElement> getElementClass() {

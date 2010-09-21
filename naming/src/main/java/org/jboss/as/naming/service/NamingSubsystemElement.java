@@ -22,7 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
@@ -39,7 +38,6 @@ import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
 
 /**
  * Subsystem element representing the naming subsystem.
@@ -107,10 +105,6 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     /** {@inheritDoc} */
     public long elementHash() {
         return 42;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<NamingSubsystemElement>> target, final NamingSubsystemElement other) {
     }
 
     /** {@inheritDoc} */

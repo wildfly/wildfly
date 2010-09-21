@@ -4,11 +4,9 @@
 package org.jboss.as.model.socket;
 
 import java.net.NetworkInterface;
-import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -49,11 +47,6 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<NicCriteriaElement>> target, NicCriteriaElement other) {
-        // no mutable state
     }
 
     @Override

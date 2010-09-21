@@ -28,7 +28,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.NavigableMap;
@@ -186,12 +186,6 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
             cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
         }
         return cksum;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<LocalDomainControllerElement>> target, final LocalDomainControllerElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */

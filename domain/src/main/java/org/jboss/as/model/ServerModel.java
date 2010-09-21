@@ -46,7 +46,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -308,12 +308,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         if (socketBindings != null) cksum = Long.rotateLeft(cksum, 1) ^ socketBindings.elementHash();
         if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
         return cksum;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ServerModel>> target, final ServerModel other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */

@@ -3,12 +3,9 @@
  */
 package org.jboss.as.model.socket;
 
-import java.util.Collection;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -49,12 +46,6 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
      */
     public String getGroupName() {
         return groupName;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SocketBindingGroupIncludeElement>> target,
-            SocketBindingGroupIncludeElement other) {
-        // no mutable state
     }
 
     @Override

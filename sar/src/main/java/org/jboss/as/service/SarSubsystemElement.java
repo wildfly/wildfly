@@ -22,7 +22,6 @@
 
 package org.jboss.as.service;
 
-import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
@@ -43,7 +42,6 @@ import org.jboss.as.deployment.processor.ServiceActivatorDependencyProcessor;
 import org.jboss.as.deployment.processor.ServiceActivatorProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
@@ -107,10 +105,6 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
     /** @inheritDoc} */
     public long elementHash() {
         return 42;
-    }
-
-    /** @inheritDoc} */
-    protected void appendDifference(Collection<AbstractModelUpdate<SarSubsystemElement>> target, SarSubsystemElement other) {
     }
 
     /** @inheritDoc} */

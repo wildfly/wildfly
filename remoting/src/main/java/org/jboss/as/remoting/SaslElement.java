@@ -22,11 +22,9 @@
 
 package org.jboss.as.remoting;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -121,10 +119,6 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
         if (reuseSession != null) hash = Long.rotateLeft(hash, 1) ^ reuseSession.hashCode();
         if (serverAuth != null) hash = Long.rotateLeft(hash, 1) ^ serverAuth.hashCode();
         return hash;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<SaslElement>> target, final SaslElement other) {
     }
 
     /** {@inheritDoc} */

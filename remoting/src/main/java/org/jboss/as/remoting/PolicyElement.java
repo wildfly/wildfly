@@ -22,10 +22,8 @@
 
 package org.jboss.as.remoting;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
@@ -107,9 +105,6 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
         if (noPlainText != null) { hash = (noPlainText.hashCode() & 0xffffffffL) << 4 ^ hash; }
         if (passCredentials != null) { hash = (passCredentials.hashCode() & 0xffffffffL) << 5 ^ hash; }
         return hash;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<PolicyElement>> target, final PolicyElement other) {
     }
 
     protected Class<PolicyElement> getElementClass() {

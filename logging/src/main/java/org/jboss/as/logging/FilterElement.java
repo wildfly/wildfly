@@ -22,9 +22,7 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -57,8 +55,5 @@ public final class FilterElement extends AbstractModelElement<FilterElement> {
 
     public long elementHash() {
         return value.hashCode() & 0xFFFFFFFFL;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<FilterElement>> target, final FilterElement other) {
     }
 }

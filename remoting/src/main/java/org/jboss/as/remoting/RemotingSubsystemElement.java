@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -37,7 +36,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
@@ -143,24 +142,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     /** {@inheritDoc} */
     public long elementHash() {
         return calculateElementHashOf(connectors.values(), 0L);
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final RemotingSubsystemElement other) {
-        calculateDifference(target, connectors, other.connectors, new DifferenceHandler<String, ConnectorElement, RemotingSubsystemElement>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement newElement) {
-                target.add(new AddConnectorUpdate(newElement.clone()));
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement oldElement) {
-                target.add(new RemoveConnectorUpdate(name));
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<RemotingSubsystemElement>> target, final String name, final ConnectorElement oldElement, final ConnectorElement newElement) {
-                target.add(new RemoveConnectorUpdate(name));
-                target.add(new AddConnectorUpdate(newElement.clone()));
-            }
-        });
     }
 
     /** {@inheritDoc} */

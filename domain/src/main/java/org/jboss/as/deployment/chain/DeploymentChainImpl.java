@@ -26,7 +26,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 

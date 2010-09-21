@@ -29,7 +29,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -186,11 +186,6 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowed).hashCode() & 0xffffffffL;
         return hash;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<DeploymentUnitElement>> target, final DeploymentUnitElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     protected Class<DeploymentUnitElement> getElementClass() {

@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -53,9 +51,6 @@ public final class RootLoggerElement extends AbstractLoggerElement<RootLoggerEle
 
     QName getElementName() {
         return ELEMENT_NAME;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<RootLoggerElement>> target, final RootLoggerElement other) {
     }
 
     protected Class<RootLoggerElement> getElementClass() {

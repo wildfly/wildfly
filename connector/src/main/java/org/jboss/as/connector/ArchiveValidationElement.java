@@ -22,12 +22,9 @@
 
 package org.jboss.as.connector;
 
-import java.util.Collection;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -82,12 +79,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
       return 42;
    }
 
-   @Override
-   protected void appendDifference(Collection<AbstractModelUpdate<ArchiveValidationElement>> target,
-         ArchiveValidationElement other) {
-   }
-
-   @Override
+    @Override
    protected Class<ArchiveValidationElement> getElementClass() {
       return ArchiveValidationElement.class;
    }

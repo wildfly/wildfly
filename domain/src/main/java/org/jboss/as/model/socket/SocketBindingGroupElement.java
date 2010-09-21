@@ -3,7 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,6 @@ import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
@@ -277,12 +275,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SocketBindingGroupElement>> target,
-            SocketBindingGroupElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
-    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#elementHash()

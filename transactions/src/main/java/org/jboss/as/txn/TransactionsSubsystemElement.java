@@ -22,7 +22,6 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
@@ -39,7 +38,7 @@ import org.omg.CORBA.ORB;
 import javax.transaction.TransactionManager;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -110,9 +109,6 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     public long elementHash() {
         return 42;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<TransactionsSubsystemElement>> target, final TransactionsSubsystemElement other) {
     }
 
     protected Class<TransactionsSubsystemElement> getElementClass() {

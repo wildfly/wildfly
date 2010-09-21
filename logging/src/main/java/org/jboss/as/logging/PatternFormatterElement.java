@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.logmanager.formatters.PatternFormatter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -56,9 +54,6 @@ public final class PatternFormatterElement extends AbstractFormatterElement<Patt
 
     public long elementHash() {
         return pattern.hashCode() & 0xffffffffL;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<PatternFormatterElement>> target, final PatternFormatterElement other) {
     }
 
     protected Class<PatternFormatterElement> getElementClass() {

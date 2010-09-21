@@ -26,7 +26,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVir
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
@@ -188,12 +187,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         long hash = key.elementHash();
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
         return hash;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ServerGroupDeploymentElement>> target, final ServerGroupDeploymentElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */

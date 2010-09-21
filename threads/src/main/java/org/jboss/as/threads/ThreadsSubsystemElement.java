@@ -22,7 +22,6 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -31,7 +30,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -142,9 +141,6 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         long hash = 0L;
         hash = calculateElementHashOf(threadFactories.values(), hash);
         return hash;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<ThreadsSubsystemElement>> target, final ThreadsSubsystemElement other) {
     }
 
     protected Class<ThreadsSubsystemElement> getElementClass() {

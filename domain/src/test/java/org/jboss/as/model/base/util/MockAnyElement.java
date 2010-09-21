@@ -3,13 +3,10 @@
  */
 package org.jboss.as.model.base.util;
 
-import java.util.Collection;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -57,12 +54,6 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
     @Override
     protected Class<MockAnyElement> getElementClass() {
         return MockAnyElement.class;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<MockAnyElement>> target,
-            MockAnyElement other) {
-        // no mutable state
     }
 
     @Override

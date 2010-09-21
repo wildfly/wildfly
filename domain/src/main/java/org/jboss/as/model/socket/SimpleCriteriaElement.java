@@ -4,11 +4,9 @@
 package org.jboss.as.model.socket;
 
 import java.net.NetworkInterface;
-import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -44,13 +42,4 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
     protected Class<SimpleCriteriaElement> getElementClass() {
         return SimpleCriteriaElement.class;
     }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SimpleCriteriaElement>> target,
-            SimpleCriteriaElement other) {
-        // no mutable state
-    }
-
-
-
 }

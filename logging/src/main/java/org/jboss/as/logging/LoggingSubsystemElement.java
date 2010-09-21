@@ -22,10 +22,8 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -86,9 +84,6 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
 
     public long elementHash() {
         return 0;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<LoggingSubsystemElement>> target, final LoggingSubsystemElement other) {
     }
 
     protected Class<LoggingSubsystemElement> getElementClass() {

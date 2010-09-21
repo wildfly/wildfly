@@ -24,8 +24,6 @@ package org.jboss.as.model;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.marshalling.FieldSetter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -67,46 +65,6 @@ public abstract class AbstractModel<M extends AbstractModel<M>> extends Abstract
      */
     protected AbstractModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-    }
-
-    /**
-     * Get the difference between this model element and another, as a list of updates which, when applied, would make
-     * this model element equivalent to the other.  Locks this model, then the other model, for read.
-     *
-     * @param other the other model element
-     * @return the collection of updates
-     */
-    public final List<AbstractModelUpdate<M>> getDifference(M other) {
-        lockForRead();
-        try {
-            other.lockForRead();
-            try {
-                final List<AbstractModelUpdate<M>> list = new ArrayList<AbstractModelUpdate<M>>();
-                appendDifference(list, other);
-                return list;
-            } finally {
-                other.unlockForRead();
-            }
-        } finally {
-            unlockForRead();
-        }
-    }
-
-    /**
-     * Synchronize this model with the other model.  Gets all the differences with the other and merges them into this
-     * one, one update at a time, under a single lock.
-     *
-     * @param other the other model
-     */
-    public final void synchronize(M other) {
-        lockForWrite();
-        try {
-            for (AbstractModelUpdate<M> update : getDifference(other)) {
-                update.applyUpdate(cast());
-            }
-        } finally {
-            unlockForWrite();
-        }
     }
 
     // Protected members

@@ -22,14 +22,11 @@
 
 package org.jboss.as.jmx;
 
-import java.util.Collection;
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import org.jboss.as.model.AbstractModelUpdate;
+
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -69,10 +66,6 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
     /** {@inheritDoc} */
     public long elementHash() {
         return 42;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<JmxSubsystemElement>> target, final JmxSubsystemElement other) {
     }
 
     /** {@inheritDoc} */

@@ -6,7 +6,6 @@ package org.jboss.as.model.socket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -14,7 +13,6 @@ import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
@@ -181,12 +179,6 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
      */
     public boolean isFullySpecified() {
         return address != null || interfaceCriteria.size() > 0;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<InterfaceElement>> target, InterfaceElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     @Override

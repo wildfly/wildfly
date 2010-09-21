@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
@@ -82,11 +80,6 @@ public final class ExtensionElement extends AbstractModelElement<ExtensionElemen
         final String module = this.module;
         long hc = module.hashCode() & 0xFFFFFFFF;
         return hc;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ExtensionElement>> target, final ExtensionElement other) {
-        // no mutable state
     }
 
     /** {@inheritDoc} */

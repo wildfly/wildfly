@@ -4,14 +4,12 @@
 package org.jboss.as.model.socket;
 
 import java.net.NetworkInterface;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -81,11 +79,6 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.PATTERN.getLocalName(), pattern.pattern());
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<NicMatchCriteriaElement>> target, NicMatchCriteriaElement other) {
-        // no mutable state
     }
 
     @Override

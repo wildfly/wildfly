@@ -23,7 +23,6 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -31,7 +30,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -103,9 +102,6 @@ public final class ThreadFactoryElement extends AbstractModelElement<ThreadFacto
         if (priority != null) hash = Long.rotateLeft(hash, 1) ^ priority.longValue();
         if (propertiesElement != null) hash = Long.rotateLeft(hash, 1) ^ propertiesElement.elementHash();
         return hash;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<ThreadFactoryElement>> target, final ThreadFactoryElement other) {
     }
 
     protected Class<ThreadFactoryElement> getElementClass() {

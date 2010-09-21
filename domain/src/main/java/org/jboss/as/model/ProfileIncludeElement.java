@@ -7,7 +7,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -61,12 +61,6 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
      */
     public String getProfile() {
         return profile;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<ProfileIncludeElement>> target,
-            ProfileIncludeElement other) {
-        // no mutable state
     }
 
     @Override

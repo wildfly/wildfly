@@ -409,14 +409,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      */
     public abstract long elementHash();
 
-    /**
-     * Append the difference between this model element and the other model element to the target updates collection.
-     *
-     * @param target the collection
-     * @param other the other element
-     */
-    protected abstract void appendDifference(Collection<AbstractModelUpdate<E>> target, E other);
-
     private static final Comparator<Object> NATURAL = new Comparator<Object>() {
         @SuppressWarnings("unchecked")
         public int compare(final Object o1, final Object o2) {

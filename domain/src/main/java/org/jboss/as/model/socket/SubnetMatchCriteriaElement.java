@@ -5,12 +5,10 @@ package org.jboss.as.model.socket;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -94,11 +92,6 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), value);
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SubnetMatchCriteriaElement>> target, SubnetMatchCriteriaElement other) {
-        // no mutable state
     }
 
     @Override

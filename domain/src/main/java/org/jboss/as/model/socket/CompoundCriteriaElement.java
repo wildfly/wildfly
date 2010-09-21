@@ -3,7 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -11,7 +10,6 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -85,12 +83,6 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
             }
         }
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<CompoundCriteriaElement>> target, CompoundCriteriaElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     @Override

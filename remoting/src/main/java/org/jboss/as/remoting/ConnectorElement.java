@@ -23,7 +23,6 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -41,7 +40,6 @@ import org.jboss.xnio.channels.ConnectedStreamChannel;
 
 import javax.xml.stream.XMLStreamException;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.EnumSet;
 
 /**
@@ -141,10 +139,6 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     /** {@inheritDoc} */
     public long elementHash() {
         return name.hashCode() & 0xFFFFFFFF;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<ConnectorElement>> target, final ConnectorElement other) {
     }
 
     /** {@inheritDoc} */

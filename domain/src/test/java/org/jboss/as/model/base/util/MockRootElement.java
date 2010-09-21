@@ -22,7 +22,6 @@
 
 package org.jboss.as.model.base.util;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -32,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelRootElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.NamespaceAttribute;
 import org.jboss.as.model.ParseResult;
@@ -116,11 +114,6 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
 
     public AbstractModelElement<? extends AbstractModelElement<?>> getChild(String namespace, String localPart) {
         return children.get(new QName(namespace, localPart));
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<MockRootElement>> target, MockRootElement other) {
-        // no-op
     }
 
     @Override

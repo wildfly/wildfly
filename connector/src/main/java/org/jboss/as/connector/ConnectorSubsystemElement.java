@@ -22,13 +22,11 @@
 
 package org.jboss.as.connector;
 
-import java.util.Collection;
 import java.util.EnumSet;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -109,12 +107,7 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
       return 42;
    }
 
-   @Override
-   protected void appendDifference(Collection<AbstractModelUpdate<ConnectorSubsystemElement>> target,
-         ConnectorSubsystemElement other) {
-   }
-
-   @Override
+    @Override
    protected Class<ConnectorSubsystemElement> getElementClass() {
       return ConnectorSubsystemElement.class;
    }

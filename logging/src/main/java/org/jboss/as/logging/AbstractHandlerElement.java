@@ -23,10 +23,8 @@
 package org.jboss.as.logging;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import org.jboss.as.model.AbstractModelRootElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -95,9 +93,6 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
 
     public long elementHash() {
         return 0;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<E>> target, final E other) {
     }
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {

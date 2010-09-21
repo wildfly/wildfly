@@ -23,12 +23,10 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
 
 /**
  * The model element for the object store environment element.
@@ -65,11 +63,6 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
     @Override
     public long elementHash() {
         return 0;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<ObjectStoreEnvironmentElement>> target, ObjectStoreEnvironmentElement other) {
-        //TODO
     }
 
     @Override

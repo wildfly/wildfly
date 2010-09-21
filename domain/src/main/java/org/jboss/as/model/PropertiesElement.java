@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,25 +163,6 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
             }
         }
         return total;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<PropertiesElement>> target, final PropertiesElement other) {
-
-        calculateDifference(target, safeCopyMap(properties), safeCopyMap(other.properties), new DifferenceHandler<String, String, PropertiesElement>() {
-            public void handleAdd(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String newElement) {
-                target.add(new PropertyAdd(name, newElement));
-            }
-
-            public void handleRemove(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String oldElement) {
-                target.add(new PropertyRemove(name));
-            }
-
-            public void handleChange(final Collection<AbstractModelUpdate<PropertiesElement>> target, final String name, final String oldElement, final String newElement) {
-                target.add(new PropertyRemove(name));
-                target.add(new PropertyAdd(name, newElement));
-            }
-        });
     }
 
     /** {@inheritDoc} */

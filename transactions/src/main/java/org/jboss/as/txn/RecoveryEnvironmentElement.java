@@ -23,12 +23,11 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -70,11 +69,6 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
     @Override
     public long elementHash() {
         return 0;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<RecoveryEnvironmentElement>> target, RecoveryEnvironmentElement other) {
-        //TODO
     }
 
     @Override

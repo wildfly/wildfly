@@ -3,13 +3,11 @@
  */
 package org.jboss.as.model.socket;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -120,12 +118,6 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<SocketBindingGroupRefElement>> target,
-            SocketBindingGroupRefElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
-    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#elementHash()

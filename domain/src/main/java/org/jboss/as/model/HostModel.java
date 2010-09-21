@@ -29,7 +29,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -235,12 +235,6 @@ public final class HostModel extends AbstractModel<HostModel> {
         }
         if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() & 0xffffffffL;
         return cksum;
-    }
-
-    /** {@inheritDoc} */
-    protected void appendDifference(final Collection<AbstractModelUpdate<HostModel>> target, final HostModel other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
     }
 
     /** {@inheritDoc} */

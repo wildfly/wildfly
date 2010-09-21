@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.msc.service.ServiceName;
 
 import javax.xml.namespace.QName;
@@ -53,9 +51,6 @@ public final class LoggerElement extends AbstractLoggerElement<LoggerElement> {
 
     QName getElementName() {
         return ELEMENT_NAME;
-    }
-
-    protected void appendDifference(final Collection<AbstractModelUpdate<LoggerElement>> target, final LoggerElement other) {
     }
 
     protected Class<LoggerElement> getElementClass() {

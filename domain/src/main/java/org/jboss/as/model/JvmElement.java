@@ -3,7 +3,6 @@
  */
 package org.jboss.as.model;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
@@ -178,11 +177,6 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
      */
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<JvmElement>> target, JvmElement other) {
-        // FIXME implement appendDifference
-        throw new UnsupportedOperationException("implement me");
-    }
 
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#elementHash()

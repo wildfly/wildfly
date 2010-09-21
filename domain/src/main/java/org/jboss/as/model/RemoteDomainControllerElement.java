@@ -26,7 +26,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
+
 import java.util.Collections;
 
 /**
@@ -87,11 +87,6 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
         long cksum = host.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ port & 0xffffffffL;
         return cksum;
-    }
-
-    @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<RemoteDomainControllerElement>> target, RemoteDomainControllerElement other) {
-
     }
 
     @Override
