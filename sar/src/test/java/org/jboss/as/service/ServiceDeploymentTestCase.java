@@ -35,7 +35,6 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Values;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
@@ -75,7 +74,7 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
     }
 
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
-        batchBuilder.addService(MBeanServerService.MBEAN_SERVER_SERVICE_NAME, new MBeanServerService());
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
     }
 
     @Test

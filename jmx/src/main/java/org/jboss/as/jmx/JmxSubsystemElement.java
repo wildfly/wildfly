@@ -59,7 +59,7 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating the JMX Subsystem");
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        batchBuilder.addService(MBeanServerService.MBEAN_SERVER_SERVICE_NAME, new MBeanServerService())
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 

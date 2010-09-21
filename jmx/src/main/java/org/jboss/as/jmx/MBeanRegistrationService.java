@@ -22,6 +22,7 @@
 
 package org.jboss.as.jmx;
 
+import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -75,7 +76,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
      * @throws StartException If any registration problems occur
      */
     public synchronized void start(final StartContext context) throws StartException {
-        final MBeanServer mBeanServer = mBeanServerValue.getValue();
+        final MBeanServer mBeanServer = getMBeanServer();
         final T value = this.value.getValue();
         try {
             objectName = new ObjectName(name);
@@ -100,7 +101,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
         if(objectName == null){
             log.warn("No ObjectName available to unregister");
         }
-        final MBeanServer mBeanServer = mBeanServerValue.getValue();
+        final MBeanServer mBeanServer = getMBeanServer();
         try {
             mBeanServer.unregisterMBean(objectName);
         } catch (Exception e) {
@@ -119,5 +120,13 @@ public class MBeanRegistrationService<T> implements Service<Void> {
 
     public Injector<T> getValueInjector() {
         return value;
+    }
+
+    private MBeanServer getMBeanServer() {
+        MBeanServer mBeanServer = mBeanServerValue.getOptionalValue();
+        if(mBeanServer == null) {
+            mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        }
+        return mBeanServer;
     }
 }

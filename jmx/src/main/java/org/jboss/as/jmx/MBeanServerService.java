@@ -37,7 +37,7 @@ import org.jboss.msc.service.StopContext;
  * @author John Bailey
  */
 public class MBeanServerService implements Service<MBeanServer> {
-    public static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
     private MBeanServer mBeanServer;
 

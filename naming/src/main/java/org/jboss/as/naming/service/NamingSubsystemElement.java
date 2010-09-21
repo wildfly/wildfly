@@ -22,12 +22,14 @@
 
 package org.jboss.as.naming.service;
 
+import javax.management.MBeanServer;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -160,6 +162,10 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         if(isBindCompContext()) {
             addContextFactory(builder, "comp");
         }
+
+        final JndiView jndiView = new JndiView();
+        builder.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
+            .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector());
     }
 
     private void addContextFactory(final BatchBuilder builder, final String contextName) {

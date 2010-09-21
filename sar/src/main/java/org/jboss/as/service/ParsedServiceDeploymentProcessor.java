@@ -181,7 +181,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         // Add service to register the bean in the mbean server
         final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService(serviceName);
         batchBuilder.addService(MBeanRegistrationService.SERVICE_NAME.append(serviceName), mbeanRegistrationService)
-            .addDependency(MBeanServerService.MBEAN_SERVER_SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
+            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
             .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector());
     }
 
