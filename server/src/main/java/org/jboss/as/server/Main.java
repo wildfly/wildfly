@@ -37,6 +37,7 @@ import org.jboss.as.process.SystemExiter;
 import org.jboss.as.process.SystemExiter.Exiter;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
+import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -70,6 +71,10 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
+        // TODO: privileged block
+        System.setProperty("log4j.defaultInitOverride", "true");
+        new BridgeRepositorySelector().start();
+
         create(args, in, out, err);
     }
 
@@ -83,6 +88,7 @@ public final class Main {
         return main.boot(args, stdin, stdout, stderr);
     }
 
+    // TODO: privileged block
     Properties props = new Properties(System.getProperties());
 
     private Main() {

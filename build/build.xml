@@ -153,6 +153,10 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="org.apache.log4j">
+            <maven-resource group="log4j" artifact="log4j"/>
+        </module-def>
+
         <module-def name="org.apache.commons.logging"/>
 
         <module-def name="org.javassist">
@@ -239,6 +243,10 @@
             <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
         </module-def>
         
+        <module-def name="org.jboss.logmanager.log4j">
+            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager-log4j"/>
+        </module-def>
+
         <module-def name="org.jboss.marshalling">
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
         </module-def>
