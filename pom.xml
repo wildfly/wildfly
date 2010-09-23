@@ -172,7 +172,7 @@
                     <dependencies>
                         <dependency>
                             <groupId>org.jboss.as</groupId>
-                            <artifactId>build-config</artifactId>
+                            <artifactId>jboss-as-build-config</artifactId>
                             <version>${project.version}</version>
                         </dependency>
                     </dependencies>
@@ -193,7 +193,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>build-config</artifactId>
+            <artifactId>jboss-as-build-config</artifactId>
         </dependency>
     </dependencies>
 
@@ -204,7 +204,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>build-config</artifactId>
+                <artifactId>jboss-as-build-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
