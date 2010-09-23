@@ -25,7 +25,6 @@
             xmlns:threads="urn:jboss:domain:threads:1.0"
             xmlns:naming="urn:jboss:domain:naming:1.0"
             xmlns:messaging="urn:jboss:domain:messaging:1.0"
-            xmlns:jms="urn:hornetq"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
@@ -46,15 +45,12 @@
         <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
         <remoting:subsystem thread-pool="remoting"/>
         <messaging:subsystem>
-            <jms:configuration xmlns="urn:hornetq"
-                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                           xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
             <!-- A standard hornetq configuration -->
-            <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
+            <messaging:bindings-directory>${jboss.server.data.dir}/hornetq/bindings</messaging:bindings-directory>
 
-            <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
+            <messaging:journal-directory>${jboss.server.data.dir}/hornetq/journal</messaging:journal-directory>
 
-            <journal-min-files>10</journal-min-files>
+            <messaging:journal-min-files>10</messaging:journal-min-files>
 
             <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
@@ -65,6 +61,7 @@
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                   <param key="host"  value="${jboss.bind.address:localhost}"/>
                   <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+                   <param key="socket-ref" value="hq:netty" />
                </connector>
 
                <connector name="netty-throughput">
@@ -72,6 +69,7 @@
                   <param key="host"  value="${jboss.bind.address:localhost}"/>
                   <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
                   <param key="batch-delay" value="50"/>
+                   <param key="socket-ref" value="hq:netty-throughput" />
                </connector>
 
                <connector name="in-vm">
@@ -86,6 +84,7 @@
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
                   <param key="host"  value="${jboss.bind.address:localhost}"/>
                   <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+                  <param key="socket-ref" value="hq:netty" />
                </acceptor>
 
                <acceptor name="netty-throughput">
@@ -94,6 +93,7 @@
                   <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
+                  <param key="socket-ref" value="hq:netty-throughput" />
                </acceptor>
 
                <acceptor name="in-vm">
@@ -123,7 +123,6 @@
                   <address-full-policy>BLOCK</address-full-policy>
                </address-setting>
             </address-settings>
-            </jms:configuration>
         </messaging:subsystem>
     </profile>
 
@@ -141,6 +140,9 @@
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
         <socket-binding name="txn-socket-process-id" port="4714"/>
+        <socket-binding name="hq:netty" port="5445" />
+        <socket-binding name="hq:netty-throughput" port="5455" interface="default" />
+
     </socket-binding-group>
 
     <system-properties>

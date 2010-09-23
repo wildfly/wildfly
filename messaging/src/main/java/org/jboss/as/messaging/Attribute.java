@@ -9,7 +9,22 @@ import java.util.Map;
 public enum Attribute {
    UNKNOWN(null),
    /* Messaging 1.0 attributes, in alpha order */
-   NAME("name"),;
+   NAME("name"),
+   KEY("key"),
+   VALUE("value"),
+   TYPE_ATTR_NAME("type"),
+   ROLES_ATTR_NAME("roles"),
+   CREATEDURABLEQUEUE_NAME("createDurableQueue"),
+   DELETEDURABLEQUEUE_NAME("deleteDurableQueue"),
+   CREATE_NON_DURABLE_QUEUE_NAME("createNonDurableQueue"),
+   DELETE_NON_DURABLE_QUEUE_NAME("deleteNonDurableQueue"),
+   // HORNETQ-309 we keep supporting these attribute names for compatibility
+   CREATETEMPQUEUE_NAME("createTempQueue"),
+   DELETETEMPQUEUE_NAME("deleteTempQueue"),
+   SEND_NAME("send"),
+   CONSUME_NAME("consume"),
+   MANAGE_NAME("manage"),
+   ;
    private final String name;
 
    Attribute(final String name) {

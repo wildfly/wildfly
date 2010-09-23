@@ -1,5 +1,6 @@
 package org.jboss.as.messaging;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -15,6 +16,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author scott.stark@jboss.org
@@ -24,31 +26,36 @@ public class AcceptorsElement extends AbstractModelElement<AcceptorsElement> imp
    private static final long serialVersionUID = 1L;
    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
-   Configuration config = new ConfigurationImpl();
+   public AcceptorsElement(final XMLExtendedStreamReader reader, Configuration config) throws XMLStreamException {
+      System.out.println("Begin " + reader.getLocation() + reader.getLocalName());
+      // Handle elements
+      int tag = reader.getEventType();
+      String localName = null;
+      do {
+         tag = reader.nextTag();
+         localName = reader.getLocalName();
+         final org.jboss.as.messaging.Element element = org.jboss.as.messaging.Element.forName(reader.getLocalName());
+         /*
+               <acceptor name="netty">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+                  <param key="host"  value="${jboss.bind.address:localhost}"/>
+                  <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+               </acceptor>
+         */
+         switch (element) {
+         case ACCEPTOR:
+            String name = reader.getAttributeValue(0);
+            TransportConfiguration acceptorConfig = ElementUtils.parseTransportConfiguration(reader, name, Element.ACCEPTOR);
+            config.getAcceptorConfigurations().add(acceptorConfig);
+            break;
+         }
+      } while (reader.hasNext() && localName.equals(Element.ACCEPTOR.getLocalName()));
 
-
-   public AcceptorsElement(final Location location) {
-      super(location);
-   }
-
-   public AcceptorsElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      super(reader);
-      System.out.println("Begin "+reader.getLocation()+reader.getLocalName());
-      reader.discardRemainder();
-   }
-
-   public List<ConnectorServiceConfiguration> getConnectorServiceConfigurations() {
-      return null;  //To change body of created methods use File | Settings | File Templates.
    }
 
    @Override
    public long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   @Override
-   protected void appendDifference(Collection<AbstractModelUpdate<AcceptorsElement>> target, AcceptorsElement other) {
-      //To change body of implemented methods use File | Settings | File Templates.
    }
 
    @Override

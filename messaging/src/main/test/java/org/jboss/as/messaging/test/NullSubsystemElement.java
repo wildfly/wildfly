@@ -26,18 +26,8 @@ public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsys
    }
 
    @Override
-   public Collection<String> getReferencedSocketBindings() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   @Override
    public long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   @Override
-   protected void appendDifference(Collection<AbstractModelUpdate<NullSubsystemElement<T>>> target, NullSubsystemElement<T> other) {
-      //To change body of implemented methods use File | Settings | File Templates.
    }
 
    @Override
