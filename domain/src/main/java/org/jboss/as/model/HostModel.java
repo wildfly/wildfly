@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.EnumSet;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -42,15 +46,25 @@ public final class HostModel extends AbstractModel<HostModel> {
 
     private static final long serialVersionUID = 7667892965813702351L;
 
+    public static final String DEFAULT_NAME;
+    static {
+        try {
+            DEFAULT_NAME = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
+    private String name;
     private LocalDomainControllerElement localDomainController;
     private RemoteDomainControllerElement remoteDomainController;
-
+    private ManagementElement managementElement;
 
     private PropertiesElement systemProperties;
 
@@ -76,6 +90,24 @@ public final class HostModel extends AbstractModel<HostModel> {
         namespaces.putAll(readNamespaces(reader));
         // Handle attributes
         schemaLocation = readSchemaLocation(reader);
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                continue;
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                default: throw unexpectedAttribute(reader, i);
+            }
+        }
+        this.name = name != null ? name : DEFAULT_NAME;
+
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -91,6 +123,13 @@ public final class HostModel extends AbstractModel<HostModel> {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
                             this.systemProperties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case MANAGEMENT: {
+                            if(managementElement != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            this.managementElement = new ManagementElement(reader);
                             break;
                         }
                         case DOMAIN_CONTROLLER: {
@@ -116,7 +155,9 @@ public final class HostModel extends AbstractModel<HostModel> {
                 default: throw unexpectedElement(reader);
             }
         }
-
+        if(managementElement == null) {
+            throw missingRequiredElement(reader, Collections.singleton(Element.MANAGEMENT.getLocalName()));
+        }
     }
 
     /**
@@ -207,8 +248,16 @@ public final class HostModel extends AbstractModel<HostModel> {
         return localDomainController;
     }
 
-    public RemoteDomainControllerElement getRemoteDomainController() {
+    public RemoteDomainControllerElement getRemoteDomainControllerElement() {
         return remoteDomainController;
+    }
+
+    public ManagementElement getManagementElement() {
+        return managementElement;
+    }
+
+    public String getName() {
+        return name;
     }
 
     /** {@inheritDoc} */

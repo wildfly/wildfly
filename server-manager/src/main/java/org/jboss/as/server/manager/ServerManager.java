@@ -37,6 +37,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.stream.XMLInputFactory;
@@ -45,7 +47,7 @@ import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.JvmElement;
-import org.jboss.as.model.LocalDomainControllerElement;
+import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
@@ -55,8 +57,15 @@ import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
+import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
+import org.jboss.as.server.manager.management.ManagementCommunicationService;
+import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
+import org.jboss.as.server.manager.management.ManagementOperationHandlerService;
+import org.jboss.as.server.manager.management.ServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.as.threads.ThreadFactoryExecutorService;
+import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -65,6 +74,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
@@ -75,8 +85,9 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Brian Stansberry
  */
 public class ServerManager implements ShutdownListener {
-
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
+
+    static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("server", "manager");
 
     private final ServerManagerEnvironment environment;
     private final StandardElementReaderRegistrar extensionRegistrar;
@@ -108,6 +119,10 @@ public class ServerManager implements ShutdownListener {
         this.messageHandler = new MessageHandler(this);
     }
 
+    public String getName() {
+        return hostConfig.getName();
+    }
+
     /**
      * Starts the ServerManager. This brings this ServerManager to the point where
      * it has processed it's own configuration file, registered with the DomainController
@@ -130,11 +145,27 @@ public class ServerManager implements ShutdownListener {
 
         initializeServerMaker();
 
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        batchBuilder.addListener(new AbstractServiceListener<Object>() {
+            public void serviceFailed(ServiceController<? extends Object> serviceController, StartException reason) {
+                log.errorf(reason, "Service [%s] failed.", serviceController.getName());
+            }
+        });
+
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
+
+        // Always activate the management port
+        activateManagementCommunication(serviceActivatorContext);
+
         if (hostConfig.getLocalDomainControllerElement() != null) {
-            launchLocalDomainController();
+            activateLocalDomainController(serviceActivatorContext);
         } else {
-            // DC does not know about this host. Inform it of our existence
-            connectToRemoteDomainController();
+            activateRemoteDomainControllerConnection(serviceActivatorContext);
+        }
+        try {
+            batchBuilder.install();
+        } catch (ServiceRegistryException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -259,7 +290,7 @@ public class ServerManager implements ShutdownListener {
     public void stop() {
         log.info("Stopping ServerManager");
         directServerCommunicationListener.shutdown();
-        domainControllerConnection.unregister();
+        domainControllerConnection.unregister(hostConfig);
         serviceContainer.shutdown();
         // FIXME stop any local DomainController, stop other internal SM services
     }
@@ -436,81 +467,91 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-    private void launchLocalDomainController() {
+    private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
         final DomainController domainController = new DomainController();
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
-            domainController.start(hostConfig, serviceContainer, mapper, environment.getDomainConfigurationDir());
+            domainController.start(hostConfig, mapper, environment.getDomainConfigurationDir());
             setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController));
+
+            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+            final ManagementOperationHandlerService<DomainControllerOperationHandler> operationHandlerService
+                = new ManagementOperationHandlerService<DomainControllerOperationHandler>(new DomainControllerOperationHandler(domainController));
+
+            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("domain", "controller"), operationHandlerService)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
         }
     }
 
-    private void connectToRemoteDomainController() {
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final ServiceActivatorContext activatorContext = new ServiceActivatorContextImpl(batchBuilder);
+    private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
+        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this);
         final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
                 public void serviceFailed(ServiceController<? extends Void> serviceController, StartException reason) {
-                    log.errorf("Failed to register with domain controller.", reason);
+                    log.error("Failed to register with domain controller.", reason);
                 }
             })
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
 
-        final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
-        if(localDomainControllerElement != null) {
-            final String interfaceName = localDomainControllerElement.getInterfaceName();
-            ServerInterfaceElement interfaceElement = null;
-            // Activate admin interface
-            final Set<ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
-            if(dcInterfaces != null) {
-                for(ServerInterfaceElement dcInterfaceElement : dcInterfaces) {
-                    if(interfaceName.equals(dcInterfaceElement.getName())) {
-                        interfaceElement = dcInterfaceElement;
-                        break;
-                    }
-                }
-            }
-
-            final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
-            if(interfaceElement == null && hostInterfaces != null) {
-                for(ServerInterfaceElement hostInterfaceElement : hostInterfaces) {
-                    if(interfaceName.equals(hostInterfaceElement.getName())) {
-                        interfaceElement = hostInterfaceElement;
-                        break;
-                    }
-                }
-            }
-            if(interfaceElement != null) {
-                interfaceElement.activate(activatorContext);
-            }
-            serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName), NetworkInterfaceBinding.class, domainControllerClientService.getDomainControllerInterface());
-            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), localDomainControllerElement.getPort());
-        } else {
-            final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainController();
-            final InetAddress hostAddress;
-            try {
-                hostAddress = InetAddress.getByName(remoteDomainControllerElement.getHost());
-            } catch (UnknownHostException e) {
-                throw new RuntimeException("Failed to get remote domain controller address", e);
-            }
-            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
-            serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
-        }
+        final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
+        final InetAddress hostAddress;
         try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new RuntimeException(e);
+            hostAddress = InetAddress.getByName(remoteDomainControllerElement.getHost());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Failed to get remote domain controller address", e);
         }
+        serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
+        serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
+    }
+
+    private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
+        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+
+        final ManagementElement managementElement = hostConfig.getManagementElement();
+
+        final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
+        if(hostInterfaces != null) {
+            for(ServerInterfaceElement interfaceElement : hostInterfaces) {
+                if(interfaceElement.getName().equals(managementElement.getInterfaceName())) {
+                    interfaceElement.activate(serviceActivatorContext);
+                    break;
+                }
+            }
+        }
+
+        // Add the executor
+        final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
+        batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
+        final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
+        final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(20, false); // TODO: configuration
+        batchBuilder.addService(executorServiceName, executorService)
+            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
+
+        //  Add the management communication service
+        final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
+        batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
+            .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
+            .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
+            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+        //  Add the server manager operation handler
+        final ManagementOperationHandlerService<ServerManagerOperationHandler> operationHandlerService
+                = new ManagementOperationHandlerService<ServerManagerOperationHandler>(new ServerManagerOperationHandler(this));
+            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "manager"), operationHandlerService)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
     }
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
         this.domainControllerConnection = domainControllerConnection;
-        domainControllerConnection.register();
+        final DomainModel domainModel = domainControllerConnection.register(hostConfig);
+        setDomain(domainModel);
     }
 
     HostModel getHostConfig() {

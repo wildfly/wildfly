@@ -62,9 +62,8 @@ import java.util.concurrent.ThreadFactory;
  * @author John Bailey
  */
 public class DomainController {
-    static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("domain", "controller");
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-    private DomainModel domainConfig;
+    private DomainModel domainModel;
     private final AtomicBoolean started = new AtomicBoolean();
     private ConcurrentMap<String, DomainControllerClient> clients = new ConcurrentHashMap<String, DomainControllerClient>();
 
@@ -73,57 +72,12 @@ public class DomainController {
      *
      * @param hostConfig The host configuration
      */
-    public synchronized void start(final HostModel hostConfig, final ServiceContainer serviceContainer, final XMLMapper xmlMapper, final File domainConfigDir) {
+    public synchronized void start(final HostModel hostConfig, final XMLMapper xmlMapper, final File domainConfigDir) {
         if(started.compareAndSet(false, true)) {
             log.info("Starting Domain Controller");
 
             log.info("Parsing Domain Configuration");
-            domainConfig = parseDomain(xmlMapper, domainConfigDir);
-
-            final LocalDomainControllerElement localDomainControllerElement = hostConfig.getLocalDomainControllerElement();
-            final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-
-            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
-
-            // Activate Interfaces
-            final Map<String, ServerInterfaceElement> interfaces = new HashMap<String, ServerInterfaceElement>();
-            final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
-            if(hostInterfaces != null) {
-                for(ServerInterfaceElement interfaceElement : hostInterfaces) {
-                    interfaces.put(interfaceElement.getName(), interfaceElement);
-                }
-            }
-            final Set<ServerInterfaceElement> dcInterfaces = localDomainControllerElement.getInterfaces();
-            if(dcInterfaces != null) {
-                for(ServerInterfaceElement interfaceElement : dcInterfaces) {
-                    interfaces.put(interfaceElement.getName(), interfaceElement);
-                }
-            }
-            for(ServerInterfaceElement interfaceElement : interfaces.values()) {
-                interfaceElement.activate(serviceActivatorContext);
-            }
-
-            // Setup the domain controller executor
-            final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
-            batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
-            final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
-            final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(localDomainControllerElement.getMaxThreads(), false);
-            batchBuilder.addService(executorServiceName, executorService)
-                .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
-
-            //  Add the server manager communication service
-            final ServerManagerCommunicationService serverManagerCommunicationService = new ServerManagerCommunicationService(this, localDomainControllerElement);
-            batchBuilder.addService(ServerManagerCommunicationService.SERVICE_NAME, serverManagerCommunicationService)
-                .addListener(new DomainControllerStartupListener())
-                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(localDomainControllerElement.getInterfaceName()), NetworkInterfaceBinding.class, serverManagerCommunicationService.getInterfaceInjector())
-                .addDependency(executorServiceName, ExecutorService.class, serverManagerCommunicationService.getExecutorServiceInjector())
-                .setInitialMode(ServiceController.Mode.IMMEDIATE);
-
-            try {
-                batchBuilder.install();
-            } catch (ServiceRegistryException e) {
-                throw new RuntimeException(e);
-            }
+            domainModel = parseDomain(xmlMapper, domainConfigDir);
         }
     }
 
@@ -140,13 +94,16 @@ public class DomainController {
         if(clients.putIfAbsent(domainControllerClient.getId(), domainControllerClient) != null) {
             // TODO: Handle
         }
-        domainControllerClient.updateDomain(domainConfig);
     }
 
-    public void removeClient(final DomainControllerClient domainControllerClient) {
-        if(clients.remove(domainControllerClient.getId(), domainControllerClient)) {
+    public void removeClient(final String id) {
+        if(clients.remove(id) == null) {
             // TODO: Handle
         }
+    }
+
+    public synchronized DomainModel getDomainModel() {
+        return domainModel;
     }
 
     private DomainModel parseDomain(final XMLMapper mapper,  final File domainConfigDir) {
@@ -166,18 +123,6 @@ public class DomainController {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Caught exception during processing of domain.xml", e);
-        }
-    }
-
-    private class DomainControllerStartupListener extends AbstractServiceListener<Void> {
-        @Override
-        public void serviceStarted(ServiceController<? extends Void> serviceController) {
-            log.info("Domain Controller Started");
-        }
-
-        @Override
-        public void serviceFailed(ServiceController<? extends Void> serviceController, StartException reason) {
-            log.error("Failed to start server manger communication service", reason);
         }
     }
 }

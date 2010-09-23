@@ -20,27 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.manager.management;
 
-import org.jboss.as.model.DomainModel;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
+ * Interface for handling management operations coming into a server manager process.  Each handler
+ * is identified by a single byte that will be used to route the operation request to the correct handler.
  *
- *  @author John Bailey
+ * @author John Bailey
  */
-public class RemoteDomainControllerClient implements DomainControllerClient {
-    private final String id;
+public interface ManagementOperationHandler {
+    byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
 
-    public RemoteDomainControllerClient(final String id) {
-        this.id = id;
-    }
+    /**
+     * The identifier for this handler.
+     *
+     * @return the identifier
+     */
+    byte getIdentifier();
 
-    public String getId() {
-        return id;
-    }
-
-    public void updateDomain(final DomainModel domain) {
-        // NO-OP -  TODO: Wire in the SM connection info
-    }
+    /**
+     * Handle the incoming management operation.
+     *
+     * @param inputStream  The request input
+     * @param outputStream The request output
+     */
+    void handleRequest(final InputStream inputStream, final OutputStream outputStream);
 }

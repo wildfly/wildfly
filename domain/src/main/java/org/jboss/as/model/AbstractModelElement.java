@@ -373,9 +373,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
                     && "schemaLocation".equals(reader.getAttributeLocalName(i))) {
                 loc = reader.getAttributeValue(i);
             }
-            else{
-                throw unexpectedAttribute(reader, i);
-            }
         }
         return loc;
     }

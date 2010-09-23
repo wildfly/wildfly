@@ -25,12 +25,10 @@
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <domain-controller>
-       <local interface="public" port="9999">
-           <jvm name="icedtea1">
-               <heap size="64m" max-size="512m"/>
-           </jvm>
-       </local>
+       <local/>
     </domain-controller>
+
+    <management interface="public" port="9999"/>
 
     <interfaces>
         <interface name="public">

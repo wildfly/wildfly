@@ -80,6 +80,7 @@ public enum Element {
     SERVER("server"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
+    MANAGEMENT("management"),
     SERVER_GROUPS("server-groups"),
     SITE_LOCAL_ADDRESS("site-local-address"),
     SOCKET_BINDING("socket-binding"),

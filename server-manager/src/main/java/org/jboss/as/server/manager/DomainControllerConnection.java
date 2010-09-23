@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.manager;
 
+import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
+
 /**
  * Contract for communicating with a domain controller.
  *
@@ -30,11 +33,13 @@ package org.jboss.as.server.manager;
 public interface DomainControllerConnection {
     /**
      * Register with the domain controller.
+     *
+     * @return The latest domain model
      */
-    void register();
+    DomainModel register(final HostModel hostModel);
 
     /*
      * Unregister from the domain controller.
      */
-    void unregister();
+    void unregister(final HostModel hostModel);
 }

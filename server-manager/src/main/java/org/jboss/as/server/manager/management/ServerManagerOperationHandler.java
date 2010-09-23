@@ -20,27 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.manager.management;
 
-import org.jboss.as.model.DomainModel;
+import org.jboss.as.server.manager.ServerManager;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
- * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
+ * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
+ * intended for the server manager.
  *
- *  @author John Bailey
+ * @author John Bailey
  */
-public class RemoteDomainControllerClient implements DomainControllerClient {
-    private final String id;
+public class ServerManagerOperationHandler extends AbstractManagementOperationHandler {
+    private final ServerManager serverManager;
 
-    public RemoteDomainControllerClient(final String id) {
-        this.id = id;
+    /**
+     * Create a new instance.
+     *
+     * @param serverManager The server manager
+     */
+
+    public ServerManagerOperationHandler(ServerManager serverManager) {
+        this.serverManager = serverManager;
     }
 
-    public String getId() {
-        return id;
+    /** {@inheritDoc} */
+    protected OperationResponse handle(Unmarshaller unmarshaller) {
+        return NO_OP_RESPONSE;
     }
 
-    public void updateDomain(final DomainModel domain) {
-        // NO-OP -  TODO: Wire in the SM connection info
+    /** {@inheritDoc} */
+    public final byte getIdentifier() {
+        return 0;
     }
 }

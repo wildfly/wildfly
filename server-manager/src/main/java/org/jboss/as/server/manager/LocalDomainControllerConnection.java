@@ -23,6 +23,8 @@
 package org.jboss.as.server.manager;
 
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
 
 /**
  *
@@ -44,13 +46,14 @@ public class LocalDomainControllerConnection implements DomainControllerConnecti
     }
 
     /** {@inheritDoc} */
-    public void register() {
+    public DomainModel register(final HostModel hostModel) {
         domainController.addClient(client);
+        return domainController.getDomainModel();
     }
 
     /** {@inheritDoc} */
-    public void unregister() {
-        domainController.removeClient(client);
+    public void unregister(final HostModel hostModel) {
+        domainController.removeClient(client.getId());
         domainController.stop();
     }
 }
