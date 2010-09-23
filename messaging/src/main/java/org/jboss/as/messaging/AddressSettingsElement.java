@@ -1,12 +1,9 @@
 package org.jboss.as.messaging;
 
 import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.Validators;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.security.Role;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.logging.Logger;
@@ -17,7 +14,10 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,26 +43,21 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
          localName = reader.getLocalName();
          final Element element = Element.forName(reader.getLocalName());
          /*
-            <address-settings>
-               <!--default for catch all-->
-               <address-setting match="#">
-                  <dead-letter-address>jms.queue.DLQ</dead-letter-address>
-                  <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                  <redelivery-delay>0</redelivery-delay>
-                  <max-size-bytes>10485760</max-size-bytes>
-                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
-                  <address-full-policy>BLOCK</address-full-policy>
-               </address-setting>
-            </address-settings>
+            <security-setting match="#">
+            <permission type="createNonDurableQueue" roles="guest"/>
+            <permission type="deleteNonDurableQueue" roles="guest"/>
+            <permission type="consume" roles="guest"/>
+            <permission type="send" roles="guest"/>
+            </security-setting>
          */
          switch (element) {
-         case ADDRESS_SETTING:
+         case SECURITY_ELEMENT_NAME:
             String match = reader.getAttributeValue(0);
-            Pair<String, AddressSettings> settings = parseAddressSettings(reader, match);
-            config.getAddressesSettings().put(settings.a, settings.b);
+            Pair<String, Set<Role>> roles = parseSecurityRoles(reader, match);
+            config.getSecurityRoles().put(roles.a, roles.b);
             break;
          }
-      } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
+      } while (reader.hasNext() && localName.equals("security-setting"));
    }
 
    @Override
@@ -94,101 +89,79 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
       return null;  //To change body of created methods use File | Settings | File Templates.
    }
 
-   public Pair<String, AddressSettings> parseAddressSettings(final XMLExtendedStreamReader reader, String match)
+   public Pair<String, Set<Role>> parseSecurityRoles(final XMLExtendedStreamReader reader, String match)
       throws XMLStreamException {
-      AddressSettings addressSettings = new AddressSettings();
 
-      Pair<String, AddressSettings> setting = new Pair<String, AddressSettings>(match, addressSettings);
 
-      int tag = reader.getEventType();
-      String localName = null;
-      do {
-         tag = reader.nextTag();
-         localName = reader.getLocalName();
-         final Element element = Element.forName(reader.getLocalName());
+      HashSet<Role> securityRoles = new HashSet<Role>();
 
-         switch(element) {
-         case DEAD_LETTER_ADDRESS_NODE_NAME:
-         {
-            SimpleString queueName = new SimpleString(reader.getElementText());
-            addressSettings.setDeadLetterAddress(queueName);
-         }
-         break;
-         case EXPIRY_ADDRESS_NODE_NAME:
-         {
-            SimpleString queueName = new SimpleString(reader.getElementText());
-            addressSettings.setExpiryAddress(queueName);
-         }
-         break;
-         case REDELIVERY_DELAY_NODE_NAME:
-         {
-            addressSettings.setRedeliveryDelay(Long.valueOf(reader.getElementText()));
-         }
-         break;
-         case MAX_SIZE_BYTES_NODE_NAME:
-         {
-            addressSettings.setMaxSizeBytes(Long.valueOf(reader.getElementText()));
-         }
-         break;
-         case PAGE_SIZE_BYTES_NODE_NAME:
-         {
-            addressSettings.setPageSizeBytes(Long.valueOf(reader.getElementText()));
-         }
-         break;
-         case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME:
-         {
-            addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText()));
-         }
-         break;
-         case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME:
-         {
-            String value = reader.getElementText().trim();
-            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.getLocalName(),
-                                                                 value);
-            AddressFullMessagePolicy policy = null;
-            if (value.equals(AddressFullMessagePolicy.BLOCK.toString()))
-            {
-               policy = AddressFullMessagePolicy.BLOCK;
+      Pair<String, Set<Role>> securityMatch = new Pair<String, Set<Role>>(match, securityRoles);
+
+      ArrayList<String> send = new ArrayList<String>();
+      ArrayList<String> consume = new ArrayList<String>();
+      ArrayList<String> createDurableQueue = new ArrayList<String>();
+      ArrayList<String> deleteDurableQueue = new ArrayList<String>();
+      ArrayList<String> createNonDurableQueue = new ArrayList<String>();
+      ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
+      ArrayList<String> manageRoles = new ArrayList<String>();
+      ArrayList<String> allRoles = new ArrayList<String>();
+      while (reader.hasNext() && reader.getLocalName().equals(Element.PERMISSION_ELEMENT_NAME.getLocalName())) {
+         int tag = reader.nextTag();
+         String localName = reader.getLocalName();
+
+         if (Element.PERMISSION_ELEMENT_NAME.getLocalName().equalsIgnoreCase(localName)) {
+            int count = reader.getAttributeCount();
+            int rolesIndex = 1, typeIndex = 0;
+            for (int n = 0; n < count; n++) {
+               if (reader.getAttributeLocalName(n).equals(Element.ROLES_ATTR_NAME.getLocalName())) {
+                  rolesIndex = n;
+               } else if (reader.getAttributeLocalName(n).equals(Element.TYPE_ATTR_NAME.getLocalName())) {
+                  typeIndex = n;
+               }
             }
-            else if (value.equals(AddressFullMessagePolicy.DROP.toString()))
-            {
-               policy = AddressFullMessagePolicy.DROP;
+
+            List<String> roles = reader.getListAttributeValue(rolesIndex);
+            String type = reader.getAttributeValue(typeIndex);
+            for (String role : roles) {
+               if (Element.SEND_NAME.equals(type)) {
+                  send.add(role.trim());
+               } else if (Element.CONSUME_NAME.equals(type)) {
+                  consume.add(role.trim());
+               } else if (Element.CREATEDURABLEQUEUE_NAME.equals(type)) {
+                  createDurableQueue.add(role);
+               } else if (Element.DELETEDURABLEQUEUE_NAME.equals(type)) {
+                  deleteDurableQueue.add(role);
+               } else if (Element.CREATE_NON_DURABLE_QUEUE_NAME.equals(type)) {
+                  createNonDurableQueue.add(role);
+               } else if (Element.DELETE_NON_DURABLE_QUEUE_NAME.equals(type)) {
+                  deleteNonDurableQueue.add(role);
+               } else if (Element.CREATETEMPQUEUE_NAME.equals(type)) {
+                  createNonDurableQueue.add(role);
+               } else if (Element.DELETETEMPQUEUE_NAME.equals(type)) {
+                  deleteNonDurableQueue.add(role);
+               } else if (Element.MANAGE_NAME.equals(type)) {
+                  manageRoles.add(role);
+               }
+               if (!allRoles.contains(role.trim())) {
+                  allRoles.add(role.trim());
+               }
             }
-            else if (value.equals(AddressFullMessagePolicy.PAGE.toString()))
-            {
-               policy = AddressFullMessagePolicy.PAGE;
-            }
-            addressSettings.setAddressFullMessagePolicy(policy);
-         }
-         break;
-         case LVQ_NODE_NAME:
-         {
-            addressSettings.setLastValueQueue(Boolean.valueOf(reader.getElementText().trim()));
-         }
-         break;
-         case MAX_DELIVERY_ATTEMPTS:
-         {
-            addressSettings.setMaxDeliveryAttempts(Integer.valueOf(reader.getElementText().trim()));
-         }
-         break;
-         case REDISTRIBUTION_DELAY_NODE_NAME:
-         {
-            addressSettings.setRedistributionDelay(Long.valueOf(reader.getElementText().trim()));
-         }
-         break;
-         case SEND_TO_DLA_ON_NO_ROUTE:
-         {
-            addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(reader.getElementText().trim()));
-         }
-         break;
-         default:
-            break;
          }
 
-         reader.discardRemainder();
-      } while(!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName()) && reader.getEventType() != XMLExtendedStreamReader.END_ELEMENT);
- 
-      return setting;
+      }
+
+      for (String role : allRoles) {
+         securityRoles.add(new Role(role,
+            send.contains(role),
+            consume.contains(role),
+            createDurableQueue.contains(role),
+            deleteDurableQueue.contains(role),
+            createNonDurableQueue.contains(role),
+            deleteNonDurableQueue.contains(role),
+            manageRoles.contains(role)));
+      }
+
+      return securityMatch;
    }
 
 }

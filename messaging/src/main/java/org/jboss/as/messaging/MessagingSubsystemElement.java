@@ -1,12 +1,10 @@
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.messaging.hornetq.HornetQService;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -24,10 +22,8 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * The subsystem element for the messaging configuration and activation.
- * 
- * @author scott.stark@jboss.org
- * @version $Id$
+ * Created by IntelliJ IDEA. User: starksm Date: Sep 13, 2010 Time: 11:44:11 PM To change this template use File |
+ * Settings | File Templates.
  */
 public class MessagingSubsystemElement extends AbstractSubsystemElement<MessagingSubsystemElement> {
 
@@ -39,13 +35,13 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     * The service name "jboss.messaging".
     */
    public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
-   /** The subsystem configration namespace in the domain */
+
    public static final String NAMESPACE_1_0 = "urn:jboss:domain:messaging:1.0";
 
    public static final String NAMESPACE = NAMESPACE_1_0;
 
    public static final Set<String> NAMESPACES = Collections.singleton(NAMESPACE);
-   /** The */
+
    private ConfigurationElement configuration;
 
    /**
@@ -107,38 +103,18 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
    }
 
    /**
-    * Add the HornetQServer to the subsystem batch
+    * {@inheritDoc}
     */
    public void activate(final ServiceActivatorContext context) {
       log.info("Activating Messaging Subsystem");
       HornetQService hqservice = new HornetQService();
-      Configuration hqConfig = configuration.getConfiguration();
+      Configuration hqConfig = this.configuration.getConfiguration();
       hqservice.setConfiguration(hqConfig);
 
       final BatchBuilder batchBuilder = context.getBatchBuilder();
-
       final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(JBOSS_MESSAGING, hqservice);
-      // Add the dependencies on the connectors and acceptors
-      Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
-      Collection<TransportConfiguration> connectors = hqConfig.getConnectorConfigurations().values();
-      if(connectors != null) {
-         for(TransportConfiguration tc : connectors) {
-            String name = tc.getName();
-            ServiceName connectorSocketName = SocketBinding.JBOSS_BINDING_NAME.append();
-            serviceBuilder.addDependency(connectorSocketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
-         }
-      }
-      //
-      if(acceptors != null) {
-         for(TransportConfiguration tc : acceptors) {
-            String name = tc.getName();
-            ServiceName connectorSocketName = SocketBinding.JBOSS_BINDING_NAME.append();
-            serviceBuilder.addDependency(connectorSocketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
-         }
-      }
-
       serviceBuilder.setLocation(getLocation());
-      serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+      serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
    }
 
 }
