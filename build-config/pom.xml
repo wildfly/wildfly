@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>build-config</artifactId>
+    <artifactId>jboss-as-build-config</artifactId>
     <name>JBoss Application Server: Build Configuration</name>
     <version>7.0.0.Beta1-SNAPSHOT</version>
 
