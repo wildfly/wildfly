@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Indicates that a network interface must be a {@link NetworkInterface#isLoopback() loopback interface}
@@ -41,5 +42,10 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
     @Override
     protected Class<SimpleCriteriaElement> getElementClass() {
         return SimpleCriteriaElement.class;
+    }
+
+    @Override
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEndElement();
     }
 }

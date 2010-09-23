@@ -25,8 +25,6 @@ package org.jboss.as.model;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.EnumSet;
-import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -188,7 +186,7 @@ public final class HostModel extends AbstractModel<HostModel> {
      * @return the interface configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
      */
-    public InterfaceElement getInterface(String name) {
+    public ServerInterfaceElement getInterface(String name) {
         synchronized (interfaces) {
             return interfaces.get(name);
         }
@@ -261,6 +259,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long cksum = 17L;
 
@@ -287,11 +286,13 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<HostModel> getElementClass() {
         return HostModel.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         synchronized (namespaces) {
@@ -342,7 +343,7 @@ public final class HostModel extends AbstractModel<HostModel> {
         synchronized (interfaces) {
             if (!interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-                for (InterfaceElement element : interfaces.values()) {
+                for (ServerInterfaceElement element : interfaces.values()) {
                     streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                     element.writeContent(streamWriter);
                 }

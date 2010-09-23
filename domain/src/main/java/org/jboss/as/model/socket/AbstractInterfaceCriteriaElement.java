@@ -8,7 +8,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Element;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Base class for domain model elements that represent
@@ -100,17 +99,6 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
     @Override
     public long elementHash() {
         return element.hashCode() & 0xFFFFFFFF;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * This default implementation simple writes the end of the element. This
-     * is appropriate for subclasses whose element type has no attributes or child elements.
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEndElement();
     }
 
 }

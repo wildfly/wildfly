@@ -564,11 +564,13 @@
                 A set of criteria that can be used at runtime to determine
                 what IP address to use for an interface.
             </xs:documentation>
-        </xs:annotation>            
+        </xs:annotation> 
         <xs:choice>
-            <xs:element name="inet-address" type="inet-addressType"/> 
-            <!-- xs:element name="nic" type="nicType"/ --> 
+            <xs:element name="any-address" type="any-addressType"/>
+            <xs:element name="any-ipv6-address" type="any-ipv6-addressType"/>
+            <xs:element name="any-ipv4-address" type="any-ipv4-addressType"/>
             <xs:choice maxOccurs="unbounded">
+                <xs:element name="inet-address" type="inet-addressType"/> 
                 <xs:element name="loopback" type="loopbackType"/>
                 <xs:element name="multicast" type="multicastType"/>
                 <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -577,9 +579,9 @@
                 <xs:element name="public-address" type="public-addressType"/>
                 <xs:element name="link-local-address" type="link-local-addressType"/>
                 <xs:element name="site-local-address" type="site-local-addressType"/>
-                <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
-                <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
-                <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/> 
+                <xs:element name="nic" type="nicType"/>  
+                <xs:element name="nic-match" type="nic-matchType"/> 
+                <xs:element name="subnet-match" type="subnet-matchType"/> 
                 <xs:element name="not" type="address-exclusionType"/>
                 <xs:element name="any" type="address-exclusionType"/>
             </xs:choice>
@@ -633,6 +635,7 @@
 
     <xs:complexType name="address-exclusionType">
         <xs:choice>
+            <xs:element name="inet-address" type="inet-addressType"/> 
             <xs:element name="loopback" type="loopbackType"/>
             <xs:element name="multicast" type="multicastType"/>
             <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -722,6 +725,40 @@
                     Empty element indicating that part of the selection criteria
                     for an interface should be whether or not an address associated
                     with it is link-local.
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="any-ipv6-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that sockets using this interface
+                    should be bound to the IPv6 wildcard address (::).
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="any-ipv4-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that sockets using this interface
+                    should be bound to the IPv4 wildcard address (0.0.0.0).
+                </xs:documentation>
+            </xs:annotation>            
+    </xs:complexType>
+
+    <xs:complexType name="any-addressType">
+            <xs:annotation>
+                <xs:documentation>
+                    Empty element indicating that sockets using this interface
+                    should be bound to a wildcard address. The IPv6 wildcard
+                    address (::) will be used unless the java.net.preferIpV4Stack
+                    system property is set to true, in which case the IPv4
+                    wildcard address (0.0.0.0) will be used. If a socket is 
+                    bound to an IPv6 anylocal address on a dual-stack machine, 
+                    it can accept both IPv6 and IPv4 traffic; if it is bound to 
+                    an IPv4 (IPv4-mapped) anylocal address, it can only accept 
+                    IPv4 traffic.
                 </xs:documentation>
             </xs:annotation>            
     </xs:complexType>

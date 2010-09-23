@@ -30,7 +30,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private static final long serialVersionUID = 6868487634991345679L;
 
     private final String name;
-    private final RefResolver<String, InterfaceElement> interfaceResolver;
+    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
     private String interfaceName;
     private int port;
     private boolean fixedPort;
@@ -47,7 +47,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      *           to interfaces. May be used safely in the constructor
      *           itself. Cannot be <code>null</code>
      */
-    public SocketBindingElement(Location location, final String name, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) {
+    public SocketBindingElement(Location location, final String name, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) {
         super();
         this.name = name;
 
@@ -69,7 +69,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      *           itself. Cannot be <code>null</code>
      * @throws XMLStreamException if an error occurs
      */
-    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, InterfaceElement> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
+    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
         super();
 
         if (interfaceResolver == null)

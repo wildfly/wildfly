@@ -20,7 +20,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 class ParsingUtil {
 
 
-    public static final Set<Element> SIMPLE_CRITERIA = EnumSet.of(Element.LOOPBACK, Element.LINK_LOCAL_ADDRESS,
+    public static final Set<Element> SIMPLE_CRITERIA = EnumSet.of(Element.INET_ADDRESS, Element.LOOPBACK, Element.LINK_LOCAL_ADDRESS,
             Element.MULTICAST, Element.NIC, Element.NIC_MATCH, Element.POINT_TO_POINT, Element.SITE_LOCAL_ADDRESS,
             Element.PUBLIC_ADDRESS, Element.SUBNET_MATCH, Element.UP, Element.VIRTUAL);
     public static final String SIMPLE_CRITERIA_STRING;
@@ -58,6 +58,10 @@ class ParsingUtil {
     public static AbstractInterfaceCriteriaElement<?> parseSimpleInterfaceCriteria(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
         AbstractInterfaceCriteriaElement<?> result = null;
         switch (element) {
+            case INET_ADDRESS: {
+                result = new InetAddressMatchCriteriaElement(reader);
+                break;
+            }
             case LINK_LOCAL_ADDRESS: {
                 result = new SimpleCriteriaElement(reader, element, LinkLocalInterfaceCriteria.INSTANCE);
                 break;
