@@ -61,6 +61,7 @@ public class DomainControllerOperationHandler extends AbstractManagementOperatio
      * @param unmarshaller The unmarshaller for the request
      * @return An OperationResponse for this operation
      */
+    @Override
     protected OperationResponse handle(Unmarshaller unmarshaller) {
         final String serverManagerId;
         try {
@@ -107,23 +108,27 @@ public class DomainControllerOperationHandler extends AbstractManagementOperatio
 
     private enum Operation {
         REGISTER((byte) 0) {
+            @Override
             protected final void performRead(DomainController domainController, String serverManagerId, Unmarshaller unmarshaller) throws Exception {
-                log.infof("Server manager registered [%s]", serverManagerId);
+                DomainControllerOperationHandler.log.infof("Server manager registered [%s]", serverManagerId);
                 final HostModel hostConfig = unmarshaller.readObject(HostModel.class);
                 final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId);
                 domainController.addClient(client);
             }
 
+            @Override
             protected final void performWrite(DomainController domainController, String serverManagerId, Marshaller marshaller) throws Exception {
                 marshaller.writeObject(domainController.getDomainModel());
                 marshaller.writeByte(command);
             }
         },
         UNREGISTER(Byte.MAX_VALUE) {
+            @Override
             protected final void performRead(DomainController domainController, String serverManagerId, Unmarshaller unmarshaller) throws Exception {
-                log.infof("Server manager unregistered [%s]", serverManagerId);
+                DomainControllerOperationHandler.log.infof("Server manager unregistered [%s]", serverManagerId);
                 domainController.removeClient(serverManagerId);
             }
+            @Override
             protected final void performWrite(DomainController domainController, String serverManagerId, Marshaller marshaller) throws Exception {
                 marshaller.writeByte(command);
             }
