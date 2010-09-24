@@ -78,6 +78,9 @@ public enum Command {
     MSG_BYTES,
 
     /** Sent by PM if when a Process is determined to be down (PM->SM) */
-    DOWN
+    DOWN,
+
+    /** Sends data to the process stdin */
+    SEND_STDIN
     ;
 }

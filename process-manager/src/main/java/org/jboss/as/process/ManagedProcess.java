@@ -59,6 +59,7 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     private boolean stopped;
     private volatile boolean start;
     private final DelegatingSocketOutputStream commandStream = new DelegatingSocketOutputStream();
+    private OutputStream stdinStream;
     private List<StopProcessListener> stopProcessListeners;
     private int respawnCount;
 
@@ -109,6 +110,7 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
                 // issues surrounding fork/exec vs. Java.
                 process = processBuilder.start();
             }
+            stdinStream = process.getOutputStream();
             final ErrorStreamHandler errorStreamHandler = new ErrorStreamHandler(processName, process.getErrorStream());
             final Thread errorThread = new Thread(errorStreamHandler);
             errorThread.setName("Process " + processName + " stderr thread");
@@ -173,6 +175,16 @@ final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
             commandStream.write(msg, 0, msg.length);
             StreamUtils.writeChar(commandStream, '\n');
             commandStream.flush();
+        }
+    }
+
+    void sendStdin(final byte[] msg) throws IOException {
+        synchronized (this) {
+            if (!start)
+                return;
+
+            stdinStream.write(msg);
+            stdinStream.flush();
         }
     }
 

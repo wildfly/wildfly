@@ -289,6 +289,33 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
 
     }
 
+    public void sendStdin(final String recipient, final byte[] msg) {
+        if (shutdown.get())
+            return;
+
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            final ManagedProcess process = processes.get(recipient);
+            if (process == null) {
+                // ignore
+                return;
+            }
+            synchronized (process) {
+                if (! process.isStart()) {
+                    // ignore
+                    return;
+                }
+                try {
+                    process.sendStdin( msg);
+                } catch (IOException e) {
+                    // todo log it
+                }
+            }
+        }
+
+    }
+
+
     public void broadcastMessage(final String sender, final List<String> msg) {
         if (shutdown.get())
             return;

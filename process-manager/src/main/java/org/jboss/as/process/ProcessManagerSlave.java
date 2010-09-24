@@ -179,6 +179,23 @@ public final class ProcessManagerSlave {
         }
     }
 
+
+    public void sendStdin(final String recipient, final byte[] message) throws IOException {
+        if (recipient == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.SEND_STDIN).append('\0');
+        b.append(recipient).append('\0');
+        synchronized (output) {
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
+            output.write(message, 0, message.length);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
+    }
+
     public void broadcastMessage(final List<String> message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.BROADCAST);

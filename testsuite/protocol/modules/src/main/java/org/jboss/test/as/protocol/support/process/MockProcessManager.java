@@ -261,6 +261,10 @@ public class MockProcessManager implements Master{
     }
 
     @Override
+    public void sendStdin(String recipient, byte[] msg) {
+    }
+
+    @Override
     public void serversShutdown() {
         shutdownServersLatch.countDown();
     }

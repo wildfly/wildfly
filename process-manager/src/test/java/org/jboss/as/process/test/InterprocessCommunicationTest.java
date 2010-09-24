@@ -27,6 +27,7 @@ import static junit.framework.Assert.assertNull;
 
 import org.jboss.as.process.AbstractProcessManagerTest;
 import org.jboss.as.process.support.ReceivingProcess;
+import org.jboss.as.process.support.StdinProcess;
 import org.jboss.as.process.support.TestFileUtils;
 import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
@@ -58,6 +59,24 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         stopTestProcessListenerAndWait(listener);
         removeProcess("Receiver");
     }
+
+    @Test
+    public void testSendStdin() throws Exception {
+        addProcess("Receiver", StdinProcess.class); //, 8787, true);
+        TestProcessListenerStream listener = startTestProcessListenerAndWait("Receiver", new Runnable() {
+            @Override
+            public void run() {
+                sendStdin("Receiver", "One");
+            }
+        });
+
+        assertEquals("One", listener.readMessage());
+
+        stopTestProcessListenerAndWait(listener);
+        removeProcess("Receiver");
+    }
+
+
 
     @Test
     public void testSendMessageToNonExistantProcess() throws Exception {

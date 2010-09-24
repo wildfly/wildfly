@@ -48,6 +48,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
 
 /**
  *
@@ -197,6 +198,11 @@ public abstract class TestProcessUtils {
 
         @Override
         public TestProcessListenerStream createProcessListener(String name) {
+            return createProcessListener(name, null);
+        }
+
+        @Override
+        public TestProcessListenerStream createProcessListener(String name, Runnable preWait) {
             CountDownLatch processLatch = null;
             synchronized (this) {
                 ListenerSocketThread thread = listenerThreadsByProcessName
@@ -211,6 +217,8 @@ public abstract class TestProcessUtils {
             try {
                 System.err.println("*Test - Starting " + name + " " + processLatch);
                 controller.startProcess(name);
+                if (preWait != null)
+                    preWait.run();
                 processLatch.await(TIMEOUT_MILLISECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -225,6 +233,8 @@ public abstract class TestProcessUtils {
                 return thread;
             }
         }
+
+
 
         public void detachProcessListener(String name) {
             synchronized (this) {
@@ -585,6 +595,8 @@ public abstract class TestProcessUtils {
 
     public interface TestStreamManager {
         void shutdown();
+
+        TestProcessListenerStream createProcessListener(String name, Runnable preWait);
 
         TestProcessListenerStream createProcessListener(String name);
 

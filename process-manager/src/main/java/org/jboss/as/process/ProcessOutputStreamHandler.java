@@ -189,6 +189,18 @@ public final class ProcessOutputStreamHandler implements Runnable {
                             }
                             break;
                         }
+                        case SEND_STDIN: {
+                            if (status != Status.MORE) {
+                                break;
+                            }
+                            status = StreamUtils.readWord(inputStream, b);
+                            if (status == Status.MORE) {
+                                final String recipient = b.toString();
+                                master.sendStdin(recipient, StreamUtils.readBytesWithLength(inputStream));
+                                status = StreamUtils.readStatus(inputStream);
+                            }
+                            break;
+                        }
                         case BROADCAST: {
                             final List<String> msg = new ArrayList<String>(0);
                             while (status == Status.MORE) {
@@ -257,6 +269,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
         void removeProcess(final String processName);
         void sendMessage(final String sender, final String recipient, final List<String> msg);
         void sendMessage(final String sender, final String recipient, final byte[] msg);
+        void sendStdin(final String recipient, final byte[] msg);
         void broadcastMessage(final String sender, final List<String> msg);
         void broadcastMessage(final String sender, final byte[] msg);
         void serversShutdown();
