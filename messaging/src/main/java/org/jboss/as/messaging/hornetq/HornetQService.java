@@ -2,7 +2,9 @@ package org.jboss.as.messaging.hornetq;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
@@ -14,6 +16,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
+import java.security.AccessController;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +32,10 @@ public class HornetQService implements Service<HornetQServer> {
    private static final String HOST = "host";
    /** */
    private static final String PORT = "port";
+   /**
+    * The name of the SocketBinding reference to use for HOST/PORT configuration
+    */
+   private static final String SOCKET_REF = "socket-ref";
 
    private Configuration configuration;
 
@@ -41,9 +48,11 @@ public class HornetQService implements Service<HornetQServer> {
    class SocketBindingInjector implements Injector<SocketBinding>, Value<SocketBinding> {
       private String name;
       private SocketBinding value;
+
       SocketBindingInjector(String name) {
          this.name = name;
       }
+
       @Override
       public void inject(SocketBinding value) throws InjectionException {
          this.value = value;
@@ -70,6 +79,18 @@ public class HornetQService implements Service<HornetQServer> {
     * {@inheritDoc}
     */
    public synchronized void start(final StartContext context) throws StartException {
+      ClassLoader origTCCL = SecurityActions.getContextClassLoader();
+      // Validate whether the AIO native layer can be used
+      JournalType jtype = configuration.getJournalType();
+      if (jtype == JournalType.ASYNCIO) {
+         boolean supportsAIO = AIOSequentialFileFactory.isSupported();
+
+         if (supportsAIO == false) {
+            log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+            configuration.setJournalType(JournalType.NIO);
+         }
+      }
+
       try {
          // Update the acceptor/connector port/host values from the
          // Map the socket bindings onto the connectors/acceptors
@@ -77,33 +98,49 @@ public class HornetQService implements Service<HornetQServer> {
          Collection<TransportConfiguration> connectors = configuration.getConnectorConfigurations().values();
          if (connectors != null) {
             for (TransportConfiguration tc : connectors) {
-               SocketBinding binding = socketBindings.get(tc.getName());
-               if (binding == null) {
-                  throw new StartException("Failed to find SocketBinding for connector: " + tc.getName());
+               // If there is a socket binding set the HOST/PORT values
+               Object socketRef = tc.getParams().remove(SOCKET_REF);
+               if (socketRef != null) {
+                  String name = socketRef.toString();
+                  SocketBinding binding = socketBindings.get(name);
+                  if (binding == null) {
+                     throw new StartException("Failed to find SocketBinding for connector: " + tc.getName());
+                  }
+                  log.debug("Applying socket binding: " + binding);
+                  tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
+                  tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
                }
-               log.debug("Applying socket binding: "+binding);
-               tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
-               tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
             }
          }
          if (acceptors != null) {
             for (TransportConfiguration tc : acceptors) {
-               SocketBinding binding = socketBindings.get(tc.getName());
-               if (binding == null) {
-                  throw new StartException("Failed to find SocketBinding for acceptor: " + tc.getName());
+               // If there is a socket binding set the HOST/PORT values
+               Object socketRef = tc.getParams().remove(SOCKET_REF);
+               if (socketRef != null) {
+                  String name = socketRef.toString();
+                  SocketBinding binding = socketBindings.get(name);
+                  if (binding == null) {
+                     throw new StartException("Failed to find SocketBinding for connector: " + tc.getName());
+                  }
+                  log.debug("Applying socket binding: " + binding);
+                  tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
+                  tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
                }
-               log.debug("Applying socket binding: "+binding);
-               tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
-               tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
             }
          }
 
          // Now start the server
          server = new HornetQServerImpl(configuration);
+         // HornetQ expects the TCCL to be set to something that can find the log factory class.
+         ClassLoader loader = getClass().getClassLoader();
+         SecurityActions.setContextClassLoader(loader);
          log.info("Starting the HornetQServer...");
          server.start();
       } catch (Exception e) {
          throw new StartException("Failed to start service", e);
+      }
+      finally {
+         SecurityActions.setContextClassLoader(origTCCL);
       }
    }
 

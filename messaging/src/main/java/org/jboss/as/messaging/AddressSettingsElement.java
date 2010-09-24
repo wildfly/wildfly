@@ -26,8 +26,9 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
    public AddressSettingsElement(final XMLExtendedStreamReader reader, Configuration config) throws XMLStreamException {
-      System.out.println("Begin " + reader.getLocation() + reader.getLocalName());
-      // Handle elements
+      boolean trace = log.isTraceEnabled();
+      if(trace)
+         log.trace("Begin " + reader.getLocation() + reader.getLocalName());      // Handle elements
       int tag = reader.getEventType();
       String localName = null;
       do {
@@ -55,6 +56,8 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
             break;
          }
       } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
+      if(trace)
+         log.trace("End " + reader.getLocation() + reader.getLocalName());
    }
 
    @Override
@@ -64,7 +67,7 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
 
    @Override
    protected Class<AddressSettingsElement> getElementClass() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return AddressSettingsElement.class;  //To change body of implemented methods use File | Settings | File Templates.
    }
 
    @Override

@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<standalone xmlns="urn:jboss:domain:1.0"
+<domain xmlns="urn:jboss:domain:1.0"
             xmlns:remoting="urn:jboss:domain:remoting:1.0"
             xmlns:threads="urn:jboss:domain:threads:1.0"
             xmlns:naming="urn:jboss:domain:naming:1.0"
@@ -33,7 +33,7 @@
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd"
         >
 
-    <name>Standalone</name>
+    <name>Domain</name>
 
     <profile name="something">
         <threads:subsystem>
@@ -153,4 +153,4 @@
     <deployments>
     </deployments>
 
-</standalone>
+</domain>

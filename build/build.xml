@@ -159,6 +159,12 @@
 
         <module-def name="org.apache.commons.logging"/>
 
+        <module-def name="org.hornetq">
+            <maven-resource group="org.hornetq" artifact="hornetq-core"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-resources"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-jms"/>
+        </module-def>
+
         <module-def name="org.javassist">
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
@@ -181,6 +187,10 @@
 
         <module-def name="org.jboss.as.logging">
             <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.messaging">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-messaging"/>
         </module-def>
 
         <module-def name="org.jboss.as.managed-beans">
@@ -259,6 +269,10 @@
 
         <module-def name="org.jboss.msc">
             <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
+        </module-def>
+
+        <module-def name="org.jboss.netty">
+            <maven-resource group="org.jboss.netty" artifact="netty"/>
         </module-def>
         
         <module-def name="org.jboss.remoting3">

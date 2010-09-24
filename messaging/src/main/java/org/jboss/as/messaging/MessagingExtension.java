@@ -23,23 +23,28 @@
 package org.jboss.as.messaging;
 
 import org.jboss.as.Extension;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.namespace.QName;
 
 /**
- * The implementation of the Remoting extension.
+ * The implementation of the Messaging extension.
  *
  * @author scott.stark@jboss.org
+ * @version $Id$
  */
 public final class MessagingExtension implements Extension {
+   private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
    /**
     * {@inheritDoc}
     */
    public void registerElementHandlers(final XMLMapper mapper) {
-      mapper.registerRootElement(new QName(Namespace.MESSAGING_1_0.getUriString(), Element.SUBSYSTEM.getLocalName()), MessagingSubsystemParser.getInstance());
+      QName messagingNamespace = new QName(Namespace.MESSAGING_1_0.getUriString(), Element.SUBSYSTEM.getLocalName());
+      mapper.registerRootElement(messagingNamespace, MessagingSubsystemParser.getInstance());
+      log.info("Registered messaging subsystem under: "+messagingNamespace);
    }
 
    /**

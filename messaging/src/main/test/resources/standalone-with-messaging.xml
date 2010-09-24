@@ -20,28 +20,20 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0"
-        xmlns:remoting="urn:jboss:domain:remoting:1.0"
-        xmlns:threads="urn:jboss:domain:threads:1.0"
-        xmlns:txn="urn:jboss:domain:transactions:1.0"
-        xmlns:naming="urn:jboss:domain:naming:1.0"
-        xmlns:messaging="urn:jboss:domain:messaging:1.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+<standalone xmlns="urn:jboss:domain:1.0"
+            xmlns:remoting="urn:jboss:domain:remoting:1.0"
+            xmlns:threads="urn:jboss:domain:threads:1.0"
+            xmlns:naming="urn:jboss:domain:naming:1.0"
+            xmlns:messaging="urn:jboss:domain:messaging:1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
-                            urn:jboss:domain:transactions:1.0 jboss-transactions.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
-                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd"
+        >
 
     <name>Standalone</name>
-
-    <extensions>
-        <extension module="org.jboss.as.jmx"/>
-        <extension module="org.jboss.as.sar"/>
-        <extension module="org.jboss.as.managed-beans"/>
-        <extension module="org.jboss.as.messaging"/>
-    </extensions>
 
     <profile name="something">
         <threads:subsystem>
@@ -51,10 +43,6 @@
             </threads:scheduled-thread-pool-executor>
         </threads:subsystem>
         <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
-        <txn:subsystem>
-            <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-            <txn:core-environment socket-binding="txn-socket-process-id"/>
-        </txn:subsystem>
         <remoting:subsystem thread-pool="remoting"/>
         <messaging:subsystem>
             <!-- A standard hornetq configuration -->
@@ -67,17 +55,22 @@
             <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
             <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>
-
+            <!-- Test an unparsed element -->
+            <journal-compact-percentage>90</journal-compact-percentage>
             <connectors>
                <connector name="netty">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-                  <param key="socket-ref" value="netty" />
+                  <param key="host"  value="${jboss.bind.address:localhost}"/>
+                  <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+                   <param key="socket-ref" value="hq:netty" />
                </connector>
 
                <connector name="netty-throughput">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="host"  value="${jboss.bind.address:localhost}"/>
+                  <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
                   <param key="batch-delay" value="50"/>
-                  <param key="socket-ref" value="netty-throughput" />
+                   <param key="socket-ref" value="hq:netty-throughput" />
                </connector>
 
                <connector name="in-vm">
@@ -90,14 +83,18 @@
             <acceptors>
                <acceptor name="netty">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-                  <param key="socket-ref" value="netty" />
+                  <param key="host"  value="${jboss.bind.address:localhost}"/>
+                  <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+                  <param key="socket-ref" value="hq:netty" />
                </acceptor>
 
                <acceptor name="netty-throughput">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+                  <param key="host"  value="${jboss.bind.address:localhost}"/>
+                  <param key="port"  value="${hornetq.remoting.netty.batch.port:5455}"/>
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
-                  <param key="socket-ref" value="netty-throughput" />
+                  <param key="socket-ref" value="hq:netty-throughput" />
                </acceptor>
 
                <acceptor name="in-vm">
@@ -128,9 +125,6 @@
                </address-setting>
             </address-settings>
         </messaging:subsystem>
-
-        <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
     </profile>
 
     <interfaces>
@@ -140,15 +134,16 @@
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="default">
-       <socket-binding name="jndi" port="1099"/>
-       <socket-binding name="http" port="8080"/>
-       <socket-binding name="https" port="8447"/>
-       <socket-binding name="remoting" port="4447"/>
-       <socket-binding name="txn-recovery-environment" port="4712"/>
-       <socket-binding name="txn-status-manager" port="4713"/>
-       <socket-binding name="txn-socket-process-id" port="4714"/>
-       <socket-binding name="netty" port="5445" />
-       <socket-binding name="netty-throughput" port="5455" interface="default" />
+        <socket-binding name="jndi" port="1099"/>
+        <socket-binding name="http" port="8080"/>
+        <socket-binding name="https" port="8447"/>
+        <socket-binding name="remoting" port="4447"/>
+        <socket-binding name="txn-recovery-environment" port="4712"/>
+        <socket-binding name="txn-status-manager" port="4713"/>
+        <socket-binding name="txn-socket-process-id" port="4714"/>
+        <socket-binding name="hq:netty" port="5445" />
+        <socket-binding name="hq:netty-throughput" port="5455" interface="default" />
+
     </socket-binding-group>
 
     <system-properties>
@@ -159,4 +154,4 @@
     <deployments>
     </deployments>
 
-</server>
+</standalone>

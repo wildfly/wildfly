@@ -27,7 +27,9 @@ public class AcceptorsElement extends AbstractModelElement<AcceptorsElement> imp
    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
    public AcceptorsElement(final XMLExtendedStreamReader reader, Configuration config) throws XMLStreamException {
-      System.out.println("Begin " + reader.getLocation() + reader.getLocalName());
+      boolean trace = log.isTraceEnabled();
+      if(trace)
+         log.trace("Begin " + reader.getLocation() + reader.getLocalName());
       // Handle elements
       int tag = reader.getEventType();
       String localName = null;
@@ -50,7 +52,8 @@ public class AcceptorsElement extends AbstractModelElement<AcceptorsElement> imp
             break;
          }
       } while (reader.hasNext() && localName.equals(Element.ACCEPTOR.getLocalName()));
-
+      if(trace)
+         log.trace("End " + reader.getLocation() + reader.getLocalName());
    }
 
    @Override
@@ -60,7 +63,7 @@ public class AcceptorsElement extends AbstractModelElement<AcceptorsElement> imp
 
    @Override
    protected Class<AcceptorsElement> getElementClass() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return AcceptorsElement.class;
    }
 
    @Override

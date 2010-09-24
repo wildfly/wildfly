@@ -1,19 +1,17 @@
 package org.jboss.as.messaging.test;
 
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
 
 /**
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsystemElement<T>> {
+public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsystemElement<Object>> {
 
    public NullSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
       super(reader);
@@ -31,8 +29,9 @@ public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsys
    }
 
    @Override
-   protected Class<NullSubsystemElement<T>> getElementClass() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+   protected Class<NullSubsystemElement<Object>> getElementClass() {
+      Class<NullSubsystemElement<Object>> c = (Class<NullSubsystemElement<Object>>) getClass();
+      return c;
    }
 
    @Override

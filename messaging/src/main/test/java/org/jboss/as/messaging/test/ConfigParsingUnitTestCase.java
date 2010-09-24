@@ -3,6 +3,7 @@ package org.jboss.as.messaging.test;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.JournalType;
 import org.jboss.as.messaging.ConfigurationElement;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
@@ -35,15 +36,17 @@ public class ConfigParsingUnitTestCase {
    private final StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
 
    /**
-    * Test the stax parsing of the domain-with-messaging.xml configuration
+    * Test the stax parsing of the standalone-with-messaging.xml configuration
     */
    @Test
-   public void testStaxParser() {
+   public void testStandaloneStaxParser() {
       final ParseResult<ServerModel> parseResult = new ParseResult<ServerModel>();
+      // Enable the thread local mode for testing
+      MessagingSubsystemParser.enableThreadLocal(true);
       try {
          final XMLMapper mapper = createXMLMapper();
-         URL configURL = getClass().getResource("/domain-with-messaging.xml");
-         Assert.assertNotNull("domain-with-messaging.xml url is not null", configURL);
+         URL configURL = getClass().getResource("/standalone-with-messaging.xml");
+         Assert.assertNotNull("standalone-with-messaging.xml url is not null", configURL);
          System.out.println("configURL = " + configURL);
          BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
          mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(reader));
@@ -52,6 +55,7 @@ public class ConfigParsingUnitTestCase {
          ConfigurationElement config = mse.getConfiguration();
          Configuration jmsConfig = config.getConfiguration();
          Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", jmsConfig.getBindingsDirectory());
+         Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());         
          Assert.assertEquals("journal-min-files", 10, jmsConfig.getJournalMinFiles());
          Assert.assertEquals("paging-directory", "${jboss.server.data.dir}/hornetq/paging", jmsConfig.getPagingDirectory());
          Map<String, Set<Role>> securityRoleMap = jmsConfig.getSecurityRoles();
@@ -123,7 +127,10 @@ public class ConfigParsingUnitTestCase {
          }
       }
       catch (Exception e) {
-         throw new RuntimeException("domain-with-messaging.xml", e);
+         throw new RuntimeException("standalone-with-messaging.xml", e);
+      }
+      finally {
+         MessagingSubsystemParser.clearLastSubsystemElement();         
       }
 
    }

@@ -106,17 +106,25 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
       Collection<TransportConfiguration> connectors = hqConfig.getConnectorConfigurations().values();
       if(connectors != null) {
          for(TransportConfiguration tc : connectors) {
-            String name = tc.getName();
-            ServiceName connectorSocketName = SocketBinding.JBOSS_BINDING_NAME.append();
-            serviceBuilder.addDependency(connectorSocketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            Object socketRef = tc.getParams().get("socket-ref");
+            // Add a dependency on a SocketBinding if there is a socket-ref
+            if(socketRef != null) {
+               String name = socketRef.toString();
+               ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
+               serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            }
          }
       }
       //
       if(acceptors != null) {
          for(TransportConfiguration tc : acceptors) {
-            String name = tc.getName();
-            ServiceName connectorSocketName = SocketBinding.JBOSS_BINDING_NAME.append();
-            serviceBuilder.addDependency(connectorSocketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            Object socketRef = tc.getParams().get("socket-ref");
+            // Add a dependency on a SocketBinding if there is a socket-ref
+            if(socketRef != null) {
+               String name = socketRef.toString();
+               ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
+               serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            }
          }
       }
 

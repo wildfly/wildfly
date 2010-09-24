@@ -75,6 +75,7 @@
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta3</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta6</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
+        <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Beta2</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.0.CR2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
@@ -237,6 +238,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-managed-beans</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-messaging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -427,6 +434,12 @@
                 <artifactId>jboss-common-core</artifactId>
                 <version>${version.org.jboss.jboss-common-core}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>${version.org.jboss.netty}</version>
+           </dependency>
 
             <dependency>
                 <groupId>org.jboss</groupId>

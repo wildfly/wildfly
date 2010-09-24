@@ -20,7 +20,10 @@ public class ConnectorsElement extends AbstractModelElement<ConnectorsElement> i
    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
    public ConnectorsElement(final XMLExtendedStreamReader reader, Configuration config) throws XMLStreamException {
-      System.out.println("Begin " + reader.getLocation() + reader.getLocalName());
+      boolean trace = log.isTraceEnabled();
+      if(trace)
+         log.trace("Begin " + reader.getLocation() + reader.getLocalName());      // Handle elements
+
       // Handle elements
       int tag = reader.getEventType();
       String localName = null;
@@ -42,7 +45,8 @@ public class ConnectorsElement extends AbstractModelElement<ConnectorsElement> i
             break;
          }
       } while (reader.hasNext() && localName.equals(org.jboss.as.messaging.Element.CONNECTOR.getLocalName()));
-
+      if(trace)
+         log.trace("End " + reader.getLocation() + reader.getLocalName());
    }
 
 
@@ -53,7 +57,7 @@ public class ConnectorsElement extends AbstractModelElement<ConnectorsElement> i
 
    @Override
    protected Class<ConnectorsElement> getElementClass() {
-      return null;  //To change body of implemented methods use File | Settings | File Templates.
+      return ConnectorsElement.class;
    }
 
    @Override

@@ -14,11 +14,11 @@ import javax.xml.stream.XMLStreamException;
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class NullSubsystemParser<T> implements XMLElementReader<ParseResult<NullSubsystemElement>> {
+public class NullSubsystemParser<Object> implements XMLElementReader<ParseResult<NullSubsystemElement<Object>>> {
    @Override
-   public void readElement(XMLExtendedStreamReader reader, ParseResult<NullSubsystemElement> result) throws XMLStreamException {
+   public void readElement(XMLExtendedStreamReader reader, ParseResult<NullSubsystemElement<Object>> result) throws XMLStreamException {
       System.out.println(getClass().getCanonicalName()+".readElement, "+reader.getLocalName());
-      NullSubsystemElement element = new NullSubsystemElement(reader);
+      NullSubsystemElement<Object> element = new NullSubsystemElement(reader);
       result.setResult(element);
    }
 }
