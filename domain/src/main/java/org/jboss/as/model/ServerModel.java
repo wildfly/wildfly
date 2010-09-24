@@ -67,7 +67,7 @@ import java.util.TreeMap;
 public final class ServerModel extends AbstractModel<ServerModel> {
 
     /**
-     * ServiceName under which a {@link org.jboss.msc.Service Service<ServerModel>}
+     * ServiceName under which a {@link org.jboss.msc.service.Service}<ServerModel>}
      * will be registered on a running server.
      *
      * TODO see if exposing the ServerModel this way can be avoided.
@@ -599,6 +599,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     ServerGroupDeploymentElement removeDeployment(final String deploymentName) {
         synchronized (deployments) {
             return deployments.remove(deploymentName);
+        }
+    }
+
+    public Set<ServerGroupDeploymentElement> getDeployments() {
+        synchronized (deployments) {
+            return new HashSet<ServerGroupDeploymentElement>(deployments.values());
         }
     }
 }

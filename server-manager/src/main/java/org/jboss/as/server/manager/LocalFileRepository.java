@@ -20,36 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.server.manager;
 
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
+import java.io.File;
+
 
 /**
- * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
- * intended for the server manager.
+ * A repository used to retrieve files in the domain directory structure.
  *
  * @author John Bailey
  */
-public class ServerManagerOperationHandler implements ManagementOperationHandler {
-    private final ServerManager serverManager;
+public class LocalFileRepository implements FileRepository {
+    private final File repositoryRoot;
+    private final File deploymentRoot;
+    private final File configurationRoot;
 
-    /**
-     * Create a new instance.
-     *
-     * @param serverManager The server manager
-     */
-
-    public ServerManagerOperationHandler(ServerManager serverManager) {
-        this.serverManager = serverManager;
-    }
-
-    public void handleRequest(final int protocolVersion , final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException {
+    public LocalFileRepository(final ServerManagerEnvironment environment) {
+        this.repositoryRoot = environment.getDomainBaseDir();
+        this.deploymentRoot = environment.getDomainDeploymentDir();
+        this.configurationRoot = environment.getDomainConfigurationDir();
     }
 
     /** {@inheritDoc} */
-    public final byte getIdentifier() {
-        return ManagementProtocol.SERVER_MANAGER_REQUEST;
+    public File getFile(final String relativePath) {
+        return new File(repositoryRoot, relativePath);
+    }
+
+    /** {@inheritDoc} */
+    public File getConfigurationFile(String relativePath) {
+        return new File(configurationRoot, relativePath);
+    }
+
+    /** {@inheritDoc} */
+    public File getDeploymentFile(String relativePath) {
+        return new File(deploymentRoot, relativePath);
     }
 }

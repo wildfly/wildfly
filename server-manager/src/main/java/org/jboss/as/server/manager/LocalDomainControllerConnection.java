@@ -33,6 +33,7 @@ import org.jboss.as.model.HostModel;
 public class LocalDomainControllerConnection implements DomainControllerConnection {
     private final DomainController domainController;
     private final LocalDomainControllerClient client;
+    private final FileRepository fileRepository;
 
     /**
      * Create an instance.
@@ -40,20 +41,26 @@ public class LocalDomainControllerConnection implements DomainControllerConnecti
      * @param serverManager The local server manager
      * @param domainController The local domain controller
      */
-    public LocalDomainControllerConnection(final ServerManager serverManager, final DomainController domainController) {
+    public LocalDomainControllerConnection(final ServerManager serverManager, final DomainController domainController, final FileRepository fileRepository) {
         this.domainController = domainController;
         client = new LocalDomainControllerClient(serverManager);
+        this.fileRepository = fileRepository;
     }
 
     /** {@inheritDoc} */
-    public DomainModel register(final HostModel hostModel) {
+    public DomainModel register() {
         domainController.addClient(client);
         return domainController.getDomainModel();
     }
 
     /** {@inheritDoc} */
-    public void unregister(final HostModel hostModel) {
+    public void unregister() {
         domainController.removeClient(client.getId());
         domainController.stop();
+    }
+
+    /** {@inheritDoc} */
+    public FileRepository getRemoteFileRepository() {
+        return fileRepository;
     }
 }

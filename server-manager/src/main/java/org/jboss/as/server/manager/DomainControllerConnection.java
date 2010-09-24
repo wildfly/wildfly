@@ -23,7 +23,6 @@
 package org.jboss.as.server.manager;
 
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
 
 /**
  * Contract for communicating with a domain controller.
@@ -36,10 +35,18 @@ public interface DomainControllerConnection {
      *
      * @return The latest domain model
      */
-    DomainModel register(final HostModel hostModel);
+    DomainModel register();
 
     /*
      * Unregister from the domain controller.
      */
-    void unregister(final HostModel hostModel);
+    void unregister();
+
+    /**
+     * Get the file repository for the domain controller.  This can be used to pull contents from the domain
+     * controllers repository.
+     *
+     * @return The file repository
+     */
+    FileRepository getRemoteFileRepository();
 }

@@ -20,36 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.server.manager;
 
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
+import java.io.File;
+
 
 /**
- * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
- * intended for the server manager.
+ * A repository used to retrieve files in the domain directory structure.
  *
  * @author John Bailey
  */
-public class ServerManagerOperationHandler implements ManagementOperationHandler {
-    private final ServerManager serverManager;
+public interface FileRepository {
+    /**
+     * Get a file relative to the repository root.
+     *
+     * @param relativePath Relative path to the file
+     * @return The file at that path, or null if it is not found
+     */
+    File getFile(final String relativePath);
+
 
     /**
-     * Create a new instance.
+     * Get a file relative to the configuration root.
      *
-     * @param serverManager The server manager
+     * @param relativePath Relative path to the file
+     * @return The file at that path, or null if it is not found
      */
+    File getConfigurationFile(final String relativePath);
 
-    public ServerManagerOperationHandler(ServerManager serverManager) {
-        this.serverManager = serverManager;
-    }
-
-    public void handleRequest(final int protocolVersion , final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException {
-    }
-
-    /** {@inheritDoc} */
-    public final byte getIdentifier() {
-        return ManagementProtocol.SERVER_MANAGER_REQUEST;
-    }
+    /**
+     * Get a file relative to the deployment root.
+     *
+     * @param relativePath Relative path to the file
+     * @return The file at that path, or null if it is not found
+     */
+    File getDeploymentFile(final String relativePath);
 }

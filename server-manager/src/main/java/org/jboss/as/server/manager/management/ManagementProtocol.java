@@ -22,34 +22,39 @@
 
 package org.jboss.as.server.manager.management;
 
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
-
 /**
- * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
- * intended for the server manager.
- *
  * @author John Bailey
  */
-public class ServerManagerOperationHandler implements ManagementOperationHandler {
-    private final ServerManager serverManager;
+public interface ManagementProtocol {
+    // Headers
+    byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
+    int VERSION_FIELD = 0x00; // The version field header
+    int VERSION = 1; // The current protocol version
 
-    /**
-     * Create a new instance.
-     *
-     * @param serverManager The server manager
-     */
+    int REQUEST_START = 0x01;
+    int REQUEST_END = 0x02;
+    int RESPONSE_START = 0x03;
+    int RESPONSE_END = 0x04;
 
-    public ServerManagerOperationHandler(ServerManager serverManager) {
-        this.serverManager = serverManager;
-    }
+    int DOMAIN_CONTROLLER_REQUEST = 0x05;
+    int SERVER_MANAGER_REQUEST = 0x06;
 
-    public void handleRequest(final int protocolVersion , final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException {
-    }
 
-    /** {@inheritDoc} */
-    public final byte getIdentifier() {
-        return ManagementProtocol.SERVER_MANAGER_REQUEST;
-    }
+    // Domain controller request
+    int PARAM_SERVER_MANAGER_ID = 0x07;
+    int REQUEST_OPERATION = 0x08;
+    int REGISTER_REQUEST = 0x09;
+    int PARAM_HOST_MODEL = 0x10;
+    int PARAM_DOMAIN_MODEL = 0x11;
+    int REGISTER_RESPONSE = 0x12;
+    int UNREGISTER_REQUEST = 0x13;
+    int UNREGISTER_RESPONSE = 0x14;
+    int SYNC_FILE_REQUEST = 0x15;
+    int PARAM_ROOT_ID = 0x16;
+    int PARAM_FILE_PATH = 0x17;
+    int PARAM_NUM_FILES = 0x18;
+    int PARAM_FILE_SIZE = 0x19;
+    int FILE_START = 0x20;
+    int FILE_END = 0x21;
+    int SYNC_FILE_RESPONSE = 0x22;
 }

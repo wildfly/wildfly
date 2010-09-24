@@ -49,10 +49,12 @@ public class DomainControllerConnectionService implements Service<Void> {
     private final InjectedValue<InetAddress> domainControllerAddress = new InjectedValue<InetAddress>();
     private final InjectedValue<Integer> domainControllerPort = new InjectedValue<Integer>();
 
-    final ServerManager serverManager;
+    private final ServerManager serverManager;
+    private final FileRepository localRepository;
 
-    public DomainControllerConnectionService(final ServerManager serverManager) {
+    public DomainControllerConnectionService(final ServerManager serverManager, final FileRepository localRepository) {
         this.serverManager = serverManager;
+        this.localRepository = localRepository;
     }
 
     /**
@@ -70,7 +72,7 @@ public class DomainControllerConnectionService implements Service<Void> {
                 throw new StartException("Failed to get domain controller address", e);
             }
         }
-        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue()));
+        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), localRepository));
     }
 
     /**

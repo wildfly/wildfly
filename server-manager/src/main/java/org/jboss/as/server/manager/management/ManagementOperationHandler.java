@@ -22,8 +22,8 @@
 
 package org.jboss.as.server.manager.management;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.jboss.marshalling.SimpleDataInput;
+import org.jboss.marshalling.SimpleDataOutput;
 
 /**
  * Interface for handling management operations coming into a server manager process.  Each handler
@@ -32,7 +32,6 @@ import java.io.OutputStream;
  * @author John Bailey
  */
 public interface ManagementOperationHandler {
-    byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
 
     /**
      * The identifier for this handler.
@@ -44,8 +43,10 @@ public interface ManagementOperationHandler {
     /**
      * Handle the incoming management operation.
      *
-     * @param inputStream  The request input
-     * @param outputStream The request output
+     * @param protocolVersion The working protocol version
+     * @param input  The request input
+     * @param output The request output
+     * @throws ManagementOperationException If any problems occur performing the operation
      */
-    void handleRequest(final InputStream inputStream, final OutputStream outputStream);
+    void handleRequest(final int protocolVersion, final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException;
 }

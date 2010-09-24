@@ -22,34 +22,33 @@
 
 package org.jboss.as.server.manager.management;
 
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
+import java.io.DataInput;
+import java.io.IOException;
 
 /**
- * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
- * intended for the server manager.
+ * Protocol header used for management operation responses. Provides the default header fields from
+ * {@link org.jboss.as.server.manager.management.ManagementProtocolHeader}.
  *
  * @author John Bailey
  */
-public class ServerManagerOperationHandler implements ManagementOperationHandler {
-    private final ServerManager serverManager;
+public class ManagementResponseProtocolHeader extends AbstractManagementProtocolHeader {
+    /**
+     * Construct a new instance and read the header information from the input provided.
+     *
+     * @param input The input to read the header information from
+     * @throws IOException If any problem occur reading from the input
+     * @throws ManagementOperationException If any information read is invalid.
+     */
+    public ManagementResponseProtocolHeader(final DataInput input) throws IOException, ManagementOperationException {
+        super(input);
+    }
 
     /**
-     * Create a new instance.
+     * Construct an instance with the protocol version for the header.
      *
-     * @param serverManager The server manager
+     * @param version The protocol version
      */
-
-    public ServerManagerOperationHandler(ServerManager serverManager) {
-        this.serverManager = serverManager;
-    }
-
-    public void handleRequest(final int protocolVersion , final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException {
-    }
-
-    /** {@inheritDoc} */
-    public final byte getIdentifier() {
-        return ManagementProtocol.SERVER_MANAGER_REQUEST;
+    public ManagementResponseProtocolHeader(int version) {
+        super(version);
     }
 }

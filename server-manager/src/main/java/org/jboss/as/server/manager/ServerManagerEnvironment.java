@@ -62,6 +62,14 @@ public class ServerManagerEnvironment {
 
     /**
      * Constant that holds the name of the environment property
+     * for specifying the domain deployment URL.
+     *
+     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/deployments</tt> .
+     */
+    public static final String DOMAIN_DEPLOYMENT_DIR = "jboss.domain.deployment.dir";
+
+    /**
+     * Constant that holds the name of the environment property
      * for specifying the domain log directory for JBoss.
      *
      * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/<em>log</em></tt>.
@@ -95,6 +103,7 @@ public class ServerManagerEnvironment {
     private final File modulesDir;
     private final File domainBaseDir;
     private final File domainConfigurationDir;
+    private final File domainDeploymentDir;
     private final File domainDataDir;
     private final File domainLogDir;
     private final File domainServersDir;
@@ -178,6 +187,14 @@ public class ServerManagerEnvironment {
         }
         this.domainConfigurationDir = tmp;
         System.setProperty(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
+
+        tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
+        if (tmp == null) {
+            tmp = new File(this.domainBaseDir, "deployments");
+        }
+        this.domainDeploymentDir = tmp;
+        System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
+
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
@@ -314,6 +331,10 @@ public class ServerManagerEnvironment {
 
     public File getDomainConfigurationDir() {
         return domainConfigurationDir;
+    }
+
+    public File getDomainDeploymentDir() {
+        return domainDeploymentDir;
     }
 
     public File getDomainDataDir() {

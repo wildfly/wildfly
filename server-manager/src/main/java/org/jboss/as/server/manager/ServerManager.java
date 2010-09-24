@@ -51,6 +51,7 @@ import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
+import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
@@ -93,6 +94,7 @@ public class ServerManager implements ShutdownListener {
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
+    private final FileRepository fileRepository;
     private volatile ProcessManagerSlave processManagerSlave;
     private volatile DirectServerCommunicationListener directServerCommunicationListener;
     private HostModel hostConfig;
@@ -117,6 +119,7 @@ public class ServerManager implements ShutdownListener {
         this.hostXML = new File(environment.getDomainConfigurationDir(), "host.xml");
         this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
         this.messageHandler = new MessageHandler(this);
+        this.fileRepository = new LocalFileRepository(environment);
     }
 
     public String getName() {
@@ -147,7 +150,7 @@ public class ServerManager implements ShutdownListener {
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(new AbstractServiceListener<Object>() {
-            public void serviceFailed(ServiceController<? extends Object> serviceController, StartException reason) {
+            public void serviceFailed(ServiceController<?> serviceController, StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
         });
@@ -185,9 +188,8 @@ public class ServerManager implements ShutdownListener {
 
                     Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
                     servers.put(getServerProcessName(serverConf), server);
-
-                    //Now that the server is in the servers map we can start it
-                    processManagerSlave.startProcess(server.getServerProcessName());
+                    // Now that the server is in the servers map we can start it
+                    startServer(serverConf, server);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
                     log.error("Failed to start server " + serverEl.getName(), e);
@@ -195,6 +197,25 @@ public class ServerManager implements ShutdownListener {
             }
             else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
+    }
+
+    private void startServer(final ServerModel serverModel, final Server server) throws IOException {
+        // We need to make sure we have all the deployments locally
+        final Set<ServerGroupDeploymentElement> deployments = serverModel.getDeployments();
+        final FileRepository localFileRepository = this.fileRepository;
+        final FileRepository dcFileRepository = this.domainControllerConnection.getRemoteFileRepository();
+        for(ServerGroupDeploymentElement deployment : deployments) {
+            final String deploymentPath = generateDeploymentPath(deployment);
+            if(!localFileRepository.getDeploymentFile(deploymentPath).exists() && !dcFileRepository.getDeploymentFile(deploymentPath).exists()) {
+                throw new RuntimeException("Unable to get content for deployment [" + deployment.getRuntimeName() + "] from domain controller ");
+            }
+        }
+        processManagerSlave.startProcess(server.getServerProcessName());
+    }
+
+    private String generateDeploymentPath(final ServerGroupDeploymentElement deployment) {
+        final String id = deployment.getSha1HashAsHexString();
+        return id.substring(0, 2) + "/" + id.substring(2);
     }
 
     private RespawnPolicy getRespawnPolicy(ServerModel serverConf) {
@@ -290,7 +311,9 @@ public class ServerManager implements ShutdownListener {
     public void stop() {
         log.info("Stopping ServerManager");
         directServerCommunicationListener.shutdown();
-        domainControllerConnection.unregister(hostConfig);
+        if(domainControllerConnection != null) {
+            domainControllerConnection.unregister();
+        }
         serviceContainer.shutdown();
         // FIXME stop any local DomainController, stop other internal SM services
     }
@@ -473,11 +496,11 @@ public class ServerManager implements ShutdownListener {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
             domainController.start(hostConfig, mapper, environment.getDomainConfigurationDir());
-            setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController));
+            setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController, fileRepository));
 
             final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
             final ManagementOperationHandlerService<DomainControllerOperationHandler> operationHandlerService
-                = new ManagementOperationHandlerService<DomainControllerOperationHandler>(new DomainControllerOperationHandler(domainController));
+                = new ManagementOperationHandlerService<DomainControllerOperationHandler>(new DomainControllerOperationHandler(domainController, fileRepository));
 
             batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("domain", "controller"), operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
@@ -489,7 +512,7 @@ public class ServerManager implements ShutdownListener {
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
-        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this);
+        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository);
         final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
@@ -550,7 +573,10 @@ public class ServerManager implements ShutdownListener {
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
         this.domainControllerConnection = domainControllerConnection;
-        final DomainModel domainModel = domainControllerConnection.register(hostConfig);
+        if(domainControllerConnection == null) {
+            return;
+        }
+        final DomainModel domainModel = domainControllerConnection.register();
         setDomain(domainModel);
     }
 
