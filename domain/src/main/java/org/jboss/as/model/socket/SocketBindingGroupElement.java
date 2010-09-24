@@ -40,7 +40,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     private final NavigableMap<String, SocketBindingGroupIncludeElement> includedGroups = new TreeMap<String, SocketBindingGroupIncludeElement>();
     private final NavigableMap<String, SocketBindingElement> socketBindings = new TreeMap<String, SocketBindingElement>();
 
-    private final RefResolver<String, InterfaceElement> interfaceResolver;
+    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
     private final RefResolver<String, SocketBindingGroupElement> includedGroupResolver;
 
     /**
@@ -62,7 +62,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
      */
     public SocketBindingGroupElement(Location location, final String name, final String defaultInterface,
-            final RefResolver<String, InterfaceElement> interfaceResolver,
+            final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) {
         super();
 
@@ -102,7 +102,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingGroupElement(XMLExtendedStreamReader reader,
-            final RefResolver<String, InterfaceElement> interfaceResolver,
+            final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver,
             final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) throws XMLStreamException {
         super();
 

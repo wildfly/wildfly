@@ -74,7 +74,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private final String serverName;
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
-    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
+    private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
@@ -153,7 +153,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                             if (bindingGroup != null) {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
-                            RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
+                            RefResolver<String, ServerInterfaceElement> intfResolver = new SimpleRefResolver<String, ServerInterfaceElement>(interfaces);
                             bindingGroup = new SocketBindingGroupElement(reader, intfResolver, null);
                             break;
                         }
@@ -238,7 +238,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         Set<String> unspecifiedInterfaces = new HashSet<String>();
         for (InterfaceElement ie : domain.getInterfaces()) {
             if (ie.isFullySpecified())
-                interfaces.put(ie.getName(), ie);
+                interfaces.put(ie.getName(), new ServerInterfaceElement(ie));
             else
                 unspecifiedInterfaces.add(ie.getName());
         }
@@ -288,6 +288,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long cksum = serverName.hashCode() &  0xffffffffL;
         synchronized (namespaces) {
@@ -311,11 +312,13 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<ServerModel> getElementClass() {
         return ServerModel.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         synchronized (namespaces) {
@@ -355,7 +358,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-                for (InterfaceElement element : interfaces.values()) {
+                for (ServerInterfaceElement element : interfaces.values()) {
                     streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                     element.writeContent(streamWriter);
                 }
@@ -414,11 +417,11 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         profile.activate(context);
 
         // Activate Interfaces
-        final Map<String, InterfaceElement> interfaces;
+        final Map<String, ServerInterfaceElement> interfaces;
         synchronized (this.interfaces) {
-            interfaces = new TreeMap<String, InterfaceElement>(this.interfaces);
+            interfaces = new TreeMap<String, ServerInterfaceElement>(this.interfaces);
         }
-        for(InterfaceElement interfaceElement : interfaces.values()) {
+        for(ServerInterfaceElement interfaceElement : interfaces.values()) {
             interfaceElement.activate(context);
         }
 

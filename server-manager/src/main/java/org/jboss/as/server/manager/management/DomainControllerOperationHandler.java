@@ -134,8 +134,6 @@ public class DomainControllerOperationHandler extends AbstractManagementOperatio
             }
         },;
 
-        private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
-
         final byte command;
 
         Operation(final byte command) {

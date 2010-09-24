@@ -31,7 +31,6 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -233,6 +232,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
@@ -247,11 +247,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<ServerElement> getElementClass() {
         return ServerElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         // TODO re-evaluate the element order in the xsd; make sure this is correct
@@ -265,7 +267,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
-                for (InterfaceElement element : interfaces.values()) {
+                for (ServerInterfaceElement element : interfaces.values()) {
                     streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                     element.writeContent(streamWriter);
                 }

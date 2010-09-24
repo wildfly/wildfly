@@ -25,9 +25,10 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
-import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.AbstractInterfaceElement;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -44,23 +45,31 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
 
+    private static final String IPV4_ANYLOCAL = "0.0.0.0";
+    private static final String IPV6_ANYLOCAL = "::";
+
     /** The interface binding. */
     private NetworkInterfaceBinding interfaceBinding;
 
     /** The network interface element. */
-    private final InterfaceElement interfaceElement;
+    private final AbstractInterfaceElement<?> interfaceElement;
 
-    public NetworkInterfaceService(final InterfaceElement element) {
+    public NetworkInterfaceService(final AbstractInterfaceElement<?> element) {
         this.interfaceElement = element;
     }
 
     public synchronized void start(StartContext arg0) throws StartException {
         try {
-            if(interfaceElement.getAddress() != null) {
-                final InetAddress address = InetAddress.getByName(interfaceElement.getAddress());
-                final NetworkInterface net = NetworkInterface.getByInetAddress(address);
-                this.interfaceBinding = new NetworkInterfaceBinding(net, address);
-            } else {
+            if (this.interfaceElement.isAnyLocalV4Address()) {
+                this.interfaceBinding = getNetworkInterfaceBinding(IPV4_ANYLOCAL);
+            }
+            else if (this.interfaceElement.isAnyLocalV6Address()) {
+                this.interfaceBinding = getNetworkInterfaceBinding(IPV6_ANYLOCAL);
+            }
+            else if (this.interfaceElement.isAnyLocalAddress()) {
+                this.interfaceBinding = getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
+            }
+            else {
                 this.interfaceBinding = resolveInterface(interfaceElement);
             }
         } catch(Exception e) {
@@ -83,7 +92,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         return binding;
     }
 
-    static NetworkInterfaceBinding resolveInterface(final InterfaceElement element) throws SocketException {
+    static NetworkInterfaceBinding resolveInterface(final AbstractInterfaceElement<?> element) throws SocketException {
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = networkInterfaces.nextElement();
@@ -113,6 +122,13 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             }
         }
         return null;
+    }
+
+    static NetworkInterfaceBinding getNetworkInterfaceBinding(String addr) throws UnknownHostException, SocketException {
+        final InetAddress address = InetAddress.getByName(addr);
+        // FIXME this is incorrect for wildcard addresses
+        final NetworkInterface net = NetworkInterface.getByInetAddress(address);
+        return new NetworkInterfaceBinding(net, address);
     }
 
 }

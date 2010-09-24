@@ -36,6 +36,9 @@ public enum Element {
 
     // Domain 1.0 elements in alpha order
     ANY("any"),
+    ANY_ADDRESS("any-address"),
+    ANY_IPV4_ADDRESS("any-ipv4-address"),
+    ANY_IPV6_ADDRESS("any-ipv6-address"),
 
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
