@@ -62,7 +62,7 @@
             <journal-type>NIO</journal-type>
             <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
 
-            <journal-min-files>10</journal-min-files>
+            <journal-min-files>2</journal-min-files>
 
             <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
