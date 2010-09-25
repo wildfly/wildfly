@@ -9,21 +9,20 @@ import java.util.Map;
 public enum Attribute {
    UNKNOWN(null),
    /* Messaging 1.0 attributes, in alpha order */
-   NAME("name"),
-   KEY("key"),
-   VALUE("value"),
-   TYPE_ATTR_NAME("type"),
-   ROLES_ATTR_NAME("roles"),
-   CREATEDURABLEQUEUE_NAME("createDurableQueue"),
-   DELETEDURABLEQUEUE_NAME("deleteDurableQueue"),
-   CREATE_NON_DURABLE_QUEUE_NAME("createNonDurableQueue"),
-   DELETE_NON_DURABLE_QUEUE_NAME("deleteNonDurableQueue"),
-   // HORNETQ-309 we keep supporting these attribute names for compatibility
-   CREATETEMPQUEUE_NAME("createTempQueue"),
-   DELETETEMPQUEUE_NAME("deleteTempQueue"),
-   SEND_NAME("send"),
    CONSUME_NAME("consume"),
+   CREATEDURABLEQUEUE_NAME("createDurableQueue"),
+   CREATE_NON_DURABLE_QUEUE_NAME("createNonDurableQueue"),
+   CREATETEMPQUEUE_NAME("createTempQueue"),
+   DELETE_NON_DURABLE_QUEUE_NAME("deleteNonDurableQueue"),
+   DELETEDURABLEQUEUE_NAME("deleteDurableQueue"),
+   DELETETEMPQUEUE_NAME("deleteTempQueue"),
+   KEY("key"),
    MANAGE_NAME("manage"),
+   NAME("name"),
+   ROLES_ATTR_NAME("roles"),
+   SEND_NAME("send"),
+   TYPE_ATTR_NAME("type"),
+   VALUE("value"),
    ;
    private final String name;
 
