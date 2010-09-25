@@ -31,24 +31,8 @@ public class ElementUtils {
       NAMESPACE(13),
       NOTATION_DECLARATION(14),
       ENTITY_DECLARATION(15);
-      private static StaxEvent[] EVENTS = {
-         START_ELEMENT,
-         END_ELEMENT,
-         PROCESSING_INSTRUCTION,
-         CHARACTERS,
-         COMMENT,
-         SPACE,
-         START_DOCUMENT,
-         END_DOCUMENT,
-         ENTITY_REFERENCE,
-         ATTRIBUTE,
-         DTD,
-         CDATA,
-         NAMESPACE,
-         NOTATION_DECLARATION,
-         ENTITY_DECLARATION
-      };
-
+      /** Stash the values for use as an array indexed by StaxEvent.tag-1 */
+      private static StaxEvent[] EVENTS = values();
       private final int tag;
 
       StaxEvent(int tag) {
