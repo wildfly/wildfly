@@ -106,7 +106,7 @@ public class HornetQService implements Service<HornetQServer> {
                   if (binding == null) {
                      throw new StartException("Failed to find SocketBinding for connector: " + tc.getName());
                   }
-                  log.debug("Applying socket binding: " + binding);
+                  log.debugf("Applying socket binding: %s", binding);
                   tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
                   tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
                }
@@ -122,7 +122,7 @@ public class HornetQService implements Service<HornetQServer> {
                   if (binding == null) {
                      throw new StartException("Failed to find SocketBinding for connector: " + tc.getName());
                   }
-                  log.debug("Applying socket binding: " + binding);
+                  log.debugf("Applying socket binding: %s", binding);
                   tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
                   tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
                }

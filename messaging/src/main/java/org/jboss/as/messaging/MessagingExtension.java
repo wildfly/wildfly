@@ -44,7 +44,7 @@ public final class MessagingExtension implements Extension {
    public void registerElementHandlers(final XMLMapper mapper) {
       QName messagingNamespace = new QName(Namespace.MESSAGING_1_0.getUriString(), Element.SUBSYSTEM.getLocalName());
       mapper.registerRootElement(messagingNamespace, MessagingSubsystemParser.getInstance());
-      log.info("Registered messaging subsystem under: "+messagingNamespace);
+      log.infof("Registered messaging subsystem under: %s", messagingNamespace);
    }
 
    /**

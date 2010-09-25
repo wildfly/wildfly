@@ -49,7 +49,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<? 
     * {@inheritDoc}
     */
    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<? super MessagingSubsystemElement> result) throws XMLStreamException {
-      log.debug("MessagingSubsystemElement.readElement, event="+reader.getEventType());
+      log.debugf("MessagingSubsystemElement.readElement, event=%s", reader.getEventType());
       MessagingSubsystemElement msp = new MessagingSubsystemElement(reader);
       if(useThreadLocal)
          LAST_ELEMENT.set(msp);

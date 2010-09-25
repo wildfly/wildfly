@@ -26,9 +26,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
 
 
    public ConfigurationElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      boolean trace = log.isTraceEnabled();
-      if(trace)
-         log.trace("Begin " + reader.getLocation() + reader.getLocalName());
+      log.tracef("Begin %s:%s", reader.getLocation(), reader.getLocalName());
       // Handle elements
       int tag = reader.getEventType();
       String localName = null;
@@ -36,8 +34,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          tag = reader.nextTag();
          localName = reader.getLocalName();
          final Element element = Element.forName(reader.getLocalName());
-         if(trace)
-            log.trace(localName + " -> " + element + ", event=" + ElementUtils.StaxEvent.tagToEvent(tag));
+         log.tracef("%s -> %s, event=%s", localName, element, ElementUtils.StaxEvent.tagToEvent(tag));
          switch (element) {
          case ACCEPTORS:
             AcceptorsElement acceptors = new AcceptorsElement(reader, config);
@@ -297,8 +294,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
 
       // Set the log delegate
       //config.setLogDelegateFactoryClassName();
-      if(trace)
-         log.trace("End messaging:subsystem, " + reader.getLocalName() + ", hasNext: " + reader.hasNext());
+      log.tracef("End %s:%s", reader.getLocation(), reader.getLocalName());
    }
 
    public Configuration getConfiguration() {

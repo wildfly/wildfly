@@ -30,9 +30,7 @@ public class SecuritySettingsElement extends AbstractModelElement<SecuritySettin
 
 
    public SecuritySettingsElement(final XMLExtendedStreamReader reader, Configuration config) throws XMLStreamException {
-      boolean trace = log.isTraceEnabled();
-      if(trace)
-         log.trace("Begin " + reader.getLocation() + reader.getLocalName());
+      log.tracef("Begin %s:%s", reader.getLocation(), reader.getLocalName());
       // Handle elements
       int tag = reader.getEventType();
       String localName = null;
@@ -56,8 +54,7 @@ public class SecuritySettingsElement extends AbstractModelElement<SecuritySettin
             break;
          }
       } while (reader.hasNext() && localName.equals(Element.SECURITY_SETTING.getLocalName()));
-      if(trace)
-         log.trace("End " + reader.getLocation() + reader.getLocalName());
+      log.tracef("End %s:%s", reader.getLocation(), reader.getLocalName());
    }
 
    @Override
