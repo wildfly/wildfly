@@ -46,12 +46,11 @@
         <remoting:subsystem thread-pool="remoting"/>
         <messaging:subsystem>
             <!-- A standard hornetq configuration -->
-            <messaging:bindings-directory>${jboss.server.data.dir}/hornetq/bindings</messaging:bindings-directory>
+            <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
+            <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
 
-            <messaging:journal-directory>${jboss.server.data.dir}/hornetq/journal</messaging:journal-directory>
-
-            <messaging:journal-min-files>10</messaging:journal-min-files>
-
+            <journal-min-files>10</journal-min-files>
+            <journal-file-size>1048576</journal-file-size>
             <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
             <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>

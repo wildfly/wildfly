@@ -57,6 +57,7 @@ public class ConfigParsingUnitTestCase {
          Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", jmsConfig.getBindingsDirectory());
          Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());         
          Assert.assertEquals("journal-min-files", 10, jmsConfig.getJournalMinFiles());
+         Assert.assertEquals("journal-file-size", 1048576, jmsConfig.getJournalFileSize());
          Assert.assertEquals("paging-directory", "${jboss.server.data.dir}/hornetq/paging", jmsConfig.getPagingDirectory());
          Map<String, Set<Role>> securityRoleMap = jmsConfig.getSecurityRoles();
          // Security

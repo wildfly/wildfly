@@ -150,9 +150,14 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
             }
          }
          break;
-         case JOURNAL_FILE_SIZE:
-            unhandledElement(reader, element);
-            break;
+         case JOURNAL_FILE_SIZE:{
+            String text = reader.getElementText();
+            if (text != null && text.length() > 0) {
+               int size = Integer.valueOf(text);
+               config.setJournalFileSize(size);
+            }
+         }
+         break;
          case JOURNAL_MAX_IO:
             unhandledElement(reader, element);
             break;
@@ -322,7 +327,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
    }
 
    private void unhandledElement(final XMLExtendedStreamReader reader, final Element element) throws XMLStreamException {
-      log.warn("Ignorning unhandled element: "+element);
+      log.warnf("Ignorning unhandled element: %s, at: %s", element, reader.getLocation().toString());
       reader.discardRemainder();
    }
 }

@@ -63,6 +63,8 @@
             <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
 
             <journal-min-files>2</journal-min-files>
+            <!-- Default journal file size is 10Mb, reduced here to 1Mb for faster first boot -->
+            <journal-file-size>1048576</journal-file-size>
 
             <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
