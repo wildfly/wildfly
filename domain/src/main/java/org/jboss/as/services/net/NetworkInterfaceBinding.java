@@ -23,18 +23,21 @@ package org.jboss.as.services.net;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.Collection;
 
 /**
+ * The resolved network interface bindings.
+ *
  * @author Emanuel Muckenhuber
  */
 public final class NetworkInterfaceBinding {
 
     private final InetAddress address;
-    private final NetworkInterface networkInterface;
+    private final Collection<NetworkInterface> networkInterfaces;
 
-    NetworkInterfaceBinding(NetworkInterface networkInterface, InetAddress address) {
+    NetworkInterfaceBinding(Collection<NetworkInterface> networkInterfaces, InetAddress address) {
         this.address = address;
-        this.networkInterface = networkInterface;
+        this.networkInterfaces = networkInterfaces;
     }
 
     /**
@@ -47,12 +50,12 @@ public final class NetworkInterfaceBinding {
     }
 
     /**
-     * Get the network interface.
+     * Get the resolved network interfaces.
      *
-     * @return the network interface
+     * @return the networkInterfaces
      */
-    public NetworkInterface getNetworkInterface() {
-        return this.networkInterface;
+    public Collection<NetworkInterface> getNetworkInterfaces() {
+        return networkInterfaces;
     }
 
 }

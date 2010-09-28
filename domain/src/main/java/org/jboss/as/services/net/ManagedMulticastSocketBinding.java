@@ -28,6 +28,9 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
+ * Managed {@code MulticastSocket} binding, automatically registering itself
+ * at the {@code SocketBindingManager} when bound.
+ *
  * @author Emanuel Muckenhuber
  */
 class ManagedMulticastSocketBinding extends MulticastSocket implements ManagedBinding {

@@ -39,7 +39,6 @@ import org.jboss.msc.service.ServiceName;
  * An encapsulation of socket binding related information.
  *
  * @author Emanuel Muckenhuber
- * @version $Id$
  */
 public class SocketBinding {
 
@@ -67,6 +66,7 @@ public class SocketBinding {
 
    /**
     * Return the name of the SocketBinding used in the configuration
+    *
     * @return the SocketBinding configuration name
     */
    public String getName() {
@@ -98,7 +98,7 @@ public class SocketBinding {
     /**
      * Get the multicast socket address.
      *
-     * @return
+     * @return the multicast address
      */
     public InetSocketAddress getMulticastSocketAddress() {
         if(multicastAddress == null) {
@@ -145,7 +145,7 @@ public class SocketBinding {
     }
 
     /**
-     * Create and bind a datagrap socket.
+     * Create and bind a datagram socket.
      *
      * @return the datagram socket
      * @throws SocketException
@@ -155,16 +155,14 @@ public class SocketBinding {
     }
 
     /**
-     * Create and bind a multicast socket. This will also join the given
-     * multicast address.
+     * Create a multicast socket.
      *
      * @return the multicast socket
      * @throws IOException
      */
+    // TODO JBAS-8470 automatically joingGroup
     public MulticastSocket createMulticastSocket() throws IOException {
-        final MulticastSocket socket = new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
-        socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
-        return socket;
+        return new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
     }
 
     SocketFactory getSocketFactory() {

@@ -27,6 +27,9 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
+ * Managed {@code DatagramSocket} binding, automatically registering itself
+ * at the {@code SocketBindingManager} when bound.
+ *
  * @author Emanuel Muckenhuber
  */
 class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
