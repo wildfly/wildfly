@@ -198,6 +198,7 @@ public class VFSResourceLoader implements ResourceLoader {
             index.clear();
         }
 
+        index.add("");
         for (VirtualFile dir : visitor.getMatched()) {
             index.add(dir.getPathNameRelativeTo(root));
         }
