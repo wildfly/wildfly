@@ -34,7 +34,8 @@ import java.io.IOException;
  * @author John Bailey
  */
 public class ManagementRequestProtocolHeader extends AbstractManagementProtocolHeader {
-    private int operationHandlerId;
+    private byte operationHandlerId;
+    private int requestId;
 
      /**
      * Construct a new instance and read the header information from the input provided.
@@ -51,22 +52,26 @@ public class ManagementRequestProtocolHeader extends AbstractManagementProtocolH
      * Construct an instance with the protocol version and operation handler for the header.
      *
      * @param version The protocol version
+     * @param requestId The request id
      * @param operationHandlerId The id of the expected operation handler
      */
-    public ManagementRequestProtocolHeader(final int version, int operationHandlerId) {
+    public ManagementRequestProtocolHeader(final int version, final  int requestId, final byte operationHandlerId) {
         super(version);
+        this.requestId = requestId;
         this.operationHandlerId = operationHandlerId;
     }
 
     /** {@inheritDoc} */
     public void read(final DataInput input) throws IOException, ManagementOperationException {
         super.read(input);
+        requestId = input.readInt();
         operationHandlerId = input.readByte();
     }
 
     /** {@inheritDoc} */
     public void write(final DataOutput output) throws IOException, ManagementOperationException {
         super.write(output);
+        output.writeInt(requestId);
         output.writeByte(operationHandlerId);
     }
 
@@ -76,6 +81,15 @@ public class ManagementRequestProtocolHeader extends AbstractManagementProtocolH
      * @return The operation handler id
      */
     public byte getOperationHandlerId() {
-        return (byte)operationHandlerId;
+        return operationHandlerId;
+    }
+
+    /**
+     * The ID of this request.
+     *
+     * @return The request id
+     */
+    public int getRequestId() {
+        return requestId;
     }
 }

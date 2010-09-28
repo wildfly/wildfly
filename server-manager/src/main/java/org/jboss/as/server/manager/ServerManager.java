@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,8 +66,10 @@ import org.jboss.as.server.manager.management.ManagementOperationHandlerService;
 import org.jboss.as.server.manager.management.ServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.as.threads.ScheduledThreadPoolService;
 import org.jboss.as.threads.ThreadFactoryExecutorService;
 import org.jboss.as.threads.ThreadFactoryService;
+import org.jboss.as.threads.TimeSpec;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
@@ -512,7 +515,7 @@ public class ServerManager implements ShutdownListener {
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
-        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository);
+        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 20, 15L, 10L);
         final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
@@ -552,7 +555,7 @@ public class ServerManager implements ShutdownListener {
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
-        final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(20, false); // TODO: configuration
+        final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(20,false);
         batchBuilder.addService(executorServiceName, executorService)
             .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
 

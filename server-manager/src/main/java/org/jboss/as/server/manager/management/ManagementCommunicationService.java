@@ -170,7 +170,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 int workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
 
                 // Now write the response header
-                final ManagementResponseProtocolHeader responseHeader = new ManagementResponseProtocolHeader(workingVersion);
+                final ManagementResponseProtocolHeader responseHeader = new ManagementResponseProtocolHeader(workingVersion, requestHeader.getRequestId());
                 responseHeader.write(output);
                 output.flush();
 

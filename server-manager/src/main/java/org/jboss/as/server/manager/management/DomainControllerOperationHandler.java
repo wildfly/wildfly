@@ -246,7 +246,6 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                         writeFile(child, output);
                     }
                 }
-                output.writeByte(getRequestCode());
             } catch (Exception e) {
                 throw new ManagementOperationException("Unable to write response to server manager", e);
             }
@@ -269,7 +268,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         }
 
         private String getRelativePath(final File parent, final File child) {
-            return child.getAbsolutePath().substring((int)parent.getAbsolutePath().length());
+            return child.getAbsolutePath().substring(parent.getAbsolutePath().length());
         }
 
         private void writeFile(final File file, final DataOutput output) throws IOException {

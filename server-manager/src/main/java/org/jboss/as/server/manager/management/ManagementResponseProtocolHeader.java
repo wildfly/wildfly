@@ -23,6 +23,7 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -32,6 +33,8 @@ import java.io.IOException;
  * @author John Bailey
  */
 public class ManagementResponseProtocolHeader extends AbstractManagementProtocolHeader {
+    private int responseId;
+
     /**
      * Construct a new instance and read the header information from the input provided.
      *
@@ -47,8 +50,29 @@ public class ManagementResponseProtocolHeader extends AbstractManagementProtocol
      * Construct an instance with the protocol version for the header.
      *
      * @param version The protocol version
+     * @param responseId The response id
      */
-    public ManagementResponseProtocolHeader(int version) {
+    public ManagementResponseProtocolHeader(final int version, final int responseId) {
         super(version);
+        this.responseId = responseId;
+    }
+
+    public void read(final DataInput input) throws IOException, ManagementOperationException {
+        super.read(input);
+        this.responseId = input.readInt();
+    }
+
+    public void write(DataOutput output) throws IOException, ManagementOperationException {
+        super.write(output);
+        output.writeInt(responseId);
+    }
+
+    /**
+     * The response id.  This should correspond to the id of the request.
+     *
+     * @return The responseId
+     */
+    public int getResponseId() {
+        return responseId;
     }
 }
