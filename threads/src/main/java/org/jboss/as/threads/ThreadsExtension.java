@@ -23,11 +23,10 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -35,11 +34,17 @@ import javax.xml.namespace.QName;
 public final class ThreadsExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), Element.SUBSYSTEM.getLocalName()), ThreadsParser.getInstance());
-    }
+    private static final SubsystemFactory<ThreadsSubsystemElement> FACTORY = new SubsystemFactory<ThreadsSubsystemElement>() {
+        public ThreadsSubsystemElement createSubsystemElement() {
+            return new ThreadsSubsystemElement();
+        }
+    };
 
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Threading Extension");
+    }
+
+    public void initialize(final ExtensionContext context) {
+        context.registerSubsystem(Namespace.CURRENT.getUriString(), FACTORY, ThreadsParser.getInstance());
     }
 }

@@ -54,7 +54,7 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -66,16 +66,17 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
                         port = Integer.valueOf(value);
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if(host == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
         }
         this.host = host;
         if(port == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
         }
         this.port = port.intValue();
 

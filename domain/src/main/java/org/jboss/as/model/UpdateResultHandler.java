@@ -22,6 +22,11 @@
 
 package org.jboss.as.model;
 
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.StartException;
+
 /**
  * The result of applying an update to a running server.
  *
@@ -79,4 +84,96 @@ public interface UpdateResultHandler<R, P> {
     void handleRollbackCancellation(P param);
 
     void handleRollbackTimeout(P param);
+
+    /**
+     * An update result handler which does nothing.
+     */
+    UpdateResultHandler<Object, Void> NULL = new UpdateResultHandler<Object, Void>() {
+        public void handleSuccess(final Object result, final Void param) {
+        }
+
+        public void handleFailure(final Throwable cause, final Void param) {
+        }
+
+        public void handleTimeout(final Void param) {
+        }
+
+        public void handleCancellation(final Void param) {
+        }
+
+        public void handleRollbackSuccess(final Void param) {
+        }
+
+        public void handleRollbackFailure(final Throwable cause, final Void param) {
+        }
+
+        public void handleRollbackCancellation(final Void param) {
+        }
+
+        public void handleRollbackTimeout(final Void param) {
+        }
+    };
+
+    /**
+     * A listener which invokes an {@link UpdateResultHandler} when the service it is attached to has been removed.
+     *
+     * @param <P> the update result handler parameter type
+     */
+    class ServiceRemoveListener<P> extends AbstractServiceListener<Object> {
+        private final UpdateResultHandler<?, P> resultHandler;
+        private final P param;
+
+        public ServiceRemoveListener(final UpdateResultHandler<?, P> resultHandler, final P param) {
+            this.resultHandler = resultHandler;
+            this.param = param;
+        }
+
+        public void listenerAdded(final ServiceController<?> controller) {
+            controller.setMode(ServiceController.Mode.REMOVE);
+        }
+
+        public void serviceRemoved(final ServiceController<?> controller) {
+            resultHandler.handleSuccess(null, param);
+        }
+    }
+
+    /**
+     * A listener which invokes an {@link UpdateResultHandler} when the service it is attached to has been added and
+     * started successfully.
+     *
+     * @param <P> the update result handler parameter type
+     */
+    class ServiceStartListener<P> extends AbstractServiceListener<Object> {
+        private final UpdateResultHandler<?, P> resultHandler;
+        private final P param;
+
+        public ServiceStartListener(final UpdateResultHandler<?, P> resultHandler, final P param) {
+            this.resultHandler = resultHandler;
+            this.param = param;
+        }
+
+        public void serviceStarted(final ServiceController<? extends Object> controller) {
+            try {
+                resultHandler.handleSuccess(null, param);
+            } finally {
+                controller.removeListener(this);
+            }
+        }
+
+        public void serviceFailed(final ServiceController<? extends Object> controller, final StartException reason) {
+            try {
+                resultHandler.handleFailure(reason, param);
+            } finally {
+                controller.removeListener(this);
+            }
+        }
+
+        public void serviceRemoved(final ServiceController<? extends Object> controller) {
+            try {
+                resultHandler.handleCancellation(param);
+            } finally {
+                controller.removeListener(this);
+            }
+        }
+    }
 }

@@ -53,7 +53,7 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
     }
 
     @Override
-    protected ServerGroupDeploymentStartStopUpdate getCompensatingUpdate(
+    public ServerGroupDeploymentStartStopUpdate getCompensatingUpdate(
             ServerGroupDeploymentElement original) {
         return new ServerGroupDeploymentStartStopUpdate(deploymentUnitName, !isStart);
     }
@@ -69,7 +69,7 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
     }
 
     @Override
-    protected Class<ServerGroupDeploymentElement> getModelElementType() {
+    public Class<ServerGroupDeploymentElement> getModelElementType() {
         return ServerGroupDeploymentElement.class;
     }
 }

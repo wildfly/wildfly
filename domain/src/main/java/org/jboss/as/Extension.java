@@ -24,21 +24,20 @@ package org.jboss.as;
 
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
- * An extension.
+ * An extension to the JBoss Application Server.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface Extension extends ServiceActivator {
 
     /**
-     * Register root element handlers.
+     * Initialize this extension.
      *
-     * @param mapper the mapper
+     * @param context the extension context
      */
-    void registerElementHandlers(XMLMapper mapper);
+    void initialize(ExtensionContext context);
 
     /**
      * Activate the base services associated with this extension.  These services are installed
@@ -46,5 +45,5 @@ public interface Extension extends ServiceActivator {
      *
      * @param context the service activation context
      */
-    void activate(final ServiceActivatorContext context);
+    void activate(ServiceActivatorContext context);
 }

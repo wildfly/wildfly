@@ -24,6 +24,7 @@ package org.jboss.as.model;
 
 import java.util.Collections;
 import javax.xml.stream.XMLStreamException;
+
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -64,7 +65,7 @@ public final class ManagementElement extends AbstractModelElement<ManagementElem
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -80,12 +81,13 @@ public final class ManagementElement extends AbstractModelElement<ManagementElem
                         maxThreads = Integer.parseInt(value);
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if(interfaceName == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
         }
         this.interfaceName = interfaceName;
         this.port = port;
@@ -106,7 +108,7 @@ public final class ManagementElement extends AbstractModelElement<ManagementElem
     }
 
     /** {@inheritDoc} */
-    public long elementHash() {
+    private long elementHash() {
         long cksum = interfaceName.hashCode() & 0xffffffffL;
         return cksum;
     }

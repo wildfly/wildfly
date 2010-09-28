@@ -40,10 +40,10 @@ public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate
     public ServerModelDeploymentRemoveUpdate(final String deploymentName, boolean undeploy) {
         this.deploymentName = deploymentName;
         if (undeploy) {
-            this.startStopHandler = new ServerDeploymentStartStopHandler();
+            startStopHandler = new ServerDeploymentStartStopHandler();
         }
         else {
-            this.startStopHandler = null;
+            startStopHandler = null;
         }
     }
 
@@ -62,7 +62,7 @@ public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate
 
     @Override
     public <P> void applyUpdate(ServiceContainer container,
-            UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (startStopHandler != null) {
             startStopHandler.undeploy(deploymentName, container, resultHandler, param);
         }
@@ -75,10 +75,5 @@ public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate
             return null;
         }
         return new ServerModelDeploymentAddUpdate(toRemove.getUniqueName(), toRemove.getRuntimeName(), toRemove.getSha1Hash(), startStopHandler != null);
-    }
-
-    @Override
-    public boolean requiresRestart() {
-        return false;
     }
 }

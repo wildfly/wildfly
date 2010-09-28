@@ -23,6 +23,7 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -45,23 +46,24 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case DIRECTORY:
                         directory = value;
                         break;
-                    default: unexpectedAttribute(reader, i);
+                    default:
+                        ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 

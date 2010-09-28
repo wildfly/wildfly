@@ -22,20 +22,12 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.model.*;
+import org.jboss.as.model.Element;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.tm.JBossXATerminator;
-import org.omg.CORBA.ORB;
 
-import javax.transaction.TransactionManager;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -55,14 +47,14 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
 
     public TransactionsSubsystemElement() {
-        super(new QName(Namespace.TRANSACTIONS_1_0.getUriString(), "subsystem"));
+        super(new QName(org.jboss.as.model.Namespace.TRANSACTIONS_1_0.getUriString(), "subsystem").getNamespaceURI());
     }
 
     public TransactionsSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // no attributes
         if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
+            throw ParseUtils.unexpectedAttribute(reader, 0);
         }
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -86,18 +78,20 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
                             objectStoreEnvironmentElement = new ObjectStoreEnvironmentElement(reader);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         if(recoveryEnvironmentElement == null) {
-            throw missingRequiredElement(reader, Collections.singleton(Element.RECOVERY_ENVIRONMENT.getLocalName()));
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.RECOVERY_ENVIRONMENT.getLocalName()));
         }
         if(coreEnvironmentElement == null) {
-            throw missingRequiredElement(reader, Collections.singleton(Element.CORE_ENVIRONMENT.getLocalName()));
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.CORE_ENVIRONMENT.getLocalName()));
         }
         if(coordinatorEnvironmentElement == null) {
             coordinatorEnvironmentElement = new CoordinatorEnvironmentElement();
@@ -108,7 +102,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 42;
     }
 
@@ -129,25 +123,5 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         coreEnvironmentElement.writeContent(streamWriter);
 
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Transactions Subsystem");
-
-        final BatchBuilder builder = context.getBatchBuilder();
-
-        // XATerminator has no deps, so just add it in there
-        final XATerminatorService xaTerminatorService = new XATerminatorService();
-        builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService);
-
-        final TransactionManagerService transactionManagerService = new TransactionManagerService(coreEnvironmentElement.getNodeIdentifier(), coreEnvironmentElement.getMaxPorts(), coordinatorEnvironmentElement.isEnableStatistics(), coordinatorEnvironmentElement.getDefaultTimeout(), objectStoreEnvironmentElement.getDirectory());
-        final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
-        transactionManagerServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector());
-        transactionManagerServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
-        transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryEnvironmentElement.getBindingRef()), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector());
-        transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryEnvironmentElement.getStatusBindingRef()), SocketBinding.class, transactionManagerService.getStatusBindingInjector());
-        transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(coreEnvironmentElement.getBindingRef()), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
-        transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 }

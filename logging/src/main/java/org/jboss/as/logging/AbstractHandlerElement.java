@@ -91,7 +91,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         return properties;
     }
 
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 

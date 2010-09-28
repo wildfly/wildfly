@@ -41,6 +41,7 @@ public enum Attribute {
     PER_CPU("per-cpu"),
     PRIORITY("priority"),
     UNIT("unit"),
+    VALUE("value"),
     ;
     private final String name;
 

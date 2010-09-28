@@ -32,7 +32,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ChildElement<E extends AbstractModelElement<E>> implements Serializable {
+public final class ChildElement<E extends AbstractModelElement<?>> implements Serializable {
     private static final long serialVersionUID = 7293514039091602017L;
 
     private final String localName;

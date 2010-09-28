@@ -41,7 +41,7 @@ public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
     }
 
-    protected AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original) {
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original) {
         return null;
     }
 

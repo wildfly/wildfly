@@ -48,9 +48,9 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             throw new IllegalArgumentException("toReplace is null");
         this.newDeployment = newDeployment;
         this.toReplace = toReplace;
-        this.undeploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(toReplace, false);
-        this.deploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(newDeployment, true);
-        this.startStopHandler = new ServerDeploymentStartStopHandler();
+        undeploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(toReplace, false);
+        deploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(newDeployment, true);
+        startStopHandler = new ServerDeploymentStartStopHandler();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
 
     @Override
     public <P> void applyUpdate(ServiceContainer container,
-            UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (deploymentElement != null) {
             // FIXME coordinate results!!!
             startStopHandler.undeploy(toReplace, container, resultHandler, param);
@@ -99,10 +99,5 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             return null;
         }
         return new ServerModelDeploymentReplaceUpdate(toReplace, newDeployment);
-    }
-
-    @Override
-    public boolean requiresRestart() {
-        return false;
     }
 }

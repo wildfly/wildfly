@@ -22,16 +22,16 @@
 
 package org.jboss.as.threads;
 
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ChildElement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -44,105 +44,10 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
 
     private final NavigableMap<String, ThreadFactoryElement> threadFactories = new TreeMap<String, ThreadFactoryElement>();
     private final NavigableMap<String, ScheduledThreadPoolExecutorElement> scheduledExecutors = new TreeMap<String, ScheduledThreadPoolExecutorElement>();
-    private final NavigableMap<String, AbstractExecutorElement<?>> executors = new TreeMap<String, AbstractExecutorElement<?>>();
+    private final NavigableMap<String, ChildElement<AbstractExecutorElement<?>>> executors = new TreeMap<String, ChildElement<AbstractExecutorElement<?>>>();
 
-    protected ThreadsSubsystemElement(final QName elementName) {
-        super(elementName);
-    }
-
-    protected ThreadsSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-        // no attributes
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
-        // elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case THREADS_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case THREAD_FACTORY: {
-                            final ThreadFactoryElement threadFactoryElement = new ThreadFactoryElement(reader);
-                            final String name = threadFactoryElement.getName();
-                            if (threadFactories.containsKey(name)) {
-                                throw duplicateNamedElement(reader, name);
-                            }
-                            threadFactories.put(name, threadFactoryElement);
-                            break;
-                        }
-                        case SCHEDULED_THREAD_POOL_EXECUTOR: {
-                            final ScheduledThreadPoolExecutorElement executorElement = new ScheduledThreadPoolExecutorElement(reader);
-                            final String name = executorElement.getName();
-                            if (scheduledExecutors.containsKey(name)) {
-                                throw duplicateNamedElement(reader, name);
-                            }
-                            scheduledExecutors.put(name, executorElement);
-                            break;
-                        }
-                        case BOUNDED_QUEUE_THREAD_POOL_EXECUTOR:
-                        case QUEUELESS_THREAD_POOL_EXECUTOR:
-                        case THREAD_FACTORY_EXECUTOR:
-                        case UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR: {
-                            final AbstractExecutorElement<?> executorElement;
-                            switch (element) {
-                                case BOUNDED_QUEUE_THREAD_POOL_EXECUTOR: {
-                                    executorElement = new BoundedQueueThreadPoolExecutorElement(reader);
-                                    break;
-                                }
-                                case QUEUELESS_THREAD_POOL_EXECUTOR: {
-                                    executorElement = new QueuelessThreadPoolExecutorElement(reader);
-                                    break;
-                                }
-                                case THREAD_FACTORY_EXECUTOR: {
-                                    executorElement = new ThreadFactoryExecutorElement(reader);
-                                    break;
-                                }
-                                case UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR: {
-                                    executorElement = new UnboundedQueueThreadPoolExecutor(reader);
-                                    break;
-                                }
-                                default: {
-                                    throw new IllegalStateException();
-                                }
-                            }
-                            final String name = executorElement.getName();
-                            if (executors.containsKey(name)) {
-                                throw duplicateNamedElement(reader, name);
-                            }
-                            executors.put(name, executorElement);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Threading Subsystem");
-        for (ThreadFactoryElement element : threadFactories.values()) {
-            element.activate(context);
-        }
-
-        for(ScheduledThreadPoolExecutorElement element : scheduledExecutors.values()) {
-            element.activate(context);
-        }
-
-        for(AbstractExecutorElement<?> element : executors.values()) {
-            element.activate(context);
-        }
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = 0L;
-        hash = calculateElementHashOf(threadFactories.values(), hash);
-        return hash;
+    protected ThreadsSubsystemElement() {
+        super(Namespace.CURRENT.getUriString());
     }
 
     @Override
@@ -153,27 +58,43 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        synchronized (threadFactories) {
-            for (ThreadFactoryElement tfe : threadFactories.values()) {
-                streamWriter.writeStartElement(Element.THREAD_FACTORY.getLocalName());
-                tfe.writeContent(streamWriter);
-            }
+        for (ThreadFactoryElement tfe : threadFactories.values()) {
+            streamWriter.writeStartElement(Element.THREAD_FACTORY.getLocalName());
+            tfe.writeContent(streamWriter);
         }
-
-        synchronized (scheduledExecutors) {
-            for (ScheduledThreadPoolExecutorElement stpe : scheduledExecutors.values()) {
-                streamWriter.writeStartElement(Element.SCHEDULED_THREAD_POOL_EXECUTOR.getLocalName());
-                stpe.writeContent(streamWriter);
-            }
+        for (ScheduledThreadPoolExecutorElement stpe : scheduledExecutors.values()) {
+            streamWriter.writeStartElement(Element.SCHEDULED_THREAD_POOL_EXECUTOR.getLocalName());
+            stpe.writeContent(streamWriter);
         }
-
-        synchronized (executors) {
-            for (AbstractExecutorElement<?> aee : executors.values()) {
-                streamWriter.writeStartElement(aee.getStandardElement().getLocalName());
-                aee.writeContent(streamWriter);
-            }
+        for (ChildElement<? extends AbstractExecutorElement<?>> childElement : executors.values()) {
+            streamWriter.writeStartElement(childElement.getLocalName());
+            childElement.getElement().writeContent(streamWriter);
         }
 
         streamWriter.writeEndElement();
+    }
+
+    protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> objects) {
+    }
+
+    protected boolean isEmpty() {
+        return false;
+    }
+
+    ThreadFactoryElement getThreadFactory(final String name) {
+        return threadFactories.get(name);
+    }
+
+    void removeThreadFactory(final String name) {
+        threadFactories.remove(name);
+    }
+
+    ThreadFactoryElement addThreadFactory(final String name) {
+        if (threadFactories.containsKey(name)) {
+            return null;
+        }
+        final ThreadFactoryElement element = new ThreadFactoryElement(name);
+        threadFactories.put(name, element);
+        return element;
     }
 }

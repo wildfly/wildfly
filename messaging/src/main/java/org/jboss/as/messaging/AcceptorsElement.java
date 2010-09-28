@@ -2,21 +2,14 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author scott.stark@jboss.org
@@ -54,7 +47,7 @@ public class AcceptorsElement extends AbstractModelElement<AcceptorsElement> imp
    }
 
    @Override
-   public long elementHash() {
+   private long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
    }
 

@@ -51,7 +51,7 @@ public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSub
 
     /** {@inheritDoc} */
     @Override
-    protected Class<RemotingSubsystemElement> getModelElementType() {
+    public Class<RemotingSubsystemElement> getModelElementType() {
         return RemotingSubsystemElement.class;
     }
 
@@ -61,7 +61,7 @@ public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSub
     }
 
     @Override
-    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
+    public AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
         return null;
     }
 

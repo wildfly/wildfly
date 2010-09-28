@@ -97,7 +97,7 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      * no internal state.
      */
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return element.hashCode() & 0xFFFFFFFF;
     }
 

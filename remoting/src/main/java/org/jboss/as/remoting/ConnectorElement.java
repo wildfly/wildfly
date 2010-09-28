@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -80,7 +81,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -92,13 +93,14 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
                         socketBinding = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
                 required.remove(attribute);
             }
         }
         if (! required.isEmpty()) {
-            throw missingRequired(reader, required);
+            throw ParseUtils.missingRequired(reader, required);
         }
         assert name != null;
         assert socketBinding != null;
@@ -111,7 +113,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
                 case REMOTING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (visited.contains(element)) {
-                        throw unexpectedElement(reader);
+                        throw ParseUtils.unexpectedElement(reader);
                     }
                     visited.add(element);
                     switch (element) {
@@ -124,20 +126,22 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
                             break;
                         }
                         case AUTHENTICATION_PROVIDER: {
-                            authenticationProvider = readStringAttributeElement(reader, "name");
+                            authenticationProvider = ParseUtils.readStringAttributeElement(reader, "name");
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
 
     /** {@inheritDoc} */
-    public long elementHash() {
+    private long elementHash() {
         return name.hashCode() & 0xFFFFFFFF;
     }
 

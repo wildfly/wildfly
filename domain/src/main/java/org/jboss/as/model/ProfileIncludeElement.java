@@ -34,7 +34,7 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -42,16 +42,17 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
                         profile = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (profile == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.PROFILE));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROFILE));
         }
         this.profile = profile;
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     /**

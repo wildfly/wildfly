@@ -77,7 +77,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -93,15 +93,16 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                         start = Boolean.valueOf(value);
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (group == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.GROUP));
         }
         this.name = name;
         this.serverGroup = group;
@@ -138,11 +139,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                             this.systemProperties = new PropertiesElement(reader);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
 
@@ -233,21 +236,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
     /** {@inheritDoc} */
     @Override
-    public long elementHash() {
-        long cksum = name.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ serverGroup.hashCode() & 0xffffffffL;
-        cksum = calculateElementHashOf(interfaces.values(), cksum);
-        if (bindingGroup != null) {
-            cksum = Long.rotateLeft(cksum, 1) ^ bindingGroup.elementHash();
-        }
-        if (jvm != null) {
-            cksum = Long.rotateLeft(cksum, 1) ^ jvm.elementHash();
-        }
-        return cksum;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     protected Class<ServerElement> getElementClass() {
         return ServerElement.class;
     }
@@ -307,11 +295,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
                             interfaces.put(interfaceEl.getName(), interfaceEl);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }

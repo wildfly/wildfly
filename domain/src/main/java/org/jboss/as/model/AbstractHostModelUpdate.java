@@ -41,7 +41,7 @@ public abstract class AbstractHostModelUpdate<R> extends AbstractModelUpdate<Hos
 
     /** {@inheritDoc} */
     @Override
-    protected final Class<HostModel> getModelElementType() {
+    public final Class<HostModel> getModelElementType() {
         return HostModel.class;
     }
 
@@ -51,5 +51,5 @@ public abstract class AbstractHostModelUpdate<R> extends AbstractModelUpdate<Hos
 
     /** {@inheritDoc} */
     @Override
-    protected abstract AbstractHostModelUpdate<?> getCompensatingUpdate(final HostModel original);
+    public abstract AbstractHostModelUpdate<?> getCompensatingUpdate(final HostModel original);
 }

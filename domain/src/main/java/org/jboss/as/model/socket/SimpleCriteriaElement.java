@@ -8,6 +8,7 @@ import java.net.NetworkInterface;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -35,8 +36,8 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
         if (criteria == null) {
             throw new IllegalArgumentException("criteria is null");
         }
-        requireNoAttributes(reader);
-        requireNoContent(reader);
+        ParseUtils.requireNoAttributes(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     @Override

@@ -22,38 +22,28 @@
 
 package org.jboss.as.model;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
-
 /**
- * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
- * for {@code &lt;domain&gt;} root elements.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DomainModelParser implements XMLElementReader<ParseResult<DomainModel>>, XMLStreamConstants {
+public final class DomainExtensionRemove extends AbstractDomainModelUpdate<Void> {
 
-    private DomainModelParser() {
+    private static final long serialVersionUID = 3718982114819320314L;
+
+    private final String moduleName;
+
+    public DomainExtensionRemove(final String moduleName) {
+        this.moduleName = moduleName;
     }
 
-    private static final DomainModelParser INSTANCE = new DomainModelParser();
-
-    /**
-     * Get the instance.
-     *
-     * @return the instance
-     */
-    public static DomainModelParser getInstance() {
-        return INSTANCE;
+    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
+        element.removeExtension(moduleName);
     }
 
-    /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<DomainModel> value) throws XMLStreamException {
-        value.setResult(new DomainModel(reader));
+    public DomainExtensionAdd getCompensatingUpdate(final DomainModel original) {
+        return new DomainExtensionAdd(moduleName);
+    }
+
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }

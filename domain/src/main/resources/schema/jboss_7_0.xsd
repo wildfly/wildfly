@@ -23,86 +23,76 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns="urn:jboss:domain:1.0"
-  targetNamespace="urn:jboss:domain:1.0"
-  elementFormDefault="qualified"
-  attributeFormDefault="unqualified"
->
+           xmlns="urn:jboss:domain:1.0"
+           targetNamespace="urn:jboss:domain:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+        >
 
-  <!-- Include the some schema definitions for reuse -->
-  <xs:include schemaLocation="jboss-domain-common.xsd"/>
-  <xs:include schemaLocation="jboss-domain-web.xsd"/>
-  <xs:include schemaLocation="jboss-domain-mod_cluster.xsd"/>
+    <xs:element name="host">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
+                <xs:element name="system-properties" type="properties" minOccurs="0"/>
+                <xs:element name="domain-controller" type="domain-controllerType"/>
+                <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
+                <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
+                <xs:element name="servers" type="serversType" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-  <xs:element name="host">
-      <xs:complexType>
-        <xs:sequence>
-            <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
-            <xs:element name="domain-controller" type="domain-controllerType"/>
-            <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
-            <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
-            <xs:element name="servers" type="serversType" minOccurs="0"/>
-        </xs:sequence>
-     </xs:complexType>
-  </xs:element>
+    <xs:element name="domain">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="profiles" type="profilesType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-  <xs:element name="domain">
-    <xs:complexType>
-      <xs:sequence>
-          <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1" />
-          <!-- TODO the domain-configuration concept needs review -->
-          <xs:element name="domain-configuration" type="domain-configurationType" minOccurs="0" maxOccurs="1" />
-          <xs:element name="profiles" type="profilesType"  minOccurs="0" maxOccurs="1" />
-          <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1" />
-          <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1" />
-          <xs:element name="ssls" type="sslsType" minOccurs="0" maxOccurs="1" />
-          <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deployments" type="domain-deploymentsType"  minOccurs="0" maxOccurs="1" />
-          <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1" />
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
 
-  
-  <xs:element name="server">
-    <xs:complexType>
-      <xs:sequence>
-          <xs:element name="name" type="xs:string"/>
-          <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1" />          
-          <xs:element name="profile" type="standalone-profileType"/>
-          <xs:element name="interfaces" type="specified-interfacesType"  minOccurs="0" maxOccurs="1"/>
-          <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="ssls" type="sslsType" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0" maxOccurs="1"/>
-          <xs:element name="deployment-repository" type="standalone-deployment-repositoryType" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="deployments" type="mapped-deploymentsType"  minOccurs="0" maxOccurs="1"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-    
+    <xs:element name="server">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+                <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="profile" type="standalone-profileType"/>
+                <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="deployment-repository" type="standalone-deployment-repositoryType" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="domain-controllerType">
         <xs:choice>
-            <xs:element name="local"  type="domain-controller-localType"/>
+            <xs:element name="local" type="domain-controller-localType"/>
             <xs:element name="remote" type="domain-controller-remoteType"/>
         </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="domain-controller-localType">
-         <!-- FIXME this is a total ripoff of serverType to make it easy
-              to initially test booting a server by having the DC act as such.
-              We need a proper description of what a DC is
-          -->
-         <xs:all>
+        <!-- FIXME this is a total ripoff of serverType to make it easy
+            to initially test booting a server by having the DC act as such.
+            We need a proper description of what a DC is
+        -->
+        <xs:all>
             <xs:element name="priority" type="priorityType" minOccurs="0"/>
             <xs:element name="cpu-affinity" type="cpu-affinityType" minOccurs="0"/>
 
             <xs:element name="interface-specs" type="specified-interfacesType" minOccurs="0"/>
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
-            <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
-            <xs:element name="jvm" minOccurs="0" type="jvmType" />
+            <xs:element name="system-properties" type="properties" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="jvmType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="optional" default="DomainController"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
@@ -135,8 +125,8 @@
             <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
 
             <!--<xs:element name="loggers" type="loggersType" minOccurs="0"/>-->
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
-            <xs:element name="jvm" minOccurs="0" type="jvmType" />
+            <xs:element name="system-properties" type="properties" minOccurs="0"/>
+            <xs:element name="jvm" minOccurs="0" type="namedJvmType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
@@ -149,7 +139,7 @@
                 <xs:documentation>
                     TODO
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
@@ -159,170 +149,177 @@
                 <xs:documentation>
                     TODO
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="extensionsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of extension modules.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="extension" type="extensionType" minOccurs="1" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-  
-  <xs:complexType name="extensionType">
-    <xs:annotation>
-      <xs:documentation>
-         A module that extends the standard capabilities of a domain
-         or a standalone server.
-      </xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="module" use="required" type="moduleType">
-      <xs:annotation>
-        <xs:documentation>The name of the module, in group:artifact format; e.g. org.foo:widget</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>    
-  </xs:complexType>
-  
-  <xs:simpleType name="moduleType">
-     <xs:restriction base="xs:string">
-        <xs:pattern value="[\S-[:]]*:[\S-[:]]*"/>
-     </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:complexType name="server-groupsType">
-     <xs:sequence>
-        <xs:element name="server-group" type="server-groupType" minOccurs="0" maxOccurs="unbounded"/>
-     </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="server-groupType">
-     <xs:sequence>
-        <xs:element name="jvm" type="jvmType" minOccurs="0"/>
-        <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
-            
-        <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
-
-        <xs:element name="resources" minOccurs="0" maxOccurs="unbounded" type="resourcesType"/>
-        <xs:element name="system-properties" minOccurs="0" type="propertiesWithOptionalValueType"/>
-     </xs:sequence>
-     <xs:attribute name="name" type="xs:string">
         <xs:annotation>
-           <xs:documentation>
-              The name of the server group
-           </xs:documentation>
+            <xs:documentation>Contains a list of extension modules.</xs:documentation>
         </xs:annotation>
-     </xs:attribute>
-     <xs:attribute name="profile" type="xs:string">
-        <xs:annotation>
-           <xs:documentation>
-              The name of the profile this server is running.
-           </xs:documentation>
-        </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
+        <xs:sequence>
+            <xs:element name="extension" type="extensionType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
 
-  <xs:complexType name="mapped-deploymentsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of deployments that have been mapped to a server-group.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="deployment" type="mapped-deploymentType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-  
-  <xs:complexType name="mapped-deploymentType">    
-    <xs:annotation>
-      <xs:documentation>A deployment that has been mapped to a server group.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" use="required">
-      <xs:annotation>
-        <xs:documentation>Unique identifier of the deployment. Must be unique across all deployments.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="runtime-name" use="required">
-      <xs:annotation>
-        <xs:documentation>Name by which the deployment will be known within a running server.of the deployment. 
-        Does not need to be unique across all deployments in the domain, although it must be unique within
-        an individual server. For example, two different deployments running on different servers in
-        the domain could both have a 'runtime-name' of 'example.war', with one having a 'name'
-        of 'example.war_v1' and another with an 'name' of 'example.war_v2'.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sha1" use="required">
-      <xs:annotation>
-        <xs:documentation>The checksum of the deployment</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <!--  TODO clarify what a value of 'false' means -->
-    <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>Whether the deployment starts automatically when the server starts up.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
-  <xs:complexType name="domain-deploymentsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-  
-  <xs:complexType name="deploymentType">
-    <xs:annotation>
-        <xs:documentation>Deployment represents anything that can be deployed (e.g. an application such as EJB-JAR, WAR, EAR,
-                        any kind of standard archive such as RAR or JBoss-specific deployment),
-                        which can be enabled or disabled on a domain level.
-        </xs:documentation>
-    </xs:annotation>
-    <xs:complexContent>
-        <xs:extension base="mapped-deploymentType">
-            <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
-              <xs:annotation>
-                <xs:documentation>Whether the mapping the deployment to a server group is allowed.</xs:documentation>
-              </xs:annotation>
-            </xs:attribute>
-        </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>  
-  
-  <xs:complexType name="standalone-deployment-repositoryType">
-    <xs:annotation>
-      <xs:documentation>Allows configuration of an additional location where deployment
-      content can be stored.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="path" use="optional" default="standalone/deploy">
-      <xs:annotation>
-        <xs:documentation>Filesystem path indicating the location where deployment content should
-        be stored. Either an absolute or relative path; if relative it is relative
-        to the root of the JBoss AS installation. Location must be writable by
-        the user that owns the JBoss AS process. Default is 'server/deploy'</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+    <xs:complexType name="extensionType">
         <xs:annotation>
-          <xs:documentation>Periodic interval, in milliseconds, at which the repository
-          should be scanned for changes. A value of less than 1 indicates the
-          repository should only be scanned at initial startup.</xs:documentation>
+            <xs:documentation>
+                A module that extends the standard capabilities of a domain
+                or a standalone server.
+            </xs:documentation>
         </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="scan-enabled" type="boolean" use="optional" default="true">
-        <xs:annotation>
-          <xs:documentation>
-             Flag indicating that all scanning (including initial scanning at startup)
-             should be disabled.
-          </xs:documentation>
-        </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
+        <xs:attribute name="module" use="required" type="moduleType">
+            <xs:annotation>
+                <xs:documentation>The name of the module, in group:artifact format; e.g. org.foo:widget
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
-<!-- TODO this is not used anywhere yet -->
+    <xs:simpleType name="moduleType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[\S-[:]]*:[\S-[:]]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="server-groupsType">
+        <xs:sequence>
+            <xs:element name="server-group" type="server-groupType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="server-groupType">
+        <xs:sequence>
+            <xs:element name="jvm" type="namedJvmType" minOccurs="0"/>
+            <xs:element name="socket-binding-group" type="socket-binding-group-refType" minOccurs="0"/>
+
+            <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0"/>
+
+            <xs:element name="system-properties" minOccurs="0" type="properties"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the server group
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="profile" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the profile this server is running.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="mapped-deploymentsType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of deployments that have been mapped to a server-group.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="deployment" type="mapped-deploymentType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="mapped-deploymentType">
+        <xs:annotation>
+            <xs:documentation>A deployment that has been mapped to a server group.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" use="required">
+            <xs:annotation>
+                <xs:documentation>Unique identifier of the deployment. Must be unique across all deployments.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="runtime-name" use="required">
+            <xs:annotation>
+                <xs:documentation>Name by which the deployment will be known within a running server.of the deployment.
+                    Does not need to be unique across all deployments in the domain, although it must be unique within
+                    an individual server. For example, two different deployments running on different servers in
+                    the domain could both have a 'runtime-name' of 'example.war', with one having a 'name'
+                    of 'example.war_v1' and another with an 'name' of 'example.war_v2'.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sha1" use="required">
+            <xs:annotation>
+                <xs:documentation>The checksum of the deployment</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <!--  TODO clarify what a value of 'false' means -->
+        <xs:attribute name="start" use="optional" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>Whether the deployment starts automatically when the server starts up.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="domain-deploymentsType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of domain-level deployments</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="deployment" type="deploymentType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="deploymentType">
+        <xs:annotation>
+            <xs:documentation>Deployment represents anything that can be deployed (e.g. an application such as EJB-JAR,
+                WAR, EAR,
+                any kind of standard archive such as RAR or JBoss-specific deployment),
+                which can be enabled or disabled on a domain level.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="mapped-deploymentType">
+                <xs:attribute name="allowed" use="optional" type="xs:boolean" default="true">
+                    <xs:annotation>
+                        <xs:documentation>Whether the mapping the deployment to a server group is allowed.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="standalone-deployment-repositoryType">
+        <xs:annotation>
+            <xs:documentation>Allows configuration of an additional location where deployment
+                content can be stored.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="path" use="optional" default="standalone/deploy">
+            <xs:annotation>
+                <xs:documentation>Filesystem path indicating the location where deployment content should
+                    be stored. Either an absolute or relative path; if relative it is relative
+                    to the root of the JBoss AS installation. Location must be writable by
+                    the user that owns the JBoss AS process. Default is 'server/deploy'
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>Periodic interval, in milliseconds, at which the repository
+                    should be scanned for changes. A value of less than 1 indicates the
+                    repository should only be scanned at initial startup.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="scan-enabled" type="xs:boolean" use="optional" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Flag indicating that all scanning (including initial scanning at startup)
+                    should be disabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- TODO this is not used anywhere yet -->
     <xs:complexType name="clustersType">
         <xs:complexContent>
             <xs:extension base="server-groupType">
@@ -331,202 +328,198 @@
                     <xs:element name="state-transfer-timeout" type="xs:integer"/>
                     <xs:element name="method-call-timeout" type="xs:integer"/>
                 </xs:sequence>
-                <xs:attribute name="category" type="xs:string" use="required"/>                    
+                <xs:attribute name="category" type="xs:string" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
-  <!-- domain-configuration related definitions -->
-  <xs:complexType name="domain-configurationType">
-    <xs:annotation>
-      <xs:documentation>The domain manager/server bootstrap configuration</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element ref="bootstrapURI"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="bootstrapURI" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>The URI for bootstraping a domain server</xs:documentation>
-    </xs:annotation>
-  </xs:element>
+    <!-- domain-configuration related definitions -->
+    <xs:complexType name="domain-configurationType">
+        <xs:annotation>
+            <xs:documentation>The domain manager/server bootstrap configuration</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="bootstrapURI"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="bootstrapURI" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>The URI for bootstrapping a domain server</xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
-  <xs:complexType name="profilesType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of profiles available for use in the domain</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="profile" type="domain-profileType" minOccurs="1" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+    <xs:complexType name="profilesType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of profiles available for use in the domain</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="profile" type="domain-profileType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
 
-  <xs:complexType name="domain-profileType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of subsystems</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:choice minOccurs="1" maxOccurs="unbounded">
-          <!-- FIXME move web-container to another namespace and remove this -->
-          <xs:element ref="web-container"/>
-          <!-- FIXME move mod-cluster-config to another namespace and remove this -->
-          <xs:element ref="mod-cluster-config"/>
-          <xs:any namespace="##other">
+    <xs:complexType name="domain-profileType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of subsystems</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="include" type="profile-includeType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:any namespace="##other">
+                <xs:annotation>
+                    <xs:documentation>A profile declaration may include configuration
+                        elements from other namespaces for the subsystems that make up the profile.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:any>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation>A profile declaration may include configuration
-                elements from other namespaces for the subsystems that make up the profile.
+                <xs:documentation>Name of the profile</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="profile-includeType">
+        <xs:annotation>
+            <xs:documentation>Specifies that a contents of a named profile are to be included in
+                the profile whose definition includes this type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="profile" use="required">
+            <xs:annotation>
+                <xs:documentation>Name of the profile to include</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="standalone-profileType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of subsystems</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice minOccurs="1" maxOccurs="unbounded">
+                <xs:any namespace="##other">
+                    <xs:annotation>
+                        <xs:documentation>A profile declaration may include configuration
+                            elements from other namespaces for the subsystems that make up the profile.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:any>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Name of the profile</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- general socket definition -->
+    <xs:complexType name="socket-binding-groupsType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of socket binding groups</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="socket-binding-group" type="socket-binding-groupType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="socket-binding-groupType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of socket configurations</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="include" type="socket-binding-group-includeType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="default-interface" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of an interface that should be used as the interface for
+                    any sockets that do not explicitly declare one.
                 </xs:documentation>
             </xs:annotation>
-          </xs:any>
-      </xs:choice>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the profile</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
+        </xs:attribute>
+    </xs:complexType>
 
-  <xs:complexType name="profile-includeType">
-    <xs:annotation>
-      <xs:documentation>Specifies that a contents of a named profile are to be included in
-      the profile whose definition includes this type.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="profile" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the profile to include</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
-  <xs:complexType name="standalone-profileType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of subsystems</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:choice minOccurs="1" maxOccurs="unbounded">
-          <xs:any namespace="##other">
+    <xs:complexType name="socket-binding-group-includeType">
+        <xs:annotation>
+            <xs:documentation>Specifies that a contents of a named socket-binding-group are to be included in
+                the socket-binding-group whose definition includes this type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="socket-binding-group" use="required">
             <xs:annotation>
-                <xs:documentation>A profile declaration may include configuration
-                elements from other namespaces for the subsystems that make up the profile.
+                <xs:documentation>Name of the socket-binding-group to include</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="standalone-socket-binding-groupType">
+        <xs:annotation>
+            <xs:documentation>Contains a list of socket configurations</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="default-interface" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of an interface that should be used as the interface for
+                    any sockets that do not explicitly declare one.
                 </xs:documentation>
             </xs:annotation>
-          </xs:any>
-      </xs:choice>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the profile</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-  
-   <!-- general socket definition -->
-   <xs:complexType name="socket-binding-groupsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of socket binding groups</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="socket-binding-group" type="socket-binding-groupType" maxOccurs="unbounded"/>
-    </xs:sequence>
-   </xs:complexType>
+        </xs:attribute>
+    </xs:complexType>
 
-   <xs:complexType name="socket-binding-groupType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of socket configurations</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="include" type="socket-binding-group-includeType" minOccurs="0"  maxOccurs="unbounded"/>
-      <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="default-interface" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>
-            Name of an interface that should be used as the interface for
-            any sockets that do not explicitly declare one.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-   </xs:complexType>
-
-  <xs:complexType name="socket-binding-group-includeType">
-    <xs:annotation>
-      <xs:documentation>Specifies that a contents of a named socket-binding-group are to be included in
-      the socket-binding-group whose definition includes this type.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="socket-binding-group" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the socket-binding-group to include</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:complexType>
-
-   <xs:complexType name="standalone-socket-binding-groupType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of socket configurations</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-        <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="default-interface" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>
-            Name of an interface that should be used as the interface for
-            any sockets that do not explicitly declare one.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-   </xs:complexType>
-   
-   <xs:complexType name="socket-bindingType">
-    <xs:annotation>
-      <xs:documentation>Configuration information for a socket.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="interface" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Name of the interface to which the socket should be bound, or, for multicast
-            sockets, the interface on which it should listen. This should
-            be one of the declared interfaces.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
-      <xs:annotation>
-        <xs:documentation>
-            Number of the port to which the socket should be bound.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
-      <xs:annotation>
-        <xs:documentation>
-            Whether the port value should remain fixed even if numerically offsets
-            are applied to the other sockets in the socket group..
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="multicast-address" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Multicast address on which the socket should receive multicast
-            traffic. If unspecified, the socket will not be configured
-            to receive multicast.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Port on which the socket should receive multicast
-            traffic. Must be configured if 'multicast-address' is configured.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-   </xs:complexType>
+    <xs:complexType name="socket-bindingType">
+        <xs:annotation>
+            <xs:documentation>Configuration information for a socket.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="interface" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the interface to which the socket should be bound, or, for multicast
+                    sockets, the interface on which it should listen. This should
+                    be one of the declared interfaces.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Number of the port to which the socket should be bound.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether the port value should remain fixed even if numerically offsets
+                    are applied to the other sockets in the socket group..
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="multicast-address" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Multicast address on which the socket should receive multicast
+                    traffic. If unspecified, the socket will not be configured
+                    to receive multicast.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Port on which the socket should receive multicast
+                    traffic. Must be configured if 'multicast-address' is configured.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="socket-binding-group-refType">
         <xs:attribute name="ref" type="xs:string">
@@ -534,16 +527,16 @@
                 <xs:documentation>
                     The socket group to use for the server group or server.
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
         <xs:attribute name="port-offset" type="xs:int" default="0">
             <xs:annotation>
                 <xs:documentation>
-                    Increment to apply to the base port values defined in the 
+                    Increment to apply to the base port values defined in the
                     referenced socket group to derive the values to use on this
                     server.
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
@@ -555,7 +548,7 @@
                 not be fully specified (i.e. include criteria on how to determine
                 their IP address.)
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="interface" type="named-interfaceType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -572,7 +565,7 @@
                 lower level (e.g. at the server level, where available addresses
                 are known.)
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:group ref="interface-criteriaGroup" minOccurs="0"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -582,13 +575,13 @@
             <xs:documentation>
                 A list of fully specified named network interfaces.
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="interface" type="specified-interfaceType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="specified-interfaceType" >
+    <xs:complexType name="specified-interfaceType">
         <xs:annotation>
             <xs:documentation>
                 A named network interface, along with required criteria
@@ -598,20 +591,20 @@
         <xs:group ref="interface-criteriaGroup" minOccurs="1"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
-    
+
     <xs:group name="interface-criteriaGroup">
         <xs:annotation>
             <xs:documentation>
                 A set of criteria that can be used at runtime to determine
                 what IP address to use for an interface.
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:choice>
             <xs:element name="any-address" type="any-addressType"/>
             <xs:element name="any-ipv6-address" type="any-ipv6-addressType"/>
             <xs:element name="any-ipv4-address" type="any-ipv4-addressType"/>
             <xs:choice maxOccurs="unbounded">
-                <xs:element name="inet-address" type="inet-addressType"/> 
+                <xs:element name="inet-address" type="inet-addressType"/>
                 <xs:element name="loopback" type="loopbackType"/>
                 <xs:element name="multicast" type="multicastType"/>
                 <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -620,15 +613,15 @@
                 <xs:element name="public-address" type="public-addressType"/>
                 <xs:element name="link-local-address" type="link-local-addressType"/>
                 <xs:element name="site-local-address" type="site-local-addressType"/>
-                <xs:element name="nic" type="nicType"/>  
-                <xs:element name="nic-match" type="nic-matchType"/> 
-                <xs:element name="subnet-match" type="subnet-matchType"/> 
+                <xs:element name="nic" type="nicType"/>
+                <xs:element name="nic-match" type="nic-matchType"/>
+                <xs:element name="subnet-match" type="subnet-matchType"/>
                 <xs:element name="not" type="address-exclusionType"/>
                 <xs:element name="any" type="address-exclusionType"/>
             </xs:choice>
         </xs:choice>
     </xs:group>
-    
+
     <xs:complexType name="inet-addressType">
         <xs:attribute name="value" type="xs:string" use="required">
             <xs:annotation>
@@ -636,20 +629,20 @@
                     Either a IP address in IPv6 or IPv4 dotted decimal notation,
                     or a hostname that can be resolved to an IP address.
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="nicType">
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     The name of a network interface (e.g. eth0, eth1, lo).
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="nic-matchType">
         <xs:attribute name="pattern" type="xs:string" use="required">
             <xs:annotation>
@@ -658,10 +651,10 @@
                     interfaces available on the machine can be matched to find
                     an acceptable interface.
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="subnet-matchType">
         <xs:attribute name="value" type="xs:string" use="required">
             <xs:annotation>
@@ -670,13 +663,13 @@
                     address' network prefix, written in "slash notation";
                     e.g. "192.168.0.0/16".
                 </xs:documentation>
-            </xs:annotation>            
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="address-exclusionType">
         <xs:choice>
-            <xs:element name="inet-address" type="inet-addressType"/> 
+            <xs:element name="inet-address" type="inet-addressType"/>
             <xs:element name="loopback" type="loopbackType"/>
             <xs:element name="multicast" type="multicastType"/>
             <xs:element name="point-to-point" type="point-to-pointType"/>
@@ -684,183 +677,183 @@
             <xs:element name="up" type="interface-upType"/>
             <xs:element name="public-address" type="public-addressType"/>
             <xs:element name="link-local-address" type="link-local-addressType"/>
-            <xs:element name="site-local-address" type="site-local-addressType"/> 
-            <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>  
-            <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/> 
+            <xs:element name="site-local-address" type="site-local-addressType"/>
+            <xs:element name="nic" type="nicType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="nic-match" type="nic-matchType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="subnet-match" type="subnet-matchType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="loopbackType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it is a loopback
-                    interface.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it is a loopback
+                interface.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="multicastType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it supports
-                    multicast.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it supports
+                multicast.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="point-to-pointType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it is a point-to-point
-                    interface.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it is a point-to-point
+                interface.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="interface-upType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it is currently up.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it is currently up.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="interface-virtualType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it is a virtual
-                    interface.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it is a virtual
+                interface.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="public-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not it has a publicly
-                    routable address.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not it has a publicly
+                routable address.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="site-local-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not an address associated
-                    with it is site-local.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not an address associated
+                with it is site-local.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="link-local-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that part of the selection criteria
-                    for an interface should be whether or not an address associated
-                    with it is link-local.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that part of the selection criteria
+                for an interface should be whether or not an address associated
+                with it is link-local.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="any-ipv6-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that sockets using this interface
-                    should be bound to the IPv6 wildcard address (::).
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that sockets using this interface
+                should be bound to the IPv6 wildcard address (::).
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="any-ipv4-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that sockets using this interface
-                    should be bound to the IPv4 wildcard address (0.0.0.0).
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that sockets using this interface
+                should be bound to the IPv4 wildcard address (0.0.0.0).
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
     <xs:complexType name="any-addressType">
-            <xs:annotation>
-                <xs:documentation>
-                    Empty element indicating that sockets using this interface
-                    should be bound to a wildcard address. The IPv6 wildcard
-                    address (::) will be used unless the java.net.preferIpV4Stack
-                    system property is set to true, in which case the IPv4
-                    wildcard address (0.0.0.0) will be used. If a socket is 
-                    bound to an IPv6 anylocal address on a dual-stack machine, 
-                    it can accept both IPv6 and IPv4 traffic; if it is bound to 
-                    an IPv4 (IPv4-mapped) anylocal address, it can only accept 
-                    IPv4 traffic.
-                </xs:documentation>
-            </xs:annotation>            
+        <xs:annotation>
+            <xs:documentation>
+                Empty element indicating that sockets using this interface
+                should be bound to a wildcard address. The IPv6 wildcard
+                address (::) will be used unless the java.net.preferIpV4Stack
+                system property is set to true, in which case the IPv4
+                wildcard address (0.0.0.0) will be used. If a socket is
+                bound to an IPv6 anylocal address on a dual-stack machine,
+                it can accept both IPv6 and IPv4 traffic; if it is bound to
+                an IPv4 (IPv4-mapped) anylocal address, it can only accept
+                IPv4 traffic.
+            </xs:documentation>
+        </xs:annotation>
     </xs:complexType>
 
-   <xs:complexType name="socketType">
-    <xs:annotation>
-      <xs:documentation>Configuration information for a socket.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="interface" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Name of the interface to which the socket should be bound, or, for multicast
-            sockets, the interface on which it should listen. This should
-            be one of the declared interfaces.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
-      <xs:annotation>
-        <xs:documentation>
-            Number of the port to which the socket should be bound.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
-      <xs:annotation>
-        <xs:documentation>
-            Whether the port value should remain fixed even if numerically offsets
-            are applied to the other sockets in the socket group..
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="multicast-address" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Multicast address on which the socket should receive multicast
-            traffic. If unspecified, the socket will not be configured
-            to receive multicast.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
-      <xs:annotation>
-        <xs:documentation>
-            Port on which the socket should receive multicast
-            traffic. If unspecified, the socket will not be configured
-            to receive multicast.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-   </xs:complexType>
-   
-   
+    <xs:complexType name="socketType">
+        <xs:annotation>
+            <xs:documentation>Configuration information for a socket.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="interface" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the interface to which the socket should be bound, or, for multicast
+                    sockets, the interface on which it should listen. This should
+                    be one of the declared interfaces.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" type="xs:unsignedShort" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Number of the port to which the socket should be bound.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="fixed-port" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether the port value should remain fixed even if numerically offsets
+                    are applied to the other sockets in the socket group..
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="multicast-address" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Multicast address on which the socket should receive multicast
+                    traffic. If unspecified, the socket will not be configured
+                    to receive multicast.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="multicast-port" type="xs:positiveInteger" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Port on which the socket should receive multicast
+                    traffic. If unspecified, the socket will not be configured
+                    to receive multicast.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
     <!--  JVM configurations -->
     <xs:complexType name="jvmsType">
         <xs:sequence>
-            <xs:element name="jvm" type="jvmType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="jvm" type="namedJvmType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="jvmType">
         <xs:all minOccurs="0" maxOccurs="1">
             <xs:element name="heap" type="heapType" minOccurs="0"/>
@@ -870,21 +863,20 @@
             <xs:element name="stack" type="memory-sizeType" minOccurs="0"/>
             <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
             <xs:element name="environment-variables" type="environmentVariablesType" minOccurs="0"/>
-            <xs:element name="system-properties" type="propertiesWithOptionalValueType" minOccurs="0"/>
-            <xs:element name="classpath-prefix" minOccurs="0"/>
-            <xs:element name="classpath-suffix" minOccurs="0"/>
-            <xs:element name="server-classpath" minOccurs="0"/>
-            <xs:element name="system-classpath" minOccurs="0"/>
-            <xs:element name="native-library-path-prefix" minOccurs="0"/>
-            <xs:element name="native-library-path-suffix" minOccurs="0"/>
-            <xs:element name="bytecode-preprocessors" minOccurs="0"/>
+            <xs:element name="system-properties" type="properties" minOccurs="0"/>
         </xs:all>
-        <xs:attribute name="name" type="xs:string"/>
-        <xs:attribute name="java-home" />
-        <xs:attribute name="debug-enabled" default="false" type="boolean"/>
-        <xs:attribute name="debug-options" default="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"/>
-        <xs:attribute name="javac-options" default="-g"/>
-        <xs:attribute name="env-classpath-ignored" default="true" type="boolean"/>
+        <xs:attribute name="java-home" type="xs:string"/>
+        <xs:attribute name="debug-enabled" type="xs:boolean" default="false"/>
+        <xs:attribute name="debug-options" type="xs:string" default="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"/>
+        <xs:attribute name="env-classpath-ignored" default="true" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="namedJvmType">
+        <xs:complexContent>
+            <xs:extension base="jvmType">
+                <xs:attribute name="name" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="heapType">
@@ -901,9 +893,9 @@
     </xs:complexType>
 
     <xs:complexType name="jvm-optionsType">
-       <xs:sequence>
-          <xs:element name="option" type="jvm-optionType" minOccurs="0" maxOccurs="unbounded"/>
-       </xs:sequence>
+        <xs:sequence>
+            <xs:element name="option" type="jvm-optionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="jvm-optionType">
@@ -923,105 +915,21 @@
         <xs:attribute name="size" type="xs:string" use="required"/>
     </xs:complexType>
 
-   <!-- SSL related definitions -->
-   <xs:complexType name="sslsType">
-    <xs:annotation>
-      <xs:documentation>Contains a list of SSL definitions</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="ssl" type="sslType" maxOccurs="unbounded"/>
-    </xs:sequence>
-   </xs:complexType>
-
-    <!-- resources related definitions -->
-    <xs:complexType name="resourcesType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="external-jndi-resource" type="external-jndi-resourceType"/>
-            <xs:element name="jdbc-resource" type="external-jndi-resourceType"/>
-            <xs:element name="mail-resource" type="mail-resourceType"/>
-            <xs:element name="persistence-manager-factory-resource"
-                type="persistence-manager-factory-resourceType"/>
-            <!-- 
-            <xs:group ref="connector-resource"/>
-            <xs:group ref="resource-adapter-config"/>
-            <xs:group ref="connector-connection-pool"/>
-            -->
-        </xs:choice>
-        <xs:attribute name="name"/>
-        <xs:attribute name="jndi-name">
-            <xs:annotation>
-                <xs:documentation>The JNDI name under which to bind the resource</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="factory-class">
-            <xs:annotation>
-                <xs:documentation>The class name of the ObjectFactory</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="external-jndi-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="jndi-lookup-name" use="required"/>
-                <xs:attribute name="res-type" use="required"/>
-                <xs:attribute name="factory-class" use="required"/>
-                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="jdbc-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="pool-name" use="required"/>
-                <xs:attribute name="enabled" default="true" type="xs:boolean"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:attributeGroup name="jdbc-connection-pool">
-        <xs:attribute name="name" use="required"/>
-    </xs:attributeGroup>
-
-    <xs:complexType name="mail-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:sequence minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation>The JavaMail connection properties</xs:documentation>
-                    </xs:annotation>
-                    <xs:element name="mail.store.protocol" type="xs:string"/>
-                    <xs:element name="mail.transport.protocol" type="xs:string"/>
-                    <xs:element name="mail.user" type="xs:string"/>
-                    <xs:element name="mail.pop3.host" type="xs:string"/>
-                    <xs:element name="mail.smtp.host" type="xs:string"/>
-                    <xs:element name="mail.smtp.port" type="xs:string"/>
-                    <xs:element name="mail.from" type="xs:string"/>
-                    <xs:element name="mail.debug" type="xs:string"/>
-                </xs:sequence>
-                <xs:attribute name="user" use="required"/>
-                <xs:attribute name="password" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="persistence-manager-factory-resourceType">
-        <xs:complexContent>
-            <xs:extension base="resource-commonType">
-                <xs:attribute name="factory-class" use="required">
-                    <xs:annotation>
-                        <xs:documentation>The class name of the JPA factory</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="resource-commonType">
-        <xs:sequence minOccurs="0" maxOccurs="1">
-            <xs:element name="properties" type="propertiesWithRequiredValueType"/>
+    <xs:complexType name="properties">
+        <xs:sequence>
+            <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="environmentVariablesType">
+        <xs:sequence>
+            <xs:element name="variable" type="propertyType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="propertyType">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="value" use="optional"/>
     </xs:complexType>
 
 </xs:schema>

@@ -1,7 +1,6 @@
 package org.jboss.as.messaging.test;
 
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -18,13 +17,8 @@ public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsys
       reader.discardRemainder();
    }
 
-   @Override
-   public void activate(ServiceActivatorContext context) {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   @Override
-   public long elementHash() {
+    @Override
+    private long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
    }
 

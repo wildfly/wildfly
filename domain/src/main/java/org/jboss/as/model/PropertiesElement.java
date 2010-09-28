@@ -32,7 +32,6 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -52,10 +51,8 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     /**
      * Construct a new instance.
      *
-     * @param location the location at which this element was declared
      */
-    public PropertiesElement(final Location location, final Element propertyType, final boolean allowNullValue) {
-        super();
+    public PropertiesElement(final Element propertyType, final boolean allowNullValue) {
         this.propertyType = propertyType;
         this.allowNullValue = allowNullValue;
     }
@@ -70,11 +67,10 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     }
 
     public PropertiesElement(final XMLExtendedStreamReader reader, final Element propertyType, boolean allowNullValue) throws XMLStreamException {
-        super();
         this.propertyType = propertyType;
         this.allowNullValue = allowNullValue;
         // Handle attributes
-        requireNoAttributes(reader);
+        ParseUtils.requireNoAttributes(reader);
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -88,7 +84,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                         for (int i = 0; i < count; i++) {
                             final String attrValue = reader.getAttributeValue(i);
                             if (reader.getAttributeNamespace(i) != null) {
-                                throw unexpectedAttribute(reader, i);
+                                throw ParseUtils.unexpectedAttribute(reader, i);
                             }
                             else {
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -104,35 +100,35 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
                                         value = attrValue;
                                         break;
                                     }
-                                    default: throw unexpectedAttribute(reader, i);
+                                    default:
+                                        throw ParseUtils.unexpectedAttribute(reader, i);
                                 }
                             }
                         }
                         if (name == null) {
-                            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                         }
                         if (value == null && !allowNullValue) {
                             throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
                         }
                         properties.put(name, value);
                         // Handle elements
-                        requireNoContent(reader);
+                        ParseUtils.requireNoContent(reader);
                     } else {
-                        throw unexpectedElement(reader);
+                        throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         if (properties.size() == 0) {
-            throw missingRequiredElement(reader, Collections.singleton(propertyType));
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(propertyType));
         }
     }
 
     public PropertiesElement(final Element propertyType, boolean allowNullValue, PropertiesElement ... toCombine) {
-        // FIXME -- hack Location
-        super();
         this.allowNullValue = allowNullValue;
         this.propertyType = propertyType;
         if (toCombine != null) {
@@ -205,9 +201,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     }
 
     public int size() {
-        synchronized (properties) {
-            return properties.size();
-        }
+        return properties.size();
     }
 
     /**
@@ -217,9 +211,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      * @return the value, or {@code null} if the property does not exist
      */
     public String getProperty(final String name) {
-        synchronized (properties) {
-            return properties.get(name);
-        }
+        return properties.get(name);
     }
 
     /**
@@ -228,14 +220,15 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
      * @return the names. Will not return <code>null</code>
      */
     public Set<String> getPropertyNames() {
-        synchronized (properties) {
-            return new HashSet<String>(properties.keySet());
-        }
+        return new HashSet<String>(properties.keySet());
     }
 
+    /**
+     * Get a copy of the properties map.
+     *
+     * @return the copy of the properties map
+     */
     public Map<String, String> getProperties() {
-        synchronized (properties) {
-            return new HashMap<String, String>(properties);
-        }
+        return new HashMap<String, String>(properties);
     }
 }

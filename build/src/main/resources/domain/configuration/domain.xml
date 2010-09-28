@@ -25,6 +25,10 @@
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <extensions>
+        <extension module="org.jboss.as.threads"/>
+        <extension module="org.jboss.as.remoting"/>
+        <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.managed-beans"/>

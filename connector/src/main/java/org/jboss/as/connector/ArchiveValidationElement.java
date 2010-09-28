@@ -25,6 +25,7 @@ package org.jboss.as.connector;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -49,7 +50,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -62,7 +63,7 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
                         break;
                     }
                     default:
-                        throw unexpectedAttribute(reader, i);
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }

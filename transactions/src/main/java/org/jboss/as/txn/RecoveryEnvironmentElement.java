@@ -22,7 +22,7 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.*;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -45,7 +45,7 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -55,19 +55,20 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
                     case STATUS_BINDING:
                         statusBindingRef = value;
                         break;
-                    default: unexpectedAttribute(reader, i);
+                    default:
+                        ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if(bindingRef == null) {
-            missingRequired(reader, Collections.singleton(Attribute.BINDING));
+            ParseUtils.missingRequired(reader, Collections.singleton(org.jboss.as.model.Attribute.BINDING));
         }
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 

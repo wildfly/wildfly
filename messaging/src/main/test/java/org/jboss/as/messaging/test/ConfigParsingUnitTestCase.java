@@ -8,9 +8,9 @@ import org.jboss.as.messaging.ConfigurationElement;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.messaging.Namespace;
+import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.ServerModelParser;
 import org.jboss.as.server.StandardElementReaderRegistrar;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
@@ -146,8 +146,7 @@ public class ConfigParsingUnitTestCase {
     */
    protected XMLMapper createXMLMapper() throws Exception {
       XMLMapper mapper = XMLMapper.Factory.create();
-      ServerModelParser domainParser = ServerModelParser.getInstance();
-      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), domainParser);
+      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.HOST_XML_READER);
       NullSubsystemParser<Object> threadsParser = new NullSubsystemParser();
       mapper.registerRootElement(new QName("urn:jboss:domain:threads:1.0", "subsystem"), threadsParser);
       NullSubsystemParser<Object> namingParser = new NullSubsystemParser();

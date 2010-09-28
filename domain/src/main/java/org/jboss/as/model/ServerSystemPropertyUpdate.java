@@ -41,24 +41,19 @@ public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<
      * @param propertyUpdate the property update to apply
      */
     public ServerSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
+        super(false);
         this.propertyUpdate = propertyUpdate;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean requiresRestart() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void applyUpdate(final ServerModel element) throws UpdateFailedException {
+    protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
         propertyUpdate.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<Void, P> resultHandler, final P param) {
+    public <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         try {
             propertyUpdate.applyUpdate(System.getProperties());
         } catch (UpdateFailedException e) {

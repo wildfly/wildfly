@@ -20,26 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.threads;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.ParseResult;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.msc.service.ServiceName;
 
 /**
- *
- * A ConnectorSubsystemElementParser.
- *
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ConnectorSubsystemElementParser implements XMLElementReader<ParseResult<ConnectorSubsystemElement>> {
+final class Services {
 
-    @Override
-    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader,
-            final ParseResult<ConnectorSubsystemElement> result) throws XMLStreamException {
-        result.setResult(new ConnectorSubsystemElement(xmlExtendedStreamReader));
+    private Services() {
+    }
+
+    private static final ServiceName THREAD = ServiceName.JBOSS.append("thread");
+    private static final ServiceName FACTORY = THREAD.append("factory");
+    private static final ServiceName EXECUTOR = THREAD.append("executor");
+
+    static ServiceName threadFactoryName(String name) {
+        return FACTORY.append(name);
     }
 }

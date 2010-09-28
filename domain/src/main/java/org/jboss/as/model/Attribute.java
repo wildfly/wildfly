@@ -26,13 +26,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the possible XML attributes in the domain schema, by name.
+ * An enumeration of all the recognized XML attributes, by local name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum Attribute {
     // always first
     UNKNOWN(null),
+
+    // xsi attributes in alpha order
+    NO_NAMESPACE_SCHEMA_LOCATION("noNamespaceSchemaLocation"),
+    SCHEMA_LOCATION("schemaLocation"),
 
     // domain 1.0 attributes in alpha order
     ALLOWED("allowed"),

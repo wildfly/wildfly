@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 /**
  *
  */
@@ -18,6 +40,7 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
@@ -61,7 +84,7 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -69,12 +92,13 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
                         name = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         this.name = name;
         // Handle elements
@@ -85,22 +109,22 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
                     switch (element) {
                         case ANY_ADDRESS: {
                             validateAnyLocalAllowed(element, reader);
-                            requireNoAttributes(reader);
-                            requireNoContent(reader);
+                            ParseUtils.requireNoAttributes(reader);
+                            ParseUtils.requireNoContent(reader);
                             anyLocal = true;
                             break;
                         }
                         case ANY_IPV4_ADDRESS: {
                             validateAnyLocalAllowed(element, reader);
-                            requireNoAttributes(reader);
-                            requireNoContent(reader);
+                            ParseUtils.requireNoAttributes(reader);
+                            ParseUtils.requireNoContent(reader);
                             anyLocalV4 = true;
                             break;
                         }
                         case ANY_IPV6_ADDRESS: {
                             validateAnyLocalAllowed(element, reader);
-                            requireNoAttributes(reader);
-                            requireNoContent(reader);
+                            ParseUtils.requireNoAttributes(reader);
+                            ParseUtils.requireNoContent(reader);
                             anyLocalV6 = true;
                             break;
                         }
@@ -120,7 +144,8 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         if (criteriaRequired && !anyLocal && !anyLocalV4 && !anyLocalV6 && interfaceCriteria.isEmpty()) {
@@ -174,16 +199,6 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
      */
     public boolean isFullySpecified() {
         return anyLocal || anyLocalV4 || anyLocalV6 || interfaceCriteria.size() > 0;
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = name.hashCode()  & 0xFFFFFFFF;
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(anyLocal).hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(anyLocalV4).hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(anyLocalV6).hashCode() & 0xffffffffL;
-        hash = calculateElementHashOf(interfaceCriteria.values(), hash);
-        return hash;
     }
 
     @Override

@@ -22,6 +22,7 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -48,12 +49,13 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: break;
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         // Elements
@@ -70,19 +72,20 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
                             break;
                         }
                         case THREAD_FACTORY: {
-                            setThreadFactory(readStringAttributeElement(reader, "name"));
+                            setThreadFactory(ParseUtils.readStringAttributeElement(reader, "name"));
                             break;
                         }
                         case PROPERTIES: {
                             setProperties(new PropertiesElement(reader));
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
@@ -108,7 +111,7 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 
@@ -135,10 +138,5 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
             properties.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected Element getStandardElement() {
-        return Element.UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR;
     }
 }

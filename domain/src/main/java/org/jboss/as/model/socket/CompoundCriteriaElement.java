@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -49,7 +50,7 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
 
 
         // Handle attributes
-        requireNoAttributes(reader);
+        ParseUtils.requireNoAttributes(reader);
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -59,18 +60,12 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
                     interfaceCriteria.put(aice.getElement(), aice);
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         if (interfaceCriteria.isEmpty()) {
             throw ParsingUtil.missingCriteria(reader, ParsingUtil.SIMPLE_CRITERIA_STRING);
-        }
-    }
-
-    @Override
-    public long elementHash() {
-        synchronized (interfaceCriteria) {
-            return calculateElementHashOf(interfaceCriteria.values(), 17L);
         }
     }
 

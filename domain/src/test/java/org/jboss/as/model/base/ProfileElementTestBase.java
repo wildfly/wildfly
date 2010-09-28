@@ -236,7 +236,6 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         byte[] bytes = serialize(testee);
         ProfileElement testee1 = deserialize(bytes, ProfileElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getName(), testee1.getName());
         Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = testee1.getSubsystems();
         assertEquals(2, subsystems.size());

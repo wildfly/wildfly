@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the possible XML elements in the domain schema, by name.
+ * An enumeration of all the recognized XML element local names, by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -66,6 +66,7 @@ public enum Element {
     LOCAL("local"),
     LOOPBACK("loopback"),
 
+    MANAGEMENT("management"),
     MULTICAST("multicast"),
 
     NAME("name"),
@@ -85,19 +86,18 @@ public enum Element {
     SERVER("server"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
-    MANAGEMENT("management"),
     SERVER_GROUPS("server-groups"),
     SITE_LOCAL_ADDRESS("site-local-address"),
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
-    SSL("ssl"),
-    SSLS("ssls"),
     STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
+    SUBSYSTEM("subsystem"),
     SYSTEM_PROPERTIES("system-properties"),
 
     UP("up"),
+
     VARIABLE("variable"),
     VIRTUAL("virtual"),
     ;

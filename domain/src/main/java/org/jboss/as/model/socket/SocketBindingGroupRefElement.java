@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -42,7 +43,7 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -64,17 +65,18 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
                         }
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.REF));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REF));
         }
         this.ref = name;
         this.portOffset = offset;
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
 

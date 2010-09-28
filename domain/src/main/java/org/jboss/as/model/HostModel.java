@@ -24,9 +24,7 @@ package org.jboss.as.model;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
@@ -53,10 +51,8 @@ public final class HostModel extends AbstractModel<HostModel> {
         }
     }
 
-    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
-    private final String schemaLocation;
+    private final Set<String> extensions = new HashSet<String>();
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
-    private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
     private String name;
@@ -73,89 +69,6 @@ public final class HostModel extends AbstractModel<HostModel> {
      */
     public HostModel(final QName elementName) {
         super(elementName);
-        this.schemaLocation = null;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
-     */
-    public HostModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-        // Handle namespaces
-        namespaces.putAll(readNamespaces(reader));
-        // Handle attributes
-        schemaLocation = readSchemaLocation(reader);
-        String name = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                continue;
-            }
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case NAME: {
-                    name = value;
-                    break;
-                }
-                default: throw unexpectedAttribute(reader, i);
-            }
-        }
-        this.name = name != null ? name : DEFAULT_NAME;
-
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case EXTENSIONS: {
-                            parseExtensions(reader);
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        case MANAGEMENT: {
-                            if(managementElement != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.managementElement = new ManagementElement(reader);
-                            break;
-                        }
-                        case DOMAIN_CONTROLLER: {
-                            parseDomainController(reader);
-                            break;
-                        }
-                        case INTERFACES: {
-                            parseInterfaces(reader);
-                            break;
-                        }
-                        case JVMS: {
-                            parseJvms(reader);
-                            break;
-                        }
-                        case SERVERS: {
-                            parseServers(reader);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-        if(managementElement == null) {
-            throw missingRequiredElement(reader, Collections.singleton(Element.MANAGEMENT.getLocalName()));
-        }
     }
 
     /**
@@ -260,33 +173,6 @@ public final class HostModel extends AbstractModel<HostModel> {
 
     /** {@inheritDoc} */
     @Override
-    public long elementHash() {
-        long cksum = 17L;
-
-        synchronized (interfaces) {
-            cksum = calculateElementHashOf(interfaces.values(), cksum);
-        }
-        synchronized (extensions) {
-            cksum = calculateElementHashOf(extensions.values(), cksum);
-        }
-        synchronized (jvms) {
-            cksum = calculateElementHashOf(jvms.values(), cksum);
-        }
-        synchronized (servers) {
-            cksum = calculateElementHashOf(servers.values(), cksum);
-        }
-        if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
-        if (localDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ localDomainController.elementHash();
-        if (remoteDomainController != null) cksum = Long.rotateLeft(cksum, 1) ^ remoteDomainController.elementHash();
-        synchronized (namespaces) {
-            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() & 0xffffffffL;
-        }
-        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() & 0xffffffffL;
-        return cksum;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     protected Class<HostModel> getElementClass() {
         return HostModel.class;
     }
@@ -295,33 +181,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        synchronized (namespaces) {
-            for (NamespaceAttribute namespace : namespaces.values()) {
-                if (namespace.isDefaultNamespaceDeclaration()) {
-                    // for now I assume this is handled externally
-                    continue;
-                }
-                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
-            }
-        }
-
-        if (schemaLocation != null) {
-            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
-            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
-        }
-
-        // TODO re-evaluate the element order in the xsd; make sure this is correct
-
-        synchronized (extensions) {
-            if (!extensions.isEmpty()) {
-                streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {
-                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
-            }
-        }
+        writeNamespaces(streamWriter);
 
         if (systemProperties != null) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
@@ -340,173 +200,34 @@ public final class HostModel extends AbstractModel<HostModel> {
         }
         streamWriter.writeEndElement();
 
-        synchronized (interfaces) {
-            if (!interfaces.isEmpty()) {
-                streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-                for (ServerInterfaceElement element : interfaces.values()) {
-                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
+        if (!interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
+            for (ServerInterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
             }
+            streamWriter.writeEndElement();
         }
 
-        synchronized (jvms) {
-            if (!jvms.isEmpty()) {
-                streamWriter.writeStartElement(Element.JVMS.getLocalName());
-                for (JvmElement element : jvms.values()) {
-                    streamWriter.writeStartElement(Element.JVM.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
+        if (!jvms.isEmpty()) {
+            streamWriter.writeStartElement(Element.JVMS.getLocalName());
+            for (JvmElement element : jvms.values()) {
+                streamWriter.writeStartElement(Element.JVM.getLocalName());
+                element.writeContent(streamWriter);
             }
+            streamWriter.writeEndElement();
         }
 
-        synchronized (servers) {
-            if (!servers.isEmpty()) {
-                streamWriter.writeStartElement(Element.SERVERS.getLocalName());
-                for (ServerElement server : servers.values()) {
-                    streamWriter.writeStartElement(Element.SERVER.getLocalName());
-                    server.writeContent(streamWriter);
-                    streamWriter.writeEndElement();
-                }
+        if (!servers.isEmpty()) {
+            streamWriter.writeStartElement(Element.SERVERS.getLocalName());
+            for (ServerElement server : servers.values()) {
+                streamWriter.writeStartElement(Element.SERVER.getLocalName());
+                server.writeContent(streamWriter);
                 streamWriter.writeEndElement();
             }
+            streamWriter.writeEndElement();
         }
 
         streamWriter.writeEndElement();
-    }
-
-    private void parseDomainController(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case LOCAL: {
-                            if (localDomainController != null) {
-                                throw new XMLStreamException("Child " + element.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
-                            }
-                            this.localDomainController = new LocalDomainControllerElement(reader);
-                            break;
-                        }
-                        case REMOTE: {
-                            if (remoteDomainController != null) {
-                                throw new XMLStreamException("Child " + element.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
-                            }
-                            this.remoteDomainController = new RemoteDomainControllerElement(reader);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-        if (remoteDomainController == null && localDomainController == null) {
-            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " +
-                    Element.LOCAL.getLocalName() + " domain controller configuration must be declared.", reader.getLocation());
-        } else if (remoteDomainController != null && localDomainController != null) {
-            throw new XMLStreamException("Only a single " + Element.REMOTE.getLocalName() + " or " +
-                    Element.LOCAL.getLocalName() + " domain controller configuration can be declared.", reader.getLocation());
-        }
-    }
-
-    private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case EXTENSION: {
-                            final ExtensionElement extension = new ExtensionElement(reader);
-                            if (extensions.containsKey(extension.getModule())) {
-                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
-                            }
-                            extensions.put(extension.getModule(), extension);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
-    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INTERFACE: {
-                            final ServerInterfaceElement interfaceEl = new ServerInterfaceElement(reader);
-                            if (interfaces.containsKey(interfaceEl.getName())) {
-                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
-                            }
-                            interfaces.put(interfaceEl.getName(), interfaceEl);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
-    private void parseJvms(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case JVM: {
-                            final JvmElement jvm = new JvmElement(reader);
-                            if (jvms.containsKey(jvm.getName())) {
-                                throw new XMLStreamException("JVM " + jvm.getName() + " already declared", reader.getLocation());
-                            }
-                            jvms.put(jvm.getName(), jvm);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
-
-    private void parseServers(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SERVER: {
-                            final ServerElement server = new ServerElement(reader);
-                            if (servers.containsKey(server.getName())) {
-                                throw new XMLStreamException("Interface " + server.getName() + " already declared", reader.getLocation());
-                            }
-                            servers.put(server.getName(), server);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
     }
 }

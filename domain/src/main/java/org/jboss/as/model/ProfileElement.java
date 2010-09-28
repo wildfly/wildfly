@@ -29,8 +29,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
-    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
-        new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(QNameComparator.getInstance());
+    private final NavigableMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
+        new TreeMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
     private final RefResolver<String, ProfileElement> includedProfileResolver;
 
     /**
@@ -68,7 +68,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -76,12 +76,13 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                         name = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         this.name = name;
         // Handle elements
@@ -92,7 +93,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                     switch (element) {
                         case INCLUDE: {
                             if (includedProfileResolver == null) {
-                                throw unexpectedElement(reader);
+                                throw ParseUtils.unexpectedElement(reader);
                             }
                             final ProfileIncludeElement include = new ProfileIncludeElement(reader);
                             if (includedProfiles.containsKey(include.getProfile())) {
@@ -101,7 +102,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                             includedProfiles.put(include.getProfile(), include);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
@@ -113,7 +115,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
                     if (subsystems.containsKey(qname)) {
                         throw new XMLStreamException("Subsystem " + qname + " already declared", reader.getLocation());
                     }
-                    subsystems.put(qname, subsystem);
+                    subsystems.put(qname.getNamespaceURI(), subsystem);
                 }
             }
         }
@@ -174,18 +176,6 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         synchronized (subsystems) {
             return new HashSet<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(subsystems.values());
         }
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = name.hashCode() & 0xffffffffL;
-        synchronized (includedProfiles) {
-            hash = calculateElementHashOf(includedProfiles.values(), hash);
-        }
-        synchronized (subsystems) {
-            hash = calculateElementHashOf(subsystems.values(), hash);
-        }
-        return hash;
     }
 
     @Override
@@ -250,9 +240,23 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         }
 
         // Activate sub-systems
-        final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
+        final Map<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
         for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
             subsystem.activate(context);
         }
+    }
+
+    boolean addSubsystem(final String uri, final AbstractSubsystemElement<?> element) {
+        assert uri != null;
+        assert element != null;
+        return subsystems.put(uri, element) == null;
+    }
+
+    boolean removeSubsystem(final String uri) {
+        return subsystems.remove(uri) != null;
+    }
+
+    public AbstractSubsystemElement<?> getSubsystem(final String namespaceUri) {
+        return subsystems.get(namespaceUri);
     }
 }

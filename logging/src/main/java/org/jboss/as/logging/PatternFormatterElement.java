@@ -52,7 +52,7 @@ public final class PatternFormatterElement extends AbstractFormatterElement<Patt
         return new PatternFormatter(pattern);
     }
 
-    public long elementHash() {
+    private long elementHash() {
         return pattern.hashCode() & 0xffffffffL;
     }
 

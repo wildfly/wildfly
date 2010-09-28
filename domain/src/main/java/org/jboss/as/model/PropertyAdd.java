@@ -75,7 +75,7 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
+    public AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
         return new PropertyRemove(name);
     }
 

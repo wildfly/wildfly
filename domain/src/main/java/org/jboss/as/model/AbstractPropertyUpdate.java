@@ -41,7 +41,7 @@ public abstract class AbstractPropertyUpdate extends AbstractModelElementUpdate<
     }
 
     /** {@inheritDoc} */
-    protected final Class<PropertiesElement> getModelElementType() {
+    public final Class<PropertiesElement> getModelElementType() {
         return PropertiesElement.class;
     }
 
@@ -64,5 +64,5 @@ public abstract class AbstractPropertyUpdate extends AbstractModelElementUpdate<
     protected abstract void applyUpdate(Map<? super String, ? super String> map);
 
     /** {@inheritDoc} */
-    protected abstract AbstractPropertyUpdate getCompensatingUpdate(PropertiesElement original);
+    public abstract AbstractPropertyUpdate getCompensatingUpdate(PropertiesElement original);
 }

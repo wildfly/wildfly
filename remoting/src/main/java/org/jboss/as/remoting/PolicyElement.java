@@ -24,6 +24,7 @@ package org.jboss.as.remoting;
 
 import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
@@ -50,7 +51,7 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
 
     public PolicyElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
+            throw ParseUtils.unexpectedAttribute(reader, 0);
         }
         // Handle nested elements.
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -59,39 +60,41 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
                 case REMOTING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (visited.contains(element)) {
-                        throw unexpectedElement(reader);
+                        throw ParseUtils.unexpectedElement(reader);
                     }
                     visited.add(element);
                     switch (element) {
                         case FORWARD_SECRECY: {
-                            forwardSecrecy = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            forwardSecrecy = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case NO_ACTIVE: {
-                            noActive = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            noActive = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case NO_ANONYMOUS: {
-                            noAnonymous = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            noAnonymous = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case NO_DICTIONARY: {
-                            noDictionary = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            noDictionary = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case NO_PLAINTEXT: {
-                            noPlainText = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            noPlainText = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case PASS_CREDENTIALS: {
-                            passCredentials = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            passCredentials = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }

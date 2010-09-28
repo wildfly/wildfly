@@ -45,8 +45,8 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
 
     private ServerModelDeploymentFullReplaceUpdate(ServerModelDeploymentAddUpdate add,
                                                    ServerModelDeploymentRemoveUpdate remove) {
-        this.addUpdate = add;
-        this.removeUpdate = remove;
+        addUpdate = add;
+        removeUpdate = remove;
     }
 
 
@@ -58,7 +58,7 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
 
     @Override
     public <P> void applyUpdate(ServiceContainer container,
-            UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         removeUpdate.applyUpdate(container, resultHandler, param);
         addUpdate.applyUpdate(container, resultHandler, param);
     }
@@ -67,10 +67,5 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
         return new ServerModelDeploymentFullReplaceUpdate(removeUpdate.getCompensatingUpdate(original),
                 addUpdate.getCompensatingUpdate(original));
-    }
-
-    @Override
-    public boolean requiresRestart() {
-        return false;
     }
 }

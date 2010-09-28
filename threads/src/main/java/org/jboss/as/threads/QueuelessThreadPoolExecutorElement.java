@@ -22,6 +22,7 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -56,7 +57,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -65,7 +66,8 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
                     break;
                 }
                 case NAME: break;
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         // Elements
@@ -82,7 +84,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
                             break;
                         }
                         case THREAD_FACTORY: {
-                            setThreadFactory(readStringAttributeElement(reader, "name"));
+                            setThreadFactory(ParseUtils.readStringAttributeElement(reader, "name"));
                             break;
                         }
                         case PROPERTIES: {
@@ -90,15 +92,16 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
                             break;
                         }
                         case HANDOFF_EXECUTOR: {
-                            handoffExecutor = readStringAttributeElement(reader, "handoff-executor");
+                            handoffExecutor = ParseUtils.readStringAttributeElement(reader, "handoff-executor");
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
@@ -133,7 +136,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return super.elementHash();
     }
 
@@ -173,10 +176,5 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
             streamWriter.writeAttribute("name", handoffExecutor);
         }
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected Element getStandardElement() {
-        return Element.QUEUELESS_THREAD_POOL_EXECUTOR;
     }
 }

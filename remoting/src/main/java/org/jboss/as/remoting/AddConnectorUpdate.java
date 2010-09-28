@@ -52,13 +52,13 @@ public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsys
     }
 
     @Override
-    protected AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
+    public AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Class<RemotingSubsystemElement> getModelElementType() {
+    public Class<RemotingSubsystemElement> getModelElementType() {
         return RemotingSubsystemElement.class;
     }
 

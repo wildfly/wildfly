@@ -22,6 +22,7 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -59,7 +60,7 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -72,7 +73,8 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
                     break;
                 }
                 case NAME: break;
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         // Elements
@@ -93,7 +95,7 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
                             break;
                         }
                         case THREAD_FACTORY: {
-                            setThreadFactory(readStringAttributeElement(reader, "name"));
+                            setThreadFactory(ParseUtils.readStringAttributeElement(reader, "name"));
                             break;
                         }
                         case PROPERTIES: {
@@ -105,15 +107,16 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
                             break;
                         }
                         case HANDOFF_EXECUTOR: {
-                            handoffExecutor = readStringAttributeElement(reader, "handoff-executor");
+                            handoffExecutor = ParseUtils.readStringAttributeElement(reader, "handoff-executor");
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
@@ -152,7 +155,7 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         long hash = super.elementHash();
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(blocking).hashCode() & 0xffffffffL;
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowCoreTimeout).hashCode() & 0xffffffffL;
@@ -194,10 +197,5 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
             streamWriter.writeAttribute("name", handoffExecutor);
         }
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected Element getStandardElement() {
-        return Element.BOUNDED_QUEUE_THREAD_POOL_EXECUTOR;
     }
 }

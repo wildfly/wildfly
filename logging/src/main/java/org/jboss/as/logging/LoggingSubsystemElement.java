@@ -25,10 +25,7 @@ package org.jboss.as.logging;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
@@ -49,21 +46,7 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     private final NavigableMap<String, AbstractHandlerElement<?>> handlers = new TreeMap<String, AbstractHandlerElement<?>>();
 
     public LoggingSubsystemElement(final QName elementName) {
-        super(elementName);
-    }
-
-    public LoggingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-    }
-
-    public void activate(final ServiceActivatorContext context) {
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-        for (AbstractLoggerElement<?> element : loggers.values()) {
-            element.addServices(batchBuilder);
-        }
-        for (AbstractHandlerElement<?> element : handlers.values()) {
-            element.addServices(batchBuilder);
-        }
+        super(elementName.getNamespaceURI());
     }
 
     boolean addLogger(String name, AbstractLoggerElement<?> logger) {
@@ -82,7 +65,7 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         return true;
     }
 
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 

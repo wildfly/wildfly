@@ -44,7 +44,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -56,7 +56,8 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                         home = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
@@ -65,7 +66,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             // level (i.e. when wrapped in <jvms/>). At server-group and server
             // levels it can be unnamed, in which case configuration from
             // domain and host levels aren't mixed in. OR make name required in xsd always
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         this.name = name;
         this.javaHome = home;
@@ -93,11 +94,13 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                             this.systemProperties = new PropertiesElement(reader);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -239,7 +242,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -251,14 +254,14 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                         max = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         this.heapSize = size;
         this.maxHeap = max;
         // Handle elements
-        requireNoContent(reader);
-
+        ParseUtils.requireNoContent(reader);
     }
 }

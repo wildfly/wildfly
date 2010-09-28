@@ -5,9 +5,8 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -15,7 +14,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +56,7 @@ public class SecuritySettingsElement extends AbstractModelElement<SecuritySettin
    }
 
    @Override
-   public long elementHash() {
+   private long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
    }
 
@@ -112,7 +110,7 @@ public class SecuritySettingsElement extends AbstractModelElement<SecuritySettin
          final int count = reader.getAttributeCount();
          for (int i = 0; i < count; i++) {
             if (reader.getAttributeNamespace(i) != null) {
-               throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                switch (attribute) {
@@ -123,7 +121,7 @@ public class SecuritySettingsElement extends AbstractModelElement<SecuritySettin
                   type = reader.getAttributeValue(i);
                   break;
                default:
-                  throw unexpectedAttribute(reader, i);
+                   throw ParseUtils.unexpectedAttribute(reader, i);
                }
             }
          }

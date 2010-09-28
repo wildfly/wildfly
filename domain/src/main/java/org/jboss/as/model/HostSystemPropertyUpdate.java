@@ -47,7 +47,7 @@ public final class HostSystemPropertyUpdate extends AbstractHostModelUpdate<Void
     }
 
     /** {@inheritDoc} */
-    protected HostSystemPropertyUpdate getCompensatingUpdate(final HostModel original) {
+    public HostSystemPropertyUpdate getCompensatingUpdate(final HostModel original) {
         return new HostSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 

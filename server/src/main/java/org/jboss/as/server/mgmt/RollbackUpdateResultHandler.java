@@ -22,15 +22,13 @@
 
 package org.jboss.as.server.mgmt;
 
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * Support class for invoking the various {@code handleRollbackXXX} methods
  * on an {@link UpdateResultHandler}. Delegates invocations to the {@code UpdateResultHandler}
  * associated with the update that is being rolled back.The
- * {@link AbstractServerModelUpdate#getCompensatingUpdate(AbstractModelElement) compensating update}
+ * {@link org.jboss.as.model.AbstractModelElementUpdate#getCompensatingUpdate(E) compensating update}
  * for an update that is being rolled back invokes the non-{@code handleRollbackXXX} methods
  * on this object, which in turn invokes the {@code handleRollbackXXX} methods
  * on the {@code UpdateResultHandler} associated with the update that is being

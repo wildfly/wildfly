@@ -22,44 +22,42 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import java.util.List;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * The base class of all subsystem elements.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElement<E>> extends AbstractModelRootElement<E> implements ServiceActivator {
+public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElement<E>> extends AbstractModelRootElement<E> {
 
     private static final long serialVersionUID = 899219830157478004L;
 
     /**
      * Construct a new instance.
      *
-     * @param elementName the element name
+     * @param namespaceUri the namespace URI of this subsystem
      */
-    protected AbstractSubsystemElement(final QName elementName) {
-        super(elementName);
+    protected AbstractSubsystemElement(final String namespaceUri) {
+        super(new QName(namespaceUri, "subsystem"));
     }
 
     /**
-     * Construct a new instance.
+     * Append a list of updates which will clear this subsystem's configuration.  Adding this subsystem
+     * followed by executing the compensating updates for the updates on the list (in reverse order)
+     * should result in the exact same configuration that this subsystem currently holds.
      *
-     * @param reader the reader from which the element content should be read
+     * @param list the list of updates required to clear this subsystem
      */
-    protected AbstractSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-    }
+    protected abstract void getClearingUpdates(List<? super AbstractSubsystemUpdate<E, ?>> list);
 
     /**
-     * Activate this container within a service container.
+     * Determine whether this subsystem is empty (i.e. can be removed).  This method should return {@code true}
+     * whenever {@link #getClearingUpdates(java.util.List)} would add no elements to the list.
      *
-     * @param context the service activation context
+     * @return {@code true} if this subsystem is empty
      */
-    public abstract void activate(final ServiceActivatorContext context);
+    protected abstract boolean isEmpty();
 }

@@ -25,17 +25,11 @@
  */
 package org.jboss.as.server.manager;
 
-import java.util.Arrays;
-import java.util.List;
-
 import javax.xml.namespace.QName;
 
-import org.jboss.as.Extension;
-import org.jboss.as.model.DomainModelParser;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.HostModelParser;
+import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.Namespace;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -46,17 +40,6 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class StandardElementReaderRegistrarImpl implements StandardElementReaderRegistrar {
 
-    /**
-     * Standard modules that include parsing {@link Extension}s.
-     */
-    private static final List<String> EXTENSION_MODULES = Arrays.asList(new String[] {
-            "org.jboss.as.threads",
-            "org.jboss.as.remoting",
-            "org.jboss.as.transactions",
-            "org.jboss.as.naming"
-    });
-
-
     /* (non-Javadoc)
      * @see org.jboss.as.server.manager.ElementHandlerRegistrar#registerStandardDomainHandlers(org.jboss.staxmapper.XMLMapper)
      */
@@ -64,10 +47,8 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     public synchronized void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException {
 
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
-            mapper.registerRootElement(new QName(ns.getUriString(), Element.DOMAIN.getLocalName()), DomainModelParser.getInstance());
+            mapper.registerRootElement(new QName(ns.getUriString(), Element.DOMAIN.getLocalName()), ModelXmlParsers.DOMAIN_XML_READER);
         }
-
-        registerExtensions(mapper);
     }
 
     /* (non-Javadoc)
@@ -77,19 +58,7 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
     public synchronized void registerStandardHostReaders(XMLMapper mapper) throws ModuleLoadException {
 
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
-            mapper.registerRootElement(new QName(ns.getUriString(), Element.HOST.getLocalName()), HostModelParser.getInstance());
-        }
-
-        registerExtensions(mapper);
-
-    }
-
-    private static void registerExtensions(XMLMapper mapper) throws ModuleLoadException {
-        for (String module : EXTENSION_MODULES) {
-            for (Extension extension : Module.loadService(module, Extension.class)) {
-                extension.registerElementHandlers(mapper);
-            }
+            mapper.registerRootElement(new QName(ns.getUriString(), Element.HOST.getLocalName()), ModelXmlParsers.HOST_XML_READER);
         }
     }
-
 }

@@ -41,7 +41,7 @@ public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<D
 
     /** {@inheritDoc} */
     @Override
-    protected final Class<DomainModel> getModelElementType() {
+    public final Class<DomainModel> getModelElementType() {
         return DomainModel.class;
     }
 
@@ -51,5 +51,5 @@ public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<D
 
     /** {@inheritDoc} */
     @Override
-    protected abstract AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original);
+    public abstract AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original);
 }

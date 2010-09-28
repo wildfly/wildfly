@@ -65,7 +65,7 @@ class ServerDeploymentStartStopHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
             BatchBuilder batchBuilder = serviceContainer.batchBuilder();
             deploy(deploymentName, runtimeName, deploymentHash, batchBuilder, serviceContainer, resultHandler, param);
@@ -78,7 +78,7 @@ class ServerDeploymentStartStopHandler {
 
     <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
             final BatchBuilder batchBuilder, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
             // Add a listener so we can get ahold of the DeploymentService
@@ -92,7 +92,7 @@ class ServerDeploymentStartStopHandler {
     }
 
     <P> void undeploy(final String deploymentName, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
             @SuppressWarnings("unchecked")
@@ -189,12 +189,12 @@ class ServerDeploymentStartStopHandler {
 
     private class DeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
 
-        private final UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler;
+        private final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler;
         private final P param;
         private final ServiceName deploymentServiceName;
         private final boolean undeploy;
 
-        private DeploymentServiceTracker(final UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler,
+        private DeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
                 final P param, final ServiceName deploymentServiceName, final boolean undeploy) {
             this.resultHandler = resultHandler;
             this.param = param;

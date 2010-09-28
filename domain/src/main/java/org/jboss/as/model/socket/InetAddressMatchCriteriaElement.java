@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -32,12 +33,12 @@ public class InetAddressMatchCriteriaElement extends AbstractInterfaceCriteriaEl
     public InetAddressMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.INET_ADDRESS);
 
-        address = readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
+        address = ParseUtils.readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
         setInterfaceCriteria(new InetAddressMatchInterfaceCriteria(address));
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return address.hashCode() & 0xffffffffL;
     }
 

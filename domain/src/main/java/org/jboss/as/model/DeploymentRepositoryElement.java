@@ -75,7 +75,7 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -91,13 +91,14 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
                         enabled = Boolean.parseBoolean(value);
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         this.path = path;
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     /**
@@ -119,7 +120,7 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         long hash = path.hashCode() & 0xffffffffL;
         hash = Long.rotateLeft(hash, 1) ^ interval & 0xffffffffL;
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(enabled).hashCode() & 0xffffffffL;

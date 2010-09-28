@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -42,7 +43,7 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -55,23 +56,23 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
                         }
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (pattern == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.PATTERN));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PATTERN));
         }
         this.pattern = pattern;
         // Handle elements
-        requireNoContent(reader);
-
+        ParseUtils.requireNoContent(reader);
 
         setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return pattern.hashCode() & 0xffffffffL;
     }
 

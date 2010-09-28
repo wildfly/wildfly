@@ -88,7 +88,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         for(int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -116,18 +116,19 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                         start = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (uniqueInput == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (runtimeInput == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
         }
         if (hashInput == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
 
         this.uniqueName = uniqueInput;
@@ -135,7 +136,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         this.sha1Hash = hashInput;
         this.start = start == null ? true : Boolean.valueOf(start);
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
 
         // TODO:  Read in serialized DIs
     }
@@ -196,16 +197,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
      */
     void setStart(boolean start) {
         this.start = start;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public long elementHash() {
-        long hash = uniqueName.hashCode();
-        hash = Long.rotateLeft(hash, 1) ^ runtimeName.hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ AbstractModelElement.calculateElementHashOf(sha1Hash);
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
-        return hash;
     }
 
     /** {@inheritDoc} */

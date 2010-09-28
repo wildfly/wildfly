@@ -46,7 +46,7 @@ public abstract class AbstractModelElementUpdate<E extends AbstractModelElement<
      *
      * @return the model element type class
      */
-    protected abstract Class<E> getModelElementType();
+    public abstract Class<E> getModelElementType();
 
     /**
      * Apply this update to the given model element.
@@ -67,5 +67,5 @@ public abstract class AbstractModelElementUpdate<E extends AbstractModelElement<
      * @return the compensating update, or {@code null} if no compensating update
      *           is possible
      */
-    protected abstract AbstractModelElementUpdate<E> getCompensatingUpdate(E original);
+    public abstract AbstractModelElementUpdate<E> getCompensatingUpdate(E original);
 }

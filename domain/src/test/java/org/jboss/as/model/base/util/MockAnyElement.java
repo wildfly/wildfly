@@ -8,7 +8,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -47,8 +47,8 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
      */
     public MockAnyElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        requireNoAttributes(reader);
-        requireNoContent(reader);
+        ParseUtils.requireNoAttributes(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     @Override
@@ -57,17 +57,12 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 19;
     }
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    public void activate(ServiceActivatorContext context) {
-        // no-op
     }
 }

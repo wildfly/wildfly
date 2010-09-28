@@ -25,6 +25,7 @@ package org.jboss.as.remoting;
 import java.util.EnumSet;
 import java.util.Locale;
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -58,7 +59,7 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
         // No attributes
         final int count = reader.getAttributeCount();
         if (count > 0) {
-            throw unexpectedAttribute(reader, 0);
+            throw ParseUtils.unexpectedAttribute(reader, 0);
         }
         // Nested elements
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -67,12 +68,12 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
                 case REMOTING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (visited.contains(element)) {
-                        throw unexpectedElement(reader);
+                        throw ParseUtils.unexpectedElement(reader);
                     }
                     visited.add(element);
                     switch (element) {
                         case INCLUDE_MECHANISMS: {
-                            includeMechanisms = readArrayAttributeElement(reader, "value", String.class);
+                            includeMechanisms = ParseUtils.readArrayAttributeElement(reader, "value", String.class);
                             break;
                         }
                         case POLICY: {
@@ -84,41 +85,30 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
                             break;
                         }
                         case QOP: {
-                            qop = readArrayAttributeElement(reader, "value", SaslQop.class);
+                            qop = ParseUtils.readArrayAttributeElement(reader, "value", SaslQop.class);
                             break;
                         }
                         case REUSE_SESSION: {
-                            reuseSession = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            reuseSession = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case SERVER_AUTH: {
-                            serverAuth = Boolean.valueOf(readBooleanAttributeElement(reader, "value"));
+                            serverAuth = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
                             break;
                         }
                         case STRENGTH: {
-                            strength = readArrayAttributeElement(reader, "value", SaslStrength.class);
+                            strength = ParseUtils.readArrayAttributeElement(reader, "value", SaslStrength.class);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
-    }
-
-    /** {@inheritDoc} */
-    public long elementHash() {
-        long hash = 0L;
-        if (properties != null) hash ^= properties.elementHash();
-        if (policy != null) hash = Long.rotateLeft(hash, 1) ^ policy.elementHash();
-        if (includeMechanisms != null) hash = calculateElementHashOf(includeMechanisms, hash);
-        if (qop != null) hash = calculateElementHashOf(qop, hash);
-        if (strength != null) hash = calculateElementHashOf(strength, hash);
-        if (reuseSession != null) hash = Long.rotateLeft(hash, 1) ^ reuseSession.hashCode();
-        if (serverAuth != null) hash = Long.rotateLeft(hash, 1) ^ serverAuth.hashCode();
-        return hash;
     }
 
     /** {@inheritDoc} */

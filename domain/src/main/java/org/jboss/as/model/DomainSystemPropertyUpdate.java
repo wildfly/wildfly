@@ -47,7 +47,7 @@ public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<
     }
 
     /** {@inheritDoc} */
-    protected DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
+    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
         return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 

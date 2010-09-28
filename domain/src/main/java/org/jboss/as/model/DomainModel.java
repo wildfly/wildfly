@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -34,9 +36,11 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.SubsystemFactory;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupIncludeElement;
+import org.jboss.marshalling.FieldSetter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -49,9 +53,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
 
     private static final long serialVersionUID = 5516070442013067881L;
 
-    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
-    private final String schemaLocation;
-    private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
+    // non-model fields
+    private final transient Map<String, SubsystemFactory<?>> subsystemTypes = new HashMap<String, SubsystemFactory<?>>();
+
+    private static final FieldSetter subsystemTypesSetter = FieldSetter.get(DomainModel.class, "subsystemTypes");
+
+    // model fields
+    private final Set<String> extensions = new HashSet<String>();
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
     private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
@@ -60,72 +68,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
 
     private PropertiesElement systemProperties;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param elementName the element name of this domain element
-     */
-    public DomainModel(final QName elementName) {
-        super(elementName);
-        this.schemaLocation = null;
-    }
+    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.DOMAIN.getLocalName());
 
     /**
      * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
      */
-    public DomainModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-        // Handle namespaces
-        namespaces.putAll(readNamespaces(reader));
-        // Handle attributes
-        schemaLocation = readSchemaLocation(reader);
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case EXTENSIONS: {
-                            parseExtensions(reader);
-                            break;
-                        }
-                        case PROFILES: {
-                            parseProfiles(reader);
-                            break;
-                        }
-                        case INTERFACES: {
-                            parseInterfaces(reader);
-                            break;
-                        }
-                        case SOCKET_BINDING_GROUPS: {
-                            parseSocketBindingGroups(reader);
-                            break;
-                        }
-                        case DEPLOYMENTS: {
-                            parseDeployments(reader);
-                            break;
-                        }
-                        case SERVER_GROUPS: {
-                            parseServerGroups(reader);
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
+    public DomainModel() {
+        super(ELEMENT_NAME);
     }
 
     /**
@@ -133,9 +82,9 @@ public final class DomainModel extends AbstractModel<DomainModel> {
      *
      * @return the extensions. May be empty but will not be <code>null</code>
      */
-    public Set<ExtensionElement> getExtensions() {
+    public Set<String> getExtensions() {
         synchronized (extensions) {
-            return new HashSet<ExtensionElement>(extensions.values());
+            return new HashSet<String>(extensions);
         }
     }
 
@@ -225,36 +174,6 @@ public final class DomainModel extends AbstractModel<DomainModel> {
 
     /** {@inheritDoc} */
     @Override
-    public long elementHash() {
-        long hash = 0L;
-        synchronized (extensions) {
-            hash = calculateElementHashOf(extensions.values(), hash);
-        }
-        synchronized (serverGroups) {
-            hash = calculateElementHashOf(serverGroups.values(), hash);
-        }
-        synchronized (deployments) {
-            hash = calculateElementHashOf(deployments.values(), hash);
-        }
-        synchronized (profiles) {
-            hash = calculateElementHashOf(profiles.values(), hash);
-        }
-        synchronized (interfaces) {
-            hash = calculateElementHashOf(interfaces.values(), hash);
-        }
-        synchronized (bindingGroups) {
-            hash = calculateElementHashOf(bindingGroups.values(), hash);
-        }
-        if (systemProperties != null) hash = Long.rotateLeft(hash, 1) ^ systemProperties.elementHash();
-        synchronized (namespaces) {
-            hash = Long.rotateLeft(hash, 1) ^ namespaces.hashCode() &  0xffffffffL;
-        }
-        if (schemaLocation != null) hash = Long.rotateLeft(hash, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
-        return hash;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     protected Class<DomainModel> getElementClass() {
         return DomainModel.class;
     }
@@ -263,30 +182,15 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        synchronized (namespaces) {
-            for (NamespaceAttribute namespace : namespaces.values()) {
-                if (namespace.isDefaultNamespaceDeclaration()) {
-                    // for now I assume this is handled externally
-                    continue;
-                }
-                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
-            }
-        }
+        writeNamespaces(streamWriter);
 
-        if (schemaLocation != null) {
-            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
-            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
-        }
-
-        synchronized (extensions) {
-            if (! extensions.isEmpty()) {
-                streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {
-                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
+        if (! extensions.isEmpty()) {
+            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+            for (String extension : extensions) {
+                streamWriter.writeEmptyElement(Element.EXTENSION.getLocalName());
+                streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), extension);
             }
+            streamWriter.writeEndElement();
         }
 
         synchronized (profiles) {
@@ -354,29 +258,6 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         streamWriter.writeEndElement();
     }
 
-    private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case EXTENSION: {
-                            final ExtensionElement extension = new ExtensionElement(reader);
-                            if (extensions.containsKey(extension.getModule())) {
-                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
-                            }
-                            extensions.put(extension.getModule(), extension);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
     private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
 
         RefResolver<String, ProfileElement> resolver = new SimpleRefResolver<String, ProfileElement>(profiles) ;
@@ -398,11 +279,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                             profiles.put(name, profile);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         // Validate included profiles
@@ -434,11 +317,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                             interfaces.put(interfaceEl.getName(), interfaceEl);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -465,11 +350,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                             locations.put(name, location);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
         // Validate included groups
@@ -504,11 +391,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                             deployments.put(deployment.getUniqueName(), deployment);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -527,12 +416,31 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                             serverGroups.put(serverGroup.getName(), serverGroup);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
+    }
+
+    boolean addExtension(final String name) {
+        return extensions.add(name);
+    }
+
+    boolean removeExtension(final String name) {
+        return extensions.remove(name);
+    }
+
+    SubsystemFactory<?> getSubsystemFactory(final String uri) {
+        return subsystemTypes.get(uri);
+    }
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        subsystemTypesSetter.set(this, new HashMap<String, SubsystemFactory<?>>());
     }
 }

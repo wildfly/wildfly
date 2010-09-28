@@ -54,17 +54,11 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
         this.deploymentRuntimeName = deploymentRuntimeName;
         this.deploymentHash = deploymentHash;
         if (deploy) {
-            this.startStopHandler = new ServerDeploymentStartStopHandler();
+            startStopHandler = new ServerDeploymentStartStopHandler();
         }
         else {
-            this.startStopHandler = null;
+            startStopHandler = null;
         }
-    }
-
-
-    @Override
-    public boolean requiresRestart() {
-        return false;
     }
 
     @Override
@@ -87,7 +81,7 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
 
     @Override
     public <P> void applyUpdate(ServiceContainer container,
-            UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (startStopHandler != null) {
             startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, container, resultHandler, param);
         }

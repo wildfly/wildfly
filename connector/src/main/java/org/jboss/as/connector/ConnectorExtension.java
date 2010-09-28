@@ -22,28 +22,29 @@
 
 package org.jboss.as.connector;
 
-import javax.xml.namespace.QName;
-
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  *
  * A ConnectorExtension.
  *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ConnectorExtension implements Extension {
 
-    @Override
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName(Namespace.CONNECTOR_1_0.getUriString(), "subsystem"),
-                new ConnectorSubsystemElementParser());
+    public void initialize(final ExtensionContext context) {
+        context.<ConnectorSubsystemElement>registerSubsystem(Namespace.CONNECTOR_1_0.getUriString(), new SubsystemFactory<ConnectorSubsystemElement>() {
+            public ConnectorSubsystemElement createSubsystemElement() {
+                return new ConnectorSubsystemElement();
+            }
+        }, null /* new ConnectorSubsystemElementParser() */);
     }
 
     @Override
-    public void activate(final ServiceActivatorContext context) {
-    }
+   public void activate(final ServiceActivatorContext context) {
+   }
 }

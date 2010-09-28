@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.Extension;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
@@ -36,20 +35,16 @@ import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -79,124 +74,16 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
 
-    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
-    private final String schemaLocation;
     private final String serverName;
-    private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
     private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
+    private final Set<String> extensions = new HashSet<String>();
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
     private PropertiesElement systemProperties;
 
-
-    /**
-     * Construct a new instance.
-     *
-     * @param elementName the element name of this standalone element
-     */
-    protected ServerModel(final QName elementName) {
-        super(elementName);
-        // FIXME implement or remove Location-based constructor
-        throw new UnsupportedOperationException("implement me");
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
-     */
-    public ServerModel(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-
-        this.portOffset = 0;
-
-        // Handle namespaces
-        namespaces.putAll(readNamespaces(reader));
-        // Handle attributes
-        schemaLocation = readSchemaLocation(reader);
-        // Handle elements
-        String name = null;
-        ProfileElement profileElement = null;
-        SocketBindingGroupElement bindingGroup = null;
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case NAME: {
-                            if (name != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            name = reader.getElementText();
-                            break;
-                        }
-                        case EXTENSIONS: {
-                            parseExtensions(reader);
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        case INTERFACES: {
-                            parseInterfaces(reader);
-                            break;
-                        }
-                        case PROFILE : {
-                            if (profileElement != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            profileElement = new ProfileElement(reader, null);
-                            break;
-                        }
-                        case DEPLOYMENTS: {
-                            parseDeployments(reader);
-                            break;
-                        }
-                        case SOCKET_BINDING_GROUP: {
-                            if (bindingGroup != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            RefResolver<String, ServerInterfaceElement> intfResolver = new SimpleRefResolver<String, ServerInterfaceElement>(interfaces);
-                            bindingGroup = new SocketBindingGroupElement(reader, intfResolver, null);
-                            break;
-                        }
-                        case DEPLOYMENT_REPOSITORY: {
-                            DeploymentRepositoryElement repo = new DeploymentRepositoryElement(reader);
-                            if (repositories.containsKey(repo.getPath())) {
-                                throw new XMLStreamException(element.getLocalName() + " with name " + repo.getPath() + " already declared; names must be unique", reader.getLocation());
-                            }
-                            repositories.put(repo.getPath(), repo);
-                            break;
-                        }
-                        case SSLS: {
-                            throw new UnsupportedOperationException("implement parsing of " + element.getLocalName());
-                            //break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Element.NAME));
-        }
-        this.serverName = name;
-        if (profileElement == null) {
-            throw missingRequired(reader, Collections.singleton(Element.PROFILE));
-        }
-        this.profile = profileElement;
-        this.socketBindings = bindingGroup;
-    }
 
     /**
      * Assemble a standalone server configuration from the domain/host model.
@@ -217,8 +104,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         if (serverName == null) {
             throw new IllegalArgumentException("serverName is null");
         }
-
-        this.schemaLocation = null;
 
         ServerElement server = host.getServer(serverName);
         if (server == null)
@@ -312,30 +197,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     /** {@inheritDoc} */
     @Override
-    public long elementHash() {
-        long cksum = serverName.hashCode() &  0xffffffffL;
-        synchronized (namespaces) {
-            cksum = Long.rotateLeft(cksum, 1) ^ namespaces.hashCode() &  0xffffffffL;
-        }
-        if (schemaLocation != null) cksum = Long.rotateLeft(cksum, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ portOffset & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
-        synchronized (deployments) {
-            cksum = calculateElementHashOf(deployments.values(), cksum);
-        }
-        synchronized (extensions) {
-            cksum = calculateElementHashOf(extensions.values(), cksum);
-        }
-        synchronized (interfaces) {
-            cksum = calculateElementHashOf(interfaces.values(), cksum);
-        }
-        if (socketBindings != null) cksum = Long.rotateLeft(cksum, 1) ^ socketBindings.elementHash();
-        if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
-        return cksum;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     protected Class<ServerModel> getElementClass() {
         return ServerModel.class;
     }
@@ -344,40 +205,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        synchronized (namespaces) {
-            for (NamespaceAttribute namespace : namespaces.values()) {
-                if (namespace.isDefaultNamespaceDeclaration()) {
-                    streamWriter.setDefaultNamespace(namespace.getNamespaceURI());
-                    streamWriter.writeDefaultNamespace(namespace.getNamespaceURI());
-                }
-                else {
-                    streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
-                    streamWriter.writeNamespace(namespace.getPrefix(), namespace.getNamespaceURI());
-                }
-            }
-        }
-
-        if (schemaLocation != null) {
-            // FIXME this doesn't work; disabled for now
-            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
-            streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
-        }
+        writeNamespaces(streamWriter);
 
         // TODO re-evaluate the element order in the xsd; make sure this is correct
         streamWriter.writeStartElement(Element.NAME.getLocalName());
         streamWriter.writeCharacters(serverName);
         streamWriter.writeEndElement();
-
-        synchronized (extensions) {
-            if (! extensions.isEmpty()) {
-                streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
-                for (ExtensionElement element : extensions.values()) {
-                    streamWriter.writeStartElement(Element.EXTENSION.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
-            }
-        }
 
         streamWriter.writeStartElement(Element.PROFILE.getLocalName());
         profile.writeContent(streamWriter);
@@ -433,21 +266,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
         // Activate extensions
-        final Map<String, ExtensionElement> extensionsCopy;
-        synchronized (this.extensions) {
-            extensionsCopy = new TreeMap<String,ExtensionElement>(this.extensions);
-        }
-        for(Map.Entry<String, ExtensionElement> extensionEntry : extensionsCopy.entrySet()) {
-            final ExtensionElement extensionElement = extensionEntry.getValue();
-            final String moduleSpec = extensionElement.getModule();
-            try {
-                for (Extension extension : Module.loadService(moduleSpec, Extension.class)) {
-                    extension.activate(context);
-                }
-            } catch(ModuleLoadException e) {
-                throw new RuntimeException("Failed activate subsystem: " + extensionEntry.getKey(), e);
-            }
-        }
 
         // Activate profile
         profile.activate(context);
@@ -506,84 +324,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         }
     }
 
-    private void parseExtensions(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case EXTENSION: {
-                            final ExtensionElement extension = new ExtensionElement(reader);
-                            if (extensions.containsKey(extension.getModule())) {
-                                throw new XMLStreamException("Extension module " + extension.getModule() + " already declared", reader.getLocation());
-                            }
-                            extensions.put(extension.getModule(), extension);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
+    boolean addExtension(final String name) {
+        return extensions.add(name);
     }
 
-    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INTERFACE: {
-                            final ServerInterfaceElement interfaceEl = new ServerInterfaceElement(reader);
-                            if (interfaces.containsKey(interfaceEl.getName())) {
-                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
-                            }
-                            interfaces.put(interfaceEl.getName(), interfaceEl);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
-    }
-
-    private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
-        // FIXME replace with SimpleRefResolver
-        final RefResolver<String, DeploymentRepositoryElement> repoResolver = new RefResolver<String, DeploymentRepositoryElement>() {
-            private static final long serialVersionUID = 1L;
-            /** Always returns <code>null</code> since full domain does not support deployment-repository */
-            @Override
-            public DeploymentRepositoryElement resolveRef(String ref) {
-                return repositories.get(ref);
-            }
-        };
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case DEPLOYMENT: {
-                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader, repoResolver);
-                            if (deployments.containsKey(deployment.getUniqueName())) {
-                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
-                                        " already declared", reader.getLocation());
-                            }
-                            deployments.put(deployment.getUniqueName(), deployment);
-                            break;
-                        }
-                        default: throw unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: throw unexpectedElement(reader);
-            }
-        }
+    AbstractSubsystemElement<?> getSubsystem(final String namespaceUri) {
+        return profile.getSubsystem(namespaceUri);
     }
 
     void addDeployment(final ServerGroupDeploymentElement deploymentElement) {

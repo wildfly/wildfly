@@ -17,6 +17,7 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.RefResolver;
 import org.jboss.as.model.SimpleRefResolver;
 import org.jboss.msc.service.Location;
@@ -119,7 +120,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -136,15 +137,16 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                         defIntf = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (defIntf == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.DEFAULT_INTERFACE));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.DEFAULT_INTERFACE));
         }
         this.name = name;
         this.defaultInterface = defIntf;
@@ -156,7 +158,7 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                     switch (element) {
                         case INCLUDE: {
                             if (includedGroupResolver == null) {
-                                throw unexpectedElement(reader);
+                                throw ParseUtils.unexpectedElement(reader);
                             }
                             final SocketBindingGroupIncludeElement include = new SocketBindingGroupIncludeElement(reader);
                             if (includedGroups.containsKey(include.getGroupName())) {
@@ -173,11 +175,13 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                             socketBindings.put(include.getName(), include);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -270,26 +274,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         for(SocketBindingElement element : getAllSocketBindings()) {
             element.activate(serviceActivatorContext);
         }
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
-     */
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#elementHash()
-     */
-    @Override
-    public long elementHash() {
-        long cksum = name.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ defaultInterface.hashCode() & 0xffffffffL;
-        synchronized (includedGroups) {
-            cksum = calculateElementHashOf(includedGroups.values(), cksum);
-        }
-        synchronized (socketBindings) {
-            cksum = calculateElementHashOf(socketBindings.values(), cksum);
-        }
-        return cksum;
     }
 
     /* (non-Javadoc)

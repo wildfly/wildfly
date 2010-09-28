@@ -47,5 +47,5 @@ public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>, R> 
 
     /** {@inheritDoc} */
     @Override
-    protected abstract AbstractModelUpdate<E, ?> getCompensatingUpdate(E original);
+    public abstract AbstractModelUpdate<E, ?> getCompensatingUpdate(E original);
 }

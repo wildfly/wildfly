@@ -35,6 +35,10 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
+    // predefined standard
+    XML_SCHEMA_INSTANCE("http://www.w3.org/2001/XMLSchema-instance"),
+
+    // domain versions, oldest to newest
     DOMAIN_1_0("urn:jboss:domain:1.0")
     ;
 
@@ -61,7 +65,7 @@ public enum Namespace {
     /**
      * Set of all namespaces, excluding the special {@link #UNKNOWN} value.
      */
-    public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(Namespace.UNKNOWN));
+    public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(UNKNOWN, XML_SCHEMA_INSTANCE));
 
     private static final Map<String, Namespace> MAP;
 

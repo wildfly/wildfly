@@ -11,6 +11,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -44,7 +45,7 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
         for (int i = 0; i < count; i ++) {
             value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -67,24 +68,25 @@ public class SubnetMatchCriteriaElement extends AbstractInterfaceCriteriaElement
                         }
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (net == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.VALUE));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
         }
         this.value = value;
         this.network = net;
         this.mask = mask;
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
 
         setInterfaceCriteria(new SubnetMatchInterfaceCriteria(this.network, this.mask));
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return value.hashCode() & 0xffffffffL;
     }
 

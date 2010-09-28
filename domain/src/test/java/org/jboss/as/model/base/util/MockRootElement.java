@@ -26,15 +26,18 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelRootElement;
 import org.jboss.as.model.Namespace;
-import org.jboss.as.model.NamespaceAttribute;
+import org.jboss.as.model.NamespacePrefix;
 import org.jboss.as.model.ParseResult;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.QNameComparator;
+import org.jboss.as.model.SchemaLocation;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -47,8 +50,8 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
 
     private final NavigableMap<QName, AbstractModelElement<? extends AbstractModelElement<?>>> children =
         new TreeMap<QName, AbstractModelElement<? extends AbstractModelElement<?>>>(QNameComparator.getInstance());
-    private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
-    private final String schemaLocation;
+    private final NavigableMap<String, NamespacePrefix> namespaces = new TreeMap<String, NamespacePrefix>();
+    private String schemaLocation;
 
     public static final String ELEMENT_NAME = "mock-root";
 
@@ -92,9 +95,17 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
         super(reader);
         final Namespace ns = Namespace.forUri(reader.getNamespaceURI());
         // Handle namespaces
-        namespaces.putAll(readNamespaces(reader));
+        for (NamespacePrefix namespacePrefix : ParseUtils.readNamespaces(reader)) {
+            namespaces.put(namespacePrefix.getPrefix(), namespacePrefix);
+        }
         // Handle attributes
-        schemaLocation = readSchemaLocation(reader);
+        int cnt = reader.getAttributeCount();
+        for (int i = 0; i < cnt; i ++) {
+            if (reader.getAttributeNamespace(i).equals(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI) && reader.getAttributeLocalName(i).equals("schemaLocation")) {
+                schemaLocation = reader.getAttributeValue(i);
+                break;
+            }
+        }
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
            String namespace = reader.getNamespaceURI();
@@ -107,21 +118,13 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
                 children.put(qname, child);
             }
             else {
-                throw unexpectedElement(reader);
+                throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
 
     public AbstractModelElement<? extends AbstractModelElement<?>> getChild(String namespace, String localPart) {
         return children.get(new QName(namespace, localPart));
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = namespaces.hashCode() &  0xffffffffL;
-        if (schemaLocation != null) hash = Long.rotateLeft(hash, 1) ^ schemaLocation.hashCode() &  0xffffffffL;
-        hash = calculateElementHashOf(children.values(), hash);
-        return hash;
     }
 
     @Override
@@ -132,16 +135,12 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        for (NamespaceAttribute namespace : namespaces.values()) {
-            if (namespace.isDefaultNamespaceDeclaration()) {
-                // for now I assume this is handled externally
-                continue;
-            }
+        for (NamespacePrefix namespace : namespaces.values()) {
             streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
         }
 
         if (schemaLocation != null) {
-            NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
+            NamespacePrefix ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
 

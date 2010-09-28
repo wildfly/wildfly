@@ -61,7 +61,7 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
    }
 
    @Override
-   public long elementHash() {
+   private long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
    }
 

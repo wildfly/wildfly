@@ -25,8 +25,8 @@ package org.jboss.as.threads;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.PropertiesElement;
+import org.jboss.as.model.*;
+import org.jboss.as.model.Attribute;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -73,7 +73,7 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
     protected AbstractExecutorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         name = reader.getAttributeValue(null, "name");
         if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
     }
 
@@ -96,13 +96,13 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
                     break;
                 }
                 default: {
-                    throw unexpectedAttribute(reader, i);
+                    throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
-        if (qty == -1L) throw missingRequired(reader, Collections.singleton(Attribute.TIME));
-        if (unit == null) throw missingRequired(reader, Collections.singleton(Attribute.UNIT));
-        requireNoContent(reader);
+        if (qty == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TIME));
+        if (unit == null) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.UNIT));
+        ParseUtils.requireNoContent(reader);
         return new TimeSpec(unit, qty);
     }
 
@@ -121,13 +121,13 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
                     break;
                 }
                 default: {
-                    throw unexpectedAttribute(reader, i);
+                    throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
-        if (perCpu == -1L) throw missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
-        if (count == -1L) throw missingRequired(reader, Collections.singleton(Attribute.COUNT));
-        requireNoContent(reader);
+        if (perCpu == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
+        if (count == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.COUNT));
+        ParseUtils.requireNoContent(reader);
         return new ScaledCount(count, perCpu);
     }
 
@@ -189,11 +189,4 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
     public final String getName() {
         return name;
     }
-
-    /**
-     * Gets the Element that usually is the name for the XML element
-     * associated with a subclass of this class.
-     * @return
-     */
-    protected abstract Element getStandardElement();
 }

@@ -51,7 +51,7 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
      */
     public LocalDomainControllerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super();
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     /** {@inheritDoc} */

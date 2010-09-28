@@ -22,6 +22,7 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -54,7 +55,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -63,7 +64,8 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
                     blocking = Boolean.parseBoolean(reader.getAttributeValue(i));
                     break;
                 }
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         // Elements
@@ -76,18 +78,19 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
                             break;
                         }
                         case THREAD_FACTORY: {
-                            setThreadFactory(readStringAttributeElement(reader, "name"));
+                            setThreadFactory(ParseUtils.readStringAttributeElement(reader, "name"));
                             break;
                         }
                         case PROPERTIES: {
                             setProperties(new PropertiesElement(reader));
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
@@ -112,7 +115,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return super.elementHash();
     }
 
@@ -142,10 +145,5 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
             properties.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    protected Element getStandardElement() {
-        return Element.THREAD_FACTORY_EXECUTOR;
     }
 }

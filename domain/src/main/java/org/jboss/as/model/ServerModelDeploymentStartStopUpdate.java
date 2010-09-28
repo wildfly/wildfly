@@ -70,9 +70,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         }
     }
 
-    @Override
-    public <P> void applyUpdate(ServiceContainer container,
-            UpdateResultHandler<ServerDeploymentActionResult, P> resultHandler, P param) {
+    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
         if (deploymentElement != null) {
@@ -87,10 +85,5 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         else if (resultHandler != null) {
             resultHandler.handleSuccess(new SimpleServerDeploymentActionResult(null, Result.EXECUTED), param);
         }
-    }
-
-    @Override
-    public boolean requiresRestart() {
-        return false;
     }
 }

@@ -70,7 +70,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -102,18 +102,19 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                         start = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (uniqueInput == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         if (runtimeInput == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
         }
         if (sha1Input == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
         this.uniqueName = uniqueInput;
         this.runtimeName = runtimeInput;
@@ -122,7 +123,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         this.start = start == null ? true : Boolean.valueOf(start);
 
         // Handle elements
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     /**
@@ -205,16 +206,6 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
 
     @Override
     public void activate(ServiceActivatorContext serviceActivatorContext) {
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = uniqueName.hashCode();
-        hash = Long.rotateLeft(hash, 1) ^ runtimeName.hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ AbstractModelElement.calculateElementHashOf(sha1Hash);
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(allowed).hashCode() & 0xffffffffL;
-        return hash;
     }
 
     @Override

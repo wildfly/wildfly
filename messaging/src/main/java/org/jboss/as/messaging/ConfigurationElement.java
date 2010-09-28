@@ -11,6 +11,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -300,7 +301,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
             // The end of the subsystem element
             break;
          default:
-            throw unexpectedElement(reader);
+             throw ParseUtils.unexpectedElement(reader);
          }
       } while (reader.hasNext() && localName.equals("subsystem") == false);
 
@@ -314,7 +315,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
    }
 
    @Override
-   public long elementHash() {
+   private long elementHash() {
       return 0;  //To change body of implemented methods use File | Settings | File Templates.
    }
 

@@ -20,40 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
+import java.util.List;
+import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
- * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
- * for {@code &lt;standalone&gt;} root elements.
+ * The extension context.
  *
- * @author Brian Stansberry
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerModelParser implements XMLElementReader<ParseResult<ServerModel>>, XMLStreamConstants {
-
-    private ServerModelParser() {
-    }
-
-    private static final ServerModelParser INSTANCE = new ServerModelParser();
+public interface ExtensionContext {
 
     /**
-     * Get the instance.
+     * Register a subsystem.
      *
-     * @return the instance
+     * TODO: consider a mechanism to register alias namespaces.
+     *
+     * @param namespaceUri the subsystem namespace URI
+     * @param factory the subsystem element factory
+     * @param reader the XML element reader which parses the subsystem XML
      */
-    public static ServerModelParser getInstance() {
-        return INSTANCE;
-    }
-
-    /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ServerModel> value) throws XMLStreamException {
-        value.setResult(new ServerModel(reader));
-    }
+    <E extends AbstractSubsystemElement<E>> void registerSubsystem(String namespaceUri, SubsystemFactory<E> factory, XMLElementReader<List<? super AbstractSubsystemUpdate<E, ?>>> reader);
 }

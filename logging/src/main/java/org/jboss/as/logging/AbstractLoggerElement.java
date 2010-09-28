@@ -68,7 +68,7 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
 
     }
 
-    public long elementHash() {
+    private long elementHash() {
         return 0;
     }
 

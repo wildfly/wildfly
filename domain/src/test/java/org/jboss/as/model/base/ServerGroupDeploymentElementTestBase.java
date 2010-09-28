@@ -183,7 +183,6 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
         byte[] bytes = serialize(testee);
         ServerGroupDeploymentElement testee1 = deserialize(bytes, ServerGroupDeploymentElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getRuntimeName(), testee1.getRuntimeName());
         assertTrue(Arrays.equals(testee.getSha1Hash(), testee1.getSha1Hash()));
         assertEquals(testee.getUniqueName(), testee1.getUniqueName());

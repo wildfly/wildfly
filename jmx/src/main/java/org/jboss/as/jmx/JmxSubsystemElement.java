@@ -25,10 +25,8 @@ package org.jboss.as.jmx;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -48,23 +46,11 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
      */
     public JmxSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        requireNoContent(reader);
-    }
-
-    /**
-     * Activate the JMX subsystem.
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating the JMX Subsystem");
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
-            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+        ParseUtils.requireNoContent(reader);
     }
 
     /** {@inheritDoc} */
-    public long elementHash() {
+    private long elementHash() {
         return 42;
     }
 

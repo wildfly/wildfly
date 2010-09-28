@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -33,13 +34,13 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
     public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.NIC);
 
-        this.name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+        this.name = ParseUtils.readStringAttributeElement(reader, Attribute.NAME.getLocalName());
 
         setInterfaceCriteria(new NicInterfaceCriteria(name));
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return name.hashCode() & 0xffffffffL;
     }
 

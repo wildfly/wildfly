@@ -22,38 +22,30 @@
 
 package org.jboss.as.model;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
- * A parser which can be sent in to {@link XMLMapper#registerRootElement(QName, XMLElementReader)}
- * for {@code &lt;host&gt;} root elements.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class HostModelParser implements XMLElementReader<ParseResult<HostModel>>, XMLStreamConstants {
+public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
 
-    private HostModelParser() {
+    private static final long serialVersionUID = 4755195359412875338L;
+
+    private final String namespaceUri;
+
+    public ServerSubsystemAdd(final String namespaceUri) {
+        super(false);
+        this.namespaceUri = namespaceUri;
     }
 
-    private static final HostModelParser INSTANCE = new HostModelParser();
+    protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
 
-    /**
-     * Get the instance.
-     *
-     * @return the instance
-     */
-    public static HostModelParser getInstance() {
-        return INSTANCE;
     }
 
-    /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<HostModel> value) throws XMLStreamException {
-        value.setResult(new HostModel(reader));
+    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    }
+
+    public AbstractServerModelUpdate<?> getCompensatingUpdate(final ServerModel original) {
+        return null;
     }
 }

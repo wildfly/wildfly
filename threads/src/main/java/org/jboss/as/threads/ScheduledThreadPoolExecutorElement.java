@@ -22,6 +22,7 @@
 
 package org.jboss.as.threads;
 
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -48,12 +49,13 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: break;
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         // Elements
@@ -70,26 +72,27 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
                             break;
                         }
                         case THREAD_FACTORY: {
-                            setThreadFactory(readStringAttributeElement(reader, "name"));
+                            setThreadFactory(ParseUtils.readStringAttributeElement(reader, "name"));
                             break;
                         }
                         case PROPERTIES: {
                             setProperties(new PropertiesElement(reader));
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
     }
 
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return super.elementHash();
     }
 
@@ -133,10 +136,5 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
             threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
         }
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
-    }
-
-    @Override
-    protected Element getStandardElement() {
-        return Element.SCHEDULED_THREAD_POOL_EXECUTOR;
     }
 }

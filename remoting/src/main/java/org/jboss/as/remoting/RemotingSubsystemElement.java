@@ -22,18 +22,12 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.*;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.remoting3.Endpoint;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.jboss.xnio.OptionMap;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -41,9 +35,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.Executor;
-
-import static org.jboss.as.threads.AbstractExecutorElement.JBOSS_THREAD_SCHEDULED_EXECUTOR;
 
 /**
  * A Remoting subsystem definition.
@@ -83,7 +74,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
      * @param elementName the name of the subsystem element
      */
     public RemotingSubsystemElement(final String threadPoolName, final QName elementName) {
-        super(elementName);
+        super(elementName.getNamespaceURI());
         if (threadPoolName == null) {
             throw new IllegalArgumentException("threadPoolName is null");
         }
@@ -103,7 +94,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
@@ -111,12 +102,13 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
                         threadPoolName = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
         if (threadPoolName == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.THREAD_POOL));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(org.jboss.as.model.Attribute.THREAD_POOL));
         }
         this.threadPoolName = threadPoolName;
         // Handle elements
@@ -130,19 +122,15 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
                             connectors.put(connector.getName(), connector);
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
             }
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public long elementHash() {
-        return calculateElementHashOf(connectors.values(), 0L);
     }
 
     /** {@inheritDoc} */
@@ -160,20 +148,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             element.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Remoting Subsystem");
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final EndpointService endpointService = new EndpointService();
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        final BatchServiceBuilder<Endpoint> serviceBuilder = batchBuilder.addService(JBOSS_REMOTING_ENDPOINT, endpointService);
-        serviceBuilder.addDependency(JBOSS_THREAD_SCHEDULED_EXECUTOR.append(threadPoolName), Executor.class, executorInjector);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
-        // todo configure option map
-        endpointService.setOptionMap(OptionMap.EMPTY);
     }
 
     /**

@@ -22,22 +22,18 @@
 
 package org.jboss.as.naming.service;
 
-import javax.management.MBeanServer;
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.as.naming.InitialContextFactoryBuilder;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.spi.NamingManager;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -63,7 +59,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
      * @param supportEvents Should the naming system support events
      */
     public NamingSubsystemElement(final boolean supportEvents) {
-        super(new QName("urn:jboss:domain:naming:1.0", "subsystem"));
+        super(new QName("urn:jboss:domain:naming:1.0", "subsystem").getNamespaceURI());
         this.supportEvents = supportEvents;
     }
 
@@ -79,7 +75,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
-                throw unexpectedAttribute(reader, i);
+                throw ParseUtils.unexpectedAttribute(reader, i);
             }
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -98,15 +94,16 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
                     bindCompContext = Boolean.parseBoolean(reader.getAttributeValue(i));
                     break;
                 }
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
-        requireNoContent(reader);
+        ParseUtils.requireNoContent(reader);
     }
 
     /** {@inheritDoc} */
     @Override
-    public long elementHash() {
+    private long elementHash() {
         return 42;
     }
 
@@ -124,53 +121,6 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         streamWriter.writeAttribute(Attribute.BIND_MODULE_CONTEXT.getLocalName(), Boolean.toString(isBindModuleContext()));
         streamWriter.writeAttribute(Attribute.BIND_COMP_CONTEXT.getLocalName(), Boolean.toString(isBindCompContext()));
         streamWriter.writeEndElement();
-    }
-
-    /**
-     * Activate the naming subsystem.  Add a service for the naming server as well as a placeholder service for the java: namespace.
-     *
-     * @param context the service activation context
-     */
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Naming Subsystem");
-
-        // Setup naming environment
-        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
-        try {
-            //If we are reusing the JVM. e.g. in tests we should not set this again
-            if (!NamingManager.hasInitialContextFactoryBuilder())
-                NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
-        } catch (NamingException e) {
-            log.warn("Failed to set InitialContextFactoryBuilder", e);
-        }
-
-        // Create the Naming Service
-        final BatchBuilder builder = context.getBatchBuilder();
-        builder.addService(NamingService.SERVICE_NAME, new NamingService(isSupportEvents()));
-
-        // Create java: context service
-        final JavaContextService javaContextService = new JavaContextService();
-        builder.addService(JavaContextService.SERVICE_NAME, javaContextService)
-            .addDependency(NamingService.SERVICE_NAME);
-
-        final ContextService globalContextService = new ContextService("global");
-        builder.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
-             .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector());
-
-        if(isBindAppContext()) {
-            addContextFactory(builder, "app");
-        }
-        if(isBindModuleContext()) {
-            addContextFactory(builder, "module");
-        }
-        if(isBindCompContext()) {
-            addContextFactory(builder, "comp");
-        }
-
-        final JndiView jndiView = new JndiView();
-        builder.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
-            .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector());
     }
 
     private void addContextFactory(final BatchBuilder builder, final String contextName) {

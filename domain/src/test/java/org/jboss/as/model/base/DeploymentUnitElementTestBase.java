@@ -185,7 +185,6 @@ public abstract class DeploymentUnitElementTestBase extends DomainModelElementTe
         byte[] bytes = serialize(testee);
         DeploymentUnitElement testee1 = deserialize(bytes, DeploymentUnitElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getRuntimeName(), testee1.getRuntimeName());
         assertTrue(Arrays.equals(testee.getSha1Hash(), testee1.getSha1Hash()));
         assertEquals(testee.getUniqueName(), testee1.getUniqueName());

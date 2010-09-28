@@ -50,7 +50,7 @@ public final class PropertyRemove extends AbstractPropertyUpdate {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
+    public AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
         return new PropertyAdd(name, original.getProperty(name));
     }
 
