@@ -32,15 +32,11 @@
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd">
 
-    <!--<extensions>
-        <extension module="org.foo:blah"/>
-    </extensions>-->
-
-    <!-- The domain manager/server bootstrap configuration
-    <domain-configuration>
-        <bootstrapURI>http://bootstrap.uri</bootstrapURI>
-    </domain-configuration>
-    -->
+    <extensions>
+        <extension module="org.jboss.as.jmx"/>
+        <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.managed-beans"/>
+    </extensions>
 
     <profiles>
         <profile name="something">
@@ -56,6 +52,9 @@
                 <txn:core-environment socket-binding="txn-socket-process-id"/>
             </txn:subsystem>
             <remoting:subsystem thread-pool="remoting"/>
+            <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         </profile>
 
         <profile name="something2">
@@ -73,9 +72,12 @@
     -->
     <interfaces>
 
-        <interface name="default">
+        <interface name="loopback">
             <!--  Here we directly state the IP address -->
             <inet-address value="127.0.0.1"/>
+        </interface>
+        <interface name="external">
+            <any-address/>
         </interface>
         <interface name="internal">
             <!-- 
@@ -99,17 +101,29 @@
                 <subnet-match value="192.168.0.0/16"/>
             </any>
         </interface>
+        <interface name="public3">
+            <!--  
+                Here we name the NIC; the IP address associated with NIC whose
+                byte representation has the lowest
+            -->
+            <nic name="eth1"/>
+        </interface>
+        <!-- 
+             For this one, no address selection criteria is provided, so 
+             an override at the host or server level is required. 
+        -->
+        <interface name="public4"/>
     </interfaces>
 
     <socket-binding-groups>
-         <socket-binding-group name="standard-sockets" default-interface="default">
+         <socket-binding-group name="standard-sockets" default-interface="external">
             <socket-binding name="jndi" port="1099"/>
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="txn-socket-process-id" port="4714"/>
+            <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
          </socket-binding-group>
          <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
             <include socket-binding-group="standard-sockets"/>
@@ -143,15 +157,6 @@
 
            <socket-binding-group ref="standard-clustered-sockets"/>
 
-<!--       TODO this has to be clarified
-           <cluster default-multicast-address="230.0.0.4">
-             <group-communication-config name="udp">
-                 <udp-tranpsort socket="cluster-udp"/>
-             </group-communication-config>  
-             <core-framework state-transfer-timeout="5000" method-call-timeout="2000"/>
-             <ha-jndi socket="ha-jndi" discovery-socket="ha-jndi-discovery"/>
-           </cluster>
--->
             <deployments>
             </deployments>
 

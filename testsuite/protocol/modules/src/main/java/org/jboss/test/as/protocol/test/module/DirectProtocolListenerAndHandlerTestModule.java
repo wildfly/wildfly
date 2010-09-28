@@ -27,14 +27,14 @@ import java.util.Arrays;
 import junit.framework.Assert;
 
 import org.jboss.as.process.SystemExiter;
+import org.jboss.as.server.DirectServerSideCommunicationHandler;
+import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.test.as.protocol.support.process.NoopExiter;
-import org.jboss.test.as.protocol.support.server.MockDirectServerSideCommunicationHandler;
-import org.jboss.test.as.protocol.support.server.MockServerSideMessageHandler;
-import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManagerCommunicationHandler;
-import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManagerCommunicationListener;
-import org.jboss.test.as.protocol.support.server.manager.MockServerManager;
-import org.jboss.test.as.protocol.support.server.manager.MockServerManagerMessageHandler;
+import org.jboss.test.as.protocol.support.server.TestServerSideMessageHandler;
+import org.jboss.test.as.protocol.support.server.manager.TestDirectServerManagerCommunicationListener;
+import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler;
+import org.jboss.test.as.protocol.support.server.manager.MockServerManagerProcess;
 import org.jboss.test.as.protocol.test.base.DirectProtocolListenerAndHandlerTest;
 
 /**
@@ -50,26 +50,26 @@ public class DirectProtocolListenerAndHandlerTestModule implements DirectProtoco
 
     @Override
     public void testDirectProtocolListenerAndHandler() throws Exception{
-        MockServerManager serverManager = MockServerManager.create();
+        MockServerManagerProcess serverManager = MockServerManagerProcess.create();
 
-        MockServerManagerMessageHandler managerMessageHandler = new MockServerManagerMessageHandler();
-        MockDirectServerManagerCommunicationListener managerListener = MockDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
+        TestServerManagerMessageHandler managerMessageHandler = new TestServerManagerMessageHandler();
+        TestDirectServerManagerCommunicationListener managerListener = TestDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
 
-        MockServerSideMessageHandler serverMessageHandler = new MockServerSideMessageHandler();
-        MockDirectServerSideCommunicationHandler serverHandler = MockDirectServerSideCommunicationHandler.create("Test", InetAddress.getLocalHost(), managerListener.getSmPort(), serverMessageHandler);
+        TestServerSideMessageHandler serverMessageHandler = new TestServerSideMessageHandler();
+        DirectServerSideCommunicationHandler serverHandler = DirectServerSideCommunicationHandler.create("Test", InetAddress.getLocalHost(), managerListener.getSmPort(), serverMessageHandler);
 
         byte[] sent = ServerManagerProtocolCommand.SERVER_AVAILABLE.createCommandBytes(null);
         serverHandler.sendMessage(sent);
-        compare(sent, managerMessageHandler.awaitAndReadMessage());
+        compare(sent, managerMessageHandler.awaitAndReadMessage().getMessage());
 
-        MockDirectServerManagerCommunicationHandler managerHandler = managerListener.getManagerHandler("Test");
+        DirectServerManagerCommunicationHandler managerHandler = managerListener.getManagerHandler("Test");
         sent = ServerManagerProtocolCommand.START_SERVER.createCommandBytes("ABCD".getBytes());
         managerHandler.sendMessage(sent);
         compare(sent, serverMessageHandler.awaitAndReadMessage());
 
         sent = ServerManagerProtocolCommand.SERVER_STARTED.createCommandBytes(null);
         serverHandler.sendMessage(sent);
-        compare(sent, managerMessageHandler.awaitAndReadMessage());
+        compare(sent, managerMessageHandler.awaitAndReadMessage().getMessage());
 
         sent = ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null);
         managerHandler.sendMessage(sent);
@@ -77,14 +77,14 @@ public class DirectProtocolListenerAndHandlerTestModule implements DirectProtoco
 
         sent = ServerManagerProtocolCommand.SERVER_STOPPED.createCommandBytes(null);
         serverHandler.sendMessage(sent);
-        compare(sent, managerMessageHandler.awaitAndReadMessage());
+        compare(sent, managerMessageHandler.awaitAndReadMessage().getMessage());
 
         serverHandler.shutdown();
 
         waitForClose(serverHandler, managerHandler, 5000);
     }
 
-    private void waitForClose(MockDirectServerSideCommunicationHandler serverHandler, MockDirectServerManagerCommunicationHandler managerHandler, int timeoutMs)
+    private void waitForClose(DirectServerSideCommunicationHandler serverHandler, DirectServerManagerCommunicationHandler managerHandler, int timeoutMs)
             throws InterruptedException {
         //Wait for close
         long end = System.currentTimeMillis() + timeoutMs;

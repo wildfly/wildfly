@@ -37,7 +37,7 @@ import org.jboss.as.process.ProcessManagerSlave.Handler;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class DirectServerCommunicationHandler implements ServerCommunicationHandler{
+public class DirectServerManagerCommunicationHandler implements ServerCommunicationHandler{
     private final SocketConnection socketConnection;
     private final OutputStream output;
     private final InputStream input;
@@ -46,7 +46,7 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
     private final InputStreamHandler inputHandler;
     private final ShutdownListener shutdownListener;
 
-    protected DirectServerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+    private DirectServerManagerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
         this.socketConnection = socketConnection;
         this.output = socketConnection.getOutputStream();
         this.input = socketConnection.getInputStream();
@@ -56,8 +56,8 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
         this.shutdownListener = shutdownListener;
     }
 
-    static DirectServerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
-        DirectServerCommunicationHandler handler = new DirectServerCommunicationHandler(socketConnection, serverName, messageHandler, shutdownListener);
+    public static DirectServerManagerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+        DirectServerManagerCommunicationHandler handler = new DirectServerManagerCommunicationHandler(socketConnection, serverName, messageHandler, shutdownListener);
         handler.start();
         return handler;
     }
@@ -85,7 +85,7 @@ public class DirectServerCommunicationHandler implements ServerCommunicationHand
         inputHandler.shutdown();
     }
 
-    protected boolean isClosed() {
+    public boolean isClosed() {
         return !socketConnection.isOpen();
     }
 

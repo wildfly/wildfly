@@ -43,7 +43,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.xml.stream.XMLInputFactory;
+
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
@@ -59,7 +61,7 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
-import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
+import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
 import org.jboss.as.server.manager.management.ManagementCommunicationService;
 import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
@@ -91,6 +93,7 @@ import org.jboss.staxmapper.XMLMapper;
  * A ServerManager.
  *
  * @author Brian Stansberry
+ * @author Kabir Khan
  */
 public class ServerManager implements ShutdownListener {
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
@@ -157,6 +160,7 @@ public class ServerManager implements ShutdownListener {
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(new AbstractServiceListener<Object>() {
+            @Override
             public void serviceFailed(ServiceController<?> serviceController, StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
@@ -633,7 +637,7 @@ public class ServerManager implements ShutdownListener {
         return hostConfig;
     }
 
-    private HostModel parseHost() {
+    protected HostModel parseHost() {
 
         if (!hostXML.exists()) {
             throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " does not exist.");

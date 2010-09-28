@@ -19,57 +19,76 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.as.protocol.support.server;
+package org.jboss.test.as.protocol.support.server.manager;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.server.ServerCommunicationHandler.Handler;
+import org.jboss.as.process.ProcessManagerSlave.Handler;
 
 /**
- *
+ * A server manager side Handler implementation that allows us to see the commands
+ * received from a server instance
+ * *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MockServerSideMessageHandler implements Handler{
+public class TestServerManagerMessageHandler implements Handler{
 
-    final AtomicInteger puts = new AtomicInteger();
-    final AtomicInteger gets = new AtomicInteger();
-    final BlockingQueue<byte[]> data = new LinkedBlockingQueue<byte[]>();
+    private final BlockingQueue<ServerMessage> messages = new LinkedBlockingQueue<ServerMessage>();
 
     @Override
-    public void handleMessage(byte[] message) {
-        data.add(message);
+    public void handleMessage(String sourceProcessName, byte[] message) {
+        messages.add(new ServerMessage(sourceProcessName,message));
     }
 
     @Override
-    public void handleMessage(List<String> message) {
+    public void handleMessage(String sourceProcessName, List<String> message) {
     }
 
     @Override
     public void shutdown() {
-        System.out.println("Server shutting down");
+        messages.add(new ServerMessage(null, "SHUTDOWN".getBytes()));
     }
 
-    public byte[] awaitAndReadMessage() {
-        return awaitAndReadMessage(10000);
-    }
-
-    public byte[] awaitAndReadMessage(int timeoutMs) {
+    public ServerMessage awaitAndReadMessage() {
         try {
-            byte[] bytes = data.poll(timeoutMs, TimeUnit.MILLISECONDS);
-            if (bytes == null)
+            ServerMessage sm = messages.poll(10, TimeUnit.SECONDS);
+            if (sm == null)
                 throw new RuntimeException("Read timed out");
-            return bytes;
+            return sm;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void reconnectServer(String addr, String port) {
+    public void shutdownServers() {
+        messages.add(new ServerMessage(null, "SHUTDOWN_SERVERS".getBytes()));
+    }
+
+    @Override
+    public void down(String downProcessName) {
+    }
+
+    public class ServerMessage {
+        String sourceProcess;
+        byte[] message;
+
+        public ServerMessage(String sourceProcess, byte[] message) {
+            super();
+            this.sourceProcess = sourceProcess;
+            this.message = message;
+        }
+
+        public String getSourceProcess() {
+            return sourceProcess;
+        }
+
+        public byte[] getMessage() {
+            return message;
+        }
     }
 }

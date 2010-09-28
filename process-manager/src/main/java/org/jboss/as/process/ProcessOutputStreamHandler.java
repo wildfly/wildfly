@@ -281,5 +281,6 @@ public final class ProcessOutputStreamHandler implements Runnable {
     public interface Managed {
         String getProcessName();
         void closeCommandStream();
+        void processEnded(int exitCode);
     }
 }

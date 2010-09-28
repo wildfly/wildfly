@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,8 @@ import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
+import org.jboss.as.process.ManagedProcess.ProcessHandler;
+import org.jboss.as.process.ManagedProcess.RealProcessHandler;
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
 import org.jboss.logging.Logger;
 
@@ -48,9 +51,9 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
+public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
 
-    static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
+    public static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
 
     private final SocketListener socketListener;
 
@@ -62,8 +65,15 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
 
     private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
 
-    ProcessManagerMaster(InetAddress addr, int port) throws IOException {
+    private final ProcessHandlerFactory processHandlerFactory;
+
+    protected ProcessManagerMaster(InetAddress addr, int port) throws IOException{
+        this(null, addr, port);
+    }
+
+    protected ProcessManagerMaster(ProcessHandlerFactory processHandlerFactory, InetAddress addr, int port) throws IOException {
         socketListener = SocketListener.createSocketListener("PM", new ProcessAcceptor(), addr, port, 20);
+        this.processHandlerFactory = processHandlerFactory == null ? new RealProcessHandlerFactory() : processHandlerFactory;
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
             @Override
@@ -97,7 +107,7 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
         master.startProcess(SERVER_MANAGER_PROCESS_NAME);
     }
 
-    synchronized void start() {
+    protected synchronized void start() {
         try {
             socketListener.start();
         } catch (IOException e) {
@@ -106,7 +116,7 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
         }
     }
 
-    void shutdown() {
+    protected void shutdown() {
         boolean isShutdown = shutdown.getAndSet(true);
         if (isShutdown)
             return;
@@ -150,11 +160,15 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
         socketListener.shutdown();
     }
 
-    InetAddress getInetAddress() {
+    ProcessHandlerFactory getProcessHandlerFactory() {
+        return processHandlerFactory;
+    }
+
+    public InetAddress getInetAddress() {
         return socketListener.getAddress();
     }
 
-    Integer getPort() {
+    public Integer getPort() {
         return socketListener.getPort();
     }
 
@@ -463,6 +477,10 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
         }
     }
 
+    protected void acceptedConnection(String processName, SocketConnection connection) {
+        //Hook for tests
+    }
+
     private static class ParsedArgs {
         final Integer pmPort;
         final InetAddress pmAddress;
@@ -563,19 +581,25 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
             InputStream in = socket.getInputStream();
             StringBuilder sb = new StringBuilder();
 
-            //TODO Timeout on the read?
-            Status status = StreamUtils.readWord(in, sb);
-            if (status != Status.MORE) {
-                throw new InitialSocketRequestException("Process acceptor: received '" + sb.toString() + "' but no more");
-            }
-            if (!sb.toString().equals("CONNECTED")) {
-                throw new InitialSocketRequestException("Process acceptor: received unknown start command '" + sb.toString() + "'");
-            }
-            sb = new StringBuilder();
-            while (status == Status.MORE) {
+            socket.setSoTimeout(10000);
+            Status status;
+            String processName;
+            try {
                 status = StreamUtils.readWord(in, sb);
+                if (status != Status.MORE) {
+                    throw new InitialSocketRequestException("Process acceptor: received '" + sb.toString() + "' but no more");
+                }
+                if (!sb.toString().equals("CONNECTED")) {
+                    throw new InitialSocketRequestException("Process acceptor: received unknown start command '" + sb.toString() + "'");
+                }
+                sb = new StringBuilder();
+                while (status == Status.MORE) {
+                    status = StreamUtils.readWord(in, sb);
+                }
+                processName = sb.toString();
+            } catch (SocketTimeoutException e) {
+                throw new InitialSocketRequestException("Process acceptor: did not receive any data on socket within 10 seconds");
             }
-            String processName = sb.toString();
 
             final Map<String, ManagedProcess> processes = ProcessManagerMaster.this.processes;
             ManagedProcess process = null;
@@ -584,12 +608,31 @@ public final class ProcessManagerMaster implements ProcessOutputStreamHandler.Ma
                 if (process == null) {
                     throw new InitialSocketRequestException("Process acceptor: received connect command for unknown process '" + processName + "' (" +  processes.keySet() + ")");
                 }
-                if (!process.isStart()) {
-                    throw new InitialSocketRequestException("Process acceptor: received connect command for not started process '" + process + "'");
-                }
             }
+            socket.setSoTimeout(0);
             SocketConnection connection = SocketConnection.accepted(socket);
             process.setSocket(connection);
+            acceptedConnection(processName, connection);
+        }
+    }
+
+    /**
+     * Create instances of {@link ProcessHandler}. The default implementation
+     * returns an implementation of ProcessHandler that creates real processes.
+     * Tests may provide a different implementation
+     */
+    public interface ProcessHandlerFactory {
+        ProcessHandler createHandler();
+    }
+
+    /**
+     * ProcessHandler implementation that creates real processes.
+     */
+    private static class RealProcessHandlerFactory implements ProcessHandlerFactory {
+
+        @Override
+        public ProcessHandler createHandler() {
+            return new RealProcessHandler();
         }
     }
 }

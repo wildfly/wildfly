@@ -45,7 +45,7 @@ public abstract class ServerCommunicationHandler {
     protected final OutputStream output;
     private final SocketConnection managerConnection;
 
-    ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -65,7 +65,7 @@ public abstract class ServerCommunicationHandler {
 
     abstract Runnable getController();
 
-    public void start() {
+    protected void start() {
         Thread t = new Thread(getController(), "Server Process");
         t.start();
     }
@@ -78,11 +78,11 @@ public abstract class ServerCommunicationHandler {
         return output;
     }
 
-    protected void shutdown() {
+    public void shutdown() {
         managerConnection.close();
     }
 
-    protected boolean isClosed() {
+    public boolean isClosed() {
         return !managerConnection.isOpen();
     }
 

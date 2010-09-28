@@ -36,41 +36,41 @@ import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
-import org.jboss.as.server.DirectServerCommunicationHandler;
+import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.as.server.manager.ServerManager;
-import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
+import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.logging.Logger;
 
 /**
- * Copies the functionality of the {@link DirectServerCommunicationHandler}
- * but does not need a ServerManager/Server lookup
+ * Copies the functionality of the {@link DirectServerManagerCommunicationHandler}
+ * but keeps track of handlers by server
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MockDirectServerManagerCommunicationListener implements ShutdownListener {
+public class TestDirectServerManagerCommunicationListener implements ShutdownListener {
 
-    private final Logger log = Logger.getLogger(MockDirectServerManagerCommunicationListener.class);
+    private final Logger log = Logger.getLogger(TestDirectServerManagerCommunicationListener.class);
 
     private final SocketListener socketListener;
 
     @SuppressWarnings("unused")
     private final ServerManager serverManager;
 
-    private final MockServerManagerMessageHandler messageHandler;
+    private final TestServerManagerMessageHandler messageHandler;
 
     private volatile CountDownLatch newConnectionLatch = new CountDownLatch(1);
 
-    private final Map<String, MockDirectServerManagerCommunicationHandler> handlers = new ConcurrentHashMap<String, MockDirectServerManagerCommunicationHandler>();
+    private final Map<String, DirectServerManagerCommunicationHandler> handlers = new ConcurrentHashMap<String, DirectServerManagerCommunicationHandler>();
 
-    private MockDirectServerManagerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog, MockServerManagerMessageHandler messageHandler) throws IOException {
+    private TestDirectServerManagerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
         this.serverManager = serverManager;
         socketListener = SocketListener.createSocketListener("ServerManager", new ServerAcceptor(), address, port, backlog);
         this.messageHandler = messageHandler;
     }
 
-    public static MockDirectServerManagerCommunicationListener create(ServerManager serverManager, InetAddress address, int port, int backlog, MockServerManagerMessageHandler messageHandler) throws IOException {
-        MockDirectServerManagerCommunicationListener listener = new MockDirectServerManagerCommunicationListener(serverManager, address, port, backlog, messageHandler);
+    public static TestDirectServerManagerCommunicationListener create(ServerManager serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
+        TestDirectServerManagerCommunicationListener listener = new TestDirectServerManagerCommunicationListener(serverManager, address, port, backlog, messageHandler);
         listener.start();
         return listener;
     }
@@ -88,7 +88,7 @@ public class MockDirectServerManagerCommunicationListener implements ShutdownLis
     }
 
 
-    public MockDirectServerManagerCommunicationHandler getManagerHandler(String processName) {
+    public DirectServerManagerCommunicationHandler getManagerHandler(String processName) {
         return handlers.get(processName);
     }
 
@@ -128,7 +128,7 @@ public class MockDirectServerManagerCommunicationListener implements ShutdownLis
             String processName = sb.toString();
 
             log.infof("Server acceptor: connected server %s", processName);
-            MockDirectServerManagerCommunicationHandler handler = MockDirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, messageHandler, MockDirectServerManagerCommunicationListener.this);
+            DirectServerManagerCommunicationHandler handler = DirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, messageHandler, TestDirectServerManagerCommunicationListener.this);
             handlers.put(processName, handler);
 
             newConnectionLatch.countDown();

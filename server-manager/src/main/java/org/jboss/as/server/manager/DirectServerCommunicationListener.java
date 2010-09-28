@@ -102,7 +102,7 @@ class DirectServerCommunicationListener{
             if (server == null) {
                 throw new InitialSocketRequestException("Server acceptor: unknown server " + processName);
             }
-            server.setCommunicationHandler(DirectServerCommunicationHandler.create(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager), serverManager));
+            server.setCommunicationHandler(DirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager), serverManager));
         }
     }
 }

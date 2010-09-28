@@ -38,12 +38,18 @@ import org.jboss.as.process.SystemExiter;
  *
  * @author Kabir Khan
  */
-public class DirectServerCommunicationHandler extends ServerCommunicationHandler {
+public class DirectServerSideCommunicationHandler extends ServerCommunicationHandler {
 
     final Runnable controller = new InputStreamHandler();
 
-    public DirectServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+    private DirectServerSideCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
         super(processName, addr, port, handler);
+    }
+
+    public static DirectServerSideCommunicationHandler create(String processName, InetAddress addr, Integer port, final Handler handler){
+        DirectServerSideCommunicationHandler comm = new DirectServerSideCommunicationHandler(processName, addr, port, handler);
+        comm.start();
+        return comm;
     }
 
     @Override
@@ -58,27 +64,6 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
         output.write(message, 0, message.length);
         output.flush();
     }
-
-
-//    class LoggingOutputStream extends OutputStream{
-//        OutputStream delegate;
-//
-//        public LoggingOutputStream(OutputStream delegate) {
-//            this.delegate = delegate;
-//        }
-//
-//        @Override
-//        public void write(int b) throws IOException {
-//            System.out.println("----> " + b);
-//            delegate.write(b);
-//        }
-//
-//        @Override
-//        public void flush() throws IOException {
-//            delegate.flush();
-//        }
-//    }
-
 
     @Override
     public Runnable getController() {
@@ -106,7 +91,7 @@ public class DirectServerCommunicationHandler extends ServerCommunicationHandler
 
         void shutdown() {
             if (!shutdown.getAndSet(true)) {
-                DirectServerCommunicationHandler.this.shutdown();
+                DirectServerSideCommunicationHandler.this.shutdown();
 
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {

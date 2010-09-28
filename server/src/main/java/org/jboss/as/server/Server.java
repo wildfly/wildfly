@@ -49,7 +49,7 @@ public class Server extends AbstractServer {
 
     private ServerCommunicationHandler serverCommunicationHandler;
     private ServerCommunicationHandler processManagerCommunicationHandler;
-    private AtomicBoolean stopping = new AtomicBoolean();
+    private final AtomicBoolean stopping = new AtomicBoolean();
 
     private final MessageHandler messageHandler = new MessageHandler(this);
 
@@ -60,6 +60,7 @@ public class Server extends AbstractServer {
         state = ServerState.BOOTING;
     }
 
+    @Override
     public void start() {
         launchCommunicationHandlers();
         sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
@@ -67,6 +68,7 @@ public class Server extends AbstractServer {
         log.info("Server Available to start");
     }
 
+    @Override
     public void start(ServerModel config) throws ServerStartException {
         try {
             state = ServerState.STARTING;
@@ -78,6 +80,7 @@ public class Server extends AbstractServer {
         }
     }
 
+    @Override
     public void stop() {
         if (stopping.getAndSet(true))
             return;
@@ -86,8 +89,7 @@ public class Server extends AbstractServer {
         sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
         state = ServerState.STOPPED;
         log.info("Server stopped");
-        serverCommunicationHandler.shutdown();
-        processManagerCommunicationHandler.shutdown();
+        shutdownCommunicationHandlers();
     }
 
     public void reconnectToServerManager(String host, String port) {
@@ -105,8 +107,7 @@ public class Server extends AbstractServer {
             log.errorf("Could not parse %s into a port", port);
             return;
         }
-        this.serverCommunicationHandler = new DirectServerCommunicationHandler(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
-        this.serverCommunicationHandler.start();
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
         sendMessage(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state);
     }
 
@@ -135,13 +136,11 @@ public class Server extends AbstractServer {
 
     private void launchCommunicationHandlers() {
         ServerEnvironment env = getEnvironment();
-        this.processManagerCommunicationHandler = new ProcessManagerServerCommunicationHandler(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
-        this.processManagerCommunicationHandler.start();
-        this.serverCommunicationHandler = new DirectServerCommunicationHandler(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
-        this.serverCommunicationHandler.start();
+        this.processManagerCommunicationHandler = ProcessManagerServerCommunicationHandler.create(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
     }
 
-    private void sendMessage(ServerManagerProtocolCommand command) {
+    protected void sendMessage(ServerManagerProtocolCommand command) {
         try {
             byte[] bytes = command.createCommandBytes(null);
             serverCommunicationHandler.sendMessage(bytes);
@@ -156,5 +155,14 @@ public class Server extends AbstractServer {
         } catch (IOException e) {
             log.error("Failed to send message to Server Manager [" + command + ":" + data + "]", e);
         }
+    }
+
+    protected void setState(ServerState state) {
+        this.state = state;
+    }
+
+    protected void shutdownCommunicationHandlers() {
+        serverCommunicationHandler.shutdown();
+        processManagerCommunicationHandler.shutdown();
     }
 }

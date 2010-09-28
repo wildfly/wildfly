@@ -38,7 +38,7 @@ import org.jboss.logging.Logger;
  *
  * @author Brian Stansberry
  */
-class MessageHandler implements Handler {
+public class MessageHandler implements Handler {
 
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
 
@@ -46,7 +46,7 @@ class MessageHandler implements Handler {
 //    private final Map<String, Server> servers = new ConcurrentHashMap<String, Server>();
 
 
-    MessageHandler(ServerManager serverManager) {
+    public MessageHandler(ServerManager serverManager) {
         if (serverManager == null) {
             throw new IllegalArgumentException("serverManager is null");
         }

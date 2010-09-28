@@ -45,11 +45,18 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
 
     private final Controller controller = new Controller();
 
-    public ProcessManagerServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+    private ProcessManagerServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
         super(processName, addr, port, handler);
     }
 
-     public void sendMessage(final List<String> message) throws IOException {
+    public static ProcessManagerServerCommunicationHandler create(String processName, InetAddress addr, Integer port, final Handler handler){
+        ProcessManagerServerCommunicationHandler comm = new ProcessManagerServerCommunicationHandler(processName, addr, port, handler);
+        comm.start();
+        return comm;
+    }
+
+    @Override
+    public void sendMessage(final List<String> message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.SEND);
         b.append('\0').append("ServerManager");
@@ -61,6 +68,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
         output.flush();
     }
 
+    @Override
     public void sendMessage(final byte[] message) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append(Command.SEND_BYTES);
@@ -73,12 +81,13 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
         output.flush();
     }
 
+    @Override
     public Runnable getController() {
         return controller;
     }
 
     @Override
-    protected void shutdown() {
+    public void shutdown() {
         super.shutdown();
     }
 
