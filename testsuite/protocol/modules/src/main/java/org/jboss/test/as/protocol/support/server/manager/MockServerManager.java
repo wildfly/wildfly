@@ -48,7 +48,7 @@ public class MockServerManager extends ServerManager {
     static class MockServerManagerEnvironment extends ServerManagerEnvironment {
 
         public MockServerManagerEnvironment(boolean isRestart) throws Exception{
-            super(new Properties(), false, System.in, System.out, System.err, "Test", InetAddress.getLocalHost(), 0, InetAddress.getLocalHost(), 0);
+            super(new Properties(), false, System.in, System.out, System.err, "Test", InetAddress.getLocalHost(), 0, InetAddress.getLocalHost(), 0, null);
         }
 
     }

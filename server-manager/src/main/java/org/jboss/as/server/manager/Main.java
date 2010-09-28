@@ -151,6 +151,7 @@ public final class Main {
         Integer smPort = null;
         InetAddress smAddress = null;
         String procName = null;
+        String defaultJVM = null;
         boolean isRestart = false;
 
         final int argsLength = args.length;
@@ -216,6 +217,8 @@ public final class Main {
                     procName = args[++i];
                 } else if (CommandLineConstants.RESTART_SERVER_MANAGER.equals(arg)) {
                     isRestart = true;
+                } else if(CommandLineConstants.DEFAULT_JVM.equals(arg)) {
+                    defaultJVM = args[++i];
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -241,7 +244,7 @@ public final class Main {
             }
         }
 
-        return new ServerManagerEnvironment(props,isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort);
+        return new ServerManagerEnvironment(props,isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {

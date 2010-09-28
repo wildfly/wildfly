@@ -56,6 +56,9 @@ public class CommandLineConstants {
     /** Start a standalone server */
     public static final String STANDALONE = "-standalone";
 
+    /** Configure a default jvm */
+    public static final String DEFAULT_JVM = "-default-jvm";
+
     /** Passed in when the server manager is respawned by PM */
     public static final String RESTART_SERVER_MANAGER = "-restarted-server-manager";
 

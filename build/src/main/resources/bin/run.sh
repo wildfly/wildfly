@@ -145,6 +145,7 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.server-manager \
+         -default-jvm \"$JAVA\" \
          "$@"
       JBOSS_STATUS=$?
    else
@@ -160,6 +161,7 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.server-manager \
+         -default-jvm \"$JAVA\" \
          "$@" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process

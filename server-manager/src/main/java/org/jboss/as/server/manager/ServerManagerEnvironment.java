@@ -99,15 +99,16 @@ public class ServerManagerEnvironment {
     private final File domainLogDir;
     private final File domainServersDir;
     private final File domainTempDir;
+    private final File defaultJVM;
     private final boolean isRestart;
-
 
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
 
     public ServerManagerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
-            String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress, Integer serverManagerPort) {
+            String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress,
+            Integer serverManagerPort, String defaultJVM) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -206,6 +207,11 @@ public class ServerManagerEnvironment {
         this.domainTempDir = tmp;
         System.setProperty(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
 
+        if(defaultJVM != null) {
+            this.defaultJVM = new File(defaultJVM);
+        } else {
+            this.defaultJVM = null;
+        }
     }
 
     /**
@@ -324,6 +330,10 @@ public class ServerManagerEnvironment {
 
     public File getDomainTempDir() {
         return domainTempDir;
+    }
+
+    public File getDefaultJVM() {
+        return defaultJVM;
     }
 
     private static InetAddress findLocalhost() {
