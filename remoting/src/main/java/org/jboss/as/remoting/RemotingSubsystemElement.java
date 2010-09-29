@@ -140,17 +140,21 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         return calculateElementHashOf(connectors.values(), 0L);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<RemotingSubsystemElement> getElementClass() {
         return RemotingSubsystemElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.THREAD_POOL.getLocalName(), threadPoolName);
         for (ConnectorElement element : connectors.values()) {
             streamWriter.writeStartElement("connector");
             element.writeContent(streamWriter);
@@ -159,6 +163,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     }
 
     /** {@inheritDoc} */
+    @Override
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Remoting Subsystem");
         final BatchBuilder batchBuilder = context.getBatchBuilder();

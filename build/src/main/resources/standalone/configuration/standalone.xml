@@ -20,19 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0"
-        xmlns:remoting="urn:jboss:domain:remoting:1.0"
-        xmlns:threads="urn:jboss:domain:threads:1.0"
-        xmlns:txn="urn:jboss:domain:transactions:1.0"
-        xmlns:naming="urn:jboss:domain:naming:1.0"
-        xmlns:messaging="urn:jboss:domain:messaging:1.0"
+<server xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
-                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
-                            urn:jboss:domain:transactions:1.0 jboss-transactions.xsd
-                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
-                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <name>Standalone</name>
 
@@ -44,19 +34,18 @@
     </extensions>
 
     <profile name="something">
-        <threads:subsystem>
-            <threads:scheduled-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="SECONDS"/>
-            </threads:scheduled-thread-pool-executor>
-        </threads:subsystem>
-        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
-        <txn:subsystem>
-            <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-            <txn:core-environment socket-binding="txn-socket-process-id"/>
-        </txn:subsystem>
-        <remoting:subsystem thread-pool="remoting"/>
-        <messaging:subsystem>
+        <subsystem xmlns="urn:jboss:domain:threads:1.0">
+            <scheduled-thread-pool-executor name="remoting">
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="SECONDS"/>
+            </scheduled-thread-pool-executor>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <subsystem xmlns="urn:jboss:domain:transactions:1.0">
+            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <core-environment socket-binding="txn-socket-process-id"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- A standard hornetq configuration -->
             <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
             <journal-type>NIO</journal-type>
@@ -129,8 +118,8 @@
                   <address-full-policy>BLOCK</address-full-policy>
                </address-setting>
             </address-settings>
-        </messaging:subsystem>
-
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
     </profile>

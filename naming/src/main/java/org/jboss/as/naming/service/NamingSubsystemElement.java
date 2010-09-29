@@ -105,21 +105,25 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         return 42;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<NamingSubsystemElement> getElementClass() {
         return NamingSubsystemElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.SUPPORT_EVENTS.getLocalName(), Boolean.toString(isSupportEvents()));
         streamWriter.writeAttribute(Attribute.BIND_APP_CONTEXT.getLocalName(), Boolean.toString(isBindAppContext()));
         streamWriter.writeAttribute(Attribute.BIND_MODULE_CONTEXT.getLocalName(), Boolean.toString(isBindModuleContext()));
         streamWriter.writeAttribute(Attribute.BIND_COMP_CONTEXT.getLocalName(), Boolean.toString(isBindCompContext()));
+        streamWriter.writeEndElement();
     }
 
     /**
@@ -127,6 +131,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
      *
      * @param context the service activation context
      */
+    @Override
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Naming Subsystem");
 

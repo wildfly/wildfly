@@ -183,6 +183,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long hash = key.elementHash();
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(start).hashCode() & 0xffffffffL;
@@ -190,15 +191,19 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<ServerGroupDeploymentElement> getElementClass() {
         return ServerGroupDeploymentElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key.getName());
         streamWriter.writeAttribute(Attribute.SHA1.getLocalName(), key.getSha1HashAsHexString());
         if (!this.start) streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
+
+        streamWriter.writeEndElement();
     }
 
     @Override

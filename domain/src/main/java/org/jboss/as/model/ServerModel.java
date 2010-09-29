@@ -324,10 +324,13 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         synchronized (namespaces) {
             for (NamespaceAttribute namespace : namespaces.values()) {
                 if (namespace.isDefaultNamespaceDeclaration()) {
-                    // for now I assume this is handled externally
-                    continue;
+                    streamWriter.setDefaultNamespace(namespace.getNamespaceURI());
+                    streamWriter.writeDefaultNamespace(namespace.getNamespaceURI());
                 }
-                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+                else {
+                    streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+                    streamWriter.writeNamespace(namespace.getPrefix(), namespace.getNamespaceURI());
+                }
             }
         }
 
@@ -345,7 +348,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
                 for (ExtensionElement element : extensions.values()) {
-                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                    streamWriter.writeStartElement(Element.EXTENSION.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
@@ -386,6 +389,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             }
             streamWriter.writeEndElement();
         }
+
+        streamWriter.writeEndElement();
     }
 
     /**

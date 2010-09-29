@@ -24,7 +24,7 @@ public class InetAddressMatchCriteriaElement extends AbstractInterfaceCriteriaEl
     private String address;
 
     /**
-     * Creates a new NicMatchCriteriaElement by parsing an xml stream
+     * Creates a new InetAddressMatchCriteriaElement by parsing an xml stream
      *
      * @param reader stream reader used to read the xml
      * @throws XMLStreamException if an error occurs
@@ -32,7 +32,7 @@ public class InetAddressMatchCriteriaElement extends AbstractInterfaceCriteriaEl
     public InetAddressMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader, Element.INET_ADDRESS);
 
-        String address = readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
+        address = readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
         setInterfaceCriteria(new InetAddressMatchInterfaceCriteria(address));
     }
 

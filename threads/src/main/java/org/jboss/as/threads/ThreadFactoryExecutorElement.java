@@ -111,6 +111,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 
+    @Override
     public long elementHash() {
         return super.elementHash();
     }
@@ -119,10 +120,12 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
         return blocking;
     }
 
+    @Override
     protected Class<ThreadFactoryExecutorElement> getElementClass() {
         return ThreadFactoryExecutorElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
         if (blocking) { streamWriter.writeAttribute("blocking", "true"); }
@@ -139,5 +142,10 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
             properties.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
+    }
+
+    @Override
+    protected Element getStandardElement() {
+        return Element.THREAD_FACTORY_EXECUTOR;
     }
 }
