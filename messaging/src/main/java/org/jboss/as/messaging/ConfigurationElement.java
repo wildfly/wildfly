@@ -61,7 +61,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case BINDINGS_DIRECTORY: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setBindingsDirectory(text);
+               config.setBindingsDirectory(text.trim());
             }
          }
          break;
@@ -71,7 +71,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case CLUSTERED: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setClustered(Boolean.getBoolean(text));
+               config.setClustered(Boolean.getBoolean(text.trim()));
             }
          }
          break;
@@ -132,14 +132,14 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case JOURNAL_DIRECTORY: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setJournalDirectory(text);
+               config.setJournalDirectory(text.trim());
             }
          }
          break;
          case JOURNAL_MIN_FILES: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setJournalMinFiles(Integer.valueOf(text));
+               config.setJournalMinFiles(Integer.valueOf(text.trim()));
             }
          }
          break;
@@ -152,7 +152,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case JOURNAL_TYPE:{
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               JournalType jtype = JournalType.valueOf(text);
+               JournalType jtype = JournalType.valueOf(text.trim());
                config.setJournalType(jtype);
             }
          }
@@ -160,7 +160,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case JOURNAL_FILE_SIZE:{
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               int size = Integer.valueOf(text);
+               int size = Integer.valueOf(text.trim());
                config.setJournalFileSize(size);
             }
          }
@@ -171,7 +171,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case LARGE_MESSAGES_DIRECTORY: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setLargeMessagesDirectory(text);
+               config.setLargeMessagesDirectory(text.trim());
             }
          }
          break;
@@ -214,7 +214,7 @@ public class ConfigurationElement extends AbstractModelElement<ConfigurationElem
          case PAGING_DIRECTORY: {
             String text = reader.getElementText();
             if (text != null && text.length() > 0) {
-               config.setPagingDirectory(text);
+               config.setPagingDirectory(text.trim());
             }
          }
          break;

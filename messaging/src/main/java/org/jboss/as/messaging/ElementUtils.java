@@ -71,7 +71,7 @@ public class ElementUtils {
 
          switch(element) {
          case FACTORY_CLASS:
-            clazz = reader.getElementText();
+            clazz = reader.getElementText().trim();
          break;
          case PARAM:
             int count = reader.getAttributeCount();

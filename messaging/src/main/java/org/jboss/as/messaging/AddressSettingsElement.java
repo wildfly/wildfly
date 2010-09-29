@@ -99,29 +99,29 @@ public class AddressSettingsElement extends AbstractModelElement<AddressSettings
 
          switch (element) {
          case DEAD_LETTER_ADDRESS_NODE_NAME: {
-            SimpleString queueName = new SimpleString(reader.getElementText());
+            SimpleString queueName = new SimpleString(reader.getElementText().trim());
             addressSettings.setDeadLetterAddress(queueName);
          }
          break;
          case EXPIRY_ADDRESS_NODE_NAME: {
-            SimpleString queueName = new SimpleString(reader.getElementText());
+            SimpleString queueName = new SimpleString(reader.getElementText().trim());
             addressSettings.setExpiryAddress(queueName);
          }
          break;
          case REDELIVERY_DELAY_NODE_NAME: {
-            addressSettings.setRedeliveryDelay(Long.valueOf(reader.getElementText()));
+            addressSettings.setRedeliveryDelay(Long.valueOf(reader.getElementText().trim()));
          }
          break;
          case MAX_SIZE_BYTES_NODE_NAME: {
-            addressSettings.setMaxSizeBytes(Long.valueOf(reader.getElementText()));
+            addressSettings.setMaxSizeBytes(Long.valueOf(reader.getElementText().trim()));
          }
          break;
          case PAGE_SIZE_BYTES_NODE_NAME: {
-            addressSettings.setPageSizeBytes(Long.valueOf(reader.getElementText()));
+            addressSettings.setPageSizeBytes(Long.valueOf(reader.getElementText().trim()));
          }
          break;
          case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME: {
-            addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText()));
+            addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText().trim()));
          }
          break;
          case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME: {
