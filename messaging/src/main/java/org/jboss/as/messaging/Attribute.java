@@ -18,6 +18,7 @@ public enum Attribute {
    DELETETEMPQUEUE_NAME("deleteTempQueue"),
    KEY("key"),
    MANAGE_NAME("manage"),
+   MATCH("match"),
    NAME("name"),
    ROLES_ATTR_NAME("roles"),
    SEND_NAME("send"),
@@ -55,6 +56,7 @@ public enum Attribute {
       return element == null ? UNKNOWN : element;
    }
 
+   @Override
    public String toString() {
       return getLocalName();
    }

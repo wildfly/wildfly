@@ -4,20 +4,17 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.messaging.hornetq.HornetQService;
-import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,6 +64,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
    /**
     * {@inheritDoc}
     */
+   @Override
    public long elementHash() {
       // TODO
       return 0L;
@@ -76,6 +74,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Class<MessagingSubsystemElement> getElementClass() {
       return MessagingSubsystemElement.class;
    }
@@ -83,8 +82,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
    /**
     * {@inheritDoc}
     */
+   @Override
    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-      streamWriter.writeStartElement("configuration");
       configuration.writeContent(streamWriter);
       streamWriter.writeEndElement();
    }
@@ -92,6 +91,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
    /**
     * Add the HornetQServer to the subsystem batch
     */
+   @Override
    public void activate(final ServiceActivatorContext context) {
       log.info("Activating Messaging Subsystem");
       HornetQService hqservice = new HornetQService();

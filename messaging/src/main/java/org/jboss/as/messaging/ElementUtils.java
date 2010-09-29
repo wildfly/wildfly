@@ -1,11 +1,15 @@
 package org.jboss.as.messaging;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.security.Role;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -94,5 +98,81 @@ public class ElementUtils {
       } while(reader.hasNext());
 
       return new TransportConfiguration(clazz, params, name);
+   }
+
+   static void writeTransportConfiguration(TransportConfiguration config, XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+
+       streamWriter.writeAttribute(Attribute.NAME.getLocalName(), config.getName());
+
+       writeSimpleElement(Element.FACTORY_CLASS, config.getFactoryClassName(), streamWriter);
+       Map<String, Object> params = config.getParams();
+       if (params != null) {
+           for (Map.Entry<String, Object> entry : params.entrySet()) {
+               streamWriter.writeEmptyElement(Element.PARAM.getLocalName());
+               streamWriter.writeAttribute(Attribute.KEY.getLocalName(), entry.getKey());
+               streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().toString());
+           }
+       }
+   }
+
+   static void writeSimpleElement(final Element element, final String content, final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+       if (content != null && content.length() > 0) {
+           streamWriter.writeStartElement(element.getLocalName());
+           streamWriter.writeCharacters(content);
+           streamWriter.writeEndElement();
+       }
+   }
+
+   static void writeSimpleElement(final Element element, final SimpleString content, final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+       if (content != null) {
+           writeSimpleElement(element, content.toString(), streamWriter);
+       }
+   }
+
+   static void writeRoles(final Set<Role> roles, final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+       Map<Attribute, String> rolesByType = new HashMap<Attribute, String>();
+
+       for (Role role : roles) {
+           String name = role.getName();
+           if (role.isConsume()) {
+               storeRoleToType(Attribute.CONSUME_NAME, name, rolesByType);
+           }
+           if (role.isCreateDurableQueue()) {
+               storeRoleToType(Attribute.CREATEDURABLEQUEUE_NAME, name, rolesByType);
+           }
+           if (role.isCreateNonDurableQueue()) {
+               storeRoleToType(Attribute.CREATE_NON_DURABLE_QUEUE_NAME, name, rolesByType);
+           }
+           if (role.isDeleteDurableQueue()) {
+               storeRoleToType(Attribute.DELETEDURABLEQUEUE_NAME, name, rolesByType);
+           }
+           if (role.isDeleteNonDurableQueue()) {
+               storeRoleToType(Attribute.DELETE_NON_DURABLE_QUEUE_NAME, name, rolesByType);
+           }
+           if (role.isManage()) {
+               storeRoleToType(Attribute.MANAGE_NAME, name, rolesByType);
+           }
+           if (role.isSend()) {
+               storeRoleToType(Attribute.SEND_NAME, name, rolesByType);
+           }
+       }
+
+       for (Map.Entry<Attribute, String> entry : rolesByType.entrySet()) {
+           streamWriter.writeStartElement(Element.PERMISSION_ELEMENT_NAME.getLocalName());
+           streamWriter.writeAttribute(Attribute.TYPE_ATTR_NAME.getLocalName(), entry.getKey().getLocalName());
+           streamWriter.writeAttribute(Attribute.ROLES_ATTR_NAME.getLocalName(), entry.getValue());
+           streamWriter.writeEndElement();
+       }
+   }
+
+   private static void storeRoleToType(Attribute type, String role, Map<Attribute, String> rolesByType) {
+    String roleList = rolesByType.get(type);
+       if (roleList == null) {
+           roleList = role;
+       }
+       else {
+           roleList += ", " + role;
+       }
+       rolesByType.put(type, roleList);
    }
 }
