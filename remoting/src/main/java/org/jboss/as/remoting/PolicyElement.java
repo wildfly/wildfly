@@ -99,17 +99,6 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
         }
     }
 
-    public long elementHash() {
-        long hash = 0L;
-        if (forwardSecrecy != null) { hash = forwardSecrecy.hashCode() & 0xffffffffL; }
-        if (noActive != null) { hash = (noActive.hashCode() & 0xffffffffL) << 1 ^ hash; }
-        if (noAnonymous != null) { hash = (noAnonymous.hashCode() & 0xffffffffL) << 2 ^ hash; }
-        if (noDictionary != null) { hash = (noDictionary.hashCode() & 0xffffffffL) << 3 ^ hash; }
-        if (noPlainText != null) { hash = (noPlainText.hashCode() & 0xffffffffL) << 4 ^ hash; }
-        if (passCredentials != null) { hash = (passCredentials.hashCode() & 0xffffffffL) << 5 ^ hash; }
-        return hash;
-    }
-
     protected Class<PolicyElement> getElementClass() {
         return PolicyElement.class;
     }

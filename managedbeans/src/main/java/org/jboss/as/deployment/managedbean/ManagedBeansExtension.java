@@ -22,25 +22,39 @@
 
 package org.jboss.as.deployment.managedbean;
 
-import javax.xml.namespace.QName;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Domain extension used to initialize the managed bean subsystem element handlers.
  *
  * @author John E. Bailey
+ * @author Emanuel Muckenhuber
  */
 public class ManagedBeansExtension implements Extension {
 
-    /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
-     */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:managedbeans:1.0", "subsystem"), new ManagedBeanSubsystemElementParser());
+    public static final String NAMESPACE = "urn:jboss:domain:managedbeans:1.0";
+
+    final ManagedBeanSubsystemElementParser PARSER = new ManagedBeanSubsystemElementParser();
+    final SubsystemFactory<ManagedBeansSubsystemElement> FACTORY = new SubsystemFactory<ManagedBeansSubsystemElement>() {
+        public ManagedBeansSubsystemElement createSubsystemElement() {
+            return new ManagedBeansSubsystemElement();
+        }
+    };
+
+    /** {@inheritDoc} */
+    public void initialize(ExtensionContext context) {
+        context.registerSubsystem(NAMESPACE, FACTORY, PARSER);
     }
 
     /**
@@ -49,5 +63,16 @@ public class ManagedBeansExtension implements Extension {
      * @param context the service activation context
      */
     public void activate(final ServiceActivatorContext context) {
+    }
+
+    static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>>> {
+
+        /** {@inheritDoc} */
+        public void readElement(XMLExtendedStreamReader reader,
+                List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>> arg1) throws XMLStreamException {
+            // Require no content
+            ParseUtils.requireNoContent(reader);
+        }
+
     }
 }

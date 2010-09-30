@@ -20,34 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.remoting;
+package org.jboss.as.jmx;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.msc.service.ServiceActivatorContext;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * The implementation of the Remoting extension.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class RemotingExtension implements Extension {
+public enum Namespace {
+    // must be first
+    UNKNOWN(null),
 
-    private static final SubsystemFactory<RemotingSubsystemElement> FACTORY = new SubsystemFactory<RemotingSubsystemElement>() {
-        public RemotingSubsystemElement createSubsystemElement() {
-            return new RemotingSubsystemElement();
-        };
-    };
+    JMX_1_0("urn:jboss:domain:jmx:1.0")
+    ;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.REMOTING_1_0.getUriString(), FACTORY, RemotingSubsystemParser.getInstance());
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = JMX_1_0;
+
+    private final String name;
+
+    Namespace(final String name) {
+        this.name = name;
     }
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        // no actions needed
+    /**
+     * Get the URI of this namespace.
+     *
+     * @return the URI
+     */
+    public String getUriString() {
+        return name;
     }
 
+    private static final Map<String, Namespace> MAP;
+
+    static {
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) map.put(name, namespace);
+        }
+        MAP = map;
+    }
+
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
+        return element == null ? UNKNOWN : element;
+    }
 }

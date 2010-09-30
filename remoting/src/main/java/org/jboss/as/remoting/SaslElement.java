@@ -22,20 +22,18 @@
 
 package org.jboss.as.remoting;
 
-import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.as.model.PropertiesElement;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.Options;
 import org.jboss.xnio.SaslQop;
 import org.jboss.xnio.SaslStrength;
 import org.jboss.xnio.Sequence;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,71 +42,16 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
 
     private static final long serialVersionUID = -7152729794181116303L;
 
-    private PropertiesElement properties;
     private PolicyElement policy;
     private String[] includeMechanisms;
     private SaslQop[] qop;
     private SaslStrength[] strength;
     private Boolean reuseSession;
     private Boolean serverAuth;
+    private Map<String, String> properties;
 
     public SaslElement() {
-    }
-
-    public SaslElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // No attributes
-        final int count = reader.getAttributeCount();
-        if (count > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
-        }
-        // Nested elements
-        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case REMOTING_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (visited.contains(element)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    visited.add(element);
-                    switch (element) {
-                        case INCLUDE_MECHANISMS: {
-                            includeMechanisms = ParseUtils.readArrayAttributeElement(reader, "value", String.class);
-                            break;
-                        }
-                        case POLICY: {
-                            policy = new PolicyElement(reader);
-                            break;
-                        }
-                        case PROPERTIES: {
-                            properties = new PropertiesElement(reader);
-                            break;
-                        }
-                        case QOP: {
-                            qop = ParseUtils.readArrayAttributeElement(reader, "value", SaslQop.class);
-                            break;
-                        }
-                        case REUSE_SESSION: {
-                            reuseSession = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case SERVER_AUTH: {
-                            serverAuth = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case STRENGTH: {
-                            strength = ParseUtils.readArrayAttributeElement(reader, "value", SaslStrength.class);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
+        //
     }
 
     /** {@inheritDoc} */
@@ -142,11 +85,73 @@ public final class SaslElement extends AbstractModelElement<SaslElement> {
             streamWriter.writeStartElement("policy");
             policy.writeContent(streamWriter);
         }
-        if (properties != null) {
-            streamWriter.writeStartElement("properties");
-            properties.writeContent(streamWriter);
+        if (properties != null && ! properties.isEmpty()) {
+            streamWriter.writeStartElement(Element.PROPERTIES.getLocalName());
+            for (String key : properties.keySet()) {
+                streamWriter.writeEmptyElement(Element.PROPERTY.getLocalName());
+                streamWriter.writeAttribute(Attribute.NAME.getLocalName(), key);
+                streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), properties.get(key));
+            }
+            streamWriter.writeEndElement();
         }
         streamWriter.writeEndElement();
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+
+
+    public PolicyElement getPolicy() {
+        return policy;
+    }
+
+    void setPolicy(PolicyElement policy) {
+        this.policy = policy;
+    }
+
+    public String[] getIncludeMechanisms() {
+        return includeMechanisms;
+    }
+
+    void setIncludeMechanisms(String[] includeMechanisms) {
+        this.includeMechanisms = includeMechanisms;
+    }
+
+    public SaslQop[] getQop() {
+        return qop;
+    }
+
+    void setQop(SaslQop[] qop) {
+        this.qop = qop;
+    }
+
+    public SaslStrength[] getStrength() {
+        return strength;
+    }
+
+    void setStrength(SaslStrength[] strength) {
+        this.strength = strength;
+    }
+
+    public Boolean getReuseSession() {
+        return reuseSession;
+    }
+
+    void setReuseSession(Boolean reuseSession) {
+        this.reuseSession = reuseSession;
+    }
+
+    public Boolean getServerAuth() {
+        return serverAuth;
+    }
+
+    void setServerAuth(Boolean serverAuth) {
+        this.serverAuth = serverAuth;
     }
 
     /**

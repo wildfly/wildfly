@@ -22,47 +22,64 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * Add a connector to a remoting container.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class AddConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
+public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = -2278776744412864865L;
+    private static final long serialVersionUID = -1238913680118311381L;
 
-    private final ConnectorElement newElement;
+    private final String name;
+    private final String socketBinding;
+    private SaslElement saslElement;
+    private String authenticationProvider;
+    private final Map<String, String> properties = new HashMap<String, String>();
 
-    /**
-     * Construct a new instance.
-     *
-     * @param newElement the connector element to add
-     */
-    public AddConnectorUpdate(final ConnectorElement newElement) {
-        this.newElement = newElement;
-    }
-
-    @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return null;
-    }
-
-    @Override
-    public AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
-        return null;
+    public AddConnectorUpdate(String name, String socketBinding) {
+        this.name = name;
+        this.socketBinding = socketBinding;
     }
 
     /** {@inheritDoc} */
-    @Override
-    public Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
     }
 
-    @Override
-    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
+    /** {@inheritDoc} */
+    public AbstractSubsystemUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(RemotingSubsystemElement original) {
+        return new RemoveConnectorUpdate(name);
     }
+
+    /** {@inheritDoc} */
+    protected void applyUpdate(RemotingSubsystemElement element) throws UpdateFailedException {
+        final ConnectorElement connector = element.addConnector(name, socketBinding);
+        connector.setAuthenticationProvider(authenticationProvider);
+        connector.setSaslElement(saslElement);
+        connector.setConnectorProperties(properties);
+    }
+
+    public void setSaslElement(SaslElement saslElement) {
+        this.saslElement = saslElement;
+    }
+
+    public void setAuthenticationProvider(String authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
 }

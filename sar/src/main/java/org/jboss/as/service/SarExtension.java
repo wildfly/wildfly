@@ -22,9 +22,19 @@
 
 package org.jboss.as.service;
 
+import java.util.List;
+
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -34,13 +44,18 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class SarExtension implements Extension {
 
-    /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
-     */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:sar:1.0", "subsystem"), new SarSubsystemElementParser());
+    public static final String NAMESPACE = "urn:jboss:domain:sar:1.0";
+
+    static final SarSubSystemElementParser PARSER = new SarSubSystemElementParser();
+    static final SubsystemFactory<SarSubsystemElement> FACTORY = new SubsystemFactory<SarSubsystemElement>() {
+        public SarSubsystemElement createSubsystemElement() {
+            return new SarSubsystemElement();
+        }
+    };
+
+    /** {@inheritDoc} */
+    public void initialize(ExtensionContext context) {
+        context.registerSubsystem(NAMESPACE, FACTORY, PARSER);
     }
 
     /**
@@ -49,5 +64,16 @@ public class SarExtension implements Extension {
      * @param context the service activation context
      */
     public void activate(final ServiceActivatorContext context) {
+    }
+
+
+    static class SarSubSystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>>> {
+
+        /** {@inheritDoc} */
+        public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> arg1)
+                throws XMLStreamException {
+            // Require no content
+            ParseUtils.requireNoContent(reader);
+        }
     }
 }

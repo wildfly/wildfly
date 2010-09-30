@@ -22,16 +22,18 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.model.AbstractModelUpdate;
-import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+
 
 /**
  * An update which removes a connector from the remoting container.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSubsystemElement, Void> {
+public final class RemoveConnectorUpdate extends AbstractRemotingSubsystemUpdate<Void> {
 
     private static final long serialVersionUID = -8965990593053845956L;
 
@@ -50,22 +52,28 @@ public final class RemoveConnectorUpdate extends AbstractModelUpdate<RemotingSub
     }
 
     /** {@inheritDoc} */
-    @Override
-    public Class<RemotingSubsystemElement> getModelElementType() {
-        return RemotingSubsystemElement.class;
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
     }
 
-    @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return null;
+    /** {@inheritDoc} */
+    public AbstractSubsystemUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(RemotingSubsystemElement subSystem) {
+        final ConnectorElement original = subSystem.getConnector(name);
+        if(original == null) {
+            throw new IllegalStateException("null connector name");
+        }
+        final AddConnectorUpdate update = new AddConnectorUpdate(original.getName(), original.getSocketBinding());
+        update.setAuthenticationProvider(original.getAuthenticationProvider());
+        update.setSaslElement(original.getSaslElement());
+        return update;
     }
 
-    @Override
-    public AbstractModelUpdate<RemotingSubsystemElement, ?> getCompensatingUpdate(final RemotingSubsystemElement original) {
-        return null;
+    /** {@inheritDoc} */
+    protected void applyUpdate(RemotingSubsystemElement element) throws UpdateFailedException {
+        ConnectorElement connector = element.removeConnector(name);
+        if(connector == null) {
+            throw new IllegalStateException("failed to remove connector " + name);
+        }
     }
 
-    @Override
-    protected void applyUpdate(final RemotingSubsystemElement element) throws UpdateFailedException {
-    }
 }

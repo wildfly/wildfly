@@ -20,22 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.service;
+package org.jboss.as.remoting;
 
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.model.ParseResult;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 
 /**
- * Element parser used to parse the SAR subsystem.
+ * The abstract remoting subsystem update.
  *
- * @author John Bailey
+ * @author Emanuel Muckenhuber
  */
-public class SarSubsystemElementParser implements XMLElementReader<ParseResult<? super SarSubsystemElement>> {
+public abstract class AbstractRemotingSubsystemUpdate<R> extends AbstractSubsystemUpdate<RemotingSubsystemElement, R> {
+
+    private static final long serialVersionUID = 2153633061736452981L;
+
+    protected AbstractRemotingSubsystemUpdate() {
+        super(Namespace.REMOTING_1_0.getUriString());
+    }
+
+    protected AbstractRemotingSubsystemUpdate(final boolean restart) {
+        super(Namespace.REMOTING_1_0.getUriString(), restart);
+    }
 
     /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader, final ParseResult<? super SarSubsystemElement> result) throws XMLStreamException {
-        result.setResult(new SarSubsystemElement(xmlExtendedStreamReader));
+    public Class<RemotingSubsystemElement> getModelElementType() {
+        return RemotingSubsystemElement.class;
     }
 }

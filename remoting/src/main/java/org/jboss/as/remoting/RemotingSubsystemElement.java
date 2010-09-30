@@ -23,15 +23,13 @@
 package org.jboss.as.remoting;
 
 import org.jboss.as.model.*;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -44,8 +42,6 @@ import java.util.TreeMap;
 public final class RemotingSubsystemElement extends AbstractSubsystemElement<RemotingSubsystemElement> {
 
     private static final long serialVersionUID = 8225457441023207312L;
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     /**
      * The service name "jboss.remoting".
@@ -69,6 +65,13 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
 
     /**
      * Construct a new instance.
+     */
+    public RemotingSubsystemElement() {
+        super(Namespace.REMOTING_1_0.getUriString());
+    }
+
+    /**
+     * Construct a new instance.
      *
      * @param threadPoolName the name of the thread pool for the remoting subsystem
      * @param elementName the name of the subsystem element
@@ -79,58 +82,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             throw new IllegalArgumentException("threadPoolName is null");
         }
         this.threadPoolName = threadPoolName;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which the subsystem element should be read
-     */
-    public RemotingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-        // Handle attributes
-        String threadPoolName = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case THREAD_POOL: {
-                        threadPoolName = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (threadPoolName == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(org.jboss.as.model.Attribute.THREAD_POOL));
-        }
-        this.threadPoolName = threadPoolName;
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case REMOTING_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case CONNECTOR: {
-                            final ConnectorElement connector = new ConnectorElement(reader);
-                            connectors.put(connector.getName(), connector);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
     }
 
     /** {@inheritDoc} */
@@ -159,6 +110,14 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         return threadPoolName;
     }
 
+    void setThreadPoolName(String threadPoolName) {
+        this.threadPoolName = threadPoolName;
+    }
+
+    ConnectorElement getConnector(String name) {
+        return connectors.get(name);
+    }
+
     String addConnector(final ConnectorElement element) {
         final String name = element.getName();
         if (connectors.containsKey(name)) {
@@ -174,5 +133,25 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
             throw new IllegalArgumentException("No such connector exists");
         }
         return element;
+    }
+
+    /** {@inheritDoc} */
+    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<RemotingSubsystemElement, ?>> list) {
+        // TODO Auto-generated method stub
+    }
+
+    /** {@inheritDoc} */
+    protected boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    ConnectorElement addConnector(String name, String socketBinding) {
+        if(this.connectors.containsKey(name)) {
+            return null;
+        }
+        final ConnectorElement connector = new ConnectorElement(name, socketBinding);
+        this.connectors.put(name, connector);
+        return connector;
     }
 }

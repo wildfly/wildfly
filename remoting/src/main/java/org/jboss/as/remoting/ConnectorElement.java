@@ -22,9 +22,12 @@
 
 package org.jboss.as.remoting;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
@@ -33,15 +36,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.ChannelListener;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.channels.ConnectedStreamChannel;
-
-import javax.xml.stream.XMLStreamException;
-import java.net.InetSocketAddress;
-import java.util.EnumSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -59,7 +57,7 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     private String socketBinding;
     private SaslElement saslElement;
     private String authenticationProvider;
-    private PropertiesElement connectorProperties;
+    private Map<String, String> connectorProperties;
 
     public ConnectorElement(final String name, final String socketBinding) {
         if (name == null) {
@@ -72,79 +70,6 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         this.socketBinding = socketBinding;
     }
 
-    public ConnectorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Handle attributes
-        String name = null;
-        String socketBinding = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case SOCKET_BINDING: {
-                        socketBinding = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-                required.remove(attribute);
-            }
-        }
-        if (! required.isEmpty()) {
-            throw ParseUtils.missingRequired(reader, required);
-        }
-        assert name != null;
-        assert socketBinding != null;
-        this.name = name;
-        this.socketBinding = socketBinding;
-        // Handle nested elements.
-        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case REMOTING_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (visited.contains(element)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    visited.add(element);
-                    switch (element) {
-                        case SASL: {
-                            saslElement = new SaslElement(reader);
-                            break;
-                        }
-                        case PROPERTIES: {
-                            connectorProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        case AUTHENTICATION_PROVIDER: {
-                            authenticationProvider = ParseUtils.readStringAttributeElement(reader, "name");
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-    }
-
-    /** {@inheritDoc} */
-    private long elementHash() {
-        return name.hashCode() & 0xFFFFFFFF;
-    }
-
     /** {@inheritDoc} */
     protected Class<ConnectorElement> getElementClass() {
         return ConnectorElement.class;
@@ -154,6 +79,15 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", name);
         streamWriter.writeAttribute("socket-binding", name);
+        if(saslElement != null) {
+            streamWriter.writeStartElement(Element.SASL.getLocalName());
+            saslElement.writeContent(streamWriter);
+        }
+        if(authenticationProvider != null) {
+            streamWriter.writeStartElement(Element.AUTHENTICATION_PROVIDER.getLocalName());
+            streamWriter.writeAttribute("name", authenticationProvider);
+            streamWriter.writeEndElement();
+        }
         streamWriter.writeEndElement();
     }
 
@@ -173,6 +107,30 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
      */
     public String getSocketBinding() {
         return socketBinding;
+    }
+
+    public String getAuthenticationProvider() {
+        return authenticationProvider;
+    }
+
+    void setAuthenticationProvider(String authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
+    }
+
+    public SaslElement getSaslElement() {
+        return saslElement;
+    }
+
+    void setSaslElement(SaslElement saslElement) {
+        this.saslElement = saslElement;
+    }
+
+    public Map<String, String> getConnectorProperties() {
+        return connectorProperties;
+    }
+
+    void setConnectorProperties(Map<String, String> connectorProperties) {
+        this.connectorProperties = connectorProperties;
     }
 
     /**

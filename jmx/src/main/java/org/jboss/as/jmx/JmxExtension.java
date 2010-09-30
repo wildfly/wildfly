@@ -22,10 +22,10 @@
 
 package org.jboss.as.jmx;
 
-import javax.xml.namespace.QName;
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  * JMX Extension
@@ -34,12 +34,19 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class JmxExtension implements Extension {
 
-    /** {@inheritDoc} */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:jmx:1.0", "subsystem"), new JmxSubsystemElementParser());
-    }
+    final SubsystemFactory<JmxSubsystemElement> FACTORY = new SubsystemFactory<JmxSubsystemElement>() {
+        public JmxSubsystemElement createSubsystemElement() {
+            return new JmxSubsystemElement();
+        }
+    };
 
     /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
     }
+
+    /** {@inheritDoc} */
+    public void initialize(ExtensionContext context) {
+        context.registerSubsystem(Namespace.JMX_1_0.getUriString(), FACTORY, new JmxSubsystemElementParser());
+    }
+
 }

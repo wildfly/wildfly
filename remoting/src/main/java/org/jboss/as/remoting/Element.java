@@ -44,6 +44,7 @@ public enum Element {
     PASS_CREDENTIALS("pass-credentials"),
     POLICY("policy"),
     PROPERTIES("properties"),
+    PROPERTY("property"),
     QOP("qop"),
     REUSE_SESSION("reuse-session"),
     SASL("sasl"),

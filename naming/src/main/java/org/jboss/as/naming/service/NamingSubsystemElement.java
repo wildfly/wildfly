@@ -22,19 +22,19 @@
 
 package org.jboss.as.naming.service;
 
+import java.util.List;
+
 import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.as.model.ParseUtils;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.value.Values;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.naming.Context;
 import javax.naming.Reference;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -43,7 +43,9 @@ import javax.xml.stream.XMLStreamException;
  * @author John E. Bailey
  */
 final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsystemElement> {
+
     private static final long serialVersionUID = -5701304143558865658L;
+
     private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
 
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
@@ -54,57 +56,20 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     private boolean bindCompContext;
 
     /**
+     * Create a new instance.
+     */
+    public NamingSubsystemElement() {
+        super(NamingExtension.NAMESPACE);
+    }
+
+    /**
      * Create a new instance without a stream reader.
      *
      * @param supportEvents Should the naming system support events
      */
     public NamingSubsystemElement(final boolean supportEvents) {
-        super(new QName("urn:jboss:domain:naming:1.0", "subsystem").getNamespaceURI());
+        super(NamingExtension.NAMESPACE);
         this.supportEvents = supportEvents;
-    }
-
-    /**
-     * Create a new instance from a stream reader.
-     *
-     * @param reader The stream reader
-     * @throws XMLStreamException
-     */
-    public NamingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
-        // Attributes
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            }
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case SUPPORT_EVENTS: {
-                    supportEvents = Boolean.parseBoolean(reader.getAttributeValue(i));
-                    break;
-                }
-                case BIND_APP_CONTEXT: {
-                    bindAppContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                    break;
-                }
-                case BIND_MODULE_CONTEXT: {
-                    bindModuleContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                    break;
-                }case BIND_COMP_CONTEXT: {
-                    bindCompContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-            }
-        }
-        ParseUtils.requireNoContent(reader);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    private long elementHash() {
-        return 42;
     }
 
     /** {@inheritDoc} */
@@ -134,15 +99,42 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         return supportEvents;
     }
 
+    void setSupportEvents(boolean supportEvents) {
+        this.supportEvents = supportEvents;
+    }
+
     public boolean isBindAppContext() {
         return bindAppContext;
+    }
+
+    void setBindAppContext(boolean bindAppContext) {
+        this.bindAppContext = bindAppContext;
     }
 
     public boolean isBindModuleContext() {
         return bindModuleContext;
     }
 
+    void setBindModuleContext(boolean bindModuleContext) {
+        this.bindModuleContext = bindModuleContext;
+    }
+
     public boolean isBindCompContext() {
         return bindCompContext;
+    }
+
+    void setBindCompContext(boolean bindCompContext) {
+        this.bindCompContext = bindCompContext;
+    }
+
+    /** {@inheritDoc} */
+    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<NamingSubsystemElement, ?>> list) {
+        // TODO Auto-generated method stub
+    }
+
+    /** {@inheritDoc} */
+    protected boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
     }
 }
