@@ -31,9 +31,11 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
 import org.jboss.as.server.manager.Server;
 import org.jboss.as.server.manager.ServerManager;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.test.as.protocol.support.process.TestProcessHandler;
 import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
@@ -74,7 +76,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
@@ -82,7 +84,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         managerAlive(svr1.getSmAddress(), svr1.getSmPort());
         managerAlive(svr1.getPmAddress(), svr1.getPmPort());
 
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
 
         shutdownProcessManagerNoWait(pm);
 
@@ -96,11 +98,11 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         sm.waitForShutdownServers();
 
         //Check servers received STOP_SERVER from SM
-        assertReadCommand(svr1, ServerManagerProtocolCommand.STOP_SERVER);
-        assertReadCommand(svr2, ServerManagerProtocolCommand.STOP_SERVER);
+        assertReadCommand(svr1, ServerManagerToServerProtocolCommand.STOP_SERVER);
+        assertReadCommand(svr2, ServerManagerToServerProtocolCommand.STOP_SERVER);
 
         //Send SERVER_STOPPED from servers to SM
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_STOPPED, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STOPPED, svr1, svr2);
 
         //Check PM has stopped and removed the processes
         pm.pollStoppedProcess(2);  //Only server-one
@@ -129,7 +131,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
@@ -137,14 +139,14 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         managerAlive(svr1.getSmAddress(), svr1.getSmPort());
         managerAlive(svr1.getPmAddress(), svr1.getPmPort());
 
-        svr1.sendMessageToManager(ServerManagerProtocolCommand.SERVER_STARTED);
+        svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
         final int addCount = pm.getAddCount();
         final int removeCount = pm.getRemoveCount();
         int stopCount = pm.getStopCount();
         int startCount = pm.getStartCount();
         for (int i = 0 ; i <= 4 ; i++ ) {
             if (i < 4) {
-                svr2.sendMessageToManager(ServerManagerProtocolCommand.SERVER_START_FAILED);
+                svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
                 pm.pollStoppedProcess(1);
                 pm.pollStartedProcess(1);
                 Assert.assertEquals(++stopCount, pm.getStopCount());
@@ -152,9 +154,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
             } else {
                 svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-                sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr2);
+                sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr2);
                 Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
-                svr2.sendMessageToManager(ServerManagerProtocolCommand.SERVER_STARTED);
+                svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
             }
         }
         Assert.assertEquals(addCount, pm.getAddCount());
@@ -174,7 +176,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
@@ -182,14 +184,14 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         managerAlive(svr1.getSmAddress(), svr1.getSmPort());
         managerAlive(svr1.getPmAddress(), svr1.getPmPort());
 
-        svr2.sendMessageToManager(ServerManagerProtocolCommand.SERVER_STARTED);
+        svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
         final int addCount = pm.getAddCount();
         final int removeCount = pm.getRemoveCount();
         int stopCount = pm.getStopCount();
         int startCount = pm.getStartCount();
         //TODO JBAS-8390 once respawn policies are configurable we can make this a bit less time-consuming
         for (int i = 0 ; i <= 14 ; i++ ) {
-            svr1.sendMessageToManager(ServerManagerProtocolCommand.SERVER_START_FAILED);
+            svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
             pm.pollStoppedProcess(1);
             Assert.assertEquals(++stopCount, pm.getStopCount());
 
@@ -197,7 +199,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 pm.pollStartedProcess(1);
                 Assert.assertEquals(++startCount, pm.getStartCount());
                 svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
-                svr1.sendMessageToManager(ServerManagerProtocolCommand.SERVER_AVAILABLE);
+                svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
                 Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
                 Assert.assertEquals(addCount, pm.getAddCount());
                 Assert.assertEquals(removeCount, pm.getRemoveCount());
@@ -221,7 +223,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
@@ -229,14 +231,14 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
         Assert.assertTrue(managerAlive(svr1.getPmAddress(), svr1.getPmPort()));
 
-        svr1.sendMessageToManager(ServerManagerProtocolCommand.SERVER_STARTED);
+        svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
         final int addCount = pm.getAddCount();
         final int removeCount = pm.getRemoveCount();
         int stopCount = pm.getStopCount();
         int startCount = pm.getStartCount();
 
         for (int i = 0 ; i <= 4 ; i++) {
-            svr2.sendMessageToManager(ServerManagerProtocolCommand.SERVER_STARTED);
+            svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
             if (i < 4) {
                 final MockServerProcess proc = svr2;
                 sm.resetDownLatch();
@@ -253,7 +255,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 Assert.assertEquals(++stopCount, pm.getStopCount());
                 Assert.assertEquals(++startCount, pm.getStartCount());
                 svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-                svr2.sendMessageToManager(ServerManagerProtocolCommand.SERVER_AVAILABLE);
+                svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
                 Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
             }
         }
@@ -302,14 +304,14 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
 
         Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
 
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
 
         sm.stop();
 
@@ -364,7 +366,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
         MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
         MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
 
         Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
         Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
@@ -372,7 +374,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         managerAlive(svr1.getSmAddress(), svr1.getSmPort());
         managerAlive(svr1.getPmAddress(), svr1.getPmPort());
 
-        sendMessageToServerManager(ServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
 
         svr2.closeServerManagerConnection();
 
@@ -416,22 +418,22 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         return svr;
     }
 
-    private void sendMessageToServerManager(ServerManagerProtocolCommand cmd, MockServerProcess...processes) throws IOException {
+    private void sendMessageToServerManager(ServerToServerManagerProtocolCommand cmd, MockServerProcess...processes) throws IOException {
         for (MockServerProcess proc : processes) {
             proc.sendMessageToManager(cmd);
         }
     }
 
-    private ServerManagerProtocolCommand.Command assertReadCommand(MockServerProcess svr, ServerManagerProtocolCommand expected) throws Exception {
+    private Command<ServerManagerToServerProtocolCommand> assertReadCommand(MockServerProcess svr, ServerManagerToServerProtocolCommand expected) throws Exception {
         byte[] received = svr.awaitAndReadMessage();
         Assert.assertNotNull(received);
-        ServerManagerProtocolCommand.Command cmd = ServerManagerProtocolCommand.readCommand(received);
+        Command<ServerManagerToServerProtocolCommand> cmd = ServerManagerToServerProtocolCommand.readCommand(received);
         Assert.assertEquals(expected, cmd.getCommand());
         return cmd;
     }
 
     private ServerModel assertReadStartCommand(MockServerProcess svr) throws Exception {
-        ServerManagerProtocolCommand.Command cmd = assertReadCommand(svr, ServerManagerProtocolCommand.START_SERVER);
+        Command<ServerManagerToServerProtocolCommand> cmd = assertReadCommand(svr, ServerManagerToServerProtocolCommand.START_SERVER);
         ServerModel cfg = ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, cmd);
         Assert.assertNotNull(cfg);
         return cfg;

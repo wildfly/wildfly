@@ -26,10 +26,11 @@
 package org.jboss.as.server.manager;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.jboss.as.process.ProcessManagerSlave.Handler;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.logging.Logger;
 
 /**
@@ -42,8 +43,7 @@ public class MessageHandler implements Handler {
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
 
     private final ServerManager serverManager;
-//    private final Map<String, Server> servers = new ConcurrentHashMap<String, Server>();
-
+    private final CommandHandler commandHandler = new CommandHandler();
 
     public MessageHandler(ServerManager serverManager) {
         if (serverManager == null) {
@@ -54,43 +54,9 @@ public class MessageHandler implements Handler {
 
     @Override
     public void handleMessage(String sourceProcessName, byte[] message) {
-        try {
-            Command cmd = ServerManagerProtocolCommand.readCommand(message);
-            log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
-            switch (cmd.getCommand()) {
-            case SERVER_AVAILABLE:
-                serverManager.availableServer(sourceProcessName);
-                break;
-            case SERVER_STARTED:
-                serverManager.startedServer(sourceProcessName);
-                break;
-            case SERVER_START_FAILED:
-                serverManager.failedStartServer(sourceProcessName);
-                break;
-            case SERVER_STOPPED:
-                serverManager.stoppedServer(sourceProcessName);
-                break;
-            case SERVER_RECONNECT_STATUS:
-                ServerState state;
-                try {
-                    state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
-                } catch (Exception e) {
-                    log.error("Could not unmarshal server state for SERVER_RECONNECT_STATUS message", e);
-                    return;
-                }
-                serverManager.reconnectedServer(sourceProcessName, state);
-                break;
-            default:
-                if (log.isTraceEnabled())
-                    log.warn("Received unknown command for " + sourceProcessName + ":" + Arrays.asList(message));
-                else
-                    log.warn("Received unknown command for " + sourceProcessName);
-                break;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        commandHandler.handleCommand(sourceProcessName, message);
     }
+
 
 
     @Override
@@ -124,5 +90,54 @@ public class MessageHandler implements Handler {
 //        servers.remove(serverName);
 //    }
 
+    /**
+     * Callback for the {@link ServerToServerManagerProtocolCommand#handleCommand(String, ServerToServerManagerCommandHandler, Command)} calls
+     */
+    private class CommandHandler implements ServerToServerManagerCommandHandler{
+
+        void handleCommand(String sourceProcessName, byte[] message) {
+            Command<ServerToServerManagerProtocolCommand> cmd = null;
+            try {
+                cmd = ServerToServerManagerProtocolCommand.readCommand(message);
+            } catch (IOException e) {
+                log.error("Error reading command", e);
+                return;
+            }
+
+            try {
+                cmd.getCommand().handleCommand(sourceProcessName, this, cmd);
+            } catch (IOException e) {
+                log.error("Error unmarshalling command data", e);
+            } catch (ClassNotFoundException e) {
+                log.error("Error unmarshalling command data", e);
+            }
+        }
+
+        @Override
+        public void handleServerAvailable(String sourceProcessName) {
+            serverManager.availableServer(sourceProcessName);
+        }
+
+        @Override
+        public void handleServerReconnectStatus(String sourceProcessName, ServerState state) {
+            serverManager.reconnectedServer(sourceProcessName, state);
+        }
+
+        @Override
+        public void handleServerStartFailed(String sourceProcessName) {
+            serverManager.failedStartServer(sourceProcessName);
+        }
+
+        @Override
+        public void handleServerStarted(String sourceProcessName) {
+            serverManager.startedServer(sourceProcessName);
+        }
+
+        @Override
+        public void handleServerStopped(String sourceProcessName) {
+            serverManager.stoppedServer(sourceProcessName);
+        }
+
+    }
 
 }

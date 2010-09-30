@@ -34,8 +34,8 @@ import org.jboss.as.server.Main;
 import org.jboss.as.server.Server;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.test.as.protocol.support.process.NoopExiter;
 
 /**
@@ -92,7 +92,7 @@ public class TestServerProcess extends Server {
     @Override
     public void start(ServerModel config) throws ServerStartException {
             setState(ServerState.STARTED);
-            sendMessage(ServerManagerProtocolCommand.SERVER_STARTED);
+            sendMessage(ServerToServerManagerProtocolCommand.SERVER_STARTED);
     }
 
     /**
@@ -101,7 +101,7 @@ public class TestServerProcess extends Server {
      */
     @Override
     public void stop() {
-        sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
+        sendMessage(ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         setState(ServerState.STOPPED);
         shutdownCommunicationHandlers();
     }

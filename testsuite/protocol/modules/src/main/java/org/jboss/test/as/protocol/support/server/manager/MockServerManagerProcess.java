@@ -35,8 +35,8 @@ import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.as.server.manager.ProcessManagerSlaveFactory;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.test.as.protocol.support.server.TestServerProcess;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler.ServerMessage;
 
@@ -109,11 +109,11 @@ public class MockServerManagerProcess extends ServerManager {
         pmSlave.removeProcess(serverName);
     }
 
-    public void sendMessageToServer(String serverName, ServerManagerProtocolCommand cmd) throws Exception {
+    public void sendMessageToServer(String serverName, ServerManagerToServerProtocolCommand cmd) throws Exception {
         sendMessageToServer(serverName, cmd, null);
     }
 
-    public void sendMessageToServer(String serverName, ServerManagerProtocolCommand cmd, Object data) throws Exception {
+    public void sendMessageToServer(String serverName, ServerManagerToServerProtocolCommand cmd, Object data) throws Exception {
         getServerCommunicationHandler(serverName).sendMessage(ServerManagerProtocolUtils.createCommandBytes(cmd, data));
     }
 

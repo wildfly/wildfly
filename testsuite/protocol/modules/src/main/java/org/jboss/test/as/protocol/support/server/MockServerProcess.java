@@ -31,9 +31,9 @@ import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.server.DirectServerSideCommunicationHandler;
 import org.jboss.as.server.ProcessManagerServerCommunicationHandler;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 
 /**
  * A mock server instance that can be used to verify the commands received from
@@ -81,11 +81,11 @@ public class MockServerProcess {
         return proc;
     }
 
-    public void sendMessageToManager(ServerManagerProtocolCommand command) throws IOException {
+    public void sendMessageToManager(ServerToServerManagerProtocolCommand command) throws IOException {
         sendMessageToManager(command, null);
     }
 
-    public void sendMessageToManager(ServerManagerProtocolCommand command, Object data) throws IOException {
+    public void sendMessageToManager(ServerToServerManagerProtocolCommand command, Object data) throws IOException {
         byte[] bytes = ServerManagerProtocolUtils.createCommandBytes(command, data);
         smHandler.sendMessage(bytes);
     }
@@ -132,6 +132,6 @@ public class MockServerProcess {
         this.smAddress = smAddress;
         this.smPort = smPort;
         smHandler = DirectServerSideCommunicationHandler.create(managed.getProcessName(), smAddress, smPort, messageHandler);
-        smHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state));
+        smHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state));
     }
 }

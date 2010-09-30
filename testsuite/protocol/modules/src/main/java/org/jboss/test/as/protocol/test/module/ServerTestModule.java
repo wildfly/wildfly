@@ -35,10 +35,11 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.test.as.protocol.support.process.TestProcessHandler;
 import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
@@ -73,12 +74,12 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
 
         newConnectionListener.assertWaitForConnection("Server:server-one");
 
-        assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
         ServerModel cfg = getServer("standard", "server-one");
-        sm.sendMessageToServer("Server:server-one", ServerManagerProtocolCommand.START_SERVER, cfg);
-        assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_STARTED);
-        sm.sendMessageToServer("Server:server-one", ServerManagerProtocolCommand.STOP_SERVER);
-        assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_STOPPED);
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.START_SERVER, cfg);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STARTED);
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.STOP_SERVER);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
 
         new Thread(new Runnable() {
             public void run() {
@@ -108,10 +109,10 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
 
         newConnectionListener.assertWaitForConnection("Server:server-one");
 
-        assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
         ServerModel cfg = getServer("standard", "server-one");
-        sm.sendMessageToServer("Server:server-one", ServerManagerProtocolCommand.START_SERVER, cfg);
-        assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_STARTED);
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.START_SERVER, cfg);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STARTED);
 
         sm.crashServerManager(1);
         sm.stop();
@@ -120,7 +121,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         sm = assertGetServerManager(processHandlerFactory);
 
         sm.sendReconnectServersToProcessManager();
-        ServerManagerProtocolCommand.Command cmd = assertReadServerCommand(sm, "Server:server-one", ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS);
+        Command<ServerToServerManagerProtocolCommand> cmd = assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS);
         ServerState state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
         Assert.assertSame(ServerState.STARTED, state);
 
@@ -137,19 +138,13 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         ServerMessage msg2 = sm.awaitAndReadMessage();
         if (msg1.getSourceProcess() != null) {
             assertPmServerMessage(msg2, org.jboss.as.process.Command.SHUTDOWN.toString());
-            assertServerServerMessage(msg1, "Server:server-one", ServerManagerProtocolCommand.SERVER_STOPPED);
+            assertServerServerMessage(msg1, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         } else {
             assertPmServerMessage(msg1, org.jboss.as.process.Command.SHUTDOWN.toString());
-            assertServerServerMessage(msg2, "Server:server-one", ServerManagerProtocolCommand.SERVER_STOPPED);
+            assertServerServerMessage(msg2, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         }
 
         sm.stop();
-    }
-
-    private void assertShutdownMessages(ServerMessage pmMessage, ServerMessage serverMessage, String serverName) {
-        Assert.assertNotNull(pmMessage.getSourceProcess());
-        Assert.assertEquals(serverName, serverMessage.getSourceProcess());
-
     }
 
     private MockServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) {
@@ -160,15 +155,15 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         return mgr;
     }
 
-    private Command assertReadServerCommand(MockServerManagerProcess serverManager, String serverName, ServerManagerProtocolCommand expectedCommand) throws Exception {
+    private Command<ServerToServerManagerProtocolCommand> assertReadServerCommand(MockServerManagerProcess serverManager, String serverName, ServerToServerManagerProtocolCommand expectedCommand) throws Exception {
         ServerMessage msg = serverManager.awaitAndReadMessage();
         return assertServerServerMessage(msg, serverName, expectedCommand);
     }
 
-    private Command assertServerServerMessage(ServerMessage msg, String serverName, ServerManagerProtocolCommand expectedCommand) throws Exception {
+    private Command<ServerToServerManagerProtocolCommand> assertServerServerMessage(ServerMessage msg, String serverName, ServerToServerManagerProtocolCommand expectedCommand) throws Exception {
         Assert.assertEquals(serverName, msg.getSourceProcess());
         byte[] sent = msg.getMessage();
-        Command cmd = ServerManagerProtocolCommand.readCommand(sent);
+        Command<ServerToServerManagerProtocolCommand> cmd = ServerToServerManagerProtocolCommand.readCommand(sent);
         Assert.assertEquals(expectedCommand, cmd.getCommand());
         return cmd;
     }
