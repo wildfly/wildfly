@@ -62,7 +62,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         Object id = getProcessId("Main", CrashingProcess.class);
 
         detachTestProcessListener("Main");
-        sendMessage("Test", "Main", lazyList("Exit1"));
+        sendMessage("Test", "Main", "Exit1");
         assertEquals("Main-Exit1", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(1, stopLatch.getExitCode());
@@ -134,7 +134,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
 
         detachTestProcessListener("Main");
-        sendMessage("Test", "Main", lazyList("Exit0"));
+        sendMessage("Test", "Main", "Exit0");
         assertEquals("Main-Exit0", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(0, stopLatch.getExitCode());
@@ -171,7 +171,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
         detachTestProcessListener("Down");
-        sendMessage("Test", "Down", lazyList("Exit1"));
+        sendMessage("Test", "Down", "Exit1");
         assertEquals("Down-Exit1", procListener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(1, stopLatch.getExitCode());
@@ -190,7 +190,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
         detachTestProcessListener("Down");
-        sendMessage("Test", "Down", lazyList("Exit0"));
+        sendMessage("Test", "Down", "Exit0");
         assertEquals("Down-Exit0", procListener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(0, stopLatch.getExitCode());

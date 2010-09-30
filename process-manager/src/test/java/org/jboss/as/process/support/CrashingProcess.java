@@ -21,7 +21,6 @@
  */
 package org.jboss.as.process.support;
 
-import java.util.List;
 
 /**
  *
@@ -45,12 +44,6 @@ public class CrashingProcess extends AbstractProcess {
     @Override
     protected void handleMessage(String sourceProcessName, byte[] message) {
         handleMessage(sourceProcessName, new String(message));
-    }
-
-    @Override
-    protected void handleMessage(String sourceProcessName, List<String> message) {
-        for (String msg : message)
-            handleMessage(sourceProcessName, msg);
     }
 
     @Override

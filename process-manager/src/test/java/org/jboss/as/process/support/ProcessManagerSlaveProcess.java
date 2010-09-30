@@ -21,8 +21,6 @@
  */
 package org.jboss.as.process.support;
 
-import java.util.Collections;
-import java.util.List;
 
 /**
  *
@@ -47,16 +45,10 @@ public class ProcessManagerSlaveProcess extends AbstractProcess {
 
     @Override
     protected void handleMessage(String sourceProcessName, byte[] message) {
-        writeData(sourceProcessName, new String(message), true);
+        writeData(sourceProcessName, new String(message));
     }
 
-    @Override
-    protected void handleMessage(String sourceProcessName, List<String> message) {
-        for (String str : message)
-            writeData(sourceProcessName, str, false);
-    }
-
-    private void writeData(String sourceProcessName, String message, boolean bytes) {
+    private void writeData(String sourceProcessName, String message) {
 
         if (!message.contains("$"))
             writeData(sourceProcessName + "-" + processName + "-" + message);
@@ -66,19 +58,13 @@ public class ProcessManagerSlaveProcess extends AbstractProcess {
             String nextProcess = message.substring(4, index);
             message = message.substring(index + 1);
             debug(processName, "Sending data to " + nextProcess + " '" + message + "'");
-            if (!bytes)
-                sendMessage(nextProcess, Collections.singletonList(message));
-            else
-                sendMessage(nextProcess, message.getBytes());
+            sendMessage(nextProcess, message.getBytes());
         }
         else if (message.startsWith("Bcst$")) {
             writeData(sourceProcessName + "-" + processName + "-" + message);
             message = message.substring(5);
             debug(processName, "broadcasting data '" + message + "'");
-            if (!bytes)
-                broadcastMessage(Collections.singletonList(message));
-            else
-                broadcastMessage(message.getBytes());
+            broadcastMessage(message.getBytes());
         }
         else if (message.startsWith("Add$")) {
             int index1 = message.indexOf("$");

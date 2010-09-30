@@ -21,7 +21,6 @@
  */
 package org.jboss.as.process.support;
 
-import java.util.List;
 
 /**
  *
@@ -50,10 +49,6 @@ public class StartStopSimpleProcess extends AbstractProcess {
 
     @Override
     protected void handleMessage(String sourceProcessName, byte[] message) {
-    }
-
-    @Override
-    protected void handleMessage(String sourceProcessName, List<String> message) {
     }
 
     @Override

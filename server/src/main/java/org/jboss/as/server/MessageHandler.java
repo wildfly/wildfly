@@ -26,7 +26,6 @@
 package org.jboss.as.server;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
@@ -51,15 +50,6 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         }
         this.server = server;
     }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
-     */
-    @Override
-    public void handleMessage(List<String> message) {
-        logger.info("Message received: " + message);
-    }
-
 
     @Override
     public void handleMessage(byte[] message) {

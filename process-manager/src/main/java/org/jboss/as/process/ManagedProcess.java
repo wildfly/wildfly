@@ -140,29 +140,12 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         return start;
     }
 
-    void send(final String sender, final List<String> msg) throws IOException {
-        synchronized (this) {
-            if (!start)
-                return;
-            final StringBuilder b = new StringBuilder();
-            b.append(Command.MSG);
-            b.append('\0');
-            b.append(sender);
-            for (String s : msg) {
-                b.append('\0').append(s);
-            }
-            b.append('\n');
-            StreamUtils.writeString(commandStream, b);
-            commandStream.flush();
-        }
-    }
-
     void send(final String sender, final byte[] msg) throws IOException {
         synchronized (this) {
             if (!start)
                 return;
             final StringBuilder b = new StringBuilder();
-            b.append(Command.MSG_BYTES);
+            b.append(Command.MSG);
             b.append('\0');
             b.append(sender);
             b.append('\0');

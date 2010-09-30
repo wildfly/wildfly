@@ -24,7 +24,6 @@ package org.jboss.as.process.support;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.CommandLineConstants;
@@ -161,14 +160,6 @@ public abstract class AbstractProcess {
     protected abstract void handleMessage(String sourceProcessName, byte[] message);
 
     /**
-     * Callback for when the process receives a <code>handleMessage()</code>
-     * call
-     * @param sourceProcessName the name of the process sending the message
-     * @param message the message
-     */
-    protected abstract void handleMessage(String sourceProcessName, List<String> message);
-
-    /**
      * Callback for when the process receives a <code>shutdown()</code> call.
      */
     protected abstract void shutdown();
@@ -191,38 +182,11 @@ public abstract class AbstractProcess {
      * Send a message to another process via the slave
      *
      * @param processName the name of the process
-     * @param message the messages
-     */
-    protected void sendMessage(String processName, List<String> message){
-        try {
-            slave.sendMessage(processName, message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Send a message to another process via the slave
-     *
-     * @param processName the name of the process
      * @param message the message
      */
     protected void sendMessage(String processName, byte[] message){
         try {
             slave.sendMessage(processName, message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Broadcast a message to other processes via the slave
-     *
-     * @param message the messages
-     */
-    protected void broadcastMessage(List<String> message){
-        try {
-            slave.broadcastMessage(message);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -309,11 +273,6 @@ public abstract class AbstractProcess {
 
         @Override
         public void handleMessage(String sourceProcessName, byte[] message) {
-            AbstractProcess.this.handleMessage(sourceProcessName, message);
-        }
-
-        @Override
-        public void handleMessage(String sourceProcessName, List<String> message) {
             AbstractProcess.this.handleMessage(sourceProcessName, message);
         }
 

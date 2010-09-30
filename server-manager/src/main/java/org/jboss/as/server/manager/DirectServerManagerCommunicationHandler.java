@@ -25,7 +25,6 @@ package org.jboss.as.server.manager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
@@ -65,11 +64,6 @@ public class DirectServerManagerCommunicationHandler implements ServerCommunicat
     protected void start() {
         Thread t = new Thread(inputHandler);
         t.start();
-    }
-
-    @Override
-    public void sendMessage(List<String> message) throws IOException {
-        throw new IllegalArgumentException("Only byte messages are supported");
     }
 
     @Override

@@ -26,7 +26,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.StreamUtils;
@@ -50,11 +49,6 @@ public class DirectServerSideCommunicationHandler extends ServerCommunicationHan
         DirectServerSideCommunicationHandler comm = new DirectServerSideCommunicationHandler(processName, addr, port, handler);
         comm.start();
         return comm;
-    }
-
-    @Override
-    public void sendMessage(final List<String> message) throws IOException {
-        throw new IllegalArgumentException("String communication is not enabled");
     }
 
     @Override

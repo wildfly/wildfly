@@ -21,7 +21,6 @@
  */
 package org.jboss.test.as.protocol.support.server;
 
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -46,10 +45,6 @@ public class TestServerSideMessageHandler implements Handler{
     @Override
     public void handleMessage(byte[] message) {
         data.add(message);
-    }
-
-    @Override
-    public void handleMessage(List<String> message) {
     }
 
     @Override

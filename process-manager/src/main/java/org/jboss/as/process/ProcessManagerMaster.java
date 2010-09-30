@@ -252,31 +252,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         }
     }
 
-    public void sendMessage(final String sender, final String recipient, final List<String> msg) {
-        if (shutdown.get())
-            return;
-
-        final Map<String, ManagedProcess> processes = this.processes;
-        synchronized (processes) {
-            final ManagedProcess process = processes.get(recipient);
-            if (process == null) {
-                // ignore
-                return;
-            }
-            synchronized (process) {
-                if (! process.isStart()) {
-                    // ignore
-                    return;
-                }
-                try {
-                    process.send(sender, msg);
-                } catch (IOException e) {
-                    // todo log it
-                }
-            }
-        }
-    }
-
     public void sendMessage(final String sender, final String recipient, final byte[] msg) {
         if (shutdown.get())
             return;
@@ -329,28 +304,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
 
     }
 
-
-    public void broadcastMessage(final String sender, final List<String> msg) {
-        if (shutdown.get())
-            return;
-
-        final Map<String, ManagedProcess> processes = this.processes;
-        synchronized (processes) {
-            for (ManagedProcess process : processes.values()) {
-                synchronized (process) {
-                    if (! process.isStart()) {
-                        // ignore and go on with the other processes
-                        continue;
-                    }
-                    try {
-                        process.send(sender, msg);
-                    } catch (IOException e) {
-                        // todo log it
-                    }
-                }
-            }
-        }
-    }
 
     public void broadcastMessage(final String sender, final byte[] msg) {
         if (shutdown.get())

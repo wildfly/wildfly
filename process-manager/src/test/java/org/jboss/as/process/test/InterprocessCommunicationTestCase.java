@@ -38,11 +38,7 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public abstract class InterprocessCommunicationTest extends AbstractProcessManagerTest {
-    protected abstract void sendMessage(String sender, String recipient, String... message) throws InterruptedException;
-
-    protected abstract void broadcastMessage(String sender, String... message) throws InterruptedException;
-
+public class InterprocessCommunicationTestCase extends AbstractProcessManagerTest {
     @Test
     public void testSendMessage() throws Exception {
         addProcess("Receiver", ReceivingProcess.class/*, 8787, true*/);
@@ -52,7 +48,8 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertEquals("Test-One", listener.readMessage());
         // assertEquals("Test-One\n", TestFileUtils.readFile(receiver));
 
-        sendMessage("Test", "Receiver", "Two", "Three");
+        sendMessage("Test", "Receiver", "Two");
+        sendMessage("Test", "Receiver", "Three");
         assertEquals("Test-Two", listener.readMessage());
         assertEquals("Test-Three", listener.readMessage());
 
@@ -97,7 +94,8 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertFalse(fileB.exists());
         assertNull(listenerB.readMessage(100));
 
-        sendMessage("Tester", "ReceiverB", "Two", "Three");
+        sendMessage("Tester", "ReceiverB", "Two");
+        sendMessage("Tester", "ReceiverB", "Three");
         assertEquals("Tester-Two", listenerB.readMessage());
         assertEquals("Tester-Three", listenerB.readMessage());
         assertNull(listenerA.readMessage(100));
@@ -125,7 +123,10 @@ public abstract class InterprocessCommunicationTest extends AbstractProcessManag
         assertEquals("Test-One", listenerB.readMessage());
         assertEquals("Test-One", listenerC.readMessage());
 
-        broadcastMessage("Test", "Two", "Three", "Four", "Five");
+        broadcastMessage("Test", "Two");
+        broadcastMessage("Test", "Three");
+        broadcastMessage("Test", "Four");
+        broadcastMessage("Test", "Five");
         assertEquals("Test-Two", listenerA.readMessage());
         assertEquals("Test-Two", listenerB.readMessage());
         assertEquals("Test-Two", listenerC.readMessage());

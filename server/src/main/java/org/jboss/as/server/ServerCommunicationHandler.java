@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.List;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.logging.Logger;
@@ -59,8 +58,6 @@ public abstract class ServerCommunicationHandler {
         this.handler = handler;
     }
 
-    abstract void sendMessage(final List<String> message) throws IOException;
-
     abstract void sendMessage(final byte[] message) throws IOException;
 
     abstract Runnable getController();
@@ -89,8 +86,6 @@ public abstract class ServerCommunicationHandler {
     public interface Handler {
 
         void handleMessage(byte[] message);
-
-        void handleMessage(List<String> message);
 
         void shutdown();
 

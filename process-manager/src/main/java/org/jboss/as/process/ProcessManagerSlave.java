@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -146,29 +145,12 @@ public final class ProcessManagerSlave {
         }
     }
 
-    public void sendMessage(final String processName, final List<String> message) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND).append('\0');
-        b.append(processName);
-        for (String str : message) {
-            b.append('\0').append(str);
-        }
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
-    }
-
     public void sendMessage(final String recipient, final byte[] message) throws IOException {
         if (recipient == null) {
             throw new IllegalArgumentException("processName is null");
         }
         final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND_BYTES).append('\0');
+        b.append(Command.SEND).append('\0');
         b.append(recipient).append('\0');
         synchronized (output) {
             StreamUtils.writeString(output, b.toString());
@@ -192,19 +174,6 @@ public final class ProcessManagerSlave {
             StreamUtils.writeInt(output, message.length);
             output.write(message, 0, message.length);
             StreamUtils.writeChar(output, '\n');
-            output.flush();
-        }
-    }
-
-    public void broadcastMessage(final List<String> message) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.BROADCAST);
-        for (String str : message) {
-            b.append('\0').append(str);
-        }
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
             output.flush();
         }
     }
@@ -295,26 +264,6 @@ public final class ProcessManagerSlave {
                                 if (status == Status.MORE) {
                                     status = StreamUtils.readWord(input, b);
                                     final String sourceProcess = b.toString();
-                                    final List<String> msg = new ArrayList<String>();
-                                    while (status == Status.MORE) {
-                                        status = StreamUtils.readWord(input, b);
-                                        msg.add(b.toString());
-                                    }
-                                    if (status == Status.END_OF_LINE) {
-                                        try {
-                                            handler.handleMessage(sourceProcess, msg);
-                                        } catch (Throwable t) {
-                                            // ignored!
-                                        }
-                                    }
-                                    // else it was end of stream, so only a partial was received
-                                }
-                                break;
-                            }
-                            case MSG_BYTES: {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String sourceProcess = b.toString();
                                     if (status == Status.MORE) {
                                         try {
                                             handler.handleMessage(sourceProcess, StreamUtils.readBytesWithLength(input));
@@ -370,8 +319,6 @@ public final class ProcessManagerSlave {
     public interface Handler {
 
         void handleMessage(String sourceProcessName, byte[] message);
-
-        void handleMessage(String sourceProcessName, List<String> message);
 
         void shutdown();
 

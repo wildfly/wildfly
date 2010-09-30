@@ -27,7 +27,6 @@ package org.jboss.as.server.manager;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
@@ -51,15 +50,6 @@ public class MessageHandler implements Handler {
             throw new IllegalArgumentException("serverManager is null");
         }
         this.serverManager = serverManager;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
-     */
-    @Override
-    public void handleMessage(String sourceProcessName, List<String> message) {
-        log.info("Received message from server " + sourceProcessName + ":" + message);
-        // TODO: actually handle this....
     }
 
     @Override

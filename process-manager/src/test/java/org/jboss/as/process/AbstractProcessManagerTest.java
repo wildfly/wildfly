@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
 import org.jboss.as.process.support.TestFileUtils;
-import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils;
+import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessController;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
 import org.jboss.as.process.support.TestProcessUtils.TestStreamManager;
@@ -176,12 +176,12 @@ public abstract class AbstractProcessManagerTest {
         master.removeProcess(name);
     }
 
-    protected void sendMessage(String sender, String recipient, List<String> msg){
+    protected void sendMessage(String sender, String recipient, byte[] msg) {
         master.sendMessage(sender, recipient, msg);
     }
 
-    protected void sendMessage(String sender, String recipient, byte[] msg) {
-        master.sendMessage(sender, recipient, msg);
+    protected void sendMessage(String sender, String recipient, String msg) {
+        master.sendMessage(sender, recipient, msg.getBytes());
     }
 
     protected void sendStdin(String recipient, String msg) {
@@ -195,12 +195,12 @@ public abstract class AbstractProcessManagerTest {
         }
     }
 
-    protected void broadcastMessage(String sender, List<String> msg){
+    protected void broadcastMessage(String sender, byte[] msg){
         master.broadcastMessage(sender, msg);
     }
 
-    protected void broadcastMessage(String sender, byte[] msg){
-        master.broadcastMessage(sender, msg);
+    protected void broadcastMessage(String sender, String msg){
+        master.broadcastMessage(sender, msg.getBytes());
     }
 
     protected List<String> lazyList(String... strings) {

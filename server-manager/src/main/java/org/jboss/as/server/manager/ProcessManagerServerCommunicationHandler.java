@@ -4,7 +4,6 @@
 package org.jboss.as.server.manager;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jboss.as.process.ProcessManagerSlave;
 
@@ -30,14 +29,6 @@ public class ProcessManagerServerCommunicationHandler implements ServerCommunica
         }
         this.processManagerSlave = processManagerSlave;
 
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.server.manager.ServerCommunicationHandler#sendMessage(java.util.List)
-     */
-    @Override
-    public void sendMessage(List<String> message) throws IOException {
-        processManagerSlave.sendMessage(serverName, message);
     }
 
     @Override

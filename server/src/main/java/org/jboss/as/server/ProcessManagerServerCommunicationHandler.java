@@ -25,8 +25,6 @@ package org.jboss.as.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.Command;
@@ -56,22 +54,9 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
     }
 
     @Override
-    public void sendMessage(final List<String> message) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND);
-        b.append('\0').append("ServerManager");
-        for (String s : message) {
-            b.append('\0').append(s);
-        }
-        b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
-    }
-
-    @Override
     public void sendMessage(final byte[] message) throws IOException {
         final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND_BYTES);
+        b.append(Command.SEND);
         b.append('\0').append("ServerManager");
         b.append('\0');
         StreamUtils.writeString(output, b.toString());
@@ -114,26 +99,6 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                                 break;
                             }
                             case MSG: {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String sourceProcess = b.toString();
-                                    final List<String> msg = new ArrayList<String>();
-                                    while (status == Status.MORE) {
-                                        status = StreamUtils.readWord(input, b);
-                                        msg.add(b.toString());
-                                    }
-                                    if (status == Status.END_OF_LINE) {
-                                        try {
-                                            handler.handleMessage(msg);
-                                        } catch (Throwable t) {
-                                            logger.error("Caught exception handling message from " + sourceProcess, t);
-                                        }
-                                    }
-                                    // else it was end of stream, so only a partial was received
-                                }
-                                break;
-                            }
-                            case MSG_BYTES: {
                                 if (status == Status.MORE) {
                                     status = StreamUtils.readWord(input, b);
                                     final String sourceProcess = b.toString();

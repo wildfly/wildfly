@@ -44,12 +44,6 @@ public enum Command {
     /** Send a message via the process manager (Process->PM) */
     SEND,
 
-    /** Send a message via the process manager (Process->PM) */
-    SEND_BYTES,
-
-    /** Broadcast a message via the process manager (Process->PM) */
-    BROADCAST,
-
     /** Broadcast a message via the process manager (Process->PM) */
     BROADCAST_BYTES,
 
@@ -71,11 +65,8 @@ public enum Command {
     /** Reconnect to the SM (PM->SM) */
     RECONNECT_SERVER_MANAGER,
 
-    /** Receive a message from another process or process manager (PM->Process) */
-    MSG,
-
     /** Reeive a message from another process or process manager (PM->Process) */
-    MSG_BYTES,
+    MSG,
 
     /** Sent by PM if when a Process is determined to be down (PM->SM) */
     DOWN,
