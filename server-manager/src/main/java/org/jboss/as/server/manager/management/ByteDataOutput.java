@@ -20,27 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.server.manager.management;
 
-import org.jboss.as.model.DomainModel;
+import java.io.DataOutput;
+import org.jboss.marshalling.ByteOutput;
 
 /**
- * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
+ * Interface used to establish a contract for a class that complies to both the DataOutput and ByteOutput contract.
  *
- *  @author John Bailey
+ * @author John Bailey
  */
-public class RemoteDomainControllerClient implements DomainControllerClient {
-    private final String id;
-
-    public RemoteDomainControllerClient(final String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void updateDomain(final DomainModel domain) {
-        // NO-OP -  TODO: Wire in the SM connection info
-    }
+public interface ByteDataOutput extends DataOutput, ByteOutput{
 }

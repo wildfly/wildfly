@@ -23,16 +23,12 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.DataInput;
-import java.io.IOException;
+import org.jboss.marshalling.ByteInput;
 
 /**
+ * Interface used to establish a contract for a class that complies to both the DataInput and ByteInput contract.
+ *
  * @author John Bailey
  */
-public class ManagementProtocolUtils {
-    public static void expectHeader(final DataInput input, int expected) throws IOException, ManagementOperationException {
-        byte header = input.readByte();
-        if (header != (byte) expected) {
-            throw new ManagementOperationException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
-        }
-    }
+public interface ByteDataInput extends DataInput, ByteInput {
 }

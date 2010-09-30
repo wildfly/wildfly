@@ -28,12 +28,12 @@ import java.io.IOException;
 
 /**
  * Protocol header used for management requests.  Provides the default header fields from
- * {@link org.jboss.as.server.manager.management.ManagementProtocolHeader} as well as a field to identify who the
+ * {@link ManagementProtocolHeader} as well as a field to identify who the
  * request should be handled by.
  *
  * @author John Bailey
  */
-public class ManagementRequestProtocolHeader extends AbstractManagementProtocolHeader {
+public class ManagementRequestHeader extends ManagementProtocolHeader {
     private byte operationHandlerId;
     private int requestId;
 
@@ -42,9 +42,9 @@ public class ManagementRequestProtocolHeader extends AbstractManagementProtocolH
      *
      * @param input The input to read the header information from
      * @throws IOException If any problem occur reading from the input
-     * @throws ManagementOperationException If any information read is invalid.
+     * @throws ManagementException If any information read is invalid.
      */
-    public ManagementRequestProtocolHeader(final DataInput input) throws IOException, ManagementOperationException {
+    public ManagementRequestHeader(final DataInput input) throws IOException, ManagementException {
         super(input);
     }
 
@@ -55,21 +55,21 @@ public class ManagementRequestProtocolHeader extends AbstractManagementProtocolH
      * @param requestId The request id
      * @param operationHandlerId The id of the expected operation handler
      */
-    public ManagementRequestProtocolHeader(final int version, final  int requestId, final byte operationHandlerId) {
+    public ManagementRequestHeader(final int version, final  int requestId, final byte operationHandlerId) {
         super(version);
         this.requestId = requestId;
         this.operationHandlerId = operationHandlerId;
     }
 
     /** {@inheritDoc} */
-    public void read(final DataInput input) throws IOException, ManagementOperationException {
+    public void read(final DataInput input) throws IOException, ManagementException {
         super.read(input);
         requestId = input.readInt();
         operationHandlerId = input.readByte();
     }
 
     /** {@inheritDoc} */
-    public void write(final DataOutput output) throws IOException, ManagementOperationException {
+    public void write(final DataOutput output) throws IOException, ManagementException {
         super.write(output);
         output.writeInt(requestId);
         output.writeByte(operationHandlerId);

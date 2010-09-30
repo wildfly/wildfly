@@ -27,17 +27,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerClient;
-import org.jboss.as.domain.controller.RemoteDomainControllerClient;
 import org.jboss.as.server.manager.FileRepository;
-import static org.jboss.as.server.manager.management.ManagementProtocolUtils.expectHeader;
-import static org.jboss.as.server.manager.management.MarshallingUtils.marshall;
+import org.jboss.as.server.manager.RemoteDomainControllerClient;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
+import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 
 /**
@@ -46,21 +53,53 @@ import org.jboss.marshalling.SimpleDataOutput;
  *
  * @author John Bailey
  */
-public class DomainControllerOperationHandler implements ManagementOperationHandler {
+public class DomainControllerOperationHandler implements ManagementOperationHandler, Service<DomainControllerOperationHandler> {
     private static final Logger log = Logger.getLogger("org.jboss.as.management");
+    public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append("operation", "handler");
 
+    private final InjectedValue<DomainController> domainControllerValue = new InjectedValue<DomainController>();
+    private final InjectedValue<ScheduledExecutorService> executorServiceValue = new InjectedValue<ScheduledExecutorService>();
+    private final InjectedValue<FileRepository> localFileRepositoryValue = new InjectedValue<FileRepository>();
 
-    private final DomainController domainController;
-    private final FileRepository localFileRepository;
+    private DomainController domainController;
+    private ScheduledExecutorService executorService;
+    private FileRepository localFileRepository;
 
-    public DomainControllerOperationHandler(final DomainController domainController, final FileRepository localFileRepository) {
-        this.domainController = domainController;
-        this.localFileRepository = localFileRepository;
-    }
 
     /** {@inheritDoc} */
     public final byte getIdentifier() {
         return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void start(StartContext context) throws StartException {
+        domainController = domainControllerValue.getValue();
+        executorService = executorServiceValue.getValue();
+        localFileRepository = localFileRepositoryValue.getValue();
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void stop(StopContext context) {
+        domainController = null;
+        executorService = null;
+        localFileRepository = null;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized DomainControllerOperationHandler getValue() throws IllegalStateException {
+        return this;
+    }
+
+    public Injector<DomainController> getDomainControllerInjector() {
+        return domainControllerValue;
+    }
+
+    public Injector<ScheduledExecutorService> getExecutorServiceInjector() {
+        return executorServiceValue;
+    }
+
+    public Injector<FileRepository> getLocalFileRepositoryInjector() {
+        return localFileRepositoryValue;
     }
 
     /**
@@ -69,43 +108,30 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
      *
      * @param input  The operation input
      * @param output The operation output
-     * @throws ManagementOperationException If any problems occur performing the operation
+     * @throws ManagementException If any problems occur performing the operation
      */
-    public void handleRequest(final int protocolVersion, final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException {
-        final String serverManagerId;
-        try {
-            expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_ID);
-            serverManagerId = input.readUTF();
-        } catch (IOException e) {
-            throw new ManagementOperationException("ServerManager Request failed.  Unable to read signature", e);
-        }
+    public final void handleRequest(final int protocolVersion, final ByteDataInput input, final ByteDataOutput output) throws ManagementException {
         final byte commandCode;
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             commandCode = input.readByte();
         } catch (IOException e) {
-            throw new ManagementOperationException("ServerManager Request failed to read command code", e);
+            throw new ManagementException("ServerManager Request failed to read command code", e);
         }
 
-        final Operation operation = operationFor(commandCode);
+        final ManagementOperation operation = operationFor(commandCode);
         if (operation == null) {
-            throw new ManagementOperationException("Invalid command code " + commandCode + " received from server manager " + serverManagerId);
+            throw new ManagementException("Invalid command code " + commandCode + " received from server manager");
         }
         try {
-            log.debugf("Received DomainController operation [%s] from ServerManager [%s]", operation, serverManagerId);
-            operation.handle(serverManagerId, input, output);
+            log.debugf("Received DomainController operation [%s]", operation);
+            operation.handle(input, output);
         } catch (Exception e) {
-            throw new ManagementOperationException("Failed to execute domain controller operation", e);
+            throw new ManagementException("Failed to execute domain controller operation", e);
         }
     }
 
-    private interface Operation {
-        byte getRequestCode();
-
-        void handle(final String serverManagerId, final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException;
-    }
-
-    private Operation operationFor(final byte commandByte) {
+    private ManagementOperation operationFor(final byte commandByte) {
         switch (commandByte) {
             case ManagementProtocol.REGISTER_REQUEST:
                 return new RegisterOperation();
@@ -119,87 +145,86 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         }
     }
 
-    private abstract class RequestResponseOperation implements Operation {
-        public void handle(String serverManagerId, SimpleDataInput input, SimpleDataOutput output) throws ManagementOperationException {
+    private abstract class DomainControllerOperation extends ManagementResponse {
+        protected void readRequest(final ByteDataInput input) throws ManagementException {
+            super.readRequest(input);    //To change body of overridden methods use File | Settings | File Templates.
+            final String serverManagerId;
             try {
-                expectHeader(input, ManagementProtocol.REQUEST_START);
+                expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_ID);
+                serverManagerId = input.readUTF();
                 readRequest(serverManagerId, input);
-                expectHeader(input, ManagementProtocol.REQUEST_END);
             } catch (IOException e) {
-                throw new ManagementOperationException("Domain controller request failed.  Unable to read request.", e);
-            }
-            try {
-                output.writeByte(ManagementProtocol.RESPONSE_START);
-                output.writeByte(getResponseCode());
-                sendResponse(serverManagerId, output);
-                output.writeByte(ManagementProtocol.RESPONSE_END);
-                output.flush();
-            } catch (IOException e) {
-                throw new ManagementOperationException("Failed to send response", e);
+                throw new ManagementException("ServerManager Request failed.  Unable to read signature", e);
             }
         }
 
-        protected abstract byte getResponseCode();
-
-        protected void readRequest(String serverManagerId, SimpleDataInput input) throws ManagementOperationException{
-        }
-
-        protected void sendResponse(String serverManagerId, SimpleDataOutput output) throws ManagementOperationException {
-        }
+        protected abstract void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException;
     }
 
-    private class RegisterOperation extends RequestResponseOperation {
+    private class RegisterOperation extends DomainControllerOperation {
+
         public final byte getRequestCode() {
             return ManagementProtocol.REGISTER_REQUEST;
         }
 
-        protected byte getResponseCode() {
+        protected final byte getResponseCode() {
             return ManagementProtocol.REGISTER_RESPONSE;
         }
 
-        protected void readRequest(final String serverManagerId, final SimpleDataInput input) throws ManagementOperationException {
-            log.infof("Server manager registered [%s]", serverManagerId);
-            final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId);
-            domainController.addClient(client);
+        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_HOST);
+                final int addressSize = input.readInt();
+                byte[] addressBytes = new byte[addressSize];
+                input.readFully(addressBytes);
+                expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_PORT);
+                final int port = input.readInt();
+                final InetAddress address = InetAddress.getByAddress(addressBytes);
+                final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService);
+                domainController.addClient(client);
+                log.infof("Server manager registered [%s]", client);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to read server manager connection information from request", e);
+            }
         }
 
-        protected void sendResponse(final String serverManagerId, final SimpleDataOutput output) throws ManagementOperationException {
+        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
                 output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
-                marshall(output, domainController.getDomainModel());
+                marshal(output, domainController.getDomainModel());
             } catch (Exception e) {
-                throw new ManagementOperationException("Unable to write domain configuration to server manager", e);
+                throw new ManagementException("Unable to write domain configuration to server manager", e);
             }
         }
     }
 
-    private class UnregisterOperation extends RequestResponseOperation {
+    private class UnregisterOperation extends DomainControllerOperation {
         public final byte getRequestCode() {
             return ManagementProtocol.UNREGISTER_REQUEST;
         }
 
-        protected byte getResponseCode() {
+        protected final byte getResponseCode() {
             return ManagementProtocol.UNREGISTER_RESPONSE;
         }
 
-        protected void readRequest(String serverManagerId, SimpleDataInput input) throws ManagementOperationException {
+        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
             log.infof("Server manager unregistered [%s]", serverManagerId);
             domainController.removeClient(serverManagerId);
         }
     }
 
-    private class GetFileOperation extends RequestResponseOperation {
+    private class GetFileOperation extends DomainControllerOperation {
         private File localPath;
 
         public final byte getRequestCode() {
             return ManagementProtocol.SYNC_FILE_REQUEST;
         }
 
-        protected byte getResponseCode() {
+        protected final byte getResponseCode() {
             return ManagementProtocol.SYNC_FILE_RESPONSE;
         }
 
-        protected void readRequest(String serverManagerId, SimpleDataInput input) throws ManagementOperationException {
+        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
             final byte rootId;
             final String filePath;
             try {
@@ -208,7 +233,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                 expectHeader(input, ManagementProtocol.PARAM_FILE_PATH);
                 filePath = input.readUTF();
             } catch (Exception e) {
-                throw new ManagementOperationException("Unable to read file request attributes", e);
+                throw new ManagementException("Unable to read file request attributes", e);
             }
 
             log.infof("Server manager [%s] requested file [%s] from root [%d]", serverManagerId, filePath, rootId);
@@ -231,7 +256,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             }
         }
 
-        protected void sendResponse(String serverManagerId, SimpleDataOutput output) throws ManagementOperationException {
+        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
                 output.writeByte(ManagementProtocol.PARAM_NUM_FILES);
                 if (localPath == null || !localPath.exists()) {
@@ -247,7 +272,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                     }
                 }
             } catch (Exception e) {
-                throw new ManagementOperationException("Unable to write response to server manager", e);
+                throw new ManagementException("Unable to write response to server manager", e);
             }
         }
 

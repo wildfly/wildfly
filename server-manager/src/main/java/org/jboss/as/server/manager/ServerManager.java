@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -66,21 +67,24 @@ import org.jboss.as.server.manager.management.ManagementOperationHandlerService;
 import org.jboss.as.server.manager.management.ServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
-import org.jboss.as.threads.ScheduledThreadPoolService;
-import org.jboss.as.threads.ThreadFactoryExecutorService;
 import org.jboss.as.threads.ThreadFactoryService;
-import org.jboss.as.threads.TimeSpec;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -364,8 +368,6 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-
-
     /**
      * Callback for when we receive the SERVER_STOPPED message from a Server
      *
@@ -494,19 +496,37 @@ public class ServerManager implements ShutdownListener {
     }
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
-        final DomainController domainController = new DomainController();
         try {
+            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
-            domainController.start(hostConfig, mapper, environment.getDomainConfigurationDir());
-            setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController, fileRepository));
 
-            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
-            final ManagementOperationHandlerService<DomainControllerOperationHandler> operationHandlerService
-                = new ManagementOperationHandlerService<DomainControllerOperationHandler>(new DomainControllerOperationHandler(domainController, fileRepository));
+            final DomainController domainController = new DomainController();
 
-            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("domain", "controller"), operationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
+
+            batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
+                .addInjection(domainController.getXmlMapperInjector(), mapper)
+                .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
+                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
+
+
+            final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
+            batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
+                .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
+                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
+                .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
+
+            batchBuilder.addService(SERVICE_NAME_BASE.append("local", "dc", "connection"), Service.NULL)
+                .addDependency(DomainController.SERVICE_NAME, DomainController.class, new Injector<DomainController>(){
+                    public void inject(DomainController value) throws InjectionException {
+                        setDomainControllerConnection(new LocalDomainControllerConnection(ServerManager.this, domainController, fileRepository));
+                    }
+                    public void uninject() {
+                        setDomainControllerConnection(null);
+                    }
+                });
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
         }
@@ -534,6 +554,11 @@ public class ServerManager implements ShutdownListener {
         }
         serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
         serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
+
+        final ManagementElement managementElement = hostConfig.getManagementElement();
+        serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, domainControllerClientService.getLocalManagementInterfaceInjector());
+        serviceBuilder.addInjection(domainControllerClientService.getLocalManagementPortInjector(), managementElement.getPort());
+        serviceBuilder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerClientService.getExecutorServiceInjector());
     }
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
@@ -555,9 +580,30 @@ public class ServerManager implements ShutdownListener {
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
-        final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(20,false);
-        batchBuilder.addService(executorServiceName, executorService)
-            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
+
+        /**
+         * Replace below with fixed ScheduledThreadPoolService
+         */
+        final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
+        batchBuilder.addService(executorServiceName, new Service<ScheduledExecutorService>() {
+            private ScheduledExecutorService executorService;
+            public synchronized void start(StartContext context) throws StartException {
+                executorService = Executors.newScheduledThreadPool(20, threadFactoryValue.getValue());
+            }
+
+            public synchronized void stop(StopContext context) {
+                executorService.shutdown();
+            }
+
+            public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
+                return executorService;
+            }
+        }).addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryValue);
+
+//        final ScheduledThreadPoolService executorService = new ScheduledThreadPoolService(20, TimeSpec.DEFAULT_KEEPALIVE);
+//        batchBuilder.addService(executorServiceName, executorService)
+//            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
+
 
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();

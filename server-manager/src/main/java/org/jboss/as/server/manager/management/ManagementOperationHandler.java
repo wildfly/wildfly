@@ -22,9 +22,6 @@
 
 package org.jboss.as.server.manager.management;
 
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
-
 /**
  * Interface for handling management operations coming into a server manager process.  Each handler
  * is identified by a single byte that will be used to route the operation request to the correct handler.
@@ -46,7 +43,7 @@ public interface ManagementOperationHandler {
      * @param protocolVersion The working protocol version
      * @param input  The request input
      * @param output The request output
-     * @throws ManagementOperationException If any problems occur performing the operation
+     * @throws ManagementException If any problems occur performing the operation
      */
-    void handleRequest(final int protocolVersion, final SimpleDataInput input, final SimpleDataOutput output) throws ManagementOperationException;
+    void handleRequest(final int protocolVersion, final ByteDataInput input, final ByteDataOutput output) throws ManagementException;
 }

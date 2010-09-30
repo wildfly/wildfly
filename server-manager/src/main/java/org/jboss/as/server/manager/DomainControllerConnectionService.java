@@ -24,6 +24,8 @@ package org.jboss.as.server.manager;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ScheduledExecutorService;
+import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -46,6 +48,11 @@ public class DomainControllerConnectionService implements Service<Void> {
 
     private final InjectedValue<InetAddress> domainControllerAddress = new InjectedValue<InetAddress>();
     private final InjectedValue<Integer> domainControllerPort = new InjectedValue<Integer>();
+
+    private final InjectedValue<NetworkInterfaceBinding> localManagementInterface = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<Integer> localManagementPort = new InjectedValue<Integer>();
+
+    private final InjectedValue<ScheduledExecutorService> executorService = new InjectedValue<ScheduledExecutorService>();
 
     private final ServerManager serverManager;
     private final FileRepository localRepository;
@@ -77,7 +84,8 @@ public class DomainControllerConnectionService implements Service<Void> {
                 throw new StartException("Failed to get domain controller address", e);
             }
         }
-        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), localRepository, connectionRetryLimit, connectionRetryInterval, connectTimeout));
+        final NetworkInterfaceBinding managementInterface = localManagementInterface.getValue();
+        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), managementInterface.getAddress(), localManagementPort.getValue(), localRepository, connectionRetryLimit, connectionRetryInterval, connectTimeout, executorService.getValue()));
     }
 
     /**
@@ -94,7 +102,7 @@ public class DomainControllerConnectionService implements Service<Void> {
      *
      * @return {@code null}
      */
-    public synchronized Void getValue() throws IllegalStateException {
+    public Void getValue() throws IllegalStateException {
         return null;
     }
 
@@ -104,5 +112,17 @@ public class DomainControllerConnectionService implements Service<Void> {
 
     public Injector<Integer> getDomainControllerPortInjector() {
         return domainControllerPort;
+    }
+
+    public Injector<NetworkInterfaceBinding> getLocalManagementInterfaceInjector() {
+        return localManagementInterface;
+    }
+
+    public Injector<Integer> getLocalManagementPortInjector() {
+        return localManagementPort;
+    }
+
+    public Injector<ScheduledExecutorService> getExecutorServiceInjector() {
+        return executorService;
     }
 }

@@ -28,11 +28,11 @@ import java.io.IOException;
 
 /**
  * Protocol header used for management operation responses. Provides the default header fields from
- * {@link org.jboss.as.server.manager.management.ManagementProtocolHeader}.
+ * {@link ManagementProtocolHeader}.
  *
  * @author John Bailey
  */
-public class ManagementResponseProtocolHeader extends AbstractManagementProtocolHeader {
+public class ManagementResponseHeader extends ManagementProtocolHeader {
     private int responseId;
 
     /**
@@ -40,9 +40,9 @@ public class ManagementResponseProtocolHeader extends AbstractManagementProtocol
      *
      * @param input The input to read the header information from
      * @throws IOException If any problem occur reading from the input
-     * @throws ManagementOperationException If any information read is invalid.
+     * @throws ManagementException If any information read is invalid.
      */
-    public ManagementResponseProtocolHeader(final DataInput input) throws IOException, ManagementOperationException {
+    public ManagementResponseHeader(final DataInput input) throws IOException, ManagementException {
         super(input);
     }
 
@@ -52,17 +52,17 @@ public class ManagementResponseProtocolHeader extends AbstractManagementProtocol
      * @param version The protocol version
      * @param responseId The response id
      */
-    public ManagementResponseProtocolHeader(final int version, final int responseId) {
+    public ManagementResponseHeader(final int version, final int responseId) {
         super(version);
         this.responseId = responseId;
     }
 
-    public void read(final DataInput input) throws IOException, ManagementOperationException {
+    public void read(final DataInput input) throws IOException, ManagementException {
         super.read(input);
         this.responseId = input.readInt();
     }
 
-    public void write(DataOutput output) throws IOException, ManagementOperationException {
+    public void write(DataOutput output) throws IOException, ManagementException {
         super.write(output);
         output.writeInt(responseId);
     }

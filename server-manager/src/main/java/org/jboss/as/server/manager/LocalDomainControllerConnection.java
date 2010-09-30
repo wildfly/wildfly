@@ -24,7 +24,6 @@ package org.jboss.as.server.manager;
 
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
 
 /**
  *
@@ -40,6 +39,7 @@ public class LocalDomainControllerConnection implements DomainControllerConnecti
      *
      * @param serverManager The local server manager
      * @param domainController The local domain controller
+     * @param fileRepository The local file repository
      */
     public LocalDomainControllerConnection(final ServerManager serverManager, final DomainController domainController, final FileRepository fileRepository) {
         this.domainController = domainController;
@@ -56,7 +56,6 @@ public class LocalDomainControllerConnection implements DomainControllerConnecti
     /** {@inheritDoc} */
     public void unregister() {
         domainController.removeClient(client.getId());
-        domainController.stop();
     }
 
     /** {@inheritDoc} */

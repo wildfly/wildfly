@@ -40,21 +40,30 @@ public interface ManagementProtocol {
     int SERVER_MANAGER_REQUEST = 0x06;
 
 
-    // Domain controller request
+    // Domain Controller requests
     int PARAM_SERVER_MANAGER_ID = 0x07;
-    int REQUEST_OPERATION = 0x08;
-    int REGISTER_REQUEST = 0x09;
-    int PARAM_HOST_MODEL = 0x10;
-    int PARAM_DOMAIN_MODEL = 0x11;
-    int REGISTER_RESPONSE = 0x12;
-    int UNREGISTER_REQUEST = 0x13;
-    int UNREGISTER_RESPONSE = 0x14;
-    int SYNC_FILE_REQUEST = 0x15;
-    int PARAM_ROOT_ID = 0x16;
-    int PARAM_FILE_PATH = 0x17;
-    int PARAM_NUM_FILES = 0x18;
-    int PARAM_FILE_SIZE = 0x19;
-    int FILE_START = 0x20;
-    int FILE_END = 0x21;
-    int SYNC_FILE_RESPONSE = 0x22;
+    int PARAM_SERVER_MANAGER_HOST = 0x08;
+    int PARAM_SERVER_MANAGER_PORT = 0x09;
+    int REQUEST_OPERATION = 0x10;
+    int REGISTER_REQUEST = 0x11;
+    int PARAM_HOST_MODEL = 0x12;
+    int PARAM_DOMAIN_MODEL = 0x13;
+    int REGISTER_RESPONSE = 0x14;
+    int UNREGISTER_REQUEST = 0x15;
+    int UNREGISTER_RESPONSE = 0x16;
+    int SYNC_FILE_REQUEST = 0x17;
+    int PARAM_ROOT_ID = 0x18;
+    int PARAM_FILE_PATH = 0x19;
+    int PARAM_NUM_FILES = 0x20;
+    int PARAM_FILE_SIZE = 0x21;
+    int FILE_START = 0x22;
+    int FILE_END = 0x23;
+    int SYNC_FILE_RESPONSE = 0x24;
+
+    // Server Manager requests
+    int UPDATE_DOMAIN_OPERATION = 0x25;
+    int UPDATE_DOMAIN_REQUEST = 0x26;
+    int UPDATE_DOMAIN_RESPONSE = 0x27;
+    int IS_ACTIVE_REQUEST = 0x28;
+    int IS_ACTIVE_RESPONSE = 0x29;
 }

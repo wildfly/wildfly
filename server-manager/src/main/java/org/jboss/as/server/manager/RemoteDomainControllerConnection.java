@@ -28,25 +28,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.server.manager.management.ManagementOperationException;
+import org.jboss.as.server.manager.management.ByteDataInput;
+import org.jboss.as.server.manager.management.ByteDataOutput;
+import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
-import static org.jboss.as.server.manager.management.ManagementProtocolUtils.expectHeader;
-import org.jboss.as.server.manager.management.ManagementRequestProtocolHeader;
-import org.jboss.as.server.manager.management.ManagementResponseProtocolHeader;
-import static org.jboss.as.server.manager.management.MarshallingUtils.unmarshall;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
+import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
+import org.jboss.as.server.manager.management.AbstractManagementRequest;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
 
 /**
  * Connection to a remote domain controller.
@@ -58,11 +49,13 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
     private final String serverManagerId;
     private final InetAddress dcAddress;
     private final int dcPort;
-    private final RemoteFileRepository remoteFileRepository;
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(10);
     private final int connectionRetryLimit;
     private final long connectionRetryInterval;
     private final long connectTimeout;
+    private final InetAddress localManagementAddress;
+    private final int localManagementPort;
+    private final RemoteFileRepository remoteFileRepository;
+    private final ScheduledExecutorService executorService;
 
     /**
      * Create an instance.
@@ -70,212 +63,83 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
      * @param serverManagerId  The identifier of the server manager
      * @param dcAddress  The domain controller port
      * @param dcPort  The domain controller port
+     * @param localManagementAddress The local management address
+     * @param localManagementPort The local management port
      * @param localFileRepository  The local file repository
      * @param connectionRetryLimit  The number of times to retry operations
      * @param connectionRetryInterval  The interval between connection retries
      * @param connectTimeout  The timeout for connecting to the remote DC (in seconds)
+     * @param executorService The executor service
      */
-    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort, final FileRepository localFileRepository, final int connectionRetryLimit, final long connectionRetryInterval, final long connectTimeout) {
+    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort, final InetAddress localManagementAddress, final int localManagementPort, final FileRepository localFileRepository, final int connectionRetryLimit, final long connectionRetryInterval, final long connectTimeout, final ScheduledExecutorService executorService) {
         this.serverManagerId = serverManagerId;
         this.dcAddress = dcAddress;
         this.dcPort = dcPort;
+        this.localManagementAddress = localManagementAddress;
+        this.localManagementPort = localManagementPort;
         this.remoteFileRepository = new RemoteFileRepository(this, localFileRepository);
         this.connectionRetryLimit = connectionRetryLimit;
         this.connectionRetryInterval = connectionRetryInterval;
         this.connectTimeout = connectTimeout;
+        this.executorService = executorService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public DomainModel register() {
         try {
-            return execute(new RegisterOperation()).get();
-        } catch (Exception e) {
+            return new RegisterOperation(localManagementAddress, localManagementPort, this).executeForResult();
+        } catch (ManagementException e) {
             throw new RuntimeException("Failed to register with the domain controller", e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void unregister() {
-        execute(new UnregisterOperation());
+        try {
+            new UnregisterOperation(this).execute();
+        } catch (ManagementException e) {
+            throw new RuntimeException("Failed to register with the domain controller", e);
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public FileRepository getRemoteFileRepository() {
         return remoteFileRepository;
     }
 
-    private <T> Future<T> execute(final DomainControllerOperation<T> operation) {
-        final InitiatingFuture<T> initiatingFuture = new InitiatingFuture<T>();
-        executorService.execute(new InitiateRequestTask<T>(operation, initiatingFuture));
-        try {
-            return initiatingFuture.get();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to execute remote domain controller operation: " +  operation, e);
-        }
-    }
+    private abstract static class DomainControllerRequest<T> extends AbstractManagementRequest<T> {
+        protected final String serverManagerId;
 
-    private class InitiateRequestTask<T> implements Runnable {
-        private final DomainControllerOperation<T> operation;
-        private final InitiatingFuture<T> initiatingFuture;
-        private int requestId;
-
-        private InitiateRequestTask(final DomainControllerOperation<T> operation, final InitiatingFuture<T> initiatingFuture) {
-            this.operation = operation;
-            this.initiatingFuture = initiatingFuture;
+        private DomainControllerRequest(final RemoteDomainControllerConnection connection) {
+            super(connection.dcAddress, connection.dcPort, connection.connectionRetryLimit, connection.connectionRetryInterval, connection.connectTimeout, connection.executorService);
+            this.serverManagerId = connection.serverManagerId;
         }
 
-        public void run() {
-            final int requestId = this.requestId++;
-            Socket socket = null;
+        protected byte getHandlerId() {
+            return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
+        }
+
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
             try {
-                socket = new Socket();
-                int timeout = (int)TimeUnit.SECONDS.toMillis(connectTimeout);
-                socket.connect(new InetSocketAddress(dcAddress, dcPort), timeout);
-                socket.setSoTimeout(timeout);
-                SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(socket.getInputStream()));
-                SimpleDataOutput output = new SimpleDataOutput(Marshalling.createByteOutput(socket.getOutputStream()));
-
-                // Start by writing the header
-                final ManagementRequestProtocolHeader managementRequestHeader = new ManagementRequestProtocolHeader(ManagementProtocol.VERSION, requestId, (byte)ManagementProtocol.DOMAIN_CONTROLLER_REQUEST);
-                managementRequestHeader.write(output);
-                output.flush();
-
-                // Now read the response header
-                final ManagementResponseProtocolHeader responseHeader = new ManagementResponseProtocolHeader(input);
-
-                if (requestId != responseHeader.getResponseId()) {
-                    // TODO: Exception???
-                    safeClose(socket);
-                    return;
-                }
-                // Schedule execution the operation
-                Future<T> resultFuture = executorService.submit(new ExecuteTask<T>(operation, responseHeader.getVersion(), socket, input, output));
-                initiatingFuture.set(resultFuture);
-            } catch (Throwable e) {
-                safeClose(socket);
-                if(requestId < connectionRetryLimit) {
-                    executorService.schedule(this, connectionRetryInterval, TimeUnit.SECONDS);
-                } else {
-                    initiatingFuture.setException(new Exception("Failed to initiate request to remote domain controller", e));
-                }
-            }
-        }
-    }
-
-    private final class InitiatingFuture<T> {
-        private volatile Future<T> operationFuture;
-        private volatile Exception exception;
-
-        Future<T> get() throws Exception {
-            boolean intr = false;
-            try {
-                synchronized (this) {
-                    while (this.operationFuture == null && exception == null) {
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                            intr = true;
-                        }
-                    }
-                }
-                if (exception != null) {
-                    throw exception;
-                }
-                return operationFuture;
-            } finally {
-                if (intr) Thread.currentThread().interrupt();
-            }
-        }
-
-        void set(final Future<T> operationFuture) {
-            synchronized (this) {
-                this.operationFuture = operationFuture;
-                notifyAll();
-            }
-        }
-
-        void setException(final Exception exception) {
-            synchronized (this) {
-                this.exception = exception;
-                notifyAll();
-            }
-        }
-    }
-
-    private class ExecuteTask<T> implements Callable<T> {
-        private final DomainControllerOperation<T> operation;
-        private final int protocolVersion;
-        private final Socket socket;
-        private final SimpleDataInput input;
-        private final SimpleDataOutput output;
-
-        private ExecuteTask(final DomainControllerOperation<T> operation, final int protocolVersion, final Socket socket, final SimpleDataInput input, final SimpleDataOutput output) {
-            this.operation = operation;
-            this.protocolVersion = protocolVersion;
-            this.socket = socket;
-            this.input = input;
-            this.output = output;
-        }
-
-        public T call() throws Exception {
-            try {
-                return operation.execute(protocolVersion, serverManagerId, output, input);
-            } finally {
-                safeClose(socket);
-            }
-        }
-    }
-
-    private static interface DomainControllerOperation<T> {
-        byte getRequestCode();
-
-        T execute(final int protocolVersion, final String serverManagerId, final SimpleDataOutput output, final SimpleDataInput input) throws ManagementOperationException;
-    }
-
-    private abstract static class RequestResponseOperation<T> implements DomainControllerOperation<T> {
-        public final T execute(final int protocolVersion, final String serverManagerId, final SimpleDataOutput output, final SimpleDataInput input) throws ManagementOperationException {
-            try {
-                // First send request
                 output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_ID);
                 output.writeUTF(serverManagerId);
-                output.writeByte(ManagementProtocol.REQUEST_OPERATION);
-                output.writeByte(getRequestCode());
-                output.writeByte(ManagementProtocol.REQUEST_START);
-                sendRequest(protocolVersion, output);
-                output.writeByte(ManagementProtocol.REQUEST_END);
-                output.flush();
-
-                // Now process the response
-                expectHeader(input, ManagementProtocol.RESPONSE_START);
-                byte responseCode = input.readByte();
-                if (responseCode != getResponseCode()) {
-                    throw new ManagementOperationException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
-                }
-                final T result = receiveResponse(protocolVersion, input);
-                expectHeader(input, ManagementProtocol.RESPONSE_END);
-                return result;
-            } catch (IOException e) {
-                throw new ManagementOperationException("Failed to execute remote domain controller operation", e);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write local management connection information in request", e);
             }
-        }
-
-        protected abstract byte getResponseCode();
-
-        protected void sendRequest(final int protocolVersion, final SimpleDataOutput output) throws ManagementOperationException {
-        }
-
-        protected T receiveResponse(final int protocolVersion, final SimpleDataInput input) throws ManagementOperationException {
-            return null;
         }
     }
 
-    private static class RegisterOperation extends RequestResponseOperation<DomainModel> {
+    private static class RegisterOperation extends DomainControllerRequest<DomainModel> {
+        private final InetAddress localManagementAddress;
+        private final int localManagementPort;
+
+        private RegisterOperation(final InetAddress localManagementAddress, final int localManagementPort, final RemoteDomainControllerConnection connection) {
+            super(connection);
+            this.localManagementAddress = localManagementAddress;
+            this.localManagementPort = localManagementPort;
+        }
+
         public final byte getRequestCode() {
             return ManagementProtocol.REGISTER_REQUEST;
         }
@@ -284,18 +148,36 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             return ManagementProtocol.REGISTER_RESPONSE;
         }
 
-        protected final DomainModel receiveResponse(final int protocolVersion, final SimpleDataInput input) throws ManagementOperationException {
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_HOST);
+                final byte[] address = localManagementAddress.getAddress();
+                output.writeInt(address.length);
+                output.write(address);
+                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_PORT);
+                output.writeInt(localManagementPort);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write local management connection information in request", e);
+            }
+        }
+
+        protected final DomainModel receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
                 log.infof("Registered with remote domain controller");
-                return unmarshall(input, DomainModel.class);
+                return unmarshal(input, DomainModel.class);
             } catch (Exception e) {
-                throw new ManagementOperationException("Failed to read domain model from response", e);
+                throw new ManagementException("Failed to read domain model from response", e);
             }
         }
     }
 
-    private static class UnregisterOperation extends RequestResponseOperation<Void> {
+    private static class UnregisterOperation extends DomainControllerRequest<Void> {
+        private UnregisterOperation(final RemoteDomainControllerConnection connection) {
+            super(connection);
+        }
+
         public final byte getRequestCode() {
             return ManagementProtocol.UNREGISTER_REQUEST;
         }
@@ -304,18 +186,19 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             return ManagementProtocol.UNREGISTER_RESPONSE;
         }
 
-        protected Void receiveResponse(int protocolVersion, SimpleDataInput input) throws ManagementOperationException {
+        protected Void receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
             log.infof("Unregistered with remote domain controller");
             return null;
         }
     }
 
-    private static class GetFileOperation extends RequestResponseOperation<File> {
+    private static class GetFileOperation extends DomainControllerRequest<File> {
         private final byte rootId;
         private final String filePath;
         private final FileRepository localFileRepository;
 
-        private GetFileOperation(byte rootId, String filePath, final FileRepository localFileRepository) {
+        private GetFileOperation(final byte rootId, final String filePath, final FileRepository localFileRepository, final RemoteDomainControllerConnection connection) {
+            super(connection);
             this.rootId = rootId;
             this.filePath = filePath;
             this.localFileRepository = localFileRepository;
@@ -329,18 +212,19 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             return ManagementProtocol.SYNC_FILE_RESPONSE;
         }
 
-        protected final void sendRequest(final int protocolVersion, final SimpleDataOutput output) throws ManagementOperationException {
+        protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
             try {
                 output.writeByte(ManagementProtocol.PARAM_ROOT_ID);
                 output.writeByte(rootId);
                 output.writeByte(ManagementProtocol.PARAM_FILE_PATH);
                 output.writeUTF(filePath);
             } catch (IOException e) {
-                throw new ManagementOperationException("Failed to send sync file request", e);
+                throw new ManagementException("Failed to send sync file request", e);
             }
         }
 
-        protected final File receiveResponse(final int protocolVersion, final SimpleDataInput input) throws ManagementOperationException {
+        protected final File receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
             final File localPath;
             switch (rootId) {
                 case 0: {
@@ -368,7 +252,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                     }
                     case 0: { // Found on DC, but was an empty dir
                         if (!localPath.mkdirs()) {
-                            throw new ManagementOperationException("Unable to create local directory: " + localPath);
+                            throw new ManagementException("Unable to create local directory: " + localPath);
                         }
                         break;
                     }
@@ -382,7 +266,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                             log.debugf("Received file [%s] of length %d", path, length);
                             final File file = new File(localPath, path);
                             if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                                throw new ManagementOperationException("Unable to create local directory " + localPath.getParent());
+                                throw new ManagementException("Unable to create local directory " + localPath.getParent());
                             }
                             long totalRead = 0;
                             OutputStream fileOut = null;
@@ -402,14 +286,14 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                                 }
                             }
                             if (totalRead != length) {
-                                throw new ManagementOperationException("Did not read the entire file. Missing: " + (length - totalRead));
+                                throw new ManagementException("Did not read the entire file. Missing: " + (length - totalRead));
                             }
                             expectHeader(input, ManagementProtocol.FILE_END);
                         }
                     }
                 }
             } catch (IOException e) {
-                throw new ManagementOperationException("Failed to process sync file response", e);
+                throw new ManagementException("Failed to process sync file response", e);
             }
             return localPath;
         }
@@ -438,30 +322,12 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
 
         private File getFile(final String relativePath, final byte repoId) {
             try {
-                return connection.execute(new GetFileOperation(repoId, relativePath, localFileRepository)).get();
+                return new GetFileOperation(repoId, relativePath, localFileRepository, connection).executeForResult();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to get file from remote repository", e);
             }
         }
     }
 
-    private void safeClose(final Socket socket) {
-        if (socket == null)
-            return;
-        try {
-            socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }

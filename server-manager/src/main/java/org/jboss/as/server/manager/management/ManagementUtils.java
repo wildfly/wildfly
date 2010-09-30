@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.manager.management;
 
+import java.io.DataInput;
+import java.io.IOException;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshaller;
@@ -34,9 +36,11 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 
 /**
+ * Utility class providing methods for common management tasks.
+ *
  * @author John Bailey
  */
-public final class MarshallingUtils {
+public class ManagementUtils {
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
 
@@ -51,10 +55,9 @@ public final class MarshallingUtils {
         CONFIG = config;
     }
 
-    private MarshallingUtils() {
-    }
+    private ManagementUtils() {}
 
-    public static <T> T unmarshall(final ByteInput input, final Class<T> expectedType) throws Exception {
+    public static <T> T unmarshal(final ByteInput input, final Class<T> expectedType) throws Exception {
         final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
         final ChunkyByteInput chunked = new ChunkyByteInput(input);
         try {
@@ -67,7 +70,7 @@ public final class MarshallingUtils {
         }
     }
 
-    public static void marshall(final ByteOutput output, final Object object) throws Exception {
+    public static void marshal(final ByteOutput output, final Object object) throws Exception {
         final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
         final ChunkyByteOutput chunked = new ChunkyByteOutput(output);
         try {
@@ -78,5 +81,12 @@ public final class MarshallingUtils {
             chunked.close();
         }
 
+    }
+
+    public static void expectHeader(final DataInput input, int expected) throws IOException, ManagementException {
+        byte header = input.readByte();
+        if (header != (byte) expected) {
+            throw new ManagementException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
+        }
     }
 }

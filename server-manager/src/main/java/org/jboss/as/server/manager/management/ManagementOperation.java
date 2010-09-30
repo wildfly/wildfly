@@ -20,41 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager;
-
-import org.jboss.as.domain.controller.DomainControllerClient;
-import org.jboss.as.model.DomainModel;
+package org.jboss.as.server.manager.management;
 
 /**
- * A client to integarte with a local domain controller instance.
+ * Management operation interface used to establish a general contract for operation handlers to conform to.
  *
  * @author John Bailey
  */
-public class LocalDomainControllerClient implements DomainControllerClient {
-    private static final String ID = "LOCAL";
-    private final ServerManager serverManager;
+public interface ManagementOperation {
+    /**
+     * Code to identify this operation
+     *
+     * @return The request code
+     */
+    byte getRequestCode();
 
     /**
-     * Create an instance with a server manger.
+     * Handle the request using the provided input and output
      *
-     * @param serverManager The local server manager instance.
+     * @param input The request input
+     * @param output The request output
+     * @throws ManagementException If any problems occur handling the request
      */
-    public LocalDomainControllerClient(final ServerManager serverManager) {
-        this.serverManager = serverManager;
-    }
-
-    /** {@inheritDoc} */
-    public String getId() {
-        return ID;
-    }
-
-    /** {@inheritDoc} */
-    public void updateDomain(final DomainModel domain) {
-        serverManager.setDomain(domain);
-    }
-
-    /** {@inheritDoc} */
-    public boolean isActive() {
-        return true;
-    }
+    void handle(final ByteDataInput input, final ByteDataOutput output) throws ManagementException;
 }

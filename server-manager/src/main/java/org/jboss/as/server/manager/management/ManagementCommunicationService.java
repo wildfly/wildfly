@@ -35,9 +35,6 @@ import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
-import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -157,30 +154,28 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
         }
 
         public void run() {
-            final InputStream socketIn = socketConnection.getInputStream();
-            final OutputStream socketOut = socketConnection.getOutputStream();
             try {
-                final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(socketIn));
-                final SimpleDataOutput output =  new SimpleDataOutput(Marshalling.createByteOutput(socketOut));
+                final ByteDataInput input = new SimpleByteDataInput(socketConnection.getInputStream());
+                final ByteDataOutput output =  new SimpleByteDataOutput(socketConnection.getOutputStream());
 
                 // Start by reading the request header
-                final ManagementRequestProtocolHeader requestHeader = new ManagementRequestProtocolHeader(input);
+                final ManagementRequestHeader requestHeader = new ManagementRequestHeader(input);
 
                 // Work with the lowest protocol version
                 int workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
 
                 // Now write the response header
-                final ManagementResponseProtocolHeader responseHeader = new ManagementResponseProtocolHeader(workingVersion, requestHeader.getRequestId());
+                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
                 responseHeader.write(output);
                 output.flush();
 
                 byte handlerId = requestHeader.getOperationHandlerId();
                 if (handlerId == -1) {
-                    throw new ManagementOperationException("Management request failed.  Invalid handler id");
+                    throw new ManagementException("Management request failed.  Invalid handler id");
                 }
                 final ManagementOperationHandler handler = handlers.get(handlerId);
                 if (handler == null) {
-                    throw new ManagementOperationException("Management request failed.  NO handler found for id" + handlerId);
+                    throw new ManagementException("Management request failed.  NO handler found for id" + handlerId);
                 }
                 handler.handleRequest(workingVersion, input, output);
             } catch (Exception e) {

@@ -25,6 +25,8 @@ package org.jboss.as.server.manager.management;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
 /**
  * Protocol header used to send the required information to establish a request with a remote server manager.  The primary
@@ -32,29 +34,84 @@ import java.io.IOException;
  *
  * @author John Bailey
  */
-public interface ManagementProtocolHeader {
+public abstract class ManagementProtocolHeader {
+
+    protected int version;
+
+    /**
+     * Construct a new instance without setting the version.  Should be used if the input is not available at the time
+     * of creation.
+     */
+    protected ManagementProtocolHeader() {
+    }
+
+    /**
+     * Construct a new instance and read the header information from the input provided.
+     *
+     * @param input The input to read the header information from
+     * @throws IOException If any problem occur reading from the input
+     * @throws ManagementException If any information read is invalid.
+     */
+    protected ManagementProtocolHeader(final DataInput input) throws IOException, ManagementException {
+        read(input);
+    }
+
+    /**
+     * Construct an instance with the protocol version for the header.
+     *
+     * @param version The protocol version
+     */
+    protected ManagementProtocolHeader(int version) {
+        this.version = version;
+    }
+
     /**
      * Read the header information from the provided {@link java.io.DataInput}.
      *
      * @param input The input to read from
      * @throws IOException If any problems occur reading from the input
-     * @throws ManagementOperationException If any of the input values are incorrect
+     * @throws ManagementException If any of the input values are incorrect
      */
-    void read(final DataInput input) throws IOException, ManagementOperationException;
+    public void read(final DataInput input) throws IOException, ManagementException {
+        validateSignature(input);
+        expectHeader(input, ManagementProtocol.VERSION_FIELD);
+        this.version = input.readInt();
+    }
 
     /**
      * Write the header information to the provided {@link java.io.DataOutput}.
      *
      * @param output The output to write to
      * @throws IOException If any problems occur writing to the output
-     * @throws ManagementOperationException If any of the output values are incorrect
+     * @throws ManagementException If any of the output values are incorrect
      */
-    void write(final DataOutput output) throws IOException, ManagementOperationException;
+    public void write(final DataOutput output) throws IOException, ManagementException {
+        output.write(ManagementProtocol.SIGNATURE);
+        output.writeByte(ManagementProtocol.VERSION_FIELD);
+        output.writeInt(getVersion());
+    }
 
     /**
      * The protocol version for the current communication.
      *
      * @return The protocol version
      */
-    int getVersion();
+    public int getVersion() {
+        return version;
+    }
+
+    /**
+     * Validate the header signature.
+     *
+     * @param input The input to read the signature from
+     * @throws IOException If any read problems occur
+     * @throws ManagementException If the signature information is invalid
+     */
+    protected void validateSignature(final DataInput input) throws IOException, ManagementException {
+        final byte[] signatureBytes = new byte[4];
+        input.readFully(signatureBytes);
+        if (!Arrays.equals(ManagementProtocol.SIGNATURE, signatureBytes)) {
+            throw new ManagementException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
+        }
+    }
 }

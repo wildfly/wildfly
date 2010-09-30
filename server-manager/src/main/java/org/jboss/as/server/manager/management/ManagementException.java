@@ -27,7 +27,8 @@ package org.jboss.as.server.manager.management;
  *
  * @author John Bailey
  */
-public class ManagementOperationException extends Exception {
+public class ManagementException extends Exception {
+    private static final long serialVersionUID = -7500137184431829933L;
 
     /**
      * Constructs a {@code ManagementOperationException} with the specified detail message. The cause is not
@@ -35,7 +36,7 @@ public class ManagementOperationException extends Exception {
      *
      * @param message the detail message
      */
-    public ManagementOperationException(String message) {
+    public ManagementException(String message) {
         super(message);
     }
 
@@ -45,7 +46,7 @@ public class ManagementOperationException extends Exception {
      * @param message the detail message
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
-    public ManagementOperationException(String message, Throwable cause) {
+    public ManagementException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -56,7 +57,7 @@ public class ManagementOperationException extends Exception {
      *
      * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
-    public ManagementOperationException(Throwable cause) {
+    public ManagementException(Throwable cause) {
         super(cause);
     }
 }

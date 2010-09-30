@@ -24,20 +24,11 @@ package org.jboss.as.server.manager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import org.jboss.as.server.manager.management.ChunkyByteInput;
 import org.jboss.as.server.manager.management.ChunkyByteOutput;
-import org.jboss.as.server.manager.management.MarshallingUtils;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -163,16 +154,5 @@ public class ChunkyByteInputOutputTest {
 
         Assert.assertArrayEquals(expected, result);
         Assert.assertEquals(-1, byteInput.read());
-    }
-
-
-    private static final MarshallerFactory MARSHALLER_FACTORY;
-    private static final MarshallingConfiguration CONFIG;
-
-    static {
-        MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river");
-        final MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassTable(ModularClassTable.getInstance());
-        CONFIG = config;
     }
 }
