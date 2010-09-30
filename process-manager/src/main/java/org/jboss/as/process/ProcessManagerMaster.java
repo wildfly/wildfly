@@ -44,6 +44,8 @@ import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.ManagedProcess.ProcessHandler;
 import org.jboss.as.process.ManagedProcess.RealProcessHandler;
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
 import org.jboss.logging.Logger;
 
 /**
@@ -131,7 +133,7 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
             try {
                 stopped = serverManagerProcess.shutdownServers();
             } catch (IOException e) {
-                log.errorf("Error sending %s command to %s", Command.SHUTDOWN_SERVERS, SERVER_MANAGER_PROCESS_NAME);
+                log.errorf("Error sending %s command to %s", OutgoingCommand.SHUTDOWN_SERVERS, SERVER_MANAGER_PROCESS_NAME);
             }
         }
 
@@ -141,7 +143,7 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
                     log.errorf("Did not receive shutdown confirmation of servers in %d seconds. Continuing shutdown process ", 10);
                 }
             } catch (InterruptedException e) {
-                log.errorf(e, "Error waiting for %s command from %s", Command.SERVERS_SHUTDOWN, SERVER_MANAGER_PROCESS_NAME);
+                log.errorf(e, "Error waiting for %s command from %s", IncomingCommand.SERVERS_SHUTDOWN, SERVER_MANAGER_PROCESS_NAME);
             }
         }
 

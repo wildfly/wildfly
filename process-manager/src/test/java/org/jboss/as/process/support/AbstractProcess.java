@@ -270,7 +270,6 @@ public abstract class AbstractProcess {
     }
 
     private class TestHandler implements Handler {
-
         @Override
         public void handleMessage(String sourceProcessName, byte[] message) {
             AbstractProcess.this.handleMessage(sourceProcessName, message);
@@ -278,10 +277,11 @@ public abstract class AbstractProcess {
 
         @Override
         public void shutdown() {
-            shutdown.set(true);
-            AbstractProcess.this.shutdown();
-            clientStream.shutdown();
-            slave.shutdown();
+            if (!shutdown.getAndSet(true)) {
+                AbstractProcess.this.shutdown();
+                clientStream.shutdown();
+                slave.shutdown();
+            }
         }
 
 		@Override

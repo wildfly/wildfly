@@ -35,6 +35,7 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
 import org.jboss.as.server.manager.ServerManagerProtocol.Command;
@@ -86,10 +87,10 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
                 pm.shutdown();
             }
         }).start();
-        assertReadPmCommand(sm, org.jboss.as.process.Command.SHUTDOWN_SERVERS.toString());
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN_SERVERS.toString());
         sm.sendServersShutdownToProcessManager();
 
-        assertReadPmCommand(sm, org.jboss.as.process.Command.SHUTDOWN.toString());
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN.toString());
         sm.stop();
     }
 
@@ -130,17 +131,17 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
                 pm.shutdown();
             }
         }).start();
-        assertReadPmCommand(sm, org.jboss.as.process.Command.SHUTDOWN_SERVERS.toString());
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN_SERVERS.toString());
         sm.sendServersShutdownToProcessManager();
 
         //One of these will come from PM, the other from the server
         ServerMessage msg1 = sm.awaitAndReadMessage();
         ServerMessage msg2 = sm.awaitAndReadMessage();
         if (msg1.getSourceProcess() != null) {
-            assertPmServerMessage(msg2, org.jboss.as.process.Command.SHUTDOWN.toString());
+            assertPmServerMessage(msg2, OutgoingCommand.SHUTDOWN.toString());
             assertServerServerMessage(msg1, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         } else {
-            assertPmServerMessage(msg1, org.jboss.as.process.Command.SHUTDOWN.toString());
+            assertPmServerMessage(msg1, OutgoingCommand.SHUTDOWN.toString());
             assertServerServerMessage(msg2, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         }
 

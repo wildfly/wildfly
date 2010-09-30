@@ -27,10 +27,12 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.process.Command;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.SystemExiter;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommandHandler;
 import org.jboss.logging.Logger;
 
 /**
@@ -55,15 +57,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
 
     @Override
     public void sendMessage(final byte[] message) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND);
-        b.append('\0').append("ServerManager");
-        b.append('\0');
-        StreamUtils.writeString(output, b.toString());
-        StreamUtils.writeInt(output, message.length);
-        output.write(message, 0, message.length);
-        StreamUtils.writeChar(output, '\n');
-        output.flush();
+        IncomingCommand.SEND.sendMessage(output, "ServerManager", message);
     }
 
     @Override
@@ -81,6 +75,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
         public void run() {
+            OutgoingCommandHandlerToMessageHandlerAdapter handler = new OutgoingCommandHandlerToMessageHandlerAdapter();
             final InputStream input = ProcessManagerServerCommunicationHandler.this.input;
             final StringBuilder b = new StringBuilder();
             try {
@@ -92,41 +87,8 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                         break;
                     }
                     try {
-                        final Command command = Command.valueOf(b.toString());
-                        switch (command) {
-                            case SHUTDOWN: {
-                                shutdown();
-                                break;
-                            }
-                            case MSG: {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String sourceProcess = b.toString();
-                                    if (status == Status.MORE) {
-                                        try {
-                                            handler.handleMessage(StreamUtils.readBytesWithLength(input));
-                                        } catch (Throwable t) {
-                                            logger.error("Caught exception handling message from " + sourceProcess, t);
-                                        }
-                                        status = StreamUtils.readStatus(input);
-                                    }
-                                }
-                                break;
-                            }
-                            case RECONNECT_SERVER_MANAGER : {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String address = b.toString();
-                                    if (status != Status.MORE) {
-                                        // else it was end of stream, so only a partial was received
-                                        return;
-                                    }
-                                    status = StreamUtils.readWord(input, b);
-                                    final String port = b.toString();
-                                    handler.reconnectServer(address, port);
-                                }
-                            }
-                        }
+                        final OutgoingCommand command = OutgoingCommand.valueOf(b.toString());
+                        status = command.handleMessage(input, status, handler, b);
                     } catch (IllegalArgumentException e) {
                         // unknown command...
                         logger.error("Received unknown command: " + b.toString());
@@ -161,6 +123,34 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                 thread.setName("Exit thread");
                 thread.start();
             }
+        }
+    }
+
+    private class OutgoingCommandHandlerToMessageHandlerAdapter implements OutgoingCommandHandler {
+
+        @Override
+        public void handleDown(String serverName) {
+            logger.warn("Wrong command " + OutgoingCommand.DOWN + " received");
+        }
+
+        @Override
+        public void handleMessage(String sourceProcess, byte[] message) {
+            handler.handleMessage(message);
+        }
+
+        @Override
+        public void handleReconnectServerManager(String address, String port) {
+            handler.reconnectServer(address, port);
+        }
+
+        @Override
+        public void handleShutdown() {
+            handler.shutdown();
+        }
+
+        @Override
+        public void handleShutdownServers() {
+            logger.warn("Wrong command " + OutgoingCommand.SHUTDOWN_SERVERS + " received");
         }
     }
 }
