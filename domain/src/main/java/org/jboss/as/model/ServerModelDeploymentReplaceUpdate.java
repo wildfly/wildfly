@@ -23,14 +23,12 @@
 package org.jboss.as.model;
 
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-import org.jboss.msc.service.ServiceContainer;
-
 
 /**
- * Update used when updating a deployment element to be started.
- *
- * @author Brian Stansberry
- */
+* Update used when updating a deployment element to be started.
+*
+* @author Brian Stansberry
+*/
 public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
     private static final long serialVersionUID = 5773083013951607950L;
 
@@ -73,13 +71,13 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     }
 
     @Override
-    public <P> void applyUpdate(ServiceContainer container,
+    public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (deploymentElement != null) {
             // FIXME coordinate results!!!
-            startStopHandler.undeploy(toReplace, container, resultHandler, param);
+            startStopHandler.undeploy(toReplace, updateContext, resultHandler, param);
             startStopHandler.deploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
-                    container, resultHandler, param);
+                    updateContext, resultHandler, param);
         }
         else if (resultHandler != null) {
             // We shouldn't be able to get here, as the model update should have failed,

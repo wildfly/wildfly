@@ -25,15 +25,13 @@ package org.jboss.as.model;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 import org.jboss.as.deployment.client.api.server.SimpleServerDeploymentActionResult;
 import org.jboss.as.deployment.client.api.server.ServerUpdateActionResult.Result;
-import org.jboss.msc.service.ServiceContainer;
-
 
 /**
- * Update used when updating a deployment element to be started or stopped.
- *
- * @author John E. Bailey
- * @author Brian Stansberry
- */
+* Update used when updating a deployment element to be started or stopped.
+*
+* @author John E. Bailey
+* @author Brian Stansberry
+*/
 public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
     private static final long serialVersionUID = 5773083013951607950L;
 
@@ -70,16 +68,16 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         }
     }
 
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
         if (deploymentElement != null) {
             if (elementUpdate.isStart()) {
                 startStopHandler.deploy(deploymentElement.getUniqueName(), deploymentElement.getRuntimeName(),
-                        deploymentElement.getSha1Hash(), container, resultHandler, param);
+                        deploymentElement.getSha1Hash(), updateContext, resultHandler, param);
             }
             else {
-                startStopHandler.undeploy(getDeploymentUnitName(), container, resultHandler, param);
+                startStopHandler.undeploy(getDeploymentUnitName(), updateContext, resultHandler, param);
             }
         }
         else if (resultHandler != null) {

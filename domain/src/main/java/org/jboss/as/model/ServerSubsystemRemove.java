@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceContainer;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -51,7 +49,7 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
 
     }
 
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         // no runtime operation
     }
 

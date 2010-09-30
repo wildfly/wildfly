@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceContainer;
-
 /**
  * An update which modifies the server's system properties.
  *
@@ -53,7 +51,7 @@ public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<
 
     /** {@inheritDoc} */
     @Override
-    public <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         try {
             propertyUpdate.applyUpdate(System.getProperties());
         } catch (UpdateFailedException e) {

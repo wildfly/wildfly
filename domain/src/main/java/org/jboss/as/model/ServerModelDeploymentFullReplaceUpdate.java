@@ -23,14 +23,12 @@
 package org.jboss.as.model;
 
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-import org.jboss.msc.service.ServiceContainer;
-
 
 /**
- * Update used when updating a deployment element to be started.
- *
- * @author Brian Stansberry
- */
+* Update used when updating a deployment element to be started.
+*
+* @author Brian Stansberry
+*/
 public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
     private static final long serialVersionUID = 5773083013951607950L;
 //    private static final Logger log = Logger.getLogger("org.jboss.as.model");
@@ -57,10 +55,10 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     }
 
     @Override
-    public <P> void applyUpdate(ServiceContainer container,
+    public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
-        removeUpdate.applyUpdate(container, resultHandler, param);
-        addUpdate.applyUpdate(container, resultHandler, param);
+        removeUpdate.applyUpdate(updateContext, resultHandler, param);
+        addUpdate.applyUpdate(updateContext, resultHandler, param);
     }
 
     @Override

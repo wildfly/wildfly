@@ -25,7 +25,6 @@ package org.jboss.as.model;
 import java.util.Arrays;
 
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-import org.jboss.msc.service.ServiceContainer;
 
 /**
  * Update to the ServerModel element to add a new deployment.
@@ -80,10 +79,10 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
     }
 
     @Override
-    public <P> void applyUpdate(ServiceContainer container,
+    public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (startStopHandler != null) {
-            startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, container, resultHandler, param);
+            startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, updateContext, resultHandler, param);
         }
     }
 }

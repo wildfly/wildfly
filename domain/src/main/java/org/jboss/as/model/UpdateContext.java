@@ -22,31 +22,19 @@
 
 package org.jboss.as.model;
 
+import org.jboss.msc.service.BatchBuilder;
+
 /**
+ * The update context.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerExtensionRemove extends AbstractServerModelUpdate<Void> {
+public interface UpdateContext {
 
-    private static final long serialVersionUID = 3718982114819320314L;
-
-    private final String moduleName;
-
-    public ServerExtensionRemove(final String moduleName) {
-        super(true);
-        this.moduleName = moduleName;
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
-        element.addExtension(moduleName);
-    }
-
-    /** {@inheritDoc} */
-    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        // no action
-    }
-
-    public ServerExtensionAdd getCompensatingUpdate(final ServerModel original) {
-        return new ServerExtensionAdd(moduleName);
-    }
+    /**
+     * Get the current batch builder.
+     *
+     * @return the batch builder
+     */
+    BatchBuilder getBatchBuilder();
 }

@@ -25,7 +25,6 @@ package org.jboss.as.model;
 import org.jboss.as.Extension;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceContainer;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -47,12 +46,13 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         // no action
     }
 
-    /** {@inheritDoc} */
-    protected void applyUpdateBootAction(final ServiceContainer container) {
+    /** {@inheritDoc}
+     * @param updateContext*/
+    protected void applyUpdateBootAction(final UpdateContext updateContext) {
         try {
             for (Extension extension : Module.loadService(moduleName, Extension.class)) {
                 extension.activate(null);

@@ -22,11 +22,14 @@
 
 package org.jboss.as.threads;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -107,7 +110,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         }
     }
 
-    private void parseThreadFactoryElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) throws XMLStreamException {
+    private void parseThreadFactoryElement(final XMLExtendedStreamReader reader, final List<? super ThreadFactoryAdd> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         String groupName = null;
@@ -174,7 +177,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         updates.add(add);
     }
 
-    private void parseScheduledExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) throws XMLStreamException {
+    private void parseScheduledExecutorElement(final XMLExtendedStreamReader reader, final List<? super ScheduledExecutorAdd> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         final String name = reader.getAttributeValue(0);
@@ -182,10 +185,94 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
             throw duplicateNamedElement(reader, name);
         }
 
-        final ScheduledExecutorAdd add = new ScheduledExecutorAdd(name, maxSize);
-
-
         // Elements
+        ScaledCount maxSize = null;
+        TimeSpec keepaliveTime = null;
+        String threadFactoryRef = null;
 
+        final Map<String, String> map = new HashMap<String, String>();
+        final EnumSet<Element> required = EnumSet.of(Element.MAX_THREADS);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            if (! reader.getNamespaceURI().equals(Namespace.CURRENT.getUriString())) {
+                throw unexpectedElement(reader);
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            required.remove(element);
+            if (! encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case MAX_THREADS: {
+                    maxSize = readScaledCountElement(reader);
+                    break;
+                }
+                case KEEPALIVE_TIME: {
+                    keepaliveTime = readTimeSpecElement(reader);
+                    break;
+                }
+
+            }
+        }
+        final ScheduledExecutorAdd add = new ScheduledExecutorAdd(name, maxSize);
+        if (keepaliveTime != null) add.setKeepaliveTime(keepaliveTime);
+        if (threadFactoryRef != null) add.setThreadFactoryName(threadFactoryRef);
+        add.getProperties().putAll(map);
+        updates.add(add);
     }
+
+    protected static TimeSpec readTimeSpecElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        TimeUnit unit = null;
+        long qty = -1L;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                case TIME: {
+                    qty = reader.getLongAttributeValue(i);
+                    break;
+                }
+                case UNIT: {
+                    // BES 2010/09/28 - I replaced this because it fails with
+                    // case sensitivity problems
+                    //unit = reader.getAttributeValue(i, TimeUnit.class);
+                    String val = reader.getAttributeValue(i);
+                    unit = Enum.valueOf(TimeUnit.class, val.toUpperCase());
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (qty == -1L) throw missingRequired(reader, Collections.singleton(Attribute.TIME));
+        if (unit == null) throw missingRequired(reader, Collections.singleton(Attribute.UNIT));
+        requireNoContent(reader);
+        return new TimeSpec(unit, qty);
+    }
+
+    protected static ScaledCount readScaledCountElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        long perCpu = -1L;
+        long count = -1L;
+        final int acnt = reader.getAttributeCount();
+        for (int i = 0; i < acnt; i ++) {
+            switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                case PER_CPU: {
+                    perCpu = reader.getLongAttributeValue(i);
+                    break;
+                }
+                case COUNT: {
+                    count = reader.getLongAttributeValue(i);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (perCpu == -1L) throw missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
+        if (count == -1L) throw missingRequired(reader, Collections.singleton(Attribute.COUNT));
+        requireNoContent(reader);
+        return new ScaledCount(count, perCpu);
+    }
+
 }

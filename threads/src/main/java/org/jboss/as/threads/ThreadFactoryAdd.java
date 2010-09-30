@@ -25,11 +25,11 @@ package org.jboss.as.threads;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 
@@ -57,13 +57,13 @@ public final class ThreadFactoryAdd extends AbstractThreadsSubsystemUpdate<Void>
         return new ThreadFactoryRemove(name);
     }
 
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         final ThreadFactoryService service = new ThreadFactoryService();
         service.setNamePattern(threadNamePattern);
         service.setPriority(priority);
         service.setThreadGroupName(groupName);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
-        final BatchBuilder batchBuilder = container.batchBuilder();
+        final BatchBuilder batchBuilder = updateContext.batchBuilder();
         final BatchServiceBuilder<ThreadFactory> builder = batchBuilder.addService(Services.threadFactoryName(name), service);
         builder.addListener(listener);
         builder.setInitialMode(ServiceController.Mode.IMMEDIATE);

@@ -23,9 +23,9 @@
 package org.jboss.as.threads;
 
 import java.util.Map;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -56,8 +56,8 @@ public final class ThreadFactoryRemove extends AbstractThreadsSubsystemUpdate<Vo
         return add;
     }
 
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceController<?> controller = container.getService(Services.threadFactoryName(name));
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
+        final ServiceController<?> controller = updateContext.getService(Services.threadFactoryName(name));
         if (controller == null) {
             handler.handleSuccess(null, param);
         } else {

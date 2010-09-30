@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceContainer;
-
 /**
  * An update that applies to a server model and/or a running server instance.
  * <p>
@@ -82,23 +80,23 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
      * Apply this update to a running service container.  The given result handler is called with the result of the
      * application.  By default, this method does nothing but report success.
      *
-     * @param container the container
+     * @param updateContext the update context
      * @param resultHandler the handler to call back with the result
      * @param param the parameter value to pass to the result handler
      */
-    protected <P> void applyUpdate(ServiceContainer container, UpdateResultHandler<? super R, P> resultHandler, P param) {
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super R, P> resultHandler, P param) {
         resultHandler.handleSuccess(null, param);
     }
 
     /**
      * Apply the boot action for this update.  This action is only executed when the update is processed during
-     * server startup.  By default, this method simply invokes {@link #applyUpdate(ServiceContainer, UpdateResultHandler, Object)}
+     * server startup.  By default, this method simply invokes {@link #applyUpdate(UpdateContext, UpdateResultHandler, Object)}
      * directly, but this behavior should be overriden if a different action must be taken at boot time.
      *
-     * @param container the container
+     * @param updateContext the update context
      */
-    protected void applyUpdateBootAction(ServiceContainer container) {
-        applyUpdate(container, UpdateResultHandler.NULL, null);
+    protected void applyUpdateBootAction(UpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 
     /** {@inheritDoc} */

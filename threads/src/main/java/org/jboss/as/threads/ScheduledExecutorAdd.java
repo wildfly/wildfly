@@ -22,9 +22,11 @@
 
 package org.jboss.as.threads;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceContainer;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,6 +38,10 @@ public final class ScheduledExecutorAdd extends AbstractThreadsSubsystemUpdate<V
     private final String name;
     private final ScaledCount maxSize;
 
+    private TimeSpec keepaliveTime;
+    private String threadFactoryName;
+    private final Map<String, String> properties = new HashMap<String, String>();
+
     public ScheduledExecutorAdd(final String name, final ScaledCount maxSize) {
         this.name = name;
         this.maxSize = maxSize;
@@ -45,9 +51,37 @@ public final class ScheduledExecutorAdd extends AbstractThreadsSubsystemUpdate<V
         return null;
     }
 
-    protected <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
     }
 
     protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ScaledCount getMaxSize() {
+        return maxSize;
+    }
+
+    public TimeSpec getKeepaliveTime() {
+        return keepaliveTime;
+    }
+
+    public void setKeepaliveTime(final TimeSpec keepaliveTime) {
+        this.keepaliveTime = keepaliveTime;
+    }
+
+    public String getThreadFactoryName() {
+        return threadFactoryName;
+    }
+
+    public void setThreadFactoryName(final String threadFactoryName) {
+        this.threadFactoryName = threadFactoryName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
     }
 }
