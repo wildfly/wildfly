@@ -62,7 +62,7 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
      * Apply this update to a running service container.  The given result handler is called with the result of the
      * application.
      *
-     * @param updateContext
+     * @param updateContext the update context
      * @param resultHandler the handler to call back with the result
      * @param param the parameter value to pass to the result handler
      */
@@ -73,8 +73,7 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
      * server startup.  By default, this method simply invokes {@link #applyUpdate(UpdateContext, UpdateResultHandler, Object)}
      * directly, but this behavior should be overriden if a different action must be taken at boot time.
      *
-     * @param container the container
-     * @param updateContext
+     * @param updateContext the update context
      */
     protected void applyUpdateBootAction(UpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
