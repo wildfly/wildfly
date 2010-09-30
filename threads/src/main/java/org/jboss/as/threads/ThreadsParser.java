@@ -82,6 +82,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
                             break;
                         }
                         case SCHEDULED_THREAD_POOL_EXECUTOR: {
+                            //noinspection unchecked
                             parseScheduledExecutorElement(reader, updates, scheduledExecutorNames);
                             break;
                         }
@@ -219,6 +220,34 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         if (threadFactoryRef != null) add.setThreadFactoryName(threadFactoryRef);
         add.getProperties().putAll(map);
         updates.add(add);
+    }
+
+    private void parseBoundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) throws XMLStreamException {
+        // Attributes
+        String name = null;
+
+        final int count = reader.getAttributeCount();
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        for (int i = 0; i < count; i ++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = reader.getAttributeValue(i);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
     }
 
     protected static TimeSpec readTimeSpecElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
