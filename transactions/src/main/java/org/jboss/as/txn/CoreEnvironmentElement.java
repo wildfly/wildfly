@@ -23,12 +23,9 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.*;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-
-import java.util.Collections;
 
 /**
  * The model element for the core environment element.
@@ -41,39 +38,8 @@ public class CoreEnvironmentElement extends AbstractModelElement<CoreEnvironment
     private String bindingRef;
     private int maxPorts = 10;
 
-    protected CoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case BINDING:
-                        bindingRef = value;
-                        break;
-                    case NODE_IDENTIFIER:
-                        nodeIdentifier = value;
-                        break;
-                    case SOCKET_PROCESS_ID_MAX_PORTS:
-                        maxPorts = Integer.parseInt(value);
-                        break;
-                    default:
-                        ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if(bindingRef == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(org.jboss.as.model.Attribute.BINDING));
-        }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    private long elementHash() {
-        return 0;
+    protected CoreEnvironmentElement() {
+        //
     }
 
     @Override
@@ -93,11 +59,24 @@ public class CoreEnvironmentElement extends AbstractModelElement<CoreEnvironment
         return bindingRef;
     }
 
+
+    public void setBindingRef(String bindingRef) {
+        this.bindingRef = bindingRef;
+    }
+
     public String getNodeIdentifier() {
         return nodeIdentifier;
     }
 
+    public void setNodeIdentifier(String nodeIdentifier) {
+        this.nodeIdentifier = nodeIdentifier;
+    }
+
     public int getMaxPorts() {
         return maxPorts;
+    }
+
+    public void setMaxPorts(int maxPorts) {
+        this.maxPorts = maxPorts;
     }
 }

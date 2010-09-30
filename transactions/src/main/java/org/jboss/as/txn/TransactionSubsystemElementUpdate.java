@@ -22,47 +22,56 @@
 
 package org.jboss.as.txn;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * The transaction subsystem update.
+ *
+ * @author Emanuel Muckenhuber
  */
-final class TransactionsSubsystemElement extends AbstractSubsystemElement<TransactionsSubsystemElement> {
+public class TransactionSubsystemElementUpdate extends AbstractSubsystemUpdate<TransactionsSubsystemElement, Void> {
 
-    private static final long serialVersionUID = 4097067542390229861L;
+    private static final long serialVersionUID = 8491562773438385413L;
 
     private RecoveryEnvironmentElement recoveryEnvironmentElement;
     private CoreEnvironmentElement coreEnvironmentElement;
     private CoordinatorEnvironmentElement coordinatorEnvironmentElement;
     private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
 
-    public TransactionsSubsystemElement() {
-        super(Namespace.TRANSACTIONS_1_0.getUriString());
+    protected TransactionSubsystemElementUpdate() {
+        super(Namespace.TRANSACTIONS_1_0.getUriString(), true);
     }
 
-    @Override
-    protected Class<TransactionsSubsystemElement> getElementClass() {
+    /** {@inheritDoc} */
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /** {@inheritDoc} */
+    public AbstractSubsystemUpdate<TransactionsSubsystemElement, ?> getCompensatingUpdate(TransactionsSubsystemElement original) {
+        final TransactionSubsystemElementUpdate update = new TransactionSubsystemElementUpdate();
+        update.setRecoveryEnvironmentElement(original.getRecoveryEnvironmentElement());
+        update.setCoreEnvironmentElement(original.getCoreEnvironmentElement());
+        update.setCoordinatorEnvironmentElement(original.getCoordinatorEnvironmentElement());
+        update.setObjectStoreEnvironmentElement(original.getObjectStoreEnvironmentElement());
+        return update;
+    }
+
+    /** {@inheritDoc} */
+    public Class<TransactionsSubsystemElement> getModelElementType() {
         return TransactionsSubsystemElement.class;
     }
 
-    @Override
-    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        // BES this doesn't work right now; see if we can fix it as it should
-        //streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.RECOVERY_ENVIRONMENT.getLocalName());
-        streamWriter.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
-        recoveryEnvironmentElement.writeContent(streamWriter);
-        // BES this doesn't work right now; see if we can fix it as it should
-        //streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.CORE_ENVIRONMENT.getLocalName());
-        streamWriter.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
-        coreEnvironmentElement.writeContent(streamWriter);
-
-        streamWriter.writeEndElement();
+    /** {@inheritDoc} */
+    protected void applyUpdate(TransactionsSubsystemElement element) throws UpdateFailedException {
+        if(recoveryEnvironmentElement != null) element.setRecoveryEnvironmentElement(recoveryEnvironmentElement);
+        if(coreEnvironmentElement != null) element.setCoreEnvironmentElement(coreEnvironmentElement);
+        if(coordinatorEnvironmentElement != null) element.setCoordinatorEnvironmentElement(coordinatorEnvironmentElement);
+        if(objectStoreEnvironmentElement != null) element.setObjectStoreEnvironmentElement(objectStoreEnvironmentElement);
     }
 
     public RecoveryEnvironmentElement getRecoveryEnvironmentElement() {
@@ -95,17 +104,6 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     public void setObjectStoreEnvironmentElement(ObjectStoreEnvironmentElement objectStoreEnvironmentElement) {
         this.objectStoreEnvironmentElement = objectStoreEnvironmentElement;
-    }
-
-    /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
-        // TODO Auto-generated method stub
-    }
-
-    /** {@inheritDoc} */
-    protected boolean isEmpty() {
-        // TODO Auto-generated method stub
-        return false;
     }
 
 }

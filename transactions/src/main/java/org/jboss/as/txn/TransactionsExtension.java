@@ -23,20 +23,31 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.SubsystemFactory;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class TransactionsExtension implements Extension {
 
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:transactions:1.0", "subsystem"), new TransactionSubsystemElementParser());
+    public static final String NAMESPACE = "urn:jboss:domain:transactions:1.0";
+
+    static final SubsystemFactory<TransactionsSubsystemElement> FACTORY = new SubsystemFactory<TransactionsSubsystemElement>() {
+        public TransactionsSubsystemElement createSubsystemElement() {
+            return new TransactionsSubsystemElement();
+        }
+    };
+
+    /** {@inheritDoc} */
+    public void initialize(ExtensionContext context) {
+        context.registerSubsystem(NAMESPACE, FACTORY, TransactionSubsystemElementParser.getInstance());
     }
 
+    /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
+        //
     }
+
 }

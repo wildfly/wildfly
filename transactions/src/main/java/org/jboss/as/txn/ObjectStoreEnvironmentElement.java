@@ -23,8 +23,6 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -38,33 +36,8 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
     private static final long serialVersionUID = 5036917797026753281L;
     private String directory = "/tmp/tx-object-store";
 
-    protected ObjectStoreEnvironmentElement() throws XMLStreamException {
-    }
-
-    protected ObjectStoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case DIRECTORY:
-                        directory = value;
-                        break;
-                    default:
-                        ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    private long elementHash() {
-        return 0;
+    protected ObjectStoreEnvironmentElement() {
+        //
     }
 
     @Override
@@ -81,4 +54,9 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
     public String getDirectory() {
         return directory;
     }
+
+    public void setDirectory(String directory) {
+        this.directory = directory;
+    }
+
 }

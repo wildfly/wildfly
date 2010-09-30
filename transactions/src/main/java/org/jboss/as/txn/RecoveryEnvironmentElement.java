@@ -23,12 +23,9 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.*;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-
-import java.util.Collections;
 
 /**
  * The model element for the recovery environment element.
@@ -40,36 +37,8 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
     private String bindingRef;
     private String statusBindingRef;
 
-    protected RecoveryEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case BINDING:
-                        bindingRef = value;
-                        break;
-                    case STATUS_BINDING:
-                        statusBindingRef = value;
-                        break;
-                    default:
-                        ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if(bindingRef == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(org.jboss.as.model.Attribute.BINDING));
-        }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    private long elementHash() {
-        return 0;
+    protected RecoveryEnvironmentElement() {
+        //
     }
 
     @Override
@@ -88,7 +57,15 @@ public class RecoveryEnvironmentElement extends AbstractModelElement<RecoveryEnv
         return bindingRef;
     }
 
+    public void setBindingRef(String bindingRef) {
+        this.bindingRef = bindingRef;
+    }
+
     public String getStatusBindingRef() {
         return statusBindingRef;
+    }
+
+    public void setStatusBindingRef(String statusBindingRef) {
+        this.statusBindingRef = statusBindingRef;
     }
 }

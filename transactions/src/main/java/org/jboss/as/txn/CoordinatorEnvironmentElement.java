@@ -23,8 +23,6 @@
 package org.jboss.as.txn;
 
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -39,36 +37,9 @@ public class CoordinatorEnvironmentElement extends AbstractModelElement<Coordina
     private boolean enableStatistics;
     private int defaultTimeout = 300;
 
-    protected CoordinatorEnvironmentElement() throws XMLStreamException {
-    }
 
-    protected CoordinatorEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case ENABLE_STATISTICS:
-                        enableStatistics = Boolean.parseBoolean(value);
-                        break;
-                    case DEFAULT_TIMEOUT:
-                        defaultTimeout = Integer.parseInt(value);
-                        break;
-                    default:
-                        ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-    }
-
-    @Override
-    private long elementHash() {
-        return 0;
+    protected CoordinatorEnvironmentElement() {
+        //
     }
 
     @Override
@@ -87,7 +58,16 @@ public class CoordinatorEnvironmentElement extends AbstractModelElement<Coordina
         return enableStatistics;
     }
 
+    public void setEnableStatistics(boolean enableStatistics) {
+        this.enableStatistics = enableStatistics;
+    }
+
     public int getDefaultTimeout() {
         return defaultTimeout;
     }
+
+    public void setDefaultTimeout(int defaultTimeout) {
+        this.defaultTimeout = defaultTimeout;
+    }
+
 }
