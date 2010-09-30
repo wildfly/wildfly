@@ -22,7 +22,11 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.model.ParseUtils.*;
+import static org.jboss.as.model.ParseUtils.missingRequired;
+import static org.jboss.as.model.ParseUtils.readProperty;
+import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.model.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -182,7 +186,6 @@ public final class RemotingSubsystemParser implements XMLStreamConstants, XMLEle
                 }
             }
         }
-
         return update;
     }
 
@@ -210,7 +213,7 @@ public final class RemotingSubsystemParser implements XMLStreamConstants, XMLEle
                             break;
                         }
                         case POLICY: {
-                            saslElement.setPolicy(new PolicyElement(reader));
+                            saslElement.setPolicy(parsePolicyElement(reader));
                             break;
                         }
                         case PROPERTIES: {
@@ -247,6 +250,60 @@ public final class RemotingSubsystemParser implements XMLStreamConstants, XMLEle
             }
         }
         return saslElement;
+    }
+
+    PolicyElement parsePolicyElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final PolicyElement policy = new PolicyElement();
+        if (reader.getAttributeCount() > 0) {
+            throw ParseUtils.unexpectedAttribute(reader, 0);
+        }
+        // Handle nested elements.
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case REMOTING_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    visited.add(element);
+                    switch (element) {
+                        case FORWARD_SECRECY: {
+                            policy.setForwardSecrecy(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        case NO_ACTIVE: {
+                            policy.setNoActive(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        case NO_ANONYMOUS: {
+                            policy.setNoAnonymous(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        case NO_DICTIONARY: {
+                            policy.setNoDictionary(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        case NO_PLAINTEXT: {
+                            policy.setNoPlainText(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        case PASS_CREDENTIALS: {
+                            policy.setPassCredentials(Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value")));
+                            break;
+                        }
+                        default: {
+                            throw ParseUtils.unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+        return policy;
     }
 
     void parseProperties(XMLExtendedStreamReader reader, Map<String, String> map) throws XMLStreamException {

@@ -22,10 +22,7 @@
 
 package org.jboss.as.remoting;
 
-import java.util.EnumSet;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.Options;
@@ -47,60 +44,59 @@ public final class PolicyElement extends AbstractModelElement<PolicyElement> {
     private Boolean passCredentials;
 
     public PolicyElement() {
-    }
-
-    public PolicyElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        if (reader.getAttributeCount() > 0) {
-            throw ParseUtils.unexpectedAttribute(reader, 0);
-        }
-        // Handle nested elements.
-        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case REMOTING_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (visited.contains(element)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    visited.add(element);
-                    switch (element) {
-                        case FORWARD_SECRECY: {
-                            forwardSecrecy = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case NO_ACTIVE: {
-                            noActive = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case NO_ANONYMOUS: {
-                            noAnonymous = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case NO_DICTIONARY: {
-                            noDictionary = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case NO_PLAINTEXT: {
-                            noPlainText = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        case PASS_CREDENTIALS: {
-                            passCredentials = Boolean.valueOf(ParseUtils.readBooleanAttributeElement(reader, "value"));
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
+        //
     }
 
     protected Class<PolicyElement> getElementClass() {
         return PolicyElement.class;
+    }
+
+    public Boolean getForwardSecrecy() {
+        return forwardSecrecy;
+    }
+
+    void setForwardSecrecy(Boolean forwardSecrecy) {
+        this.forwardSecrecy = forwardSecrecy;
+    }
+
+    public Boolean getNoActive() {
+        return noActive;
+    }
+
+    void setNoActive(Boolean noActive) {
+        this.noActive = noActive;
+    }
+
+    public Boolean getNoAnonymous() {
+        return noAnonymous;
+    }
+
+    void setNoAnonymous(Boolean noAnonymous) {
+        this.noAnonymous = noAnonymous;
+    }
+
+    public Boolean getNoDictionary() {
+        return noDictionary;
+    }
+
+    void setNoDictionary(Boolean noDictionary) {
+        this.noDictionary = noDictionary;
+    }
+
+    public Boolean getNoPlainText() {
+        return noPlainText;
+    }
+
+    void setNoPlainText(Boolean noPlainText) {
+        this.noPlainText = noPlainText;
+    }
+
+    public Boolean getPassCredentials() {
+        return passCredentials;
+    }
+
+    void setPassCredentials(Boolean passCredentials) {
+        this.passCredentials = passCredentials;
     }
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {

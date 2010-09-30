@@ -32,7 +32,7 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Emanuel Muckenhuber
  */
-public class RemotingSubsystemElementUpdate extends AbstractRemotingSubsystemUpdate<Void>{
+public class RemotingSubsystemElementUpdate extends AbstractRemotingSubsystemUpdate<Void> {
 
     private static final long serialVersionUID = 3032538104327225862L;
 
