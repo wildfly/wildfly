@@ -30,24 +30,24 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ThreadFactoryGroupNameUpdate extends AbstractThreadsSubsystemUpdate<Void> {
+public final class ThreadFactoryPriorityUpdate extends AbstractThreadsSubsystemUpdate<Void> {
 
     private static final long serialVersionUID = 4253625376544201028L;
 
     private final String name;
-    private final String newGroupName;
+    private final Integer newPriority;
 
-    public ThreadFactoryGroupNameUpdate(final String name, final String newGroupName) {
+    public ThreadFactoryPriorityUpdate(final String name, final Integer newPriority) {
         this.name = name;
-        this.newGroupName = newGroupName;
+        this.newPriority = newPriority;
     }
 
-    public ThreadFactoryGroupNameUpdate getCompensatingUpdate(final ThreadsSubsystemElement original) {
+    public ThreadFactoryPriorityUpdate getCompensatingUpdate(final ThreadsSubsystemElement original) {
         final ThreadFactoryElement threadFactory = original.getThreadFactory(name);
         if (threadFactory == null) {
             return null;
         }
-        return new ThreadFactoryGroupNameUpdate(name, threadFactory.getGroupName());
+        return new ThreadFactoryPriorityUpdate(name, threadFactory.getPriority());
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
@@ -57,7 +57,7 @@ public final class ThreadFactoryGroupNameUpdate extends AbstractThreadsSubsystem
         } else {
             try {
                 final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
-                threadFactoryService.setThreadGroupName(newGroupName);
+                threadFactoryService.setPriority(newPriority);
                 handler.handleSuccess(null, param);
             } catch (Throwable t) {
                 handler.handleFailure(t, param);
@@ -70,11 +70,11 @@ public final class ThreadFactoryGroupNameUpdate extends AbstractThreadsSubsystem
         if (threadFactory == null) {
             throw notConfigured();
         }
-        threadFactory.setGroupName(newGroupName);
+        threadFactory.setPriority(newPriority);
     }
 
-    public String getNewGroupName() {
-        return newGroupName;
+    public Integer getNewPriority() {
+        return newPriority;
     }
 
     public String getName() {
