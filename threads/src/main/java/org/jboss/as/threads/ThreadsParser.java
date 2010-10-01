@@ -22,6 +22,8 @@
 
 package org.jboss.as.threads;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -81,24 +83,20 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
                             parseThreadFactoryElement(reader, updates, threadFactoryNames);
                             break;
                         }
-                        case SCHEDULED_THREAD_POOL_EXECUTOR: {
+                        case SCHEDULED_THREAD_POOL: {
                             //noinspection unchecked
                             parseScheduledExecutorElement(reader, updates, scheduledExecutorNames);
                             break;
                         }
-                        case BOUNDED_QUEUE_THREAD_POOL_EXECUTOR: {
+                        case BOUNDED_QUEUE_THREAD_POOL: {
                             parseBoundedQueueExecutorElement(reader, updates, executorNames);
                             break;
                         }
-                        case QUEUELESS_THREAD_POOL_EXECUTOR: {
+                        case QUEUELESS_THREAD_POOL: {
                             parseQueuelessExecutorElement(reader, updates, executorNames);
                             break;
                         }
-                        case THREAD_FACTORY_EXECUTOR: {
-                            parseThreadFactoryExecutorElement(reader, updates, executorNames);
-                            break;
-                        }
-                        case UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR: {
+                        case UNBOUNDED_QUEUE_THREAD_POOL: {
                             parseUnboundedQueueExecutorElement(reader, updates, executorNames);
                             break;
                         }
@@ -178,7 +176,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         updates.add(add);
     }
 
-    private void parseScheduledExecutorElement(final XMLExtendedStreamReader reader, final List<? super ScheduledExecutorAdd> updates, final Set<String> names) throws XMLStreamException {
+    private void parseScheduledExecutorElement(final XMLExtendedStreamReader reader, final List<? super ScheduledThreadPoolAdd> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         final String name = reader.getAttributeValue(0);
@@ -215,9 +213,9 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
 
             }
         }
-        final ScheduledExecutorAdd add = new ScheduledExecutorAdd(name, maxSize);
+        final ScheduledThreadPoolAdd add = new ScheduledThreadPoolAdd(name, maxSize);
         if (keepaliveTime != null) add.setKeepaliveTime(keepaliveTime);
-        if (threadFactoryRef != null) add.setThreadFactoryName(threadFactoryRef);
+        if (threadFactoryRef != null) add.setThreadFactory(threadFactoryRef);
         add.getProperties().putAll(map);
         updates.add(add);
     }
@@ -226,7 +224,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         // Attributes
         String name = null;
         boolean allowCoreTimeout = false;
-        boolean blocking = true;
+        boolean blocking = false;
 
         final int count = reader.getAttributeCount();
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
@@ -261,6 +259,8 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         if (! names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
+        
+
     }
 
     protected static TimeSpec readTimeSpecElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -293,17 +293,17 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
     }
 
     protected static ScaledCount readScaledCountElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        long perCpu = -1L;
-        long count = -1L;
+        BigDecimal perCpu = null;
+        BigDecimal count = null;
         final int acnt = reader.getAttributeCount();
         for (int i = 0; i < acnt; i ++) {
             switch (Attribute.forName(reader.getAttributeLocalName(i))) {
                 case PER_CPU: {
-                    perCpu = reader.getLongAttributeValue(i);
+                    perCpu = new BigDecimal(reader.getAttributeValue(i), MathContext.DECIMAL64);
                     break;
                 }
                 case COUNT: {
-                    count = reader.getLongAttributeValue(i);
+                    count = new BigDecimal(reader.getAttributeValue(i), MathContext.DECIMAL64);
                     break;
                 }
                 default: {
@@ -311,10 +311,74 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
                 }
             }
         }
-        if (perCpu == -1L) throw missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
-        if (count == -1L) throw missingRequired(reader, Collections.singleton(Attribute.COUNT));
+        if (perCpu == null) throw missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
+        if (count == null) throw missingRequired(reader, Collections.singleton(Attribute.COUNT));
         requireNoContent(reader);
         return new ScaledCount(count, perCpu);
     }
 
+    static final Map<String, String> UNIT_NICK_NAMES = stringMap(
+        entry("S", "SECONDS"),
+        entry("SEC", "SECONDS"),
+        entry("SECOND", "SECONDS"),
+        entry("SECONDS", "SECONDS"),
+        entry("M", "MINUTES"),
+        entry("MIN", "MINUTES"),
+        entry("MINUTE", "MINUTES"),
+        entry("MINUTES", "MINUTES"),
+        entry("MS", "MILLISECONDS"),
+        entry("MILLIS", "MILLISECONDS"),
+        entry("MILLISECOND", "MILLISECONDS"),
+        entry("MILLISECONDS", "MILLISECONDS"),
+        entry("NS", "NANOSECONDS"),
+        entry("NANOS", "NANOSECONDS"),
+        entry("NANOSECOND", "NANOSECONDS"),
+        entry("NANOSECONDS", "NANOSECONDS"),
+        entry("H", "HOURS"),
+        entry("HOUR", "HOURS"),
+        entry("HOURS", "HOURS"),
+        entry("D", "DAYS"),
+        entry("DAY", "DAYS"),
+        entry("DAYS", "DAYS"),
+        entry("MON", "MONTHS"),
+        entry("MONTH", "MONTHS"),
+        entry("MONTHS", "MONTHS"),
+        entry("W", "WEEKS"),
+        entry("WEEK", "WEEKS"),
+        entry("WEEKS", "WEEKS")
+    );
+
+    private static StringEntry entry(final String key, final String value) {
+        return new StringEntry(key, value);
+    }
+
+    private static Map<String, String> stringMap(StringEntry... entries) {
+        final HashMap<String, String> hashMap = new HashMap<String, String>(entries.length);
+        for (Map.Entry<String, String> e : entries) {
+            hashMap.put(e.getKey(), e.getValue());
+        }
+        return Collections.unmodifiableMap(hashMap);
+    }
+
+    private static final class StringEntry implements Map.Entry<String, String> {
+        private final String key;
+        private final String value;
+
+        private StringEntry(final String key, final String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String setValue(final String value) {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

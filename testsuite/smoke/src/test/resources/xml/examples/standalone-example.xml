@@ -36,10 +36,10 @@
     
     <profile name="something2">
         <threads:subsystem>
-            <threads:queueless-thread-pool-executor name="remoting">
+            <threads:queueless-thread-pool name="remoting">
                 <threads:max-threads count="10" per-cpu="20"/>
                 <threads:keepalive-time time="10" unit="s"/>
-            </threads:queueless-thread-pool-executor>
+            </threads:queueless-thread-pool>
         </threads:subsystem>
         <remoting:subsystem thread-pool="remoting-pool">
             <remoting:connector name="default-connector" socket-binding="remoting"/>

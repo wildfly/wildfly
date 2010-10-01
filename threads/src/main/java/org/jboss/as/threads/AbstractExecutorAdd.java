@@ -24,45 +24,39 @@ package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ScheduledExecutorAdd extends AbstractThreadsSubsystemUpdate<Void> {
+public abstract class AbstractExecutorAdd extends AbstractThreadsSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = 5228895749512255692L;
+    private static final long serialVersionUID = 3661832034337989182L;
 
     private final String name;
-    private final ScaledCount maxSize;
+    private final ScaledCount maxThreads;
+    private final Map<String, String> properties = new HashMap<String, String>(0);
 
+    private String threadFactory;
     private TimeSpec keepaliveTime;
-    private String threadFactoryName;
-    private final Map<String, String> properties = new HashMap<String, String>();
 
-    public ScheduledExecutorAdd(final String name, final ScaledCount maxSize) {
+    protected AbstractExecutorAdd(final String name, final ScaledCount maxThreads) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        if (maxThreads == null) {
+            throw new IllegalArgumentException("maxThreads is null");
+        }
+        maxThreads.getScaledCount();
         this.name = name;
-        this.maxSize = maxSize;
+        this.maxThreads = maxThreads;
     }
 
-    public AbstractThreadsSubsystemUpdate<?> getCompensatingUpdate(final ThreadsSubsystemElement original) {
-        return null;
+    public String getThreadFactory() {
+        return threadFactory;
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-    }
-
-    protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ScaledCount getMaxSize() {
-        return maxSize;
+    public void setThreadFactory(final String threadFactory) {
+        this.threadFactory = threadFactory;
     }
 
     public TimeSpec getKeepaliveTime() {
@@ -73,15 +67,19 @@ public final class ScheduledExecutorAdd extends AbstractThreadsSubsystemUpdate<V
         this.keepaliveTime = keepaliveTime;
     }
 
-    public String getThreadFactoryName() {
-        return threadFactoryName;
+    public ScaledCount getMaxThreads() {
+        return maxThreads;
     }
 
-    public void setThreadFactoryName(final String threadFactoryName) {
-        this.threadFactoryName = threadFactoryName;
+    public String getName() {
+        return name;
     }
 
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public final ExecutorRemove getCompensatingUpdate(final ThreadsSubsystemElement original) {
+        return new ExecutorRemove(name);
     }
 }

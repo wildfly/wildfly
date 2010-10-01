@@ -38,10 +38,10 @@
     <profiles>
         <profile name="something">
             <subsystem xmlns="urn:jboss:domain:threads:1.0">
-                <scheduled-thread-pool-executor name="remoting">
+                <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="SECONDS"/>
-                </scheduled-thread-pool-executor>
+                    <keepalive-time time="10" unit="sec"/>
+                </scheduled-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0" bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">

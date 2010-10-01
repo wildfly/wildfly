@@ -43,8 +43,7 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     private final NavigableMap<String, ThreadFactoryElement> threadFactories = new TreeMap<String, ThreadFactoryElement>();
-    private final NavigableMap<String, ScheduledThreadPoolExecutorElement> scheduledExecutors = new TreeMap<String, ScheduledThreadPoolExecutorElement>();
-    private final NavigableMap<String, ChildElement<AbstractExecutorElement<?>>> executors = new TreeMap<String, ChildElement<AbstractExecutorElement<?>>>();
+    private final NavigableMap<String, ChildElement<? extends AbstractExecutorElement<?>>> executors = new TreeMap<String, ChildElement<? extends AbstractExecutorElement<?>>>();
 
     protected ThreadsSubsystemElement() {
         super(Namespace.CURRENT.getUriString());
@@ -62,10 +61,6 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
             streamWriter.writeStartElement(Element.THREAD_FACTORY.getLocalName());
             tfe.writeContent(streamWriter);
         }
-        for (ScheduledThreadPoolExecutorElement stpe : scheduledExecutors.values()) {
-            streamWriter.writeStartElement(Element.SCHEDULED_THREAD_POOL_EXECUTOR.getLocalName());
-            stpe.writeContent(streamWriter);
-        }
         for (ChildElement<? extends AbstractExecutorElement<?>> childElement : executors.values()) {
             streamWriter.writeStartElement(childElement.getLocalName());
             childElement.getElement().writeContent(streamWriter);
@@ -75,10 +70,16 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
     }
 
     protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> objects) {
+        for (String name : threadFactories.keySet()) {
+            objects.add(new ThreadFactoryRemove(name));
+        }
+        for (String name : executors.keySet()) {
+            objects.add(new ExecutorRemove(name));
+        }
     }
 
     protected boolean isEmpty() {
-        return false;
+        return threadFactories.isEmpty() && executors.isEmpty();
     }
 
     ThreadFactoryElement getThreadFactory(final String name) {
@@ -96,5 +97,18 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         final ThreadFactoryElement element = new ThreadFactoryElement(name);
         threadFactories.put(name, element);
         return element;
+    }
+
+    AbstractExecutorElement<?> getExecutor(final String name) {
+        final ChildElement<? extends AbstractExecutorElement<?>> childElement = executors.get(name);
+        return childElement == null ? null : childElement.getElement();
+    }
+
+    void removeExecutor(final String name) {
+        executors.remove(name);
+    }
+
+    void addExecutor(final String name, final ChildElement<? extends AbstractExecutorElement<?>> element) {
+        executors.put(name, element);
     }
 }

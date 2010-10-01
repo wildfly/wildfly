@@ -40,11 +40,10 @@
         </xs:annotation>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="thread-factory" type="thread-factory"/>
-            <xs:element name="thread-factory-executor" type="thread-factory-executor"/>
-            <xs:element name="unbounded-queue-thread-pool-executor" type="unbounded-queue-thread-pool-executor"/>
-            <xs:element name="bounded-queue-thread-pool-executor" type="bounded-queue-thread-pool-executor"/>
-            <xs:element name="queueless-thread-pool-executor" type="queueless-thread-pool-executor"/>
-            <xs:element name="scheduled-thread-pool-executor" type="scheduled-thread-pool-executor"/>
+            <xs:element name="unbounded-queue-thread-pool" type="unbounded-queue-thread-pool"/>
+            <xs:element name="bounded-queue-thread-pool" type="bounded-queue-thread-pool"/>
+            <xs:element name="queueless-thread-pool" type="queueless-thread-pool"/>
+            <xs:element name="scheduled-thread-pool" type="scheduled-thread-pool"/>
         </xs:choice>
     </xs:complexType>
 
@@ -78,31 +77,7 @@
         <xs:attribute name="priority" type="priority" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="thread-factory-executor">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                An executor which simply executes each task in a new thread.
-
-                The "name" attribute is the bean name of the created executor.
-                The "blocking" attribute specifies whether the submitter thread will block if the maximum number of threads
-                are already active.
-
-                The optional "thread-factory" element specifies the name of a specific thread factory to
-                use to create worker threads.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:all>
-            <xs:element name="thread-factory" type="ref" minOccurs="0"/>
-            <xs:element name="max-threads" type="scaled-count" minOccurs="0"/>
-            <xs:element name="properties" type="properties" minOccurs="0"/>
-        </xs:all>
-        <xs:attribute name="name" use="required"/>
-        <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
-    </xs:complexType>
-
-    <xs:complexType name="unbounded-queue-thread-pool-executor">
+    <xs:complexType name="unbounded-queue-thread-pool">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
@@ -130,7 +105,7 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
 
-    <xs:complexType name="bounded-queue-thread-pool-executor">
+    <xs:complexType name="bounded-queue-thread-pool">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
@@ -171,7 +146,7 @@
         <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
     </xs:complexType>
 
-    <xs:complexType name="queueless-thread-pool-executor">
+    <xs:complexType name="queueless-thread-pool">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
@@ -203,7 +178,7 @@
         <xs:attribute name="blocking" use="optional" type="xs:boolean"/>
     </xs:complexType>
 
-    <xs:complexType name="scheduled-thread-pool-executor">
+    <xs:complexType name="scheduled-thread-pool">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[

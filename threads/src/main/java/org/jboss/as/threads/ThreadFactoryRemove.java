@@ -58,7 +58,7 @@ public final class ThreadFactoryRemove extends AbstractThreadsSubsystemUpdate<Vo
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         final ServiceController<?> controller = updateContext.getServiceContainer().
-                getService(Services.threadFactoryName(name));
+                getService(ThreadsServices.threadFactoryName(name));
         if (controller == null) {
             handler.handleSuccess(null, param);
         } else {

@@ -23,35 +23,39 @@
 package org.jboss.as.threads;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ScaledCount implements Serializable{
+public final class ScaledCount implements Serializable {
     private static final long serialVersionUID = 50591622989801087L;
 
-    private final long count;
-    private final long perCpu;
+    private final BigDecimal count;
+    private final BigDecimal perCpu;
 
-    public ScaledCount(final long count, final long perCpu) {
+    public ScaledCount(final BigDecimal count, final BigDecimal perCpu) {
+        if (count.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Count must be greater than or equal to zero");
+        }
+        if (perCpu.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Per-cpu must be greater than or equal to zero");
+        }
         this.count = count;
         this.perCpu = perCpu;
     }
 
-    public long getCount() {
+    public BigDecimal getCount() {
         return count;
     }
 
-    public long getPerCpu() {
+    public BigDecimal getPerCpu() {
         return perCpu;
     }
 
     public int getScaledCount() {
-        return (int)(count + (perCpu * Runtime.getRuntime().availableProcessors()));
-    }
-
-    public long elementHash() {
-        return Long.rotateLeft(perCpu, 1) ^ count;
+        return count.add(perCpu.multiply(BigDecimal.valueOf((long)Runtime.getRuntime().availableProcessors()), MathContext.DECIMAL64), MathContext.DECIMAL64).round(MathContext.DECIMAL64).intValueExact();
     }
 
     public boolean equals(final Object obj) {
@@ -59,10 +63,10 @@ public final class ScaledCount implements Serializable{
     }
 
     public boolean equals(final ScaledCount obj) {
-        return obj != null && obj.count == count && obj.perCpu == perCpu;
+        return obj != null && obj.count.equals(count) && obj.perCpu.equals(perCpu);
     }
 
     public int hashCode() {
-        return (int) elementHash();
+        return count.hashCode() * 31 + perCpu.hashCode();
     }
 }

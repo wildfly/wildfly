@@ -37,10 +37,10 @@
 
     <profile name="something">
         <threads:subsystem>
-            <threads:scheduled-thread-pool-executor name="remoting">
+            <threads:scheduled-thread-pool name="remoting">
                 <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="SECONDS"/>
-            </threads:scheduled-thread-pool-executor>
+                <threads:keepalive-time time="10" unit="sec"/>
+            </threads:scheduled-thread-pool>
         </threads:subsystem>
         <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
         <remoting:subsystem thread-pool="remoting"/>

@@ -46,7 +46,6 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
 
     private JBossThreadPoolExecutor executor;
     private ExecutorService value;
-    private StopContext context;
 
     private int maxThreads;
     private TimeSpec keepAlive;
@@ -66,13 +65,11 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
         if (executor == null) {
             throw new IllegalStateException();
         }
-        this.context = context;
         context.asynchronous();
         executor.shutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
             public void handleEvent(final StopContext stopContext) {
                 stopContext.complete();
-                UnboundedQueueThreadPoolService.this.context = null;
             }
         }, context);
         this.executor = null;

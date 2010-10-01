@@ -22,14 +22,11 @@
 
 package org.jboss.as.threads;
 
-import java.util.Collections;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-import org.jboss.as.model.*;
-import org.jboss.as.model.Attribute;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import java.util.Map;
+import org.jboss.as.model.AbstractModelElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -37,98 +34,19 @@ import javax.xml.stream.XMLStreamException;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<T>> extends AbstractModelElement<T> implements ServiceActivator {
+public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<T>> extends AbstractModelElement<T> {
 
     private static final long serialVersionUID = -2409073407325398348L;
 
-    /**
-     * The service name under which thread-related services are registered.
-     */
-    public static ServiceName JBOSS_THREAD = ServiceName.JBOSS.append("thread");
-    /**
-     * The service name under which thread factories are registered.
-     */
-    public static ServiceName JBOSS_THREAD_FACTORY = JBOSS_THREAD.append("factory");
-    /**
-     * The service name under which executors (thread pools) are registered.
-     */
-    public static ServiceName JBOSS_THREAD_EXECUTOR = JBOSS_THREAD.append("executor");
-    /**
-     * The service name under which scheduled executors are registered.
-     */
-    public static ServiceName JBOSS_THREAD_SCHEDULED_EXECUTOR = JBOSS_THREAD.append("scheduled-executor");
-
     private final String name;
+    private final Map<String, String> properties = new HashMap<String, String>();
 
     private String threadFactory;
     private ScaledCount maxThreads;
     private TimeSpec keepaliveTime;
 
-    private PropertiesElement properties;
-
     protected AbstractExecutorElement(final String name) {
         this.name = name;
-    }
-
-    protected AbstractExecutorElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        name = reader.getAttributeValue(null, "name");
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-    }
-
-    protected static TimeSpec readTimeSpecElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        TimeUnit unit = null;
-        long qty = -1L;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            switch (Attribute.forName(reader.getAttributeLocalName(i))) {
-                case TIME: {
-                    qty = reader.getLongAttributeValue(i);
-                    break;
-                }
-                case UNIT: {
-                    // BES 2010/09/28 - I replaced this because it fails with
-                    // case sensitivity problems
-                    //unit = reader.getAttributeValue(i, TimeUnit.class);
-                    String val = reader.getAttributeValue(i);
-                    unit = Enum.valueOf(TimeUnit.class, val.toUpperCase());
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (qty == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TIME));
-        if (unit == null) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.UNIT));
-        ParseUtils.requireNoContent(reader);
-        return new TimeSpec(unit, qty);
-    }
-
-    protected static ScaledCount readScaledCountElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        long perCpu = -1L;
-        long count = -1L;
-        final int acnt = reader.getAttributeCount();
-        for (int i = 0; i < acnt; i ++) {
-            switch (Attribute.forName(reader.getAttributeLocalName(i))) {
-                case PER_CPU: {
-                    perCpu = reader.getLongAttributeValue(i);
-                    break;
-                }
-                case COUNT: {
-                    count = reader.getLongAttributeValue(i);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (perCpu == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PER_CPU));
-        if (count == -1L) throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.COUNT));
-        ParseUtils.requireNoContent(reader);
-        return new ScaledCount(count, perCpu);
     }
 
     protected static void writeTimeSpecElement(final XMLExtendedStreamWriter writer, final TimeSpec timeSpec, final String localName) throws XMLStreamException {
@@ -138,20 +56,14 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
     }
 
     protected static void writeScaledCountElement(final XMLExtendedStreamWriter writer, final ScaledCount scaledCount, final String localName) throws XMLStreamException {
+        if (scaledCount == null) {
+            return;
+        }
         writer.writeEmptyElement(localName);
-        final long count = scaledCount.getCount();
-        if (count > 0L) writer.writeAttribute("count", Long.toString(count));
-        final long perCpu = scaledCount.getPerCpu();
-        if (perCpu > 0L) writer.writeAttribute("per-cpu", Long.toString(perCpu));
-    }
-
-    @Override
-    public long elementHash() {
-        long hash = name.hashCode() & 0xFFFFFFFFL;
-        if (threadFactory != null) hash = Long.rotateLeft(hash, 1) ^ threadFactory.hashCode() & 0xFFFFFFFFL;
-        if (maxThreads != null) hash = Long.rotateLeft(hash, 1) ^ maxThreads.elementHash();
-        if (keepaliveTime != null) hash = Long.rotateLeft(hash, 1) ^ keepaliveTime.elementHash();
-        return hash;
+        final BigDecimal count = scaledCount.getCount();
+        if (count.compareTo(BigDecimal.ZERO) > 0) writer.writeAttribute("count", count.toPlainString());
+        final BigDecimal perCpu = scaledCount.getPerCpu();
+        if (perCpu.compareTo(BigDecimal.ZERO) > 0) writer.writeAttribute("per-cpu", perCpu.toPlainString());
     }
 
     public String getThreadFactory() {
@@ -170,12 +82,12 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
         this.maxThreads = maxThreads;
     }
 
-    public PropertiesElement getProperties() {
-        return properties;
+    public String getProperty(String name) {
+        return properties.get(name);
     }
 
-    void setProperties(final PropertiesElement properties) {
-        this.properties = properties;
+    Map<String, String> getProperties() {
+        return properties;
     }
 
     public TimeSpec getKeepaliveTime() {
@@ -189,4 +101,37 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
     public final String getName() {
         return name;
     }
+
+    public final void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        writeAttributes(streamWriter);
+        writeElements(streamWriter);
+        streamWriter.writeEndElement();
+    }
+
+    protected void writeAttributes(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute("name", getName());
+    }
+
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        final ScaledCount maxThreads = getMaxThreads();
+        if (maxThreads != null) writeScaledCountElement(streamWriter, maxThreads, "max-threads");
+        final TimeSpec keepaliveTime = getKeepaliveTime();
+        if (keepaliveTime != null) writeTimeSpecElement(streamWriter, keepaliveTime, "keepalive-time");
+        final String threadFactory = getThreadFactory();
+        if (threadFactory != null) {
+            streamWriter.writeEmptyElement("thread-factory");
+            streamWriter.writeAttribute("name", threadFactory);
+        }
+        if (! properties.isEmpty()) {
+            streamWriter.writeStartElement("properties");
+            for (String name : properties.keySet()) {
+                streamWriter.writeEmptyElement("property");
+                streamWriter.writeAttribute("name", name);
+                streamWriter.writeAttribute("value", properties.get(name));
+            }
+            streamWriter.writeEndElement();
+        }
+    }
+
+    abstract AbstractThreadsSubsystemUpdate<Void> getAdd();
 }

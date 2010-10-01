@@ -47,19 +47,20 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     private QueuelessExecutor executor;
     private ExecutorService value;
-    private StopContext context;
 
     private int maxThreads;
     private boolean blocking;
-    private long keepAlive;
+    private TimeSpec keepAlive;
 
-    public QueuelessThreadPoolService(int maxThreads, boolean blocking, long keepAlive) {
+    public QueuelessThreadPoolService(int maxThreads, boolean blocking, TimeSpec keepAlive) {
         this.maxThreads = maxThreads;
         this.blocking = blocking;
         this.keepAlive = keepAlive;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
+        final TimeSpec keepAliveSpec = keepAlive;
+        long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getDuration();
         executor = new QueuelessExecutor(threadFactoryValue.getValue(), JBossExecutors.directExecutor(), handoffExecutorValue.getOptionalValue(), keepAlive);
         executor.setMaxThreads(maxThreads);
         executor.setBlocking(blocking);
@@ -71,18 +72,15 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
         if (executor == null) {
             throw new IllegalStateException();
         }
-        this.context = context;
         context.asynchronous();
         executor.shutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
             public void handleEvent(final StopContext stopContext) {
                 stopContext.complete();
-                QueuelessThreadPoolService.this.context = null;
             }
         }, context);
         this.executor = null;
         value = null;
-        this.context = null;
     }
 
     public synchronized ExecutorService getValue() throws IllegalStateException {
@@ -117,10 +115,11 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
         }
     }
 
-    public synchronized void setKeepAlive(long keepAlive) {
-        this.keepAlive = keepAlive;
+    public synchronized void setKeepAlive(TimeSpec keepAliveSpec) {
+        keepAlive = keepAliveSpec;
         final QueuelessExecutor executor = this.executor;
         if(executor != null) {
+            long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getDuration();
             executor.setKeepAliveTime(keepAlive);
         }
     }

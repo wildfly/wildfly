@@ -33,7 +33,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Threads 1.0 elements in alpha order
-    BOUNDED_QUEUE_THREAD_POOL_EXECUTOR("bounded-queue-thread-pool-executor"),
+    BOUNDED_QUEUE_THREAD_POOL("bounded-queue-thread-pool"),
     CORE_THREADS("core-threads"),
     HANDOFF_EXECUTOR("handoff-executor"),
     KEEPALIVE_TIME("keepalive-time"),
@@ -41,12 +41,11 @@ public enum Element {
     PROPERTIES("properties"),
     PROPERTY("property"),
     QUEUE_LENGTH("queue-length"),
-    QUEUELESS_THREAD_POOL_EXECUTOR("queueless-thread-pool-executor"),
-    SCHEDULED_THREAD_POOL_EXECUTOR("scheduled-thread-pool-executor"),
+    QUEUELESS_THREAD_POOL("queueless-thread-pool"),
+    SCHEDULED_THREAD_POOL("scheduled-thread-pool"),
     SUBSYSTEM("subsystem"),
     THREAD_FACTORY("thread-factory"),
-    THREAD_FACTORY_EXECUTOR("thread-factory-executor"),
-    UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR("unbounded-queue-thread-pool-executor"),
+    UNBOUNDED_QUEUE_THREAD_POOL("unbounded-queue-thread-pool"),
     ;
 
     private final String name;

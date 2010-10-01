@@ -22,21 +22,27 @@
 
 package org.jboss.as.threads;
 
-import org.jboss.msc.service.ServiceName;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class Services {
+public final class UnboundedQueueThreadPoolElement extends AbstractExecutorElement<UnboundedQueueThreadPoolElement> {
 
-    private Services() {
+    private static final long serialVersionUID = 8095990490745474752L;
+
+    UnboundedQueueThreadPoolElement(final String name) {
+        super(name);
     }
 
-    private static final ServiceName THREAD = ServiceName.JBOSS.append("thread");
-    private static final ServiceName FACTORY = THREAD.append("factory");
-    private static final ServiceName EXECUTOR = THREAD.append("executor");
+    @Override
+    protected Class<UnboundedQueueThreadPoolElement> getElementClass() {
+        return UnboundedQueueThreadPoolElement.class;
+    }
 
-    static ServiceName threadFactoryName(String name) {
-        return FACTORY.append(name);
+    UnboundedQueueThreadPoolAdd getAdd() {
+        final UnboundedQueueThreadPoolAdd add = new UnboundedQueueThreadPoolAdd(getName(), getMaxThreads());
+        add.setKeepaliveTime(getKeepaliveTime());
+        add.setThreadFactory(getThreadFactory());
+        add.getProperties().putAll(getProperties());
+        return add;
     }
 }

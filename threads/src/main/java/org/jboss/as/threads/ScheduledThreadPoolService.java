@@ -57,7 +57,7 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
 
     public synchronized void start(final StartContext context) throws StartException {
         executor = new ExecutorImpl(0, threadFactoryValue.getValue());
-        executor.setMaximumPoolSize(maxThreads);
+        executor.setCorePoolSize(maxThreads);
         if(keepAlive != null)
             executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
         value = JBossExecutors.protectedScheduledExecutorService(executor);

@@ -64,7 +64,7 @@ public final class ThreadFactoryAdd extends AbstractThreadsSubsystemUpdate<Void>
         service.setThreadGroupName(groupName);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<ThreadFactory> builder = batchBuilder.addService(Services.threadFactoryName(name), service);
+        final BatchServiceBuilder<ThreadFactory> builder = batchBuilder.addService(ThreadsServices.threadFactoryName(name), service);
         builder.addListener(listener);
         builder.setInitialMode(ServiceController.Mode.IMMEDIATE);
         try {

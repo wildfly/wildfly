@@ -47,7 +47,6 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
 
     private QueueExecutor executor;
     private ExecutorService value;
-    private StopContext context;
 
     private int coreThreads;
     private int maxThreads;
@@ -76,13 +75,11 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
         if (executor == null) {
             throw new IllegalStateException();
         }
-        this.context = context;
         context.asynchronous();
         executor.shutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
             public void handleEvent(final StopContext stopContext) {
                 stopContext.complete();
-                BoundedQueueThreadPoolService.this.context = null;
             }
         }, context);
         this.executor = null;
