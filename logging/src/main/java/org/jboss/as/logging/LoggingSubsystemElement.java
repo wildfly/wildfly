@@ -22,9 +22,11 @@
 
 package org.jboss.as.logging;
 
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -45,8 +47,8 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     private final NavigableMap<String, AbstractLoggerElement<?>> loggers = new TreeMap<String, AbstractLoggerElement<?>>();
     private final NavigableMap<String, AbstractHandlerElement<?>> handlers = new TreeMap<String, AbstractHandlerElement<?>>();
 
-    public LoggingSubsystemElement(final QName elementName) {
-        super(elementName.getNamespaceURI());
+    public LoggingSubsystemElement() {
+        super(Namespace.LOGGING_1_0.getUriString());
     }
 
     boolean addLogger(String name, AbstractLoggerElement<?> logger) {
@@ -57,6 +59,14 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         return true;
     }
 
+    AbstractLoggerElement<?> getLogger(final String name) {
+        return loggers.get(name);
+    }
+
+    AbstractLoggerElement<?> removeLogger(final String name) {
+        return loggers.remove(name);
+    }
+
     boolean addHandler(String name, AbstractHandlerElement<?> handler) {
         if (handlers.containsKey(name)) {
             return false;
@@ -65,8 +75,12 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         return true;
     }
 
-    private long elementHash() {
-        return 0;
+    AbstractHandlerElement<?> getHandler(final String name) {
+        return this.handlers.get(name);
+    }
+
+    AbstractHandlerElement<?> removeHandler(final String name) {
+        return this.handlers.remove(name);
     }
 
     protected Class<LoggingSubsystemElement> getElementClass() {
@@ -84,5 +98,16 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
             streamWriter.writeStartElement(elementName.getNamespaceURI(), elementName.getLocalPart());
             element.writeContent(streamWriter);
         }
+    }
+
+    /** {@inheritDoc} */
+    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> list) {
+        // TODO Auto-generated method stub
+    }
+
+    /** {@inheritDoc} */
+    protected boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

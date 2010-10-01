@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.staxmapper.XMLElementReader;
@@ -42,10 +44,15 @@ import java.util.logging.Level;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class LoggingSubsystemParser implements XMLElementReader<ParseResult<? super LoggingSubsystemElement>>, XMLStreamConstants {
+public final class LoggingSubsystemParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>>>, XMLStreamConstants {
 
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<? super LoggingSubsystemElement> result) throws XMLStreamException {
-        result.setResult(parseLoggingSubsystemElement(reader));
+    private static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
+
+    /**
+     * @return the instance
+     */
+    public static LoggingSubsystemParser getInstance() {
+        return INSTANCE;
     }
 
     private static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
@@ -77,12 +84,13 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
     }
 
-    static LoggingSubsystemElement parseLoggingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    /** {@inheritDoc} */
+    public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates)
+            throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        final LoggingSubsystemElement subsystemElement = new LoggingSubsystemElement(reader.getName());
 
         // Elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -97,44 +105,44 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     switch (element) {
                         case LOGGER: {
                             LoggerElement loggerElement = parseLoggerElement(reader);
-                            subsystemElement.addLogger(loggerElement.getName(), loggerElement);
+                            updates.add(new LoggerAddUpdate(loggerElement.getName(), loggerElement));
                             break;
                         }
                         case ROOT_LOGGER: {
                             RootLoggerElement loggerElement = parseRootLoggerElement(reader);
-                            subsystemElement.addLogger("", loggerElement);
+                            updates.add(new LoggerAddUpdate("", loggerElement));
                             break;
                         }
                         case CONSOLE_HANDLER: {
                             ConsoleHandlerElement handlerElement = parseConsoleHandlerElement(reader);
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                         case FILE_HANDLER: {
                             FileHandlerElement handlerElement = parseFileHandlerElement(reader);
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
                             PeriodicRotatingFileHandlerElement handlerElement = parsePeriodicRotatingFileHandlerElement(reader);
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
                             SizeRotatingFileHandlerElement handlerElement = parseSizeRotatingHandlerElement(reader);
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                         case ASYNC_HANDLER: {
                             AsyncHandlerElement handlerElement = parseAsyncHandlerElement(reader);
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                         default: {
                             final ParseResult<AbstractHandlerElement<?>> result = new ParseResult<AbstractHandlerElement<?>>();
                             reader.handleAny(result);
                             AbstractHandlerElement<?> handlerElement = result.getResult();
-                            subsystemElement.addHandler(handlerElement.getName(), handlerElement);
+                            updates.add(new HandlerAddUpdate(handlerElement));
                             break;
                         }
                     }
@@ -145,7 +153,6 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
-        return subsystemElement;
     }
 
     private static LoggerElement parseLoggerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

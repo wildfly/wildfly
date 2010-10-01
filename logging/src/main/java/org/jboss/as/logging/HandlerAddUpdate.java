@@ -22,41 +22,38 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.as.model.ParseResult;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * The logging extension.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class LoggingExtension implements Extension {
+public class HandlerAddUpdate extends AbstractLoggingSubsystemUpdate<Void> {
 
-    static final SubsystemFactory<LoggingSubsystemElement> FACTORY = new SubsystemFactory<LoggingSubsystemElement>() {
-        public LoggingSubsystemElement createSubsystemElement() {
-            return new LoggingSubsystemElement();
-        }
-    };
+    private static final long serialVersionUID = 5791037187352350769L;
+    private final AbstractHandlerElement<?> handler;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.LOGGING_1_0.getUriString(), FACTORY, LoggingSubsystemParser.getInstance());
+    public HandlerAddUpdate(AbstractHandlerElement<?> handler) {
+        super();
+        this.handler = handler;
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        //
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
     }
 
+    /** {@inheritDoc} */
+    public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(LoggingSubsystemElement original) {
+        return new HandlerRemoveUpdate(handler.getName());
+    }
+
+    /** {@inheritDoc} */
+    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
+        element.addHandler(handler.getName(), handler);
+    }
 
 }
