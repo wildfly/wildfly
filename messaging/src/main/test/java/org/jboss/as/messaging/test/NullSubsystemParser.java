@@ -1,6 +1,7 @@
 package org.jboss.as.messaging.test;
 
-import org.jboss.as.model.ParseResult;
+import java.util.List;
+
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -13,14 +14,12 @@ import javax.xml.stream.XMLStreamException;
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class NullSubsystemParser<Object> implements XMLElementReader<ParseResult<NullSubsystemElement<Object>>> {
+public class NullSubsystemParser<Object> implements XMLElementReader<List<?>> {
 
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, ParseResult<NullSubsystemElement<Object>> result)
-            throws XMLStreamException {
-        System.out.println(getClass().getCanonicalName() + ".readElement, " + reader.getLocalName());
-        NullSubsystemElement<Object> element = new NullSubsystemElement(reader);
-        result.setResult(element);
+    /** {@inheritDoc} */
+    public void readElement(XMLExtendedStreamReader arg0, List<?> arg1) throws XMLStreamException {
+        // TODO Auto-generated method stub
+
     }
 
 }

@@ -1,30 +1,30 @@
 package org.jboss.as.messaging.test;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.jboss.as.messaging.ConfigurationElementWriter;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.messaging.Namespace;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ModelXmlParsers;
-import org.jboss.as.model.ParseResult;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.StandardElementReaderRegistrar;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Tests of the messaging/hornetq configuration parsing.
@@ -33,29 +33,31 @@ import java.util.Set;
  * @version $Id$
  */
 public class ConfigParsingUnitTestCase {
-   private final StandardElementReaderRegistrar extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
 
-   /**
+    /**
     * Test the stax parsing of the standalone-with-messaging.xml configuration
     */
    @Test
    public void testStandaloneStaxParser() {
-      final ParseResult<ServerModel> parseResult = new ParseResult<ServerModel>();
-      // Enable the thread local mode for testing
-      MessagingSubsystemParser.enableThreadLocal(true);
       try {
          final XMLMapper mapper = createXMLMapper();
          URL configURL = getClass().getResource("/standalone-with-messaging.xml");
          Assert.assertNotNull("standalone-with-messaging.xml url is not null", configURL);
          System.out.println("configURL = " + configURL);
          BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
-         mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(reader));
-         // Validate the configuration
-         MessagingSubsystemElement mse = MessagingSubsystemParser.getLastSubsystemElement();
-         ConfigurationElementWriter config = mse.getConfiguration();
-         Configuration jmsConfig = config.getConfiguration();
+         List<AbstractSubsystemUpdate<?, ?>> updates = new ArrayList<AbstractSubsystemUpdate<?,?>>();
+         mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(reader));
+
+         MessagingSubsystemElement subsystem = new MessagingSubsystemElement();
+         Configuration jmsConfig = subsystem.getConfiguration();
+
+
+         for(final AbstractSubsystemUpdate<?, ?> update : updates) {
+             // update?
+         }
+
          Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", jmsConfig.getBindingsDirectory());
-         Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());         
+         Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());
          Assert.assertEquals("journal-min-files", 10, jmsConfig.getJournalMinFiles());
          Assert.assertEquals("journal-file-size", 1048576, jmsConfig.getJournalFileSize());
          Assert.assertEquals("paging-directory", "${jboss.server.data.dir}/hornetq/paging", jmsConfig.getPagingDirectory());
@@ -103,7 +105,7 @@ public class ConfigParsingUnitTestCase {
                   Map<String, Object> a0params = new HashMap<String, Object>();
          a0params.put("host", "${jboss.bind.address:localhost}");
          a0params.put("port", "${hornetq.remoting.netty.port:5445}");
-         a0params.put("socket-ref", "hq:netty");         
+         a0params.put("socket-ref", "hq:netty");
          TransportConfiguration a0 = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
             a0params , "netty");
          Map<String, Object> a1params = new HashMap<String, Object>();
@@ -131,7 +133,7 @@ public class ConfigParsingUnitTestCase {
          throw new RuntimeException("standalone-with-messaging.xml", e);
       }
       finally {
-         MessagingSubsystemParser.clearLastSubsystemElement();         
+
       }
 
    }
@@ -140,7 +142,7 @@ public class ConfigParsingUnitTestCase {
     * Create an XMLMapper that has the root {urn:jboss:domain:1.0}standalone and
     * {urn:jboss:domain:threads:1.0}subsystem {urn:jboss:domain:naming:1.0}subystem and
     * {urn:jboss:domain:remoting:1.0}subsystem parsers registered to be a NullSubsystemParser
-    * 
+    *
     * @return
     * @throws Exception
     */

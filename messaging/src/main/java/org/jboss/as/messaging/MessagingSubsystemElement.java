@@ -27,12 +27,12 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     /** The HornetQ Configuration. */
     private final Configuration configuration;
 
-    protected MessagingSubsystemElement() {
+    public MessagingSubsystemElement() {
         super(Namespace.MESSAGING_1_0.getUriString());
         this.configuration = new ConfigurationImpl();
     }
 
-    Configuration getConfiguration() {
+    public Configuration getConfiguration() {
         return this.configuration;
     }
 

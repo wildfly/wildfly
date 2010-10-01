@@ -25,18 +25,6 @@ public class MessagingSubsystemParser implements
         XMLElementReader<List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>>> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
-
-    /**
-     * A thread local for storing the last MessagingSubsystemElement parsed for
-     * testing
-     */
-    private static final ThreadLocal<MessagingSubsystemElement> LAST_ELEMENT = new ThreadLocal<MessagingSubsystemElement>();
-    private static boolean useThreadLocal = false;
-
-    private MessagingSubsystemParser() {
-        //
-    }
-
     private static final MessagingSubsystemParser INSTANCE = new MessagingSubsystemParser();
 
     /**
@@ -48,28 +36,13 @@ public class MessagingSubsystemParser implements
         return INSTANCE;
     }
 
-    /**
-     * For testing only.
-     */
-    public static void enableThreadLocal(boolean flag) {
-        useThreadLocal = flag;
-    }
-
-    public static MessagingSubsystemElement getLastSubsystemElement() {
-        return LAST_ELEMENT.get();
-    }
-
-    public static void clearLastSubsystemElement() {
-        LAST_ELEMENT.remove();
+    private MessagingSubsystemParser() {
+        //
     }
 
     /** {@inheritDoc} */
     public void readElement(XMLExtendedStreamReader reader,
             List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
-        // TODO
-        if (useThreadLocal) {
-            LAST_ELEMENT.set(null);
-        }
 
         final MessagingSubsystemUpdate update = new MessagingSubsystemUpdate();
         updates.add(update);
