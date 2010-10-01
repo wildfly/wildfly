@@ -80,6 +80,6 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
     }
 
     protected ServerSubsystemAdd getServerModelUpdate() {
-        return null;
+        return new ServerSubsystemAdd(namespaceUri);
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.SubsystemFactory;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -37,10 +39,17 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
     }
 
     protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
-
+        final SubsystemFactory<?> factory = element.getSubsystemFactory(namespaceUri);
+        if (factory == null) {
+            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is not configured in this server");
+        }
+        if (! element.addSubsystem(namespaceUri, factory.createSubsystemElement())) {
+            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is already configured in this server");
+        }
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
+        
     }
 
     public AbstractServerModelUpdate<?> getCompensatingUpdate(final ServerModel original) {

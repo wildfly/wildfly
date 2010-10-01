@@ -225,6 +225,8 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
     private void parseBoundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
+        boolean allowCoreTimeout = false;
+        boolean blocking = true;
 
         final int count = reader.getAttributeCount();
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
@@ -239,10 +241,21 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
                     name = reader.getAttributeValue(i);
                     break;
                 }
+                case ALLOW_CORE_TIMEOUT: {
+                    allowCoreTimeout = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
+                case BLOCKING: {
+                    blocking = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
                 default: {
                     throw unexpectedAttribute(reader, i);
                 }
             }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
         }
 
         if (! names.add(name)) {

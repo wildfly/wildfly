@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.deployment.DeployerRegistrationContext;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
