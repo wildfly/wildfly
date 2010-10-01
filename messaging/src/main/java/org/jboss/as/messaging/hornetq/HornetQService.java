@@ -1,5 +1,6 @@
 package org.jboss.as.messaging.hornetq;
 
+import java.io.File;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -129,6 +130,12 @@ public class HornetQService implements Service<HornetQServer> {
             }
          }
 
+         // Fix the paths used by the HornetQ configuration
+         configuration.setBindingsDirectory(getDataDirectoryFor(configuration.getBindingsDirectory()));
+         configuration.setJournalDirectory(getDataDirectoryFor(configuration.getJournalDirectory()));
+         configuration.setLargeMessagesDirectory(getDataDirectoryFor(configuration.getLargeMessagesDirectory()));
+         configuration.setPagingDirectory(getDataDirectoryFor(configuration.getPagingDirectory()));
+
          // Now start the server
          server = new HornetQServerImpl(configuration);
          // HornetQ expects the TCCL to be set to something that can find the log factory class.
@@ -172,5 +179,9 @@ public class HornetQService implements Service<HornetQServer> {
 
    public void setConfiguration(Configuration hqConfig) {
       this.configuration = hqConfig;
+   }
+
+   private String getDataDirectoryFor(final String relativePath) {
+      return System.getProperty("jboss.server.data.dir") + File.separatorChar + relativePath;
    }
 }

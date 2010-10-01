@@ -47,17 +47,17 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- A standard hornetq configuration -->
-            <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
+            <bindings-directory>hornetq/bindings</bindings-directory>
             <journal-type>NIO</journal-type>
-            <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
+            <journal-directory>hornetq/journal</journal-directory>
 
             <journal-min-files>2</journal-min-files>
             <!-- Default journal file size is 10Mb, reduced here to 1Mb for faster first boot -->
             <journal-file-size>1048576</journal-file-size>
 
-            <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
+            <large-messages-directory>hornetq/largemessages</large-messages-directory>
 
-            <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>
+            <paging-directory>/hornetq/paging</paging-directory>
 
             <connectors>
                <connector name="netty">
