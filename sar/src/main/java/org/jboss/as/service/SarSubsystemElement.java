@@ -61,7 +61,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author John Bailey
  */
 final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemElement> {
-    private final Logger log = Logger.getLogger("org.jboss.as.deployment.managedbean");
+    private final Logger log = Logger.getLogger("org.jboss.as.deployment.sar");
 
     public static final long SAR_DEPLOYMENT_CHAIN_PRIORITY = JarDeploymentActivator.JAR_DEPLOYMENT_CHAIN_PRIORITY - 1000000L;
     public static final ServiceName SAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("sar");
