@@ -24,7 +24,6 @@ package org.jboss.as.service;
 
 import java.util.List;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
@@ -35,7 +34,6 @@ import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
  * Extension used to enable SAR deployments.
@@ -64,6 +62,7 @@ public class SarExtension implements Extension {
      * @param context the service activation context
      */
     public void activate(final ServiceActivatorContext context) {
+        //
     }
 
 

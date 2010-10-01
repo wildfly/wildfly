@@ -26,6 +26,7 @@ import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceController;
 
 
 /**
@@ -53,7 +54,13 @@ public final class RemoveConnectorUpdate extends AbstractRemotingSubsystemUpdate
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
+        final ServiceController<?> controller = updateContext.getServiceContainer().getService(ConnectorElement.connectorName(name));
+        if(controller == null) {
+            resultHandler.handleSuccess(null, param);
+        } else {
+            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+            controller.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 
     /** {@inheritDoc} */

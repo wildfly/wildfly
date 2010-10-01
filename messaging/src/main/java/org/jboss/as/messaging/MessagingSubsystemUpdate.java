@@ -75,8 +75,12 @@ public class MessagingSubsystemUpdate extends AbstractMessagingSubsystemUpdate<V
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
+        //
+    }
 
+    /** {@inheritDoc} */
+    protected void applyUpdateBootAction(UpdateContext updateContext) {
+        // TODO register hornetQ service here ?
     }
 
     public String getBindingsDirectory() {
