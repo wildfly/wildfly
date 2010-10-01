@@ -215,9 +215,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void stopProcess(final String processName) {
-        if (shutdown.get())
-            return;
-
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(processName);
@@ -234,9 +231,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void removeProcess(final String processName) {
-        if (shutdown.get())
-            return;
-
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(processName);

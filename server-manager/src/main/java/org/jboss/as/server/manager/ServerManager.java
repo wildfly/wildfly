@@ -344,7 +344,7 @@ public class ServerManager implements ShutdownListener {
             serversCopy = new HashMap<String, Server>(servers);
         }
 
-        for (Map.Entry<String, Server> entry : servers.entrySet()) {
+        for (Map.Entry<String, Server> entry : serversCopy.entrySet()) {
             try {
                 Server server = entry.getValue();
                 if (server.getState() == ServerState.STOPPED)
@@ -384,8 +384,6 @@ public class ServerManager implements ShutdownListener {
             return;
         }
         checkState(server, ServerState.STOPPING);
-        if (shutdownLatch != null)
-            shutdownLatch.remove(serverName);
 
         try {
             processManagerSlave.stopProcess(serverName);
@@ -393,6 +391,8 @@ public class ServerManager implements ShutdownListener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        if (shutdownLatch != null)
+            shutdownLatch.remove(serverName);
     }
 
     /**
