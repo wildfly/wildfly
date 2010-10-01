@@ -1,81 +1,68 @@
 package org.jboss.as.messaging;
 
-import org.jboss.as.model.AbstractSubsystemElement;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import java.util.Collections;
-import java.util.Set;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The subsystem element for the messaging configuration and activation.
  *
  * @author scott.stark@jboss.org
- * @version $Id$
+ * @author Emanuel Muckenhuber
  */
 public class MessagingSubsystemElement extends AbstractSubsystemElement<MessagingSubsystemElement> {
 
-   private static final long serialVersionUID = 8225457441023207312L;
+    private static final long serialVersionUID = 8225457441023207312L;
 
-   private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
+    /** The service name "jboss.messaging". */
+    public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
 
-   /**
-    * The service name "jboss.messaging".
-    */
-   public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
-   /** The subsystem configration namespace in the domain */
-   public static final String NAMESPACE_1_0 = "urn:jboss:domain:messaging:1.0";
+    /** The HornetQ Configuration. */
+    private final Configuration configuration;
 
-   public static final String NAMESPACE = NAMESPACE_1_0;
+    protected MessagingSubsystemElement() {
+        super(Namespace.MESSAGING_1_0.getUriString());
+        this.configuration = new ConfigurationImpl();
+    }
 
-   public static final Set<String> NAMESPACES = Collections.singleton(NAMESPACE);
-   /** The */
-   private ConfigurationElement configuration;
+    Configuration getConfiguration() {
+        return this.configuration;
+    }
 
-   /**
-    * Construct a new instance.
-    *
-    * @param reader the reader from which the subsystem element should be read
-    * @throws XMLStreamException
-    */
-   public MessagingSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      super(reader);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Class<MessagingSubsystemElement> getElementClass() {
+        return MessagingSubsystemElement.class;
+    }
 
-      configuration = new ConfigurationElement(reader);
-   }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        final ConfigurationElementWriter configElement = new ConfigurationElementWriter(configuration);
+        configElement.writeContent(streamWriter);
+        streamWriter.writeEndElement();
+    }
 
-   public ConfigurationElement getConfiguration() {
-      return configuration;
-   }
+    /** {@inheritDoc} */
+    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> list) {
+        // TODO Auto-generated method stub
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   private long elementHash() {
-      // TODO
-      return 0L;
-   }
+    /** {@inheritDoc} */
+    protected boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected Class<MessagingSubsystemElement> getElementClass() {
-      return MessagingSubsystemElement.class;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-      configuration.writeContent(streamWriter);
-      streamWriter.writeEndElement();
-   }
 }

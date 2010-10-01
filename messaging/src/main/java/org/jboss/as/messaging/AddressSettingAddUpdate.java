@@ -22,33 +22,41 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.hornetq.api.core.Pair;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * The implementation of the Messaging extension.
+ * Update adding {@code AddressSettings}.
  *
- * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public class AddressSettingAddUpdate extends AbstractPairUpdate<String, AddressSettings> {
 
-    private static final SubsystemFactory<MessagingSubsystemElement> FACTORY = new SubsystemFactory<MessagingSubsystemElement>() {
-        public MessagingSubsystemElement createSubsystemElement() {
-            return new MessagingSubsystemElement();
-        }
-    };
+    private static final long serialVersionUID = -1629954652094107618L;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), FACTORY, MessagingSubsystemParser.getInstance());
+    public AddressSettingAddUpdate(Pair<String, AddressSettings> pair) {
+        super(pair);
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        // no actions needed
+    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
+        return new AddressSettingsRemoveUpdate(getKey());
+    }
+
+    /** {@inheritDoc} */
+    void applyUpdate(Configuration configuration) throws UpdateFailedException {
+        add(configuration.getAddressesSettings());
+    }
+
+    /** {@inheritDoc} */
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
     }
 
 }

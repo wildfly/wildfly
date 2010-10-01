@@ -22,33 +22,50 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.msc.service.ServiceActivatorContext;
+import java.util.Map;
+
+import org.hornetq.api.core.Pair;
+import org.jboss.as.model.UpdateFailedException;
 
 /**
- * The implementation of the Messaging extension.
+ * The abstract pair update.
  *
- * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public abstract class AbstractPairUpdate<A, B> extends AbstractMessagingSubsystemUpdate<Void> {
 
-    private static final SubsystemFactory<MessagingSubsystemElement> FACTORY = new SubsystemFactory<MessagingSubsystemElement>() {
-        public MessagingSubsystemElement createSubsystemElement() {
-            return new MessagingSubsystemElement();
-        }
-    };
+    private static final long serialVersionUID = 6172053691870351651L;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), FACTORY, MessagingSubsystemParser.getInstance());
+    /** The pair. */
+    private final Pair<A, B> pair;
+
+    public AbstractPairUpdate(final Pair<A, B> pair) {
+        super();
+        this.pair = pair;
     }
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        // no actions needed
+    public AbstractPairUpdate(final Pair<A, B> pair, boolean restart) {
+        super(restart);
+        this.pair = pair;
+    }
+
+    A getKey() {
+        return pair.a;
+    }
+
+    B getValue() {
+        return pair.b;
+    }
+
+    void add(Map<A, B> map) throws UpdateFailedException {
+        if(map.containsKey(getKey())) {
+            throw new UpdateFailedException("duplicate key " + getKey());
+        }
+        map.put(getKey(), getValue());
+    }
+
+    B get(Map<A, B> map) {
+        return map.get(getKey());
     }
 
 }

@@ -4,7 +4,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.jboss.as.messaging.ConfigurationElement;
+import org.jboss.as.messaging.ConfigurationElementWriter;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.messaging.Namespace;
@@ -52,7 +52,7 @@ public class ConfigParsingUnitTestCase {
          mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(reader));
          // Validate the configuration
          MessagingSubsystemElement mse = MessagingSubsystemParser.getLastSubsystemElement();
-         ConfigurationElement config = mse.getConfiguration();
+         ConfigurationElementWriter config = mse.getConfiguration();
          Configuration jmsConfig = config.getConfiguration();
          Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", jmsConfig.getBindingsDirectory());
          Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());         

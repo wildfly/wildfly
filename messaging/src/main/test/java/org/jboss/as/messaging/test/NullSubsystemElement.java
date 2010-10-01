@@ -1,6 +1,9 @@
 package org.jboss.as.messaging.test;
 
+import java.util.List;
+
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -12,24 +15,31 @@ import javax.xml.stream.XMLStreamException;
  */
 public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsystemElement<Object>> {
 
-   public NullSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      super(reader);
-      reader.discardRemainder();
-   }
+    public NullSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super("");
+        reader.discardRemainder();
+    }
 
     @Override
-    private long elementHash() {
-      return 0;  //To change body of implemented methods use File | Settings | File Templates.
-   }
+    protected Class<NullSubsystemElement<Object>> getElementClass() {
+        Class<NullSubsystemElement<Object>> c = (Class<NullSubsystemElement<Object>>) getClass();
+        return c;
+    }
 
-   @Override
-   protected Class<NullSubsystemElement<Object>> getElementClass() {
-      Class<NullSubsystemElement<Object>> c = (Class<NullSubsystemElement<Object>>) getClass();
-      return c;
-   }
+    @Override
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        // To change body of implemented methods use File | Settings | File
+        // Templates.
+    }
 
-   @Override
-   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
+    /** {@inheritDoc} */
+    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<NullSubsystemElement<Object>, ?>> list) {
+        // TODO Auto-generated method stub
+    }
+
+    /** {@inheritDoc} */
+    protected boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

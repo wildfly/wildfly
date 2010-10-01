@@ -22,33 +22,43 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.msc.service.ServiceActivatorContext;
+import java.util.Set;
+
+import org.hornetq.api.core.Pair;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.security.Role;
+import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * The implementation of the Messaging extension.
+ * Update adding security roles based on their match.
  *
- * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public class SecurityRolesAddUpdate extends AbstractPairUpdate<String, Set<Role>> {
 
-    private static final SubsystemFactory<MessagingSubsystemElement> FACTORY = new SubsystemFactory<MessagingSubsystemElement>() {
-        public MessagingSubsystemElement createSubsystemElement() {
-            return new MessagingSubsystemElement();
-        }
-    };
+    private static final long serialVersionUID = -1369007423461679335L;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), FACTORY, MessagingSubsystemParser.getInstance());
+    public SecurityRolesAddUpdate(Pair<String, Set<Role>> pair) {
+        super(pair);
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        // no actions needed
+    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
+        return new SecurityRolesRemoveUpdate(getKey());
+    }
+
+    /** {@inheritDoc} */
+    void applyUpdate(Configuration configuration) throws UpdateFailedException {
+        add(configuration.getSecurityRoles());
+    }
+
+    /** {@inheritDoc} */
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
     }
 
 }
