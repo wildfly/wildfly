@@ -21,7 +21,6 @@
  */
 package org.jboss.test.as.protocol.support.server.manager;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -39,7 +38,6 @@ import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.test.as.protocol.support.process.NoopExiter;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
-import org.jboss.test.as.protocol.support.xml.ConfigParser;
 
 /**
  * Starts a real server manager instance in-process
@@ -53,6 +51,7 @@ public class TestServerManagerProcess extends ServerManager {
 
     private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
+    private volatile CountDownLatch domainModelLatch = new CountDownLatch(1);
     private volatile CountDownLatch downLatch = new CountDownLatch(1);
 
     public static ServerManager createServerManager(TestProcessManager pm) throws Exception{
@@ -99,11 +98,17 @@ public class TestServerManagerProcess extends ServerManager {
         } else {
             TestServerManagerProcess manager = new TestServerManagerProcess(managed, config);
             manager.start();
-            DomainModel domain = ConfigParser.parseDomain(new File(System.getProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR)));
-            manager.setDomain(domain);
+            manager.waitForLatch(manager.domainModelLatch);
             return manager;
         }
     }
+
+    @Override
+    public void setDomain(final DomainModel domain) {
+        super.setDomain(domain);
+        domainModelLatch.countDown();
+    }
+
 
     @Override
     public void shutdownServers() {
