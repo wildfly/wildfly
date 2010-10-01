@@ -42,7 +42,7 @@ class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding 
     }
 
     public InetSocketAddress getBindAddress() {
-        return InetSocketAddress.class.cast(getLocalPort());
+        return InetSocketAddress.class.cast(getLocalSocketAddress());
     }
 
     public void bind(SocketAddress endpoint, int backlog) throws IOException {
