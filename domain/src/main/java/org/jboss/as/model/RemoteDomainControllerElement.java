@@ -84,13 +84,6 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
     }
 
     @Override
-    public long elementHash() {
-        long cksum = host.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ port & 0xffffffffL;
-        return cksum;
-    }
-
-    @Override
     protected Class<RemoteDomainControllerElement> getElementClass() {
         return RemoteDomainControllerElement.class;
     }

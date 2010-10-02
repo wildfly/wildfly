@@ -75,9 +75,9 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (deploymentElement != null) {
             // FIXME coordinate results!!!
-            startStopHandler.undeploy(toReplace, updateContext, resultHandler, param);
+            startStopHandler.undeploy(toReplace, updateContext.getServiceContainer(), resultHandler, param);
             startStopHandler.deploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
-                    updateContext, resultHandler, param);
+                    updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
         }
         else if (resultHandler != null) {
             // We shouldn't be able to get here, as the model update should have failed,

@@ -176,7 +176,7 @@ public class ServerUpdateController {
             try {
                 rollbackTuple = update.getRollbackTuple(serverModel);
 
-                update.getUpdate().applyUpdate(serverModel);
+                serverModel.update(update.getUpdate());
                 appliedToModel = true;
                 if (allowRuntimeUpdates) {
                     update.applyUpdate(serviceContainer);
@@ -206,7 +206,7 @@ public class ServerUpdateController {
                     }
                     if (appliedToModel) {
                         try {
-                            rollbackTuple.getUpdate().applyUpdate(serverModel);
+                            serverModel.update(rollbackTuple.getUpdate());
                         } catch (UpdateFailedException e1) {
                             rollbackTuple.handleFailure(e1);
                         }
@@ -226,7 +226,7 @@ public class ServerUpdateController {
     private void applyRollbacks() {
         for (ServerModelUpdateTuple<?, ?> update : rollbacks) {
             try {
-                update.getUpdate().applyUpdate(serverModel);
+                serverModel.update(update.getUpdate());
             }
             catch (Exception e) {
                 update.handleFailure(e);

@@ -273,7 +273,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         // Activate extensions
 
         // Activate profile
-        profile.activate(context);
+//        profile.activate(context);
 
         // Activate Interfaces
         final Map<String, ServerInterfaceElement> interfaces;

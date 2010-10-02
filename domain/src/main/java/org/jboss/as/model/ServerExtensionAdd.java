@@ -46,7 +46,7 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         // no action
     }
 

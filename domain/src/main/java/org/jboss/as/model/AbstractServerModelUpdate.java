@@ -84,7 +84,7 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
      * @param resultHandler the handler to call back with the result
      * @param param the parameter value to pass to the result handler
      */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super R, P> resultHandler, P param) {
+    public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super R, P> resultHandler, P param) {
         resultHandler.handleSuccess(null, param);
     }
 

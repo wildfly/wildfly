@@ -72,12 +72,11 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
 
     /** {@inheritDoc} */
     protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> list) {
-        // TODO Auto-generated method stub
+        // nothing to do
     }
 
     /** {@inheritDoc} */
     protected boolean isEmpty() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 }

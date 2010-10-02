@@ -8,7 +8,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.ParseUtils;
-import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -24,10 +23,8 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
     private final String groupName;
 
     /**
-     * @param location
      */
-    public SocketBindingGroupIncludeElement(Location location, final String groupName) {
-        super();
+    public SocketBindingGroupIncludeElement(final String groupName) {
         this.groupName = groupName;
     }
 
@@ -36,7 +33,6 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
      * @throws XMLStreamException
      */
     public SocketBindingGroupIncludeElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super();
         this.groupName = ParseUtils.readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
     }
 
@@ -47,11 +43,6 @@ public class SocketBindingGroupIncludeElement extends AbstractModelElement<Socke
      */
     public String getGroupName() {
         return groupName;
-    }
-
-    @Override
-    private long elementHash() {
-        return groupName.hashCode() & 0xffffffffL;
     }
 
     /* (non-Javadoc)

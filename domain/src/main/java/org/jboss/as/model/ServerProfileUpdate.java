@@ -44,7 +44,7 @@ public final class ServerProfileUpdate<E extends AbstractSubsystemElement<E>, R>
         subsystemUpdate.applyUpdate(subsystemElement);
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super R, P> handler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super R, P> handler, final P param) {
         subsystemUpdate.applyUpdate(updateContext, handler, param);
     }
 

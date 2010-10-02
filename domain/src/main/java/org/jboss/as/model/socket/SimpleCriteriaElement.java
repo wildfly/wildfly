@@ -32,7 +32,7 @@ public class SimpleCriteriaElement extends AbstractInterfaceCriteriaElement<Simp
      * @throws XMLStreamException if an error occurs
      */
     public SimpleCriteriaElement(XMLExtendedStreamReader reader, Element type, InterfaceCriteria criteria) throws XMLStreamException {
-        super(reader, type, criteria);
+        super(type, criteria);
         if (criteria == null) {
             throw new IllegalArgumentException("criteria is null");
         }

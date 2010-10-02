@@ -82,7 +82,7 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (startStopHandler != null) {
-            startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, updateContext, resultHandler, param);
+            startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
         }
     }
 }

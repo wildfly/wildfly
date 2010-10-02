@@ -15,7 +15,6 @@ import org.jboss.as.model.Element;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.RefResolver;
 import org.jboss.as.services.net.SocketBindingService;
-import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -42,14 +41,11 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     /**
      * Construct a new instance.
      *
-     * @param location the declaration location of the element
      * @param name the name of the group. Cannot be <code>null</code>
-     * @param interfaceResolver {@link RefResolver} to use to resolve references
+     * @param interfaceResolver {@link org.jboss.as.model.RefResolver} to use to resolve references
      *           to interfaces. May be used safely in the constructor
-     *           itself. Cannot be <code>null</code>
      */
-    public SocketBindingElement(Location location, final String name, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) {
-        super();
+    public SocketBindingElement(final String name, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) {
         this.name = name;
 
         if (interfaceResolver == null)
@@ -71,7 +67,6 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      * @throws XMLStreamException if an error occurs
      */
     public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
-        super();
 
         if (interfaceResolver == null)
             throw new IllegalArgumentException("interfaceResolver is null");
@@ -304,27 +299,6 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
-     */
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#elementHash()
-     */
-    @Override
-    private long elementHash() {
-        long cksum = name.hashCode() & 0xffffffffL;
-        if (interfaceName != null)
-            cksum = Long.rotateLeft(cksum, 1) ^ interfaceName.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ port & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ Boolean.valueOf(fixedPort).hashCode() & 0xffffffffL;
-        if (multicastAddress != null)
-            cksum = Long.rotateLeft(cksum, 1) ^ multicastAddress.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ multicastPort & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ defaultInterfaceName.hashCode() & 0xffffffffL;
-        return cksum;
-    }
-
-    /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#getElementClass()
      */
     @Override
@@ -359,7 +333,7 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private int parsePort(String value, Attribute attribute, XMLExtendedStreamReader reader, boolean allowEphemeral) throws XMLStreamException {
         int legal;
         try {
-            legal = Integer.valueOf(value);
+            legal = Integer.parseInt(value);
             int min = allowEphemeral ? 0 : 1;
             if (legal < min || legal >= 65536) {
                 throw new XMLStreamException("Illegal value " + value +

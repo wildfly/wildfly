@@ -3,8 +3,6 @@
  */
 package org.jboss.as.model;
 
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -24,7 +22,7 @@ import java.util.TreeMap;
  *
  * @author Brian Stansberry
  */
-public class ProfileElement extends AbstractModelElement<ProfileElement> implements ServiceActivator {
+public class ProfileElement extends AbstractModelElement<ProfileElement> {
     private static final long serialVersionUID = -7412521588206707920L;
 
     private final String name;
@@ -224,26 +222,6 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         }
 
         streamWriter.writeEndElement();
-    }
-
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-
-        // Activate included profiles
-        for (ProfileIncludeElement includeEl : includedProfiles.values()) {
-            ProfileElement prof = includedProfileResolver.resolveRef(includeEl.getProfile());
-            if (prof == null) {
-                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' refers to non-existent profile '" + includeEl.getProfile() + "'");
-            }
-            prof.activate(context);
-        }
-
-        // Activate sub-systems
-        final Map<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
-        for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
-            subsystem.activate(context);
-        }
     }
 
     boolean addSubsystem(final String uri, final AbstractSubsystemElement<?> element) {

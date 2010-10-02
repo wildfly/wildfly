@@ -32,16 +32,11 @@ public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCrit
      * @throws XMLStreamException if an error occurs
      */
     public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader, Element.NIC);
+        super(Element.NIC);
 
         this.name = ParseUtils.readStringAttributeElement(reader, Attribute.NAME.getLocalName());
 
         setInterfaceCriteria(new NicInterfaceCriteria(name));
-    }
-
-    @Override
-    private long elementHash() {
-        return name.hashCode() & 0xffffffffL;
     }
 
     @Override

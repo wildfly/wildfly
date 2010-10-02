@@ -22,7 +22,7 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.model.*;
+import org.jboss.as.model.AbstractModelElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;

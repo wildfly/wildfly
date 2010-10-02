@@ -38,7 +38,7 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
      * @throws XMLStreamException if an error occurs
      */
     public CompoundCriteriaElement(XMLExtendedStreamReader reader, boolean isAny) throws XMLStreamException {
-        super(reader, isAny ? Element.ANY : Element.NOT);
+        super(isAny ? Element.ANY : Element.NOT);
 
         Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>(interfaceCriteria.size());
         for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria.values()) {

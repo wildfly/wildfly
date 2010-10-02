@@ -114,20 +114,6 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
-     */
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#elementHash()
-     */
-    @Override
-    public long elementHash() {
-        long cksum = ref.hashCode() & 0xffffffffL;
-        cksum = Long.rotateLeft(cksum, 1) ^ portOffset & 0xffffffffL;
-        return cksum;
-    }
-
-    /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#getElementClass()
      */
     @Override

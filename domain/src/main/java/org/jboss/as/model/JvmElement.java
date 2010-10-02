@@ -178,24 +178,6 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#appendDifference(java.util.Collection, org.jboss.as.model.AbstractModelElement)
-     */
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.AbstractModelElement#elementHash()
-     */
-    @Override
-    public long elementHash() {
-        long cksum = name.hashCode() & 0xffffffffL;
-        if (javaHome != null) cksum = Long.rotateLeft(cksum, 1) ^ javaHome.hashCode() & 0xffffffffL;
-        if (heapSize != null) cksum = Long.rotateLeft(cksum, 1) ^ heapSize.hashCode() & 0xffffffffL;
-        if (maxHeap != null) cksum = Long.rotateLeft(cksum, 1) ^ maxHeap.hashCode() & 0xffffffffL;
-        if (environmentVariables != null) cksum = Long.rotateLeft(cksum, 1) ^ environmentVariables.elementHash();
-        if (systemProperties != null) cksum = Long.rotateLeft(cksum, 1) ^ systemProperties.elementHash();
-        return cksum;
-    }
-
-    /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#getElementClass()
      */
     @Override

@@ -48,8 +48,8 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
         }
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
+
     }
 
     public AbstractServerModelUpdate<?> getCompensatingUpdate(final ServerModel original) {

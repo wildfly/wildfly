@@ -7,7 +7,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Element;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Base class for domain model elements that represent
@@ -30,13 +29,11 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      * {@link #setInterfaceCriteria(InterfaceCriteria)} before returning from
      * their constructor.
      *
-     * @param reader stream reader used to read the xml
      * @param element the element being read
      *
      * @throws XMLStreamException if an error occurs
      */
-    protected AbstractInterfaceCriteriaElement(XMLExtendedStreamReader reader, final Element element) throws XMLStreamException {
-        super();
+    protected AbstractInterfaceCriteriaElement(final Element element) throws XMLStreamException {
         if (element == null)
             throw new IllegalArgumentException("element is null");
         this.element = element;
@@ -45,15 +42,14 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
     /**
      * Creates a new AbstractInterfaceCriteriaElement by parsing an xml stream
      *
-     * @param reader stream reader used to read the xml
      * @param element the element being read
      * @param interfaceCriteria the criteria to use to check whether an network
      *         interface and address is acceptable for use by an interface
      *
      * @throws XMLStreamException if an error occurs
      */
-    protected AbstractInterfaceCriteriaElement(XMLExtendedStreamReader reader, final Element element, final InterfaceCriteria interfaceCriteria) throws XMLStreamException {
-        this(reader, element);
+    protected AbstractInterfaceCriteriaElement(final Element element, final InterfaceCriteria interfaceCriteria) throws XMLStreamException {
+        this(element);
         setInterfaceCriteria(interfaceCriteria);
     }
 
@@ -71,7 +67,7 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
     /**
      * Sets the InterfaceCriteria associated with this element.
      *
-     * @param the criteria. Cannot be <code>null</code>
+     * @param criteria the criteria. Cannot be <code>null</code>
      */
     protected final void setInterfaceCriteria(InterfaceCriteria criteria) {
         if (criteria == null) {
@@ -88,17 +84,4 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
     Element getElement() {
         return element;
     }
-
-    /**
-     * {@inheritDoc}
-     *
-     * This default implementation uses the hash code of the {@link Element}
-     * passed to the constructor. This is appropriate for subclasses with
-     * no internal state.
-     */
-    @Override
-    private long elementHash() {
-        return element.hashCode() & 0xFFFFFFFF;
-    }
-
 }

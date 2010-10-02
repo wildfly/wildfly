@@ -65,11 +65,6 @@ public class ProfileIncludeElement extends AbstractModelElement<ProfileIncludeEl
     }
 
     @Override
-    public long elementHash() {
-        return profile.hashCode() & 0xffffffffL;
-    }
-
-    @Override
     protected Class<ProfileIncludeElement> getElementClass() {
         return ProfileIncludeElement.class;
     }

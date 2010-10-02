@@ -120,14 +120,6 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
     }
 
     @Override
-    private long elementHash() {
-        long hash = path.hashCode() & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ interval & 0xffffffffL;
-        hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(enabled).hashCode() & 0xffffffffL;
-        return hash;
-    }
-
-    @Override
     protected Class<DeploymentRepositoryElement> getElementClass() {
         return DeploymentRepositoryElement.class;
     }

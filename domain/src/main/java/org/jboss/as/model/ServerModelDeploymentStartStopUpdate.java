@@ -68,16 +68,16 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         }
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
         if (deploymentElement != null) {
             if (elementUpdate.isStart()) {
                 startStopHandler.deploy(deploymentElement.getUniqueName(), deploymentElement.getRuntimeName(),
-                        deploymentElement.getSha1Hash(), updateContext, resultHandler, param);
+                        deploymentElement.getSha1Hash(), updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
             }
             else {
-                startStopHandler.undeploy(getDeploymentUnitName(), updateContext, resultHandler, param);
+                startStopHandler.undeploy(getDeploymentUnitName(), updateContext.getServiceContainer(), resultHandler, param);
             }
         }
         else if (resultHandler != null) {

@@ -109,6 +109,12 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         }
     }
 
+    private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) {
+    }
+
+    private void parseQueuelessExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) {
+    }
+
     private void parseThreadFactoryElement(final XMLExtendedStreamReader reader, final List<? super ThreadFactoryAdd> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
@@ -259,7 +265,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         if (! names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-        
+
 
     }
 

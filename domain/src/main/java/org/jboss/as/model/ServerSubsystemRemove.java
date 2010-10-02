@@ -49,7 +49,7 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
 
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         // no runtime operation
     }
 

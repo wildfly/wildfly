@@ -63,7 +63,7 @@ public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (startStopHandler != null) {
-            startStopHandler.undeploy(deploymentName, updateContext, resultHandler, param);
+            startStopHandler.undeploy(deploymentName, updateContext.getServiceContainer(), resultHandler, param);
         }
     }
 

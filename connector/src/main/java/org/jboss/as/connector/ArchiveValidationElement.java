@@ -74,11 +74,6 @@ final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidat
     private static final long serialVersionUID = 8524290005529632318L;
 
     @Override
-    public long elementHash() {
-        return 42;
-    }
-
-    @Override
     protected Class<ArchiveValidationElement> getElementClass() {
         return ArchiveValidationElement.class;
     }
