@@ -33,15 +33,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.SubsystemFactory;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.model.socket.SocketBindingGroupIncludeElement;
 import org.jboss.marshalling.FieldSetter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -256,175 +253,6 @@ public final class DomainModel extends AbstractModel<DomainModel> {
 
         // close domain
         streamWriter.writeEndElement();
-    }
-
-    private void parseProfiles(XMLExtendedStreamReader reader) throws XMLStreamException {
-
-        RefResolver<String, ProfileElement> resolver = new SimpleRefResolver<String, ProfileElement>(profiles) ;
-        Map<String, Location> locations = new HashMap<String,javax.xml.stream.Location>();
-
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PROFILE: {
-                            final Location location = reader.getLocation();
-                            final ProfileElement profile = new ProfileElement(reader, resolver);
-                            final String name = profile.getName();
-                            if (profiles.containsKey(name)) {
-                                throw new XMLStreamException("Profile " + name + " already declared", location);
-                            }
-                            locations.put(name, location);
-                            profiles.put(name, profile);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        // Validate included profiles
-        // We do this after creating the profiles instead of in the ProfileElement
-        // constructor itself because even if we required the user to declare the included
-        // profile before the includee, if we ended up resorting the content and then
-        // marshalling it, we might break things
-        for (ProfileElement profile : profiles.values()) {
-            for (ProfileIncludeElement include : profile.getIncludedProfiles()) {
-                ProfileElement included = profiles.get(include.getProfile());
-                if (included == null) {
-                    throw new XMLStreamException("Included profile " + include.getProfile() + " not found", locations.get(profile.getName()));
-                }
-            }
-        }
-    }
-
-    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INTERFACE: {
-                            final InterfaceElement interfaceEl = new InterfaceElement(reader);
-                            if (interfaces.containsKey(interfaceEl.getName())) {
-                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
-                            }
-                            interfaces.put(interfaceEl.getName(), interfaceEl);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-    }
-
-    private void parseSocketBindingGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
-        RefResolver<String, SocketBindingGroupElement> groupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(bindingGroups);
-        RefResolver<String, InterfaceElement> intfResolver = new SimpleRefResolver<String, InterfaceElement>(interfaces);
-        Map<String, Location> locations = new HashMap<String, Location>();
-
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SOCKET_BINDING_GROUP: {
-                            final Location location = reader.getLocation();
-                            SocketBindingGroupElement group = new SocketBindingGroupElement(reader, intfResolver, groupResolver);
-                            final String name = group.getName();
-                            if (bindingGroups.containsKey(name)) {
-                                throw new XMLStreamException(element.getLocalName() + " with name " +
-                                        name + " already declared", location);
-                            }
-                            bindingGroups.put(name, group);
-                            locations.put(name, location);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        // Validate included groups
-        // We do this after creating the groups instead of in the SocketBindingGroupElement
-        // constructor itself because even if we required the user to declare the included
-        // group before the includee, if we ended up resorting the content and then
-        // marshalling it, we might break things
-        for (SocketBindingGroupElement group : bindingGroups.values()) {
-            for (SocketBindingGroupIncludeElement include : group.getIncludedSocketBindingGroups()) {
-                SocketBindingGroupElement included = bindingGroups.get(include.getGroupName());
-                if (included == null) {
-                    throw new XMLStreamException("Included " + Element.SOCKET_BINDING_GROUP.getLocalName() +
-                            " " + include.getGroupName() + " not found", locations.get(group.getName()));
-                }
-            }
-        }
-    }
-
-    private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case DEPLOYMENT: {
-                            final DeploymentUnitElement deployment = new DeploymentUnitElement(reader);
-                            if (deployments.containsKey(deployment.getUniqueName())) {
-                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
-                                        " already declared", reader.getLocation());
-                            }
-                            deployments.put(deployment.getUniqueName(), deployment);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-    }
-
-    private void parseServerGroups(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SERVER_GROUP: {
-                            final ServerGroupElement serverGroup = new ServerGroupElement(reader);
-                            if (serverGroups.containsKey(serverGroup.getName())) {
-                                throw new XMLStreamException("Server group " + serverGroup.getName() + " already declared", reader.getLocation());
-                            }
-                            serverGroups.put(serverGroup.getName(), serverGroup);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
     }
 
     boolean addExtension(final String name) {
