@@ -26,7 +26,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.server.ServerCommunicationHandler.Handler;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 
 /**
  * A server side Handler implementation that allows us to see the commands
@@ -35,7 +37,7 @@ import org.jboss.as.server.ServerCommunicationHandler.Handler;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class TestServerSideMessageHandler implements Handler{
+public class TestServerSideMessageHandler extends ServerManagerToServerCommandHandler implements OutgoingPmCommandHandler{
 
     final AtomicInteger puts = new AtomicInteger();
     final AtomicInteger gets = new AtomicInteger();
@@ -43,12 +45,12 @@ public class TestServerSideMessageHandler implements Handler{
     final BlockingQueue<String> reconnectServer = new LinkedBlockingQueue<String>();
 
     @Override
-    public void handleMessage(byte[] message) {
+    public void handleCommand(byte[] message) {
         data.add(message);
     }
 
     @Override
-    public void shutdown() {
+    public void handleShutdown() {
         System.out.println("Server shutting down");
     }
 
@@ -68,7 +70,7 @@ public class TestServerSideMessageHandler implements Handler{
     }
 
     @Override
-    public void reconnectServer(String addr, String port) {
+    public void handleReconnectServerManager(String addr, String port) {
         reconnectServer.add(addr + ":" + port);
     }
 
@@ -78,4 +80,22 @@ public class TestServerSideMessageHandler implements Handler{
             throw new RuntimeException("Read timed out");
         return info;
     }
+
+    @Override
+    public void handleStartServer(ServerModel serverModel) {
+    }
+
+    @Override
+    public void handleStopServer() {
+    }
+
+    @Override
+    public void handleDown(String serverName) {
+    }
+
+    @Override
+    public void handleShutdownServers() {
+    }
+
+
 }

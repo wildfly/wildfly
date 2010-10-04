@@ -39,7 +39,7 @@ public final class Server {
 
     private final String serverProcessName;
     private final ServerModel serverConfig;
-    private volatile ServerCommunicationHandler communicationHandler;
+    private volatile DirectServerManagerCommunicationHandler communicationHandler;
 
     private final RespawnPolicy respawnPolicy;
     private final AtomicInteger respawnCount = new AtomicInteger();
@@ -129,7 +129,7 @@ public final class Server {
         return serverConfig;
     }
 
-    void setCommunicationHandler(ServerCommunicationHandler communicationHandler) {
+    void setCommunicationHandler(DirectServerManagerCommunicationHandler communicationHandler) {
         this.communicationHandler = communicationHandler;
     }
 

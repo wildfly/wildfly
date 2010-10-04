@@ -26,7 +26,7 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
 import org.jboss.logging.Logger;
 
 public final class ProcessOutputStreamHandler implements Runnable {
@@ -61,7 +61,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
                     return;
                 }
                 try {
-                    final IncomingCommand command = IncomingCommand.valueOf(b.toString());
+                    final IncomingPmCommand command = IncomingPmCommand.valueOf(b.toString());
                     status = command.handleMessage(inputStream, status, master, processName, b);
                 } catch (IllegalArgumentException e) {
                     // unknown command...
@@ -88,13 +88,12 @@ public final class ProcessOutputStreamHandler implements Runnable {
         void startProcess(final String processName);
         void stopProcess(final String processName);
         void removeProcess(final String processName);
-        void sendMessage(final String sender, final String recipient, final byte[] msg);
         void sendStdin(final String recipient, final byte[] msg);
-        void broadcastMessage(final String sender, final byte[] msg);
         void serversShutdown();
         void downServer(String serverName);
         void reconnectServersToServerManager(String smAddress, String smPort);
         void reconnectProcessToServerManager(String server, String smAddress, String smPort);
+        boolean isShutdown();
     }
 
     public interface Managed {

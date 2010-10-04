@@ -44,8 +44,8 @@ import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.ManagedProcess.ProcessHandler;
 import org.jboss.as.process.ManagedProcess.RealProcessHandler;
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
-import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.logging.Logger;
 
 /**
@@ -133,7 +133,7 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
             try {
                 stopped = serverManagerProcess.shutdownServers();
             } catch (IOException e) {
-                log.errorf("Error sending %s command to %s", OutgoingCommand.SHUTDOWN_SERVERS, SERVER_MANAGER_PROCESS_NAME);
+                log.errorf("Error sending %s command to %s", OutgoingPmCommand.SHUTDOWN_SERVERS, SERVER_MANAGER_PROCESS_NAME);
             }
         }
 
@@ -143,7 +143,7 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
                     log.errorf("Did not receive shutdown confirmation of servers in %d seconds. Continuing shutdown process ", 10);
                 }
             } catch (InterruptedException e) {
-                log.errorf(e, "Error waiting for %s command from %s", IncomingCommand.SERVERS_SHUTDOWN, SERVER_MANAGER_PROCESS_NAME);
+                log.errorf(e, "Error waiting for %s command from %s", IncomingPmCommand.SERVERS_SHUTDOWN, SERVER_MANAGER_PROCESS_NAME);
             }
         }
 
@@ -160,6 +160,10 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         }
 
         socketListener.shutdown();
+    }
+
+    public boolean isShutdown() {
+        return shutdown.get();
     }
 
     ProcessHandlerFactory getProcessHandlerFactory() {
@@ -248,32 +252,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         }
     }
 
-    public void sendMessage(final String sender, final String recipient, final byte[] msg) {
-        if (shutdown.get())
-            return;
-
-        final Map<String, ManagedProcess> processes = this.processes;
-        synchronized (processes) {
-            final ManagedProcess process = processes.get(recipient);
-            if (process == null) {
-                // ignore
-                return;
-            }
-            synchronized (process) {
-                if (! process.isStart()) {
-                    // ignore
-                    return;
-                }
-                try {
-                    process.send(sender, msg);
-                } catch (IOException e) {
-                    // todo log it
-                }
-            }
-        }
-
-    }
-
     public void sendStdin(final String recipient, final byte[] msg) {
         if (shutdown.get())
             return;
@@ -298,29 +276,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
             }
         }
 
-    }
-
-
-    public void broadcastMessage(final String sender, final byte[] msg) {
-        if (shutdown.get())
-            return;
-
-        final Map<String, ManagedProcess> processes = this.processes;
-        synchronized (processes) {
-            for (ManagedProcess process : processes.values()) {
-                synchronized (process) {
-                    if (! process.isStart()) {
-                        // ignore and go on with the other processes
-                        continue;
-                    }
-                    try {
-                        process.send(sender, msg);
-                    } catch (IOException e) {
-                        // todo log it
-                    }
-                }
-            }
-        }
     }
 
     @Override

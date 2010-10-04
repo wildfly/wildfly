@@ -32,8 +32,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -47,11 +50,12 @@ import org.jboss.msc.service.StartException;
  */
 public class Server extends AbstractServer {
 
-    private ServerCommunicationHandler serverCommunicationHandler;
+    private DirectServerSideCommunicationHandler serverCommunicationHandler;
     private ServerCommunicationHandler processManagerCommunicationHandler;
     private final AtomicBoolean stopping = new AtomicBoolean();
 
-    private final MessageHandler messageHandler = new MessageHandler(this);
+    private final ServerManagerToServerCommandHandler serverManagerCommandHandler = new ServerManagerCommandHandler();
+    private final OutgoingPmCommandHandler pmCommandHandler = new OutgoingPmCommmandHandler();
 
     private volatile ServerState state;
 
@@ -107,7 +111,7 @@ public class Server extends AbstractServer {
             log.errorf("Could not parse %s into a port", port);
             return;
         }
-        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(getEnvironment().getProcessName(), addr, portNumber, serverManagerCommandHandler);
         sendMessage(ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state);
     }
 
@@ -136,8 +140,8 @@ public class Server extends AbstractServer {
 
     private void launchCommunicationHandlers() {
         ServerEnvironment env = getEnvironment();
-        this.processManagerCommunicationHandler = ProcessManagerServerCommunicationHandler.create(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
-        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
+        this.processManagerCommunicationHandler = ProcessManagerServerCommunicationHandler.create(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), pmCommandHandler);
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), serverManagerCommandHandler);
     }
 
     protected void sendMessage(ServerToServerManagerProtocolCommand command) {
@@ -164,5 +168,45 @@ public class Server extends AbstractServer {
     protected void shutdownCommunicationHandlers() {
         serverCommunicationHandler.shutdown();
         processManagerCommunicationHandler.shutdown();
+    }
+
+    private class ServerManagerCommandHandler extends ServerManagerToServerCommandHandler {
+
+        @Override
+        public void handleStartServer(ServerModel serverModel) {
+            try {
+                Server.this.start(serverModel);
+            } catch (ServerStartException e) {
+                log.error("Error starting server", e);
+            }
+        }
+
+        @Override
+        public void handleStopServer() {
+            Server.this.stop();
+        }
+    }
+
+    private class OutgoingPmCommmandHandler implements OutgoingPmCommandHandler {
+
+        @Override
+        public void handleDown(String serverName) {
+            log.warn("Unknown command " + OutgoingPmCommand.DOWN + " for Server");
+        }
+
+        @Override
+        public void handleReconnectServerManager(String address, String port) {
+            Server.this.reconnectToServerManager(address, port);
+        }
+
+        @Override
+        public void handleShutdown() {
+            Server.this.stop();
+        }
+
+        @Override
+        public void handleShutdownServers() {
+            log.warn("Unknown command " + OutgoingPmCommand.SHUTDOWN_SERVERS + " for Server");
+        }
     }
 }

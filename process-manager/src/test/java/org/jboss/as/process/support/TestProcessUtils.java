@@ -21,10 +21,14 @@
  */
 package org.jboss.as.process.support;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -48,7 +52,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.support.TestProcessUtils.TestProcessListenerStream;
 
 /**
  *
@@ -355,6 +358,13 @@ public abstract class TestProcessUtils {
             this.socket = socket;
         }
 
+        public void exitProcess(int exitCode) throws IOException {
+            OutputStream out = new BufferedOutputStream(socket.getOutputStream());
+            String cmd = "Exit" + exitCode + "\n";
+            out.write(cmd.getBytes());
+            out.flush();
+        }
+
         public void shutdown() {
             closeSocket(socket);
         }
@@ -423,6 +433,7 @@ public abstract class TestProcessUtils {
     public static class ClientSocketWriter implements TestProcessSenderStream {
         final String processName;
         final Socket socket;
+        final InputStream socketInput;
         final PrintWriter socketOutput;
 
         public ClientSocketWriter(String processName) {
@@ -431,6 +442,7 @@ public abstract class TestProcessUtils {
                 socket = new Socket(InetAddress.getLocalHost(), PORT);
                 socketOutput = new PrintWriter(socket.getOutputStream(), true);
                 socketOutput.println(new StartCommand(processName));
+                socketInput = new BufferedInputStream(socket.getInputStream());
             } catch (Exception e) {
                 e.printStackTrace(System.err);
                 shutdown();
@@ -457,6 +469,11 @@ public abstract class TestProcessUtils {
             } catch (Exception e) {
                 shutdown();
             }
+        }
+
+        @Override
+        public InputStream getInput() {
+            return socketInput;
         }
     }
 
@@ -508,6 +525,7 @@ public abstract class TestProcessUtils {
             return cmd() + ":" + processName;
         }
 
+        @Override
         public String toString() {
             return cmd() + ":" + processName;
         }
@@ -615,12 +633,16 @@ public abstract class TestProcessUtils {
         String readMessage(long timeoutMs);
 
         void shutdown();
+
+        void exitProcess(int exitCode) throws IOException;
     }
 
     public interface TestProcessSenderStream {
         void shutdown();
 
         void writeData(String msg);
+
+        InputStream getInput();
     }
 
     public interface TestProcessController {

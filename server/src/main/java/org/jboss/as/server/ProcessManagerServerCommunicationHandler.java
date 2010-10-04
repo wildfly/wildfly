@@ -30,9 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.SystemExiter;
-import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommandHandler;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.logging.Logger;
 
 /**
@@ -45,19 +44,20 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
 
     private final Controller controller = new Controller();
 
-    private ProcessManagerServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
-        super(processName, addr, port, handler);
+    private final OutgoingPmCommandHandler handler;
+
+    private ProcessManagerServerCommunicationHandler(String processName, InetAddress addr, Integer port, OutgoingPmCommandHandler handler){
+        super(processName, addr, port);
+        if (handler == null) {
+            throw new IllegalArgumentException("Null handler");
+        }
+        this.handler = handler;
     }
 
-    public static ProcessManagerServerCommunicationHandler create(String processName, InetAddress addr, Integer port, final Handler handler){
+    public static ProcessManagerServerCommunicationHandler create(String processName, InetAddress addr, Integer port, OutgoingPmCommandHandler handler){
         ProcessManagerServerCommunicationHandler comm = new ProcessManagerServerCommunicationHandler(processName, addr, port, handler);
         comm.start();
         return comm;
-    }
-
-    @Override
-    public void sendMessage(final byte[] message) throws IOException {
-        IncomingCommand.SEND.sendMessage(output, "ServerManager", message);
     }
 
     @Override
@@ -75,7 +75,6 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
         public void run() {
-            OutgoingCommandHandlerToMessageHandlerAdapter handler = new OutgoingCommandHandlerToMessageHandlerAdapter();
             final InputStream input = ProcessManagerServerCommunicationHandler.this.input;
             final StringBuilder b = new StringBuilder();
             try {
@@ -87,7 +86,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                         break;
                     }
                     try {
-                        final OutgoingCommand command = OutgoingCommand.valueOf(b.toString());
+                        final OutgoingPmCommand command = OutgoingPmCommand.valueOf(b.toString());
                         status = command.handleMessage(input, status, handler, b);
                     } catch (IllegalArgumentException e) {
                         // unknown command...
@@ -107,7 +106,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
             }
 
             try {
-                ProcessManagerServerCommunicationHandler.this.handler.shutdown();
+                ProcessManagerServerCommunicationHandler.this.handler.handleShutdown();
             }
             catch (Throwable t) {
                 t.printStackTrace(System.err);
@@ -123,34 +122,6 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
                 thread.setName("Exit thread");
                 thread.start();
             }
-        }
-    }
-
-    private class OutgoingCommandHandlerToMessageHandlerAdapter implements OutgoingCommandHandler {
-
-        @Override
-        public void handleDown(String serverName) {
-            logger.warn("Wrong command " + OutgoingCommand.DOWN + " received");
-        }
-
-        @Override
-        public void handleMessage(String sourceProcess, byte[] message) {
-            handler.handleMessage(message);
-        }
-
-        @Override
-        public void handleReconnectServerManager(String address, String port) {
-            handler.reconnectServer(address, port);
-        }
-
-        @Override
-        public void handleShutdown() {
-            handler.shutdown();
-        }
-
-        @Override
-        public void handleShutdownServers() {
-            logger.warn("Wrong command " + OutgoingCommand.SHUTDOWN_SERVERS + " received");
         }
     }
 }

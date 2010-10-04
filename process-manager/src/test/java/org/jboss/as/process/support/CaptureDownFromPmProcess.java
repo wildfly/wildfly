@@ -33,16 +33,12 @@ public class CaptureDownFromPmProcess extends AbstractProcess {
         if (args.length < 1)
             System.exit(-1);
         CaptureDownFromPmProcess process = new CaptureDownFromPmProcess(args[0], getPort(args));
-        process.startSlave();
+        process.startThread();
     }
 
 	protected CaptureDownFromPmProcess(String processName, int port) {
 	    super(processName, port);
     }
-
-	@Override
-	protected void handleMessage(String sourceProcessName, byte[] message) {
-	}
 
 	@Override
 	protected void shutdown() {
@@ -59,7 +55,7 @@ public class CaptureDownFromPmProcess extends AbstractProcess {
 
 	@Override
     protected void shutdownServers() {
-	    serversShutdown();
+	    writeData("shutdownServers");
     }
 
 

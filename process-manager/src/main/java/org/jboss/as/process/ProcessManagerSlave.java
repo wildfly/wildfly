@@ -31,9 +31,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommandHandler;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.logging.Logger;
 
 /**
@@ -43,17 +43,18 @@ import org.jboss.logging.Logger;
  * FIXME reliable transmission support (JBAS-8262)
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:kkhan@redhat.com">Kabir Khan</a>
  */
 public final class ProcessManagerSlave {
 
     Logger log = Logger.getLogger(ProcessManagerSlave.class);
-    private final Handler handler;
+    private final OutgoingPmCommandHandler handler;
     private final InputStream input;
     private final OutputStream output;
     private final SocketConnection socketConnection;
     private final Controller controller = new Controller();
 
-    public ProcessManagerSlave(String processName, InetAddress addr, Integer port, Handler handler) {
+    public ProcessManagerSlave(String processName, InetAddress addr, Integer port, OutgoingPmCommandHandler handler) {
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -71,44 +72,35 @@ public final class ProcessManagerSlave {
     }
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) throws IOException {
-        IncomingCommand.ADD.sendAddProcess(output, processName, command, env, workingDirectory);
+        IncomingPmCommand.ADD.sendAddProcess(output, processName, command, env, workingDirectory);
     }
 
     public void startProcess(final String processName) throws IOException {
-        IncomingCommand.START.sendStartProcess(output, processName);
+        IncomingPmCommand.START.sendStartProcess(output, processName);
     }
 
     public void stopProcess(final String processName) throws IOException {
-        IncomingCommand.STOP.sendStopProcess(output, processName);
+        IncomingPmCommand.STOP.sendStopProcess(output, processName);
     }
 
     public void removeProcess(final String processName) throws IOException {
-        IncomingCommand.REMOVE.sendRemoveProcess(output, processName);
+        IncomingPmCommand.REMOVE.sendRemoveProcess(output, processName);
     }
-
-    public void sendMessage(final String recipient, final byte[] message) throws IOException {
-        IncomingCommand.SEND.sendMessage(output, recipient, message);
-    }
-
 
     public void sendStdin(final String recipient, final byte[] message) throws IOException {
-        IncomingCommand.SEND_STDIN.sendStdin(output, recipient, message);
-    }
-
-    public void broadcastMessage(final byte[] message) throws IOException {
-        IncomingCommand.BROADCAST.broadcastMessage(output, message);
+        IncomingPmCommand.SEND_STDIN.sendStdin(output, recipient, message);
     }
 
     public void serversShutdown() throws IOException {
-        IncomingCommand.SERVERS_SHUTDOWN.sendServersShutdown(output);
+        IncomingPmCommand.SERVERS_SHUTDOWN.sendServersShutdown(output);
     }
 
     public void reconnectServers(InetAddress addr, int port) throws IOException {
-        IncomingCommand.RECONNECT_SERVERS.sendReconnectServers(output, addr, port);
+        IncomingPmCommand.RECONNECT_SERVERS.sendReconnectServers(output, addr, port);
     }
 
     public void reconnectServer(String serverName, InetAddress addr, int port) throws IOException {
-        IncomingCommand.RECONNECT_SERVER.sendReconnectServer(output, serverName, addr, port);
+        IncomingPmCommand.RECONNECT_SERVER.sendReconnectServer(output, serverName, addr, port);
     }
 
     private final class Controller implements Runnable {
@@ -116,7 +108,6 @@ public final class ProcessManagerSlave {
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
         public void run() {
-            OutgoingCommandHandlerToMessageHandlerAdapter handler = new OutgoingCommandHandlerToMessageHandlerAdapter();
             final InputStream input = ProcessManagerSlave.this.input;
             final StringBuilder b = new StringBuilder();
             try {
@@ -129,7 +120,7 @@ public final class ProcessManagerSlave {
                     }
                     try {
 
-                        final OutgoingCommand command = OutgoingCommand.valueOf(b.toString());
+                        final OutgoingPmCommand command = OutgoingPmCommand.valueOf(b.toString());
                         status = command.handleMessage(input, status, handler, b);
                     } catch (IllegalArgumentException e) {
                         // unknown command...
@@ -149,7 +140,7 @@ public final class ProcessManagerSlave {
         }
 
         try{
-            handler.shutdown();
+            handler.handleShutdown();
         }
         catch (Throwable t) {
             t.printStackTrace(System.err);
@@ -168,45 +159,5 @@ public final class ProcessManagerSlave {
             thread.start();
         }
 
-    }
-
-
-    public interface Handler {
-
-        void handleMessage(String sourceProcessName, byte[] message);
-
-        void shutdown();
-
-        void shutdownServers();
-
-        void down(String downProcessName);
-    }
-
-    private class OutgoingCommandHandlerToMessageHandlerAdapter implements OutgoingCommandHandler {
-
-        @Override
-        public void handleDown(String serverName) {
-            handler.down(serverName);
-        }
-
-        @Override
-        public void handleMessage(String sourceProcess, byte[] message) {
-            handler.handleMessage(sourceProcess, message);
-        }
-
-        @Override
-        public void handleReconnectServerManager(String address, String port) {
-            log.warn("Wrong command " + OutgoingCommand.RECONNECT_SERVER_MANAGER + " received");
-        }
-
-        @Override
-        public void handleShutdown() {
-            handler.shutdown();
-        }
-
-        @Override
-        public void handleShutdownServers() {
-            handler.shutdownServers();
-        }
     }
 }

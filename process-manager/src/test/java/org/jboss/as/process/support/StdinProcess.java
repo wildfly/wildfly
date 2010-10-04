@@ -29,7 +29,7 @@ import java.io.IOException;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class StdinProcess extends ReceivingProcess {
+public class StdinProcess extends AbstractProcess {
     protected StdinProcess(String processName, int port) {
         super(processName, port);
     }
@@ -45,7 +45,15 @@ public class StdinProcess extends ReceivingProcess {
         } catch (IOException e) {
         }
 
-        process.startSlave();
         process.writeData(read);
+        process.startThread();
+    }
+
+    @Override
+    protected void shutdown() {
+    }
+
+    @Override
+    protected void started() {
     }
 }

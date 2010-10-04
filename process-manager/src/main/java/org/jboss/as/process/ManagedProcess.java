@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.ProcessManagerMaster.ProcessHandlerFactory;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.logging.Logger;
 import org.jboss.logging.NDC;
@@ -130,20 +130,12 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
                 return;
             }
             stopped = true;
-            OutgoingCommand.SHUTDOWN.sendStop(commandStream);
+            OutgoingPmCommand.SHUTDOWN.sendStop(commandStream);
         }
     }
 
     boolean isStart() {
         return start;
-    }
-
-    void send(final String sender, final byte[] msg) throws IOException {
-        synchronized (this) {
-            if (!start)
-                return;
-            OutgoingCommand.MSG.sendMsg(commandStream, sender, msg);
-        }
     }
 
     void sendStdin(final byte[] msg) throws IOException {
@@ -157,21 +149,21 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     }
 
     boolean shutdownServers() throws IOException {
-        checkServerManager(OutgoingCommand.SHUTDOWN_SERVERS);
+        checkServerManager(OutgoingPmCommand.SHUTDOWN_SERVERS);
         synchronized (this) {
             if (!start)
                 return false;
-            OutgoingCommand.SHUTDOWN_SERVERS.sendShutdownServers(commandStream);
+            OutgoingPmCommand.SHUTDOWN_SERVERS.sendShutdownServers(commandStream);
             return true;
         }
     }
 
     void down(String stoppedProcessName) throws IOException {
-        checkServerManager(OutgoingCommand.DOWN);
+        checkServerManager(OutgoingPmCommand.DOWN);
         synchronized (this) {
             if (!start)
                 return;
-            OutgoingCommand.DOWN.sendDown(commandStream, stoppedProcessName);
+            OutgoingPmCommand.DOWN.sendDown(commandStream, stoppedProcessName);
         }
     }
 
@@ -179,18 +171,22 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         synchronized (this) {
             if (!start)
                 return;
-            OutgoingCommand.RECONNECT_SERVER_MANAGER.sendReconnectToServerManager(commandStream, addr, port);
+            OutgoingPmCommand.RECONNECT_SERVER_MANAGER.sendReconnectToServerManager(commandStream, addr, port);
         }
     }
 
 
-    private void checkServerManager(OutgoingCommand cmd) {
+    private void checkServerManager(OutgoingPmCommand cmd) {
         if (!ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME.equals(processName))
             throw new IllegalStateException("Attempt to send " + cmd +
                     " on a ManagedProcess that is not " + ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME + ": " + processName);
     }
 
     private void respawn() {
+
+        if (master.isShutdown())
+            return;
+
         long wait = 0;
         synchronized (this) {
             if (stopped || start)

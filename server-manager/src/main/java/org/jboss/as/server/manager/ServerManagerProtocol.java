@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.model.ServerModel;
+import org.jboss.logging.Logger;
 
 /**
  * Commands from the server manager to a server. The format of the bytes is:<br>
@@ -40,6 +41,8 @@ import org.jboss.as.model.ServerModel;
  * @version $Revision: 1.1 $
  */
 public class ServerManagerProtocol {
+
+    private static final Logger log = Logger.getLogger(ServerManagerProtocol.class.getName());
 
     /**
      * Commands sent from SM->Server
@@ -251,16 +254,51 @@ public class ServerManagerProtocol {
         }
     }
 
-    public interface ServerManagerToServerCommandHandler {
-        void handleStartServer(ServerModel serverModel);
-        void handleStopServer();
+    public abstract static class ServerManagerToServerCommandHandler {
+        public void handleCommand(byte[] message) {
+            Command<ServerManagerToServerProtocolCommand> cmd = null;
+            try {
+                cmd = ServerManagerToServerProtocolCommand.readCommand(message);
+            } catch (IOException e) {
+                log.error("Error reading command", e);
+                return;
+            }
+
+            try {
+                cmd.getCommand().handleCommand(this, cmd);
+            } catch (IOException e) {
+                log.error("Error unmarshalling command data", e);
+            } catch (ClassNotFoundException e) {
+                log.error("Error unmarshalling command data", e);
+            }
+        }
+
+        public abstract void handleStartServer(ServerModel serverModel);
+        public abstract void handleStopServer();
     }
 
-    public interface ServerToServerManagerCommandHandler {
-        void handleServerAvailable(String sourceProcessName);
-        void handleServerStarted(String sourceProcessName);
-        void handleServerStopped(String sourceProcessName);
-        void handleServerStartFailed(String sourceProcessName);
-        void handleServerReconnectStatus(String sourceProcessName, ServerState state);
+    public abstract static class ServerToServerManagerCommandHandler {
+        public void handleCommand(String sourceProcessName, byte[] message) {
+            Command<ServerToServerManagerProtocolCommand> cmd = null;
+            try {
+                cmd = ServerToServerManagerProtocolCommand.readCommand(message);
+            } catch (IOException e) {
+                log.error("Error reading command", e);
+                return;
+            }
+
+            try {
+                cmd.getCommand().handleCommand(sourceProcessName, this, cmd);
+            } catch (IOException e) {
+                log.error("Error unmarshalling command data", e);
+            } catch (ClassNotFoundException e) {
+                log.error("Error unmarshalling command data", e);
+            }
+        }
+        public abstract void handleServerAvailable(String sourceProcessName);
+        public abstract void handleServerStarted(String sourceProcessName);
+        public abstract void handleServerStopped(String sourceProcessName);
+        public abstract void handleServerStartFailed(String sourceProcessName);
+        public abstract void handleServerReconnectStatus(String sourceProcessName, ServerState state);
     }
 }

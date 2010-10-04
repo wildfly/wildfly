@@ -22,13 +22,17 @@
 package org.jboss.as.process.support;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.ProcessManagerSlave;
-import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.process.Status;
+import org.jboss.as.process.StreamUtils;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessSenderStream;
 
@@ -56,27 +60,30 @@ public abstract class AbstractProcess {
     /** The name of this process */
     protected final String processName;
 
-    /** The process manager slave */
-    private ProcessManagerSlave slave;
-
-    /** The port on which the ProcessManager is listening */
-    private final int port;
-
     /** True if this process has received the shutdown event */
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
     /** The stream for sending data back to the test manager */
-    private TestProcessSenderStream clientStream;
+    private final TestProcessSenderStream clientStream;
+
+    private final SocketConnection conn;
+
+    private final TestHandler handler = new TestHandler();
 
     /**
      * Constructor
      *
      * @param processName the name of this process
      */
-    protected AbstractProcess(String processName, int port) {
+    protected AbstractProcess(String processName, int port){
         this.processName = processName;
-        this.port = port;
         file = TestFileUtils.getOutputFile(processName);
+        try {
+            conn = SocketConnection.connect(InetAddress.getLocalHost(), port, "CONNECTED", processName);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        clientStream = TestProcessUtils.createProcessClient(processName);
     }
 
     protected static Integer getPort(String[] args) {
@@ -117,23 +124,6 @@ public abstract class AbstractProcess {
         debug(processName, msg);
     }
 
-    /**
-     * Must be called after instantiating the process for the process to respond
-     * to output. This initializes the
-     */
-    protected void startSlave() {
-        clientStream = TestProcessUtils.createProcessClient(processName);
-
-        try {
-            slave = new ProcessManagerSlave(processName, InetAddress.getLocalHost(), port, new TestHandler());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-        Thread t = new Thread(this.slave.getController(), "Slave Process");
-        t.start();
-        started();
-
-    }
 
     /**
      * Check if the process has been shutdown, useful for process specific
@@ -149,15 +139,6 @@ public abstract class AbstractProcess {
      * Called once {@link #startSlave()} has been called
      */
     protected abstract void started();
-
-    /**
-     * Callback for when the process receives a <code>handleMessage()</code>
-     * call
-     *
-     * @param sourceProcessName the name of the process sending the message
-     * @param message the message
-     */
-    protected abstract void handleMessage(String sourceProcessName, byte[] message);
 
     /**
      * Callback for when the process receives a <code>shutdown()</code> call.
@@ -178,120 +159,79 @@ public abstract class AbstractProcess {
 
     }
 
-    /**
-     * Send a message to another process via the slave
-     *
-     * @param processName the name of the process
-     * @param message the message
-     */
-    protected void sendMessage(String processName, byte[] message){
-        try {
-            slave.sendMessage(processName, message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected void handleTestCommand(String cmd) {
+
     }
 
-    /**
-     * Add a process via the slave
-     *
-     * @param processName the process name
-     * @param classname the class name
-     */
-    protected void addProcess(String processName, String classname) {
-        try {
-            slave.addProcess(processName, TestProcessUtils.createCommand(processName, classname, port), System.getenv(), ".");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected void startThread() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream in = conn.getInputStream();
+                StringBuilder b = new StringBuilder();
+                try {
+                    while (!shutdown.get()) {
+                        Status status = StreamUtils.readWord(in, b);
+
+                        try {
+
+                            final OutgoingPmCommand command = OutgoingPmCommand.valueOf(b.toString());
+                            status = command.handleMessage(in, status, handler, b);
+                        } catch (IllegalArgumentException e) {
+                            // unknown command...
+                        }
+
+                        if (status == Status.MORE) StreamUtils.readToEol(in);
+                    }
+                } catch (IOException e) {
+                    handler.handleShutdown();
+                }
+            }
+        }).start();
+
+        new Thread (new Runnable() {
+
+            @Override
+            public void run() {
+                InputStream in = clientStream.getInput();
+                StringBuilder b = new StringBuilder();
+                try {
+                    while (!shutdown.get()) {
+                        Status status = StreamUtils.readWord(in, b);
+                        handleTestCommand(b.toString());
+
+                        if (status == Status.MORE) StreamUtils.readToEol(in);
+                    }
+                } catch (IOException e) {
+                    handler.handleShutdown();
+                }
+            }
+        }).start();
+
+        started();
     }
 
-    /**
-     * Start a process via the slave
-     *
-     * @param processName the process name
-     */
-    protected void startProcess(String processName) {
-        try {
-            slave.startProcess(processName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Stop a process via the slave
-     *
-     * @param processName the process name
-     */
-    protected void stopProcess(String processName) {
-        try {
-            slave.stopProcess(processName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Remove a process via the slave
-     *
-     * @param processName the process name
-     */
-    protected void removeProcess(String processName) {
-        try {
-            slave.removeProcess(processName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    /**
-     * Broadcast a message to other processes via the slave
-     *
-     * @param message the message
-     */
-    protected void broadcastMessage(final byte[] message){
-        try {
-            slave.broadcastMessage(message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Sends the SERVERS_SHUTDOWN message to the PM via the slave
-     * (This will only be sent by the ServerManager process)
-     */
-    protected void serversShutdown() {
-    	try {
-    		slave.serversShutdown();
-    	} catch (IOException e) {
-    		throw new RuntimeException(e);
-    	}
-    }
-
-    private class TestHandler implements Handler {
+    private class TestHandler implements OutgoingPmCommandHandler {
         @Override
-        public void handleMessage(String sourceProcessName, byte[] message) {
-            AbstractProcess.this.handleMessage(sourceProcessName, message);
-        }
-
-        @Override
-        public void shutdown() {
+        public void handleShutdown() {
             if (!shutdown.getAndSet(true)) {
                 AbstractProcess.this.shutdown();
                 clientStream.shutdown();
-                slave.shutdown();
             }
         }
 
 		@Override
-        public void shutdownServers() {
+        public void handleShutdownServers() {
 			AbstractProcess.this.shutdownServers();
         }
 
 		@Override
-        public void down(String downProcessName) {
+        public void handleDown(String downProcessName) {
 			AbstractProcess.this.down(downProcessName);
+        }
+
+        @Override
+        public void handleReconnectServerManager(String address, String port) {
         }
     }
 }

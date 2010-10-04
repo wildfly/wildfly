@@ -29,23 +29,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.StreamUtils;
-import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class DirectServerManagerCommunicationHandler implements ServerCommunicationHandler{
+public class DirectServerManagerCommunicationHandler{
     private final SocketConnection socketConnection;
     private final OutputStream output;
     private final InputStream input;
     private final String serverName;
-    private final Handler messageHandler;
+    private final ServerToServerManagerCommandHandler messageHandler;
     private final InputStreamHandler inputHandler;
     private final ShutdownListener shutdownListener;
 
-    private DirectServerManagerCommunicationHandler(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+    private DirectServerManagerCommunicationHandler(SocketConnection socketConnection, String serverName, ServerToServerManagerCommandHandler messageHandler, ShutdownListener shutdownListener) {
         this.socketConnection = socketConnection;
         this.output = socketConnection.getOutputStream();
         this.input = socketConnection.getInputStream();
@@ -55,7 +55,7 @@ public class DirectServerManagerCommunicationHandler implements ServerCommunicat
         this.shutdownListener = shutdownListener;
     }
 
-    public static DirectServerManagerCommunicationHandler create(SocketConnection socketConnection, String serverName, Handler messageHandler, ShutdownListener shutdownListener) {
+    public static DirectServerManagerCommunicationHandler create(SocketConnection socketConnection, String serverName, ServerToServerManagerCommandHandler messageHandler, ShutdownListener shutdownListener) {
         DirectServerManagerCommunicationHandler handler = new DirectServerManagerCommunicationHandler(socketConnection, serverName, messageHandler, shutdownListener);
         handler.start();
         return handler;
@@ -66,7 +66,6 @@ public class DirectServerManagerCommunicationHandler implements ServerCommunicat
         t.start();
     }
 
-    @Override
     public void sendMessage(byte[] message) throws IOException {
         synchronized (output) {
             StreamUtils.writeInt(output, message.length);
@@ -91,7 +90,7 @@ public class DirectServerManagerCommunicationHandler implements ServerCommunicat
             try {
                 while (!shutdown.get()) {
                     byte[] bytes = StreamUtils.readBytesWithLength(input);
-                    messageHandler.handleMessage(serverName, bytes);
+                    messageHandler.handleCommand(serverName, bytes);
                 }
             } catch (IOException e) {
             } finally {

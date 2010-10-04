@@ -5,7 +5,7 @@ package org.jboss.as.server.manager;
 
 import org.jboss.as.model.HostModel;
 import org.jboss.as.process.ProcessManagerSlave;
-import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 
 /**
  * A ProcessManagerSlaveFactory.
@@ -20,7 +20,7 @@ public final class ProcessManagerSlaveFactory {
         return INSTANCE;
     }
 
-    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment environment, HostModel host, Handler handler) {
+    public ProcessManagerSlave getProcessManagerSlave(ServerManagerEnvironment environment, HostModel host, OutgoingPmCommandHandler handler) {
         return new ProcessManagerSlave(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
     }
 

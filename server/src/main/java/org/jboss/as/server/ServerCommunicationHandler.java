@@ -22,7 +22,6 @@
 
 package org.jboss.as.server;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -39,26 +38,19 @@ import org.jboss.logging.Logger;
 public abstract class ServerCommunicationHandler {
     protected final Logger logger = Logger.getLogger(this.getClass());
 
-    protected final Handler handler;
     protected final InputStream input;
     protected final OutputStream output;
     private final SocketConnection managerConnection;
 
-    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port){
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
-        }
-        if (handler == null) {
-            throw new IllegalArgumentException("handler is null");
         }
 
         this.managerConnection = SocketConnection.connect(addr, port, "CONNECTED", processName);
         this.input = managerConnection.getInputStream();
         this.output = managerConnection.getOutputStream();
-        this.handler = handler;
     }
-
-    abstract void sendMessage(final byte[] message) throws IOException;
 
     abstract Runnable getController();
 
@@ -82,14 +74,4 @@ public abstract class ServerCommunicationHandler {
     public boolean isClosed() {
         return !managerConnection.isOpen();
     }
-
-    public interface Handler {
-
-        void handleMessage(byte[] message);
-
-        void shutdown();
-
-        void reconnectServer(String addr, String port);
-    }
-
 }

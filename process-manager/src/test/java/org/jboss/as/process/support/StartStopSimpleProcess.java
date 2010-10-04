@@ -39,16 +39,12 @@ public class StartStopSimpleProcess extends AbstractProcess {
         if (args.length < 1)
             System.exit(-1);
         StartStopSimpleProcess process = new StartStopSimpleProcess(args[0], getPort(args));
-        process.startSlave();
+        process.startThread();
     }
 
     @Override
     protected void started() {
         writeData(STARTED);
-    }
-
-    @Override
-    protected void handleMessage(String sourceProcessName, byte[] message) {
     }
 
     @Override

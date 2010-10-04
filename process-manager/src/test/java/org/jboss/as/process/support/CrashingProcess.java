@@ -37,14 +37,9 @@ public class CrashingProcess extends AbstractProcess {
         if (args.length < 1)
             System.exit(-1);
         CrashingProcess process = new CrashingProcess(args[0], getPort(args));
-        process.startSlave();
+        process.startThread();
     }
 
-
-    @Override
-    protected void handleMessage(String sourceProcessName, byte[] message) {
-        handleMessage(sourceProcessName, new String(message));
-    }
 
     @Override
     protected void shutdown() {
@@ -55,10 +50,11 @@ public class CrashingProcess extends AbstractProcess {
         debug("Started");
     }
 
-    private void handleMessage(String sourceProcessName, String message) {
-        if (message.startsWith("Exit")) {
-            int status = Integer.valueOf(message.substring(4));
-            writeData(processName + "-" + message);
+    @Override
+    protected void handleTestCommand(String cmd) {
+        if (cmd.startsWith("Exit")) {
+            int status = Integer.valueOf(cmd.substring(4));
+            writeData(processName + "-" + cmd);
             debug("Exiting");
             System.exit(status);
         }

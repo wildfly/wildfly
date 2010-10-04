@@ -32,6 +32,7 @@ import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 import org.jboss.logging.Logger;
 
 /**
@@ -46,15 +47,18 @@ class DirectServerCommunicationListener{
 
     private final SocketListener socketListener;
 
+    private final ServerToServerManagerCommandHandler commandHandler;
+
     private final ServerManager serverManager;
 
-    DirectServerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog) throws IOException {
+    DirectServerCommunicationListener(ServerToServerManagerCommandHandler commandHandler, ServerManager serverManager, InetAddress address, int port, int backlog) throws IOException {
         this.serverManager = serverManager;
+        this.commandHandler = commandHandler;
         socketListener = SocketListener.createSocketListener("ServerManager", new ServerAcceptor(), address, port, backlog);
     }
 
-    static DirectServerCommunicationListener create(ServerManager serverManager, InetAddress address, int port, int backlog) throws IOException {
-        DirectServerCommunicationListener listener = new DirectServerCommunicationListener(serverManager, address, port, backlog);
+    static DirectServerCommunicationListener create(ServerToServerManagerCommandHandler commandHandler,ServerManager serverManager, InetAddress address, int port, int backlog) throws IOException {
+        DirectServerCommunicationListener listener = new DirectServerCommunicationListener(commandHandler, serverManager, address, port, backlog);
         listener.start();
         return listener;
     }
@@ -102,7 +106,7 @@ class DirectServerCommunicationListener{
             if (server == null) {
                 throw new InitialSocketRequestException("Server acceptor: unknown server " + processName);
             }
-            server.setCommunicationHandler(DirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, new MessageHandler(serverManager), serverManager));
+            server.setCommunicationHandler(DirectServerManagerCommunicationHandler.create(SocketConnection.accepted(socket), processName, commandHandler, serverManager));
         }
     }
 }

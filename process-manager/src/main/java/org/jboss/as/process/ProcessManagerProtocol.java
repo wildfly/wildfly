@@ -45,7 +45,7 @@ public class ProcessManagerProtocol {
     /**
      * Commands sent from the processes to PM
      */
-    public enum IncomingCommand {
+    public enum IncomingPmCommand {
         /** Tells the process manager to add a process (SM->PM) */
         ADD {
             @Override
@@ -250,67 +250,6 @@ public class ProcessManagerProtocol {
             }
         },
 
-        /** Send a message via the process manager (Process->PM) */
-        SEND {
-            @Override
-            public void sendMessage(final OutputStream output, final String recipient, final byte[] message) throws IOException {
-                if (recipient == null) {
-                    throw new IllegalArgumentException("processName is null");
-                }
-                final StringBuilder b = new StringBuilder();
-                b.append(this).append('\0');
-                b.append(recipient).append('\0');
-                synchronized (output) {
-                    StreamUtils.writeString(output, b.toString());
-                    StreamUtils.writeInt(output, message.length);
-                    output.write(message, 0, message.length);
-                    StreamUtils.writeChar(output, '\n');
-                    output.flush();
-                }
-            }
-
-            @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final Master master, final String processName, final StringBuilder b) throws IOException {
-                if (currentStatus != Status.MORE) {
-                    //break;
-                    return currentStatus;
-                }
-                Status status = StreamUtils.readWord(inputStream, b);
-                if (status == Status.MORE) {
-                    final String recipient = b.toString();
-                    master.sendMessage(processName, recipient, StreamUtils.readBytesWithLength(inputStream));
-                    status = StreamUtils.readStatus(inputStream);
-                }
-                return status;
-            }
-        },
-
-        /** Broadcast a message via the process manager (Process->PM) */
-        BROADCAST {
-            @Override
-            public void broadcastMessage(final OutputStream output, final byte[] message) throws IOException {
-                final StringBuilder b = new StringBuilder();
-                b.append(this).append('\0');
-                synchronized (output) {
-                    StreamUtils.writeString(output, b.toString());
-                    StreamUtils.writeInt(output, message.length);
-                    output.write(message);
-                    StreamUtils.writeChar(output, '\n');
-                    output.flush();
-                }
-            }
-
-            @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final Master master, final String processName, final StringBuilder b) throws IOException {
-                Status status = currentStatus;
-                if (status == Status.MORE) {
-                    master.broadcastMessage(processName, StreamUtils.readBytesWithLength(inputStream));
-                    status = StreamUtils.readStatus(inputStream);
-                }
-                return status;
-            }
-        },
-
         /** All the known servers have been shut down (SM->PM). Response to {@link OugoingCommand#SHUTDOWN_SERVERS} */
         SERVERS_SHUTDOWN {
             @Override
@@ -326,7 +265,7 @@ public class ProcessManagerProtocol {
                 if (processName.equals(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME)) {
                     master.serversShutdown();
                 } else {
-                    log.warnf("%s received from wrong process %s", IncomingCommand.SERVERS_SHUTDOWN, processName);
+                    log.warnf("%s received from wrong process %s", IncomingPmCommand.SERVERS_SHUTDOWN, processName);
                 }
                 return currentStatus;
             }
@@ -537,7 +476,7 @@ public class ProcessManagerProtocol {
 
         /**
          * SM tells PM that all the services have been shutdown in response to the
-         * {@link OutgoingCommand#SHUTDOWN_SERVERS} command
+         * {@link OutgoingPmCommand#SHUTDOWN_SERVERS} command
          *
          * @param output output stream to PM
          * @throws IOException if the command could not be sent to PM
@@ -580,13 +519,13 @@ public class ProcessManagerProtocol {
     /**
      * Commands sent from PM to the processes
      */
-    public enum OutgoingCommand {
+    public enum OutgoingPmCommand {
         /** Shutdown a process (PM->Process) */
         SHUTDOWN {
             @Override
             public void sendStop(final OutputStream output) throws IOException {
                 synchronized (output) {
-                    StreamUtils.writeString(output, OutgoingCommand.SHUTDOWN + "\n");
+                    StreamUtils.writeString(output, OutgoingPmCommand.SHUTDOWN + "\n");
                     output.flush();
                     try {
                         output.close();
@@ -597,7 +536,7 @@ public class ProcessManagerProtocol {
             }
 
             @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException {
+            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException {
                 handler.handleShutdown();
                 return currentStatus;
             }
@@ -609,13 +548,13 @@ public class ProcessManagerProtocol {
             boolean sendShutdownServers(final OutputStream output) throws IOException {
                 synchronized (output) {
                     final OutputStream stream = output;
-                    StreamUtils.writeString(stream, OutgoingCommand.SHUTDOWN_SERVERS + "\n");
+                    StreamUtils.writeString(stream, OutgoingPmCommand.SHUTDOWN_SERVERS + "\n");
                     stream.flush();
                     return true;
                 }
             }
             @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException {
+            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException {
                 handler.handleShutdownServers();
                 return currentStatus;
             }
@@ -626,7 +565,7 @@ public class ProcessManagerProtocol {
             @Override
             void sendReconnectToServerManager (final OutputStream output, String addr, int port) throws IOException {
                 StringBuilder sb = new StringBuilder();
-                sb.append(OutgoingCommand.RECONNECT_SERVER_MANAGER);
+                sb.append(OutgoingPmCommand.RECONNECT_SERVER_MANAGER);
                 sb.append('\0');
                 sb.append(addr);
                 sb.append('\0');
@@ -639,7 +578,7 @@ public class ProcessManagerProtocol {
             }
 
             @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException {
+            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException {
                 Status status = currentStatus;
                 if (status == Status.MORE) {
                     status = StreamUtils.readWord(inputStream, b);
@@ -656,48 +595,12 @@ public class ProcessManagerProtocol {
             }
         },
 
-        /** Reeive a message from another process or process manager (PM->Process) */
-        MSG {
-            @Override
-            void sendMsg(final OutputStream output, final String sender, final byte[] msg) throws IOException {
-                final StringBuilder b = new StringBuilder();
-                b.append(OutgoingCommand.MSG);
-                b.append('\0');
-                b.append(sender);
-                b.append('\0');
-                synchronized (output) {
-                    StreamUtils.writeString(output, b.toString());
-                    StreamUtils.writeInt(output, msg.length);
-                    output.write(msg, 0, msg.length);
-                    StreamUtils.writeChar(output, '\n');
-                    output.flush();
-                }
-            }
-            @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException {
-                Status status = currentStatus;
-                if (status == Status.MORE) {
-                    status = StreamUtils.readWord(inputStream, b);
-                    final String sourceProcess = b.toString();
-                    if (status == Status.MORE) {
-                        try {
-                            handler.handleMessage(sourceProcess, StreamUtils.readBytesWithLength(inputStream));
-                        } catch (Throwable t) {
-                            log.error("Caught exception handling message from " + sourceProcess, t);
-                        }
-                        status = StreamUtils.readStatus(inputStream);
-                    }
-                }
-                return status;
-            }
-        },
-
         /** Sent by PM if when a Process is determined to be down (PM->SM) */
         DOWN {
             @Override
             void sendDown(final OutputStream output, final String stoppedProcessName) throws IOException {
                 StringBuilder sb = new StringBuilder();
-                sb.append(OutgoingCommand.DOWN);
+                sb.append(OutgoingPmCommand.DOWN);
                 sb.append('\0');
                 sb.append(stoppedProcessName);
                 sb.append('\n');
@@ -707,7 +610,7 @@ public class ProcessManagerProtocol {
                 }
             }
             @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException {
+            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException {
                 Status status = currentStatus;
                 if (status == Status.MORE) {
                     status = StreamUtils.readWord(inputStream, b);
@@ -777,14 +680,18 @@ public class ProcessManagerProtocol {
             throw new IllegalStateException("Illegal operation for " + this);
         }
 
-        public abstract Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingCommandHandler handler, final StringBuilder b) throws IOException;
+        public abstract Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException;
     }
 
-    public interface OutgoingCommandHandler{
+    public interface OutgoingPmCommandHandler{
         void handleShutdown();
         void handleShutdownServers();
-        void handleMessage(String sourceProcess, byte[] message);
         void handleDown(String serverName);
         void handleReconnectServerManager(String address, String port);
+    }
+
+    public interface IncomingPmCommandHandler {
+        void handleShutdown();
+        void handleReconnectServer(String addr, String port);
     }
 }

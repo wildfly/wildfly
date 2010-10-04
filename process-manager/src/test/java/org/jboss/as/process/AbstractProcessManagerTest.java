@@ -176,14 +176,6 @@ public abstract class AbstractProcessManagerTest {
         master.removeProcess(name);
     }
 
-    protected void sendMessage(String sender, String recipient, byte[] msg) {
-        master.sendMessage(sender, recipient, msg);
-    }
-
-    protected void sendMessage(String sender, String recipient, String msg) {
-        master.sendMessage(sender, recipient, msg.getBytes());
-    }
-
     protected void sendStdin(String recipient, String msg) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -193,14 +185,6 @@ public abstract class AbstractProcessManagerTest {
         } catch (UnsupportedEncodingException e) {
         } catch (IOException e) {
         }
-    }
-
-    protected void broadcastMessage(String sender, byte[] msg){
-        master.broadcastMessage(sender, msg);
-    }
-
-    protected void broadcastMessage(String sender, String msg){
-        master.broadcastMessage(sender, msg.getBytes());
     }
 
     protected List<String> lazyList(String... strings) {

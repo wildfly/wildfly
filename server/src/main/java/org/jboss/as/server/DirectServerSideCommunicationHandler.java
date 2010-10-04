@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.StreamUtils;
 import org.jboss.as.process.SystemExiter;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 
 /**
  * Communication Handler for direct communication between this Server and the
@@ -39,19 +40,24 @@ import org.jboss.as.process.SystemExiter;
  */
 public class DirectServerSideCommunicationHandler extends ServerCommunicationHandler {
 
-    final Runnable controller = new InputStreamHandler();
+    private final Runnable controller = new InputStreamHandler();
 
-    private DirectServerSideCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
-        super(processName, addr, port, handler);
+    private final ServerManagerToServerCommandHandler handler;
+
+    private DirectServerSideCommunicationHandler(String processName, InetAddress addr, Integer port, ServerManagerToServerCommandHandler handler){
+        super(processName, addr, port);
+        if (handler == null) {
+            throw new IllegalArgumentException("handler is null");
+        }
+        this.handler = handler;
     }
 
-    public static DirectServerSideCommunicationHandler create(String processName, InetAddress addr, Integer port, final Handler handler){
+    public static DirectServerSideCommunicationHandler create(String processName, InetAddress addr, Integer port, ServerManagerToServerCommandHandler handler){
         DirectServerSideCommunicationHandler comm = new DirectServerSideCommunicationHandler(processName, addr, port, handler);
         comm.start();
         return comm;
     }
 
-    @Override
     public void sendMessage(final byte[] message) throws IOException {
         OutputStream output = getOutput();
         StreamUtils.writeInt(output, message.length);
@@ -72,7 +78,7 @@ public class DirectServerSideCommunicationHandler extends ServerCommunicationHan
             try {
                 while (!shutdown.get()) {
                     byte[] bytes = StreamUtils.readBytesWithLength(input);
-                    handler.handleMessage(bytes);
+                    handler.handleCommand(bytes);
                 }
             } catch (EOFException e) {
                 logger.debug("EOF received");

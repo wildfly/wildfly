@@ -62,7 +62,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         Object id = getProcessId("Main", CrashingProcess.class);
 
         detachTestProcessListener("Main");
-        sendMessage("Test", "Main", "Exit1");
+        listener.exitProcess(1);
         assertEquals("Main-Exit1", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(1, stopLatch.getExitCode());
@@ -134,7 +134,7 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Main");
 
         detachTestProcessListener("Main");
-        sendMessage("Test", "Main", "Exit0");
+        listener.exitProcess(0);
         assertEquals("Main-Exit0", listener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(0, stopLatch.getExitCode());
@@ -158,6 +158,10 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         assertTrue(0 != stopLatch.getExitCode());
 
         assertEquals("Down is down", smListener.readMessage());
+
+        //Get rid of SM so PM does not wait for confirmation when tearing down the test
+        stopTestProcessListenerAndWait(smListener);
+        removeProcess("ServerManager");
     }
 
     @Test
@@ -171,12 +175,16 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
         detachTestProcessListener("Down");
-        sendMessage("Test", "Down", "Exit1");
+        procListener.exitProcess(1);
         assertEquals("Down-Exit1", procListener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(1, stopLatch.getExitCode());
 
         assertEquals("Down is down", smListener.readMessage());
+
+        //Get rid of SM so PM does not wait for confirmation when tearing down the test
+        stopTestProcessListenerAndWait(smListener);
+        removeProcess("ServerManager");
     }
 
     @Test
@@ -190,12 +198,16 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("Down");
         detachTestProcessListener("Down");
-        sendMessage("Test", "Down", "Exit0");
+        procListener.exitProcess(0);
         assertEquals("Down-Exit0", procListener.readMessage());
         assertTrue(stopLatch.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(0, stopLatch.getExitCode());
 
         assertNull(smListener.readMessage(2000));
+
+        //Get rid of SM so PM does not wait for confirmation when tearing down the test
+        stopTestProcessListenerAndWait(smListener);
+        removeProcess("ServerManager");
     }
 
     @Test
@@ -222,17 +234,17 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
             detachTestProcessListener("KillMe");
             long killStart = System.currentTimeMillis();
             killProcess("KillMe", CrashingProcess.class);
-            assertTrue("Failed for " + i, stopLatch.await(1000, TimeUnit.MILLISECONDS));
+            assertTrue("Failed for " + i, stopLatch.await(2000, TimeUnit.MILLISECONDS));
             assertTrue(0 != stopLatch.getExitCode());
             listener.shutdown();
 
-            listener = getTestProcessListener("KillMe", 1000);
+            listener = getTestProcessListener("KillMe", 2000);
             if (i == 2) {
                 assertNull(listener);
             }else {
-                assertNotNull(listener);
+                assertNotNull("Iteration " + i, listener);
                 long respawn = System.currentTimeMillis() - killStart;
-                assertTrue(respawn + "<" + lastRespawn, respawn >= lastRespawn);
+                assertTrue(respawn + "<" + lastRespawn + " for iteration " + i, respawn >= lastRespawn);
                 lastRespawn = respawn;
 
                 Object id = getProcessId("KillMe", CrashingProcess.class);
@@ -240,7 +252,6 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
                 lastId = id;
             }
         }
-
     }
 
 

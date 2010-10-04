@@ -25,7 +25,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.process.ProcessManagerSlave.Handler;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
+import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 
 /**
  * A server manager side Handler implementation that allows us to see the commands
@@ -34,17 +36,12 @@ import org.jboss.as.process.ProcessManagerSlave.Handler;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class TestServerManagerMessageHandler implements Handler{
+public class TestServerManagerMessageHandler extends ServerToServerManagerCommandHandler implements OutgoingPmCommandHandler {
 
     private final BlockingQueue<ServerMessage> messages = new LinkedBlockingQueue<ServerMessage>();
 
     @Override
-    public void handleMessage(String sourceProcessName, byte[] message) {
-        messages.add(new ServerMessage(sourceProcessName,message));
-    }
-
-    @Override
-    public void shutdown() {
+    public void handleShutdown() {
         messages.add(new ServerMessage(null, "SHUTDOWN".getBytes()));
     }
 
@@ -60,12 +57,41 @@ public class TestServerManagerMessageHandler implements Handler{
     }
 
     @Override
-    public void shutdownServers() {
+    public void handleShutdownServers() {
         messages.add(new ServerMessage(null, "SHUTDOWN_SERVERS".getBytes()));
     }
 
     @Override
-    public void down(String downProcessName) {
+    public void handleDown(String downProcessName) {
+    }
+
+    @Override
+    public void handleCommand(String sourceProcessName, byte[] message) {
+        messages.add(new ServerMessage(sourceProcessName, message));
+    }
+
+    @Override
+    public void handleServerAvailable(String sourceProcessName) {
+    }
+
+    @Override
+    public void handleServerReconnectStatus(String sourceProcessName, ServerState state) {
+    }
+
+    @Override
+    public void handleServerStartFailed(String sourceProcessName) {
+    }
+
+    @Override
+    public void handleServerStarted(String sourceProcessName) {
+    }
+
+    @Override
+    public void handleServerStopped(String sourceProcessName) {
+    }
+
+    @Override
+    public void handleReconnectServerManager(String address, String port) {
     }
 
     public class ServerMessage {

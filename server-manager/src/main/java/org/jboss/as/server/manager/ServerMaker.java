@@ -36,6 +36,7 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -48,14 +49,16 @@ public final class ServerMaker {
     static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
 
     private final ProcessManagerSlave processManagerSlave;
-    private final MessageHandler messageHandler;
+
+    @SuppressWarnings("unused")
+    private final OutgoingPmCommandHandler messageHandler;
     private final ServerManagerEnvironment environment;
 
     private final CommunicationVariables communicationVariables;
 
     public ServerMaker(ServerManagerEnvironment environment,
             ProcessManagerSlave processManagerSlave,
-            MessageHandler messageHandler,
+            OutgoingPmCommandHandler messageHandler,
             CommunicationVariables communicationVariables) {
 
         if (environment == null) {
