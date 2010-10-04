@@ -29,10 +29,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * Coordinates the execution of a set of {@link AbstractServerModelUpdate updates}.
@@ -160,6 +163,8 @@ public class ServerUpdateController {
             return;
         }
 
+        BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        UpdateContext updateContext = new SimpleUpdateContext(serviceContainer, batchBuilder);
         for (ServerModelUpdateTuple<?,?> update : updates) {
 
             logger.debugf("Applying update %s", update.getUpdate().toString());
@@ -179,7 +184,7 @@ public class ServerUpdateController {
                 serverModel.update(update.getUpdate());
                 appliedToModel = true;
                 if (allowRuntimeUpdates) {
-                    update.applyUpdate(serviceContainer);
+                    update.applyUpdate(updateContext);
                 }
                 else {
                     // We won't get a callback from a result handler, so
@@ -192,7 +197,7 @@ public class ServerUpdateController {
                 // directly fails, we roll it back in catch block below.
                 // The 'rollbacks' list is for updates that succeeeded.
                 if (allowOverallRollback) {
-                    // Add the rollback to the list last in t
+                    // Add this latest update's rollback to the list
                     rollbacks.add(0, rollbackTuple);
                 }
             }
@@ -202,10 +207,12 @@ public class ServerUpdateController {
 
                 if (rollbackTuple != null) {
                     if (appliedToModel) {
-                        rollbackTuple.applyUpdate(serviceContainer);
-                    }
-                    if (appliedToModel) {
                         try {
+                            if (allowRuntimeUpdates) {
+                                // FIXME this is likely incorrect given we are now
+                                // using a batch!!!
+                                rollbackTuple.applyUpdate(updateContext);
+                            }
                             serverModel.update(rollbackTuple.getUpdate());
                         } catch (UpdateFailedException e1) {
                             rollbackTuple.handleFailure(e1);
@@ -217,6 +224,14 @@ public class ServerUpdateController {
             }
         }
 
+        if (status == Status.ACTIVE) {
+            try {
+                batchBuilder.install();
+            } catch (ServiceRegistryException e) {
+                handleRollback();
+            }
+        }
+
         if (logger.isDebugEnabled()) {
             logger.debugf("%s update(s) applied", updates.size());
         }
@@ -224,30 +239,47 @@ public class ServerUpdateController {
 
     /** Only invoke with the object monitor held */
     private void applyRollbacks() {
-        for (ServerModelUpdateTuple<?, ?> update : rollbacks) {
-            try {
-                serverModel.update(update.getUpdate());
-            }
-            catch (Exception e) {
-                update.handleFailure(e);
-            }
-            finally {
-                try {
-                    if (allowRuntimeUpdates) {
-                        update.applyUpdate(serviceContainer);
+        BatchBuilder batchBuilder = serviceContainer.batchBuilder();
+        UpdateContext updateContext = new SimpleUpdateContext(serviceContainer, batchBuilder);
+        boolean failed = false;
+        try {
+            for (ServerModelUpdateTuple<?, ?> update : rollbacks) {
+
+                if (failed) {
+                    update.handleCancellation();
+                }
+                else {
+                    try {
+                        serverModel.update(update.getUpdate());
                     }
-                    else {
-                        rollbackComplete();
+                    catch (Exception e) {
+                        update.handleFailure(e);
+                    }
+                    finally {
+                        try {
+                            if (allowRuntimeUpdates) {
+                                update.applyUpdate(updateContext);
+                            }
+                            else {
+                                rollbackComplete();
+                            }
+                        }
+                        catch (Exception e) {
+                            update.handleFailure(e);
+                        }
                     }
                 }
-                catch (Exception e) {
-                    update.handleFailure(e);
-                }
+            }
+
+            batchBuilder.install();
+
+            if (logger.isDebugEnabled()) {
+                logger.debugf("%s rollbacks applied", rollbacks.size());
             }
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debugf("%s rollbacks applied", rollbacks.size());
+        catch (Exception e) {
+            // FIXME what to do
+            logger.error("Caught exception applying rollbacks", e);
         }
     }
 
@@ -383,7 +415,7 @@ public class ServerUpdateController {
             resultHandler.handleFailure(cause, param);
         }
 
-        private void applyUpdate(ServiceContainer container) {
+        private void applyUpdate(UpdateContext container) {
             update.applyUpdate(container, resultHandler, param);
         }
 
