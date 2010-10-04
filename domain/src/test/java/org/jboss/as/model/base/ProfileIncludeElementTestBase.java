@@ -124,7 +124,6 @@ public abstract class ProfileIncludeElementTestBase extends DomainModelElementTe
         byte[] bytes = serialize(testee);
         ProfileIncludeElement testee1 = deserialize(bytes, ProfileIncludeElement.class);
 
-        assertEquals(testee.elementHash(), testee1.elementHash());
         assertEquals(testee.getProfile(), testee1.getProfile());
     }
 

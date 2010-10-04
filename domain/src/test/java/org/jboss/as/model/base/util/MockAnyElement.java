@@ -6,8 +6,10 @@ package org.jboss.as.model.base.util;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import java.util.List;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -46,7 +48,7 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
      * @throws XMLStreamException if an error occurs
      */
     public MockAnyElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader);
+        super(NAMESPACE);
         ParseUtils.requireNoAttributes(reader);
         ParseUtils.requireNoContent(reader);
     }
@@ -57,12 +59,14 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
     }
 
     @Override
-    private long elementHash() {
-        return 19;
-    }
-
-    @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
+    }
+
+    protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<MockAnyElement, ?>> objects) {
+    }
+
+    protected boolean isEmpty() {
+        return true;
     }
 }
