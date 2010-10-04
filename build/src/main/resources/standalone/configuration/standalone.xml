@@ -22,7 +22,15 @@
 
 <server xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd">
 
     <name>Standalone</name>
 
@@ -81,7 +89,7 @@
             <journal-directory relative-to="jboss.server.data.dir" path="hornetq/journal" />
             <journal-min-files>2</journal-min-files>
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-            <journal-file-size>102400</journal-file-size>         
+            <journal-file-size>102400</journal-file-size> 
 
             <connectors>
                <in-vm-connector name="in-vm" server-id="0" />
@@ -147,8 +155,5 @@
     </system-properties>
     
     <deployment-repository scan-interval="5000"/>
-    
-    <deployments>
-    </deployments>
 
 </server>

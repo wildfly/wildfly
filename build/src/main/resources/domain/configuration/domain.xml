@@ -22,7 +22,15 @@
 
 <domain xmlns="urn:jboss:domain:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:threads:1.0 jboss-threads.xsd
+                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
+                            urn:jboss:domain:transactions:1.0 jboss-txn.xsd
+                            urn:jboss:domain:messaging:1.0 jboss-messaging.xsd
+                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
+                            urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
+                            urn:jboss:domain:sar:1.0 jboss-sar.xsd
+                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd">
 
     <extensions>
         <extension module="org.jboss.as.threads"/>
@@ -212,20 +220,14 @@
         <property name="prop2" value="value2"/>
     </system-properties>
 
-    <deployments>
-    </deployments>
-
     <server-groups>
         <server-group name="main-server-group" profile="something">
 
-           <jvm name="icedtea1">
-              <heap size="512m" max-size="1024m"/>
-           </jvm>
+            <jvm name="icedtea1">
+                <heap size="512m" max-size="1024m"/>
+            </jvm>
 
-           <socket-binding-group ref="standard-clustered-sockets"/>
-
-            <deployments>
-            </deployments>
+            <socket-binding-group ref="standard-clustered-sockets"/>
 
             <system-properties>
                <property name="prop1" value="value1"/>

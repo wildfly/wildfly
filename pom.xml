@@ -123,9 +123,9 @@
         <module>jmx</module>
         <module>sar</module>
         <module>managedbeans</module>
+        <module>messaging</module>
         <module>build</module>
         <module>testsuite</module>
-        <module>messaging</module>
     </modules>
 
     <build>
@@ -208,6 +208,13 @@
         <dependencies>
 
             <!-- Modules in this project -->
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-build</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>

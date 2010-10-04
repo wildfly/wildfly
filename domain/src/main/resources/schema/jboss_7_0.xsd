@@ -98,7 +98,6 @@
             <xs:element name="jvm" minOccurs="0" type="jvmType"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="optional" default="DomainController"/>
-        <xs:attribute name="group" type="xs:string" use="required"/>
 
     </xs:complexType>
 
@@ -174,19 +173,12 @@
                 or a standalone server.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="module" use="required" type="moduleType">
+        <xs:attribute name="module" use="required" type="xs:string">
             <xs:annotation>
-                <xs:documentation>The name of the module, in group:artifact format; e.g. org.foo:widget
-                </xs:documentation>
+                <xs:documentation>The name of the module</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
-    <xs:simpleType name="moduleType">
-        <xs:restriction base="xs:string">
-            <xs:pattern value="[\S-[:]]*:[\S-[:]]*"/>
-        </xs:restriction>
-    </xs:simpleType>
 
     <xs:complexType name="server-groupsType">
         <xs:sequence>
