@@ -34,104 +34,101 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- *
  * A ConnectorSubsystemElement.
- *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
  */
 final class ConnectorSubsystemElement extends AbstractSubsystemElement<ConnectorSubsystemElement> {
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 6451041006443208660L;
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 6451041006443208660L;
 
-   private ArchiveValidationElement archiveValidationElement;
+    private ArchiveValidationElement archiveValidationElement;
 
-   private boolean beanValidation;
+    private boolean beanValidation;
 
-   public ConnectorSubsystemElement() {
-      super(new QName("urn:jboss:domain:connector:1.0", "subsystem"));
-   }
+    public ConnectorSubsystemElement() {
+        super(new QName("urn:jboss:domain:connector:1.0", "subsystem"));
+    }
 
-   public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      super(reader);
-      final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-      while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-         switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case CONNECTOR_1_0 : {
-               final Element element = Element.forName(reader.getLocalName());
-               if (visited.contains(element)) {
-                  throw unexpectedElement(reader);
-               }
-               visited.add(element);
-               switch (element) {
-                  case ARCHIVE_VALIDATION : {
-                     archiveValidationElement = new ArchiveValidationElement(reader);
-                     break;
-                  }
-                  case BEAN_VALIDATION : {
-                     beanValidation = elementAsBoolean(reader);
-                     break;
-                  }
-                  default :
-                     throw unexpectedElement(reader);
-               }
-               break;
+    public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case CONNECTOR_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (visited.contains(element)) {
+                        throw unexpectedElement(reader);
+                    }
+                    visited.add(element);
+                    switch (element) {
+                        case ARCHIVE_VALIDATION: {
+                            archiveValidationElement = new ArchiveValidationElement(reader);
+                            break;
+                        }
+                        case BEAN_VALIDATION: {
+                            beanValidation = elementAsBoolean(reader);
+                            break;
+                        }
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
             }
-            default :
-               throw unexpectedElement(reader);
-         }
-      }
-   }
-
-   @Override
-   public void activate(ServiceActivatorContext context) {
-      final BatchBuilder builder = context.getBatchBuilder();
-
-      final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
-
-      if (this.archiveValidationElement != null) {
-         config.setArchiveValidation(true);
-         config.setArchiveValidationFailOnError(this.archiveValidationElement.isFailOnError());
-         config.setArchiveValidationFailOnWarn(this.archiveValidationElement.isFailOnWarn());
-      }
-      config.setBeanValidation(this.beanValidation);
-
-      final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-      builder.addService(ConnectorServices.JBOSS_CONNECTOR, connectorConfigService);
-
-   }
+        }
+    }
 
     @Override
-   public long elementHash() {
-      return 42;
-   }
+    public void activate(ServiceActivatorContext context) {
+        final BatchBuilder builder = context.getBatchBuilder();
+
+        final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
+
+        if (this.archiveValidationElement != null) {
+            config.setArchiveValidation(true);
+            config.setArchiveValidationFailOnError(this.archiveValidationElement.isFailOnError());
+            config.setArchiveValidationFailOnWarn(this.archiveValidationElement.isFailOnWarn());
+        }
+        config.setBeanValidation(this.beanValidation);
+
+        final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
+        builder.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
+
+    }
 
     @Override
-   protected Class<ConnectorSubsystemElement> getElementClass() {
-      return ConnectorSubsystemElement.class;
-   }
+    public long elementHash() {
+        return 42;
+    }
 
-   @Override
-   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-      if (this.archiveValidationElement != null) {
-         this.archiveValidationElement.writeContent(streamWriter);
-      }
-      streamWriter.writeStartElement(Element.BEAN_VALIDATION.getLocalName());
-      streamWriter.writeCharacters(String.valueOf(beanValidation));
-      streamWriter.writeEndElement();
+    @Override
+    protected Class<ConnectorSubsystemElement> getElementClass() {
+        return ConnectorSubsystemElement.class;
+    }
 
-   }
+    @Override
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if (this.archiveValidationElement != null) {
+            this.archiveValidationElement.writeContent(streamWriter);
+        }
+        streamWriter.writeStartElement(Element.BEAN_VALIDATION.getLocalName());
+        streamWriter.writeCharacters(String.valueOf(beanValidation));
+        streamWriter.writeEndElement();
 
-   /**
-    * convert an xml element in boolean value. Empty elements results with true (tag presence is sufficient condition)
-    *
-    * @param reader the StAX reader
-    * @return the boolean representing element
-    * @throws XMLStreamException StAX exception
-    */
-   private boolean elementAsBoolean(XMLExtendedStreamReader reader) throws XMLStreamException {
-      String elementtext = reader.getElementText();
-      return elementtext == null || elementtext.length() == 0 ? true : Boolean.valueOf(elementtext.trim());
-   }
+    }
+
+    /**
+     * convert an xml element in boolean value. Empty elements results with true
+     * (tag presence is sufficient condition)
+     * @param reader the StAX reader
+     * @return the boolean representing element
+     * @throws XMLStreamException StAX exception
+     */
+    private boolean elementAsBoolean(XMLExtendedStreamReader reader) throws XMLStreamException {
+        String elementtext = reader.getElementText();
+        return elementtext == null || elementtext.length() == 0 ? true : Boolean.valueOf(elementtext.trim());
+    }
 }

@@ -151,6 +151,7 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
         }
     }
 
+    @Override
     public long elementHash() {
         long hash = super.elementHash();
         hash = Long.rotateLeft(hash, 1) ^ Boolean.valueOf(blocking).hashCode() & 0xffffffffL;
@@ -161,10 +162,12 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
         return hash;
     }
 
+    @Override
     protected Class<BoundedQueueThreadPoolExecutorElement> getElementClass() {
         return BoundedQueueThreadPoolExecutorElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
         if (blocking) { streamWriter.writeAttribute("blocking", "true"); }
@@ -191,5 +194,10 @@ public final class BoundedQueueThreadPoolExecutorElement extends AbstractExecuto
             streamWriter.writeAttribute("name", handoffExecutor);
         }
         streamWriter.writeEndElement();
+    }
+
+    @Override
+    protected Element getStandardElement() {
+        return Element.BOUNDED_QUEUE_THREAD_POOL_EXECUTOR;
     }
 }

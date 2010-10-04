@@ -21,7 +21,10 @@
  */
 package org.jboss.as.process;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -117,13 +120,18 @@ public abstract class AbstractProcessManagerTest {
         return TestFileUtils.getOutputFile(processName);
     }
 
-    protected TestProcessListenerStream startTestProcessListenerAndWait(String name)
+
+    protected TestProcessListenerStream startTestProcessListenerAndWait(String name) throws InterruptedException {
+        return startTestProcessListenerAndWait(name, null);
+    }
+
+    protected TestProcessListenerStream startTestProcessListenerAndWait(String name, Runnable preWait)
             throws InterruptedException {
         // master.startProcess(name);
         processes.add(name);
         stoppedProcesses.remove(name);
 
-        return testManager.createProcessListener(name);
+        return testManager.createProcessListener(name, preWait);
     }
 
     protected void startProcess(String name, int waitMs)
@@ -168,20 +176,31 @@ public abstract class AbstractProcessManagerTest {
         master.removeProcess(name);
     }
 
-    protected void sendMessage(String sender, String recipient, List<String> msg){
-        master.sendMessage(sender, recipient, msg);
-    }
-
     protected void sendMessage(String sender, String recipient, byte[] msg) {
         master.sendMessage(sender, recipient, msg);
     }
 
-    protected void broadcastMessage(String sender, List<String> msg){
-        master.broadcastMessage(sender, msg);
+    protected void sendMessage(String sender, String recipient, String msg) {
+        master.sendMessage(sender, recipient, msg.getBytes());
+    }
+
+    protected void sendStdin(String recipient, String msg) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            new DataOutputStream(out).writeUTF(msg);
+            out.flush();
+            master.sendStdin(recipient, out.toByteArray());
+        } catch (UnsupportedEncodingException e) {
+        } catch (IOException e) {
+        }
     }
 
     protected void broadcastMessage(String sender, byte[] msg){
         master.broadcastMessage(sender, msg);
+    }
+
+    protected void broadcastMessage(String sender, String msg){
+        master.broadcastMessage(sender, msg.getBytes());
     }
 
     protected List<String> lazyList(String... strings) {

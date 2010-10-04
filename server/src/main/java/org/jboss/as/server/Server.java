@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -49,7 +49,7 @@ public class Server extends AbstractServer {
 
     private ServerCommunicationHandler serverCommunicationHandler;
     private ServerCommunicationHandler processManagerCommunicationHandler;
-    private AtomicBoolean stopping = new AtomicBoolean();
+    private final AtomicBoolean stopping = new AtomicBoolean();
 
     private final MessageHandler messageHandler = new MessageHandler(this);
 
@@ -60,34 +60,36 @@ public class Server extends AbstractServer {
         state = ServerState.BOOTING;
     }
 
+    @Override
     public void start() {
         launchCommunicationHandlers();
-        sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        sendMessage(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
         state = ServerState.AVAILABLE;
         log.info("Server Available to start");
     }
 
+    @Override
     public void start(ServerModel config) throws ServerStartException {
         try {
             state = ServerState.STARTING;
             super.start(config);
         } catch(ServerStartException e) {
             state = ServerState.FAILED;
-            sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
+            sendMessage(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
             throw e;
         }
     }
 
+    @Override
     public void stop() {
         if (stopping.getAndSet(true))
             return;
         state = ServerState.STOPPING;
         super.stop();
-        sendMessage(ServerManagerProtocolCommand.SERVER_STOPPED);
+        sendMessage(ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         state = ServerState.STOPPED;
         log.info("Server stopped");
-        serverCommunicationHandler.shutdown();
-        processManagerCommunicationHandler.shutdown();
+        shutdownCommunicationHandlers();
     }
 
     public void reconnectToServerManager(String host, String port) {
@@ -105,9 +107,8 @@ public class Server extends AbstractServer {
             log.errorf("Could not parse %s into a port", port);
             return;
         }
-        this.serverCommunicationHandler = new DirectServerCommunicationHandler(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
-        this.serverCommunicationHandler.start();
-        sendMessage(ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state);
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(getEnvironment().getProcessName(), addr, portNumber, messageHandler);
+        sendMessage(ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, state);
     }
 
     @Override
@@ -117,10 +118,10 @@ public class Server extends AbstractServer {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
                     state = ServerState.STARTED;
-                    sendMessage(ServerManagerProtocolCommand.SERVER_STARTED);
+                    sendMessage(ServerToServerManagerProtocolCommand.SERVER_STARTED);
                 } else {
                     state = ServerState.FAILED;
-                    sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
+                    sendMessage(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
                     final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
@@ -135,13 +136,11 @@ public class Server extends AbstractServer {
 
     private void launchCommunicationHandlers() {
         ServerEnvironment env = getEnvironment();
-        this.processManagerCommunicationHandler = new ProcessManagerServerCommunicationHandler(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
-        this.processManagerCommunicationHandler.start();
-        this.serverCommunicationHandler = new DirectServerCommunicationHandler(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
-        this.serverCommunicationHandler.start();
+        this.processManagerCommunicationHandler = ProcessManagerServerCommunicationHandler.create(env.getProcessName(), env.getProcessManagerAddress(), env.getProcessManagerPort(), messageHandler);
+        this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(env.getProcessName(), env.getServerManagerAddress(), env.getServerManagerPort(), messageHandler);
     }
 
-    private void sendMessage(ServerManagerProtocolCommand command) {
+    protected void sendMessage(ServerToServerManagerProtocolCommand command) {
         try {
             byte[] bytes = command.createCommandBytes(null);
             serverCommunicationHandler.sendMessage(bytes);
@@ -150,11 +149,20 @@ public class Server extends AbstractServer {
         }
     }
 
-    private void sendMessage(ServerManagerProtocolCommand command, Object data) {
+    private void sendMessage(ServerToServerManagerProtocolCommand command, Object data) {
         try {
             serverCommunicationHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(command, data));
         } catch (IOException e) {
             log.error("Failed to send message to Server Manager [" + command + ":" + data + "]", e);
         }
+    }
+
+    protected void setState(ServerState state) {
+        this.state = state;
+    }
+
+    protected void shutdownCommunicationHandlers() {
+        serverCommunicationHandler.shutdown();
+        processManagerCommunicationHandler.shutdown();
     }
 }

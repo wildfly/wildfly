@@ -24,14 +24,12 @@ package org.jboss.as.deployment;
 
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.model.DeploymentUnitKey;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.jboss.as.deployment.TestUtils.getResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

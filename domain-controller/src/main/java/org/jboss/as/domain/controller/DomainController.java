@@ -22,72 +22,74 @@
 
 package org.jboss.as.domain.controller;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.jboss.as.model.LocalDomainControllerElement;
 import org.jboss.as.model.ParseResult;
-import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.services.net.NetworkInterfaceBinding;
-import org.jboss.as.services.net.NetworkInterfaceService;
-import org.jboss.as.threads.ThreadFactoryExecutorService;
-import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
 
 import javax.xml.stream.XMLInputFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * A Domain controller instance.
  *
  * @author John Bailey
  */
-public class DomainController {
+public class DomainController implements Service<DomainController> {
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller");
     private DomainModel domainModel;
-    private final AtomicBoolean started = new AtomicBoolean();
-    private ConcurrentMap<String, DomainControllerClient> clients = new ConcurrentHashMap<String, DomainControllerClient>();
+    private final ConcurrentMap<String, DomainControllerClient> clients = new ConcurrentHashMap<String, DomainControllerClient>();
+    private final InjectedValue<XMLMapper> xmlMapper = new InjectedValue<XMLMapper>();
+    private final InjectedValue<File> domainConfigDir = new InjectedValue<File>();
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
+    private ScheduledFuture<?> pollingFuture;
 
     /**
      * Start the domain controller with configuration.  This will launch required service for the domain controller.
-     *
-     * @param hostConfig The host configuration
      */
-    public synchronized void start(final HostModel hostConfig, final XMLMapper xmlMapper, final File domainConfigDir) {
-        if(started.compareAndSet(false, true)) {
-            log.info("Starting Domain Controller");
+    public synchronized void start(final StartContext context) {
+        log.info("Starting Domain Controller");
 
-            log.info("Parsing Domain Configuration");
-            domainModel = parseDomain(xmlMapper, domainConfigDir);
-        }
+        log.info("Parsing Domain Configuration");
+        domainModel = parseDomain(xmlMapper.getValue(), domainConfigDir.getValue());
+        pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                for(DomainControllerClient client : clients.values()) {
+                    if(!client.isActive()) {
+                        log.warnf("Registered Server Manager [%s] is no longer active", client.getId());
+                    }
+                }
+            }
+        }, 30L, 30L, TimeUnit.SECONDS);
     }
 
     /**
      * Stop the domain controller
      */
-    public synchronized void stop() {
-        if(started.compareAndSet(true, false)) {
-            log.info("Stopping Domain Controller");
+    public synchronized void stop(final StopContext stopContext) {
+        log.info("Stopping Domain Controller");
+        domainModel = null;
+        if(pollingFuture != null) {
+            pollingFuture.cancel(true);
         }
+    }
+
+    public DomainController getValue() throws IllegalStateException {
+        return this;
     }
 
     public void addClient(final DomainControllerClient domainControllerClient) {
@@ -112,7 +114,7 @@ public class DomainController {
             throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
         }
         else if (! domainXML.canWrite()) {
-            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " is not writeable. A DomainController cannot be launched without a writable domain.xml");
+            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " is not writable. A DomainController cannot be launched without a writable domain.xml");
         }
 
         try {
@@ -124,5 +126,17 @@ public class DomainController {
         } catch (Exception e) {
             throw new RuntimeException("Caught exception during processing of domain.xml", e);
         }
+    }
+
+    public Injector<XMLMapper> getXmlMapperInjector() {
+        return xmlMapper;
+    }
+
+    public Injector<File> getDomainConfigDirInjector() {
+        return domainConfigDir;
+    }
+
+    public Injector<ScheduledExecutorService> getScheduledExecutorServiceInjector() {
+        return scheduledExecutorService;
     }
 }

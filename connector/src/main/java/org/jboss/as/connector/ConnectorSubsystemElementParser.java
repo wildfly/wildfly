@@ -37,9 +37,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 final class ConnectorSubsystemElementParser implements XMLElementReader<ParseResult<ConnectorSubsystemElement>> {
 
-   @Override
-   public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader,
-         final ParseResult<ConnectorSubsystemElement> result) throws XMLStreamException {
+    @Override
+    public void readElement(final XMLExtendedStreamReader xmlExtendedStreamReader,
+            final ParseResult<ConnectorSubsystemElement> result) throws XMLStreamException {
         result.setResult(new ConnectorSubsystemElement(xmlExtendedStreamReader));
     }
 }

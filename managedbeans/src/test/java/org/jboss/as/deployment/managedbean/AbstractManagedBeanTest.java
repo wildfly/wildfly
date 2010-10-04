@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
@@ -54,19 +55,19 @@ public abstract class AbstractManagedBeanTest {
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractManagedBeanTest.class, "/test")).getPathName());
 
         serviceContainer = ServiceContainer.Factory.create();
 
         runWithLatchedBatch(new BatchedWork() {
             @Override
-            public void execute(BatchBuilder batchBuilder) throws Exception {
+            public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
                 setupServices(batchBuilder);
             }
         });
     }
 
     protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
+        MockServerDeploymentRepository.addService(batchBuilder, VFS.getChild(getResource(AbstractManagedBeanTest.class, "/test")).getPhysicalFile());
     }
 
     @After
@@ -76,8 +77,8 @@ public abstract class AbstractManagedBeanTest {
 
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
-            public void execute(BatchBuilder batchBuilder) throws Exception {
-                new ServerGroupDeploymentElement(deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+            public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
+                new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
             }
         });
     }
@@ -98,7 +99,7 @@ public abstract class AbstractManagedBeanTest {
         });
         batchBuilder.addListener(listener);
         // Run the work
-        work.execute(batchBuilder);
+        work.execute(batchBuilder, serviceContainer);
 
         batchBuilder.install();
         listener.finishBatch();
@@ -108,7 +109,7 @@ public abstract class AbstractManagedBeanTest {
     }
 
     protected static interface BatchedWork {
-        void execute(final BatchBuilder batchBuilder) throws Exception;
+        void execute(final BatchBuilder batchBuilder, final ServiceContainer serviceContainer) throws Exception;
     }
 
     protected URL getResource(final Class<?> testClass, final String path) throws Exception {

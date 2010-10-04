@@ -22,27 +22,22 @@
 
 package org.jboss.as.server.manager;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.HostModel;
-import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
-import org.jboss.as.server.manager.management.ManagementOperationHandler;
+import org.jboss.as.server.manager.management.ByteDataInput;
+import org.jboss.as.server.manager.management.ByteDataOutput;
+import org.jboss.as.server.manager.management.ManagementException;
+import org.jboss.as.server.manager.management.ManagementProtocol;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
+import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
+import org.jboss.as.server.manager.management.AbstractManagementRequest;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassTable;
-import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
 
 /**
  * Connection to a remote domain controller.
@@ -50,171 +45,289 @@ import org.jboss.modules.ModuleLoadException;
  * @author John Bailey
  */
 public class RemoteDomainControllerConnection implements DomainControllerConnection {
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.manager");
-    private static final MarshallerFactory MARSHALLER_FACTORY;
-    private static final MarshallingConfiguration CONFIG;
-
-    static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.river"));
-        } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
-        }
-        final MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassTable(ModularClassTable.getInstance());
-        CONFIG = config;
-    }
-
+    private static final Logger log = Logger.getLogger("org.jboss.as.management");
     private final String serverManagerId;
     private final InetAddress dcAddress;
     private final int dcPort;
+    private final int connectionRetryLimit;
+    private final long connectionRetryInterval;
+    private final long connectTimeout;
+    private final InetAddress localManagementAddress;
+    private final int localManagementPort;
+    private final RemoteFileRepository remoteFileRepository;
+    private final ScheduledExecutorService executorService;
 
     /**
      * Create an instance.
      *
-     * @param serverManagerId The identifier of the server manager
-     * @param dcAddress       The domain controller port
-     * @param dcPort          The domain controller port
+     * @param serverManagerId  The identifier of the server manager
+     * @param dcAddress  The domain controller port
+     * @param dcPort  The domain controller port
+     * @param localManagementAddress The local management address
+     * @param localManagementPort The local management port
+     * @param localFileRepository  The local file repository
+     * @param connectionRetryLimit  The number of times to retry operations
+     * @param connectionRetryInterval  The interval between connection retries
+     * @param connectTimeout  The timeout for connecting to the remote DC (in seconds)
+     * @param executorService The executor service
      */
-    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort) {
+    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort, final InetAddress localManagementAddress, final int localManagementPort, final FileRepository localFileRepository, final int connectionRetryLimit, final long connectionRetryInterval, final long connectTimeout, final ScheduledExecutorService executorService) {
         this.serverManagerId = serverManagerId;
         this.dcAddress = dcAddress;
         this.dcPort = dcPort;
+        this.localManagementAddress = localManagementAddress;
+        this.localManagementPort = localManagementPort;
+        this.remoteFileRepository = new RemoteFileRepository(this, localFileRepository);
+        this.connectionRetryLimit = connectionRetryLimit;
+        this.connectionRetryInterval = connectionRetryInterval;
+        this.connectTimeout = connectTimeout;
+        this.executorService = executorService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public DomainModel register(final HostModel hostModel) {
-        return execute(new RegisterOperatation(hostModel));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void unregister(final HostModel hostModel) {
-        execute(new UnregisterOperatation(hostModel));
-    }
-
-    private <T> T execute(final DomainControllerOperatation<T> operatation) {
-        Socket socket = null;
-        Marshaller marshaller = null;
-        Unmarshaller unmarshaller = null;
+    /** {@inheritDoc} */
+    public DomainModel register() {
         try {
-            socket = new Socket(dcAddress, dcPort);
-            final InputStream socketIn = new BufferedInputStream(socket.getInputStream());
-            final OutputStream socketOut = new BufferedOutputStream(socket.getOutputStream());
-
-            socketOut.write(ManagementOperationHandler.SIGNATURE);
-            socketOut.write(DomainControllerOperationHandler.DOMAIN_CONTROLLER_HANDLER);
-
-            marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-            marshaller.start(Marshalling.createByteOutput(socketOut));
-
-            marshaller.writeUTF(serverManagerId);
-            marshaller.writeByte(operatation.getCommandByte());
-
-            operatation.sendRequest(marshaller);
-            marshaller.finish();
-
-            unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
-            unmarshaller.start(Marshalling.createByteInput(socketIn));
-            final T result = operatation.readResponse(unmarshaller);
-            unmarshaller.finish();
-            return result;
-        } catch (Throwable t) {
-            throw new RuntimeException("Failed to execute server manager request " + operatation, t);
-        } finally {
-            safeClose(marshaller);
-            safeClose(unmarshaller);
-            safeClose(socket);
+            return new RegisterOperation(localManagementAddress, localManagementPort, this).executeForResult();
+        } catch (ManagementException e) {
+            throw new RuntimeException("Failed to register with the domain controller", e);
         }
     }
 
-    private interface DomainControllerOperatation<T> {
-        byte getCommandByte();
-
-        void sendRequest(final Marshaller marshaller) throws Exception;
-
-        T readResponse(final Unmarshaller unmarshaller) throws Exception;
+    /** {@inheritDoc} */
+    public void unregister() {
+        try {
+            new UnregisterOperation(this).execute();
+        } catch (ManagementException e) {
+            throw new RuntimeException("Failed to register with the domain controller", e);
+        }
     }
 
-    private class RegisterOperatation implements DomainControllerOperatation<DomainModel> {
-        private final HostModel hostModel;
+    /** {@inheritDoc} */
+    public FileRepository getRemoteFileRepository() {
+        return remoteFileRepository;
+    }
 
-        private RegisterOperatation(HostModel hostModel) {
-            this.hostModel = hostModel;
+    private abstract static class DomainControllerRequest<T> extends AbstractManagementRequest<T> {
+        protected final String serverManagerId;
+
+        private DomainControllerRequest(final RemoteDomainControllerConnection connection) {
+            super(connection.dcAddress, connection.dcPort, connection.connectionRetryLimit, connection.connectionRetryInterval, connection.connectTimeout, connection.executorService);
+            this.serverManagerId = connection.serverManagerId;
         }
 
-        public final byte getCommandByte() {
-            return (byte) 0;
+        protected byte getHandlerId() {
+            return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
         }
 
-        public void sendRequest(final Marshaller marshaller) throws Exception {
-            marshaller.writeObject(hostModel);
-        }
-
-        public DomainModel readResponse(Unmarshaller unmarshaller) throws Exception {
-            final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
-
-            byte response = unmarshaller.readByte();
-            if (response != getCommandByte()) {
-                // TODO: Handle invalid response..
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_ID);
+                output.writeUTF(serverManagerId);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write local management connection information in request", e);
             }
-            return domainModel;
         }
     }
 
+    private static class RegisterOperation extends DomainControllerRequest<DomainModel> {
+        private final InetAddress localManagementAddress;
+        private final int localManagementPort;
 
-    private class UnregisterOperatation implements DomainControllerOperatation<Void> {
-        private final HostModel hostModel;
-
-        private UnregisterOperatation(HostModel hostModel) {
-            this.hostModel = hostModel;
+        private RegisterOperation(final InetAddress localManagementAddress, final int localManagementPort, final RemoteDomainControllerConnection connection) {
+            super(connection);
+            this.localManagementAddress = localManagementAddress;
+            this.localManagementPort = localManagementPort;
         }
 
-        public final byte getCommandByte() {
-            return Byte.MAX_VALUE;
+        public final byte getRequestCode() {
+            return ManagementProtocol.REGISTER_REQUEST;
         }
 
-        public void sendRequest(Marshaller marshaller) throws Exception {
-            marshaller.writeObject(hostModel);
+        protected final byte getResponseCode() {
+            return ManagementProtocol.REGISTER_RESPONSE;
         }
 
-        public Void readResponse(Unmarshaller unmarshaller) throws Exception {
-             byte response = unmarshaller.readByte();
-            if(response != getCommandByte()) {
-                // TODO: Handle invalid response..
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_HOST);
+                final byte[] address = localManagementAddress.getAddress();
+                output.writeInt(address.length);
+                output.write(address);
+                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_PORT);
+                output.writeInt(localManagementPort);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write local management connection information in request", e);
             }
+        }
+
+        protected final DomainModel receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
+                log.infof("Registered with remote domain controller");
+                return unmarshal(input, DomainModel.class);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to read domain model from response", e);
+            }
+        }
+    }
+
+    private static class UnregisterOperation extends DomainControllerRequest<Void> {
+        private UnregisterOperation(final RemoteDomainControllerConnection connection) {
+            super(connection);
+        }
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.UNREGISTER_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return ManagementProtocol.UNREGISTER_RESPONSE;
+        }
+
+        protected Void receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+            log.infof("Unregistered with remote domain controller");
             return null;
         }
     }
 
-    private void safeClose(final Socket socket) {
-        if (socket == null)
-            return;
-        try {
-            socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
+    private static class GetFileOperation extends DomainControllerRequest<File> {
+        private final byte rootId;
+        private final String filePath;
+        private final FileRepository localFileRepository;
+
+        private GetFileOperation(final byte rootId, final String filePath, final FileRepository localFileRepository, final RemoteDomainControllerConnection connection) {
+            super(connection);
+            this.rootId = rootId;
+            this.filePath = filePath;
+            this.localFileRepository = localFileRepository;
         }
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.SYNC_FILE_REQUEST;
         }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        protected final byte getResponseCode() {
+            return ManagementProtocol.SYNC_FILE_RESPONSE;
+        }
+
+        protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_ROOT_ID);
+                output.writeByte(rootId);
+                output.writeByte(ManagementProtocol.PARAM_FILE_PATH);
+                output.writeUTF(filePath);
+            } catch (IOException e) {
+                throw new ManagementException("Failed to send sync file request", e);
+            }
+        }
+
+        protected final File receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
+            final File localPath;
+            switch (rootId) {
+                case 0: {
+                    localPath = localFileRepository.getFile(filePath);
+                    break;
+                }
+                case 1: {
+                    localPath = localFileRepository.getConfigurationFile(filePath);
+                    break;
+                }
+                case 2: {
+                    localPath = localFileRepository.getDeploymentFile(filePath);
+                    break;
+                }
+                default: {
+                    localPath = null;
+                }
+            }
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_NUM_FILES);
+                int numFiles = input.readInt();
+                switch (numFiles) {
+                    case -1: { // Not found on DC
+                        break;
+                    }
+                    case 0: { // Found on DC, but was an empty dir
+                        if (!localPath.mkdirs()) {
+                            throw new ManagementException("Unable to create local directory: " + localPath);
+                        }
+                        break;
+                    }
+                    default: { // Found on DC
+                        for (int i = 0; i < numFiles; i++) {
+                            expectHeader(input, ManagementProtocol.FILE_START);
+                            expectHeader(input, ManagementProtocol.PARAM_FILE_PATH);
+                            final String path = input.readUTF();
+                            expectHeader(input, ManagementProtocol.PARAM_FILE_SIZE);
+                            final long length = input.readLong();
+                            log.debugf("Received file [%s] of length %d", path, length);
+                            final File file = new File(localPath, path);
+                            if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                                throw new ManagementException("Unable to create local directory " + localPath.getParent());
+                            }
+                            long totalRead = 0;
+                            OutputStream fileOut = null;
+                            try {
+                                fileOut = new BufferedOutputStream(new FileOutputStream(file));
+                                final byte[] buffer = new byte[8192];
+                                int read;
+                                while (totalRead < length && (read = input.read(buffer, 0, Math.min((int) (length - totalRead), buffer.length))) != -1) {
+                                    if (read > 0) {
+                                        fileOut.write(buffer, 0, read);
+                                        totalRead += read;
+                                    }
+                                }
+                            } finally {
+                                if (fileOut != null) {
+                                    fileOut.close();
+                                }
+                            }
+                            if (totalRead != length) {
+                                throw new ManagementException("Did not read the entire file. Missing: " + (length - totalRead));
+                            }
+                            expectHeader(input, ManagementProtocol.FILE_END);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                throw new ManagementException("Failed to process sync file response", e);
+            }
+            return localPath;
         }
     }
 
-    private void safeClose(final Closeable closeable) {
-        if (closeable != null) try {
-            closeable.close();
-        } catch (Throwable ignored) {
-            // todo: log me
+    private static class RemoteFileRepository implements FileRepository {
+        private final RemoteDomainControllerConnection connection;
+        private final FileRepository localFileRepository;
+
+        private RemoteFileRepository(final RemoteDomainControllerConnection connection, final FileRepository localFileRepository) {
+            this.connection = connection;
+            this.localFileRepository = localFileRepository;
+        }
+
+        public final File getFile(String relativePath) {
+            return getFile(relativePath, (byte)0);
+        }
+
+        public final File getConfigurationFile(String relativePath) {
+            return getFile(relativePath, (byte)1);
+        }
+
+        public final File getDeploymentFile(String relativePath) {
+            return getFile(relativePath, (byte)2);
+        }
+
+        private File getFile(final String relativePath, final byte repoId) {
+            try {
+                return new GetFileOperation(repoId, relativePath, localFileRepository, connection).executeForResult();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get file from remote repository", e);
+            }
         }
     }
+
+
 }

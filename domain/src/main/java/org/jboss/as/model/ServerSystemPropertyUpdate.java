@@ -45,16 +45,19 @@ public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean requiresRestart() {
         return false;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
+    @Override
+    public void applyUpdate(final ServerModel element) throws UpdateFailedException {
         propertyUpdate.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
+    @Override
     public <P> void applyUpdate(final ServiceContainer container, final UpdateResultHandler<Void, P> resultHandler, final P param) {
         try {
             propertyUpdate.applyUpdate(System.getProperties());
@@ -66,7 +69,8 @@ public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getCompensatingUpdate(final ServerModel original) {
+    @Override
+    public ServerSystemPropertyUpdate getCompensatingUpdate(final ServerModel original) {
         return new ServerSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 }

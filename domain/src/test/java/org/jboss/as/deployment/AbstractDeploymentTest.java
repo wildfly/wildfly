@@ -51,19 +51,19 @@ public abstract class AbstractDeploymentTest {
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource(AbstractDeploymentTest.class, "/test")).getPathName());
 
         serviceContainer = ServiceContainer.Factory.create();
 
         runWithLatchedBatch(new BatchedWork() {
             @Override
-            public void execute(BatchBuilder batchBuilder) throws Exception {
+            public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
                 setupServices(batchBuilder);
             }
         });
     }
 
     protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
+        MockServerDeploymentRepository.addService(batchBuilder, VFS.getChild(getResource(AbstractDeploymentTest.class, "/test")).getPhysicalFile());
     }
 
     @After
@@ -73,8 +73,8 @@ public abstract class AbstractDeploymentTest {
 
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
-            public void execute(BatchBuilder batchBuilder) throws Exception {
-                new ServerGroupDeploymentElement(deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
+            public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
+                new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
             }
         });
     }
@@ -95,7 +95,7 @@ public abstract class AbstractDeploymentTest {
         });
         batchBuilder.addListener(listener);
         // Run the work
-        work.execute(batchBuilder);
+        work.execute(batchBuilder, serviceContainer);
 
         batchBuilder.install();
         listener.finishBatch();
@@ -105,7 +105,7 @@ public abstract class AbstractDeploymentTest {
     }
 
     protected static interface BatchedWork {
-        void execute(final BatchBuilder batchBuilder) throws Exception;
+        void execute(final BatchBuilder batchBuilder, final ServiceContainer serviceContainer) throws Exception;
     }
 
     public static URL getResource(final Class<?> testClass, final String path) throws Exception {

@@ -32,6 +32,8 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.jboss.as.server.manager.ServerManagerEnvironment;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -46,6 +48,9 @@ public class AbstractProtocolTestModule {
         setProperties.add(name);
     }
 
+    protected void setDomainConfigDir(String name) throws URISyntaxException {
+        addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
+    }
 
     public void beforeTest() throws Exception {
     }

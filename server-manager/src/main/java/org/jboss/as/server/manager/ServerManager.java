@@ -38,10 +38,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.xml.stream.XMLInputFactory;
+
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
@@ -51,12 +55,13 @@ import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
+import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
-import org.jboss.as.server.manager.DirectServerCommunicationHandler.ShutdownListener;
+import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
 import org.jboss.as.server.manager.management.ManagementCommunicationService;
 import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
@@ -64,25 +69,31 @@ import org.jboss.as.server.manager.management.ManagementOperationHandlerService;
 import org.jboss.as.server.manager.management.ServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
-import org.jboss.as.threads.ThreadFactoryExecutorService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
  * A ServerManager.
  *
  * @author Brian Stansberry
+ * @author Kabir Khan
  */
 public class ServerManager implements ShutdownListener {
     private static final Logger log = Logger.getLogger("org.jboss.server.manager");
@@ -93,6 +104,7 @@ public class ServerManager implements ShutdownListener {
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final File hostXML;
     private final MessageHandler messageHandler;
+    private final FileRepository fileRepository;
     private volatile ProcessManagerSlave processManagerSlave;
     private volatile DirectServerCommunicationListener directServerCommunicationListener;
     private HostModel hostConfig;
@@ -117,6 +129,7 @@ public class ServerManager implements ShutdownListener {
         this.hostXML = new File(environment.getDomainConfigurationDir(), "host.xml");
         this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
         this.messageHandler = new MessageHandler(this);
+        this.fileRepository = new LocalFileRepository(environment);
     }
 
     public String getName() {
@@ -147,7 +160,8 @@ public class ServerManager implements ShutdownListener {
 
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(new AbstractServiceListener<Object>() {
-            public void serviceFailed(ServiceController<? extends Object> serviceController, StartException reason) {
+            @Override
+            public void serviceFailed(ServiceController<?> serviceController, StartException reason) {
                 log.errorf(reason, "Service [%s] failed.", serviceController.getName());
             }
         });
@@ -185,9 +199,8 @@ public class ServerManager implements ShutdownListener {
 
                     Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
                     servers.put(getServerProcessName(serverConf), server);
-
-                    //Now that the server is in the servers map we can start it
-                    processManagerSlave.startProcess(server.getServerProcessName());
+                    // Now that the server is in the servers map we can start it
+                    startServer(serverConf, server);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
                     log.error("Failed to start server " + serverEl.getName(), e);
@@ -195,6 +208,25 @@ public class ServerManager implements ShutdownListener {
             }
             else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
+    }
+
+    private void startServer(final ServerModel serverModel, final Server server) throws IOException {
+        // We need to make sure we have all the deployments locally
+        final Set<ServerGroupDeploymentElement> deployments = serverModel.getDeployments();
+        final FileRepository localFileRepository = this.fileRepository;
+        final FileRepository dcFileRepository = this.domainControllerConnection.getRemoteFileRepository();
+        for(ServerGroupDeploymentElement deployment : deployments) {
+            final String deploymentPath = generateDeploymentPath(deployment);
+            if(!localFileRepository.getDeploymentFile(deploymentPath).exists() && !dcFileRepository.getDeploymentFile(deploymentPath).exists()) {
+                throw new RuntimeException("Unable to get content for deployment [" + deployment.getRuntimeName() + "] from domain controller ");
+            }
+        }
+        processManagerSlave.startProcess(server.getServerProcessName());
+    }
+
+    private String generateDeploymentPath(final ServerGroupDeploymentElement deployment) {
+        final String id = deployment.getSha1HashAsHexString();
+        return id.substring(0, 2) + "/" + id.substring(2);
     }
 
     private RespawnPolicy getRespawnPolicy(ServerModel serverConf) {
@@ -290,7 +322,9 @@ public class ServerManager implements ShutdownListener {
     public void stop() {
         log.info("Stopping ServerManager");
         directServerCommunicationListener.shutdown();
-        domainControllerConnection.unregister(hostConfig);
+        if(domainControllerConnection != null) {
+            domainControllerConnection.unregister();
+        }
         serviceContainer.shutdown();
         // FIXME stop any local DomainController, stop other internal SM services
     }
@@ -310,7 +344,7 @@ public class ServerManager implements ShutdownListener {
             serversCopy = new HashMap<String, Server>(servers);
         }
 
-        for (Map.Entry<String, Server> entry : servers.entrySet()) {
+        for (Map.Entry<String, Server> entry : serversCopy.entrySet()) {
             try {
                 Server server = entry.getValue();
                 if (server.getState() == ServerState.STOPPED)
@@ -338,8 +372,6 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-
-
     /**
      * Callback for when we receive the SERVER_STOPPED message from a Server
      *
@@ -352,8 +384,6 @@ public class ServerManager implements ShutdownListener {
             return;
         }
         checkState(server, ServerState.STOPPING);
-        if (shutdownLatch != null)
-            shutdownLatch.remove(serverName);
 
         try {
             processManagerSlave.stopProcess(serverName);
@@ -361,6 +391,8 @@ public class ServerManager implements ShutdownListener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        if (shutdownLatch != null)
+            shutdownLatch.remove(serverName);
     }
 
     /**
@@ -468,19 +500,37 @@ public class ServerManager implements ShutdownListener {
     }
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
-        final DomainController domainController = new DomainController();
         try {
+            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
-            domainController.start(hostConfig, mapper, environment.getDomainConfigurationDir());
-            setDomainControllerConnection(new LocalDomainControllerConnection(this, domainController));
 
-            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
-            final ManagementOperationHandlerService<DomainControllerOperationHandler> operationHandlerService
-                = new ManagementOperationHandlerService<DomainControllerOperationHandler>(new DomainControllerOperationHandler(domainController));
+            final DomainController domainController = new DomainController();
 
-            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("domain", "controller"), operationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
+
+            batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
+                .addInjection(domainController.getXmlMapperInjector(), mapper)
+                .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
+                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
+
+
+            final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
+            batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
+                .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
+                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
+                .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
+
+            batchBuilder.addService(SERVICE_NAME_BASE.append("local", "dc", "connection"), Service.NULL)
+                .addDependency(DomainController.SERVICE_NAME, DomainController.class, new Injector<DomainController>(){
+                    public void inject(DomainController value) throws InjectionException {
+                        setDomainControllerConnection(new LocalDomainControllerConnection(ServerManager.this, domainController, fileRepository));
+                    }
+                    public void uninject() {
+                        setDomainControllerConnection(null);
+                    }
+                });
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
         }
@@ -489,7 +539,7 @@ public class ServerManager implements ShutdownListener {
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
-        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this);
+        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 20, 15L, 10L);
         final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
@@ -508,6 +558,11 @@ public class ServerManager implements ShutdownListener {
         }
         serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
         serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
+
+        final ManagementElement managementElement = hostConfig.getManagementElement();
+        serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, domainControllerClientService.getLocalManagementInterfaceInjector());
+        serviceBuilder.addInjection(domainControllerClientService.getLocalManagementPortInjector(), managementElement.getPort());
+        serviceBuilder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerClientService.getExecutorServiceInjector());
     }
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
@@ -529,9 +584,30 @@ public class ServerManager implements ShutdownListener {
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
         batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
-        final ThreadFactoryExecutorService executorService = new ThreadFactoryExecutorService(20, false); // TODO: configuration
-        batchBuilder.addService(executorServiceName, executorService)
-            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
+
+        /**
+         * Replace below with fixed ScheduledThreadPoolService
+         */
+        final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
+        batchBuilder.addService(executorServiceName, new Service<ScheduledExecutorService>() {
+            private ScheduledExecutorService executorService;
+            public synchronized void start(StartContext context) throws StartException {
+                executorService = Executors.newScheduledThreadPool(20, threadFactoryValue.getValue());
+            }
+
+            public synchronized void stop(StopContext context) {
+                executorService.shutdown();
+            }
+
+            public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
+                return executorService;
+            }
+        }).addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryValue);
+
+//        final ScheduledThreadPoolService executorService = new ScheduledThreadPoolService(20, TimeSpec.DEFAULT_KEEPALIVE);
+//        batchBuilder.addService(executorServiceName, executorService)
+//            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
+
 
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
@@ -550,7 +626,10 @@ public class ServerManager implements ShutdownListener {
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
         this.domainControllerConnection = domainControllerConnection;
-        final DomainModel domainModel = domainControllerConnection.register(hostConfig);
+        if(domainControllerConnection == null) {
+            return;
+        }
+        final DomainModel domainModel = domainControllerConnection.register();
         setDomain(domainModel);
     }
 
@@ -558,7 +637,7 @@ public class ServerManager implements ShutdownListener {
         return hostConfig;
     }
 
-    private HostModel parseHost() {
+    protected HostModel parseHost() {
 
         if (!hostXML.exists()) {
             throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " does not exist.");

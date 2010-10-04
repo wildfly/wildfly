@@ -21,100 +21,124 @@
  */
 package org.jboss.as.connector;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import org.jboss.jca.deployers.common.Configuration;
+
 /**
- *
  * A ConnectorSubsystemConfiguration.
- *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
  */
-public class ConnectorSubsystemConfiguration {
-   /** Preform bean validation */
-   private final AtomicBoolean beanValidation = new AtomicBoolean(true);
+public class ConnectorSubsystemConfiguration implements Configuration {
+    /** Preform bean validation */
+    private final AtomicBoolean beanValidation = new AtomicBoolean(true);
 
-   /** Preform archive validation */
-   private final AtomicBoolean archiveValidation = new AtomicBoolean(true);
+    /** Preform archive validation */
+    private final AtomicBoolean archiveValidation = new AtomicBoolean(true);
 
-   /** Archive validation: Fail on Warn */
-   private final AtomicBoolean archiveValidationFailOnWarn = new AtomicBoolean(false);
+    /** Archive validation: Fail on Warn */
+    private final AtomicBoolean archiveValidationFailOnWarn = new AtomicBoolean(false);
 
-   /** Archive validation: Fail on Error */
-   private final AtomicBoolean archiveValidationFailOnError = new AtomicBoolean(true);
+    /** Archive validation: Fail on Error */
+    private final AtomicBoolean archiveValidationFailOnError = new AtomicBoolean(true);
 
-   /**
-    *
-    * Create a new ConnectorSubsystemConfiguration.
-    *
-    */
-   public ConnectorSubsystemConfiguration() {
+    /**
+     * Create a new ConnectorSubsystemConfiguration.
+     */
+    public ConnectorSubsystemConfiguration() {
 
-   }
+    }
 
-   /**
-    * Set if bean validation should be performed
-    * @param value The value
-    */
-   public void setBeanValidation(boolean value) {
-      beanValidation.set(value);
-   }
+    /**
+     * Set if bean validation should be performed
+     * @param value The value
+     */
+    public void setBeanValidation(boolean value) {
+        beanValidation.set(value);
+    }
 
-   /**
-    * Should bean validation be performed
-    * @return True if validation; otherwise false
-    */
-   public boolean getBeanValidation() {
-      return beanValidation.get();
-   }
+    /**
+     * Should bean validation be performed
+     * @return True if validation; otherwise false
+     */
+    public boolean getBeanValidation() {
+        return beanValidation.get();
+    }
 
-   /**
-    * Set if archive validation should be performed
-    * @param value The value
-    */
-   public void setArchiveValidation(boolean value) {
-      archiveValidation.set(value);
-   }
+    /**
+     * Set if archive validation should be performed
+     * @param value The value
+     */
+    public void setArchiveValidation(boolean value) {
+        archiveValidation.set(value);
+    }
 
-   /**
-    * Should archive validation be performed
-    * @return True if validation; otherwise false
-    */
-   public boolean getArchiveValidation() {
-      return archiveValidation.get();
-   }
+    /**
+     * Should archive validation be performed
+     * @return True if validation; otherwise false
+     */
+    public boolean getArchiveValidation() {
+        return archiveValidation.get();
+    }
 
-   /**
-    * Set if a failed warning archive validation report should fail the deployment
-    * @param value The value
-    */
-   public void setArchiveValidationFailOnWarn(boolean value) {
-      archiveValidationFailOnWarn.set(value);
-   }
+    /**
+     * Set if a failed warning archive validation report should fail the
+     * deployment
+     * @param value The value
+     */
+    public void setArchiveValidationFailOnWarn(boolean value) {
+        archiveValidationFailOnWarn.set(value);
+    }
 
-   /**
-    * Does a failed archive validation warning report fail the deployment
-    * @return True if failing; otherwise false
-    */
-   public boolean getArchiveValidationFailOnWarn() {
-      return archiveValidationFailOnWarn.get();
-   }
+    /**
+     * Does a failed archive validation warning report fail the deployment
+     * @return True if failing; otherwise false
+     */
+    public boolean getArchiveValidationFailOnWarn() {
+        return archiveValidationFailOnWarn.get();
+    }
 
-   /**
-    * Set if a failed error archive validation report should fail the deployment
-    * @param value The value
-    */
-   public void setArchiveValidationFailOnError(boolean value) {
-      archiveValidationFailOnError.set(value);
-   }
+    /**
+     * Set if a failed error archive validation report should fail the
+     * deployment
+     * @param value The value
+     */
+    public void setArchiveValidationFailOnError(boolean value) {
+        archiveValidationFailOnError.set(value);
+    }
 
-   /**
-    * Does a failed archive validation error report fail the deployment
-    * @return True if failing; otherwise false
-    */
-   public boolean getArchiveValidationFailOnError() {
-      return archiveValidationFailOnError.get();
-   }
+    /**
+     * Does a failed archive validation error report fail the deployment
+     * @return True if failing; otherwise false
+     */
+    public boolean getArchiveValidationFailOnError() {
+        return archiveValidationFailOnError.get();
+    }
+
+    @Override
+    public void setDefaultBootstrapContext(CloneableBootstrapContext value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public CloneableBootstrapContext getDefaultBootstrapContext() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setBootstrapContexts(Map<String, CloneableBootstrapContext> value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Map<String, CloneableBootstrapContext> getBootstrapContexts() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
-

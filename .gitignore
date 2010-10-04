@@ -12,3 +12,4 @@ target
 *.iws
 .idea
 maven-ant-tasks.jar
+test-output

@@ -25,26 +25,23 @@ package org.jboss.as.connector;
 import org.jboss.msc.service.ServiceName;
 
 /**
- *
  * A ConnectorServices.
- *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
  */
 public final class ConnectorServices {
 
-   public static final ServiceName JBOSS_CONNECTOR = ServiceName.JBOSS.append("connector");
+    public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
-   /**
-    *
-    * convenient method to check notNull of value
-    *
-    * @param <T> type of the value
-    * @param value the value
-    * @return the value or throw an {@link IllegalStateException} if value is null (a.k.a. service not started)
-    */
-   public static <T> T notNull(T value) {
-        if (value == null) throw new IllegalStateException("Service not started");
+    /**
+     * convenient method to check notNull of value
+     * @param <T> type of the value
+     * @param value the value
+     * @return the value or throw an {@link IllegalStateException} if value is
+     *         null (a.k.a. service not started)
+     */
+    public static <T> T notNull(T value) {
+        if (value == null)
+            throw new IllegalStateException("Service not started");
         return value;
     }
 

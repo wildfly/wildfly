@@ -55,7 +55,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
 
     public TransactionsSubsystemElement() {
-        super(new QName("urn:jboss:domain:transactions:1.0", "subsystem"));
+        super(new QName(Namespace.TRANSACTIONS_1_0.getUriString(), "subsystem"));
     }
 
     public TransactionsSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -107,21 +107,31 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         }
     }
 
+    @Override
     public long elementHash() {
         return 42;
     }
 
+    @Override
     protected Class<TransactionsSubsystemElement> getElementClass() {
         return TransactionsSubsystemElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.RECOVERY_ENVIRONMENT.getLocalName());
+        // BES this doesn't work right now; see if we can fix it as it should
+        //streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.RECOVERY_ENVIRONMENT.getLocalName());
+        streamWriter.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
         recoveryEnvironmentElement.writeContent(streamWriter);
-        streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.CORE_ENVIRONMENT.getLocalName());
+        // BES this doesn't work right now; see if we can fix it as it should
+        //streamWriter.writeStartElement(Namespace.TRANSACTIONS_1_0.name(), Element.CORE_ENVIRONMENT.getLocalName());
+        streamWriter.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
         coreEnvironmentElement.writeContent(streamWriter);
+
+        streamWriter.writeEndElement();
     }
 
+    @Override
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Transactions Subsystem");
 

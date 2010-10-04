@@ -57,7 +57,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * Construct a new instance.
      */
     protected AbstractModelElement() {
-        assert getClass() == getElementClass();
+        assert getClass() == getElementClass() : ""+getClass() + " != " + getElementClass();
     }
 
     /**

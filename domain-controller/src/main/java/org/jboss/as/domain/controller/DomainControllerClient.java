@@ -44,5 +44,13 @@ public interface DomainControllerClient {
      * @param domain The domain configuration
      */
     void updateDomain(DomainModel domain);
+
+    /**
+     * Check the server manager client to verify it is still active.
+     *
+     * @return true if the client is active, false if not.
+     */
+    boolean isActive();
+
     // TODO:  Add calls for updates/events
 }

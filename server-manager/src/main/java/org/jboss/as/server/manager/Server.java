@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 
 /**
  * A client proxy for communication between a ServerManager and a managed server.
@@ -133,19 +134,19 @@ public final class Server {
     }
 
     public void start() throws IOException {
-        sendCommand(ServerManagerProtocolCommand.START_SERVER, serverConfig);
+        sendCommand(ServerManagerToServerProtocolCommand.START_SERVER, serverConfig);
     }
 
     public void stop() throws IOException {
-        sendCommand(ServerManagerProtocolCommand.STOP_SERVER);
+        sendCommand(ServerManagerToServerProtocolCommand.STOP_SERVER);
         respawnCount.set(0);
     }
 
-    private void sendCommand(ServerManagerProtocolCommand command) throws IOException {
+    private void sendCommand(ServerManagerToServerProtocolCommand command) throws IOException {
         sendCommand(command, null);
     }
 
-    private void sendCommand(ServerManagerProtocolCommand command, Object o) throws IOException {
+    private void sendCommand(ServerManagerToServerProtocolCommand command, Object o) throws IOException {
         byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
         communicationHandler.sendMessage(cmd);
     }

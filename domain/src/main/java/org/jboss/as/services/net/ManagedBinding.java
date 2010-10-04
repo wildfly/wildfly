@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
- * The managed binding.
+ * A representation of a socket binding. Open ports need to be registered
+ * using the {@code SocketBindingManager}.
  *
  * @author Emanuel Muckenhuber
  */

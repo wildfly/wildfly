@@ -28,6 +28,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 /**
+ * Managed {@code ServerSocket} binding, automatically registering itself
+ * at the {@code SocketBindingManager} when bound.
+ *
  * @author Emanuel Muckenhuber
  */
 class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {

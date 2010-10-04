@@ -73,7 +73,9 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
         );
     }
 
+    @Override
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        super.setupServices(batchBuilder);
         batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
     }
 

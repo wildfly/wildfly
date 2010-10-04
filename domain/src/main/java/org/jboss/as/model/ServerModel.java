@@ -40,6 +40,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -64,6 +66,14 @@ import java.util.TreeMap;
  */
 public final class ServerModel extends AbstractModel<ServerModel> {
 
+    /**
+     * ServiceName under which a {@link org.jboss.msc.service.Service}<ServerModel>}
+     * will be registered on a running server.
+     *
+     * TODO see if exposing the ServerModel this way can be avoided.
+     */
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "model");
+
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
@@ -73,7 +83,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private final String schemaLocation;
     private final String serverName;
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
-    private final NavigableMap<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
+    private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
+    private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
     private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
@@ -157,6 +168,14 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                             bindingGroup = new SocketBindingGroupElement(reader, intfResolver, null);
                             break;
                         }
+                        case DEPLOYMENT_REPOSITORY: {
+                            DeploymentRepositoryElement repo = new DeploymentRepositoryElement(reader);
+                            if (repositories.containsKey(repo.getPath())) {
+                                throw new XMLStreamException(element.getLocalName() + " with name " + repo.getPath() + " already declared; names must be unique", reader.getLocation());
+                            }
+                            repositories.put(repo.getPath(), repo);
+                            break;
+                        }
                         case SSLS: {
                             throw new UnsupportedOperationException("implement parsing of " + element.getLocalName());
                             //break;
@@ -220,7 +239,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
         Set<ServerGroupDeploymentElement> groupDeployments = serverGroup.getDeployments();
         for (ServerGroupDeploymentElement dep : groupDeployments) {
-            deployments.put(dep.getKey(), dep);
+            deployments.put(dep.getUniqueName(), dep);
         }
 
         SocketBindingGroupRefElement bindingRef = server.getSocketBindingGroup();
@@ -287,6 +306,10 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return systemProperties;
     }
 
+    public ServerGroupDeploymentElement getDeployment(String deploymentName) {
+        return deployments.get(deploymentName);
+    }
+
     /** {@inheritDoc} */
     @Override
     public long elementHash() {
@@ -324,14 +347,18 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         synchronized (namespaces) {
             for (NamespaceAttribute namespace : namespaces.values()) {
                 if (namespace.isDefaultNamespaceDeclaration()) {
-                    // for now I assume this is handled externally
-                    continue;
+                    streamWriter.setDefaultNamespace(namespace.getNamespaceURI());
+                    streamWriter.writeDefaultNamespace(namespace.getNamespaceURI());
                 }
-                streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+                else {
+                    streamWriter.setPrefix(namespace.getPrefix(), namespace.getNamespaceURI());
+                    streamWriter.writeNamespace(namespace.getPrefix(), namespace.getNamespaceURI());
+                }
             }
         }
 
         if (schemaLocation != null) {
+            // FIXME this doesn't work; disabled for now
             NamespaceAttribute ns = namespaces.get("http://www.w3.org/2001/XMLSchema-instance");
             streamWriter.writeAttribute(ns.getPrefix(), ns.getNamespaceURI(), "schemaLocation", schemaLocation);
         }
@@ -345,7 +372,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             if (! extensions.isEmpty()) {
                 streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
                 for (ExtensionElement element : extensions.values()) {
-                    streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+                    streamWriter.writeStartElement(Element.EXTENSION.getLocalName());
                     element.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
@@ -378,6 +405,13 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             systemProperties.writeContent(streamWriter);
         }
 
+        if (! repositories.isEmpty()) {
+            for (DeploymentRepositoryElement element : repositories.values()) {
+                streamWriter.writeStartElement(Element.DEPLOYMENT_REPOSITORY.getLocalName());
+                element.writeContent(streamWriter);
+            }
+        }
+
         if (! deployments.isEmpty()) {
             streamWriter.writeStartElement(Element.DEPLOYMENTS.getLocalName());
             for (ServerGroupDeploymentElement element : deployments.values()) {
@@ -386,6 +420,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             }
             streamWriter.writeEndElement();
         }
+
+        streamWriter.writeEndElement();
     }
 
     /**
@@ -442,17 +478,30 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
     }
 
-    public void activateDeployments(final ServiceActivatorContext context) {
-        final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments;
+    public void activateDeployments(final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
+        final Map<String, ServerGroupDeploymentElement> deployments;
         synchronized (this.deployments) {
-            deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>(this.deployments);
+            deployments = new TreeMap<String, ServerGroupDeploymentElement>(this.deployments);
         }
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
             try {
-                deploymentElement.activate(context);
+                deploymentElement.activate(context, serviceContainer);
             } catch(Throwable t) {
                 // TODO: Rollback deployments services added before failure?
-                log.error("Failed to activate deployment " + deploymentElement.getName(), t);
+                log.error("Failed to activate deployment " + deploymentElement.getUniqueName(), t);
+            }
+        }
+        final Map<String, DeploymentRepositoryElement> repos;
+        synchronized (repositories) {
+            repos = new TreeMap<String, DeploymentRepositoryElement>(repositories);
+        }
+        for (DeploymentRepositoryElement repo : repos.values()) {
+            try {
+                repo.activate(context);
+            }
+            catch(Throwable t) {
+                // TODO: Rollback deployments services added before failure?
+                log.error("Failed to activate deployment repository " + repo.getPath(), t);
             }
         }
     }
@@ -504,19 +553,28 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     }
 
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // FIXME replace with SimpleRefResolver
+        final RefResolver<String, DeploymentRepositoryElement> repoResolver = new RefResolver<String, DeploymentRepositoryElement>() {
+            private static final long serialVersionUID = 1L;
+            /** Always returns <code>null</code> since full domain does not support deployment-repository */
+            @Override
+            public DeploymentRepositoryElement resolveRef(String ref) {
+                return repositories.get(ref);
+            }
+        };
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DEPLOYMENT: {
-                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
-                            if (deployments.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader, repoResolver);
+                            if (deployments.containsKey(deployment.getUniqueName())) {
+                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
                                         " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
-                            deployments.put(deployment.getKey(), deployment);
+                            deployments.put(deployment.getUniqueName(), deployment);
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -525,6 +583,28 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                 }
                 default: throw unexpectedElement(reader);
             }
+        }
+    }
+
+    void addDeployment(final ServerGroupDeploymentElement deploymentElement) {
+        synchronized (deployments) {
+            if(deployments.put(deploymentElement.getUniqueName(), deploymentElement) != null) {
+                throw new IllegalArgumentException("Deployment " + deploymentElement.getUniqueName() +
+                                        " with sha1 hash " + bytesToHexString(deploymentElement.getSha1Hash()) +
+                                        " already declared");
+            }
+        }
+    }
+
+    ServerGroupDeploymentElement removeDeployment(final String deploymentName) {
+        synchronized (deployments) {
+            return deployments.remove(deploymentName);
+        }
+    }
+
+    public Set<ServerGroupDeploymentElement> getDeployments() {
+        synchronized (deployments) {
+            return new HashSet<ServerGroupDeploymentElement>(deployments.values());
         }
     }
 }

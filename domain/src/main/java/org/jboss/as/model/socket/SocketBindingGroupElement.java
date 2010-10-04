@@ -319,6 +319,8 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
                 included.writeContent(streamWriter);
             }
         }
+
+        streamWriter.writeEndElement();
     }
 
 }

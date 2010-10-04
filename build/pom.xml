@@ -140,6 +140,11 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-deployment-client</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
 
@@ -161,6 +166,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-managed-beans</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-messaging</artifactId>
         </dependency>
 
         <dependency>
@@ -207,7 +217,47 @@
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-common-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjts</artifactId>
@@ -252,6 +302,11 @@
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+           </dependency>
 
         <dependency>
             <groupId>org.jboss.remoting3</groupId>
@@ -361,6 +416,19 @@
         <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-nio</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-resources</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms</artifactId>
         </dependency>
 
         <dependency>

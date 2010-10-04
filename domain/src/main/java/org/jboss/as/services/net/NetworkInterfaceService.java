@@ -26,6 +26,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 
 import org.jboss.as.model.socket.AbstractInterfaceElement;
@@ -36,6 +39,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
+ * Service resolving the {@code NetworkInterfaceBinding} based on the configured
+ * interfaces in the domain model.
+ *
  * @author Emanuel Muckenhuber
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
@@ -102,7 +108,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
                 if (element.getInterfaceCriteria().isAcceptable(networkInterface, address)) {
                     final InetAddress resolved = getInterfaceAddress(networkInterface);
                     if (resolved != null) {
-                        return new NetworkInterfaceBinding(networkInterface, resolved);
+                        return new NetworkInterfaceBinding(Collections.singleton(networkInterface), resolved);
                     }
                 }
             }
@@ -124,11 +130,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         return null;
     }
 
-    static NetworkInterfaceBinding getNetworkInterfaceBinding(String addr) throws UnknownHostException, SocketException {
+    static NetworkInterfaceBinding getNetworkInterfaceBinding(final String addr) throws UnknownHostException, SocketException {
         final InetAddress address = InetAddress.getByName(addr);
-        // FIXME this is incorrect for wildcard addresses
-        final NetworkInterface net = NetworkInterface.getByInetAddress(address);
-        return new NetworkInterfaceBinding(net, address);
+        final Collection<NetworkInterface> interfaces = new ArrayList<NetworkInterface>();
+        final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+            interfaces.add(networkInterfaces.nextElement());
+        }
+        return new NetworkInterfaceBinding(interfaces, address);
     }
 
 }

@@ -44,6 +44,7 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
      * @param value the property value
      */
     public PropertyAdd(final String name, final String value) {
+
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -55,21 +56,25 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final PropertiesElement element) {
         element.addProperty(name, value);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final Properties properties) throws UpdateFailedException {
         properties.setProperty(name, value);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final Map<? super String, ? super String> map) {
         map.put(name, value);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
         return new PropertyRemove(name);
     }

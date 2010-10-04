@@ -26,12 +26,11 @@
 package org.jboss.as.server;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
-import org.jboss.as.server.manager.ServerManagerProtocolUtils;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.logging.Logger;
 
 /**
@@ -44,6 +43,7 @@ import org.jboss.logging.Logger;
 class MessageHandler implements ServerCommunicationHandler.Handler {
     private static final Logger logger = Logger.getLogger("org.jboss.as.server");
     private final Server server;
+    CommandHandler commandHandler = new CommandHandler();
 
     MessageHandler(Server server) {
         if (server == null) {
@@ -52,46 +52,9 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
         this.server = server;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.process.ProcessManagerSlave.Handler#handleMessage(java.lang.String, java.util.List)
-     */
-    @Override
-    public void handleMessage(List<String> message) {
-        logger.info("Message received: " + message);
-    }
-
-
     @Override
     public void handleMessage(byte[] message) {
-        Command cmd = null;
-        try {
-            cmd = ServerManagerProtocolCommand.readCommand(message);
-        } catch (IOException e) {
-            logger.error("Error reading command", e);
-            return;
-        }
-        switch (cmd.getCommand()) {
-        case START_SERVER:
-            ServerModel standalone = null;
-            try {
-                standalone = ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, cmd);
-            } catch (Exception e) {
-                logger.error("Error reading standalone", e);
-                return;
-            }
-            try {
-                server.start(standalone);
-            } catch (ServerStartException e) {
-                logger.error("Error starting server", e);
-                return;
-            }
-            break;
-        case STOP_SERVER:
-            server.stop();
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown command " + cmd.getCommand());
-        }
+        commandHandler.handleCommand(message);
     }
 
     @Override
@@ -102,5 +65,45 @@ class MessageHandler implements ServerCommunicationHandler.Handler {
     @Override
     public void reconnectServer(String addr, String port) {
         server.reconnectToServerManager(addr, port);
+    }
+
+    /**
+     * Callback for the {@link ServerManagerToServerProtocolCommand#handleCommand(ServerManagerToServerCommandHandler, Command)} calls
+     */
+    private class CommandHandler implements ServerManagerToServerCommandHandler {
+
+        void handleCommand(byte[] message) {
+            Command<ServerManagerToServerProtocolCommand> cmd = null;
+            try {
+                cmd = ServerManagerToServerProtocolCommand.readCommand(message);
+            } catch (IOException e) {
+                logger.error("Error reading command", e);
+                return;
+            }
+
+            try {
+                cmd.getCommand().handleCommand(this, cmd);
+            } catch (IOException e) {
+                logger.error("Error unmarshalling command data", e);
+            } catch (ClassNotFoundException e) {
+                logger.error("Error unmarshalling command data", e);
+            }
+        }
+
+        @Override
+        public void handleStartServer(ServerModel serverModel) {
+            try {
+                server.start(serverModel);
+            } catch (ServerStartException e) {
+                logger.error("Error starting server", e);
+                return;
+            }
+
+        }
+
+        @Override
+        public void handleStopServer() {
+            server.stop();
+        }
     }
 }

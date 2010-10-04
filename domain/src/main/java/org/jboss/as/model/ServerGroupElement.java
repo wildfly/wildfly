@@ -46,7 +46,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     private final String name;
     private final String profile;
-    private final NavigableMap<DeploymentUnitKey, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>();
+    private final NavigableMap<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
     private PropertiesElement systemProperties;
@@ -203,7 +203,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     public Set<ServerGroupDeploymentElement> getDeployments() {
         Set<ServerGroupDeploymentElement> deps = new LinkedHashSet<ServerGroupDeploymentElement>();
         synchronized (deploymentMappings) {
-            for (Map.Entry<DeploymentUnitKey, ServerGroupDeploymentElement> entry : deploymentMappings.entrySet()) {
+            for (Map.Entry<String, ServerGroupDeploymentElement> entry : deploymentMappings.entrySet()) {
                 deps.add(entry.getValue());
             }
         }
@@ -225,6 +225,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long cksum = name.hashCode() & 0xffffffffL;
         cksum = Long.rotateLeft(cksum, 1) ^ profile.hashCode() & 0xffffffffL;
@@ -238,11 +239,13 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<ServerGroupElement> getElementClass() {
         return ServerGroupElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), profile);
@@ -278,19 +281,29 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
 
     private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // FIXME replace with SimpleRefResolver
+        final RefResolver<String, DeploymentRepositoryElement> resolver = new RefResolver<String, DeploymentRepositoryElement>() {
+            private static final long serialVersionUID = 1L;
+            /** Always returns <code>null</code> since full domain does not support deployment-repository */
+            @Override
+            public DeploymentRepositoryElement resolveRef(String ref) {
+                return null;
+            }
+        };
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DOMAIN_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DEPLOYMENT: {
-                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader);
-                            if (deploymentMappings.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader, resolver);
+                            if (deploymentMappings.containsKey(deployment.getUniqueName())) {
+                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
                                         " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
-                            deploymentMappings.put(deployment.getKey(), deployment);
+                            deploymentMappings.put(deployment.getUniqueName(), deployment);
                             break;
                         }
                         default: throw unexpectedElement(reader);

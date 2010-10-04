@@ -26,12 +26,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
+import org.jboss.as.process.ProcessManagerProtocol.IncomingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommandHandler;
+import org.jboss.logging.Logger;
 
 /**
  * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
@@ -43,6 +46,7 @@ import org.jboss.as.communication.SocketConnection;
  */
 public final class ProcessManagerSlave {
 
+    Logger log = Logger.getLogger(ProcessManagerSlave.class);
     private final Handler handler;
     private final InputStream input;
     private final OutputStream output;
@@ -67,178 +71,44 @@ public final class ProcessManagerSlave {
     }
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        if (command == null) {
-            throw new IllegalArgumentException("command is null");
-        }
-        if (env == null) {
-            throw new IllegalArgumentException("env is null");
-        }
-        if (workingDirectory == null) {
-            throw new IllegalArgumentException("workingDirectory is null");
-        }
-        final StringBuilder b = new StringBuilder(256);
-        b.append(Command.ADD).append('\0');
-        b.append(processName).append('\0');
-        b.append(workingDirectory).append('\0');
-        b.append(command.size()).append('\0');
-        for (String str : command) {
-            b.append(str).append('\0');
-        }
-        b.append(env.size());
-        for (Map.Entry<String, String> entry : env.entrySet()) {
-            final String key = entry.getKey();
-            if (key != null) {
-                b.append('\0').append(key);
-                final String value = entry.getValue();
-                b.append('\0');
-                if (value != null) b.append(value);
-            }
-        }
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
+        IncomingCommand.ADD.sendAddProcess(output, processName, command, env, workingDirectory);
     }
 
     public void startProcess(final String processName) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.START).append('\0');
-        b.append(processName);
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
+        IncomingCommand.START.sendStartProcess(output, processName);
     }
 
     public void stopProcess(final String processName) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.STOP).append('\0');
-        b.append(processName);
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
+        IncomingCommand.STOP.sendStopProcess(output, processName);
     }
 
     public void removeProcess(final String processName) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.REMOVE).append('\0');
-        b.append(processName);
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
-    }
-
-    public void sendMessage(final String processName, final List<String> message) throws IOException {
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND).append('\0');
-        b.append(processName);
-        for (String str : message) {
-            b.append('\0').append(str);
-        }
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
+        IncomingCommand.REMOVE.sendRemoveProcess(output, processName);
     }
 
     public void sendMessage(final String recipient, final byte[] message) throws IOException {
-        if (recipient == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.SEND_BYTES).append('\0');
-        b.append(recipient).append('\0');
-        synchronized (output) {
-            StreamUtils.writeString(output, b.toString());
-            StreamUtils.writeInt(output, message.length);
-            output.write(message, 0, message.length);
-            StreamUtils.writeChar(output, '\n');
-            output.flush();
-        }
+        IncomingCommand.SEND.sendMessage(output, recipient, message);
     }
 
-    public void broadcastMessage(final List<String> message) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.BROADCAST);
-        for (String str : message) {
-            b.append('\0').append(str);
-        }
-        b.append('\n');
-        synchronized (output) {
-            StreamUtils.writeString(output, b);
-            output.flush();
-        }
+
+    public void sendStdin(final String recipient, final byte[] message) throws IOException {
+        IncomingCommand.SEND_STDIN.sendStdin(output, recipient, message);
     }
 
     public void broadcastMessage(final byte[] message) throws IOException {
-        final StringBuilder b = new StringBuilder();
-        b.append(Command.BROADCAST_BYTES).append('\0');
-        synchronized (output) {
-            StreamUtils.writeString(output, b.toString());
-            StreamUtils.writeInt(output, message.length);
-            output.write(message);
-            StreamUtils.writeChar(output, '\n');
-            output.flush();
-        }
+        IncomingCommand.BROADCAST.broadcastMessage(output, message);
     }
 
     public void serversShutdown() throws IOException {
-        synchronized (output) {
-            StreamUtils.writeString(output, Command.SERVERS_SHUTDOWN + "\n");
-            output.flush();
-        }
+        IncomingCommand.SERVERS_SHUTDOWN.sendServersShutdown(output);
     }
 
     public void reconnectServers(InetAddress addr, int port) throws IOException {
-        synchronized (output) {
-            StringBuilder b = new StringBuilder();
-            b.append(Command.RECONNECT_SERVERS);
-            b.append('\0');
-            b.append(addr.getHostAddress());
-            b.append('\0');
-            b.append(port);
-            b.append('\n');
-            StreamUtils.writeString(output, b.toString());
-            output.flush();
-        }
+        IncomingCommand.RECONNECT_SERVERS.sendReconnectServers(output, addr, port);
     }
 
     public void reconnectServer(String serverName, InetAddress addr, int port) throws IOException {
-        synchronized (output) {
-            StringBuilder b = new StringBuilder();
-            b.append(Command.RECONNECT_SERVER);
-            b.append('\0');
-            b.append(serverName);
-            b.append('\0');
-            b.append(addr.getHostAddress());
-            b.append('\0');
-            b.append(port);
-            b.append('\n');
-            StreamUtils.writeString(output, b.toString());
-            output.flush();
-        }
+        IncomingCommand.RECONNECT_SERVER.sendReconnectServer(output, serverName, addr, port);
     }
 
     private final class Controller implements Runnable {
@@ -246,6 +116,7 @@ public final class ProcessManagerSlave {
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
         public void run() {
+            OutgoingCommandHandlerToMessageHandlerAdapter handler = new OutgoingCommandHandlerToMessageHandlerAdapter();
             final InputStream input = ProcessManagerSlave.this.input;
             final StringBuilder b = new StringBuilder();
             try {
@@ -257,59 +128,9 @@ public final class ProcessManagerSlave {
                         break;
                     }
                     try {
-                        final Command command = Command.valueOf(b.toString());
-                        switch (command) {
-                            case SHUTDOWN: {
-                                shutdown();
-                                break;
-                            }
-                            case SHUTDOWN_SERVERS : {
-                                handler.shutdownServers();
-                                break;
-                            }
-                            case DOWN:{
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    handler.down(b.toString());
-                                }
-                                break;
-                            }
-                            case MSG: {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String sourceProcess = b.toString();
-                                    final List<String> msg = new ArrayList<String>();
-                                    while (status == Status.MORE) {
-                                        status = StreamUtils.readWord(input, b);
-                                        msg.add(b.toString());
-                                    }
-                                    if (status == Status.END_OF_LINE) {
-                                        try {
-                                            handler.handleMessage(sourceProcess, msg);
-                                        } catch (Throwable t) {
-                                            // ignored!
-                                        }
-                                    }
-                                    // else it was end of stream, so only a partial was received
-                                }
-                                break;
-                            }
-                            case MSG_BYTES: {
-                                if (status == Status.MORE) {
-                                    status = StreamUtils.readWord(input, b);
-                                    final String sourceProcess = b.toString();
-                                    if (status == Status.MORE) {
-                                        try {
-                                            handler.handleMessage(sourceProcess, StreamUtils.readBytesWithLength(input));
-                                        } catch (Throwable t) {
-                                            // ignored!
-                                        }
-                                        status = StreamUtils.readStatus(input);
-                                    }
-                                }
-                                break;
-                            }
-                        }
+
+                        final OutgoingCommand command = OutgoingCommand.valueOf(b.toString());
+                        status = command.handleMessage(input, status, handler, b);
                     } catch (IllegalArgumentException e) {
                         // unknown command...
                     }
@@ -354,12 +175,38 @@ public final class ProcessManagerSlave {
 
         void handleMessage(String sourceProcessName, byte[] message);
 
-        void handleMessage(String sourceProcessName, List<String> message);
-
         void shutdown();
 
         void shutdownServers();
 
         void down(String downProcessName);
+    }
+
+    private class OutgoingCommandHandlerToMessageHandlerAdapter implements OutgoingCommandHandler {
+
+        @Override
+        public void handleDown(String serverName) {
+            handler.down(serverName);
+        }
+
+        @Override
+        public void handleMessage(String sourceProcess, byte[] message) {
+            handler.handleMessage(sourceProcess, message);
+        }
+
+        @Override
+        public void handleReconnectServerManager(String address, String port) {
+            log.warn("Wrong command " + OutgoingCommand.RECONNECT_SERVER_MANAGER + " received");
+        }
+
+        @Override
+        public void handleShutdown() {
+            handler.shutdown();
+        }
+
+        @Override
+        public void handleShutdownServers() {
+            handler.shutdownServers();
+        }
     }
 }

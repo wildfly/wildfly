@@ -53,7 +53,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     private final String schemaLocation;
     private final NavigableMap<String, ExtensionElement> extensions = new TreeMap<String, ExtensionElement>();
     private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
-    private final NavigableMap<DeploymentUnitKey, DeploymentUnitElement> deployments = new TreeMap<DeploymentUnitKey, DeploymentUnitElement>();
+    private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
     private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
@@ -224,6 +224,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public long elementHash() {
         long hash = 0L;
         synchronized (extensions) {
@@ -253,11 +254,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<DomainModel> getElementClass() {
         return DomainModel.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         synchronized (namespaces) {
@@ -493,12 +496,12 @@ public final class DomainModel extends AbstractModel<DomainModel> {
                     switch (element) {
                         case DEPLOYMENT: {
                             final DeploymentUnitElement deployment = new DeploymentUnitElement(reader);
-                            if (deployments.containsKey(deployment.getKey())) {
-                                throw new XMLStreamException("Deployment " + deployment.getName() +
+                            if (deployments.containsKey(deployment.getUniqueName())) {
+                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
                                         " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
                                         " already declared", reader.getLocation());
                             }
-                            deployments.put(deployment.getKey(), deployment);
+                            deployments.put(deployment.getUniqueName(), deployment);
                             break;
                         }
                         default: throw unexpectedElement(reader);

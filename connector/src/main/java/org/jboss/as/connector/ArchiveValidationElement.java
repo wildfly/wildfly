@@ -37,76 +37,74 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 final class ArchiveValidationElement extends AbstractModelElement<ArchiveValidationElement> {
 
-   private boolean failOnError = true;
+    private boolean failOnError = true;
 
-   private boolean failOnWarn = false;
+    private boolean failOnWarn = false;
 
-   public ArchiveValidationElement() {
-   }
+    public ArchiveValidationElement() {
+    }
 
-   public ArchiveValidationElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-      final int count = reader.getAttributeCount();
-      for (int i = 0; i < count; i++) {
-         final String value = reader.getAttributeValue(i);
-         if (reader.getAttributeNamespace(i) != null) {
-            throw unexpectedAttribute(reader, i);
-         }
-         else {
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-               case FAIL_ON_ERROR : {
-                  failOnError = Boolean.valueOf(value);
-                  break;
-                  }
-               case FAIL_ON_WARN : {
-                  failOnWarn = Boolean.valueOf(value);
-                  break;
-                  }
-               default :
-                  throw unexpectedAttribute(reader, i);
-              }
-          }
-      }
+    public ArchiveValidationElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case FAIL_ON_ERROR: {
+                        failOnError = Boolean.valueOf(value);
+                        break;
+                    }
+                    case FAIL_ON_WARN: {
+                        failOnWarn = Boolean.valueOf(value);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
 
-   }
+    }
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 8524290005529632318L;
-
-
-   @Override
-   public long elementHash() {
-      return 42;
-   }
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 8524290005529632318L;
 
     @Override
-   protected Class<ArchiveValidationElement> getElementClass() {
-      return ArchiveValidationElement.class;
-   }
+    public long elementHash() {
+        return 42;
+    }
 
-   @Override
-   public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-      streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
-      streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), String.valueOf(failOnError));
-      streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), String.valueOf(failOnWarn));
-   }
+    @Override
+    protected Class<ArchiveValidationElement> getElementClass() {
+        return ArchiveValidationElement.class;
+    }
 
-   /**
-    * Get the failOnError.
-    *
-    * @return the failOnError.
-    */
-   public boolean isFailOnError() {
-      return failOnError;
-   }
+    @Override
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
+        streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), String.valueOf(failOnError));
+        streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), String.valueOf(failOnWarn));
+    }
 
-   /**
-    * Get the failOnWarn.
-    *
-    * @return the failOnWarn.
-    */
-   public boolean isFailOnWarn() {
-      return failOnWarn;
-   }
+    /**
+     * Get the failOnError.
+     *
+     * @return the failOnError.
+     */
+    public boolean isFailOnError() {
+        return failOnError;
+    }
+
+    /**
+     * Get the failOnWarn.
+     *
+     * @return the failOnWarn.
+     */
+    public boolean isFailOnWarn() {
+        return failOnWarn;
+    }
 
 }

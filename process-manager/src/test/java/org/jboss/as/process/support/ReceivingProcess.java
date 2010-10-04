@@ -21,7 +21,6 @@
  */
 package org.jboss.as.process.support;
 
-import java.util.List;
 
 /**
  *
@@ -47,12 +46,6 @@ public class ReceivingProcess extends AbstractProcess {
     @Override
     protected void handleMessage(String sourceProcessName, byte[] message) {
         writeData(sourceProcessName + "-" + new String(message));
-    }
-
-    @Override
-    protected void handleMessage(String sourceProcessName, List<String> message) {
-        for (String str : message)
-            writeData(sourceProcessName + "-" + str);
     }
 
     @Override

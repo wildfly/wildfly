@@ -32,7 +32,7 @@
 
     <interfaces>
         <interface name="public">
-            <inet-address value="0.0.0.0"/>
+            <any-ipv4-address />
         </interface>
     </interfaces>
 

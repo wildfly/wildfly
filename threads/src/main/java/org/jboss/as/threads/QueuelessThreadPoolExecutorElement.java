@@ -132,10 +132,12 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
         }
     }
 
+    @Override
     public long elementHash() {
         return super.elementHash();
     }
 
+    @Override
     protected Class<QueuelessThreadPoolExecutorElement> getElementClass() {
         return QueuelessThreadPoolExecutorElement.class;
     }
@@ -148,6 +150,7 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
         return blocking;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
         streamWriter.writeAttribute("blocking", Boolean.toString(blocking));
@@ -170,5 +173,10 @@ public final class QueuelessThreadPoolExecutorElement extends AbstractExecutorEl
             streamWriter.writeAttribute("name", handoffExecutor);
         }
         streamWriter.writeEndElement();
+    }
+
+    @Override
+    protected Element getStandardElement() {
+        return Element.QUEUELESS_THREAD_POOL_EXECUTOR;
     }
 }

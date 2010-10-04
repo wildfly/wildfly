@@ -62,6 +62,7 @@
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
+        <version.org.jboss.ironjacamar>1.0.0-SNAPSHOT</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.0.Beta2</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-vfs>3.0.0.CR5</version.org.jboss.jboss-vfs>
@@ -75,6 +76,7 @@
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta3</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.modules.jboss-modules>1.0.0.Beta6</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.remoting3.jboss-remoting>3.1.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
+        <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
         <version.org.jboss.slf4j.slf4j-jboss-logmanager>1.0.0.CR3</version.org.jboss.slf4j.slf4j-jboss-logmanager>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>1.0.0.Beta2</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.0.CR2</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
@@ -97,12 +99,14 @@
         <version.org.jboss.threads.jboss-threads>2.0.0.CR5</version.org.jboss.threads.jboss-threads>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
+        <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
     </properties>
 
     <modules>
         <module>build-config</module>
+        <module>deployment-client</module>
         <module>domain</module>
         <module>connector</module>
         <module>server-manager</module>
@@ -119,6 +123,7 @@
         <module>managedbeans</module>
         <module>build</module>
         <module>testsuite</module>
+        <module>messaging</module>
     </modules>
 
     <build>
@@ -210,6 +215,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-deployment-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -235,6 +246,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-managed-beans</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-messaging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -427,6 +444,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>${version.org.jboss.netty}</version>
+           </dependency>
+
+            <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>staxmapper</artifactId>
                 <version>${version.org.jboss.staxmapper}</version>
@@ -457,7 +480,104 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-core-spi</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-core-api</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.integration</groupId>
+                        <artifactId>jboss-integration</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.threads</groupId>
+                        <artifactId>jboss-threads</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-core-impl</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.integration</groupId>
+                        <artifactId>jboss-integration</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-jaspi-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.security</groupId>
+                        <artifactId>jboss-security-spi-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.threads</groupId>
+                        <artifactId>jboss-threads</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-common-api</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-common-spi</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-common-impl</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jbossxb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>stax</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+           <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-deployers-common</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+           </dependency>
+           <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-validator</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.jbossts</groupId>
                 <artifactId>jbossjts</artifactId>
@@ -896,7 +1016,23 @@
                 <artifactId>xnio-nio</artifactId>
                 <version>${version.org.jboss.xnio.xnio-nio}</version>
             </dependency>
-      
+
+            <dependency>
+              <groupId>org.hornetq</groupId>
+              <artifactId>hornetq-resources</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.hornetq</groupId>
+              <artifactId>hornetq-core</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jms</artifactId>
+                <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>

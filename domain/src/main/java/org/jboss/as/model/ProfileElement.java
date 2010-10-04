@@ -8,6 +8,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -194,6 +195,7 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
 
         synchronized (includedProfiles) {
@@ -207,13 +209,30 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
         synchronized (subsystems) {
             if (!subsystems.isEmpty()) {
+
+                String defaultNamespace = streamWriter.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+
                 for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
-                    QName qname = subsystem.getElementName();
-                    streamWriter.writeStartElement(qname.getNamespaceURI(), qname.getLocalPart());
-                    subsystem.writeContent(streamWriter);
+                    try {
+                        QName qname = subsystem.getElementName();
+                        if (streamWriter.getNamespaceContext().getPrefix(qname.getNamespaceURI()) == null) {
+                            // Unknown namespace; it becomes default
+                            streamWriter.setDefaultNamespace(qname.getNamespaceURI());
+                            streamWriter.writeStartElement(qname.getLocalPart());
+                            streamWriter.writeNamespace(null, qname.getNamespaceURI());
+                        }
+                        else {
+                            streamWriter.writeStartElement(qname.getNamespaceURI(), qname.getLocalPart());
+                        }
+                        subsystem.writeContent(streamWriter);
+                    }
+                    finally {
+                        streamWriter.setDefaultNamespace(defaultNamespace);
+                    }
                 }
             }
         }
+
         streamWriter.writeEndElement();
     }
 

@@ -150,11 +150,12 @@
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
-    
+
     <deployments>
-        <deployment name="my-app.ear" sha1="xxx"/>
-        <deployment name="my-ejb.jar" sha1="xxx"/>
-        <deployment name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
+        <deployment name="my-app.ear_v1" runtime-name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-app.ear_v2" runtime-name="my-app.ear" sha1="xxx"/>
+        <deployment name="my-ejb.jar"    runtime-name="my-ejb.jar" sha1="xxx"/>
+        <deployment name="my-war.ear"    runtime-name="my-war.ear" sha1="xxx" allowed="false" start="false"/>
     </deployments>
 
     <server-groups>
@@ -176,8 +177,8 @@
            </cluster>
 -->
             <deployments>
-                <deployment name="my-app1.ear" sha1="xxx" start="true"/>
-                <deployment name="my-app2.ear" sha1="xxx" start="false"/>
+                <deployment name="my-app1.ear_v1" runtime-name="my-app.ear" sha1="xxx" start="true"/>
+                <deployment name="my-ejb.jar" runtime-name="my-ejb.jar" sha1="xxx" start="false"/>
             </deployments>
 
             <system-properties>

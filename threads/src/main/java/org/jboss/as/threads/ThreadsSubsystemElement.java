@@ -22,17 +22,17 @@
 
 package org.jboss.as.threads;
 
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.NavigableMap;
-import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -122,6 +122,7 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         }
     }
 
+    @Override
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Threading Subsystem");
         for (ThreadFactoryElement element : threadFactories.values()) {
@@ -137,16 +138,42 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         }
     }
 
+    @Override
     public long elementHash() {
         long hash = 0L;
         hash = calculateElementHashOf(threadFactories.values(), hash);
         return hash;
     }
 
+    @Override
     protected Class<ThreadsSubsystemElement> getElementClass() {
         return null;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+
+        synchronized (threadFactories) {
+            for (ThreadFactoryElement tfe : threadFactories.values()) {
+                streamWriter.writeStartElement(Element.THREAD_FACTORY.getLocalName());
+                tfe.writeContent(streamWriter);
+            }
+        }
+
+        synchronized (scheduledExecutors) {
+            for (ScheduledThreadPoolExecutorElement stpe : scheduledExecutors.values()) {
+                streamWriter.writeStartElement(Element.SCHEDULED_THREAD_POOL_EXECUTOR.getLocalName());
+                stpe.writeContent(streamWriter);
+            }
+        }
+
+        synchronized (executors) {
+            for (AbstractExecutorElement<?> aee : executors.values()) {
+                streamWriter.writeStartElement(aee.getStandardElement().getLocalName());
+                aee.writeContent(streamWriter);
+            }
+        }
+
+        streamWriter.writeEndElement();
     }
 }

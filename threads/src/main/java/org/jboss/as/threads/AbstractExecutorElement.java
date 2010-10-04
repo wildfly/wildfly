@@ -88,7 +88,11 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
                     break;
                 }
                 case UNIT: {
-                    unit = reader.getAttributeValue(i, TimeUnit.class);
+                    // BES 2010/09/28 - I replaced this because it fails with
+                    // case sensitivity problems
+                    //unit = reader.getAttributeValue(i, TimeUnit.class);
+                    String val = reader.getAttributeValue(i);
+                    unit = Enum.valueOf(TimeUnit.class, val.toUpperCase());
                     break;
                 }
                 default: {
@@ -141,6 +145,7 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
         if (perCpu > 0L) writer.writeAttribute("per-cpu", Long.toString(perCpu));
     }
 
+    @Override
     public long elementHash() {
         long hash = name.hashCode() & 0xFFFFFFFFL;
         if (threadFactory != null) hash = Long.rotateLeft(hash, 1) ^ threadFactory.hashCode() & 0xFFFFFFFFL;
@@ -184,4 +189,11 @@ public abstract class AbstractExecutorElement<T extends AbstractExecutorElement<
     public final String getName() {
         return name;
     }
+
+    /**
+     * Gets the Element that usually is the name for the XML element
+     * associated with a subclass of this class.
+     * @return
+     */
+    protected abstract Element getStandardElement();
 }

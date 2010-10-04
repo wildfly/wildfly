@@ -22,8 +22,6 @@
 package org.jboss.test.as.protocol.test.module;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,18 +34,19 @@ import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.process.StreamUtils;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand;
+import org.jboss.as.process.ProcessManagerMaster;
+import org.jboss.as.process.ProcessManagerProtocol.OutgoingCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
-import org.jboss.test.as.protocol.support.process.MockProcessManager;
-import org.jboss.test.as.protocol.support.process.MockProcessManager.NewConnectionListener;
-import org.jboss.test.as.protocol.support.server.ServerStarter;
-import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManagerCommunicationHandler;
-import org.jboss.test.as.protocol.support.server.manager.MockDirectServerManagerCommunicationListener;
-import org.jboss.test.as.protocol.support.server.manager.MockServerManager;
-import org.jboss.test.as.protocol.support.server.manager.MockServerManagerMessageHandler;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
+import org.jboss.test.as.protocol.support.process.TestProcessHandler;
+import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
+import org.jboss.test.as.protocol.support.process.TestProcessManager;
+import org.jboss.test.as.protocol.support.process.TestProcessManager.NewConnectionListener;
+import org.jboss.test.as.protocol.support.server.manager.MockServerManagerProcess;
+import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler.ServerMessage;
 import org.jboss.test.as.protocol.support.xml.ConfigParser;
 import org.jboss.test.as.protocol.test.base.ServerTest;
 
@@ -62,126 +61,124 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
 
     @Override
     public void testServerStartStop() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(1);
-        ServerModel cfg = getServer("standard", "server-one");
-
-        MockServerManager serverManager = MockServerManager.create();
-        MockServerManagerMessageHandler managerMessageHandler = new MockServerManagerMessageHandler();
-        MockDirectServerManagerCommunicationListener managerListener = MockDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
-
+        setDomainConfigDir("standard");
+        TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(false, true);
         QueuedNewConnectionListener newConnectionListener = new QueuedNewConnectionListener();
-        pm.setNewConnectionListener(newConnectionListener);
-        ServerStarter.createServer("Server:server-one", pm, managerListener.getSmPort());
+        final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0, newConnectionListener);
+
+        newConnectionListener.assertWaitForConnection("ServerManager");
+
+        MockServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
+
+        sm.addServerToPm("Server:server-one", pm.getPort());
+        sm.startServerInPm("Server:server-one");
+
         newConnectionListener.assertWaitForConnection("Server:server-one");
 
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
+        ServerModel cfg = getServer("standard", "server-one");
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.START_SERVER, cfg);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STARTED);
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.STOP_SERVER);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
 
-        MockDirectServerManagerCommunicationHandler managerHandler = managerListener.getManagerHandler("Server:server-one");
-        Assert.assertNotNull(managerHandler);
+        new Thread(new Runnable() {
+            public void run() {
+                pm.shutdown();
+            }
+        }).start();
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN_SERVERS.toString());
+        sm.sendServersShutdownToProcessManager();
 
-        managerHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.START_SERVER, cfg));
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STARTED);
-
-        managerHandler.sendMessage(ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null));
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STOPPED);
-
-        waitForClose(managerHandler, 5000);
-
-        waitForServerToClose();
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN.toString());
+        sm.stop();
     }
 
     @Override
     public void testServersReconnectToRestartedServerManager() throws Exception {
-        MockProcessManager pm = MockProcessManager.create(1);
-        ServerModel cfg = getServer("standard", "server-one");
-
-        MockServerManager serverManager = MockServerManager.create();
-        MockServerManagerMessageHandler managerMessageHandler = new MockServerManagerMessageHandler();
-        MockDirectServerManagerCommunicationListener managerListener = MockDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
-
+        setDomainConfigDir("standard");
+        TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(false, true);
         QueuedNewConnectionListener newConnectionListener = new QueuedNewConnectionListener();
-        pm.setNewConnectionListener(newConnectionListener);
-        ServerStarter.createServer("Server:server-one", pm, managerListener.getSmPort());
-        SocketConnection pmServerconnection = newConnectionListener.assertWaitForConnection("Server:server-one");
+        final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0, newConnectionListener);
 
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_AVAILABLE);
+        newConnectionListener.assertWaitForConnection("ServerManager");
 
-        MockDirectServerManagerCommunicationHandler managerHandler = managerListener.getManagerHandler("Server:server-one");
-        Assert.assertNotNull(managerHandler);
+        MockServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
 
-        managerHandler.sendMessage(ServerManagerProtocolUtils.createCommandBytes(ServerManagerProtocolCommand.START_SERVER, cfg));
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STARTED);
+        sm.addServerToPm("Server:server-one", pm.getPort());
+        sm.startServerInPm("Server:server-one");
 
-        managerHandler.shutdown();
-        managerListener.shutdown();
+        newConnectionListener.assertWaitForConnection("Server:server-one");
 
-        //Restart SM
-        serverManager = MockServerManager.create();
-        managerMessageHandler = new MockServerManagerMessageHandler();
-        managerListener = MockDirectServerManagerCommunicationListener.create(serverManager, InetAddress.getLocalHost(), 0, 10, managerMessageHandler);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
+        ServerModel cfg = getServer("standard", "server-one");
+        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.START_SERVER, cfg);
+        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STARTED);
 
-        Assert.assertTrue(pmServerconnection.isOpen());
+        sm.crashServerManager(1);
+        sm.stop();
 
-        //RECONNECT_SERVER_MANAGER to process from PM
-        managerListener.resetNewConnectionLatch(1);
-        reconnectServerToServerManager(pmServerconnection, InetAddress.getLocalHost(), managerListener.getSmPort());
-        MockDirectServerManagerCommunicationHandler handler2 = managerListener.getManagerHandler("Server:server-one");
-        managerListener.waitForNewConnection();
-        Assert.assertNotSame(managerHandler, handler2);
+        newConnectionListener.assertWaitForConnection("ServerManager");
+        sm = assertGetServerManager(processHandlerFactory);
 
-        ServerManagerProtocolCommand.Command cmd = assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_RECONNECT_STATUS);
+        sm.sendReconnectServersToProcessManager();
+        Command<ServerToServerManagerProtocolCommand> cmd = assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS);
         ServerState state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
         Assert.assertSame(ServerState.STARTED, state);
 
+        new Thread(new Runnable() {
+            public void run() {
+                pm.shutdown();
+            }
+        }).start();
+        assertReadPmCommand(sm, OutgoingCommand.SHUTDOWN_SERVERS.toString());
+        sm.sendServersShutdownToProcessManager();
 
-        managerHandler = managerListener.getManagerHandler("Server:server-one");
-        Assert.assertNotNull(managerHandler);
-        managerHandler.sendMessage(ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null));
-        assertReadCommand(managerMessageHandler, ServerManagerProtocolCommand.SERVER_STOPPED);
-
-        waitForClose(managerHandler, 5000);
-        waitForServerToClose();
-    }
-
-    private void waitForServerToClose() throws Exception {
-        //Hack wait for server to finish
-        System.out.println("HACK!!! Waiting 2s for server to stop");
-        System.gc();
-        Thread.sleep(2000);
-    }
-
-    public void reconnectServerToServerManager(SocketConnection pmConnection, InetAddress addr, int port) throws IOException {
-        synchronized (this) {
-            OutputStream output = pmConnection.getOutputStream();
-            StringBuilder sb = new StringBuilder();
-            sb.append(org.jboss.as.process.Command.RECONNECT_SERVER_MANAGER);
-            sb.append('\0');
-            sb.append(addr.getHostName());
-            sb.append('\0');
-            sb.append(port);
-            sb.append('\n');
-            StreamUtils.writeString(output, sb.toString());
-            output.flush();
+        //One of these will come from PM, the other from the server
+        ServerMessage msg1 = sm.awaitAndReadMessage();
+        ServerMessage msg2 = sm.awaitAndReadMessage();
+        if (msg1.getSourceProcess() != null) {
+            assertPmServerMessage(msg2, OutgoingCommand.SHUTDOWN.toString());
+            assertServerServerMessage(msg1, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
+        } else {
+            assertPmServerMessage(msg1, OutgoingCommand.SHUTDOWN.toString());
+            assertServerServerMessage(msg2, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         }
+
+        sm.stop();
     }
 
+    private MockServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) {
+        TestProcessHandler handler = processHandlerFactory.getProcessHandler(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME);
+        Assert.assertNotNull(handler);
+        MockServerManagerProcess mgr = handler.getMockServerManager();
+        Assert.assertNotNull(mgr);
+        return mgr;
+    }
 
-    private ServerManagerProtocolCommand.Command assertReadCommand(MockServerManagerMessageHandler managerMessageHandler, ServerManagerProtocolCommand expectedCommand) throws Exception {
-        byte[] sent = managerMessageHandler.awaitAndReadMessage();
-        Command cmd = ServerManagerProtocolCommand.readCommand(sent);
+    private Command<ServerToServerManagerProtocolCommand> assertReadServerCommand(MockServerManagerProcess serverManager, String serverName, ServerToServerManagerProtocolCommand expectedCommand) throws Exception {
+        ServerMessage msg = serverManager.awaitAndReadMessage();
+        return assertServerServerMessage(msg, serverName, expectedCommand);
+    }
+
+    private Command<ServerToServerManagerProtocolCommand> assertServerServerMessage(ServerMessage msg, String serverName, ServerToServerManagerProtocolCommand expectedCommand) throws Exception {
+        Assert.assertEquals(serverName, msg.getSourceProcess());
+        byte[] sent = msg.getMessage();
+        Command<ServerToServerManagerProtocolCommand> cmd = ServerToServerManagerProtocolCommand.readCommand(sent);
         Assert.assertEquals(expectedCommand, cmd.getCommand());
         return cmd;
     }
 
-    private void waitForClose(MockDirectServerManagerCommunicationHandler serverHandler, int timeoutMs) throws InterruptedException {
-        // Wait for close
-        long end = System.currentTimeMillis() + timeoutMs;
-        while (System.currentTimeMillis() < end) {
-            if (serverHandler.isClosed())
-                break;
-            Thread.sleep(100);
-        }
-        Assert.assertTrue(serverHandler.isClosed());
+    private void assertReadPmCommand(MockServerManagerProcess serverManager, String expectedCommand) throws Exception {
+        ServerMessage msg = serverManager.awaitAndReadMessage();
+        assertPmServerMessage(msg, expectedCommand);
+    }
+
+    private void assertPmServerMessage(ServerMessage msg, String expectedCommand) {
+        Assert.assertNull(msg.getSourceProcess());
+        byte[] sent = msg.getMessage();
+        String stringCommand = new String(sent);
+        Assert.assertEquals(expectedCommand, stringCommand);
     }
 
     private ServerModel getServer(String cfgDir, String serverName) throws Exception {

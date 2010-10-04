@@ -143,7 +143,7 @@ public class ServerStartBatchBuilder implements BatchBuilder {
             if(mode.equals(ServiceController.Mode.ON_DEMAND)) {
                 ServerStartBatchBuilder.this.serverStartupListener.expectOnDemand(serviceName);
             } else {
-                ServerStartBatchBuilder.this.serverStartupListener.expectOnDemand(serviceName);
+                ServerStartBatchBuilder.this.serverStartupListener.unexpectOnDemand(serviceName);
             }
             delegate.setInitialMode(mode);
             return this;

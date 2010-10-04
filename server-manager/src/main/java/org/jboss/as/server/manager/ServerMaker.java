@@ -162,6 +162,9 @@ public final class ServerMaker {
     private String getJavaCommand(JvmElement jvm) {
         String javaHome = jvm.getJavaHome();
         if (javaHome == null) { // TODO should this be possible?
+            if(environment.getDefaultJVM() != null) {
+                return environment.getDefaultJVM().getAbsolutePath();
+            }
             return "java"; // hope for the best
         }
 

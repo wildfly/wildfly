@@ -34,7 +34,6 @@ import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.SystemExiter;
-import org.jboss.as.process.SystemExiter.Exiter;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
@@ -79,11 +78,6 @@ public final class Main {
     }
 
     private static AbstractServer create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        return create(args, stdin, stdout, stderr, null);
-    }
-
-    public static AbstractServer create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, Exiter exiter) {
-        SystemExiter.initialize(exiter);
         Main main = new Main();
         return main.boot(args, stdin, stdout, stderr);
     }
@@ -97,7 +91,7 @@ public final class Main {
     private AbstractServer boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         AbstractServer server = null;
         try {
-            ServerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
+            ServerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
             } else {
@@ -130,7 +124,7 @@ public final class Main {
         }
     }
 
-    private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         String procName = null;
@@ -211,10 +205,10 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(props, stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, standalone);
+        return new ServerEnvironment(systemProperties, stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, standalone);
     }
 
-    private URL makeURL(String urlspec) throws MalformedURLException {
+    private static URL makeURL(String urlspec) throws MalformedURLException {
         urlspec = urlspec.trim();
 
         URL url;

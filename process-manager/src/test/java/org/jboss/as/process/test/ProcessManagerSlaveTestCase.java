@@ -27,7 +27,6 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.AbstractProcessManagerTest;
@@ -48,23 +47,14 @@ import org.junit.runner.RunWith;
 public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
 
     @Test
-    public void testSimpleForwardMessageString() throws Exception {
-        testSimpleForwardMessage(true);
-    }
-
-    @Test
-    public void testSimpleForwardMessageBytes() throws Exception {
-        testSimpleForwardMessage(false);
-    }
-
-    private void testSimpleForwardMessage(boolean string) throws Exception {
+    public void testSimpleForwardMessage() throws Exception {
         addProcess("ProcA", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerA = startTestProcessListenerAndWait("ProcA");
 
         addProcess("ProcB", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerB = startTestProcessListenerAndWait("ProcB");
 
-        sendMessage(string, "Test", "ProcA", "Fwd$ProcB$Hello");
+        sendMessage("Test", "ProcA", "Fwd$ProcB$Hello");
 
         assertEquals("Test-ProcA-Fwd$ProcB$Hello", listenerA.readMessage());
         assertEquals("ProcA-ProcB-Hello", listenerB.readMessage());
@@ -76,16 +66,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
     }
 
     @Test
-    public void testBiggerForwardMessageString() throws Exception {
-        testBiggerForwardMessage(true);
-    }
-
-    @Test
-    public void testBiggerForwardMessageBytes() throws Exception {
-        testBiggerForwardMessage(false);
-    }
-
-    private void testBiggerForwardMessage(boolean string) throws Exception {
+    public void testBiggerForwardMessage() throws Exception {
         addProcess("ProcA", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerA = startTestProcessListenerAndWait("ProcA");
 
@@ -104,7 +85,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         addProcess("ProcF", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerF = startTestProcessListenerAndWait("ProcF");
 
-        sendMessage(string, "Test", "ProcA", "Fwd$ProcB$Fwd$ProcC$Fwd$ProcD$Fwd$ProcE$Fwd$ProcA$Hello");
+        sendMessage("Test", "ProcA", "Fwd$ProcB$Fwd$ProcC$Fwd$ProcD$Fwd$ProcE$Fwd$ProcA$Hello");
         assertEquals("Test-ProcA-Fwd$ProcB$Fwd$ProcC$Fwd$ProcD$Fwd$ProcE$Fwd$ProcA$Hello", listenerA.readMessage());
         assertEquals("ProcA-ProcB-Fwd$ProcC$Fwd$ProcD$Fwd$ProcE$Fwd$ProcA$Hello", listenerB.readMessage());
         assertEquals("ProcB-ProcC-Fwd$ProcD$Fwd$ProcE$Fwd$ProcA$Hello", listenerC.readMessage());
@@ -134,16 +115,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
 
 
     @Test
-    public void testBroadcastMessageString() throws Exception {
-        testBroadcastMessage(true);
-    }
-
-    @Test
-    public void testBroadcastMessageBytes() throws Exception {
-        testBroadcastMessage(false);
-    }
-
-    private void testBroadcastMessage(boolean string) throws Exception {
+    public void testBroadcastMessage() throws Exception {
         addProcess("ProcA", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerA = startTestProcessListenerAndWait("ProcA");
 
@@ -153,7 +125,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         addProcess("ProcC", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerC = startTestProcessListenerAndWait("ProcC");
 
-        sendMessage(string, "Test", "ProcA", "Bcst$Hello");
+        sendMessage("Test", "ProcA", "Bcst$Hello");
 
         assertEquals("Test-ProcA-Bcst$Hello", listenerA.readMessage());
         assertEquals("ProcA-ProcB-Hello", listenerB.readMessage());
@@ -176,7 +148,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         addProcess("ProcB", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerB = startTestProcessListenerAndWait("ProcB");
 
-        sendMessage("Test", "ProcA", Collections.singletonList("Add$slave$" + StartStopSimpleProcess.class.getName()));
+        sendMessage("Test", "ProcA", "Add$slave$" + StartStopSimpleProcess.class.getName());
         assertEquals("ProcA-Add$slave$" + StartStopSimpleProcess.class.getName(), listenerA.readMessage());
 
         //Need a short sleep here
@@ -184,7 +156,7 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertTrue(getProcessNames(false).contains("slave"));
         assertFalse(getProcessNames(true).contains("slave"));
 
-        sendMessage("Test", "ProcB", Collections.singletonList("Start$slave"));
+        sendMessage("Test", "ProcB", "Start$slave");
         assertEquals("ProcB-Start$slave", listenerB.readMessage());
 
         //Give process time to start
@@ -195,14 +167,14 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertEquals(StartStopSimpleProcess.STARTED, slave.readMessage());
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("slave");
-        sendMessage("Test", "ProcA", Collections.singletonList("Stop$slave"));
+        sendMessage("Test", "ProcA", "Stop$slave");
         assertEquals("ProcA-Stop$slave", listenerA.readMessage());
         assertEquals(StartStopSimpleProcess.STOPPED, slave.readMessage());
         assertTrue(stopLatch.await(500, TimeUnit.MILLISECONDS));
         assertTrue(getProcessNames(false).contains("slave"));
         assertFalse(getProcessNames(true).contains("slave"));
 
-        sendMessage("Test", "ProcB", Collections.singletonList("Remove$slave"));
+        sendMessage("Test", "ProcB", "Remove$slave");
         assertEquals("ProcB-Remove$slave", listenerB.readMessage());
 
         //Need a short sleep here
@@ -211,61 +183,53 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
     }
 
     @Test
-    public void testBroadcastMessageAddRemoveProcessString() throws Exception {
-        testBroadcastMessageAddRemoveProcess(true);
-    }
-
-    @Test
-    public void testBroadcastMessageAddRemoveProcessBytes()  throws Exception {
-        testBroadcastMessageAddRemoveProcess(false);
-
-    }
-
-    public void testBroadcastMessageAddRemoveProcess(boolean string) throws Exception {
+    public void testBroadcastMessageAddRemoveProcess() throws Exception {
         addProcess("ProcA", ProcessManagerSlaveProcess.class);
         TestProcessListenerStream listenerA = startTestProcessListenerAndWait("ProcA");
-        sendMessage(string, "Test", "ProcA", "Bcst$Hello1");
+        sendMessage("Test", "ProcA", "Bcst$Hello1");
         assertEquals("Test-ProcA-Bcst$Hello1", listenerA.readMessage());
         assertEquals("ProcA-ProcA-Hello1", listenerA.readMessage());
 
-        sendMessage("Test", "ProcA", lazyList("Add$ProcB$" + ProcessManagerSlaveProcess.class.getName(), "Start$ProcB"));
+        sendMessage("Test", "ProcA", "Add$ProcB$" + ProcessManagerSlaveProcess.class.getName());
+        sendMessage("Test", "ProcA", "Start$ProcB");
         assertEquals("ProcA-Add$ProcB$" + ProcessManagerSlaveProcess.class.getName(), listenerA.readMessage());
         assertEquals("ProcA-Start$ProcB", listenerA.readMessage());
         TestProcessListenerStream listenerB = getTestProcessListener("ProcB", 1000);
-        sendMessage(string, "Test", "ProcA", "Bcst$Hello2");
+        sendMessage("Test", "ProcA", "Bcst$Hello2");
         assertEquals("Test-ProcA-Bcst$Hello2", listenerA.readMessage());
         assertEquals("ProcA-ProcA-Hello2", listenerA.readMessage());
         assertEquals("ProcA-ProcB-Hello2", listenerB.readMessage());
 
-        sendMessage("Test", "ProcB", lazyList("Add$ProcC$" + ProcessManagerSlaveProcess.class.getName(), "Start$ProcC"));
+        sendMessage("Test", "ProcB", "Add$ProcC$" + ProcessManagerSlaveProcess.class.getName());
+        sendMessage("Test", "ProcB", "Start$ProcC");
         assertEquals("ProcB-Add$ProcC$" + ProcessManagerSlaveProcess.class.getName(), listenerB.readMessage());
         assertEquals("ProcB-Start$ProcC", listenerB.readMessage());
         TestProcessListenerStream listenerC = getTestProcessListener("ProcC", 1000);
-        sendMessage(string, "Test", "ProcB", "Bcst$Hello3");
+        sendMessage("Test", "ProcB", "Bcst$Hello3");
         assertEquals("Test-ProcB-Bcst$Hello3", listenerB.readMessage());
         assertEquals("ProcB-ProcA-Hello3", listenerA.readMessage());
         assertEquals("ProcB-ProcB-Hello3", listenerB.readMessage());
         assertEquals("ProcB-ProcC-Hello3", listenerC.readMessage());
 
         ProcessExitCodeAndShutDownLatch stopLatch = getStopTestProcessListenerLatch("ProcA");
-        sendMessage("Test", "ProcC", lazyList("Stop$ProcA"));
+        sendMessage("Test", "ProcC", "Stop$ProcA");
         assertEquals("ProcC-Stop$ProcA", listenerC.readMessage());
         assertTrue(stopLatch.await(500, TimeUnit.MILLISECONDS));
-        sendMessage(string, "Test", "ProcB", "Bcst$Hello4");
+        sendMessage("Test", "ProcB", "Bcst$Hello4");
         assertEquals("Test-ProcB-Bcst$Hello4", listenerB.readMessage());
         assertEquals("ProcB-ProcB-Hello4", listenerB.readMessage());
         assertEquals("ProcB-ProcC-Hello4", listenerC.readMessage());
 
         stopLatch = getStopTestProcessListenerLatch("ProcC");
-        sendMessage("Test", "ProcB", lazyList("Stop$ProcC"));
+        sendMessage("Test", "ProcB", "Stop$ProcC");
         assertEquals("ProcB-Stop$ProcC", listenerB.readMessage());
         assertTrue(stopLatch.await(500, TimeUnit.MILLISECONDS));
-        sendMessage(string, "Test", "ProcB", "Bcst$Hello5");
+        sendMessage("Test", "ProcB", "Bcst$Hello5");
         assertEquals("Test-ProcB-Bcst$Hello5", listenerB.readMessage());
         assertEquals("ProcB-ProcB-Hello5", listenerB.readMessage());
 
         stopLatch = getStopTestProcessListenerLatch("ProcB");
-        sendMessage("Test", "ProcB", lazyList("Stop$ProcB"));
+        sendMessage("Test", "ProcB", "Stop$ProcB");
         assertEquals("ProcB-Stop$ProcB", listenerB.readMessage());
         assertTrue(stopLatch.await(500, TimeUnit.MILLISECONDS));
 
@@ -273,15 +237,4 @@ public class ProcessManagerSlaveTestCase extends AbstractProcessManagerTest {
         assertFalse(getProcessNames(true).contains("ProcB"));
         assertFalse(getProcessNames(true).contains("ProcC"));
     }
-
-    private void sendMessage(boolean string, String sender, String recipient, String msg) {
-        if (string)
-            sendMessage(sender, recipient, Collections.singletonList(msg));
-        else {
-            sendMessage(sender, recipient, msg.getBytes());
-        }
-
-    }
-
-
 }

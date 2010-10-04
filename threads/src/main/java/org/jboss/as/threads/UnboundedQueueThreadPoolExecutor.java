@@ -107,14 +107,17 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 
+    @Override
     public long elementHash() {
         return 0;
     }
 
+    @Override
     protected Class<UnboundedQueueThreadPoolExecutor> getElementClass() {
         return UnboundedQueueThreadPoolExecutor.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
         final ScaledCount maxThreads = getMaxThreads();
@@ -132,5 +135,10 @@ public final class UnboundedQueueThreadPoolExecutor extends AbstractExecutorElem
             properties.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
+    }
+
+    @Override
+    protected Element getStandardElement() {
+        return Element.UNBOUNDED_QUEUE_THREAD_POOL_EXECUTOR;
     }
 }

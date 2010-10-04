@@ -25,7 +25,8 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.fail;
 
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.junit.Test;
 
 /**
@@ -37,18 +38,18 @@ public class ServerManagerProtocolCommandUnitTestCase {
 
     @Test
     public void testSmStop() throws Exception {
-        byte[] bytes = ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(null);
-        Command stop = ServerManagerProtocolCommand.readCommand(bytes);
-        assertSame(ServerManagerProtocolCommand.STOP_SERVER, stop.getCommand());
+        byte[] bytes = ServerManagerToServerProtocolCommand.STOP_SERVER.createCommandBytes(null);
+        Command<ServerManagerToServerProtocolCommand> stop = ServerManagerToServerProtocolCommand.readCommand(bytes);
+        assertSame(ServerManagerToServerProtocolCommand.STOP_SERVER, stop.getCommand());
         assertEquals(0, stop.getData().length);
     }
 
     @Test
     public void testSmStart() throws Exception {
         byte[] data = new byte[] {10, 11, 12, 13, 14, 15};
-        byte[] bytes = ServerManagerProtocolCommand.START_SERVER.createCommandBytes(data);
-        Command start = ServerManagerProtocolCommand.readCommand(bytes);
-        assertSame(ServerManagerProtocolCommand.START_SERVER, start.getCommand());
+        byte[] bytes = ServerManagerToServerProtocolCommand.START_SERVER.createCommandBytes(data);
+        Command<ServerManagerToServerProtocolCommand> start = ServerManagerToServerProtocolCommand.readCommand(bytes);
+        assertSame(ServerManagerToServerProtocolCommand.START_SERVER, start.getCommand());
 
         assertEquals(data.length, start.getData().length);
         for (int i = 0 ; i < data.length ; i++)
@@ -59,7 +60,7 @@ public class ServerManagerProtocolCommandUnitTestCase {
     public void testFailNoArgsCommandWithData() throws Exception {
         try {
             byte[] data = new byte[] {5, 6, 7};
-            ServerManagerProtocolCommand.STOP_SERVER.createCommandBytes(data);
+            ServerManagerToServerProtocolCommand.STOP_SERVER.createCommandBytes(data);
         }catch (Exception ignore) {
             return;
         }
@@ -69,7 +70,7 @@ public class ServerManagerProtocolCommandUnitTestCase {
     @Test
     public void testFailArgsCommandWithNoData() throws Exception {
         try {
-            ServerManagerProtocolCommand.START_SERVER.createCommandBytes(null);
+            ServerManagerToServerProtocolCommand.START_SERVER.createCommandBytes(null);
         }catch (Exception ignore) {
             return;
         }
@@ -78,9 +79,9 @@ public class ServerManagerProtocolCommandUnitTestCase {
 
     @Test
     public void testParseServerManagerProtocolCommands() {
-        for (ServerManagerProtocolCommand cmd : ServerManagerProtocolCommand.values()) {
+        for (ServerManagerToServerProtocolCommand cmd : ServerManagerToServerProtocolCommand.values()) {
             byte b = cmd.getId();
-            assertEquals(cmd, ServerManagerProtocolCommand.parse(b));
+            assertEquals(cmd, ServerManagerToServerProtocolCommand.parse(b));
         }
     }
 }

@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.List;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.logging.Logger;
@@ -45,7 +44,7 @@ public abstract class ServerCommunicationHandler {
     protected final OutputStream output;
     private final SocketConnection managerConnection;
 
-    ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
+    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port, final Handler handler){
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
@@ -59,13 +58,11 @@ public abstract class ServerCommunicationHandler {
         this.handler = handler;
     }
 
-    abstract void sendMessage(final List<String> message) throws IOException;
-
     abstract void sendMessage(final byte[] message) throws IOException;
 
     abstract Runnable getController();
 
-    public void start() {
+    protected void start() {
         Thread t = new Thread(getController(), "Server Process");
         t.start();
     }
@@ -78,19 +75,17 @@ public abstract class ServerCommunicationHandler {
         return output;
     }
 
-    protected void shutdown() {
+    public void shutdown() {
         managerConnection.close();
     }
 
-    protected boolean isClosed() {
+    public boolean isClosed() {
         return !managerConnection.isOpen();
     }
 
     public interface Handler {
 
         void handleMessage(byte[] message);
-
-        void handleMessage(List<String> message);
 
         void shutdown();
 

@@ -24,8 +24,8 @@ package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -149,45 +149,40 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
     private class RequestTask implements Runnable {
         private final SocketConnection socketConnection;
 
-        private RequestTask(SocketConnection socketConnection) {
+        private RequestTask(final SocketConnection socketConnection) {
             this.socketConnection = socketConnection;
         }
 
         public void run() {
-            final InputStream socketIn = socketConnection.getInputStream();
-            byte[] signatureBytes = new byte[4];
             try {
-                socketIn.read(signatureBytes);
-                if (!Arrays.equals(ManagementOperationHandler.SIGNATURE, signatureBytes)) {
-                    log.errorf("ServerManager request failed. Invalid signature[%s]", Arrays.toString(signatureBytes));
-                    return;
-                }
-            } catch (IOException e) {
-                log.error("ServerManager request failed.  Unable to read signature", e);
-                return;
-            }
-            byte handlerId;
-            try {
-                handlerId = (byte) socketIn.read();
+                final ByteDataInput input = new SimpleByteDataInput(socketConnection.getInputStream());
+                final ByteDataOutput output =  new SimpleByteDataOutput(socketConnection.getOutputStream());
+
+                // Start by reading the request header
+                final ManagementRequestHeader requestHeader = new ManagementRequestHeader(input);
+
+                // Work with the lowest protocol version
+                int workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
+
+                // Now write the response header
+                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
+                responseHeader.write(output);
+                output.flush();
+
+                byte handlerId = requestHeader.getOperationHandlerId();
                 if (handlerId == -1) {
-                    log.error("ServerManager request failed.  Invalid handler id");
-                    return;
+                    throw new ManagementException("Management request failed.  Invalid handler id");
                 }
-            } catch (IOException e) {
-                log.error("ServerManager request failed.  Unable to read handler id", e);
-                return;
-            }
-            final ManagementOperationHandler handler = handlers.get(Byte.valueOf(handlerId));
-            if (handler == null) {
-                log.error("ServerManager request failed.  Invalid handler id");
-                return;
-            }
-            try {
-                handler.handleRequest(socketConnection.getInputStream(), socketConnection.getOutputStream());
+                final ManagementOperationHandler handler = handlers.get(handlerId);
+                if (handler == null) {
+                    throw new ManagementException("Management request failed.  NO handler found for id" + handlerId);
+                }
+                handler.handleRequest(workingVersion, input, output);
+            } catch (Exception e) {
+                log.error("Failed to process management request", e);
             } finally {
                 socketConnection.close();
             }
-
         }
     }
 }

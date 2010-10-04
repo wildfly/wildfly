@@ -88,14 +88,17 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         }
     }
 
+    @Override
     public long elementHash() {
         return super.elementHash();
     }
 
+    @Override
     protected Class<ScheduledThreadPoolExecutorElement> getElementClass() {
         return ScheduledThreadPoolExecutorElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
         final ScaledCount maxThreads = getMaxThreads();
@@ -130,5 +133,10 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
             threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
         }
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
+    }
+
+    @Override
+    protected Element getStandardElement() {
+        return Element.SCHEDULED_THREAD_POOL_EXECUTOR;
     }
 }

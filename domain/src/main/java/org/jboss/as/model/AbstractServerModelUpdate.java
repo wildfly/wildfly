@@ -25,6 +25,9 @@ package org.jboss.as.model;
 import org.jboss.msc.service.ServiceContainer;
 
 /**
+ *
+ * @param <R> the type of result that is returned by this update type
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<ServerModel, R> {
@@ -32,6 +35,7 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
     private static final long serialVersionUID = 1977647714406421073L;
 
     /** {@inheritDoc} */
+    @Override
     protected final Class<ServerModel> getModelElementType() {
         return ServerModel.class;
     }
@@ -46,7 +50,8 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
     public abstract boolean requiresRestart();
 
     /** {@inheritDoc} */
-    protected abstract void applyUpdate(ServerModel element) throws UpdateFailedException;
+    @Override
+    public abstract void applyUpdate(ServerModel element) throws UpdateFailedException;
 
     /**
      * Apply this update to a running service container.  The given result handler is called with the result of the
@@ -60,10 +65,12 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
     public abstract <P> void applyUpdate(ServiceContainer container, UpdateResultHandler<R, P> resultHandler, P param);
 
     /** {@inheritDoc} */
+    @Override
     protected final AbstractServerModelUpdate<R> getServerModelUpdate() {
         return this;
     }
 
     /** {@inheritDoc} */
-    protected abstract AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original);
+    @Override
+    public abstract AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original);
 }

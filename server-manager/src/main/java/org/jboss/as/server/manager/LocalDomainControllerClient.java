@@ -52,4 +52,9 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     public void updateDomain(final DomainModel domain) {
         serverManager.setDomain(domain);
     }
+
+    /** {@inheritDoc} */
+    public boolean isActive() {
+        return true;
+    }
 }

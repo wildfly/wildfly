@@ -208,7 +208,7 @@ public class ServerEnvironment {
 
         tmp = getFileFromProperty(SERVER_DEPLOY_DIR);
         if (tmp == null) {
-            tmp = new File(this.serverBaseDir, "deployments");
+            tmp = new File(this.serverDataDir, "deployments");
         }
         this.serverDeployDir = tmp;
         System.setProperty(SERVER_DEPLOY_DIR, this.serverDeployDir.getAbsolutePath());

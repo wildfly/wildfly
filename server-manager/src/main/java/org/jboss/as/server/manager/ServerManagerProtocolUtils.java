@@ -26,7 +26,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 
-import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.Command;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -37,6 +39,7 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 
 /**
+ * This is in a separate class since the marshalling requires module classloading set up
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
@@ -55,7 +58,15 @@ public class ServerManagerProtocolUtils {
         CONFIG = config;
     }
 
-    public static byte[] createCommandBytes(ServerManagerProtocolCommand protocol, Object data) throws IOException {
+    public static byte[] createCommandBytes(ServerManagerToServerProtocolCommand protocol, Object data) throws IOException {
+        return protocol.createCommandBytes(createDataBytes(data));
+    }
+
+    public static byte[] createCommandBytes(ServerToServerManagerProtocolCommand protocol, Object data) throws IOException {
+        return protocol.createCommandBytes(createDataBytes(data));
+    }
+
+    private static byte[] createDataBytes(Object data) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         byte[] objectBytes = null;
         if (data != null) {
@@ -70,15 +81,15 @@ public class ServerManagerProtocolUtils {
                 safeClose(marshaller);
             }
         }
-
-        return protocol.createCommandBytes(objectBytes);
+        return objectBytes;
     }
 
-    public static <T> T unmarshallCommandData(Class<T> clazz, Command command) throws IOException, ClassNotFoundException{
-        if (clazz == null)
-            throw new IllegalArgumentException("Null clazz");
+    public static <T> T unmarshallCommandData(Class<T> clazz, Command<?> command) throws IOException, ClassNotFoundException{
         if (command == null)
             throw new IllegalArgumentException("Null command");
+
+        if (clazz == null)
+            throw new IllegalArgumentException("Null clazz");
         if (command.getData() == null || command.getData().length == 0)
             throw new IllegalArgumentException("No data in command ");
 
@@ -93,7 +104,6 @@ public class ServerManagerProtocolUtils {
         } finally {
             safeClose(unmarshaller);
         }
-
     }
 
     private static void safeClose(final Closeable closeable) {

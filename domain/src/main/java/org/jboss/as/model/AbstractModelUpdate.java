@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+
 /**
  * An update to an element in the model.
  *
@@ -45,5 +46,6 @@ public abstract class AbstractModelUpdate<E extends AbstractModelElement<E>, R> 
     protected abstract AbstractServerModelUpdate<R> getServerModelUpdate();
 
     /** {@inheritDoc} */
+    @Override
     protected abstract AbstractModelUpdate<E, ?> getCompensatingUpdate(E original);
 }

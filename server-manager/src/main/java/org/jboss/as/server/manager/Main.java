@@ -34,7 +34,6 @@ import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.SystemExiter;
-import org.jboss.as.process.SystemExiter.Exiter;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
@@ -99,20 +98,14 @@ public final class Main {
     }
 
     private static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        return create(args, stdin, stdout, stderr, null);
-    }
-
-
-    public static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, Exiter exiter) {
         Main main = new Main();
-        SystemExiter.initialize(exiter);
         return main.boot(args, stdin, stdout, stderr);
     }
 
     private ServerManager boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         ServerManager sm = null;
         try {
-            ServerManagerEnvironment config = determineEnvironment(args, stdin, stdout, stderr);
+            ServerManagerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
             if (config == null) {
                 abort(null);
                 return null;
@@ -145,12 +138,13 @@ public final class Main {
         }
     }
 
-    private ServerManagerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    public static ServerManagerEnvironment determineEnvironment(String[] args, Properties systemProperties, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
         Integer smPort = null;
         InetAddress smAddress = null;
         String procName = null;
+        String defaultJVM = null;
         boolean isRestart = false;
 
         final int argsLength = args.length;
@@ -216,6 +210,8 @@ public final class Main {
                     procName = args[++i];
                 } else if (CommandLineConstants.RESTART_SERVER_MANAGER.equals(arg)) {
                     isRestart = true;
+                } else if(CommandLineConstants.DEFAULT_JVM.equals(arg)) {
+                    defaultJVM = args[++i];
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -241,10 +237,10 @@ public final class Main {
             }
         }
 
-        return new ServerManagerEnvironment(props,isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort);
+        return new ServerManagerEnvironment(systemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM);
     }
 
-    private URL makeURL(String urlspec) throws MalformedURLException {
+    private static URL makeURL(String urlspec) throws MalformedURLException {
         urlspec = urlspec.trim();
 
         URL url;

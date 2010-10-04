@@ -44,6 +44,7 @@ public enum Element {
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
     DEPLOYMENTS("deployments"),
+    DEPLOYMENT_REPOSITORY("deployment-repository"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),
@@ -80,6 +81,7 @@ public enum Element {
 
     REMOTE("remote"),
 
+    SCANNING("scanning"),
     SERVER("server"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),

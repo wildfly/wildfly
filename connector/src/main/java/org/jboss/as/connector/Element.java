@@ -34,13 +34,13 @@ import java.util.Map;
  */
 
 public enum Element {
-   /** always the first **/
+    /** always the first **/
     UNKNOWN(null),
-   /** archive-validation element **/
-   ARCHIVE_VALIDATION("archive-validation"),
+    /** archive-validation element **/
+    ARCHIVE_VALIDATION("archive-validation"),
 
-   /** bean-validation element **/
-   BEAN_VALIDATION("bean-validation");
+    /** bean-validation element **/
+    BEAN_VALIDATION("bean-validation");
 
     private final String name;
 
@@ -63,7 +63,8 @@ public enum Element {
         final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
             final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+            if (name != null)
+                map.put(name, element);
         }
         MAP = map;
     }

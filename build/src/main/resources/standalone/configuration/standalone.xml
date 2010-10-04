@@ -20,17 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0"
-        xmlns:remoting="urn:jboss:domain:remoting:1.0"
-        xmlns:threads="urn:jboss:domain:threads:1.0"
-        xmlns:txn="urn:jboss:domain:transactions:1.0"
-        xmlns:naming="urn:jboss:domain:naming:1.0"
+<server xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
-                            urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
-                            urn:jboss:domain:transactions:1.0 jboss-transactions.xsd
-                            urn:jboss:domain:naming:1.0 jboss-naming.xsd
-                            urn:jboss:domain:threads:1.0 jboss-threads.xsd">
+        xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
     <name>Standalone</name>
 
@@ -38,21 +30,96 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.managed-beans"/>
+        <extension module="org.jboss.as.messaging"/>
     </extensions>
- 
+
     <profile name="something">
-        <threads:subsystem>
-            <threads:scheduled-thread-pool-executor name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="SECONDS"/>
-            </threads:scheduled-thread-pool-executor>
-        </threads:subsystem>
-        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
-        <txn:subsystem>
-            <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
-            <txn:core-environment socket-binding="txn-socket-process-id"/>
-        </txn:subsystem>
-        <remoting:subsystem thread-pool="remoting"/>
+        <subsystem xmlns="urn:jboss:domain:threads:1.0">
+            <scheduled-thread-pool-executor name="remoting">
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="SECONDS"/>
+            </scheduled-thread-pool-executor>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <subsystem xmlns="urn:jboss:domain:transactions:1.0">
+            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <core-environment socket-binding="txn-socket-process-id"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:messaging:1.0">
+            <!-- A standard hornetq configuration -->
+            <bindings-directory>hornetq/bindings</bindings-directory>
+            <journal-type>NIO</journal-type>
+            <journal-directory>hornetq/journal</journal-directory>
+
+            <journal-min-files>2</journal-min-files>
+            <!-- Default journal file size is 10Mb, reduced here to 1Mb for faster first boot -->
+            <journal-file-size>1048576</journal-file-size>
+
+            <large-messages-directory>hornetq/largemessages</large-messages-directory>
+
+            <paging-directory>/hornetq/paging</paging-directory>
+
+            <connectors>
+               <connector name="netty">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="socket-ref" value="netty" />
+               </connector>
+
+               <connector name="netty-throughput">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="batch-delay" value="50"/>
+                  <param key="socket-ref" value="netty-throughput" />
+               </connector>
+
+               <connector name="in-vm">
+                  <factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
+                  <param key="server-id" value="${hornetq.server-id:0}"/>
+               </connector>
+
+            </connectors>
+
+            <acceptors>
+               <acceptor name="netty">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+                  <param key="socket-ref" value="netty" />
+               </acceptor>
+
+               <acceptor name="netty-throughput">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+                  <param key="batch-delay" value="50"/>
+                  <param key="direct-deliver" value="false"/>
+                  <param key="socket-ref" value="netty-throughput" />
+               </acceptor>
+
+               <acceptor name="in-vm">
+                 <factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
+                 <param key="server-id" value="0"/>
+               </acceptor>
+
+            </acceptors>
+
+            <security-settings>
+               <security-setting match="#">
+                  <permission type="createNonDurableQueue" roles="guest"/>
+                  <permission type="deleteNonDurableQueue" roles="guest"/>
+                  <permission type="consume" roles="guest"/>
+                  <permission type="send" roles="guest"/>
+               </security-setting>
+            </security-settings>
+
+            <address-settings>
+               <!--default for catch all-->
+               <address-setting match="#">
+                  <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                  <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+                  <redelivery-delay>0</redelivery-delay>
+                  <max-size-bytes>10485760</max-size-bytes>
+                  <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                  <address-full-policy>BLOCK</address-full-policy>
+               </address-setting>
+            </address-settings>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
@@ -72,13 +139,17 @@
        <socket-binding name="txn-recovery-environment" port="4712"/>
        <socket-binding name="txn-status-manager" port="4713"/>
        <socket-binding name="txn-socket-process-id" port="4714"/>
+       <socket-binding name="netty" port="5445" />
+       <socket-binding name="netty-throughput" port="5455"/>
     </socket-binding-group>
 
     <system-properties>
         <property name="prop1" value="value1"/>
         <property name="prop2" value="value2"/>
     </system-properties>
-
+    
+    <deployment-repository scan-interval="5000"/>
+    
     <deployments>
     </deployments>
 

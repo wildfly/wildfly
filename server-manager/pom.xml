@@ -74,6 +74,15 @@
             <artifactId>jboss-logmanager</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
         </dependency>
@@ -82,6 +91,7 @@
            <artifactId>junit</artifactId>
            <scope>test</scope>
         </dependency>
+        
     </dependencies>
 
 </project>

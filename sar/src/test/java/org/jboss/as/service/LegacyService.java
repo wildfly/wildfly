@@ -22,10 +22,15 @@
 
 package org.jboss.as.service;
 
+import org.jboss.logging.Logger;
+
 /**
  * @author John E. Bailey
  */
 public class LegacyService implements LegacyServiceMBean {
+
+    private static final Logger logger = Logger.getLogger(LegacyService.class);
+
     private LegacyService other;
     private String somethingElse;
 
@@ -57,5 +62,10 @@ public class LegacyService implements LegacyServiceMBean {
     }
 
     public void start() {
+        logger.info("Started");
+    }
+
+    public void stop() {
+        logger.info("Stopped");
     }
 }

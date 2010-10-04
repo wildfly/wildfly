@@ -28,7 +28,8 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-testsuite</artifactId>
+        <!--  We don't want the full testsuite classpath here -->
+        <artifactId>jboss-as-parent</artifactId>
         <version>7.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
