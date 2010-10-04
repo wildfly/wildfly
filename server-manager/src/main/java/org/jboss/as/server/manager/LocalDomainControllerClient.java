@@ -22,7 +22,12 @@
 
 package org.jboss.as.server.manager;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.domain.controller.ModelUpdateResponse;
+import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 
 /**
@@ -49,8 +54,36 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     /** {@inheritDoc} */
-    public void updateDomain(final DomainModel domain) {
+    public void updateDomainModel(final DomainModel domain) {
         serverManager.setDomain(domain);
+    }
+
+    /** {@inheritDoc} */
+    public List<ModelUpdateResponse<?>> updateHostModel(List<AbstractHostModelUpdate<?>> updates) {
+        final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
+        for(AbstractHostModelUpdate<?> update : updates) {
+            responses.add(executeUpdate(update));
+        }
+        return responses;
+    }
+
+    /** {@inheritDoc} */
+    public List<ModelUpdateResponse<?>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates) {
+        final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
+        for(AbstractDomainModelUpdate<?> update : updates) {
+            responses.add(executeUpdate(update));
+        }
+        return responses;
+    }
+
+    private <R> ModelUpdateResponse<R> executeUpdate(AbstractDomainModelUpdate<R> domainUpdate) {
+        final R result = null;  // TODO execute update
+        return new ModelUpdateResponse<R>(result);
+    }
+
+    private <R> ModelUpdateResponse<R> executeUpdate(AbstractHostModelUpdate<R> hostUpdate) {
+        final R result = null;  // TODO execute update
+        return new ModelUpdateResponse<R>(result);
     }
 
     /** {@inheritDoc} */

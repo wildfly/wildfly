@@ -23,15 +23,22 @@
 package org.jboss.as.server.manager;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.domain.controller.ModelUpdateResponse;
+import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.server.manager.management.AbstractManagementRequest;
 import org.jboss.as.server.manager.management.ByteDataInput;
 import org.jboss.as.server.manager.management.ByteDataOutput;
 import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
+import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
 
 /**
  * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
@@ -55,11 +62,30 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         return id;
     }
 
-    public void updateDomain(final DomainModel domain) {
+    /** {@inheritDoc} */
+    public void updateDomainModel(final DomainModel domain) {
         try {
-            new UpdateDomainRequest(domain).execute();
+            new UpdateFullDomainRequest(domain).execute();
         } catch (ManagementException e) {
             throw new RuntimeException("Failed to update domain", e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public List<ModelUpdateResponse<?>> updateHostModel(final List<AbstractHostModelUpdate<?>> updates) {
+        try {
+            return new UpdateHostModelRequest(updates).executeForResult();
+        } catch (ManagementException e) {
+            throw new RuntimeException("Failed to update host model", e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public List<ModelUpdateResponse<?>> updateDomainModel(final List<AbstractDomainModelUpdate<?>> updates) {
+        try {
+            return new UpdateDomainModelRequest(updates).executeForResult();
+        } catch (ManagementException e) {
+            throw new RuntimeException("Failed to update domain model", e);
         }
     }
 
@@ -93,19 +119,19 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
     }
 
-    private class UpdateDomainRequest extends ServerManagerRequest<Void> {
+    private class UpdateFullDomainRequest extends ServerManagerRequest<Void> {
         private final DomainModel domainModel;
 
-        private UpdateDomainRequest(DomainModel domainModel) {
+        private UpdateFullDomainRequest(DomainModel domainModel) {
             this.domainModel = domainModel;
         }
 
         public final byte getRequestCode() {
-            return ManagementProtocol.UPDATE_DOMAIN_REQUEST;
+            return ManagementProtocol.UPDATE_FULL_DOMAIN_REQUEST;
         }
 
         protected final byte getResponseCode() {
-            return ManagementProtocol.UPDATE_DOMAIN_RESPONSE;
+            return ManagementProtocol.UPDATE_FULL_DOMAIN_RESPONSE;
         }
 
         protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
@@ -135,6 +161,105 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
 
         protected Boolean receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
             return true;  // If we made it here, we correctly established a connection
+        }
+    }
+
+
+    private class UpdateDomainModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<?>>> {
+        private final List<AbstractDomainModelUpdate<?>> updates;
+
+        private UpdateDomainModelRequest(final List<AbstractDomainModelUpdate<?>> updates) {
+            this.updates = updates;
+        }
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.UPDATE_DOMAIN_MODEL_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return ManagementProtocol.UPDATE_DOMAIN_MODEL_RESPONSE;
+        }
+
+        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
+                output.writeInt(updates.size());
+                for(AbstractDomainModelUpdate<?> update : updates) {
+                    output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    marshal(output, update);
+                }
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write domain model updates", e);
+            }
+        }
+
+        protected List<ModelUpdateResponse<?>> receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                int responseCount = input.readInt();
+                if(responseCount != updates.size()) {
+                    throw new ManagementException("Invalid domain model update response.  Response count not equal to update count.");
+                }
+                final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
+                for(int i = 0; i < responseCount; i++) {
+                    expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    final ModelUpdateResponse<?> response = unmarshal(input, ModelUpdateResponse.class);
+                    responses.add(response);
+                }
+                return responses;
+            } catch (Exception e) {
+                throw new ManagementException("Failed to receive domain model update responses.", e);
+            }
+        }
+    }
+
+    private class UpdateHostModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<?>>> {
+        private final List<AbstractHostModelUpdate<?>> updates;
+
+        private UpdateHostModelRequest(final List<AbstractHostModelUpdate<?>> updates) {
+            this.updates = updates;
+        }
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.UPDATE_HOST_MODEL_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return ManagementProtocol.UPDATE_HOST_MODEL_RESPONSE;
+        }
+
+        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+            super.sendRequest(protocolVersion, output);
+            try {
+                output.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
+                output.writeInt(updates.size());
+                for(AbstractHostModelUpdate<?> update : updates) {
+                    output.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE);
+                    marshal(output, update);
+                }
+            } catch (Exception e) {
+                throw new ManagementException("Failed to write host model updates", e);
+            }
+        }
+
+        protected List<ModelUpdateResponse<?>> receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                int responseCount = input.readInt();
+                if(responseCount != updates.size()) {
+                    throw new ManagementException("Invalid host model update response.  Response count not equal to update count.");
+                }
+                final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
+                for(int i = 0; i < responseCount; i++) {
+                    expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    final ModelUpdateResponse<?> response = unmarshal(input, ModelUpdateResponse.class);
+                    responses.add(response);
+                }
+                return responses;
+            } catch (Exception e) {
+                throw new ManagementException("Failed to receive host model update responses.", e);
+            }
         }
     }
 

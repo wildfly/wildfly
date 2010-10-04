@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.controller;
 
+import java.util.List;
+import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 
 /**
@@ -39,18 +42,32 @@ public interface DomainControllerClient {
     String getId();
 
     /**
-     * Update the client with a new version of the domain.
-     *
-     * @param domain The domain configuration
-     */
-    void updateDomain(DomainModel domain);
-
-    /**
      * Check the server manager client to verify it is still active.
      *
      * @return true if the client is active, false if not.
      */
     boolean isActive();
 
-    // TODO:  Add calls for updates/events
+    /**
+     * Update the client with a new version of the full domain.
+     *
+     * @param domain The domain configuration
+     */
+    void updateDomainModel(DomainModel domain);
+
+    /**
+     * Update the client with a list of host model updates.
+     *
+     * @param updates The updates to process
+     * @return A list of response objects to reflect the result of each update executed.
+     */
+    List<ModelUpdateResponse<?>> updateHostModel(List<AbstractHostModelUpdate<?>> updates);
+
+    /**
+     * Update the client with a list of domain model updates.
+     *
+     * @param updates The updates to process
+     * @return A list of response objects to reflect the result of each update executed.
+     */
+    List<ModelUpdateResponse<?>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates);
 }
