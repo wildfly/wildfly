@@ -32,7 +32,7 @@ public final class DomainSubsystemRemove extends AbstractDomainModelUpdate<Void>
     private static final long serialVersionUID = -9076890219875153928L;
 
     private final String profileName;
-    private final AbstractSubsystemRemove subsystemRemove;
+    private final SubsystemRemove subsystemRemove;
 
     /**
      * Construct a new instance.
@@ -40,7 +40,7 @@ public final class DomainSubsystemRemove extends AbstractDomainModelUpdate<Void>
      * @param profileName the name of the profile that the change applies to
      * @param subsystemRemove the subsystem remove
      */
-    public DomainSubsystemRemove(final String profileName, final AbstractSubsystemRemove subsystemRemove) {
+    public DomainSubsystemRemove(final String profileName, final SubsystemRemove subsystemRemove) {
         this.profileName = profileName;
         this.subsystemRemove = subsystemRemove;
     }
@@ -57,7 +57,7 @@ public final class DomainSubsystemRemove extends AbstractDomainModelUpdate<Void>
         return profileName;
     }
 
-    public AbstractSubsystemRemove getSubsystemRemove() {
+    public SubsystemRemove getSubsystemRemove() {
         return subsystemRemove;
     }
 

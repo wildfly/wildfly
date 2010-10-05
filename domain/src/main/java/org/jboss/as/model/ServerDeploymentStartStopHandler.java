@@ -203,7 +203,7 @@ class ServerDeploymentStartStopHandler {
         }
 
         @Override
-        public void serviceFailed(ServiceController<? extends Object> controller, StartException reason) {
+        public void serviceFailed(ServiceController<?> controller, StartException reason) {
 
             if (resultHandler != null && controller.getName().equals(deploymentServiceName)) {
                 resultHandler.handleFailure(reason, param);
@@ -211,20 +211,20 @@ class ServerDeploymentStartStopHandler {
         }
 
         @Override
-        public void serviceStarted(ServiceController<? extends Object> controller) {
+        public void serviceStarted(ServiceController<?> controller) {
             if (!undeploy && resultHandler != null && controller.getName().equals(deploymentServiceName)) {
                 recordResult(controller);
             }
         }
 
         @Override
-        public void serviceStopped(ServiceController<? extends Object> controller) {
+        public void serviceStopped(ServiceController<?> controller) {
             if (undeploy && resultHandler != null && controller.getName().equals(deploymentServiceName)) {
                 recordResult(controller);
             }
         }
 
-        private void recordResult(ServiceController<? extends Object> controller) {
+        private void recordResult(ServiceController<?> controller) {
             SimpleServerDeploymentActionResult result = new SimpleServerDeploymentActionResult(null, Result.EXECUTED);
             resultHandler.handleSuccess(result, param);
         }

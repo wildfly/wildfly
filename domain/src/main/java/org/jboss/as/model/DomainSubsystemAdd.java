@@ -32,7 +32,7 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
     private static final long serialVersionUID = -9076890219875153928L;
 
     private final String profileName;
-    private final AbstractSubsystemAdd subsystemAdd;
+    private final AbstractSubsystemAdd<?> subsystemAdd;
 
     /**
      * Construct a new instance.
@@ -40,7 +40,7 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
      * @param profileName the name of the profile that the change applies to
      * @param subsystemAdd the subsystem add
      */
-    public DomainSubsystemAdd(final String profileName, final AbstractSubsystemAdd subsystemAdd) {
+    public DomainSubsystemAdd(final String profileName, final AbstractSubsystemAdd<?> subsystemAdd) {
         this.profileName = profileName;
         this.subsystemAdd = subsystemAdd;
     }

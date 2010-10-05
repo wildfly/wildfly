@@ -29,13 +29,13 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
 
     private static final long serialVersionUID = 4755195359412875338L;
 
-    private final AbstractSubsystemAdd subsystemAdd;
+    private final AbstractSubsystemAdd<?> subsystemAdd;
 
-    public ServerSubsystemAdd(final AbstractSubsystemAdd subsystemAdd) {
+    public ServerSubsystemAdd(final AbstractSubsystemAdd<?> subsystemAdd) {
         this.subsystemAdd = subsystemAdd;
     }
 
-    public AbstractSubsystemAdd getSubsystemAdd() {
+    public AbstractSubsystemAdd<?> getSubsystemAdd() {
         return subsystemAdd;
     }
 
@@ -48,7 +48,7 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
     }
 
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        
+
     }
 
     public ServerSubsystemRemove getCompensatingUpdate(final ServerModel original) {

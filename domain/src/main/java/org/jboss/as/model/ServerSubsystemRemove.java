@@ -29,9 +29,9 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
 
     private static final long serialVersionUID = 4805171132512065204L;
 
-    private final AbstractSubsystemRemove subsystemRemove;
+    private final SubsystemRemove subsystemRemove;
 
-    public ServerSubsystemRemove(final AbstractSubsystemRemove subsystemRemove) {
+    public ServerSubsystemRemove(final SubsystemRemove subsystemRemove) {
         super(true);
         this.subsystemRemove = subsystemRemove;
     }

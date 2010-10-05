@@ -53,20 +53,20 @@ public interface ExtensionContext {
      * @param <E> the element type
      */
     class SubsystemConfiguration<E extends AbstractSubsystemElement<E>> {
-        private final AbstractSubsystemAdd subsystemAdd;
+        private final AbstractSubsystemAdd<E> subsystemAdd;
         private final List<AbstractSubsystemUpdate<E, ?>> updates;
 
-        public SubsystemConfiguration(final AbstractSubsystemAdd subsystemAdd, final List<AbstractSubsystemUpdate<E, ?>> updates) {
+        public SubsystemConfiguration(final AbstractSubsystemAdd<E> subsystemAdd, final List<AbstractSubsystemUpdate<E, ?>> updates) {
             this.subsystemAdd = subsystemAdd;
             this.updates = updates;
         }
 
-        public SubsystemConfiguration(final AbstractSubsystemAdd subsystemAdd, final AbstractSubsystemUpdate<E, ?>... updates) {
+        public SubsystemConfiguration(final AbstractSubsystemAdd<E> subsystemAdd, final AbstractSubsystemUpdate<E, ?>... updates) {
             this.subsystemAdd = subsystemAdd;
             this.updates = Arrays.asList(updates);
         }
 
-        public AbstractSubsystemAdd getSubsystemAdd() {
+        public AbstractSubsystemAdd<E> getSubsystemAdd() {
             return subsystemAdd;
         }
 

@@ -25,7 +25,7 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractSubsystemRemove extends AbstractModelElementUpdate<ProfileElement> {
+public final class SubsystemRemove extends AbstractModelElementUpdate<ProfileElement> {
 
     private static final long serialVersionUID = -5436702014420361771L;
 
@@ -36,20 +36,24 @@ public abstract class AbstractSubsystemRemove extends AbstractModelElementUpdate
      *
      * @param namespaceUri the namespace URI for the corresponding subsystem
      */
-    protected AbstractSubsystemRemove(final String namespaceUri) {
+    protected SubsystemRemove(final String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
 
-    /** {@inheritDoc} */
-    public abstract AbstractSubsystemAdd getCompensatingUpdate(final ProfileElement original);
+    /**
+     * {@inheritDoc}
+     */
+    public AbstractSubsystemAdd<?> getCompensatingUpdate(final ProfileElement original) {
+        return original.getSubsystem(namespaceUri).getAdd();
+    }
 
     /** {@inheritDoc} */
-    public final Class<ProfileElement> getModelElementType() {
+    public Class<ProfileElement> getModelElementType() {
         return ProfileElement.class;
     }
 
     /** {@inheritDoc} */
-    protected final void applyUpdate(final ProfileElement element) throws UpdateFailedException {
+    protected void applyUpdate(final ProfileElement element) throws UpdateFailedException {
         final AbstractSubsystemElement<?> subsystem = element.getSubsystem(namespaceUri);
         if (! subsystem.isEmpty()) {
             throw new UpdateFailedException("Subsystem " + namespaceUri + " configuration is not empty");
@@ -62,28 +66,7 @@ public abstract class AbstractSubsystemRemove extends AbstractModelElementUpdate
      *
      * @return the namespace URI
      */
-    public final String getNamespaceUri() {
+    public String getNamespaceUri() {
         return namespaceUri;
-    }
-
-    /**
-     * Apply this update to a running service container.  The given result handler is called with the result of the
-     * application.
-     *
-     * @param updateContext the update context
-     * @param resultHandler the handler to call back with the result
-     * @param param the parameter value to pass to the result handler
-     */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
-
-    /**
-     * Apply the boot action for this update.  This action is only executed when the update is processed during
-     * server startup.  By default, this method simply invokes {@link #applyUpdate(UpdateContext, UpdateResultHandler, Object)}
-     * directly, but this behavior should be overriden if a different action must be taken at boot time.
-     *
-     * @param updateContext the update context
-     */
-    protected void applyUpdateBootAction(UpdateContext updateContext) {
-        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 }

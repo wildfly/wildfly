@@ -25,7 +25,7 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractSubsystemAdd extends AbstractModelElementUpdate<ProfileElement> {
+public abstract class AbstractSubsystemAdd<E extends AbstractSubsystemElement<E>> extends AbstractModelElementUpdate<ProfileElement> {
 
     private static final long serialVersionUID = -1641174620577793267L;
 
@@ -35,8 +35,8 @@ public abstract class AbstractSubsystemAdd extends AbstractModelElementUpdate<Pr
         this.namespaceUri = namespaceUri;
     }
 
-    public final AbstractSubsystemRemove getCompensatingUpdate(final ProfileElement original) {
-        return new AbstractSubsystemRemove(namespaceUri);
+    public final SubsystemRemove getCompensatingUpdate(final ProfileElement original) {
+        return new SubsystemRemove(namespaceUri);
     }
 
     protected final void applyUpdate(final ProfileElement element) throws UpdateFailedException {
@@ -64,7 +64,7 @@ public abstract class AbstractSubsystemAdd extends AbstractModelElementUpdate<Pr
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 
-    protected abstract <E extends AbstractSubsystemElement<E>> AbstractSubsystemElement<E> createSubsystemElement();
+    protected abstract E createSubsystemElement();
 
     public final Class<ProfileElement> getModelElementType() {
         return ProfileElement.class;

@@ -152,7 +152,7 @@ public interface UpdateResultHandler<R, P> {
             this.param = param;
         }
 
-        public void serviceStarted(final ServiceController<? extends Object> controller) {
+        public void serviceStarted(final ServiceController<?> controller) {
             try {
                 resultHandler.handleSuccess(null, param);
             } finally {
@@ -160,7 +160,7 @@ public interface UpdateResultHandler<R, P> {
             }
         }
 
-        public void serviceFailed(final ServiceController<? extends Object> controller, final StartException reason) {
+        public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             try {
                 resultHandler.handleFailure(reason, param);
             } finally {
@@ -168,7 +168,7 @@ public interface UpdateResultHandler<R, P> {
             }
         }
 
-        public void serviceRemoved(final ServiceController<? extends Object> controller) {
+        public void serviceRemoved(final ServiceController<?> controller) {
             try {
                 resultHandler.handleCancellation(param);
             } finally {

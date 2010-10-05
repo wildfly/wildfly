@@ -139,7 +139,7 @@ public class DeploymentService implements Service<Void> {
          * the dependent services are.
          */
         @Override
-        public void listenerAdded(ServiceController<? extends Object> controller) {
+        public void listenerAdded(ServiceController<?> controller) {
             synchronized(dependents) {
                 dependents.put(controller.getName(), controller);
             }

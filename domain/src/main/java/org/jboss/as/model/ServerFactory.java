@@ -67,7 +67,7 @@ public final class ServerFactory {
 
         // Merge subsystems
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystemElement : leafProfile.getSubsystems()) {
-            final AbstractSubsystemAdd subsystemAdd = subsystemElement.getAdd();
+            final AbstractSubsystemAdd<?> subsystemAdd = subsystemElement.getAdd();
             list.add(new ServerSubsystemAdd(subsystemAdd));
             final List<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>, ?>> subsystemList = new ArrayList<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>,?>>();
             subsystemElement.getUpdates(subsystemList);
