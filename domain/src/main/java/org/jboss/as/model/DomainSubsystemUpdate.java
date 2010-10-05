@@ -27,7 +27,7 @@ package org.jboss.as.model;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class DomainProfileUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractDomainModelUpdate<R> {
+public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractDomainModelUpdate<R> {
     private static final long serialVersionUID = -7899677507905342444L;
 
     private final String profileName;
@@ -39,7 +39,7 @@ public final class DomainProfileUpdate<E extends AbstractSubsystemElement<E>, R>
      * @param profileName the name of the profile to modify
      * @param update the subsystem update to apply to the profile
      */
-    public DomainProfileUpdate(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
+    public DomainSubsystemUpdate(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
         this.profileName = profileName;
         this.update = update;
     }
@@ -53,8 +53,8 @@ public final class DomainProfileUpdate<E extends AbstractSubsystemElement<E>, R>
      * @param <R>
      * @return the new instance
      */
-    public static <E extends AbstractSubsystemElement<E>, R> DomainProfileUpdate<E, R> create(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
-        return new DomainProfileUpdate<E,R>(profileName, update);
+    public static <E extends AbstractSubsystemElement<E>, R> DomainSubsystemUpdate<E, R> create(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
+        return new DomainSubsystemUpdate<E,R>(profileName, update);
     }
 
     public String getProfileName() {
@@ -85,11 +85,11 @@ public final class DomainProfileUpdate<E extends AbstractSubsystemElement<E>, R>
         return createUpdate(profileName, compensatingUpdate);
     }
 
-    private static <E extends AbstractSubsystemElement<E>, R> DomainProfileUpdate<E, R> createUpdate(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
-        return new DomainProfileUpdate<E,R>(profileName, update);
+    private static <E extends AbstractSubsystemElement<E>, R> DomainSubsystemUpdate<E, R> createUpdate(final String profileName, final AbstractSubsystemUpdate<E, R> update) {
+        return new DomainSubsystemUpdate<E,R>(profileName, update);
     }
 
     protected AbstractServerModelUpdate<R> getServerModelUpdate() {
-        return new ServerProfileUpdate<E, R>(update);
+        return new ServerSubsystemUpdate<E, R>(update);
     }
 }

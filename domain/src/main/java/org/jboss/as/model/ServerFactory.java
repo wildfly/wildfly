@@ -72,7 +72,7 @@ public final class ServerFactory {
             final List<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>, ?>> subsystemList = new ArrayList<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>,?>>();
             subsystemElement.getUpdates(subsystemList);
             for (AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>, ?> update : subsystemList) {
-                list.add(ServerProfileUpdate.create(update));
+                list.add(ServerSubsystemUpdate.create(update));
             }
         }
 

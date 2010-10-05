@@ -25,18 +25,18 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerProfileUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractServerModelUpdate<R> {
+public final class ServerSubsystemUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractServerModelUpdate<R> {
 
     private static final long serialVersionUID = -9127280126443066490L;
 
     private final AbstractSubsystemUpdate<E, R> subsystemUpdate;
 
-    public ServerProfileUpdate(final AbstractSubsystemUpdate<E, R> subsystemUpdate) {
+    public ServerSubsystemUpdate(final AbstractSubsystemUpdate<E, R> subsystemUpdate) {
         this.subsystemUpdate = subsystemUpdate;
     }
 
-    public static <E extends AbstractSubsystemElement<E>, R> ServerProfileUpdate<E, R> create(AbstractSubsystemUpdate<E, R> subsystemUpdate) {
-        return new ServerProfileUpdate<E, R>(subsystemUpdate);
+    public static <E extends AbstractSubsystemElement<E>, R> ServerSubsystemUpdate<E, R> create(AbstractSubsystemUpdate<E, R> subsystemUpdate) {
+        return new ServerSubsystemUpdate<E, R>(subsystemUpdate);
     }
 
     protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
@@ -52,7 +52,7 @@ public final class ServerProfileUpdate<E extends AbstractSubsystemElement<E>, R>
         subsystemUpdate.applyUpdate(updateContext, handler, param);
     }
 
-    public ServerProfileUpdate<E, ?> getCompensatingUpdate(final ServerModel original) {
+    public ServerSubsystemUpdate<E, ?> getCompensatingUpdate(final ServerModel original) {
         final String namespaceUri = subsystemUpdate.getSubsystemNamespaceUri();
         final E element = subsystemUpdate.getModelElementType().cast(original.getSubsystem(namespaceUri));
         if (element == null) {
@@ -61,7 +61,7 @@ public final class ServerProfileUpdate<E extends AbstractSubsystemElement<E>, R>
         return createUpdate(subsystemUpdate.getCompensatingUpdate(element));
     }
 
-    private static <E extends AbstractSubsystemElement<E>, R> ServerProfileUpdate<E, R> createUpdate(final AbstractSubsystemUpdate<E, R> update) {
-        return new ServerProfileUpdate<E,R>(update);
+    private static <E extends AbstractSubsystemElement<E>, R> ServerSubsystemUpdate<E, R> createUpdate(final AbstractSubsystemUpdate<E, R> update) {
+        return new ServerSubsystemUpdate<E,R>(update);
     }
 }

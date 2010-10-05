@@ -249,7 +249,7 @@ public final class ModelXmlParsers {
                             // I don't think this is really an unchecked cast (even though ? is bounded by Object, the class
                             // specifies an additional bound for E so it should be considered safe), but IDEA thinks it is...
                             //noinspection unchecked
-                            list.add(DomainProfileUpdate.create(name, update));
+                            list.add(DomainSubsystemUpdate.create(name, update));
                         }
                         break;
                     }
