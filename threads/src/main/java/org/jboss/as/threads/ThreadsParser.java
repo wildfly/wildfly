@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -32,7 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -46,7 +48,7 @@ import static org.jboss.as.model.ParseUtils.*;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ThreadsParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>>> {
+public final class ThreadsParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ThreadsSubsystemElement>>> {
 
     private static final ThreadsParser INSTANCE = new ThreadsParser();
 
@@ -62,8 +64,9 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         return INSTANCE;
     }
 
-    /** {@inheritDoc} */
-    public void readElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<ThreadsSubsystemElement>> result) throws XMLStreamException {
+
+        final List<? super AbstractThreadsSubsystemUpdate<?>> updates = new ArrayList<AbstractThreadsSubsystemUpdate<?>>();
 
         // no attributes
         requireNoAttributes(reader);
@@ -109,10 +112,10 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         }
     }
 
-    private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) {
+    private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) {
     }
 
-    private void parseQueuelessExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) {
+    private void parseQueuelessExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) {
     }
 
     private void parseThreadFactoryElement(final XMLExtendedStreamReader reader, final List<? super ThreadFactoryAdd> updates, final Set<String> names) throws XMLStreamException {
@@ -226,7 +229,7 @@ public final class ThreadsParser implements XMLElementReader<List<? super Abstra
         updates.add(add);
     }
 
-    private void parseBoundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates, final Set<String> names) throws XMLStreamException {
+    private void parseBoundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean allowCoreTimeout = false;

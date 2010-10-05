@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 
@@ -33,12 +32,6 @@ import org.jboss.msc.service.ServiceActivatorContext;
  */
 public final class ThreadsExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
-
-    private static final SubsystemFactory<ThreadsSubsystemElement> FACTORY = new SubsystemFactory<ThreadsSubsystemElement>() {
-        public ThreadsSubsystemElement createSubsystemElement() {
-            return new ThreadsSubsystemElement();
-        }
-    };
 
     public void activate(final ServiceActivatorContext context) {
         log.info("Activating Threading Extension");
