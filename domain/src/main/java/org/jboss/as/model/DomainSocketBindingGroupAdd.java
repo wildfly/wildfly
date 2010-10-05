@@ -22,36 +22,39 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupUpdate;
+
 /**
- * An update which modifies the domain's system properties.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = -3412272237934071396L;
-    private final AbstractPropertyUpdate propertyUpdate;
+public class DomainSocketBindingGroupAdd extends AbstractDomainModelUpdate<Void> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyUpdate the property update to apply
-     */
-    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        this.propertyUpdate = propertyUpdate;
+    private static final long serialVersionUID = 6748745991529958637L;
+    private final SocketBindingGroupUpdate update;
+
+    public DomainSocketBindingGroupAdd(SocketBindingGroupUpdate update) {
+        this.update = update;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        propertyUpdate.applyUpdate(element.getSystemProperties());
+    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
+        final SocketBindingGroupElement bindingGroup = element.addSocketBindingGroup(update.getName());
+        if(bindingGroup == null) {
+            throw new UpdateFailedException("duplicate binding-group " + update.getName());
+        }
+        update.applyUpdate(bindingGroup);
     }
 
     /** {@inheritDoc} */
-    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
-        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel domain) {
+        return new DomainSocketBindingGroupRemove(update.getName());
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(propertyUpdate);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

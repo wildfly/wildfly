@@ -53,7 +53,7 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
 
-    private PropertiesElement systemProperties;
+    private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.DOMAIN.getLocalName());
 
@@ -265,4 +265,44 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         ProfileElement pe = profiles.remove(name);
         return pe != null;
     }
+
+    ServerGroupElement addServerGroup(String name, String profile) {
+        if(serverGroups.containsKey(name)) {
+            return null;
+        }
+        final ServerGroupElement group = new ServerGroupElement(name, profile);
+        serverGroups.put(name, group);
+        return group;
+    }
+
+    boolean removeServerGroup(final String name) {
+        return serverGroups.remove(name) != null;
+    }
+
+    SocketBindingGroupElement addSocketBindingGroup(final String name) {
+        if(bindingGroups.containsKey(name)) {
+            return null;
+        }
+        final SocketBindingGroupElement bindingGroup = new SocketBindingGroupElement(name);
+        bindingGroups.put(name, bindingGroup);
+        return bindingGroup;
+    }
+
+    boolean removeBindingGroup(final String name) {
+        return bindingGroups.remove(name) != null;
+    }
+
+    InterfaceElement addInterface(final String name) {
+        if(interfaces.containsKey(name)) {
+            return null;
+        }
+        final InterfaceElement networkInterface = new InterfaceElement(name);
+        interfaces.put(name, networkInterface);
+        return networkInterface;
+    }
+
+    boolean removeInterface(final String name) {
+        return interfaces.remove(name) != null;
+    }
+
 }

@@ -30,13 +30,13 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private static final long serialVersionUID = 6868487634991345679L;
 
     private final String name;
-    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
-    private String interfaceName;
     private int port;
     private boolean fixedPort;
-    private InetAddress multicastAddress;
     private int multicastPort;
-    private final String defaultInterfaceName;
+    private InetAddress multicastAddress;
+    private String interfaceName;
+    private String defaultInterfaceName;
+    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
 
     /**
      * Construct a new instance.
@@ -194,6 +194,10 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
      */
     public String getDefaultInterfaceName() {
         return defaultInterfaceName;
+    }
+
+    void setDefaultInterfaceName(String defaultInterfaceName) {
+        this.defaultInterfaceName = defaultInterfaceName;
     }
 
     /**

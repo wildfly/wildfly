@@ -23,35 +23,36 @@
 package org.jboss.as.model;
 
 /**
- * An update which modifies the domain's system properties.
+ * Remove server group update.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = -3412272237934071396L;
-    private final AbstractPropertyUpdate propertyUpdate;
+public class ServerGroupRemove extends AbstractDomainModelUpdate<Void> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyUpdate the property update to apply
-     */
-    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        this.propertyUpdate = propertyUpdate;
+    private static final long serialVersionUID = -7482118547411879295L;
+    private final String serverGroupName;
+
+    public ServerGroupRemove(String serverGroupName) {
+        this.serverGroupName = serverGroupName;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        propertyUpdate.applyUpdate(element.getSystemProperties());
+    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
+        if(element.removeServerGroup(serverGroupName)) {
+            throw new UpdateFailedException(String.format("server-group (%s) does not exist.", serverGroupName));
+        }
     }
 
     /** {@inheritDoc} */
-    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
-        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
+        final ServerGroupElement group = original.getServerGroup(serverGroupName);
+        return new ServerGroupAdd(group.getName(), group.getProfileName(), group.getJvm(), group.getSocketBindingGroup());
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(propertyUpdate);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

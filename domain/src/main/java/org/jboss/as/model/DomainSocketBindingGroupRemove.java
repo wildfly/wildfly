@@ -22,44 +22,41 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Void> {
 
-    private final String name;
-    private final String profile;
-    private final JvmElement jvm;
-    private final SocketBindingGroupRefElement ref;
+    private static final long serialVersionUID = 1L;
+    private final String bindingGroupName;
 
-    public ServerGroupAdd(final String name, final String profile, final JvmElement jvm, SocketBindingGroupRefElement bindingGroup) {
-        this.name = name;
-        this.profile = profile;
-        this.jvm = jvm;
-        this.ref = bindingGroup;
+    public DomainSocketBindingGroupRemove(final String bindingGroupName) {
+        this.bindingGroupName = bindingGroupName;
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        final ServerGroupElement group = element.addServerGroup(name, profile);
-        if(group == null) {
-            throw new UpdateFailedException("duplciate server group " + name);
+        if(! element.removeBindingGroup(bindingGroupName)) {
+            throw new UpdateFailedException(String.format("binding-group (%s) does not exist", bindingGroupName));
         }
-        group.setJvm(jvm);
-        group.setSocketBindingGroupRefElement(ref);
     }
 
     /** {@inheritDoc} */
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel domain) {
+        final SocketBindingGroupElement original = domain.getSocketBindingGroup(bindingGroupName);
+        final SocketBindingGroupUpdate update = new SocketBindingGroupUpdate(
+                bindingGroupName,
+                original.getDefaultInterface(),
+                original.getIncludedSocketBindingGroups());
+        return new DomainSocketBindingGroupAdd(update);
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
         return null;
     }
+
 }

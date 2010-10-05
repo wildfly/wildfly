@@ -22,44 +22,42 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Server group properties update.
+ *
+ * @author Emanuel Muckenhuber
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class ServerGroupPropertiesUpdate extends AbstractDomainModelUpdate<Void> {
 
-    private final String name;
-    private final String profile;
-    private final JvmElement jvm;
-    private final SocketBindingGroupRefElement ref;
+    private static final long serialVersionUID = -466918965014839469L;
 
-    public ServerGroupAdd(final String name, final String profile, final JvmElement jvm, SocketBindingGroupRefElement bindingGroup) {
-        this.name = name;
-        this.profile = profile;
-        this.jvm = jvm;
-        this.ref = bindingGroup;
+    private final String groupName;
+    private final AbstractPropertyUpdate update;
+
+    public ServerGroupPropertiesUpdate(String groupName, AbstractPropertyUpdate update) {
+        this.groupName = groupName;
+        this.update = update;
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        final ServerGroupElement group = element.addServerGroup(name, profile);
+        final ServerGroupElement group = element.getServerGroup(groupName);
         if(group == null) {
-            throw new UpdateFailedException("duplciate server group " + name);
+            throw new UpdateFailedException(String.format("Server group (%s) does not exist", groupName));
         }
-        group.setJvm(jvm);
-        group.setSocketBindingGroupRefElement(ref);
+        update.applyUpdate(group.getSystemProperties());
     }
 
     /** {@inheritDoc} */
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel element) {
+        final ServerGroupElement group = element.getServerGroup(groupName);
+        final PropertiesElement original = group.getSystemProperties();
+        return new ServerGroupPropertiesUpdate(groupName, update.getCompensatingUpdate(original));
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ServerSystemPropertyUpdate(update);
     }
+
 }

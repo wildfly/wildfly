@@ -22,36 +22,31 @@
 
 package org.jboss.as.model;
 
+
 /**
- * An update which modifies the domain's system properties.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = -3412272237934071396L;
-    private final AbstractPropertyUpdate propertyUpdate;
+public class ServerSocketBindingUpdate extends AbstractServerModelUpdate<Void> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyUpdate the property update to apply
-     */
-    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        this.propertyUpdate = propertyUpdate;
+    private static final long serialVersionUID = 5150307080530039250L;
+    private final AbstractSocketBindingUpdate bindingUpdate;
+
+    public ServerSocketBindingUpdate(AbstractSocketBindingUpdate bindingUpdate) {
+        this.bindingUpdate = bindingUpdate;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        propertyUpdate.applyUpdate(element.getSystemProperties());
+    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
+        bindingUpdate.applyUpdate(element.getSocketBindings());
     }
 
     /** {@inheritDoc} */
-    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
-        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
+    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
+        return new ServerSocketBindingUpdate(bindingUpdate.getCompensatingUpdate(original.getSocketBindings()));
     }
 
-    /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(propertyUpdate);
-    }
+    public <P> void applyUpdate(UpdateContext updateContext, org.jboss.as.model.UpdateResultHandler<? super Void,P> resultHandler, P param) {
+        bindingUpdate.applyUpdate(updateContext, resultHandler, param);
+    };
+
 }

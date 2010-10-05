@@ -37,12 +37,16 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     private static final long serialVersionUID = -7389975620327080290L;
 
     private final String name;
-    private final String defaultInterface;
+    private String defaultInterface;
     private final NavigableMap<String, SocketBindingGroupIncludeElement> includedGroups = new TreeMap<String, SocketBindingGroupIncludeElement>();
     private final NavigableMap<String, SocketBindingElement> socketBindings = new TreeMap<String, SocketBindingElement>();
 
-    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
-    private final RefResolver<String, SocketBindingGroupElement> includedGroupResolver;
+    private RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
+    private RefResolver<String, SocketBindingGroupElement> includedGroupResolver;
+
+    public SocketBindingGroupElement(final String name) {
+        this.name = name;
+    }
 
     /**
      * Construct a new instance.
@@ -243,8 +247,12 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         return defaultInterface;
     }
 
-    public Set<SocketBindingGroupIncludeElement> getIncludedSocketBindingGroups() {
-        return Collections.unmodifiableSet(new HashSet<SocketBindingGroupIncludeElement>(includedGroups.values()));
+    void setDefaultInterface(String defaultInterface) {
+        this.defaultInterface = defaultInterface;
+    }
+
+    public Set<String> getIncludedSocketBindingGroups() {
+        return Collections.unmodifiableSet(new HashSet<String>(includedGroups.keySet()));
     }
 
     public Set<SocketBindingElement> getAllSocketBindings() {
@@ -307,4 +315,27 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         streamWriter.writeEndElement();
     }
 
+    public RefResolver<String, ? extends AbstractInterfaceElement<?>> getInterfaceResolver() {
+        return interfaceResolver;
+    }
+
+    void addIncludedGroup(final String groupName) {
+        this.includedGroups.put(groupName, new SocketBindingGroupIncludeElement(groupName));
+    }
+
+    boolean removeIncludedGroup(final String groupName) {
+        return this.includedGroups.remove(groupName) != null;
+    }
+
+    boolean addSocketBinding(String name, SocketBindingElement binding) {
+        return socketBindings.put(name, binding) != null;
+    }
+
+    SocketBindingElement getSocketBinding(String name) {
+        return socketBindings.get(name);
+    }
+
+    boolean removeSocketBinding(String name) {
+        return socketBindings.remove(name) != null;
+    }
 }

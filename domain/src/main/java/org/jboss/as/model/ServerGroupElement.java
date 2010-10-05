@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -59,81 +58,6 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     public ServerGroupElement(final String name, final String profile) {
         this.name = name;
         this.profile = profile;
-    }
-
-    public ServerGroupElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Handle attributes
-        String name = null;
-        String profile = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case PROFILE: {
-                        profile = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if (profile == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROFILE));
-        }
-        this.name = name;
-        this.profile = profile;
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case JVM: {
-                            if (jvm != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
-                            }
-                            jvm = new JvmElement(reader);
-                            break;
-                        }
-                        case SOCKET_BINDING_GROUP: {
-                            if (bindingGroup != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
-                            }
-                            bindingGroup = new SocketBindingGroupRefElement(reader);
-                            break;
-                        }
-                        case DEPLOYMENTS: {
-                            parseDeployments(reader);
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
     }
 
     /**

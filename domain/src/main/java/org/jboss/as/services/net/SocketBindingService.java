@@ -21,6 +21,9 @@
 */
 package org.jboss.as.services.net;
 
+import java.net.InetAddress;
+
+import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -36,23 +39,34 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SocketBindingService implements Service<SocketBinding> {
 
-    private final SocketBindingElement element;
+    private final String name;
+    private final int port;
+    private final boolean isFixedPort;
+    private final InetAddress multicastAddress;
+    private final int multicastPort;
+
+    /** The created binding. */
+    private SocketBinding binding;
+
     private final InjectedValue<NetworkInterfaceBinding> interfaceBinding = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<SocketBindingManager> socketBindings = new InjectedValue<SocketBindingManager>();
 
-    private SocketBinding binding;
-
-    public SocketBindingService(final SocketBindingElement element) {
-        this.element = element;
+    SocketBindingService(final String name, int port, boolean isFixedPort,
+                  InetAddress multicastAddress, int multicastPort) {
+        this.name = name;
+        this.port = port;
+        this.isFixedPort = isFixedPort;
+        this.multicastAddress = multicastAddress;
+        this.multicastPort = multicastPort;
     }
 
-    public synchronized void start(StartContext arg0) throws StartException {
-        this.binding = new SocketBinding(element.getName(), element.getPort(), element.isFixedPort(),
-           element.getMulticastAddress(), element.getMulticastPort(),
+    public synchronized void start(StartContext context) throws StartException {
+        this.binding = new SocketBinding(name, port, isFixedPort,
+           multicastAddress, multicastPort,
            interfaceBinding.getValue(), socketBindings.getValue());
     }
 
-    public synchronized void stop(StopContext arg0) {
+    public synchronized void stop(StopContext context) {
         this.binding = null;
     }
 
@@ -73,7 +87,20 @@ public class SocketBindingService implements Service<SocketBinding> {
     }
 
     public static void addService(BatchBuilder builder, SocketBindingElement element) {
-        SocketBindingService service = new SocketBindingService(element);
+        SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
+                   element.getMulticastAddress(), element.getMulticastPort());
+        BatchServiceBuilder<SocketBinding> batch = builder
+            .addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
+        batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()),
+                NetworkInterfaceBinding.class, service.getInterfaceBinding());
+        batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
+                SocketBindingManager.class, service.getSocketBindings());
+        batch.setInitialMode(Mode.ON_DEMAND);
+    }
+
+    public static void addService(BatchBuilder builder, SocketBindingAdd element) {
+        SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
+                   element.getMulticastAddress(), element.getMulticastPort());
         BatchServiceBuilder<SocketBinding> batch = builder
             .addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
         batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()),
@@ -84,4 +111,3 @@ public class SocketBindingService implements Service<SocketBinding> {
     }
 
 }
-

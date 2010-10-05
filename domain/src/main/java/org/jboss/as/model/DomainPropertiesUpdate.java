@@ -23,35 +23,32 @@
 package org.jboss.as.model;
 
 /**
- * An update which modifies the domain's system properties.
+ * Domain level system properties update.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = -3412272237934071396L;
-    private final AbstractPropertyUpdate propertyUpdate;
+public class DomainPropertiesUpdate extends AbstractDomainModelUpdate<Void> {
 
-    /**
-     * Construct a new instance.
-     *
-     * @param propertyUpdate the property update to apply
-     */
-    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        this.propertyUpdate = propertyUpdate;
+    private static final long serialVersionUID = 839243584557763930L;
+    private final AbstractPropertyUpdate update;
+
+    public DomainPropertiesUpdate(AbstractPropertyUpdate update) {
+        this.update = update;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        propertyUpdate.applyUpdate(element.getSystemProperties());
+    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
+        update.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
-    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
-        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
+    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
+        return new DomainPropertiesUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(propertyUpdate);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return new ServerSystemPropertyUpdate(update);
     }
+
 }

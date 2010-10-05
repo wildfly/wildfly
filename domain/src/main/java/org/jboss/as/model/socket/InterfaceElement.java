@@ -19,6 +19,10 @@ public class InterfaceElement extends AbstractInterfaceElement<InterfaceElement>
 
     private static final long serialVersionUID = -5256526713311518506L;
 
+    public InterfaceElement(final String name) {
+        super(name);
+    }
+
     /**
      * Creates a new InterfaceElement by parsing an xml stream
      *

@@ -25,7 +25,7 @@ package org.jboss.as.model;
 import java.util.Map;
 
 /**
- * @{link RefResolver} that does a simple lookup against an injected map.
+ * {@link RefResolver} that does a simple lookup against an injected map.
  * Note on thread safety: Any access to the injected map by this class is with
  * the map's monitor held.
  *

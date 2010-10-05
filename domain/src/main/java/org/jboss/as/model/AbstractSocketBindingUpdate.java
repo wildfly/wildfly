@@ -22,36 +22,41 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+
 /**
- * An update which modifies the domain's system properties.
+ * The abstract socket binding update.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = -3412272237934071396L;
-    private final AbstractPropertyUpdate propertyUpdate;
+public abstract class AbstractSocketBindingUpdate extends AbstractModelElementUpdate<SocketBindingGroupElement> {
+
+    private static final long serialVersionUID = 8177705582229479376L;
+
+    protected AbstractSocketBindingUpdate() {
+        //
+    }
+
+    /** {@inheritDoc} */
+    public abstract AbstractSocketBindingUpdate getCompensatingUpdate(SocketBindingGroupElement original);
+
+    /** {@inheritDoc} */
+    public Class<SocketBindingGroupElement> getModelElementType() {
+        return SocketBindingGroupElement.class;
+    }
+
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return new ServerSocketBindingUpdate(this);
+    }
 
     /**
-     * Construct a new instance.
+     * Apply update when run within a {@link ServerSocketBindingUpdate}.
      *
-     * @param propertyUpdate the property update to apply
+     * @param <P>
+     * @param updateContext
+     * @param resultHandler
+     * @param param
      */
-    public DomainSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        this.propertyUpdate = propertyUpdate;
-    }
+    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
-    /** {@inheritDoc} */
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        propertyUpdate.applyUpdate(element.getSystemProperties());
-    }
-
-    /** {@inheritDoc} */
-    public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
-        return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
-    }
-
-    /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(propertyUpdate);
-    }
 }

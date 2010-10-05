@@ -66,6 +66,11 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
     private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria =
             new TreeMap<Element, AbstractInterfaceCriteriaElement<?>>();
 
+
+    protected AbstractInterfaceElement(final String name) {
+        this.name = name;
+    }
+
     /**
      * Creates a new AbstractInterfaceElement by parsing an xml stream
      *

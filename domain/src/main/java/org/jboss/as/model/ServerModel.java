@@ -361,4 +361,9 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     ProfileElement getProfile() {
         return profile;
     }
+
+    SocketBindingGroupElement getSocketBindings() {
+        return socketBindings;
+    }
+
 }
