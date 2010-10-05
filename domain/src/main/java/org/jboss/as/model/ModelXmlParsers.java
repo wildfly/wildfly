@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -204,34 +203,17 @@ public final class ModelXmlParsers {
 
         while (reader.nextTag() != END_ELEMENT) {
             // Attributes
-            final String name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+            requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+            final String name = reader.getAttributeValue(0);
             if (! names.add(name)) {
-                throw new XMLStreamException("Duplicate profile declaration", reader.getLocation());
+                throw new XMLStreamException("Duplicate profile declaration " + name, reader.getLocation());
             }
+
+            list.add(new DomainProfileAdd(name));
             final Set<String> includes = new LinkedHashSet<String>();
 
             // Content
             // Sequence
-            OUT: while (reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case DOMAIN_1_0: {
-                        if (Element.forName(reader.getLocalName()) != Element.INCLUDE) {
-                            throw unexpectedElement(reader);
-                        }
-                        final String includedName = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-                        if (! names.contains(includedName)) {
-                            throw new XMLStreamException("No profile found for inclusion", reader.getLocation());
-                        }
-                        if (! includes.add(includedName)) {
-                            throw new XMLStreamException("Duplicate profile include", reader.getLocation());
-                        }
-                        break;
-                    }
-                    default: {
-                        break OUT;
-                    }
-                }
-            }
             final Set<String> configuredSubsystemTypes = new HashSet<String>();
             while (reader.nextTag() != END_ELEMENT) {
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -239,7 +221,7 @@ public final class ModelXmlParsers {
                         if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                             throw unexpectedElement(reader);
                         }
-                        if (configuredSubsystemTypes.add(reader.getNamespaceURI())) {
+                        if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
                             throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
                         }
                         // parse content
@@ -254,10 +236,32 @@ public final class ModelXmlParsers {
                         }
                         break;
                     }
+                    case DOMAIN_1_0: {
+                        // include should come first
+                        if (configuredSubsystemTypes.size() > 0) {
+                            throw unexpectedElement(reader);
+                        }
+                        if (Element.forName(reader.getLocalName()) != Element.INCLUDE) {
+                            throw unexpectedElement(reader);
+                        }
+                        final String includedName = readStringAttributeElement(reader, Attribute.PROFILE.getLocalName());
+                        if (! names.contains(includedName)) {
+                            throw new XMLStreamException("No profile found for inclusion", reader.getLocation());
+                        }
+                        if (! includes.add(includedName)) {
+                            throw new XMLStreamException("Duplicate profile include", reader.getLocation());
+                        }
+                        list.add(new DomainProfileIncludeAdd(name, includedName));
+                        break;
+                    }
                     default: {
                         throw unexpectedElement(reader);
                     }
                 }
+            }
+
+            if (configuredSubsystemTypes.size() == 0) {
+                throw new XMLStreamException("Profile has no subsystem configurations", reader.getLocation());
             }
         }
     }

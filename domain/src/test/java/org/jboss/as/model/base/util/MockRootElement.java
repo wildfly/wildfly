@@ -37,7 +37,6 @@ import org.jboss.as.model.NamespacePrefix;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.QNameComparator;
-import org.jboss.as.model.SchemaLocation;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -56,22 +55,26 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
     public static final String ELEMENT_NAME = "mock-root";
 
     public static String getElementStart(String defaultNamespace, String namespaceLocation, boolean includeMockNamespace) {
+        return getElementStart(ELEMENT_NAME, defaultNamespace, namespaceLocation, includeMockNamespace);
+    }
+
+    public static String getElementStart(final String rootElementName, String defaultNamespace, String namespaceLocation, boolean includeMockNamespace) {
         StringBuilder sb = new StringBuilder();
         sb.append('<');
-        sb.append(ELEMENT_NAME);
+        sb.append(rootElementName);
         sb.append(" xmlns=\"");
         sb.append(defaultNamespace);
         sb.append('\"');
         if (includeMockNamespace) {
             sb.append(" xmlns:mock=\"");
-            sb.append(MockAnyElement.NAMESPACE);
+            sb.append(MockSubsystemElement.NAMESPACE);
             sb.append('\"');
         }
         sb.append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
         sb.append(" xsi:schemaLocation=\"urn:jboss:domain:1.0 jboss_7_0.xsd");
         if (includeMockNamespace) {
             sb.append(' ');
-            sb.append(MockAnyElement.NAMESPACE);
+            sb.append(MockSubsystemElement.NAMESPACE);
             sb.append(" jboss-mock-extension.xsd");
         }
         sb.append("\">");
@@ -79,13 +82,24 @@ public class MockRootElement extends AbstractModelRootElement<MockRootElement> {
     }
 
     public static String getElementEnd() {
-        return ("</" + ELEMENT_NAME + ">");
+        return getElementEnd(ELEMENT_NAME);
+    }
+
+    public static String getElementEnd(final String rootElementName) {
+        return ("</" + rootElementName + ">");
     }
 
     public static String getXmlContent(String defaultNamespace, String namespaceLocation, boolean includeMockNamespace, String children) {
         StringBuilder sb = new StringBuilder(getElementStart(defaultNamespace, namespaceLocation, includeMockNamespace));
         sb.append(children);
         sb.append(getElementEnd());
+        return sb.toString();
+    }
+
+    public static String getXmlContent(final String rootElementName, String defaultNamespace, String namespaceLocation, String children) {
+        StringBuilder sb = new StringBuilder(getElementStart(rootElementName, defaultNamespace, namespaceLocation, false));
+        sb.append(children);
+        sb.append(getElementEnd(rootElementName));
         return sb.toString();
     }
 

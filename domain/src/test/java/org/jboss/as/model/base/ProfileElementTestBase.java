@@ -22,24 +22,20 @@
 
 package org.jboss.as.model.base;
 
-import java.io.StringReader;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractSubsystemElement;
+import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.ProfileElement;
-import org.jboss.as.model.ProfileIncludeElement;
-import org.jboss.as.model.RefResolver;
-import org.jboss.as.model.base.util.MockAnyElement;
-import org.jboss.as.model.base.util.MockAnyElementParser;
-import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;
-import org.jboss.as.model.base.util.ReadElementCallback;
-import org.jboss.as.model.base.util.TestXMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.as.model.base.util.MockSubsystemElement;
+import org.jboss.as.model.base.util.MockSubystemElementParser;
+import org.jboss.as.model.base.util.ModelParsingSupport;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -49,26 +45,6 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public abstract class ProfileElementTestBase extends DomainModelElementTestBase {
 
-    private static final RefResolver<String, ProfileElement> refResolver = new RefResolver<String, ProfileElement>() {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public ProfileElement resolveRef(String ref) {
-            return null;
-        }
-
-    };
-
-    private static final ReadElementCallback<ProfileElement> callback = new ReadElementCallback<ProfileElement>() {
-
-        @Override
-        public ProfileElement readElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-            return new ProfileElement(reader, refResolver);
-        }
-
-    };
-
 
     /**
      * @param name
@@ -77,31 +53,35 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         super(name);
     }
 
+    @Override
     protected XMLMapper createXMLMapper() throws Exception{
 
         XMLMapper mapper = XMLMapper.Factory.create();
         MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
-        mapper.registerRootElement(new QName(getTargetNamespace(), Element.PROFILE.getLocalName()),
-                new TestXMLElementReader<ProfileElement>(callback));
-        MockAnyElementParser.registerXMLElementReaders(mapper);
+        mapper.registerRootElement(new QName(getTargetNamespace(), Element.DOMAIN.getLocalName()),
+                ModelXmlParsers.DOMAIN_XML_READER);
+        MockSubystemElementParser.registerXMLElementReaders(mapper);
         return mapper;
     }
 
     public void testSimpleParse() throws Exception {
-        String testContent = "<profile name=\"test\">" + MockAnyElement.getFullXmlContent() + "</profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ProfileElement testee = (ProfileElement) root.getChild(getTargetNamespace(), Element.PROFILE.getLocalName());
+        System.out.println("testSimpleParse");
+        String testContent = "<profile name=\"test\">" + MockSubsystemElement.getFullXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+        DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
+        ProfileElement testee = root.getProfile("test");
+        assertNotNull(testee);
         assertEquals("test", testee.getName());
         Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = testee.getSubsystems();
         assertEquals(2, subsystems.size());
         boolean gotMock = false;
         boolean gotAnotherMock = false;
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems) {
-            if (MockAnyElement.MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
+            if (MockSubsystemElement.MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
                 gotMock = true;
             }
-            else if (MockAnyElement.ANOTHER_MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
+            else if (MockSubsystemElement.ANOTHER_MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
                 gotAnotherMock = true;
             }
             else {
@@ -113,40 +93,39 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
     }
 
     public void testParseWithInclude() throws Exception {
-        String testContent = "<profile name=\"test\"><include profile=\"foo\"/>" + MockAnyElement.getFullXmlContent() + "</profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ProfileElement testee = (ProfileElement) root.getChild(getTargetNamespace(), Element.PROFILE.getLocalName());
+        String testContent = "<profile name=\"foo\">" + MockSubsystemElement.getAnotherSubsystemXmlContent() + "</profile>";
+        testContent += "<profile name=\"test\"><include profile=\"foo\"/>" + MockSubsystemElement.getSingleSubsystemXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+        DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
+        ProfileElement testee = root.getProfile("test");
+        assertNotNull(testee);
         assertEquals("test", testee.getName());
-        Set<ProfileIncludeElement> includes = testee.getIncludedProfiles();
+        Set<String> includes = testee.getIncludedProfiles();
         assertEquals(1, includes.size());
-        ProfileIncludeElement include = includes.iterator().next();
-        assertEquals("foo", include.getProfile());
+        String include = includes.iterator().next();
+        assertEquals("foo", include);
         Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = testee.getSubsystems();
-        assertEquals(2, subsystems.size());
+        assertEquals(1, subsystems.size());
         boolean gotMock = false;
-        boolean gotAnotherMock = false;
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems) {
-            if (MockAnyElement.MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
+            if (MockSubsystemElement.MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
                 gotMock = true;
-            }
-            else if (MockAnyElement.ANOTHER_MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
-                gotAnotherMock = true;
             }
             else {
                 fail("Unknown subsystem QName " + subsystem.getElementName());
             }
         }
         assertTrue(gotMock);
-        assertTrue(gotAnotherMock);
     }
 
     public void testNoNameParse() throws Exception {
-        String testContent = "<profile>" + MockAnyElement.getSimpleXmlContent() + "</profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        String testContent = "<profile>" + MockSubsystemElement.getSingleSubsystemXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing 'name' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -155,22 +134,24 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
     }
 
     public void testBadAttributeParse() throws Exception {
-        String testContent = "<profile bogus=\"bogus\">" + MockAnyElement.getSimpleXmlContent() + "</profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        String testContent = "<profile bogus=\"bogus\">" + MockSubsystemElement.getSingleSubsystemXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
 
-        testContent = "<profile name=\"test\" bogus=\"bogus\">" + MockAnyElement.getSimpleXmlContent() + "</profile>";
-        fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        testContent = "<profile name=\"test\" bogus=\"bogus\">" + MockSubsystemElement.getSingleSubsystemXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -180,10 +161,11 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
 
     public void testNoSubsystemParse() throws Exception {
         String testContent = "<profile name=\"test\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing children did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -191,10 +173,11 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         }
 
         testContent = "<profile name=\"test\"><include profile=\"foo\"/></profile>";
-        fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing children did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -204,21 +187,23 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
 
     public void testBadChildElement() throws Exception {
         String testContent = "<profile name=\"test\"><bogus/></profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous child element did not cause parsing failure");
         }
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
 
-        testContent = "<profile name=\"test\">" + MockAnyElement.getSimpleXmlContent() + "<bogus/></profile>";
-        fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
+        testContent = "<profile name=\"test\">" + MockSubsystemElement.getSingleSubsystemXmlContent() + "<bogus/></profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous child element did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -226,33 +211,32 @@ public abstract class ProfileElementTestBase extends DomainModelElementTestBase 
         }
     }
 
+    @Override
     public void testSerializationDeserialization() throws Exception {
 
-        String testContent = "<profile name=\"test\"><include profile=\"foo\"/>" + MockAnyElement.getFullXmlContent() + "</profile>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), true, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ProfileElement testee = (ProfileElement) root.getChild(getTargetNamespace(), Element.PROFILE.getLocalName());
+        String testContent = "<profile name=\"foo\">" + MockSubsystemElement.getSingleSubsystemXmlContent() + "</profile>";
+        testContent += "<profile name=\"test\"><include profile=\"foo\"/>" + MockSubsystemElement.getAnotherSubsystemXmlContent() + "</profile>";
+        testContent = ModelParsingSupport.wrap(Element.PROFILES.getLocalName(), testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+        DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
+        ProfileElement testee = root.getProfile("test");
+        assertNotNull(testee);
 
         byte[] bytes = serialize(testee);
         ProfileElement testee1 = deserialize(bytes, ProfileElement.class);
 
         assertEquals(testee.getName(), testee1.getName());
         Set<AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = testee1.getSubsystems();
-        assertEquals(2, subsystems.size());
-        boolean gotMock = false;
+        assertEquals(1, subsystems.size());
         boolean gotAnotherMock = false;
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems) {
-            if (MockAnyElement.MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
-                gotMock = true;
-            }
-            else if (MockAnyElement.ANOTHER_MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
+            if (MockSubsystemElement.ANOTHER_MOCK_ELEMENT_QNAME.equals(subsystem.getElementName())) {
                 gotAnotherMock = true;
             }
             else {
                 fail("Unknown subsystem QName " + subsystem.getElementName());
             }
         }
-        assertTrue(gotMock);
         assertTrue(gotAnotherMock);
     }
 

@@ -31,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.base.util.MockAnyElementParser;
 import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;
 import org.jboss.as.model.base.util.ReadElementCallback;
@@ -77,7 +76,6 @@ public abstract class PropertiesElementTestBase extends DomainModelElementTestBa
         MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
         mapper.registerRootElement(new QName(getTargetNamespace(), Element.SYSTEM_PROPERTIES.getLocalName()),
                 new TestXMLElementReader<PropertiesElement>(callback));
-        MockAnyElementParser.registerXMLElementReaders(mapper);
         return mapper;
     }
 

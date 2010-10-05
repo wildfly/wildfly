@@ -3,16 +3,13 @@
  */
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -26,100 +23,18 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
     private static final long serialVersionUID = -7412521588206707920L;
 
     private final String name;
-    private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
+    private final Set<String> includedProfiles = new HashSet<String>();
     private final NavigableMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
         new TreeMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
-    private final RefResolver<String, ProfileElement> includedProfileResolver;
 
     /**
      * Construct a new instance.
      *
-     * @param includedProfileResolver {@link org.jboss.as.model.RefResolver} to use to resolve references
-     *           to included profiles. Should not be used in the constructor
-     *           itself as referenced profiles may not have been created yet.
+     * @param name the name of the profile. Cannot be {@code null}
      */
-    public ProfileElement(final String name, final RefResolver<String, ProfileElement> includedProfileResolver) {
-        if (name != null) throw new IllegalArgumentException("name is null");
+    public ProfileElement(final String name) {
+        if (name == null) throw new IllegalArgumentException("name is null");
         this.name = name;
-        this.includedProfileResolver = includedProfileResolver;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @param includedProfileResolver {@link RefResolver} to use to resolve references
-     *           to included profiles. Should not be used in the constructor
-     *           itself as referenced profiles may not have been parsed yet.
-     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an
-     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
-     * @throws XMLStreamException if an error occurs
-     */
-    public ProfileElement(XMLExtendedStreamReader reader, final RefResolver<String, ProfileElement> includedProfileResolver) throws XMLStreamException {
-
-        this.includedProfileResolver = includedProfileResolver;
-
-        // Handle attributes
-        String name = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        this.name = name;
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INCLUDE: {
-                            if (includedProfileResolver == null) {
-                                throw ParseUtils.unexpectedElement(reader);
-                            }
-                            final ProfileIncludeElement include = new ProfileIncludeElement(reader);
-                            if (includedProfiles.containsKey(include.getProfile())) {
-                                throw new XMLStreamException("Included profile " + include.getProfile() + " already declared", reader.getLocation());
-                            }
-                            includedProfiles.put(include.getProfile(), include);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default: {
-                    ParseResult<AbstractSubsystemElement<?>> result = new ParseResult<AbstractSubsystemElement<?>>();
-                    reader.handleAny(result);
-                    AbstractSubsystemElement<?> subsystem = result.getResult();
-                    QName qname = subsystem.getElementName();
-                    if (subsystems.containsKey(qname)) {
-                        throw new XMLStreamException("Subsystem " + qname + " already declared", reader.getLocation());
-                    }
-                    subsystems.put(qname.getNamespaceURI(), subsystem);
-                }
-            }
-        }
-        if (subsystems.size() == 0) {
-            throw new XMLStreamException("Profile " + name + " has no subsystem configurations", reader.getLocation());
-        }
     }
 
     /**
@@ -139,20 +54,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
             this.subsystems.putAll(source.subsystems);
         }
         synchronized (source.includedProfiles) {
-            this.includedProfiles.putAll(source.includedProfiles);
+            this.includedProfiles.addAll(source.includedProfiles);
         }
-
-
-        final NavigableMap<String, ProfileElement> resolvedProfiles = new TreeMap<String, ProfileElement>();
-        for (Map.Entry<String, ProfileIncludeElement> entry : this.includedProfiles.entrySet()) {
-            ProfileElement prof = source.includedProfileResolver.resolveRef(entry.getKey());
-            if (prof == null) {
-                throw new IllegalStateException("Profile referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' refers to non-existent profile '" + entry.getValue().getProfile() + "'");
-            }
-            resolvedProfiles.put(entry.getKey(), new ProfileElement(prof));
-        }
-        this.includedProfileResolver = new SimpleRefResolver<String, ProfileElement>(resolvedProfiles);
     }
 
     /**
@@ -164,9 +67,9 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
         return name;
     }
 
-    public Set<ProfileIncludeElement> getIncludedProfiles() {
+    public Set<String> getIncludedProfiles() {
         synchronized (includedProfiles) {
-            return new HashSet<ProfileIncludeElement>(includedProfiles.values());
+            return new HashSet<String>(includedProfiles);
         }
     }
 
@@ -188,9 +91,9 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
 
         synchronized (includedProfiles) {
             if (!includedProfiles.isEmpty()) {
-                for (ProfileIncludeElement included : includedProfiles.values()) {
-                    streamWriter.writeStartElement(Element.INCLUDE.getLocalName());
-                    included.writeContent(streamWriter);
+                for (String included : includedProfiles) {
+                    streamWriter.writeEmptyElement(Element.INCLUDE.getLocalName());
+                    streamWriter.writeAttribute(Attribute.PROFILE.getLocalName(), included);
                 }
             }
         }
@@ -232,6 +135,14 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
 
     boolean removeSubsystem(final String uri) {
         return subsystems.remove(uri) != null;
+    }
+
+    boolean addIncludedProfile(String includedProfileName) {
+        return includedProfiles.add(includedProfileName);
+    }
+
+    boolean removeIncludedProfile(String includedProfileName) {
+        return includedProfiles.remove(includedProfileName);
     }
 
     public AbstractSubsystemElement<?> getSubsystem(final String namespaceUri) {

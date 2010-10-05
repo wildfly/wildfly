@@ -252,4 +252,17 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     boolean removeExtension(final String name) {
         return extensions.remove(name);
     }
+
+    boolean addProfile(String name) {
+        if (profiles.containsKey(name))
+            return false;
+        ProfileElement pe = new ProfileElement(name);
+        profiles.put(name, pe);
+        return true;
+    }
+
+    boolean removeProfile(String name) {
+        ProfileElement pe = profiles.remove(name);
+        return pe != null;
+    }
 }

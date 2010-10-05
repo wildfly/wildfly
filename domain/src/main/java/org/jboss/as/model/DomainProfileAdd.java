@@ -20,33 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model.v1_0;
-
-import org.jboss.as.model.Namespace;
-import org.jboss.as.model.base.ProfileIncludeElementTestBase;
+package org.jboss.as.model;
 
 /**
- * Test ProfileIncludeElement with {@link Namespace#DOMAIN_1_0}.
+ * Add a profile to the domain.
  *
  * @author Brian Stansberry
  */
-public class ProfileIncludeElementUnitTestCase extends ProfileIncludeElementTestBase {
+public final class DomainProfileAdd extends AbstractDomainModelUpdate<Void> {
+
+    private static final long serialVersionUID = -9076890219875153928L;
+
+    private final String profileName;
 
     /**
-     * @param name
+     * Construct a new instance.
+     *
+     * @param profileName the name of the profile to add
      */
-    public ProfileIncludeElementUnitTestCase(String name) {
-        super(name);
+    public DomainProfileAdd(final String profileName) {
+        this.profileName = profileName;
+    }
+
+    /**
+     * Get the profile name to add.
+     *
+     * @return the profile name
+     */
+    public String getProfileName() {
+        return profileName;
     }
 
     @Override
-    protected String getTargetNamespace() {
-        return Namespace.DOMAIN_1_0.getUriString();
+    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
+        if (! element.addProfile(profileName)) {
+            throw new UpdateFailedException("Profile '" + profileName + "' is already configured");
+        }
     }
 
     @Override
-    protected String getTargetNamespaceLocation() {
-        return "jboss_7_0.xsd";
+    public DomainProfileRemove getCompensatingUpdate(final DomainModel original) {
+        return new DomainProfileRemove(profileName);
     }
 
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
+    }
 }
