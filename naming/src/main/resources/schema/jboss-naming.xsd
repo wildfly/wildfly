@@ -30,23 +30,6 @@
     <!-- The naming subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                The configuration of the naming subsystem.
-
-                The "support-events" attribute specifies whether to support JNDI events.
-                The "bind-app-context" attribute specifies whether to bind a java:app reference context.
-                The "bind-module-context" attribute specifies whether to bind a java:module reference context.
-                The "bind-comp-context" attribute specifies whether to bind a java:comp reference context.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="support-events" use="optional" type="xs:boolean" default="true"/>
-        <xs:attribute name="bind-app-context" use="optional" type="xs:boolean" default="false"/>
-        <xs:attribute name="bind-module-context" use="optional" type="xs:boolean" default="false"/>
-        <xs:attribute name="bind-comp-context" use="optional" type="xs:boolean" default="false"/>
-    </xs:complexType>
+    <xs:complexType name="subsystem"/>
 
 </xs:schema>

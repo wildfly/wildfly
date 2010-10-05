@@ -1,0 +1,102 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.naming.service;
+
+import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.naming.InitialContextFactoryBuilder;
+import org.jboss.as.naming.context.NamespaceObjectFactory;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Values;
+
+import javax.management.MBeanServer;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.spi.NamingManager;
+
+/**
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ */
+public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsystemElement> {
+
+    private static final long serialVersionUID = -3087211831484406967L;
+
+    protected NamingSubsystemAdd() {
+        super(NamingExtension.NAMESPACE);
+    }
+
+    private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
+
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        log.info("Activating Naming Subsystem");
+
+        // Setup naming environment
+        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+        try {
+            //If we are reusing the JVM. e.g. in tests we should not set this again
+            if (!NamingManager.hasInitialContextFactoryBuilder())
+                NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+        } catch (NamingException e) {
+            log.warn("Failed to set InitialContextFactoryBuilder", e);
+        }
+
+        // Create the Naming Service
+        final BatchBuilder builder = updateContext.getBatchBuilder();
+        builder.addService(NamingService.SERVICE_NAME, new NamingService(true));
+
+        // Create java: context service
+        final JavaContextService javaContextService = new JavaContextService();
+        builder.addService(JavaContextService.SERVICE_NAME, javaContextService)
+            .addDependency(NamingService.SERVICE_NAME);
+
+        final ContextService globalContextService = new ContextService("global");
+        builder.addService(JavaContextService.SERVICE_NAME.append("global"), globalContextService)
+             .addDependency(JavaContextService.SERVICE_NAME, Context.class, globalContextService.getParentContextInjector());
+
+        addContextFactory(builder, "app");
+        addContextFactory(builder, "module");
+        addContextFactory(builder, "comp");
+
+        final JndiView jndiView = new JndiView();
+        builder.addService(ServiceName.JBOSS.append("naming", "jndi", "view"), jndiView)
+            .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, jndiView.getMBeanServerInjector());
+
+    }
+
+    protected NamingSubsystemElement createSubsystemElement() {
+        return new NamingSubsystemElement();
+    }
+
+    private static void addContextFactory(final BatchBuilder builder, final String contextName) {
+        final Reference appReference = NamespaceObjectFactory.createReference(contextName);
+        final BinderService<Reference> binderService = new BinderService<Reference>(contextName, Values.immediateValue(appReference));
+        builder.addService(JavaContextService.SERVICE_NAME.append(contextName), binderService)
+            .addDependency(JavaContextService.SERVICE_NAME, Context.class, binderService.getContextInjector());
+    }
+}

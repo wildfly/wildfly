@@ -26,8 +26,7 @@ import java.util.List;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
@@ -44,11 +43,6 @@ public class NamingExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:naming:1.0";
 
     static final NamingSubSystemElementParser PARSER = new NamingSubSystemElementParser();
-    static final SubsystemFactory<NamingSubsystemElement> FACTORY = new SubsystemFactory<NamingSubsystemElement>() {
-        public NamingSubsystemElement createSubsystemElement() {
-            return new NamingSubsystemElement();
-        };
-    };
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
@@ -63,44 +57,14 @@ public class NamingExtension implements Extension {
     public void activate(final ServiceActivatorContext context) {
     }
 
-    static class NamingSubSystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<NamingSubsystemElement, ?>>> {
+    static class NamingSubSystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>>> {
 
-        /** {@inheritDocs} */
-        public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<NamingSubsystemElement, ?>> updates)
-            throws XMLStreamException {
+        /** {@inheritDoc} */
+        public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>> result) throws XMLStreamException {
 
-            boolean supportEvents = true;
-            boolean bindAppContext = false;
-            boolean bindModuleContext = false;
-            boolean bindCompContext = false;
-
-            final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
-                if (reader.getAttributeNamespace(i) != null) {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case SUPPORT_EVENTS: {
-                        supportEvents = Boolean.parseBoolean(reader.getAttributeValue(i));
-                        break;
-                    } case BIND_APP_CONTEXT: {
-                        bindAppContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                        break;
-                    } case BIND_MODULE_CONTEXT: {
-                        bindModuleContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                        break;
-                    } case BIND_COMP_CONTEXT: {
-                        bindCompContext = Boolean.parseBoolean(reader.getAttributeValue(i));
-                        break;
-                    } default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
+            ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
-            // Add the update
-            updates.add(new NamingSubsystemElementUpdate(supportEvents, bindAppContext, bindModuleContext, bindCompContext));
+            result.setResult(new ExtensionContext.SubsystemConfiguration<NamingSubsystemElement>(new NamingSubsystemAdd()));
         }
     }
 
