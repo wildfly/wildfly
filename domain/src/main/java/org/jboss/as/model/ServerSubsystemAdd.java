@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.SubsystemFactory;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -31,28 +29,29 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
 
     private static final long serialVersionUID = 4755195359412875338L;
 
-    private final String namespaceUri;
+    private final AbstractSubsystemAdd subsystemAdd;
 
-    public ServerSubsystemAdd(final String namespaceUri) {
-        super(false);
-        this.namespaceUri = namespaceUri;
+    public ServerSubsystemAdd(final AbstractSubsystemAdd subsystemAdd) {
+        this.subsystemAdd = subsystemAdd;
+    }
+
+    public AbstractSubsystemAdd getSubsystemAdd() {
+        return subsystemAdd;
+    }
+
+    public String getNamespaceUri() {
+        return subsystemAdd.getNamespaceUri();
     }
 
     protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
-        final SubsystemFactory<?> factory = element.getSubsystemFactory(namespaceUri);
-        if (factory == null) {
-            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is not configured in this server");
-        }
-        if (! element.addSubsystem(namespaceUri, factory.createSubsystemElement())) {
-            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is already configured in this server");
-        }
+        subsystemAdd.applyUpdate(element.getProfile());
     }
 
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-
+        
     }
 
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(final ServerModel original) {
-        return null;
+    public ServerSubsystemRemove getCompensatingUpdate(final ServerModel original) {
+        return new ServerSubsystemRemove(subsystemAdd.getCompensatingUpdate(original.getProfile()));
     }
 }

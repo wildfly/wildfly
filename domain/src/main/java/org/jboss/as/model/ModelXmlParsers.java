@@ -23,15 +23,12 @@
 package org.jboss.as.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
@@ -339,7 +336,7 @@ public final class ModelXmlParsers {
             this.reader = reader;
         }
 
-        public <E extends AbstractSubsystemElement<E>> void registerSubsystem(final String namespaceUri, final SubsystemFactory<E> factory, final XMLElementReader<List<? super AbstractSubsystemUpdate<E, ?>>> elementReader) {
+        public <E extends AbstractSubsystemElement<E>> void registerSubsystem(final String namespaceUri, final XMLElementReader<ParseResult<SubsystemConfiguration<E>>> elementReader) {
             final XMLMapper mapper = reader.getXMLMapper();
             mapper.registerRootElement(new QName(namespaceUri, Element.SUBSYSTEM.getLocalName()), elementReader);
         }

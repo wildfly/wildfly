@@ -22,9 +22,12 @@
 
 package org.jboss.as;
 
+import java.util.Arrays;
 import java.util.List;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 
 /**
@@ -40,8 +43,35 @@ public interface ExtensionContext {
      * TODO: consider a mechanism to register alias namespaces.
      *
      * @param namespaceUri the subsystem namespace URI
-     * @param factory the subsystem element factory
      * @param reader the XML element reader which parses the subsystem XML
      */
-    <E extends AbstractSubsystemElement<E>> void registerSubsystem(String namespaceUri, SubsystemFactory<E> factory, XMLElementReader<List<? super AbstractSubsystemUpdate<E, ?>>> reader);
+    <E extends AbstractSubsystemElement<E>> void registerSubsystem(String namespaceUri, XMLElementReader<ParseResult<SubsystemConfiguration<E>>> reader);
+
+    /**
+     * A parsed subsystem configuration.
+     *
+     * @param <E> the element type
+     */
+    class SubsystemConfiguration<E extends AbstractSubsystemElement<E>> {
+        private final AbstractSubsystemAdd subsystemAdd;
+        private final List<AbstractSubsystemUpdate<E, ?>> updates;
+
+        public SubsystemConfiguration(final AbstractSubsystemAdd subsystemAdd, final List<AbstractSubsystemUpdate<E, ?>> updates) {
+            this.subsystemAdd = subsystemAdd;
+            this.updates = updates;
+        }
+
+        public SubsystemConfiguration(final AbstractSubsystemAdd subsystemAdd, final AbstractSubsystemUpdate<E, ?>... updates) {
+            this.subsystemAdd = subsystemAdd;
+            this.updates = Arrays.asList(updates);
+        }
+
+        public AbstractSubsystemAdd getSubsystemAdd() {
+            return subsystemAdd;
+        }
+
+        public List<AbstractSubsystemUpdate<E, ?>> getUpdates() {
+            return updates;
+        }
+    }
 }

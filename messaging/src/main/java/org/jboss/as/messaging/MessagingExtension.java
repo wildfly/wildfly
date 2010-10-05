@@ -43,7 +43,7 @@ public final class MessagingExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), FACTORY, MessagingSubsystemParser.getInstance());
+        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
     }
 
     /** {@inheritDoc} */

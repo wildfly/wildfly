@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.ServiceName;
@@ -139,7 +140,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
 
     /** {@inheritDoc} */
     @Override
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<RemotingSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<RemotingSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -148,6 +149,10 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 
     ConnectorElement addConnector(String name, String socketBinding) {

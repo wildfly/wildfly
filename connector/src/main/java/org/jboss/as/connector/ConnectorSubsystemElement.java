@@ -23,6 +23,7 @@
 package org.jboss.as.connector;
 
 import java.util.List;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -125,10 +126,14 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
         return elementtext == null || elementtext.length() == 0 ? true : Boolean.valueOf(elementtext.trim());
     }
 
-    protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<ConnectorSubsystemElement, ?>> objects) {
+    protected void getUpdates(final List<? super AbstractSubsystemUpdate<ConnectorSubsystemElement, ?>> objects) {
     }
 
     protected boolean isEmpty() {
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

@@ -30,6 +30,7 @@ import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.BatchBuilder;
@@ -71,12 +72,16 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> list) {
         // nothing to do
     }
 
     /** {@inheritDoc} */
     protected boolean isEmpty() {
         return true;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

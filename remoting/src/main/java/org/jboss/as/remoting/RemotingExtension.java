@@ -42,7 +42,7 @@ public final class RemotingExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.REMOTING_1_0.getUriString(), FACTORY, RemotingSubsystemParser.getInstance());
+        context.registerSubsystem(Namespace.REMOTING_1_0.getUriString(), RemotingSubsystemParser.getInstance());
     }
 
     /** {@inheritDoc} */

@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.HashMap;
-import org.jboss.as.SubsystemFactory;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
@@ -70,9 +68,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
      * TODO see if exposing the ServerModel this way can be avoided.
      */
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "model");
-
-    // non-model fields
-    private final transient Map<String, SubsystemFactory<?>> subsystemTypes = new HashMap<String, SubsystemFactory<?>>();
 
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
@@ -363,7 +358,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return profile.addSubsystem(namespaceUri, element);
     }
 
-    SubsystemFactory<?> getSubsystemFactory(final String uri) {
-        return subsystemTypes.get(uri);
+    ProfileElement getProfile() {
+        return profile;
     }
 }

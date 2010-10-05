@@ -24,6 +24,7 @@ package org.jboss.as.naming.service;
 
 import java.util.List;
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
@@ -128,7 +129,7 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<NamingSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<NamingSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -136,5 +137,9 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

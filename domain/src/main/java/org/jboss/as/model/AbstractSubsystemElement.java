@@ -45,19 +45,27 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
     }
 
     /**
-     * Append a list of updates which will clear this subsystem's configuration.  Adding this subsystem
-     * followed by executing the compensating updates for the updates on the list (in reverse order)
-     * should result in the exact same configuration that this subsystem currently holds.
+     * Append a list of updates which will yield the same state as this element.  Adding this subsystem
+     * followed by executing the updates on the list should result in the exact same configuration that
+     * this subsystem currently holds.  Executing the compensating updates on this model in reverse order
+     * should result in a configuration for which {@link #isEmpty()} will return true.
      *
-     * @param list the list of updates required to clear this subsystem
+     * @param list the list of updates required to duplicate this subsystem
      */
-    protected abstract void getClearingUpdates(List<? super AbstractSubsystemUpdate<E, ?>> list);
+    protected abstract void getUpdates(List<? super AbstractSubsystemUpdate<E, ?>> list);
 
     /**
      * Determine whether this subsystem is empty (i.e. can be removed).  This method should return {@code true}
-     * whenever {@link #getClearingUpdates(java.util.List)} would add no elements to the list.
+     * whenever {@link #getUpdates(java.util.List)} would add no elements to the list.
      *
      * @return {@code true} if this subsystem is empty
      */
     protected abstract boolean isEmpty();
+
+    /**
+     * Get the add update which would add this subsystem element.
+     *
+     * @return the add
+     */
+    protected abstract AbstractSubsystemAdd getAdd();
 }

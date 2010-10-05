@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -98,7 +99,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -108,4 +109,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         return false;
     }
 
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
+    }
 }

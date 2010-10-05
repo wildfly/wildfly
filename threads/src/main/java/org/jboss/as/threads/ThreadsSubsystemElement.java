@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ChildElement;
@@ -69,17 +70,21 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         streamWriter.writeEndElement();
     }
 
-    protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> objects) {
+    protected void getUpdates(final List<? super AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> objects) {
         for (String name : threadFactories.keySet()) {
-            objects.add(new ThreadFactoryRemove(name));
+            objects.add(new ThreadFactoryAdd(name));
         }
         for (String name : executors.keySet()) {
-            objects.add(new ExecutorRemove(name));
+            objects.add(executors.get(name).getElement().getAdd());
         }
     }
 
     protected boolean isEmpty() {
         return threadFactories.isEmpty() && executors.isEmpty();
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 
     ThreadFactoryElement getThreadFactory(final String name) {

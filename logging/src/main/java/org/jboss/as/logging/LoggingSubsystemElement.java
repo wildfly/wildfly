@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.ServiceName;
@@ -101,7 +102,7 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -109,5 +110,9 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

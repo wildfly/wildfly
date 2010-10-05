@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.SubsystemFactory;
-
 /**
  * Remove a subsystem from a domain profile.
  *
@@ -34,34 +32,44 @@ public final class DomainSubsystemRemove extends AbstractDomainModelUpdate<Void>
     private static final long serialVersionUID = -9076890219875153928L;
 
     private final String profileName;
-    private final String namespaceUri;
+    private final AbstractSubsystemRemove subsystemRemove;
 
     /**
      * Construct a new instance.
      *
      * @param profileName the name of the profile that the change applies to
-     * @param namespaceUri the namespace URI of the subsystem to configure
+     * @param subsystemRemove the subsystem remove
      */
-    public DomainSubsystemRemove(final String profileName, final String namespaceUri) {
+    public DomainSubsystemRemove(final String profileName, final AbstractSubsystemRemove subsystemRemove) {
         this.profileName = profileName;
-        this.namespaceUri = namespaceUri;
+        this.subsystemRemove = subsystemRemove;
     }
 
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        final SubsystemFactory<?> factory = element.getSubsystemFactory(namespaceUri);
-        if (factory == null) {
-            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is not configured in this domain");
+        final ProfileElement profileElement = element.getProfile(profileName);
+        if (profileElement == null) {
+            throw new UpdateFailedException("Profile '" + profileName + "' is not configured on this domain");
         }
-        if (! element.getProfile(profileName).removeSubsystem(namespaceUri)) {
-            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is not configured in profile '" + profileName + "'");
-        }
+        subsystemRemove.applyUpdate(profileElement);
+    }
+
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public AbstractSubsystemRemove getSubsystemRemove() {
+        return subsystemRemove;
+    }
+
+    public String getNamespaceUri() {
+        return subsystemRemove.getNamespaceUri();
     }
 
     public DomainSubsystemAdd getCompensatingUpdate(final DomainModel original) {
-        return new DomainSubsystemAdd(profileName, namespaceUri);
+        return new DomainSubsystemAdd(profileName, subsystemRemove.getCompensatingUpdate(original.getProfile(profileName)));
     }
 
     protected ServerSubsystemRemove getServerModelUpdate() {
-        return new ServerSubsystemRemove(namespaceUri);
+        return new ServerSubsystemRemove(subsystemRemove);
     }
 }

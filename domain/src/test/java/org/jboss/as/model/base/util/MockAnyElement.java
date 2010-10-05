@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 
 import java.util.List;
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseUtils;
@@ -63,10 +64,14 @@ public class MockAnyElement extends AbstractSubsystemElement<MockAnyElement> {
         streamWriter.writeEndElement();
     }
 
-    protected void getClearingUpdates(final List<? super AbstractSubsystemUpdate<MockAnyElement, ?>> objects) {
+    protected void getUpdates(final List<? super AbstractSubsystemUpdate<MockAnyElement, ?>> objects) {
     }
 
     protected boolean isEmpty() {
         return true;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

@@ -74,6 +74,10 @@
             <artifactId>jboss-logmanager-log4j</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
         </dependency>

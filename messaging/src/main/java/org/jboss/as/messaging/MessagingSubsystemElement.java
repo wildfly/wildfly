@@ -6,6 +6,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.ServiceName;
@@ -55,7 +56,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -65,4 +66,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return false;
     }
 
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
+    }
 }

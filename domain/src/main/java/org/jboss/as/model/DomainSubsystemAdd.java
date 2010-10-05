@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.SubsystemFactory;
-
 /**
  * Add a subsystem to a domain profile.
  *
@@ -34,17 +32,17 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
     private static final long serialVersionUID = -9076890219875153928L;
 
     private final String profileName;
-    private final String namespaceUri;
+    private final AbstractSubsystemAdd subsystemAdd;
 
     /**
      * Construct a new instance.
      *
      * @param profileName the name of the profile that the change applies to
-     * @param namespaceUri the namespace URI of the subsystem to configure
+     * @param subsystemAdd the subsystem add
      */
-    public DomainSubsystemAdd(final String profileName, final String namespaceUri) {
+    public DomainSubsystemAdd(final String profileName, final AbstractSubsystemAdd subsystemAdd) {
         this.profileName = profileName;
-        this.namespaceUri = namespaceUri;
+        this.subsystemAdd = subsystemAdd;
     }
 
     /**
@@ -62,24 +60,21 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
      * @return the namespace URI
      */
     public String getNamespaceUri() {
-        return namespaceUri;
+        return subsystemAdd.getNamespaceUri();
     }
 
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        final SubsystemFactory<?> factory = element.getSubsystemFactory(namespaceUri);
-        if (factory == null) {
-            throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is not configured in this domain");
-        }
-        if (! element.getProfile(profileName).addSubsystem(namespaceUri, factory.createSubsystemElement())) {
+        final String namespaceUri = subsystemAdd.getNamespaceUri();
+        if (! element.getProfile(profileName).addSubsystem(namespaceUri, subsystemAdd.createSubsystemElement())) {
             throw new UpdateFailedException("Subsystem '" + namespaceUri + "' is already configured in profile '" + profileName + "'");
         }
     }
 
     public DomainSubsystemRemove getCompensatingUpdate(final DomainModel original) {
-        return new DomainSubsystemRemove(profileName, namespaceUri);
+        return new DomainSubsystemRemove(profileName, subsystemAdd.getCompensatingUpdate(original.getProfile(profileName)));
     }
 
     protected ServerSubsystemAdd getServerModelUpdate() {
-        return new ServerSubsystemAdd(namespaceUri);
+        return new ServerSubsystemAdd(subsystemAdd);
     }
 }

@@ -35,6 +35,10 @@ public final class ServerProfileUpdate<E extends AbstractSubsystemElement<E>, R>
         this.subsystemUpdate = subsystemUpdate;
     }
 
+    public static <E extends AbstractSubsystemElement<E>, R> ServerProfileUpdate<E, R> create(AbstractSubsystemUpdate<E, R> subsystemUpdate) {
+        return new ServerProfileUpdate<E, R>(subsystemUpdate);
+    }
+
     protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
         final String namespaceUri = subsystemUpdate.getSubsystemNamespaceUri();
         final E subsystemElement = subsystemUpdate.getModelElementType().cast(element.getSubsystem(namespaceUri));

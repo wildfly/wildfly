@@ -42,7 +42,7 @@ public final class TransactionsExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(NAMESPACE, FACTORY, TransactionSubsystemElementParser.getInstance());
+        context.registerSubsystem(NAMESPACE, TransactionSubsystemElementParser.getInstance());
     }
 
     /** {@inheritDoc} */

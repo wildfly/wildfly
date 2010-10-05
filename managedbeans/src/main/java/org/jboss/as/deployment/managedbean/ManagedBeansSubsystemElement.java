@@ -30,6 +30,7 @@ import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.msc.service.BatchBuilder;
@@ -65,7 +66,7 @@ final class ManagedBeansSubsystemElement extends AbstractSubsystemElement<Manage
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -73,5 +74,9 @@ final class ManagedBeansSubsystemElement extends AbstractSubsystemElement<Manage
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

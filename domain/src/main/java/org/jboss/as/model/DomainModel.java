@@ -22,9 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -35,10 +32,8 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.SubsystemFactory;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.marshalling.FieldSetter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -49,11 +44,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public final class DomainModel extends AbstractModel<DomainModel> {
 
     private static final long serialVersionUID = 5516070442013067881L;
-
-    // non-model fields
-    private final transient Map<String, SubsystemFactory<?>> subsystemTypes = new HashMap<String, SubsystemFactory<?>>();
-
-    private static final FieldSetter subsystemTypesSetter = FieldSetter.get(DomainModel.class, "subsystemTypes");
 
     // model fields
     private final Set<String> extensions = new HashSet<String>();
@@ -261,14 +251,5 @@ public final class DomainModel extends AbstractModel<DomainModel> {
 
     boolean removeExtension(final String name) {
         return extensions.remove(name);
-    }
-
-    SubsystemFactory<?> getSubsystemFactory(final String uri) {
-        return subsystemTypes.get(uri);
-    }
-
-    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-        ois.defaultReadObject();
-        subsystemTypesSetter.set(this, new HashMap<String, SubsystemFactory<?>>());
     }
 }

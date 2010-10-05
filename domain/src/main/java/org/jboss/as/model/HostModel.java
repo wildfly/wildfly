@@ -230,4 +230,16 @@ public final class HostModel extends AbstractModel<HostModel> {
 
         streamWriter.writeEndElement();
     }
+
+    boolean addExtension(final String name) {
+        return extensions.add(name);
+    }
+
+    boolean removeExtension(final String name) {
+        return extensions.remove(name);
+    }
+
+    Set<String> getExtensions() {
+        return extensions;
+    }
 }

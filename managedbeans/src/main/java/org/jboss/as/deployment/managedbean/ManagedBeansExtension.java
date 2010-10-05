@@ -54,7 +54,7 @@ public class ManagedBeansExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(NAMESPACE, FACTORY, PARSER);
+        context.registerSubsystem(NAMESPACE, PARSER);
     }
 
     /**

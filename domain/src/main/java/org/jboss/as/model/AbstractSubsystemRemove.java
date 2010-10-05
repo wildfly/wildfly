@@ -25,37 +25,45 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractModelElementUpdate<E> {
-    private static final long serialVersionUID = 5066326932283149448L;
+public abstract class AbstractSubsystemRemove extends AbstractModelElementUpdate<ProfileElement> {
 
-    private final String subsystemNamespaceUri;
-    private final boolean requiresRestart;
+    private static final long serialVersionUID = -5436702014420361771L;
 
-    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri, final boolean restart) {
-        this.subsystemNamespaceUri = subsystemNamespaceUri;
-        requiresRestart = restart;
+    private final String namespaceUri;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param namespaceUri the namespace URI for the corresponding subsystem
+     */
+    protected AbstractSubsystemRemove(final String namespaceUri) {
+        this.namespaceUri = namespaceUri;
     }
 
-    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri) {
-        this(subsystemNamespaceUri, false);
+    /** {@inheritDoc} */
+    public abstract AbstractSubsystemAdd getCompensatingUpdate(final ProfileElement original);
+
+    /** {@inheritDoc} */
+    public final Class<ProfileElement> getModelElementType() {
+        return ProfileElement.class;
+    }
+
+    /** {@inheritDoc} */
+    protected final void applyUpdate(final ProfileElement element) throws UpdateFailedException {
+        final AbstractSubsystemElement<?> subsystem = element.getSubsystem(namespaceUri);
+        if (! subsystem.isEmpty()) {
+            throw new UpdateFailedException("Subsystem " + namespaceUri + " configuration is not empty");
+        }
+        element.removeSubsystem(namespaceUri);
     }
 
     /**
-     * Determine whether this update requires a restart to take effect.
+     * Get the namespace URI for this remove.
      *
-     * @return {@code true} if a restart is required
+     * @return the namespace URI
      */
-    public final boolean requiresRestart() {
-        return requiresRestart;
-    }
-
-    /**
-     * Get the namespace URI of the subsystem configured by this update.
-     *
-     * @return the URI
-     */
-    public final String getSubsystemNamespaceUri() {
-        return subsystemNamespaceUri;
+    public final String getNamespaceUri() {
+        return namespaceUri;
     }
 
     /**
@@ -66,7 +74,7 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
      * @param resultHandler the handler to call back with the result
      * @param param the parameter value to pass to the result handler
      */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super R, P> resultHandler, P param);
+    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
     /**
      * Apply the boot action for this update.  This action is only executed when the update is processed during
@@ -78,7 +86,4 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
     protected void applyUpdateBootAction(UpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
-
-    /** {@inheritDoc} */
-    public abstract AbstractSubsystemUpdate<E, ?> getCompensatingUpdate(E original);
 }

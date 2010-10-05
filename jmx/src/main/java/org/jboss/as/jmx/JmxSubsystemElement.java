@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -57,7 +58,7 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
     }
 
     /** {@inheritDoc} */
-    protected void getClearingUpdates(List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
@@ -65,5 +66,9 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    protected AbstractSubsystemAdd getAdd() {
+        return null;
     }
 }

@@ -29,24 +29,19 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
 
     private static final long serialVersionUID = 4805171132512065204L;
 
-    private final String subsystemUri;
+    private final AbstractSubsystemRemove subsystemRemove;
 
-    /**
-     * Construct a new instance.
-     *
-     * @param uri the subsystem URI
-     */
-    public ServerSubsystemRemove(final String uri) {
+    public ServerSubsystemRemove(final AbstractSubsystemRemove subsystemRemove) {
         super(true);
-        subsystemUri = uri;
+        this.subsystemRemove = subsystemRemove;
     }
 
     public String getSubsystemUri() {
-        return subsystemUri;
+        return subsystemRemove.getNamespaceUri();
     }
 
     protected void applyUpdate(final ServerModel element) throws UpdateFailedException {
-
+        subsystemRemove.applyUpdate(element.getProfile());
     }
 
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
@@ -54,6 +49,6 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
     }
 
     public ServerSubsystemAdd getCompensatingUpdate(final ServerModel original) {
-        return null;
+        return new ServerSubsystemAdd(subsystemRemove.getCompensatingUpdate(original.getProfile()));
     }
 }

@@ -46,7 +46,6 @@ public class JmxExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.JMX_1_0.getUriString(), FACTORY, new JmxSubsystemElementParser());
+        context.registerSubsystem(Namespace.JMX_1_0.getUriString(), new JmxSubsystemElementParser());
     }
-
 }

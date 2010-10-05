@@ -25,37 +25,22 @@ package org.jboss.as.model;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement<E>, R> extends AbstractModelElementUpdate<E> {
-    private static final long serialVersionUID = 5066326932283149448L;
+public abstract class AbstractSubsystemAdd extends AbstractModelElementUpdate<ProfileElement> {
 
-    private final String subsystemNamespaceUri;
-    private final boolean requiresRestart;
+    private static final long serialVersionUID = -1641174620577793267L;
 
-    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri, final boolean restart) {
-        this.subsystemNamespaceUri = subsystemNamespaceUri;
-        requiresRestart = restart;
+    private final String namespaceUri;
+
+    protected AbstractSubsystemAdd(final String namespaceUri) {
+        this.namespaceUri = namespaceUri;
     }
 
-    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri) {
-        this(subsystemNamespaceUri, false);
+    public final AbstractSubsystemRemove getCompensatingUpdate(final ProfileElement original) {
+        return new AbstractSubsystemRemove(namespaceUri);
     }
 
-    /**
-     * Determine whether this update requires a restart to take effect.
-     *
-     * @return {@code true} if a restart is required
-     */
-    public final boolean requiresRestart() {
-        return requiresRestart;
-    }
-
-    /**
-     * Get the namespace URI of the subsystem configured by this update.
-     *
-     * @return the URI
-     */
-    public final String getSubsystemNamespaceUri() {
-        return subsystemNamespaceUri;
+    protected final void applyUpdate(final ProfileElement element) throws UpdateFailedException {
+        element.addSubsystem(namespaceUri, createSubsystemElement());
     }
 
     /**
@@ -66,7 +51,7 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
      * @param resultHandler the handler to call back with the result
      * @param param the parameter value to pass to the result handler
      */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super R, P> resultHandler, P param);
+    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
     /**
      * Apply the boot action for this update.  This action is only executed when the update is processed during
@@ -79,6 +64,13 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 
-    /** {@inheritDoc} */
-    public abstract AbstractSubsystemUpdate<E, ?> getCompensatingUpdate(E original);
+    protected abstract <E extends AbstractSubsystemElement<E>> AbstractSubsystemElement<E> createSubsystemElement();
+
+    public final Class<ProfileElement> getModelElementType() {
+        return ProfileElement.class;
+    }
+
+    public String getNamespaceUri() {
+        return namespaceUri;
+    }
 }

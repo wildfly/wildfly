@@ -37,11 +37,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 public final class ConnectorExtension implements Extension {
 
     public void initialize(final ExtensionContext context) {
-        context.<ConnectorSubsystemElement>registerSubsystem(Namespace.CONNECTOR_1_0.getUriString(), new SubsystemFactory<ConnectorSubsystemElement>() {
-            public ConnectorSubsystemElement createSubsystemElement() {
-                return new ConnectorSubsystemElement();
-            }
-        }, null /* new ConnectorSubsystemElementParser() */);
+        context.<ConnectorSubsystemElement>registerSubsystem(Namespace.CONNECTOR_1_0.getUriString(), null /* new ConnectorSubsystemElementParser() */);
     }
 
     @Override

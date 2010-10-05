@@ -45,6 +45,6 @@ public final class ThreadsExtension implements Extension {
     }
 
     public void initialize(final ExtensionContext context) {
-        context.registerSubsystem(Namespace.CURRENT.getUriString(), FACTORY, ThreadsParser.getInstance());
+        context.registerSubsystem(Namespace.CURRENT.getUriString(), ThreadsParser.getInstance());
     }
 }
