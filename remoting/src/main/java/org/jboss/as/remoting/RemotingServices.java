@@ -22,25 +22,15 @@
 
 package org.jboss.as.remoting;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * The implementation of the Remoting extension.
- *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemotingExtension implements Extension {
-
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.REMOTING_1_0.getUriString(), RemotingSubsystemParser.getInstance());
+public final class RemotingServices {
+    private RemotingServices() {
     }
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        // no actions needed
-    }
-
+    public static final ServiceName REMOTING = ServiceName.JBOSS.append("remoting");
+    public static final ServiceName ENDPOINT = REMOTING.append("endpoint");
 }

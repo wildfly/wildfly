@@ -28,6 +28,8 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.namespace.QName;
@@ -73,20 +75,6 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
      */
     public RemotingSubsystemElement() {
         super(Namespace.REMOTING_1_0.getUriString());
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param threadPoolName the name of the thread pool for the remoting subsystem
-     * @param elementName the name of the subsystem element
-     */
-    public RemotingSubsystemElement(final String threadPoolName, final QName elementName) {
-        super(elementName.getNamespaceURI());
-        if (threadPoolName == null) {
-            throw new IllegalArgumentException("threadPoolName is null");
-        }
-        this.threadPoolName = threadPoolName;
     }
 
     /** {@inheritDoc} */
@@ -153,19 +141,24 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         return false;
     }
 
-    protected AbstractSubsystemAdd<RemotingSubsystemElement> getAdd() {
-        return null;
+    protected RemotingSubsystemAdd getAdd() {
+        return new RemotingSubsystemAdd(threadPoolName);
     }
 
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        final ServiceContainer container = updateContext.getServiceContainer();
+        final ServiceController<?> controller = container.getService(RemotingServices.ENDPOINT);
+        if (controller != null) {
+            controller.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 
     ConnectorElement addConnector(String name, String socketBinding) {
-        if(this.connectors.containsKey(name)) {
+        if (connectors.containsKey(name)) {
             return null;
         }
         final ConnectorElement connector = new ConnectorElement(name, socketBinding);
-        this.connectors.put(name, connector);
+        connectors.put(name, connector);
         return connector;
     }
 }

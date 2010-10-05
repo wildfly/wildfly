@@ -28,6 +28,7 @@ import static org.jboss.as.model.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.model.ParseUtils.unexpectedElement;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -37,7 +38,9 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -49,7 +52,7 @@ import org.jboss.xnio.SaslStrength;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class RemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<? super AbstractSubsystemUpdate<RemotingSubsystemElement, ?>>> {
+public final class RemotingSubsystemParser implements XMLStreamConstants, XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<RemotingSubsystemElement>>> {
 
     private RemotingSubsystemParser() {
     }
@@ -66,8 +69,9 @@ public final class RemotingSubsystemParser implements XMLStreamConstants, XMLEle
     }
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader reader,
-            List<? super AbstractSubsystemUpdate<RemotingSubsystemElement, ?>> updates) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<RemotingSubsystemElement>> result) throws XMLStreamException {
+        final List<AbstractSubsystemUpdate<RemotingSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<RemotingSubsystemElement,?>>();
+
         // Handle attributes
         String threadPoolName = null;
         final int count = reader.getAttributeCount();
@@ -115,6 +119,8 @@ public final class RemotingSubsystemParser implements XMLStreamConstants, XMLEle
                 }
             }
         }
+
+        result.setResult(new ExtensionContext.SubsystemConfiguration<RemotingSubsystemElement>(new RemotingSubsystemAdd(threadPoolName), updates));
     }
 
     AddConnectorUpdate parseConnector(XMLExtendedStreamReader reader) throws XMLStreamException {
