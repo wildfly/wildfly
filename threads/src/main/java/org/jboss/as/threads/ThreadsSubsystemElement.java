@@ -85,11 +85,12 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         return threadFactories.isEmpty() && executors.isEmpty();
     }
 
-    protected AbstractSubsystemAdd<ThreadsSubsystemElement> getAdd() {
-        return null;
+    protected ThreadsSubsystemAdd getAdd() {
+        return new ThreadsSubsystemAdd();
     }
 
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        // no operation
     }
 
     ThreadFactoryElement getThreadFactory(final String name) {

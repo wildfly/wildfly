@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.jboss.as.ExtensionContext;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -66,7 +67,7 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
 
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<ThreadsSubsystemElement>> result) throws XMLStreamException {
 
-        final List<? super AbstractThreadsSubsystemUpdate<?>> updates = new ArrayList<AbstractThreadsSubsystemUpdate<?>>();
+        final List<AbstractSubsystemUpdate<ThreadsSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<ThreadsSubsystemElement,?>>();
 
         // no attributes
         requireNoAttributes(reader);
@@ -110,6 +111,7 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
                 default: throw unexpectedElement(reader);
             }
         }
+        result.setResult(new ExtensionContext.SubsystemConfiguration<ThreadsSubsystemElement>(new ThreadsSubsystemAdd(), updates));
     }
 
     private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) {
