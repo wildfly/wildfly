@@ -22,14 +22,11 @@
 
 package org.jboss.as.deployment.managedbean;
 
-import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
@@ -46,32 +43,23 @@ public class ManagedBeansExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:managedbeans:1.0";
 
     final ManagedBeanSubsystemElementParser PARSER = new ManagedBeanSubsystemElementParser();
-    final SubsystemFactory<ManagedBeansSubsystemElement> FACTORY = new SubsystemFactory<ManagedBeansSubsystemElement>() {
-        public ManagedBeansSubsystemElement createSubsystemElement() {
-            return new ManagedBeansSubsystemElement();
-        }
-    };
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
         context.registerSubsystem(NAMESPACE, PARSER);
     }
 
-    /**
-     * Activate the extension.
-     *
-     * @param context the service activation context
-     */
+    /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
     }
 
-    static class ManagedBeanSubsystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>>> {
+    static class ManagedBeanSubsystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>>> {
 
         /** {@inheritDoc} */
-        public void readElement(XMLExtendedStreamReader reader,
-                List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>> arg1) throws XMLStreamException {
-            // Require no content
+        public void readElement(XMLExtendedStreamReader reader, ParseResult<ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>> result) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
+            result.setResult(new ExtensionContext.SubsystemConfiguration<ManagedBeansSubsystemElement>(new ManagedBeansSubsystemAdd()));
         }
 
     }

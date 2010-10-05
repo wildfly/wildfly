@@ -27,24 +27,27 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.ExtensionContext.SubsystemConfiguration;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.logging.Level;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class LoggingSubsystemParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>>>, XMLStreamConstants {
+public final class LoggingSubsystemParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<LoggingSubsystemElement>>>, XMLStreamConstants {
+
+
 
     private static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
 
@@ -85,7 +88,14 @@ public final class LoggingSubsystemParser implements XMLElementReader<List<? sup
     }
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates)
+    public void readElement(XMLExtendedStreamReader reader, ParseResult<SubsystemConfiguration<LoggingSubsystemElement>> result)
+            throws XMLStreamException {
+        final List<AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<LoggingSubsystemElement, ?>>();
+        readElement(reader, updates);
+        result.setResult(new ExtensionContext.SubsystemConfiguration<LoggingSubsystemElement>(new LoggingSubsystemAdd(), updates));
+    }
+
+    void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> updates)
             throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {

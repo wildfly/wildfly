@@ -22,26 +22,29 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * The logging extension.
- *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
-public final class LoggingExtension implements Extension {
+public class LoggingSubsystemAdd extends AbstractSubsystemAdd<LoggingSubsystemElement> {
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.LOGGING_1_0.getUriString(), LoggingSubsystemParser.getInstance());
+    private static final long serialVersionUID = 3126242915176358069L;
+
+    protected LoggingSubsystemAdd() {
+        super(Namespace.LOGGING_1_0.getUriString());
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        //
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
     }
 
+    /** {@inheritDoc} */
+    protected LoggingSubsystemElement createSubsystemElement() {
+        return new LoggingSubsystemElement();
+    }
 
 }
