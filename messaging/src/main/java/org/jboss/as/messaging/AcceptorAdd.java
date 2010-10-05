@@ -22,9 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
@@ -34,14 +31,11 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Emanuel Muckenhuber
  */
-public class AcceptorAddUpdate extends AbstractMessagingSubsystemUpdate<Void> {
-
+public class AcceptorAdd extends AbstractTransportAdd {
     private static final long serialVersionUID = 1L;
 
-    private final TransportConfiguration acceptorConfig;
-
-    public AcceptorAddUpdate(final TransportConfiguration acceptorConfig) {
-        this.acceptorConfig = acceptorConfig;
+    public AcceptorAdd(final String name) {
+        super(name);
     }
 
     /** {@inheritDoc} */
@@ -50,13 +44,16 @@ public class AcceptorAddUpdate extends AbstractMessagingSubsystemUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        return new AcceptorRemoveUpdate(acceptorConfig.getName());
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
+        return new AcceptorRemove(getName());
     }
 
     /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        configuration.getAcceptorConfigurations().add(acceptorConfig);
+    protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
+        final TransportElement acceptorElement = element.addAcceptor(getName());
+        acceptorElement.setFactoryClassName(getFactoryClassName());
+        acceptorElement.setParams(getParams());
     }
+
 
 }

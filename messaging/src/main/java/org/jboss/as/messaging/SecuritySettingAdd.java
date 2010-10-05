@@ -23,49 +23,32 @@
 package org.jboss.as.messaging;
 
 import java.util.Set;
-
-import org.hornetq.api.core.Pair;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Update removing security roles based on their match.
- *
- * @author Emanuel Muckenhuber
+ * @author John Bailey
  */
-public class SecurityRolesRemoveUpdate extends AbstractMessagingSubsystemUpdate<Void> {
-
-    private static final long serialVersionUID = -8130621592365940203L;
-
+public class SecuritySettingAdd extends AbstractMessagingSubsystemUpdate<Void> {
+    private static final long serialVersionUID = -5826472860381258935L;
     private final String match;
+    private final Set<Role> roles;
 
-    public SecurityRolesRemoveUpdate(String match) {
-        super();
+    public SecuritySettingAdd(final String match, final Set<Role> roles) {
         this.match = match;
+        this.roles = roles;
     }
 
-    /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        final Set<Role> roles = original.getSecurityRoles().get(match);
-        return new SecurityRolesAddUpdate(new Pair<String, Set<Role>>(match, roles));
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
+        return new SecuritySettingRemove(match);
     }
 
-    /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        final Set<Role> roles = configuration.getSecurityRoles().remove(match);
-        if(roles == null) {
-            throw new UpdateFailedException("failed to remove roles for match " + match);
-        }
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> pUpdateResultHandler, P param) {
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
-
+    protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
+        element.addSecuritySetting(match, roles);
     }
-
 }

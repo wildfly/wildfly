@@ -22,43 +22,37 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Set;
-
-import org.hornetq.api.core.Pair;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.security.Role;
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Update adding security roles based on their match.
+ * Update adding a connector {@code TransportConfiguration}.
  *
  * @author Emanuel Muckenhuber
  */
-public class SecurityRolesAddUpdate extends AbstractPairUpdate<String, Set<Role>> {
+public class ConnectorAdd extends AbstractTransportAdd {
 
-    private static final long serialVersionUID = -1369007423461679335L;
+    private static final long serialVersionUID = -7363968924387259998L;
 
-    public SecurityRolesAddUpdate(Pair<String, Set<Role>> pair) {
-        super(pair);
+    public ConnectorAdd(String name) {
+        super(name);
     }
 
     /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        return new SecurityRolesRemoveUpdate(getKey());
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
+        return new ConnectorRemove(getName());
     }
 
     /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        add(configuration.getSecurityRoles());
+    protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
+        final TransportElement connectorElement = element.addConnector(getName());
+        connectorElement.setFactoryClassName(getFactoryClassName());
+        connectorElement.setParams(getParams());
     }
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         // TODO Auto-generated method stub
-
     }
-
 }

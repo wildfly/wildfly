@@ -30,52 +30,38 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Update removing an acceptor {@code TransportConfiguration}.
+ * Update removing a connector {@code TransportConfiguration}.
  *
  * @author Emanuel Muckenhuber
  */
-public class AcceptorRemoveUpdate extends AbstractMessagingSubsystemUpdate<Void> {
+public class ConnectorRemove extends AbstractMessagingSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = 107065576462327213L;
+    private static final long serialVersionUID = -1521927776747848193L;
 
+    /** The connector name. */
     private final String name;
 
-    public AcceptorRemoveUpdate(String name) {
+    public ConnectorRemove(String name) {
         super();
         this.name = name;
     }
 
     /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        final TransportConfiguration acceptor = getAcceptorConfig(name, configuration);
-        if(acceptor == null) {
-            throw new UpdateFailedException("acceptor configuration not found: " + name);
-        }
-        configuration.getAcceptorConfigurations().remove(acceptor);
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
+        final ConnectorAdd add = new ConnectorAdd(name);
+        final TransportElement acceptorElement = element.getConnector(name);
+        add.setFactoryClassName(acceptorElement.getFactoryClassName());
+        add.setParams(acceptorElement.getParams());
+        return add;
     }
 
     /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        final TransportConfiguration acceptor = getAcceptorConfig(name, original);
-        if(acceptor == null) {
-            throw new IllegalStateException("acceptor configuration not found: " + name);
-        }
-        return new AcceptorAddUpdate(acceptor);
+    protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
+        element.removeConnector(name);
     }
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         // TODO Auto-generated method stub
-
     }
-
-    protected static TransportConfiguration getAcceptorConfig(String name, Configuration configuration) {
-        for(final TransportConfiguration acceptor : configuration.getAcceptorConfigurations()) {
-            if(acceptor.getName().equals(name)) {
-                return acceptor;
-            }
-        }
-        return null;
-    }
-
 }

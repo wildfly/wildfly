@@ -22,28 +22,37 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivatorContext;
+import java.util.Map;
 
 /**
- * The implementation of the Messaging extension.
- *
- * @author scott.stark@jboss.org
- * @author Emanuel Muckenhuber
+ * @author John Bailey
  */
-public final class MessagingExtension implements Extension {
-    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
+public abstract class AbstractTransportAdd extends AbstractMessagingSubsystemUpdate<Void> {
+    private final String name;
+    private Map<String, Object> params;
+    private String factoryClass;
 
-   /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
+    protected AbstractTransportAdd(String name) {
+        this.name = name;
     }
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Messaging Extension");
+    public String getName() {
+        return name;
     }
 
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
+    public void setParams(final Map<String, Object> params) {
+        this.params = params;
+    }
+
+    public String getFactoryClassName() {
+        return factoryClass;
+    }
+
+    public void setFactoryClassName(final String factoryClass) {
+        this.factoryClass = factoryClass;
+    }
 }

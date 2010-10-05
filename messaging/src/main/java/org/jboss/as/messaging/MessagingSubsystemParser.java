@@ -1,17 +1,24 @@
 package org.jboss.as.messaging;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import java.util.Map;
+import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
+import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -21,8 +28,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author scott.stark@jboss.org
  */
-public class MessagingSubsystemParser implements
-        XMLElementReader<List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>>> {
+public class MessagingSubsystemParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>>> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
     private static final MessagingSubsystemParser INSTANCE = new MessagingSubsystemParser();
@@ -40,12 +46,11 @@ public class MessagingSubsystemParser implements
         //
     }
 
-    /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader reader,
-            List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>> result) throws XMLStreamException {
 
-        final MessagingSubsystemUpdate update = new MessagingSubsystemUpdate();
-        updates.add(update);
+        final List<AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<MessagingSubsystemElement,?>>();
+
+        final MessagingSubsystemAdd messagingSubsystemAdd = new MessagingSubsystemAdd();
 
         // Handle elements
         int tag = reader.getEventType();
@@ -76,7 +81,7 @@ public class MessagingSubsystemParser implements
                 case BINDINGS_DIRECTORY: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setBindingsDirectory(text.trim());
+                        messagingSubsystemAdd.setBindingsDirectory(text.trim());
                     }
                 }
                     break;
@@ -86,7 +91,7 @@ public class MessagingSubsystemParser implements
                 case CLUSTERED: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setClustered(Boolean.getBoolean(text.trim()));
+                        messagingSubsystemAdd.setClustered(Boolean.getBoolean(text.trim()));
                     }
                 }
                     break;
@@ -148,14 +153,14 @@ public class MessagingSubsystemParser implements
                 case JOURNAL_DIRECTORY: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setJournalDirectory(text.trim());
+                        messagingSubsystemAdd.setJournalDirectory(text.trim());
                     }
                 }
                     break;
                 case JOURNAL_MIN_FILES: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setJournalMinFiles(Integer.valueOf(text.trim()));
+                        messagingSubsystemAdd.setJournalMinFiles(Integer.valueOf(text.trim()));
                     }
                 }
                     break;
@@ -169,7 +174,7 @@ public class MessagingSubsystemParser implements
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
                         JournalType jtype = JournalType.valueOf(text.trim());
-                        update.setJournalType(jtype);
+                        messagingSubsystemAdd.setJournalType(jtype);
                     }
                 }
                     break;
@@ -177,7 +182,7 @@ public class MessagingSubsystemParser implements
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
                         int size = Integer.valueOf(text.trim());
-                        update.setJournalFileSize(size);
+                        messagingSubsystemAdd.setJournalFileSize(size);
                     }
                 }
                     break;
@@ -187,7 +192,7 @@ public class MessagingSubsystemParser implements
                 case LARGE_MESSAGES_DIRECTORY: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setLargeMessagesDirectory(text.trim());
+                        messagingSubsystemAdd.setLargeMessagesDirectory(text.trim());
                     }
                 }
                     break;
@@ -230,7 +235,7 @@ public class MessagingSubsystemParser implements
                 case PAGING_DIRECTORY: {
                     String text = reader.getElementText();
                     if (text != null && text.length() > 0) {
-                        update.setPagingDirectory(text.trim());
+                        messagingSubsystemAdd.setPagingDirectory(text.trim());
                     }
                 }
                     break;
@@ -321,6 +326,8 @@ public class MessagingSubsystemParser implements
             }
         } while (reader.hasNext() && localName.equals("subsystem") == false);
 
+        result.setResult(new ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>(messagingSubsystemAdd, updates));
+
         // Set the log delegate
         // config.setLogDelegateFactoryClassName();
         log.tracef("End %s:%s", reader.getLocation(), reader.getLocalName());
@@ -349,14 +356,19 @@ public class MessagingSubsystemParser implements
             switch (element) {
                 case ACCEPTOR:
                     String name = reader.getAttributeValue(0);
-                    TransportConfiguration acceptorConfig = ElementUtils.parseTransportConfiguration(reader, name, Element.ACCEPTOR);
+                    final AcceptorAdd acceptorAdd = parseAcceptorConfiguration(reader, name, Element.ACCEPTOR);
                     // Add acceptor
-                    updates.add(new AcceptorAddUpdate(acceptorConfig));
+                    updates.add(acceptorAdd);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.ACCEPTOR.getLocalName()));
     }
 
+    AcceptorAdd parseAcceptorConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement) throws XMLStreamException {
+        final AcceptorAdd add = new AcceptorAdd(name);
+        parseTransportConfiguration(reader, name, parentElement, add);
+        return add;
+    }
 
     /*
     <address-settings>
@@ -381,12 +393,91 @@ public class MessagingSubsystemParser implements
             switch (element) {
                 case ADDRESS_SETTING:
                     String match = reader.getAttributeValue(0);
-                    Pair<String, AddressSettings> settings = ElementUtils.parseAddressSettings(reader, match);
+                    final AddressSettingsAdd addressSettingsAdd = parseAddressSettings(reader, match);
                     // Add address settings
-                    updates.add(new AddressSettingAddUpdate(settings));
+                    updates.add(addressSettingsAdd);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
+    }
+
+    static AddressSettingsAdd parseAddressSettings(final XMLExtendedStreamReader reader, String name) throws XMLStreamException {
+        final AddressSettingsAdd addressSettingsAdd = new AddressSettingsAdd(name);
+
+        int tag = reader.getEventType();
+        String localName = null;
+        do {
+            tag = reader.nextTag();
+            localName = reader.getLocalName();
+            final Element element = Element.forName(reader.getLocalName());
+
+            switch (element) {
+                case DEAD_LETTER_ADDRESS_NODE_NAME: {
+                    SimpleString queueName = new SimpleString(reader.getElementText().trim());
+                    addressSettingsAdd.setDeadLetterAddress(queueName);
+                }
+                    break;
+                case EXPIRY_ADDRESS_NODE_NAME: {
+                    SimpleString queueName = new SimpleString(reader.getElementText().trim());
+                    addressSettingsAdd.setExpiryAddress(queueName);
+                }
+                    break;
+                case REDELIVERY_DELAY_NODE_NAME: {
+                    addressSettingsAdd.setRedeliveryDelay(Long.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case MAX_SIZE_BYTES_NODE_NAME: {
+                    addressSettingsAdd.setMaxSizeBytes(Long.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case PAGE_SIZE_BYTES_NODE_NAME: {
+                    addressSettingsAdd.setPageSizeBytes(Long.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME: {
+                    addressSettingsAdd.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME: {
+                    String value = reader.getElementText().trim();
+                    Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(
+                            Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.getLocalName(), value);
+                    AddressFullMessagePolicy policy = null;
+                    if (value.equals(AddressFullMessagePolicy.BLOCK.toString())) {
+                        policy = AddressFullMessagePolicy.BLOCK;
+                    } else if (value.equals(AddressFullMessagePolicy.DROP.toString())) {
+                        policy = AddressFullMessagePolicy.DROP;
+                    } else if (value.equals(AddressFullMessagePolicy.PAGE.toString())) {
+                        policy = AddressFullMessagePolicy.PAGE;
+                    }
+                    addressSettingsAdd.setAddressFullMessagePolicy(policy);
+                }
+                    break;
+                case LVQ_NODE_NAME: {
+                    addressSettingsAdd.setLastValueQueue(Boolean.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case MAX_DELIVERY_ATTEMPTS: {
+                    addressSettingsAdd.setMaxDeliveryAttempts(Integer.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case REDISTRIBUTION_DELAY_NODE_NAME: {
+                    addressSettingsAdd.setRedistributionDelay(Long.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                case SEND_TO_DLA_ON_NO_ROUTE: {
+                    addressSettingsAdd.setSendToDLAOnNoRoute(Boolean.valueOf(reader.getElementText().trim()));
+                }
+                    break;
+                default:
+                    break;
+            }
+
+            reader.discardRemainder();
+        } while (!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName())
+                && reader.getEventType() != XMLExtendedStreamReader.END_ELEMENT);
+
+        return addressSettingsAdd;
     }
 
     /*
@@ -407,11 +498,65 @@ public class MessagingSubsystemParser implements
             switch (element) {
                 case CONNECTOR:
                     String name = reader.getAttributeValue(0);
-                    TransportConfiguration connectorConfig = ElementUtils.parseTransportConfiguration(reader, name, Element.CONNECTOR);
-                    updates.add(new ConnectorAddUpdate(connectorConfig));
+                    ConnectorAdd connectorAdd = parseConnectorConfiguration(reader, name, Element.CONNECTOR);
+                    updates.add(connectorAdd);
                     break;
             }
         } while (reader.hasNext() && localName.equals(org.jboss.as.messaging.Element.CONNECTOR.getLocalName()));
+    }
+
+
+    ConnectorAdd parseConnectorConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement) throws XMLStreamException {
+        final ConnectorAdd add = new ConnectorAdd(name);
+        parseTransportConfiguration(reader, name, parentElement, add);
+        return add;
+    }
+
+    void parseTransportConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement, AbstractTransportAdd add) throws XMLStreamException {
+
+        Map<String, Object> params = new HashMap<String, Object>();
+
+        int tag = reader.getEventType();
+        String localName = null;
+        String clazz = null;
+        do {
+            tag = reader.nextTag();
+            localName = reader.getLocalName();
+            Element element = Element.forName(localName);
+            if (localName.equals(parentElement.getLocalName()) == true)
+                break;
+
+            switch (element) {
+                case FACTORY_CLASS:
+                    clazz = reader.getElementText().trim();
+                    break;
+                case PARAM:
+                    int count = reader.getAttributeCount();
+                    String key = null,
+                    value = null;
+                    for (int n = 0; n < count; n++) {
+                        String attrName = reader.getAttributeLocalName(n);
+                        Attribute attribute = Attribute.forName(attrName);
+                        switch (attribute) {
+                            case KEY:
+                                key = reader.getAttributeValue(n);
+                                break;
+                            case VALUE:
+                                value = reader.getAttributeValue(n);
+                                break;
+                            default:
+                                throw unexpectedAttribute(reader, n);
+                        }
+                    }
+                    reader.discardRemainder();
+                    params.put(key, value);
+                    break;
+            }
+            // Scan to element end
+        } while (reader.hasNext());
+
+        add.setFactoryClassName(clazz);
+        add.setParams(params);
     }
 
     /*
@@ -434,8 +579,8 @@ public class MessagingSubsystemParser implements
             switch (element) {
                 case SECURITY_SETTING:
                     String match = reader.getAttributeValue(0);
-                    Pair<String, Set<Role>> roles = ElementUtils.parseSecurityRoles(reader, match);
-                    updates.add(new SecurityRolesAddUpdate(roles));
+                    final SecuritySettingAdd securitySettingAdd = parseSecurityRoles(reader, match);
+                    updates.add(securitySettingAdd);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.SECURITY_SETTING.getLocalName()));
@@ -444,5 +589,84 @@ public class MessagingSubsystemParser implements
     static void unhandledElement(final XMLExtendedStreamReader reader, final Element element) throws XMLStreamException {
         log.warnf("Ignorning unhandled element: %s, at: %s", element, reader.getLocation().toString());
         reader.discardRemainder();
+    }
+
+    SecuritySettingAdd parseSecurityRoles(final XMLExtendedStreamReader reader, String match) throws XMLStreamException {
+        final Set<Role> securityRoles = new HashSet<Role>();
+
+        ArrayList<String> send = new ArrayList<String>();
+        ArrayList<String> consume = new ArrayList<String>();
+        ArrayList<String> createDurableQueue = new ArrayList<String>();
+        ArrayList<String> deleteDurableQueue = new ArrayList<String>();
+        ArrayList<String> createNonDurableQueue = new ArrayList<String>();
+        ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
+        ArrayList<String> manageRoles = new ArrayList<String>();
+        ArrayList<String> allRoles = new ArrayList<String>();
+
+        int tag = reader.getEventType();
+        String localName = null;
+        do {
+            tag = reader.nextTag();
+            localName = reader.getLocalName();
+            if (localName.equals(Element.PERMISSION_ELEMENT_NAME.getLocalName()) == false)
+                break;
+            final Element element = Element.forName(reader.getLocalName());
+
+            List<String> roles = null;
+            String type = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                if (reader.getAttributeNamespace(i) != null) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case ROLES_ATTR_NAME:
+                            roles = reader.getListAttributeValue(i);
+                            break;
+                        case TYPE_ATTR_NAME:
+                            type = reader.getAttributeValue(i);
+                            break;
+                        default:
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+
+            for (String role : roles) {
+                if (Attribute.SEND_NAME.getLocalName().equals(type)) {
+                    send.add(role.trim());
+                } else if (Attribute.CONSUME_NAME.getLocalName().equals(type)) {
+                    consume.add(role.trim());
+                } else if (Attribute.CREATEDURABLEQUEUE_NAME.getLocalName().equals(type)) {
+                    createDurableQueue.add(role);
+                } else if (Attribute.DELETEDURABLEQUEUE_NAME.getLocalName().equals(type)) {
+                    deleteDurableQueue.add(role);
+                } else if (Attribute.CREATE_NON_DURABLE_QUEUE_NAME.getLocalName().equals(type)) {
+                    createNonDurableQueue.add(role);
+                } else if (Attribute.DELETE_NON_DURABLE_QUEUE_NAME.getLocalName().equals(type)) {
+                    deleteNonDurableQueue.add(role);
+                } else if (Attribute.CREATETEMPQUEUE_NAME.getLocalName().equals(type)) {
+                    createNonDurableQueue.add(role);
+                } else if (Attribute.DELETETEMPQUEUE_NAME.getLocalName().equals(type)) {
+                    deleteNonDurableQueue.add(role);
+                } else if (Attribute.MANAGE_NAME.getLocalName().equals(type)) {
+                    manageRoles.add(role);
+                }
+                if (!allRoles.contains(role.trim())) {
+                    allRoles.add(role.trim());
+                }
+            }
+            // Scan to element end
+            reader.discardRemainder();
+        } while (reader.hasNext());
+
+        for (String role : allRoles) {
+            securityRoles.add(new Role(role, send.contains(role), consume.contains(role), createDurableQueue.contains(role),
+                    deleteDurableQueue.contains(role), createNonDurableQueue.contains(role), deleteNonDurableQueue
+                            .contains(role), manageRoles.contains(role)));
+        }
+
+        return new SecuritySettingAdd(match, securityRoles);
     }
 }

@@ -22,41 +22,30 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.Pair;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.settings.impl.AddressSettings;
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Update adding {@code AddressSettings}.
- *
- * @author Emanuel Muckenhuber
+ * @author John Bailey
  */
-public class AddressSettingAddUpdate extends AbstractPairUpdate<String, AddressSettings> {
+public class SecuritySettingRemove extends AbstractMessagingSubsystemUpdate<Void> {
+    private static final long serialVersionUID = -1937486321192173002L;
+    private final String match;
 
-    private static final long serialVersionUID = -1629954652094107618L;
-
-    public AddressSettingAddUpdate(Pair<String, AddressSettings> pair) {
-        super(pair);
+    public SecuritySettingRemove(String match) {
+        this.match = match;
     }
 
-    /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        return new AddressSettingsRemoveUpdate(getKey());
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
+        final SecuritySettingElement securitySettingElement = element.getSecuritySetting(match);
+        return new SecuritySettingAdd(match, securitySettingElement.getRoles());
     }
 
-    /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        add(configuration.getAddressesSettings());
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> pUpdateResultHandler, P param) {
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
-
+    protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
+        element.removeSecuritySetting(match);
     }
-
 }

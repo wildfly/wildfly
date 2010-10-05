@@ -24,45 +24,51 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
- * Update adding a connector {@code TransportConfiguration}.
+ * Update removing an acceptor {@code TransportConfiguration}.
  *
  * @author Emanuel Muckenhuber
  */
-public class ConnectorAddUpdate extends AbstractMessagingSubsystemUpdate<Void> {
+public class AcceptorRemove extends AbstractMessagingSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = -7363968924387259998L;
+    private static final long serialVersionUID = 107065576462327213L;
 
-    private final TransportConfiguration connectorConfig;
+    private final String name;
 
-    public ConnectorAddUpdate(TransportConfiguration connectorConfig) {
+    public AcceptorRemove(final String name) {
         super();
-        this.connectorConfig = connectorConfig;
+        this.name = name;
     }
 
-    /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        // TODO Auto-generated method stub
-        return null;
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
+        final AcceptorAdd add = new AcceptorAdd(name);
+        final TransportElement acceptorElement = element.getAcceptor(name);
+        add.setFactoryClassName(acceptorElement.getFactoryClassName());
+        add.setParams(acceptorElement.getParams());
+        return add;
     }
 
-    /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        final String name = connectorConfig.getName();
-        if(configuration.getConnectorConfigurations().containsKey(name)) {
-            throw new UpdateFailedException("duplicate connector " + name);
-        }
-        configuration.getConnectorConfigurations().put(name, connectorConfig);
+    protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
+       element.removeAcceptor(name);
     }
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         // TODO Auto-generated method stub
+
+    }
+
+    protected static TransportConfiguration getAcceptorConfig(String name, Configuration configuration) {
+        for(final TransportConfiguration acceptor : configuration.getAcceptorConfigurations()) {
+            if(acceptor.getName().equals(name)) {
+                return acceptor;
+            }
+        }
+        return null;
     }
 
 }

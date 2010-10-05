@@ -35,29 +35,36 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Emanuel Muckenhuber
  */
-public class AddressSettingsRemoveUpdate extends AbstractMessagingSubsystemUpdate<Void> {
+public class AddressSettingsRemove extends AbstractMessagingSubsystemUpdate<Void> {
 
     private static final long serialVersionUID = -6207374666732723259L;
 
-    private final String addressSettingsName;
+    private final String name;
 
-    public AddressSettingsRemoveUpdate(String addressSettingsName) {
+    public AddressSettingsRemove(final String name) {
         super();
-        this.addressSettingsName = addressSettingsName;
+        this.name = name;
     }
 
-    /** {@inheritDoc} */
-    AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original) {
-        final AddressSettings settings = original.getAddressesSettings().get(addressSettingsName);
-        return new AddressSettingAddUpdate(new Pair<String, AddressSettings>(addressSettingsName, settings));
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
+        final AddressSettingsElement addressSettingsElement = element.getAddressSettingsElement(name);
+        final AddressSettingsAdd add = new AddressSettingsAdd(name);
+        add.setAddressFullMessagePolicy(addressSettingsElement.getAddressFullMessagePolicy());
+        add.setDeadLetterAddress(addressSettingsElement.getDeadLetterAddress());
+        add.setExpiryAddress(addressSettingsElement.getExpiryAddress());
+        add.setLastValueQueue(addressSettingsElement.isLastValueQueue());
+        add.setMaxDeliveryAttempts(addressSettingsElement.getMaxDeliveryAttempts());
+        add.setMaxSizeBytes(addressSettingsElement.getMaxSizeBytes());
+        add.setMessageCounterHistoryDayLimit(addressSettingsElement.getMessageCounterHistoryDayLimit());
+        add.setPageSizeBytes(addressSettingsElement.getPageSizeBytes());
+        add.setRedeliveryDelay(addressSettingsElement.getRedeliveryDelay());
+        add.setRedistributionDelay(addressSettingsElement.getRedistributionDelay());
+        add.setSendToDLAOnNoRoute(addressSettingsElement.isSendToDLAOnNoRoute());
+        return add;
     }
 
-    /** {@inheritDoc} */
-    void applyUpdate(Configuration configuration) throws UpdateFailedException {
-        final AddressSettings settings = configuration.getAddressesSettings().remove(addressSettingsName);
-        if(settings == null) {
-            throw new IllegalStateException(String.format("setting (%s) not found", addressSettingsName));
-        }
+    protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
+        element.removeAddressSettings(name);
     }
 
     /** {@inheritDoc} */

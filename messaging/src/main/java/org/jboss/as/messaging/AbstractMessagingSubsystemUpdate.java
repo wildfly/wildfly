@@ -48,23 +48,5 @@ public abstract class AbstractMessagingSubsystemUpdate<R> extends AbstractSubsys
         return MessagingSubsystemElement.class;
     }
 
-    /** {@inheritDoc} */
-    protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
-        final Configuration configuration = element.getConfiguration();
-        if(configuration == null) {
-            throw new UpdateFailedException("null messaging configuration");
-        }
-        applyUpdate(configuration);
-    }
-
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(MessagingSubsystemElement original) {
-        final Configuration configuration = original.getConfiguration();
-        return getCompensatingUpdate(configuration);
-    }
-
-    abstract AbstractSubsystemUpdate<MessagingSubsystemElement, ?> getCompensatingUpdate(Configuration original);
-
-    abstract void applyUpdate(Configuration configuration) throws UpdateFailedException;
-
+    public abstract AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element);
 }
