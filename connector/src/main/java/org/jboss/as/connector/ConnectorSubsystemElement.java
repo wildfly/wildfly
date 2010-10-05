@@ -26,6 +26,8 @@ import java.util.List;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -133,7 +135,10 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
         return false;
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<ConnectorSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

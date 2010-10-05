@@ -33,6 +33,8 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -81,7 +83,10 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
         return true;
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<SarSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

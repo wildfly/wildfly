@@ -67,7 +67,7 @@ public abstract class AbstractSubsystemElement<E extends AbstractSubsystemElemen
      *
      * @return the add
      */
-    protected abstract AbstractSubsystemAdd<?> getAdd();
+    protected abstract AbstractSubsystemAdd<E> getAdd();
 
     /**
      * Remove this element from a running service container.  The given result handler is called with the result of the

@@ -33,6 +33,8 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -76,7 +78,10 @@ final class ManagedBeansSubsystemElement extends AbstractSubsystemElement<Manage
         return false;
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<ManagedBeansSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

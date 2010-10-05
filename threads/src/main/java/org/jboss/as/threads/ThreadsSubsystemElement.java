@@ -32,6 +32,8 @@ import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ChildElement;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -83,8 +85,11 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
         return threadFactories.isEmpty() && executors.isEmpty();
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<ThreadsSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 
     ThreadFactoryElement getThreadFactory(final String name) {

@@ -28,6 +28,8 @@ import java.util.TreeMap;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -112,7 +114,10 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         return false;
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<LoggingSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

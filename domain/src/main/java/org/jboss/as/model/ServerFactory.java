@@ -44,6 +44,7 @@ public final class ServerFactory {
      * @param list the list to which the updates should be appended
      * @return TBD
      */
+    @SuppressWarnings({ "RawUseOfParameterizedType" })
     public static Void combine(DomainModel domainModel, HostModel hostModel, String serverName, List<AbstractServerModelUpdate<?>> list) {
         final ServerElement serverElement = hostModel.getServer(serverName);
         final String serverGroupName = serverElement.getServerGroup();
@@ -67,13 +68,8 @@ public final class ServerFactory {
 
         // Merge subsystems
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystemElement : leafProfile.getSubsystems()) {
-            final AbstractSubsystemAdd<?> subsystemAdd = subsystemElement.getAdd();
-            list.add(new ServerSubsystemAdd(subsystemAdd));
-            final List<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>, ?>> subsystemList = new ArrayList<AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>,?>>();
-            subsystemElement.getUpdates(subsystemList);
-            for (AbstractSubsystemUpdate<? extends AbstractSubsystemElement<?>, ?> update : subsystemList) {
-                list.add(ServerSubsystemUpdate.create(update));
-            }
+            // todo: find a better way around this generics issue
+            processSubsystem((AbstractSubsystemElement) subsystemElement, list);
         }
 
         // Merge deployer config stuff
@@ -81,5 +77,15 @@ public final class ServerFactory {
         // Merge deployments
 
         return null;
+    }
+
+    private static <E extends AbstractSubsystemElement<E>> void processSubsystem(E subsystemElement, List<AbstractServerModelUpdate<?>> list) {
+        final AbstractSubsystemAdd<E> subsystemAdd = subsystemElement.getAdd();
+        list.add(new ServerSubsystemAdd(subsystemAdd));
+        final List<AbstractSubsystemUpdate<E, ?>> subsystemList = new ArrayList<AbstractSubsystemUpdate<E,?>>();
+        subsystemElement.getUpdates(subsystemList);
+        for (AbstractSubsystemUpdate<E, ?> update : subsystemList) {
+            list.add(ServerSubsystemUpdate.create(update));
+        }
     }
 }

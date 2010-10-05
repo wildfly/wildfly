@@ -27,6 +27,8 @@ import java.util.List;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
@@ -139,7 +141,10 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         return false;
     }
 
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<NamingSubsystemElement> getAdd() {
         return null;
+    }
+
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }
