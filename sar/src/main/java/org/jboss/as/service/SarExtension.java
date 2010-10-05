@@ -22,14 +22,11 @@
 
 package org.jboss.as.service;
 
-import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLElementReader;
@@ -45,11 +42,6 @@ public class SarExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:sar:1.0";
 
     static final SarSubSystemElementParser PARSER = new SarSubSystemElementParser();
-    static final SubsystemFactory<SarSubsystemElement> FACTORY = new SubsystemFactory<SarSubsystemElement>() {
-        public SarSubsystemElement createSubsystemElement() {
-            return new SarSubsystemElement();
-        }
-    };
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
@@ -65,14 +57,13 @@ public class SarExtension implements Extension {
         //
     }
 
-
-    static class SarSubSystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>>> {
+    static class SarSubSystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<SarSubsystemElement>>> {
 
         /** {@inheritDoc} */
-        public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> arg1)
-                throws XMLStreamException {
+        public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<SarSubsystemElement>> result) throws XMLStreamException {
             // Require no content
             ParseUtils.requireNoContent(reader);
+            result.setResult(new ExtensionContext.SubsystemConfiguration<SarSubsystemElement>(new SarSubsystemAdd()));
         }
     }
 }

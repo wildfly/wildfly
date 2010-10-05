@@ -25,19 +25,13 @@ package org.jboss.as.service;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
+
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 
@@ -50,17 +44,8 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
 
     private static final long serialVersionUID = -5742210831771948955L;
 
-    public static final long SAR_DEPLOYMENT_CHAIN_PRIORITY = JarDeploymentActivator.JAR_DEPLOYMENT_CHAIN_PRIORITY - 1000000L;
-    public static final ServiceName SAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("sar");
-
     SarSubsystemElement(){
         super(SarExtension.NAMESPACE);
-    }
-
-    private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(SAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(SAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 
     /** {@inheritDoc} */
