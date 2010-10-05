@@ -26,11 +26,12 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -61,19 +62,24 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
 
     /** {@inheritDoc} */
     protected void getUpdates(List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>> list) {
-        // TODO Auto-generated method stub
     }
 
     /** {@inheritDoc} */
     protected boolean isEmpty() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
-    protected AbstractSubsystemAdd<JmxSubsystemElement> getAdd() {
-        return null;
+    /** {@inheritDoc} */
+    protected JmxSubsystemAdd getAdd() {
+        return new JmxSubsystemAdd();
     }
 
+    /** {@inheritDoc} */
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        final ServiceContainer container = updateContext.getServiceContainer();
+        final ServiceController<?> service = container.getService(MBeanServerService.SERVICE_NAME);
+        if (service != null) {
+            service.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 }

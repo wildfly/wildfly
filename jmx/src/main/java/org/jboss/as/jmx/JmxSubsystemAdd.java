@@ -22,23 +22,30 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
- * JMX Extension
- *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class JmxExtension implements Extension {
+public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElement> {
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
+    private static final long serialVersionUID = -3662389863046074060L;
+
+    public JmxSubsystemAdd() {
+        super(Namespace.CURRENT.getUriString());
     }
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.JMX_1_0.getUriString(), new JmxSubsystemElementParser());
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
+            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+    }
+
+    protected JmxSubsystemElement createSubsystemElement() {
+        return new JmxSubsystemElement();
     }
 }

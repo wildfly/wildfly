@@ -22,11 +22,10 @@
 
 package org.jboss.as.jmx;
 
-import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.ExtensionContext;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -36,12 +35,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author John Bailey
  */
-class JmxSubsystemElementParser implements XMLElementReader<List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>>> {
+class JmxSubsystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<JmxSubsystemElement>>> {
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader xmlExtendedStreamReader, List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>> arg1)
-            throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<JmxSubsystemElement>> result) throws XMLStreamException {
         // Require no content
-        ParseUtils.requireNoContent(xmlExtendedStreamReader);
+        ParseUtils.requireNoContent(reader);
+        result.setResult(new ExtensionContext.SubsystemConfiguration<JmxSubsystemElement>(new JmxSubsystemAdd()));
     }
 }
