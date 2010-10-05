@@ -83,7 +83,7 @@ public final class NewMain {
             throw new IllegalStateException();
         }
         for (;;) try {
-            while (initialInput.read() != -1);
+            while (initialInput.read() != -1) {}
             break;
         } catch (IOException e) {
         }
