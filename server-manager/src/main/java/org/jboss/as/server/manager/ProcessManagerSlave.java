@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.server.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +31,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
+import org.jboss.as.process.ManagedProcess;
+import org.jboss.as.process.Status;
+import org.jboss.as.process.StreamUtils;
+import org.jboss.as.process.SystemExiter;
 import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
@@ -115,6 +119,7 @@ public final class ProcessManagerSlave {
                     Status status = StreamUtils.readWord(input, b);
                     if (status == Status.END_OF_STREAM) {
                         // no more input
+                        log.info("Received end of stream closing down");
                         shutdown();
                         break;
                     }
@@ -129,6 +134,11 @@ public final class ProcessManagerSlave {
                 }
             } catch (IOException e) {
                 // exception caught, shut down channel and exit
+                log.info("Error, closing down", e);
+            } catch (Throwable t) {
+                // exception caught, shut down channel and exit
+                log.info("Throwable, closing down", t);
+            } finally {
                 shutdown();
             }
         }

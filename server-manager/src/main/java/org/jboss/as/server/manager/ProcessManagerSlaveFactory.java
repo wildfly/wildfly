@@ -4,7 +4,6 @@
 package org.jboss.as.server.manager;
 
 import org.jboss.as.model.HostModel;
-import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 
 /**

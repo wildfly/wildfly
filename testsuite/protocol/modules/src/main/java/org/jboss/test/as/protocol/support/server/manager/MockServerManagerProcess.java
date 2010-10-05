@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
+import org.jboss.as.server.manager.ProcessManagerSlave;
 import org.jboss.as.server.manager.ProcessManagerSlaveFactory;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;

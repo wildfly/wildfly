@@ -59,7 +59,6 @@ import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;

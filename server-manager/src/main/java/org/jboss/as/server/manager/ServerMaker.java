@@ -34,7 +34,6 @@ import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.ProcessManagerSlave;
 import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 
