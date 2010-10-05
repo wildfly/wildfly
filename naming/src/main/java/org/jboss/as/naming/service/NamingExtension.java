@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import java.util.List;
-
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.ParseResult;

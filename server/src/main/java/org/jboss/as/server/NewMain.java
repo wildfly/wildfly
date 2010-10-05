@@ -22,6 +22,7 @@
 
 package org.jboss.as.server;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import org.jboss.logmanager.Level;
@@ -80,6 +81,11 @@ public final class NewMain {
             e.printStackTrace(initialError);
             System.exit(1);
             throw new IllegalStateException();
+        }
+        for (;;) try {
+            while (initialInput.read() != -1);
+            break;
+        } catch (IOException e) {
         }
     }
 }
