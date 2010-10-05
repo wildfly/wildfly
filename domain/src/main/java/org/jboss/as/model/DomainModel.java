@@ -159,6 +159,20 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         return systemProperties;
     }
 
+    /**
+     * Gets the deployment configuration for a given deployment.
+     *
+     * @param uniqueName the user-specified unique name for the deployment
+     *
+     * @return the deployment configuration or <code>null</code> if no matching
+     *         deployment exists
+     */
+    public DeploymentUnitElement getDeployment(String uniqueName) {
+        synchronized (deployments) {
+            return deployments.get(uniqueName);
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Class<DomainModel> getElementClass() {
@@ -305,4 +319,24 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         return interfaces.remove(name) != null;
     }
 
+    boolean addDeployment(DeploymentUnitElement deployment) {
+        if (deployments.containsKey(deployment.getUniqueName()))
+            return false;
+        deployments.put(deployment.getUniqueName(), deployment);
+        return true;
+    }
+
+    boolean removeDeployment(String uniqueName) {
+        return deployments.remove(uniqueName) != null;
+    }
+
+    Set<String> getServerGroupDeploymentsMappings(String deploymentUniqueName) {
+        Set<String> mappings = new HashSet<String>();
+        for (ServerGroupElement sge : serverGroups.values()) {
+            if (sge.getDeployment(deploymentUniqueName) != null) {
+                mappings.add(sge.getName());
+            }
+        }
+        return mappings;
+    }
 }

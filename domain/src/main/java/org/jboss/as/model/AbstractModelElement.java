@@ -70,25 +70,6 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
     }
 
     /**
-     * Convert a hex string into a byte[].
-     *
-     * @param s the string
-     * @return the bytes
-     */
-    public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len >> 1];
-        for (int i = 0, j = 0; j < len; i++) {
-            int x = Character.digit(s.charAt(j), 16) << 4;
-            j++;
-            x = x | Character.digit(s.charAt(j), 16);
-            j++;
-            data[i] = (byte) (x & 0xFF);
-        }
-        return data;
-    }
-
-    /**
      * Get this instance, cast to the concrete type.
      *
      * @return the concrete instance
@@ -127,6 +108,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      * @param obj the other object
      * @return {@code true} if the objects are the same
      */
+    @Override
     public final boolean equals(final Object obj) {
         return super.equals(obj);
     }
@@ -136,6 +118,7 @@ public abstract class AbstractModelElement<E extends AbstractModelElement<E>> im
      *
      * @return the identity hash code
      */
+    @Override
     public final int hashCode() {
         return super.hashCode();
     }

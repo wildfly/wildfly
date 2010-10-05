@@ -28,8 +28,8 @@ import java.util.Arrays;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.base.util.MockRootElement;
 import org.jboss.as.model.base.util.MockRootElementParser;
@@ -43,7 +43,7 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public abstract class ServerGroupDeploymentElementTestBase extends DomainModelElementTestBase {
 
-    private static final byte[] SHA1_HASH = AbstractModelElement.hexStringToByteArray("22cfd207b9b90e0014a4");
+    private static final byte[] SHA1_HASH = ParseUtils.hexStringToByteArray("22cfd207b9b90e0014a4");
 
     /**
      * @param name

@@ -138,6 +138,19 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     }
 
     /**
+     * Gets the given deployment if it is mapped to this server group.
+     *
+     * @param uniqueName the user-specified unique name for the deployment
+     *
+     * @return the deployment, or {@code null} if it is not mapped to this server group
+     */
+    public ServerGroupDeploymentElement getDeployment(String uniqueName) {
+        synchronized (deploymentMappings) {
+            return deploymentMappings.get(uniqueName);
+        }
+    }
+
+    /**
      * Gets any system properties defined at the server group level for this
      * server group. These properties can extend and override any properties
      * declared at the {@link DomainModel#getSystemProperties() domain level} and

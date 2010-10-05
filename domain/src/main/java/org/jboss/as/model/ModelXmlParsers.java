@@ -482,7 +482,75 @@ public final class ModelXmlParsers {
     }
 
     static void parseDeployments(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+        requireNoAttributes(reader);
 
+        final Set<String> names = new HashSet<String>();
+
+        while (reader.nextTag() != END_ELEMENT) {
+            // Handle attributes
+            String uniqueName = null;
+            String runtimeName = null;
+            byte[] hash = null;
+            String startInput = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i ++) {
+                final String value = reader.getAttributeValue(i);
+                if (reader.getAttributeNamespace(i) != null) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            uniqueName = value;
+                            break;
+                        }
+                        case RUNTIME_NAME: {
+                            runtimeName = value;
+                            break;
+                        }
+                        case SHA1: {
+                            try {
+                                hash = ParseUtils.hexStringToByteArray(value);
+                            }
+                            catch (Exception e) {
+                               throw new XMLStreamException("Value " + value +
+                                       " for attribute " + attribute.getLocalName() +
+                                       " does not represent a properly hex-encoded SHA1 hash",
+                                       reader.getLocation(), e);
+                            }
+                            break;
+                        }
+                        case ALLOWED: {
+                            if (!Boolean.valueOf(value)) {
+                                throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
+                            }
+                            break;
+                        }
+                        case START: {
+                            startInput = value;
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if (uniqueName == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+            if (runtimeName == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+            }
+            if (hash == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
+            }
+            boolean toStart = startInput == null ? true : Boolean.valueOf(startInput);
+
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
+
+            list.add(new DomainDeploymentAdd(uniqueName, runtimeName, hash, toStart));
+        }
     }
 
     static void parseServerGroups(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {

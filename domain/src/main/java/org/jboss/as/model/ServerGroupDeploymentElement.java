@@ -102,7 +102,7 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
                     }
                     case SHA1: {
                         try {
-                            hashInput = hexStringToByteArray(value);
+                            hashInput = ParseUtils.hexStringToByteArray(value);
                         }
                         catch (Exception e) {
                             throw new XMLStreamException("Value " + value +

@@ -308,4 +308,23 @@ public final class ParseUtils {
         }
         return new Property(name, value == null ? "" : value);
     }
+
+    /**
+     * Convert a hex string into a byte[].
+     *
+     * @param s the string
+     * @return the bytes
+     */
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len >> 1];
+        for (int i = 0, j = 0; j < len; i++) {
+            int x = Character.digit(s.charAt(j), 16) << 4;
+            j++;
+            x = x | Character.digit(s.charAt(j), 16);
+            j++;
+            data[i] = (byte) (x & 0xFF);
+        }
+        return data;
+    }
 }
