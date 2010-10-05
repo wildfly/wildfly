@@ -23,12 +23,10 @@
 package org.jboss.as.connector;
 
 import java.util.List;
-import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -42,62 +40,14 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
     /** The serialVersionUID */
     private static final long serialVersionUID = 6451041006443208660L;
 
-    private ArchiveValidationElement archiveValidationElement;
-
-    private boolean beanValidation;
+    private boolean archiveValidation = true;
+    private boolean archiveValidationFailOnError = true;
+    private boolean archiveValidationFailOnWarn = false;
+    private boolean beanValidation = true;
 
     public ConnectorSubsystemElement() {
         super("urn:jboss:domain:connector:1.0");
     }
-
-//    public ConnectorSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-//        super(reader);
-//        final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
-//        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-//            switch (Namespace.forUri(reader.getNamespaceURI())) {
-//                case CONNECTOR_1_0: {
-//                    final Element element = Element.forName(reader.getLocalName());
-//                    if (visited.contains(element)) {
-//                        throw unexpectedElement(reader);
-//                    }
-//                    visited.add(element);
-//                    switch (element) {
-//                        case ARCHIVE_VALIDATION: {
-//                            archiveValidationElement = new ArchiveValidationElement(reader);
-//                            break;
-//                        }
-//                        case BEAN_VALIDATION: {
-//                            beanValidation = elementAsBoolean(reader);
-//                            break;
-//                        }
-//                        default:
-//                            throw unexpectedElement(reader);
-//                    }
-//                    break;
-//                }
-//                default:
-//                    throw unexpectedElement(reader);
-//            }
-//        }
-//    }
-//
-//        @Override
-//        public void activate(ServiceActivatorContext context) {
-//            final BatchBuilder builder = context.getBatchBuilder();
-//
-//            final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
-//
-//            if (this.archiveValidationElement != null) {
-//                config.setArchiveValidation(true);
-//                config.setArchiveValidationFailOnError(this.archiveValidationElement.isFailOnError());
-//                config.setArchiveValidationFailOnWarn(this.archiveValidationElement.isFailOnWarn());
-//            }
-//            config.setBeanValidation(this.beanValidation);
-//
-//            final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-//            builder.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
-//
-//        }
 
     @Override
     protected Class<ConnectorSubsystemElement> getElementClass() {
@@ -106,39 +56,35 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        if (archiveValidationElement != null) {
-            archiveValidationElement.writeContent(streamWriter);
-        }
-        streamWriter.writeStartElement(Element.BEAN_VALIDATION.getLocalName());
-        streamWriter.writeCharacters(String.valueOf(beanValidation));
+        streamWriter.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
+        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(beanValidation));
+
+        streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
+        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(archiveValidation));
+        streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), Boolean.toString(archiveValidationFailOnWarn));
+        streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), Boolean.toString(archiveValidationFailOnError));
+
         streamWriter.writeEndElement();
     }
 
-    /**
-     * convert an xml element in boolean value. Empty elements results with true (tag presence is sufficient condition)
-     *
-     * @param reader the StAX reader
-     *
-     * @return the boolean representing element
-     *
-     * @throws XMLStreamException StAX exception
-     */
-    private boolean elementAsBoolean(XMLExtendedStreamReader reader) throws XMLStreamException {
-        String elementtext = reader.getElementText();
-        return elementtext == null || elementtext.length() == 0 ? true : Boolean.valueOf(elementtext.trim());
-    }
-
     protected void getUpdates(final List<? super AbstractSubsystemUpdate<ConnectorSubsystemElement, ?>> objects) {
+        // empty
     }
 
     protected boolean isEmpty() {
-        return false;
+        return true;
     }
 
-    protected AbstractSubsystemAdd<ConnectorSubsystemElement> getAdd() {
-        return null;
+    protected ConnectorSubsystemAdd getAdd() {
+        final ConnectorSubsystemAdd add = new ConnectorSubsystemAdd();
+        add.setArchiveValidation(archiveValidation);
+        add.setArchiveValidationFailOnError(archiveValidationFailOnError);
+        add.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
+        add.setBeanValidation(beanValidation);
+        return add;
     }
 
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        // requires restart
     }
 }

@@ -22,58 +22,66 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="urn:jboss:domain:connector:1.0" xmlns="urn:jboss:domain:connector:1.0"
-  elementFormDefault="qualified"
-  attributeFormDefault="unqualified"
-  >
-   
-    <xs:element name="subsystem" type="subsystemType"></xs:element>
-    
+           targetNamespace="urn:jboss:domain:connector:1.0" xmlns="urn:jboss:domain:connector:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+        >
+
+    <xs:element name="subsystem" type="subsystemType"/>
+
     <xs:complexType name="subsystemType">
-      <xs:sequence>
-        <xs:element name="archive-validation" type="archive-validationType" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:documentation>
-               Toggle archive validation for the deployment units. If it's not present it's considered true 
-               with default attributes.
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        
-        <xs:element name="bean-validation" type="xs:boolean" minOccurs="0" maxOccurs="1">
-         <xs:annotation>
-            <xs:documentation>
-               Toggle bean validation (JSR-303) for the deployment units. If it's not present it's considered true
-            </xs:documentation>
-         </xs:annotation>
-        </xs:element>
-      </xs:sequence>
+        <xs:all>
+            <xs:element name="archive-validation" type="archive-validationType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Toggle archive validation for the deployment units. If it's not present it's considered true
+                        with default attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="bean-validation" type="xs:boolean" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Toggle bean validation (JSR-303) for the deployment units. If it's not present it's considered
+                        true
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="archive-validationType" mixed="true">
-      <xs:annotation>
-         <xs:documentation>
-             Toggle archive validation for the deployment units. A false value deactivate completely the validation.
-             In case it is set to true, also attributes are considered for fine grained tuning of behaviours.
-         </xs:documentation>
-      </xs:annotation>
-      <xs:simpleContent>
-        <xs:extension base="xs:boolean">
-          <xs:attribute name="fail-on-error" type="xs:boolean" default="true" use="optional">
+    <xs:complexType name="archive-validationType">
+        <xs:attribute name="enabled" type="xs:boolean" default="true" use="optional">
             <xs:annotation>
-               <xs:documentation>
-                  Should an archive validation error report fail the deployment. Default: true
-               </xs:documentation>
+                <xs:documentation>
+                    Specify whether archive validation is enabled.  Default: true
+                </xs:documentation>
             </xs:annotation>
-          </xs:attribute>
-          <xs:attribute name="fail-on-warn" type="xs:boolean" default="false" use="optional">
+        </xs:attribute>
+        <xs:attribute name="fail-on-error" type="xs:boolean" default="true" use="optional">
             <xs:annotation>
-               <xs:documentation>
-                  Should an archive validation warning report fail the deployment. Default: true
-               </xs:documentation>
+                <xs:documentation>
+                    Should an archive validation error report fail the deployment. Default: true
+                </xs:documentation>
             </xs:annotation>
-          </xs:attribute>
-        </xs:extension>
-      </xs:simpleContent>
+        </xs:attribute>
+        <xs:attribute name="fail-on-warn" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Should an archive validation warning report fail the deployment. Default: true
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="bean-validationType">
+        <xs:attribute name="enabled" type="xs:boolean" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify whether bean validation is enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 </xs:schema>

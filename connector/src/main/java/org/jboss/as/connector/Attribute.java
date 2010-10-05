@@ -11,9 +11,10 @@ import java.util.Map;
  *
  */
 public enum Attribute {
-    /** alweays the first **/
+    /** always the first **/
     UNKNOWN(null),
 
+    ENABLED("enabled"),
     /**
      * fail-on-error attribute
      *

@@ -59,8 +59,8 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="socket-binding" type="xs:IDREF" />
-        <xs:attribute name="status-socket-binding" type="xs:IDREF" />
+        <xs:attribute name="socket-binding" type="xs:string" />
+        <xs:attribute name="status-socket-binding" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="core-environment">
@@ -76,7 +76,7 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="socket-binding" type="xs:IDREF" use="required"/>
+        <xs:attribute name="socket-binding" type="xs:string" use="required"/>
         <xs:attribute name="node-identifier" type="xs:string" default="1"/>
         <xs:attribute name="socket-process-id-max-ports" type="xs:int" default="10" />
     </xs:complexType>

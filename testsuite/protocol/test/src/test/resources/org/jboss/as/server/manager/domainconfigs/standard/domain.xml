@@ -46,7 +46,7 @@
                     <threads:keepalive-time time="10" unit="sec"/>
                 </threads:scheduled-thread-pool>
             </threads:subsystem>
-            <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+            <naming:subsystem/>
             <txn:subsystem>
                 <txn:recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <txn:core-environment socket-binding="txn-socket-process-id"/>

@@ -43,7 +43,7 @@
                     <keepalive-time time="10" unit="sec"/>
                 </scheduled-thread-pool>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:naming:1.0" bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+            <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>

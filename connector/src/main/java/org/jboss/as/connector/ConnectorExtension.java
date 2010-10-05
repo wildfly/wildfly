@@ -24,7 +24,6 @@ package org.jboss.as.connector;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**

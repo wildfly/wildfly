@@ -42,7 +42,7 @@
                 <threads:keepalive-time time="10" unit="sec"/>
             </threads:scheduled-thread-pool>
         </threads:subsystem>
-        <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <naming:subsystem/>
         <remoting:subsystem thread-pool="remoting"/>
         <messaging:subsystem>
             <!-- A standard hornetq configuration -->

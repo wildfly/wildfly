@@ -57,7 +57,7 @@ import org.jboss.msc.value.Value;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
- * serivice for ResourceAdapter.
+ * service for ResourceAdapter.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
@@ -70,7 +70,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
     public ParsedRaDeploymentProcessor(Value<MetadataRepository> mdr, Value<TransactionManager> txm,
             Value<ConnectorSubsystemConfiguration> config) {
-        super();
         this.mdr = mdr;
         this.txm = txm;
         this.config = config;
