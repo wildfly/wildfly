@@ -243,9 +243,10 @@ public final class ModelXmlParsers {
                             throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
                         }
                         // parse content
-                        final List<AbstractSubsystemUpdate<?, ?>> resultList = new ArrayList<AbstractSubsystemUpdate<?, ?>>();
-                        reader.handleAny(resultList);
-                        for (AbstractSubsystemUpdate<?, ?> update : resultList) {
+                        final ParseResult<ExtensionContext.SubsystemConfiguration<?>> result = new ParseResult<ExtensionContext.SubsystemConfiguration<?>>();
+                        reader.handleAny(result);
+                        list.add(new DomainSubsystemAdd(name, result.getResult().getSubsystemAdd()));
+                        for (AbstractSubsystemUpdate<?, ?> update : result.getResult().getUpdates()) {
                             // I don't think this is really an unchecked cast (even though ? is bounded by Object, the class
                             // specifies an additional bound for E so it should be considered safe), but IDEA thinks it is...
                             //noinspection unchecked
