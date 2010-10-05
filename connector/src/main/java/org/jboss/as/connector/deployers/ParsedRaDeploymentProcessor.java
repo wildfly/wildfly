@@ -115,6 +115,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             AS7RaDeployer raDeployer = new AS7RaDeployer();
 
+            raDeployer.setConfiguration(config.getValue());
+
             ResourceAdapter ra = raDeployer.doDeploy(connectorXmlDescriptor.getUrl(),
                     connectorXmlDescriptor.getDeploymentName(), connectorXmlDescriptor.getRoot(), classLoader, cmd, ijmd);
 
@@ -140,7 +142,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         public AS7RaDeployer() {
             // validate at class level
-            super(true);
+            super(true, ParsedRaDeploymentProcessor.log);
         }
 
         public ResourceAdapter doDeploy(URL url, String deploymentName, File root, ClassLoader cl, Connector cmd,
@@ -150,7 +152,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             this.start();
 
-            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, null, cl, cmd, ijmd, null);
+            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd);
 
             return dep.getResourceAdapter();
 
@@ -158,13 +160,13 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         @Override
         protected String[] bindConnectionFactory(URL arg0, String arg1, Object arg2) throws Throwable {
-            // TODO Auto-generated method stub
+            // TODO implements Jndi registration
             return null;
         }
 
         @Override
         protected String[] bindConnectionFactory(URL arg0, String arg1, Object arg2, String arg3) throws Throwable {
-            // TODO Auto-generated method stub
+            // TODO implements Jndi registration
             return null;
         }
 
@@ -176,17 +178,18 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         @Override
         protected boolean checkConfigurationIsValid() {
-            // TODO Auto-generated method stub
-            return false;
+            return this.getConfiguration() != null;
         }
 
         @Override
         protected PrintWriter getLogPrintWriter() {
-            return null;
+            return new PrintWriter(System.out);
         }
 
         @Override
         protected File getReportDirectory() {
+            // TODO: evaluate if provide something in config about that. atm
+            // returning null and so skip its use
             return null;
         }
 
@@ -198,14 +201,14 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         @Override
         protected Object initAndInject(String arg0, List<? extends ConfigProperty> arg1, ClassLoader arg2)
                 throws DeployException {
-            // TODO Auto-generated method stub
+            // import somewhere fungal injector
             return null;
         }
 
         @Override
-        protected void registerResourceAdapterToMDR(URL arg0, File arg1, Connector arg2, IronJacamar arg3)
+        protected void registerResourceAdapterToMDR(URL url, File file, Connector connecor, IronJacamar ij)
                 throws AlreadyExistsException {
-            // TODO Auto-generated method stub
+            mdr.getValue().registerResourceAdapter(url, file, connecor, ij);
 
         }
 
