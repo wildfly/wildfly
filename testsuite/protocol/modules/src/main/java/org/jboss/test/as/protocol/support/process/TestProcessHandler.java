@@ -77,7 +77,7 @@ public class TestProcessHandler implements ProcessHandler {
         if (processName.equals(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME)) {
             try {
                 if (useRealServerManager) {
-                        testServerManager = TestServerManagerProcess.createServerManager(managed, command, processInputStream.getInput(), processOutputStream.getOutput(), processOutputStream.getOutput());
+                    testServerManager = TestServerManagerProcess.createServerManager(managed, command, processInputStream.getInput(), processOutputStream.getOutput(), processOutputStream.getOutput());
                 } else {
                     mockServerManager = MockServerManagerProcess.create(managed, command);
                 }

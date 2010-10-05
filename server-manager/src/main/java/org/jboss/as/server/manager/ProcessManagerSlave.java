@@ -95,10 +95,6 @@ public final class ProcessManagerSlave {
         IncomingPmCommand.SEND_STDIN.sendStdin(output, recipient, message);
     }
 
-    public void serversShutdown() throws IOException {
-        IncomingPmCommand.SERVERS_SHUTDOWN.sendServersShutdown(output);
-    }
-
     public void reconnectServers(InetAddress addr, int port) throws IOException {
         IncomingPmCommand.RECONNECT_SERVERS.sendReconnectServers(output, addr, port);
     }

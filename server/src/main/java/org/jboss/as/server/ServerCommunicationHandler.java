@@ -38,9 +38,9 @@ import org.jboss.logging.Logger;
 public abstract class ServerCommunicationHandler {
     protected final Logger logger = Logger.getLogger(this.getClass());
 
-    protected final InputStream input;
-    protected final OutputStream output;
-    private final SocketConnection managerConnection;
+    private final InputStream input;
+    private final OutputStream output;
+    final SocketConnection managerConnection;
 
     public ServerCommunicationHandler(String processName, InetAddress addr, Integer port){
         if (processName == null) {

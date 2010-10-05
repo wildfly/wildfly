@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +77,7 @@ public class DirectServerSideCommunicationHandler extends ServerCommunicationHan
         @Override
         public void run() {
             try {
+                InputStream input = getInput();
                 while (!shutdown.get()) {
                     byte[] bytes = StreamUtils.readBytesWithLength(input);
                     handler.handleCommand(bytes);
@@ -83,7 +85,12 @@ public class DirectServerSideCommunicationHandler extends ServerCommunicationHan
             } catch (EOFException e) {
                 logger.debug("EOF received");
             } catch (IOException e) {
-                e.printStackTrace();
+                if (isClosed()) {
+                    logger.info("Socket is closed");
+                } else {
+                    logger.info("Error reading from socket ", e);
+                }
+
             }finally {
                 shutdown();
             }

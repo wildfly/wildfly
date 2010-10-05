@@ -117,10 +117,6 @@ public class MockServerManagerProcess extends ServerManager {
         getServerCommunicationHandler(serverName).sendMessage(ServerManagerProtocolUtils.createCommandBytes(cmd, data));
     }
 
-    public void sendServersShutdownToProcessManager() throws IOException {
-        pmSlave.serversShutdown();
-    }
-
     public void sendReconnectServersToProcessManager() throws IOException {
         pmSlave.reconnectServers(InetAddress.getLocalHost(), serverListener.getSmPort());
     }
@@ -128,6 +124,11 @@ public class MockServerManagerProcess extends ServerManager {
     public ServerMessage awaitAndReadMessage() {
         return messageHandler.awaitAndReadMessage();
     }
+
+    public void waitForShutdownCommand() throws InterruptedException {
+        messageHandler.waitForShutdownCommand();
+    }
+
 
     @Override
     public void stop() {

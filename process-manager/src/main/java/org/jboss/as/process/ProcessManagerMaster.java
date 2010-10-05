@@ -33,8 +33,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.InitialSocketRequestException;
@@ -44,8 +42,6 @@ import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.ManagedProcess.ProcessHandler;
 import org.jboss.as.process.ManagedProcess.RealProcessHandler;
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
-import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.logging.Logger;
 
 /**
@@ -64,8 +60,6 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
 
     private final AtomicBoolean shutdown = new AtomicBoolean();
-
-    private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
 
     private final ProcessHandlerFactory processHandlerFactory;
 
@@ -123,43 +117,35 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         if (isShutdown)
             return;
 
-        ManagedProcess serverManagerProcess = null;
+        log.info("Initiating shutdown of ProcessManager");
+
+        ManagedProcess serverManager = null;
         synchronized (processes) {
-            serverManagerProcess = processes.get(SERVER_MANAGER_PROCESS_NAME);
+            serverManager = processes.get(SERVER_MANAGER_PROCESS_NAME);
         }
-
-        boolean stopped = false;
-        if (serverManagerProcess != null) {
+        if (serverManager != null) {
             try {
-                stopped = serverManagerProcess.shutdownServers();
+                log.info("Stopping ServerManager");
+                serverManager.stop();
             } catch (IOException e) {
-                log.errorf("Error sending %s command to %s", OutgoingPmCommand.SHUTDOWN_SERVERS, SERVER_MANAGER_PROCESS_NAME);
-            }
-        }
-
-        if (stopped) {
-            try {
-                if (!shutdownServersLatch.await(10, TimeUnit.SECONDS)) {
-                    log.errorf("Did not receive shutdown confirmation of servers in %d seconds. Continuing shutdown process ", 10);
-                }
-            } catch (InterruptedException e) {
-                log.errorf(e, "Error waiting for %s command from %s", IncomingPmCommand.SERVERS_SHUTDOWN, SERVER_MANAGER_PROCESS_NAME);
+                log.error("Error sending SHUTDOWN to ServerManager");
             }
         }
 
         synchronized (processes) {
             for (ManagedProcess proc : processes.values()) {
-                if (proc.isStart()) {
-                    try {
-                        proc.stop();
-                    } catch (IOException e) {
-                    }
+                try {
+                    log.info("Stopping " + proc.getProcessName());
+                    proc.stop();
+                } catch (IOException e) {
+                    log.error("Error sending SHUTDOWN to " + proc.getProcessName());
                 }
             }
             processes.clear();
         }
 
         socketListener.shutdown();
+        log.info("Shutdown ProcessManager");
     }
 
     public boolean isShutdown() {
@@ -183,9 +169,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, RespawnPolicy respawnPolicy) {
-        if (shutdown.get())
+        if (shutdown.get()) {
             return;
-
+        }
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             if (processes.containsKey(processName)) {
@@ -200,9 +186,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void startProcess(final String processName) {
-        if (shutdown.get())
+        if (shutdown.get()) {
             return;
-
+        }
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(processName);
@@ -219,6 +205,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void stopProcess(final String processName) {
+        if (shutdown.get()) {
+            return;
+        }
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(processName);
@@ -235,6 +224,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void removeProcess(final String processName) {
+        if (shutdown.get()) {
+            return;
+        }
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(processName);
@@ -253,9 +245,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     public void sendStdin(final String recipient, final byte[] msg) {
-        if (shutdown.get())
+        if (shutdown.get()) {
             return;
-
+        }
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             final ManagedProcess process = processes.get(recipient);
@@ -279,12 +271,10 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
     }
 
     @Override
-    public void serversShutdown() {
-        shutdownServersLatch.countDown();
-    }
-
-    @Override
     public void downServer(String serverName) {
+        if (shutdown.get()) {
+            return;
+        }
         synchronized (processes) {
             try {
                 ManagedProcess serverManagerProcess = processes.get(SERVER_MANAGER_PROCESS_NAME);
@@ -298,6 +288,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
 
     @Override
     public void reconnectServersToServerManager(String smAddress, String smPort) {
+        if (shutdown.get()) {
+            return;
+        }
         try {
             InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
@@ -326,6 +319,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
 
     @Override
     public void reconnectProcessToServerManager(String server, String smAddress, String smPort) {
+        if (shutdown.get()) {
+            return;
+        }
         if (SERVER_MANAGER_PROCESS_NAME.equals(server)) {
             return;
         }

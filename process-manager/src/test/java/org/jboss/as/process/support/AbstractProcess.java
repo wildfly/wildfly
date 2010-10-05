@@ -221,11 +221,6 @@ public abstract class AbstractProcess {
         }
 
 		@Override
-        public void handleShutdownServers() {
-			AbstractProcess.this.shutdownServers();
-        }
-
-		@Override
         public void handleDown(String downProcessName) {
 			AbstractProcess.this.down(downProcessName);
         }

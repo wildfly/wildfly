@@ -158,10 +158,6 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         assertTrue(0 != stopLatch.getExitCode());
 
         assertEquals("Down is down", smListener.readMessage());
-
-        //Get rid of SM so PM does not wait for confirmation when tearing down the test
-        stopTestProcessListenerAndWait(smListener);
-        removeProcess("ServerManager");
     }
 
     @Test
@@ -181,10 +177,6 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         assertEquals(1, stopLatch.getExitCode());
 
         assertEquals("Down is down", smListener.readMessage());
-
-        //Get rid of SM so PM does not wait for confirmation when tearing down the test
-        stopTestProcessListenerAndWait(smListener);
-        removeProcess("ServerManager");
     }
 
     @Test
@@ -204,10 +196,6 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
         assertEquals(0, stopLatch.getExitCode());
 
         assertNull(smListener.readMessage(2000));
-
-        //Get rid of SM so PM does not wait for confirmation when tearing down the test
-        stopTestProcessListenerAndWait(smListener);
-        removeProcess("ServerManager");
     }
 
     @Test

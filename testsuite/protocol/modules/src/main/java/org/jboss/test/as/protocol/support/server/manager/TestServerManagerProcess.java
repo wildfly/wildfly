@@ -111,12 +111,6 @@ public class TestServerManagerProcess extends ServerManager {
 
 
     @Override
-    public void shutdownServers() {
-        shutdownServersLatch.countDown();
-        super.shutdownServers();
-    }
-
-    @Override
     public void stop() {
         super.stop();
         shutdownLatch.countDown();
@@ -134,10 +128,6 @@ public class TestServerManagerProcess extends ServerManager {
 
     public void resetDownLatch() {
         downLatch = new CountDownLatch(1);
-    }
-
-    public void waitForShutdownServers() throws InterruptedException {
-        waitForLatch(shutdownServersLatch);
     }
 
     public void waitForShutdown() throws InterruptedException {

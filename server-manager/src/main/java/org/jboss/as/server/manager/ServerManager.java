@@ -33,15 +33,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.stream.XMLInputFactory;
@@ -118,14 +115,12 @@ public class ServerManager implements ShutdownListener {
     private ServerMaker serverMaker;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
-    private boolean stopping;
+    private final AtomicBoolean stopping = new AtomicBoolean();
 
     // TODO figure out concurrency controls
 //    private final Lock hostLock = new ReentrantLock();
 //    private final Lock domainLock = new ReentrantLock();
     private final Map<String, Server> servers = Collections.synchronizedMap(new HashMap<String, Server>());
-
-    ShutdownLatch shutdownLatch;
 
     public ServerManager(ServerManagerEnvironment environment) {
         if (environment == null) {
@@ -277,6 +272,9 @@ public class ServerManager implements ShutdownListener {
      */
     @Override
     public void connectionClosed(String processName) {
+        if (stopping.get())
+            return;
+
         Server server = servers.get(processName);
 
         if (server == null) {
@@ -294,7 +292,10 @@ public class ServerManager implements ShutdownListener {
         try {
             processManagerSlave.reconnectServer(processName, directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
         } catch (IOException e) {
-            log.error("Failed to send RECONNECT_SERVERS", e);
+            if (stopping.get())
+                return;
+
+            log.error("Failed to send RECONNECT_SERVER", e);
         }
     }
 
@@ -325,12 +326,11 @@ public class ServerManager implements ShutdownListener {
     /**
      * Callback for when we receive the SHUTDOWN message from PM
      */
-    public synchronized void stop() {
-        if (stopping) {
+    public void stop() {
+        if (stopping.getAndSet(true)) {
             return;
-        } else {
-            stopping = true;
         }
+
         log.info("Stopping ServerManager");
         directServerCommunicationListener.shutdown();
         if(domainControllerConnection != null) {
@@ -341,54 +341,14 @@ public class ServerManager implements ShutdownListener {
     }
 
     /**
-     * Callback for when we receive the SHUTDOWN_SERVERS message from PM
-     */
-    public void shutdownServers() {
-        log.info("Shutting down servers");
-        if (shutdownLatch != null) {
-            throw new IllegalStateException("Already shutting down");
-        }
-        shutdownLatch = new ShutdownLatch();
-
-        Map<String, Server> serversCopy;
-        synchronized (servers) {
-            serversCopy = new HashMap<String, Server>(servers);
-        }
-
-        for (Map.Entry<String, Server> entry : serversCopy.entrySet()) {
-            try {
-                Server server = entry.getValue();
-                if (server.getState() == ServerState.STOPPED)
-                    continue;
-                shutdownLatch.add(entry.getKey());
-                log.infof("Stopping %s", server.getServerProcessName());
-                server.stop();
-                server.setState(ServerState.STOPPING);
-            }
-            catch (Exception e) {
-                // FIXME handle exception stopping server
-            }
-        }
-        shutdownLatch.addedAll();
-        try {
-            shutdownLatch.waitForAll();
-        } catch (InterruptedException e) {
-            log.errorf("Wait for server shutdown was interrupted");
-        }
-
-        try {
-            processManagerSlave.serversShutdown();
-        } catch (IOException e) {
-            log.error("Error confiriming servers shutdown", e);
-        }
-    }
-
-    /**
      * Callback for when we receive the SERVER_STOPPED message from a Server
      *
      * @param serverName the name of the server
      */
     void stoppedServer(String serverName) {
+        if (stopping.get())
+            return;
+
         Server server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for stop", serverName);
@@ -398,12 +358,18 @@ public class ServerManager implements ShutdownListener {
 
         try {
             processManagerSlave.stopProcess(serverName);
+        } catch (IOException e) {
+            if (stopping.get())
+                return;
+            log.errorf(e, "Could not stop server %s in PM", serverName);
+        }
+        try {
             processManagerSlave.removeProcess(serverName);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (stopping.get())
+                return;
+            log.errorf(e, "Could not stop server %s", serverName);
         }
-        if (shutdownLatch != null)
-            shutdownLatch.remove(serverName);
     }
 
     /**
@@ -757,37 +723,6 @@ public class ServerManager implements ShutdownListener {
         return directServerCommunicationListener;
     }
 
-    private static class ShutdownLatch {
-        private final Set<String> waitingForServers = Collections.synchronizedSet(new HashSet<String>());
-        private final CountDownLatch done = new CountDownLatch(1);
-        private CountDownLatch waitFor;
-
-        synchronized void add(String serverName) {
-            waitingForServers.add(serverName);
-        }
-
-        synchronized void remove(String serverName) {
-            if (!waitingForServers.remove(serverName)) {
-                log.warnf("Could not find server called %s", serverName);
-                return;
-            }
-            if (waitFor != null)
-                waitFor.countDown();
-        }
-
-        synchronized void addedAll() {
-            waitFor = new CountDownLatch(waitingForServers.size());
-            done.countDown();
-        }
-
-        void waitForAll() throws InterruptedException{
-            done.await();
-            if (!waitFor.await(10, TimeUnit.SECONDS)) {
-                log.warnf("Waited 10 seconds for confirmation from all servers they are closing down before giving up %s", waitingForServers);
-            }
-        }
-    }
-
     /**
      * Callback for the {@link ServerToServerManagerProtocolCommand#handleCommand(String, ServerToServerManagerCommandHandler, Command)} calls
      */
@@ -833,11 +768,6 @@ public class ServerManager implements ShutdownListener {
         @Override
         public void handleDown(String serverName) {
             ServerManager.this.downServer(serverName);
-        }
-
-        @Override
-        public void handleShutdownServers() {
-            ServerManager.this.shutdownServers();
         }
 
 //        public void registerServer(String serverName, Server server) {

@@ -129,6 +129,7 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
             if (!start) {
                 return;
             }
+            start = false;
             stopped = true;
             OutgoingPmCommand.SHUTDOWN.sendStop(commandStream);
         }
@@ -145,16 +146,6 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
 
             stdinStream.write(msg);
             stdinStream.flush();
-        }
-    }
-
-    boolean shutdownServers() throws IOException {
-        checkServerManager(OutgoingPmCommand.SHUTDOWN_SERVERS);
-        synchronized (this) {
-            if (!start)
-                return false;
-            OutgoingPmCommand.SHUTDOWN_SERVERS.sendShutdownServers(commandStream);
-            return true;
         }
     }
 

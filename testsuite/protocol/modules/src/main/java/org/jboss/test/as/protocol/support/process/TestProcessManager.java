@@ -126,7 +126,6 @@ public class TestProcessManager extends ProcessManagerMaster {
 
     @Override
     public void removeProcess(String processName) {
-        System.err.println("---------> removing " + processName + " " + this);
         removeCount.incrementAndGet();
         removedQueue.add(processName);
         super.removeProcess(processName);
@@ -134,7 +133,6 @@ public class TestProcessManager extends ProcessManagerMaster {
 
     @Override
     public void stopProcess(String processName) {
-        System.err.println("---------> stopping " + processName + " " + this);
         stopCount.incrementAndGet();
         stoppedQueue.add(processName);
         super.stopProcess(processName);
@@ -145,11 +143,11 @@ public class TestProcessManager extends ProcessManagerMaster {
         super.shutdown();
     }
 
-    @Override
-    public void serversShutdown() {
-        super.serversShutdown();
-        shutdownServersLatch.countDown();
-    }
+//    @Override
+//    public void serversShutdown() {
+//        super.serversShutdown();
+//        shutdownServersLatch.countDown();
+//    }
 
     @Override
     public void reconnectServersToServerManager(String smAddress, String smPort) {

@@ -21,8 +21,10 @@
  */
 package org.jboss.test.as.protocol.support.process;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.ManagedProcess.ProcessHandler;
 import org.jboss.as.process.ProcessManagerMaster.ProcessHandlerFactory;
@@ -38,7 +40,8 @@ public class TestProcessHandlerFactory implements ProcessHandlerFactory {
 
     private final boolean useRealServerManager;
     private final boolean useRealServers;
-    private final Map<String, TestProcessHandler> createdProcesses = new ConcurrentHashMap<String, TestProcessHandler>();
+    private final Map<String, CountDownLatch> processLatches = new HashMap<String, CountDownLatch>();
+    private final Map<String, TestProcessHandler> createdProcesses = new HashMap<String, TestProcessHandler>();
 
 
     public TestProcessHandlerFactory(boolean useRealServerManager, boolean useRealServers) {
@@ -51,12 +54,40 @@ public class TestProcessHandlerFactory implements ProcessHandlerFactory {
         return new TestProcessHandler(this, useRealServerManager, useRealServers);
     }
 
-    void addProcessHandler(String processName, TestProcessHandler handler) {
-        createdProcesses.put(processName, handler);
+    public void resetLatch(String processName) {
+        synchronized (this) {
+            processLatches.put(processName, new CountDownLatch(1));
+        }
     }
 
-    public TestProcessHandler getProcessHandler(String processName) {
-        return createdProcesses.get(processName);
+    public void addProcessHandler(String processName, TestProcessHandler handler) {
+        CountDownLatch latch;
+        synchronized (this) {
+            latch = processLatches.get(processName);
+            if (latch == null) {
+                latch = new CountDownLatch(1);
+                processLatches.put(processName, latch);
+            }
+            createdProcesses.put(processName, handler);
+        }
+        latch.countDown();
+    }
+
+    public TestProcessHandler getProcessHandler(String processName) throws InterruptedException {
+        CountDownLatch latch;
+        synchronized (this) {
+            latch = processLatches.get(processName);
+            if (latch == null) {
+                latch = new CountDownLatch(1);
+                processLatches.put(processName, latch);
+            }
+        }
+        if (!latch.await(10, TimeUnit.SECONDS)){
+            throw new IllegalStateException("Read timed out");
+        }
+        synchronized (this) {
+            return createdProcesses.get(processName);
+        }
     }
 
 }

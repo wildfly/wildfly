@@ -26,6 +26,8 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
@@ -49,6 +51,8 @@ import org.jboss.test.as.protocol.support.process.NoopExiter;
 public class TestServerProcess extends Server {
 
     private final AtomicBoolean stopping = new AtomicBoolean();
+
+    private volatile CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     public TestServerProcess(ServerEnvironment environment) {
         super(environment);
@@ -96,7 +100,8 @@ public class TestServerProcess extends Server {
     @Override
     public void start(ServerModel config) throws ServerStartException {
         setState(ServerState.STARTED);
-        sendMessage(ServerToServerManagerProtocolCommand.SERVER_STARTED);
+        sendMessageToSm(ServerToServerManagerProtocolCommand.SERVER_STARTED);
+        shutdownLatch = new CountDownLatch(1);
     }
 
     /**
@@ -107,9 +112,16 @@ public class TestServerProcess extends Server {
     public void stop() {
         if (stopping.getAndSet(true))
             return;
-        sendMessage(ServerToServerManagerProtocolCommand.SERVER_STOPPED);
+        sendMessageToSm(ServerToServerManagerProtocolCommand.SERVER_STOPPED);
         setState(ServerState.STOPPED);
         shutdownCommunicationHandlers();
+        shutdownLatch.countDown();
+    }
+
+    public void awaitShutdown() throws Exception {
+        if (!shutdownLatch.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Wait timed out");
+        }
     }
 
 

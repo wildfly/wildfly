@@ -35,7 +35,6 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
 import org.jboss.as.server.manager.ServerManagerProtocol.Command;
@@ -45,6 +44,7 @@ import org.jboss.test.as.protocol.support.process.TestProcessHandler;
 import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
 import org.jboss.test.as.protocol.support.process.TestProcessManager.NewConnectionListener;
+import org.jboss.test.as.protocol.support.server.TestServerProcess;
 import org.jboss.test.as.protocol.support.server.manager.MockServerManagerProcess;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler.ServerMessage;
 import org.jboss.test.as.protocol.support.xml.ConfigParser;
@@ -82,15 +82,16 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.STOP_SERVER);
         assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
 
+        TestServerProcess proc1 = processHandlerFactory.getProcessHandler("Server:server-one").getTestServerProcess();
+
         new Thread(new Runnable() {
             public void run() {
                 pm.shutdown();
             }
         }).start();
-        assertReadPmCommand(sm, OutgoingPmCommand.SHUTDOWN_SERVERS.toString());
-        sm.sendServersShutdownToProcessManager();
 
-        assertReadPmCommand(sm, OutgoingPmCommand.SHUTDOWN.toString());
+        sm.waitForShutdownCommand();
+        proc1.awaitShutdown();
         sm.stop();
     }
 
@@ -126,34 +127,20 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         ServerState state = ServerManagerProtocolUtils.unmarshallCommandData(ServerState.class, cmd);
         Assert.assertSame(ServerState.STARTED, state);
 
+        TestServerProcess proc1 = processHandlerFactory.getProcessHandler("Server:server-one").getTestServerProcess();
+
         new Thread(new Runnable() {
             public void run() {
                 pm.shutdown();
             }
         }).start();
-        assertReadPmCommand(sm, OutgoingPmCommand.SHUTDOWN_SERVERS.toString());
-        sm.sendMessageToServer("Server:server-one", ServerManagerToServerProtocolCommand.STOP_SERVER);
-        assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
-        sm.stopServerInPm("Server:server-one");
-        sm.removeServerFromPm("Server:server-one");
-        sm.sendServersShutdownToProcessManager();
-        assertReadPmCommand(sm, OutgoingPmCommand.SHUTDOWN.toString());
 
-//        //One of these will come from PM, the other from the server
-//        ServerMessage msg1 = sm.awaitAndReadMessage();
-//        ServerMessage msg2 = sm.awaitAndReadMessage();
-//        if (msg1.getSourceProcess() != null) {
-//            assertPmServerMessage(msg2, OutgoingPmCommand.SHUTDOWN.toString());
-//            assertServerServerMessage(msg1, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
-//        } else {
-//            assertPmServerMessage(msg1, OutgoingPmCommand.SHUTDOWN.toString());
-//            assertServerServerMessage(msg2, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
-//        }
-
+        sm.waitForShutdownCommand();
+        proc1.awaitShutdown();
         sm.stop();
     }
 
-    private MockServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) {
+    private MockServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) throws Exception {
         TestProcessHandler handler = processHandlerFactory.getProcessHandler(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME);
         Assert.assertNotNull(handler);
         MockServerManagerProcess mgr = handler.getMockServerManager();
@@ -172,18 +159,6 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         Command<ServerToServerManagerProtocolCommand> cmd = ServerToServerManagerProtocolCommand.readCommand(sent);
         Assert.assertEquals(expectedCommand, cmd.getCommand());
         return cmd;
-    }
-
-    private void assertReadPmCommand(MockServerManagerProcess serverManager, String expectedCommand) throws Exception {
-        ServerMessage msg = serverManager.awaitAndReadMessage();
-        assertPmServerMessage(msg, expectedCommand);
-    }
-
-    private void assertPmServerMessage(ServerMessage msg, String expectedCommand) {
-        Assert.assertNull(msg.getSourceProcess());
-        byte[] sent = msg.getMessage();
-        String stringCommand = new String(sent);
-        Assert.assertEquals(expectedCommand, stringCommand);
     }
 
     private ServerModel getServer(String cfgDir, String serverName) throws Exception {

@@ -89,7 +89,6 @@ public final class ProcessOutputStreamHandler implements Runnable {
         void stopProcess(final String processName);
         void removeProcess(final String processName);
         void sendStdin(final String recipient, final byte[] msg);
-        void serversShutdown();
         void downServer(String serverName);
         void reconnectServersToServerManager(String smAddress, String smPort);
         void reconnectProcessToServerManager(String server, String smAddress, String smPort);

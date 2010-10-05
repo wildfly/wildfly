@@ -89,30 +89,13 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         shutdownProcessManagerNoWait(pm);
 
         /* On shutdown the pm will:
-         * 1)send SHUTDOWN_SERVERS to SM. SM then sends SHUTDOWN_SERVER to the servers and waits for SERVER_STOPPED confirmation back
-         * 2)wait for the SERVERS_SHUTDOWN message from SM
-         * 3)send SHUTDOWN to SM
+         * 1) Send SHUTDOWN to SM
+         * 2) Send SHUTDOWN to each Server
          */
 
-        //Check SM received SHUTDOWN_SERVERS
-        sm.waitForShutdownServers();
-
-        //Check servers received STOP_SERVER from SM
-        assertReadCommand(svr1, ServerManagerToServerProtocolCommand.STOP_SERVER);
-        assertReadCommand(svr2, ServerManagerToServerProtocolCommand.STOP_SERVER);
-
-        //Send SERVER_STOPPED from servers to SM
-        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STOPPED, svr1, svr2);
-
-        //Check PM has stopped and removed the processes
-        pm.pollStoppedProcess(2);  //Only server-one
-        pm.pollRemovedProcess(2);
-
-        //Wait for SERVERS_SHUTDOWN from SM
-        pm.waitForServersShutdown();
-
-        //Check SM received SHUTDOWN
         sm.waitForShutdown();
+        svr1.waitForShutdownCommand();
+        svr2.waitForShutdownCommand();
 
         //Check PM and SM sockets are no longer listening
         waitForManagerToStop(svr1.getSmAddress(), svr1.getSmPort(), 5000);
@@ -144,8 +127,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         final int removeCount = pm.getRemoveCount();
         int stopCount = pm.getStopCount();
         int startCount = pm.getStartCount();
-        for (int i = 0 ; i <= 4 ; i++ ) {
-            if (i < 4) {
+        for (int i = 0 ; i <= 2 ; i++ ) {
+            if (i < 2) {
+                processHandlerFactory.resetLatch("Server:server-two");
                 svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
                 pm.pollStoppedProcess(1);
                 pm.pollStartedProcess(1);
@@ -154,7 +138,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
             } else {
                 svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
-                sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr2);
+                svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
                 Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
                 svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
             }
@@ -191,6 +175,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         int startCount = pm.getStartCount();
         //TODO JBAS-8390 once respawn policies are configurable we can make this a bit less time-consuming
         for (int i = 0 ; i <= 14 ; i++ ) {
+            processHandlerFactory.resetLatch("Server:server-one");
             svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
             pm.pollStoppedProcess(1);
             Assert.assertEquals(++stopCount, pm.getStopCount());
@@ -242,6 +227,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
             if (i < 4) {
                 final MockServerProcess proc = svr2;
                 sm.resetDownLatch();
+                processHandlerFactory.resetLatch("Server:server-two");
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -402,7 +388,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         }).start();
     }
 
-    private TestServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) {
+    private TestServerManagerProcess assertGetServerManager(TestProcessHandlerFactory processHandlerFactory) throws Exception {
         TestProcessHandler handler = processHandlerFactory.getProcessHandler(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME);
         Assert.assertNotNull(handler);
         TestServerManagerProcess mgr = handler.getServerManager();
@@ -410,7 +396,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         return mgr;
     }
 
-    private MockServerProcess assertGetServer(TestProcessHandlerFactory processHandlerFactory, String serverName) {
+    private MockServerProcess assertGetServer(TestProcessHandlerFactory processHandlerFactory, String serverName) throws Exception {
         TestProcessHandler handler = processHandlerFactory.getProcessHandler(serverName);
         Assert.assertNotNull(handler);
         MockServerProcess svr = handler.getMockServerProcess();

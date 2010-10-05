@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.process.ProcessOutputStreamHandler.Master;
-import org.jboss.logging.Logger;
 
 /**
  *
@@ -39,8 +38,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: 1.1 $
  */
 public class ProcessManagerProtocol {
-
-    private static final Logger log = Logger.getLogger(ProcessManagerProtocol.class);
 
     /**
      * Commands sent from the processes to PM
@@ -247,27 +244,6 @@ public class ProcessManagerProtocol {
                 final String name = b.toString();
                 master.removeProcess(name);
                 return status;
-            }
-        },
-
-        /** All the known servers have been shut down (SM->PM). Response to {@link OugoingCommand#SHUTDOWN_SERVERS} */
-        SERVERS_SHUTDOWN {
-            @Override
-            public void sendServersShutdown(final OutputStream output) throws IOException {
-                synchronized (output) {
-                    StreamUtils.writeString(output, this + "\n");
-                    output.flush();
-                }
-            }
-
-            @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final Master master, final String processName, final StringBuilder b) throws IOException {
-                if (processName.equals(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME)) {
-                    master.serversShutdown();
-                } else {
-                    log.warnf("%s received from wrong process %s", IncomingPmCommand.SERVERS_SHUTDOWN, processName);
-                }
-                return currentStatus;
             }
         },
 
@@ -542,24 +518,6 @@ public class ProcessManagerProtocol {
             }
         },
 
-        /** Shutdown all the known servers (PM->SM) */
-        SHUTDOWN_SERVERS {
-            @Override
-            boolean sendShutdownServers(final OutputStream output) throws IOException {
-                synchronized (output) {
-                    final OutputStream stream = output;
-                    StreamUtils.writeString(stream, OutgoingPmCommand.SHUTDOWN_SERVERS + "\n");
-                    stream.flush();
-                    return true;
-                }
-            }
-            @Override
-            public Status handleMessage(final InputStream inputStream, final Status currentStatus, final OutgoingPmCommandHandler handler, final StringBuilder b) throws IOException {
-                handler.handleShutdownServers();
-                return currentStatus;
-            }
-        },
-
         /** Reconnect to the SM (PM->Process). */
         RECONNECT_SERVER_MANAGER {
             @Override
@@ -685,7 +643,6 @@ public class ProcessManagerProtocol {
 
     public interface OutgoingPmCommandHandler{
         void handleShutdown();
-        void handleShutdownServers();
         void handleDown(String serverName);
         void handleReconnectServerManager(String address, String port);
     }

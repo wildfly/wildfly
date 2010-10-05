@@ -98,6 +98,10 @@ public class MockServerProcess {
         return messageHandler.awaitAndReadMessage(timeoutMs);
     }
 
+    public void waitForShutdownCommand() throws InterruptedException {
+        messageHandler.waitForShutdownCommand();
+    }
+
     public InetAddress getPmAddress() {
         return pmAddress;
     }

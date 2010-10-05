@@ -75,7 +75,7 @@ public class ProcessManagerServerCommunicationHandler extends ServerCommunicatio
         private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
         public void run() {
-            final InputStream input = ProcessManagerServerCommunicationHandler.this.input;
+            final InputStream input = ProcessManagerServerCommunicationHandler.this.getInput();
             final StringBuilder b = new StringBuilder();
             try {
                 for (;;) {

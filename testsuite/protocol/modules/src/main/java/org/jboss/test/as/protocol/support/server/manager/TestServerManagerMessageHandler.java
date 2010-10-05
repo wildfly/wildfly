@@ -22,6 +22,7 @@
 package org.jboss.test.as.protocol.support.server.manager;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -39,10 +40,17 @@ import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCo
 public class TestServerManagerMessageHandler extends ServerToServerManagerCommandHandler implements OutgoingPmCommandHandler {
 
     private final BlockingQueue<ServerMessage> messages = new LinkedBlockingQueue<ServerMessage>();
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public void handleShutdown() {
-        messages.add(new ServerMessage(null, "SHUTDOWN".getBytes()));
+        countDownLatch.countDown();
+    }
+
+    public void waitForShutdownCommand() throws InterruptedException {
+        if (!countDownLatch.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Wait for shutdown timed out");
+        }
     }
 
     public ServerMessage awaitAndReadMessage() {
@@ -54,11 +62,6 @@ public class TestServerManagerMessageHandler extends ServerToServerManagerComman
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void handleShutdownServers() {
-        messages.add(new ServerMessage(null, "SHUTDOWN_SERVERS".getBytes()));
     }
 
     @Override

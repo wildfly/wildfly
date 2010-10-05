@@ -22,9 +22,9 @@
 package org.jboss.test.as.protocol.support.server;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
@@ -39,10 +39,10 @@ import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCo
  */
 public class TestServerSideMessageHandler extends ServerManagerToServerCommandHandler implements OutgoingPmCommandHandler{
 
-    final AtomicInteger puts = new AtomicInteger();
-    final AtomicInteger gets = new AtomicInteger();
     final BlockingQueue<byte[]> data = new LinkedBlockingQueue<byte[]>();
     final BlockingQueue<String> reconnectServer = new LinkedBlockingQueue<String>();
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
+
 
     @Override
     public void handleCommand(byte[] message) {
@@ -51,7 +51,13 @@ public class TestServerSideMessageHandler extends ServerManagerToServerCommandHa
 
     @Override
     public void handleShutdown() {
-        System.out.println("Server shutting down");
+        countDownLatch.countDown();
+    }
+
+    public void waitForShutdownCommand() throws InterruptedException {
+        if (!countDownLatch.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Wait for shutdown timed out");
+        }
     }
 
     public byte[] awaitAndReadMessage() {
@@ -92,10 +98,4 @@ public class TestServerSideMessageHandler extends ServerManagerToServerCommandHa
     @Override
     public void handleDown(String serverName) {
     }
-
-    @Override
-    public void handleShutdownServers() {
-    }
-
-
 }
