@@ -26,11 +26,12 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -40,8 +41,8 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     private static final long serialVersionUID = 4097067542390229861L;
 
-    private RecoveryEnvironmentElement recoveryEnvironmentElement;
-    private CoreEnvironmentElement coreEnvironmentElement;
+    private final RecoveryEnvironmentElement recoveryEnvironmentElement = new RecoveryEnvironmentElement();
+    private final CoreEnvironmentElement coreEnvironmentElement = new CoreEnvironmentElement();
     private CoordinatorEnvironmentElement coordinatorEnvironmentElement;
     private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
 
@@ -72,16 +73,8 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         return recoveryEnvironmentElement;
     }
 
-    public void setRecoveryEnvironmentElement(RecoveryEnvironmentElement recoveryEnvironmentElement) {
-        this.recoveryEnvironmentElement = recoveryEnvironmentElement;
-    }
-
     public CoreEnvironmentElement getCoreEnvironmentElement() {
         return coreEnvironmentElement;
-    }
-
-    public void setCoreEnvironmentElement(CoreEnvironmentElement coreEnvironmentElement) {
-        this.coreEnvironmentElement = coreEnvironmentElement;
     }
 
     public CoordinatorEnvironmentElement getCoordinatorEnvironmentElement() {
@@ -102,19 +95,24 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     /** {@inheritDoc} */
     protected void getUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
-        // TODO Auto-generated method stub
     }
 
     /** {@inheritDoc} */
     protected boolean isEmpty() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
-    protected AbstractSubsystemAdd<TransactionsSubsystemElement> getAdd() {
-        return null;
+    protected TransactionSubsystemAdd getAdd() {
+        final TransactionSubsystemAdd add = new TransactionSubsystemAdd();
+        add.setBindingName(coreEnvironmentElement.getBindingRef());
+        return add;
     }
 
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+        final ServiceContainer container = updateContext.getServiceContainer();
+        final ServiceController<?> tmController = container.getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+        tmController.setMode(ServiceController.Mode.REMOVE);
+        final ServiceController<?> xaController = container.getService(TxnServices.JBOSS_TXN_XA_TERMINATOR);
+        xaController.setMode(ServiceController.Mode.REMOVE);
     }
 }

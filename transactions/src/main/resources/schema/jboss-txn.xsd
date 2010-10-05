@@ -38,12 +38,12 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-         <xs:sequence>
-            <xs:element name="recovery-environment" type="recovery-environment" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="core-environment" type="core-environment"  minOccurs="1" maxOccurs="1"/>
-            <xs:element name="coordinator-environment" type="coordinator-environment"  minOccurs="0" maxOccurs="1"/>
-             <xs:element name="object-store" type="object-store"  minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
+        <xs:all>
+            <xs:element name="recovery-environment" type="recovery-environment"/>
+            <xs:element name="core-environment" type="core-environment"/>
+            <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0"/>
+            <xs:element name="object-store" type="object-store" minOccurs="0"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="recovery-environment">

@@ -22,13 +22,17 @@
 
 package org.jboss.as.txn;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -39,7 +43,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-final class TransactionSubsystemElementParser implements XMLStreamConstants, XMLElementReader<List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>>> {
+final class TransactionSubsystemElementParser implements XMLStreamConstants, XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<TransactionsSubsystemElement>>> {
 
     private static final TransactionSubsystemElementParser INSTANCE = new TransactionSubsystemElementParser();
 
@@ -52,38 +56,42 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
     }
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> updates)
-            throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<TransactionsSubsystemElement>> result) throws XMLStreamException {
+
+        List<AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<TransactionsSubsystemElement,?>>();
+
         // no attributes
         if (reader.getAttributeCount() > 0) {
             throw ParseUtils.unexpectedAttribute(reader, 0);
         }
-
-        RecoveryEnvironmentElement recoveryEnvironmentElement = null;
-        CoreEnvironmentElement coreEnvironmentElement = null;
-        CoordinatorEnvironmentElement coordinatorEnvironmentElement = null;
-        ObjectStoreEnvironmentElement objectStoreEnvironmentElement = null;
+        final TransactionSubsystemAdd add = new TransactionSubsystemAdd();
 
         // elements
+        final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case TRANSACTIONS_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
+                    required.remove(element);
+                    if (! encountered.add(element)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     switch (element) {
                         case RECOVERY_ENVIRONMENT: {
-                            recoveryEnvironmentElement = parseRecoveryEnvironmentElement(reader);
+                            parseRecoveryEnvironmentElement(reader, add);
                             break;
                         }
                         case CORE_ENVIRONMENT: {
-                            coreEnvironmentElement = parseCoreEnvironmentElement(reader);
+                            parseCoreEnvironmentElement(reader, add);
                             break;
                         }
                         case COORDINATOR_ENVIRONMENT: {
-                            coordinatorEnvironmentElement = parseCoordinatorEnvironmentElement(reader);
+                            parseCoordinatorEnvironmentElement(reader, add);
                             break;
                         }
                         case OBJECT_STORE: {
-                            objectStoreEnvironmentElement = parseObjectStoreEnvironmentElement(reader);
+                            parseObjectStoreEnvironmentElement(reader, add);
                             break;
                         }
                         default: {
@@ -97,30 +105,14 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
                 }
             }
         }
-        if(recoveryEnvironmentElement == null) {
-            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.RECOVERY_ENVIRONMENT.getLocalName()));
-        }
-        if(coreEnvironmentElement == null) {
-            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.CORE_ENVIRONMENT.getLocalName()));
-        }
-        if(coordinatorEnvironmentElement == null) {
-            coordinatorEnvironmentElement = new CoordinatorEnvironmentElement();
-        }
-        if(objectStoreEnvironmentElement == null) {
-            objectStoreEnvironmentElement = new ObjectStoreEnvironmentElement();
+        if (! required.isEmpty()) {
+            throw ParseUtils.missingRequiredElement(reader, required);
         }
 
-        final TransactionSubsystemElementUpdate update = new TransactionSubsystemElementUpdate();
-        update.setRecoveryEnvironmentElement(recoveryEnvironmentElement);
-        update.setCoreEnvironmentElement(coreEnvironmentElement);
-        update.setCoordinatorEnvironmentElement(coordinatorEnvironmentElement);
-        update.setObjectStoreEnvironmentElement(objectStoreEnvironmentElement);
-        // Add the transtaction subsystem update
-        updates.add(update);
+        result.setResult(new ExtensionContext.SubsystemConfiguration<TransactionsSubsystemElement>(add, updates));
     }
 
-    RecoveryEnvironmentElement parseRecoveryEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final RecoveryEnvironmentElement element = new RecoveryEnvironmentElement();
+    void parseRecoveryEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -130,57 +122,58 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case BINDING:
-                        element.setBindingRef(value);
+                        add.setRecoveryBindingName(value);
                         break;
                     case STATUS_BINDING:
-                        element.setStatusBindingRef(value);
+                        add.setRecoveryStatusBindingName(value);
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
-        if(element.getBindingRef() == null) {
+        if(add.getBindingName() == null) {
             ParseUtils.missingRequired(reader, Collections.singleton(Attribute.BINDING));
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
-        return element;
     }
 
-    CoreEnvironmentElement parseCoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    CoreEnvironmentElement parseCoreEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final CoreEnvironmentElement element = new CoreEnvironmentElement();
         final int count = reader.getAttributeCount();
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.BINDING);
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
             if (reader.getAttributeNamespace(i) != null) {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
                 switch (attribute) {
                     case BINDING:
-                        element.setBindingRef(value);
+                        add.setBindingName(value);
                         break;
                     case NODE_IDENTIFIER:
-                        element.setNodeIdentifier(value);
+                        add.setNodeIdentifier(value);
                         break;
                     case SOCKET_PROCESS_ID_MAX_PORTS:
-                        element.setMaxPorts(Integer.parseInt(value));
+                        add.setMaxPorts(Integer.parseInt(value));
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }
-        if(element.getBindingRef() == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.BINDING));
+        if (! required.isEmpty()) {
+            ParseUtils.missingRequired(reader, required);
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
         return element;
     }
 
-    CoordinatorEnvironmentElement parseCoordinatorEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    CoordinatorEnvironmentElement parseCoordinatorEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final CoordinatorEnvironmentElement element = new CoordinatorEnvironmentElement();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -206,7 +199,7 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
         return element;
     }
 
-    ObjectStoreEnvironmentElement parseObjectStoreEnvironmentElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    ObjectStoreEnvironmentElement parseObjectStoreEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final ObjectStoreEnvironmentElement element = new ObjectStoreEnvironmentElement();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {

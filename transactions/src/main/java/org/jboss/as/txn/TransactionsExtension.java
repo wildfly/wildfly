@@ -24,7 +24,6 @@ package org.jboss.as.txn;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.SubsystemFactory;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
@@ -33,12 +32,6 @@ import org.jboss.msc.service.ServiceActivatorContext;
 public final class TransactionsExtension implements Extension {
 
     public static final String NAMESPACE = "urn:jboss:domain:transactions:1.0";
-
-    static final SubsystemFactory<TransactionsSubsystemElement> FACTORY = new SubsystemFactory<TransactionsSubsystemElement>() {
-        public TransactionsSubsystemElement createSubsystemElement() {
-            return new TransactionsSubsystemElement();
-        }
-    };
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
