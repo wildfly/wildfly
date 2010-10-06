@@ -33,6 +33,8 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.jboss.as.server.manager.ServerManagerEnvironment;
+import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
+import org.jboss.test.as.protocol.support.server.manager.ServerManagerNoopExiter;
 
 /**
  *
@@ -40,6 +42,11 @@ import org.jboss.as.server.manager.ServerManagerEnvironment;
  * @version $Revision: 1.1 $
  */
 public class AbstractProtocolTestModule {
+
+    static {
+        org.jboss.as.server.manager.SystemExiter.initialize(new ServerManagerNoopExiter());
+        org.jboss.as.server.SystemExiter.initialize(new ServerNoopExiter());
+    }
 
     Set<String> setProperties = new HashSet<String>();
 
