@@ -23,8 +23,8 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     private String javaHome;
     private String heapSize;
     private String maxHeap;
-    private PropertiesElement environmentVariables;
-    private PropertiesElement systemProperties;
+    private PropertiesElement environmentVariables = new PropertiesElement(Element.VARIABLE, true);
+    private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     /**
      */

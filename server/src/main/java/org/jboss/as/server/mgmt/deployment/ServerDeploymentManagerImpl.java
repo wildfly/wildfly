@@ -56,9 +56,9 @@ import org.jboss.as.deployment.client.impl.server.DeploymentPlanResultImpl;
 import org.jboss.as.deployment.client.impl.server.InitialDeploymentPlanBuilderFactory;
 import org.jboss.as.model.ServerGroupDeploymentStartStopUpdate;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.ServerModelDeploymentAddUpdate;
+import org.jboss.as.model.ServerModelDeploymentAdd;
 import org.jboss.as.model.ServerModelDeploymentFullReplaceUpdate;
-import org.jboss.as.model.ServerModelDeploymentRemoveUpdate;
+import org.jboss.as.model.ServerModelDeploymentRemove;
 import org.jboss.as.model.ServerModelDeploymentReplaceUpdate;
 import org.jboss.as.model.ServerModelDeploymentStartStopUpdate;
 import org.jboss.as.model.UpdateResultHandler;
@@ -296,11 +296,11 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
 
         switch (action.getType()) {
             case ADD: {
-                controller.addServerModelUpdate(new ServerModelDeploymentAddUpdate(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash(), false), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentAdd(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash(), false), resultHandler, action.getId());
                 break;
             }
             case REMOVE: {
-                controller.addServerModelUpdate(new ServerModelDeploymentRemoveUpdate(action.getDeploymentUnitUniqueName(), false), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentRemove(action.getDeploymentUnitUniqueName(), false), resultHandler, action.getId());
                 break;
             }
             case DEPLOY: {

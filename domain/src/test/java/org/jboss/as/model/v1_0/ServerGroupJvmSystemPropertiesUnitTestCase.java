@@ -20,40 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.model.v1_0;
+
+import org.jboss.as.model.Namespace;
+import org.jboss.as.model.base.ServerGroupJvmSystemPropertiesTestBase;
 
 /**
- * @author Emanuel Muckenhuber
+ * Test JvmElement environment variables PropertiesElement with {@link Namespace#DOMAIN_1_0}.
+ *
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class ServerGroupJvmSystemPropertiesUnitTestCase extends ServerGroupJvmSystemPropertiesTestBase {
 
-    private final String name;
-    private final String profile;
-
-    public ServerGroupAdd(final String name, final String profile) {
-        this.name = name;
-        this.profile = profile;
+    /**
+     * @param name
+     */
+    public ServerGroupJvmSystemPropertiesUnitTestCase(String name) {
+        super(name);
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        if (! element.addServerGroup(name, profile)) {
-            throw new UpdateFailedException("Duplicate server group " + name);
-        }
+    protected String getTargetNamespace() {
+        return Namespace.DOMAIN_1_0.getUriString();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
+    protected String getTargetNamespaceLocation() {
+        return "jboss_7_0.xsd";
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return null;
-    }
 }

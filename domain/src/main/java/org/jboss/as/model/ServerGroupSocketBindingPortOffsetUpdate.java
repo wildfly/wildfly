@@ -23,37 +23,42 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * Update to add a {@link JvmElement} to a {@link ServerGroupElement}.
+ *
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class ServerGroupSocketBindingPortOffsetUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
 
-    private final String name;
-    private final String profile;
+    private static final long serialVersionUID = -5766717739615737224L;
 
-    public ServerGroupAdd(final String name, final String profile) {
-        this.name = name;
-        this.profile = profile;
+    private final int offset;
+
+    public ServerGroupSocketBindingPortOffsetUpdate(final int offset) {
+        if (offset < 0)
+            throw new IllegalArgumentException("Offset " + offset + " is less than zero");
+        this.offset = offset;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        if (! element.addServerGroup(name, profile)) {
-            throw new UpdateFailedException("Duplicate server group " + name);
-        }
+    public ServerGroupSocketBindingPortOffsetUpdate getCompensatingUpdate(ServerGroupElement original) {
+        return new ServerGroupSocketBindingPortOffsetUpdate(original.getSocketBindingPortOffset());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
-    }
-
-    /** {@inheritDoc} */
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // Socket binding changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
         return null;
     }
+
+    @Override
+    protected void applyUpdate(ServerGroupElement element) throws UpdateFailedException {
+        element.setSocketBindingPortOffset(offset);
+    }
+
+    @Override
+    public Class<ServerGroupElement> getModelElementType() {
+        return ServerGroupElement.class;
+    }
+
 }

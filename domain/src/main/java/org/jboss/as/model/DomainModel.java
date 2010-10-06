@@ -280,13 +280,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         return pe != null;
     }
 
-    ServerGroupElement addServerGroup(String name, String profile) {
+    boolean addServerGroup(String name, String profile) {
         if(serverGroups.containsKey(name)) {
-            return null;
+            return false;
         }
         final ServerGroupElement group = new ServerGroupElement(name, profile);
         serverGroups.put(name, group);
-        return group;
+        return true;
     }
 
     boolean removeServerGroup(final String name) {

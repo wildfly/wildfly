@@ -23,37 +23,40 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * Updates a {@link JvmElement}'s {@link JvmElement#getHeapSize() heap size}.
+ *
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class JvmHeapUpdate extends AbstractModelUpdate<JvmElement, Void> {
 
-    private final String name;
-    private final String profile;
+    private static final long serialVersionUID = -3406895728835596414L;
 
-    public ServerGroupAdd(final String name, final String profile) {
-        this.name = name;
-        this.profile = profile;
+    private final String size;
+
+    public JvmHeapUpdate(final String size) {
+        this.size = size;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        if (! element.addServerGroup(name, profile)) {
-            throw new UpdateFailedException("Duplicate server group " + name);
-        }
+    public JvmHeapUpdate getCompensatingUpdate(JvmElement original) {
+        return new JvmHeapUpdate(original.getHeapSize());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
-    }
-
-    /** {@inheritDoc} */
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // JvmElement changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
         return null;
     }
+
+    @Override
+    protected void applyUpdate(JvmElement element) throws UpdateFailedException {
+        element.setHeapSize(size);
+    }
+
+    @Override
+    public Class<JvmElement> getModelElementType() {
+        return JvmElement.class;
+    }
+
 }

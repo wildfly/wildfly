@@ -124,7 +124,7 @@ public final class ServerFactory {
 
         // Merge deployments
         for (ServerGroupDeploymentElement element : serverGroup.getDeployments()) {
-            final ServerModelDeploymentAddUpdate add = new ServerModelDeploymentAddUpdate(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash(), element.isStart());
+            final ServerModelDeploymentAdd add = new ServerModelDeploymentAdd(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash(), element.isStart());
             list.add(add);
         }
 

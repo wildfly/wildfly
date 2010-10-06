@@ -20,40 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model.v1_0;
-
-import org.jboss.as.model.Namespace;
-import org.jboss.as.model.base.PropertiesElementTestBase;
+package org.jboss.as.model;
 
 /**
- * Test PropertiesElement with {@link Namespace#DOMAIN_1_0}.
+ * Updates a {@link JvmElement}'s {@link JvmElement#getJavaHome() java home}.
  *
  * @author Brian Stansberry
  */
-public class PropertiesElementUnitTestCase extends PropertiesElementTestBase {
+public class JvmHomeUpdate extends AbstractModelUpdate<JvmElement, Void> {
 
-    /**
-     * @param name
-     */
-    public PropertiesElementUnitTestCase(String name) {
-        super(name);
-        // TODO Auto-generated constructor stub
+    private static final long serialVersionUID = -3406895728835596414L;
+
+    private final String javaHome;
+
+    public JvmHomeUpdate(final String javaHome) {
+        this.javaHome = javaHome;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.base.DomainModelElementTestBase#getTargetNamespace()
-     */
     @Override
-    protected String getTargetNamespace() {
-        return Namespace.DOMAIN_1_0.getUriString();
+    public JvmHomeUpdate getCompensatingUpdate(JvmElement original) {
+        return new JvmHomeUpdate(original.getJavaHome());
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.model.base.DomainModelElementTestBase#getTargetNamespaceLocation()
-     */
     @Override
-    protected String getTargetNamespaceLocation() {
-        return "jboss_7_0.xsd";
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // JvmElement changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
+        return null;
+    }
+
+    @Override
+    protected void applyUpdate(JvmElement element) throws UpdateFailedException {
+        element.setJavaHome(javaHome);
+    }
+
+    @Override
+    public Class<JvmElement> getModelElementType() {
+        return JvmElement.class;
     }
 
 }

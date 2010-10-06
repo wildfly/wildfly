@@ -30,13 +30,13 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
     private static final long serialVersionUID = -3612085673646053177L;
 
     private final String deploymentName;
     private final ServerDeploymentStartStopHandler startStopHandler;
 
-    public ServerModelDeploymentRemoveUpdate(final String deploymentName, boolean undeploy) {
+    public ServerModelDeploymentRemove(final String deploymentName, boolean undeploy) {
         this.deploymentName = deploymentName;
         if (undeploy) {
             startStopHandler = new ServerDeploymentStartStopHandler();
@@ -68,11 +68,11 @@ public class ServerModelDeploymentRemoveUpdate extends AbstractServerModelUpdate
     }
 
     @Override
-    public ServerModelDeploymentAddUpdate getCompensatingUpdate(ServerModel original) {
+    public ServerModelDeploymentAdd getCompensatingUpdate(ServerModel original) {
         ServerGroupDeploymentElement toRemove = original.getDeployment(deploymentName);
         if (toRemove == null) {
             return null;
         }
-        return new ServerModelDeploymentAddUpdate(toRemove.getUniqueName(), toRemove.getRuntimeName(), toRemove.getSha1Hash(), startStopHandler != null);
+        return new ServerModelDeploymentAdd(toRemove.getUniqueName(), toRemove.getRuntimeName(), toRemove.getSha1Hash(), startStopHandler != null);
     }
 }

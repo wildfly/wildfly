@@ -73,7 +73,7 @@ public class MockSubsystemElement extends AbstractSubsystemElement<MockSubsystem
     }
 
     @Override
-    protected AbstractSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<MockSubsystemElement> getAdd() {
         return null;
     }
 

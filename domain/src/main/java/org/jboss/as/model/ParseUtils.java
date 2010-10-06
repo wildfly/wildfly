@@ -153,6 +153,17 @@ public final class ParseUtils {
     }
 
     /**
+     * Get an exception reporting that an attribute of a given name has already been declared in this scope.
+     *
+     * @param reader the stream reader
+     * @param name the name that was redeclared
+     * @return the exception
+     */
+    public static XMLStreamException duplicateAttribute(final XMLExtendedStreamReader reader, final String name) {
+        return new XMLStreamException("An attribute named '" + name + "' has already been declared", reader.getLocation());
+    }
+
+    /**
      * Get an exception reporting that an element of a given type and name has already been declared in this scope.
      *
      * @param reader the stream reader

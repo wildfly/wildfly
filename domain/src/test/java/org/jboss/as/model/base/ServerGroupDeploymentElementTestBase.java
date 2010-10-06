@@ -22,19 +22,18 @@
 
 package org.jboss.as.model.base;
 
-import java.io.StringReader;
 import java.util.Arrays;
 
-import javax.xml.namespace.QName;
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.ParseUtils;
 import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.as.model.base.util.MockRootElement;
-import org.jboss.as.model.base.util.MockRootElementParser;
-import org.jboss.as.model.base.util.TestXMLElementReader;
-import org.jboss.staxmapper.XMLMapper;
+import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.base.util.ModelParsingSupport;
 
 /**
  * Base class for unit tests of {@link ServerGroupDeploymentElement}.
@@ -52,21 +51,9 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
         super(name);
     }
 
-    @Override
-    protected XMLMapper createXMLMapper() throws Exception{
-
-        XMLMapper mapper = XMLMapper.Factory.create();
-        MockRootElementParser.registerXMLElementReaders(mapper, getTargetNamespace());
-        mapper.registerRootElement(new QName(getTargetNamespace(), Element.DEPLOYMENT.getLocalName()),
-                new TestXMLElementReader<ServerGroupDeploymentElement>(ServerGroupDeploymentElement.class));
-        return mapper;
-    }
-
     public void testSimpleParse() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ServerGroupDeploymentElement testee = (ServerGroupDeploymentElement) root.getChild(getTargetNamespace(), Element.DEPLOYMENT.getLocalName());
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"/>");
+        ServerGroupDeploymentElement testee = getTestDeployment(fullcontent);
         assertEquals("my-war.ear", testee.getRuntimeName());
         assertTrue(Arrays.equals(SHA1_HASH, testee.getSha1Hash()));
         assertEquals("my-war.ear_v1", testee.getUniqueName());
@@ -74,10 +61,8 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testFullParse() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" start=\"false\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ServerGroupDeploymentElement testee = (ServerGroupDeploymentElement) root.getChild(getTargetNamespace(), Element.DEPLOYMENT.getLocalName());
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" start=\"false\"/>");
+        ServerGroupDeploymentElement testee = getTestDeployment(fullcontent);
         assertEquals("my-war.ear", testee.getRuntimeName());
         assertTrue(Arrays.equals(SHA1_HASH, testee.getSha1Hash()));
         assertEquals("my-war.ear_v1", testee.getUniqueName());
@@ -85,11 +70,10 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testNoUniqueNameParse() throws Exception {
-        String testContent = "<deployment runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing 'name' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -98,11 +82,10 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testNoRuntimeNameParse() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear_v1\" sha1=\"22cfd207b9b90e0014a4\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear_v1\" sha1=\"22cfd207b9b90e0014a4\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing 'name' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -111,11 +94,10 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testNoSha1Parse() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing 'sha1' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -124,11 +106,10 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testBadSha1Parse() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear\" runtime-name=\"my-war.ear\" sha1=\"xxx\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear\" runtime-name=\"my-war.ear\" sha1=\"xxx\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Missing 'name' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -137,22 +118,20 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testBadAttributeParse() throws Exception {
-        String testContent = "<deployment allowed=\"false\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment allowed=\"false\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
             // TODO validate the location stuff in the exception message
         }
 
-        testContent = "<deployment name=\"my-war.ear\"  runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" allowed=\"false\"/>";
-        fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        fullcontent = getFullContent("<deployment name=\"my-war.ear\"  runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" allowed=\"false\"/>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous 'bogus' attribute did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -161,11 +140,10 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
     }
 
     public void testBadChildElement() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear\"  runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"><bogus/></deployment>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear\"  runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\"><bogus/></deployment>");
 
         try {
-            MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
+            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
             fail("Extraneous child element did not cause parsing failure");
         }
         catch (XMLStreamException good) {
@@ -175,10 +153,8 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
 
     @Override
     public void testSerializationDeserialization() throws Exception {
-        String testContent = "<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" start=\"false\"/>";
-        String fullcontent = MockRootElement.getXmlContent(getTargetNamespace(), getTargetNamespaceLocation(), false, testContent);
-        MockRootElement root = MockRootElementParser.parseRootElement(getXMLMapper(), new StringReader(fullcontent));
-        ServerGroupDeploymentElement testee = (ServerGroupDeploymentElement) root.getChild(getTargetNamespace(), Element.DEPLOYMENT.getLocalName());
+        String fullcontent = getFullContent("<deployment name=\"my-war.ear_v1\" runtime-name=\"my-war.ear\" sha1=\"22cfd207b9b90e0014a4\" start=\"false\"/>");
+        ServerGroupDeploymentElement testee = getTestDeployment(fullcontent);
 
         byte[] bytes = serialize(testee);
         ServerGroupDeploymentElement testee1 = deserialize(bytes, ServerGroupDeploymentElement.class);
@@ -187,6 +163,23 @@ public abstract class ServerGroupDeploymentElementTestBase extends DomainModelEl
         assertTrue(Arrays.equals(testee.getSha1Hash(), testee1.getSha1Hash()));
         assertEquals(testee.getUniqueName(), testee1.getUniqueName());
         assertEquals(testee.isStart(), testee1.isStart());
+    }
+
+    private String getFullContent(String testContent) {
+        testContent = ModelParsingSupport.wrap(Element.DEPLOYMENTS.getLocalName(), testContent);
+        testContent = ModelParsingSupport.wrapServerGroup(testContent);
+        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+        return fullcontent;
+    }
+
+    private ServerGroupDeploymentElement getTestDeployment(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
+            UpdateFailedException {
+        DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
+        ServerGroupElement sge = root.getServerGroup("test");
+        assertNotNull(sge);
+        ServerGroupDeploymentElement testee = sge.getDeployment("my-war.ear_v1");
+        assertNotNull(testee);
+        return testee;
     }
 
 }

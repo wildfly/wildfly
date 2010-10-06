@@ -30,7 +30,6 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -45,9 +44,10 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
     private final String name;
     private final String profile;
     private final NavigableMap<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
-    private SocketBindingGroupRefElement bindingGroup;
+    private String bindingGroup;
+    private int portOffset = 0;
     private JvmElement jvm;
-    private PropertiesElement systemProperties;
+    private final PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     /**
      * Construct a new instance.
@@ -105,20 +105,26 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
      * assignment for this server group.
      *
      * @return the socket binding group reference, or <code>null</code>
+     * @deprecated use {@link #getSocketBindingGroupName()}
      */
-    public SocketBindingGroupRefElement getSocketBindingGroup() {
-        return bindingGroup;
+    @Deprecated
+    public org.jboss.as.model.socket.SocketBindingGroupRefElement getSocketBindingGroup() {
+        return bindingGroup == null ? null : new org.jboss.as.model.socket.SocketBindingGroupRefElement(bindingGroup, portOffset);
     }
 
     /**
-     * Sets the default
+     * Gets the default
      * {@link DomainModel#getSocketBindingGroup(String) domain-level socket binding group}
      * assignment for this server group.
      *
-     * param ref the socket binding group reference, or <code>null</code>
+     * @return the socket binding group reference, or <code>null</code>
      */
-    void setSocketBindingGroupRefElement(SocketBindingGroupRefElement ref) {
-        this.bindingGroup = ref;
+    public String getSocketBindingGroupName() {
+        return bindingGroup;
+    }
+
+    public int getSocketBindingPortOffset() {
+        return portOffset;
     }
 
     /**
@@ -182,8 +188,11 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         }
 
         if (bindingGroup != null) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            bindingGroup.writeContent(streamWriter);
+            streamWriter.writeEmptyElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            streamWriter.writeAttribute(Attribute.REF.getLocalName(), bindingGroup);
+            if (portOffset != 0) {
+                streamWriter.writeAttribute(Attribute.PORT_OFFSET.getLocalName(), String.valueOf(portOffset));
+            }
         }
 
         synchronized (deploymentMappings) {
@@ -204,4 +213,37 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
         streamWriter.writeEndElement();
     }
+
+    boolean addJvm(String jvmName) {
+        if (jvm != null)
+            return false;
+        jvm = new JvmElement(jvmName);
+        return true;
+    }
+
+    void removeJvm() {
+        this.jvm = null;
+    }
+
+    void setSocketBindingGroupName(String name) {
+        this.bindingGroup = name;
+    }
+
+    void setSocketBindingPortOffset(int offset) {
+        if (offset < 0)
+            throw new IllegalArgumentException("Offset " + offset + " is less than zero");
+        this.portOffset = offset;
+    }
+
+    boolean addDeployment(String uniqueName, String runtimeName, byte[] hash, boolean start) {
+        if (deploymentMappings.containsKey(uniqueName))
+            return false;
+        deploymentMappings.put(uniqueName, new ServerGroupDeploymentElement(uniqueName, runtimeName, hash, start));
+        return true;
+    }
+
+    boolean removeDeployment(final String uniqueName) {
+        return deploymentMappings.remove(uniqueName) != null;
+    }
+
 }

@@ -20,20 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model.base.util;
+package org.jboss.as.model.v1_0;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.model.AbstractModelElement;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.as.model.Namespace;
+import org.jboss.as.model.base.DomainSystemPropertiesElementTestBase;
 
 /**
- * Callback called from {@link TestXMLElementReader} when it needs to create
- * an element.
+ * Test PropertiesElement for system properties directly under <domain/>
+ * with {@link Namespace#DOMAIN_1_0}.
  *
  * @author Brian Stansberry
  */
-public interface ReadElementCallback<T extends AbstractModelElement<T>> {
+public class DomainSystemPropertiesElementUnitTestCase extends DomainSystemPropertiesElementTestBase {
 
-    T readElement(XMLExtendedStreamReader reader) throws XMLStreamException;
+    /**
+     * @param name
+     */
+    public DomainSystemPropertiesElementUnitTestCase(String name) {
+        super(name);
+    }
+
+    @Override
+    protected String getTargetNamespace() {
+        return Namespace.DOMAIN_1_0.getUriString();
+    }
+
+    @Override
+    protected String getTargetNamespaceLocation() {
+        return "jboss_7_0.xsd";
+    }
+
 }

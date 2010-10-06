@@ -48,9 +48,6 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
-        if (value == null) {
-            throw new IllegalArgumentException("value is null");
-        }
         this.name = name;
         this.value = value;
     }

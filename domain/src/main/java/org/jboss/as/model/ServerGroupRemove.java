@@ -37,6 +37,7 @@ public class ServerGroupRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         if(element.removeServerGroup(serverGroupName)) {
             throw new UpdateFailedException(String.format("server-group (%s) does not exist.", serverGroupName));
@@ -44,14 +45,18 @@ public class ServerGroupRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         final ServerGroupElement group = original.getServerGroup(serverGroupName);
-        return new ServerGroupAdd(group.getName(), group.getProfileName(), group.getJvm(), group.getSocketBindingGroup());
+        return new ServerGroupAdd(group.getName(), group.getProfileName());
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
+        // FIXME -- figure out impact of removing server group on ServerModel
+        // Basically should be none, but their should be validation that
+        // group isn't used on a server before this update is applied
         return null;
     }
 

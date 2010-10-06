@@ -18,6 +18,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  */
+@Deprecated
 public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBindingGroupRefElement> {
 
     private static final long serialVersionUID = 4250004070765682113L;
@@ -27,8 +28,9 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
 
     /**
      */
-    public SocketBindingGroupRefElement(final String ref) {
-        this.ref  =ref;
+    public SocketBindingGroupRefElement(final String ref, final int portOffset) {
+        this.ref = ref;
+        this.portOffset = portOffset;
     }
 
     /**

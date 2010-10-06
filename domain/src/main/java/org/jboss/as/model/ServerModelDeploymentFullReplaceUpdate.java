@@ -33,16 +33,16 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     private static final long serialVersionUID = 5773083013951607950L;
 //    private static final Logger log = Logger.getLogger("org.jboss.as.model");
 
-    private final ServerModelDeploymentAddUpdate addUpdate;
-    private final ServerModelDeploymentRemoveUpdate removeUpdate;
+    private final ServerModelDeploymentAdd addUpdate;
+    private final ServerModelDeploymentRemove removeUpdate;
 
     public ServerModelDeploymentFullReplaceUpdate(final String deploymentUniqueName, final String deploymentFileName, byte[] hash) {
-        this(new ServerModelDeploymentAddUpdate(deploymentUniqueName, deploymentFileName, hash, true),
-             new ServerModelDeploymentRemoveUpdate(deploymentUniqueName, true));
+        this(new ServerModelDeploymentAdd(deploymentUniqueName, deploymentFileName, hash, true),
+             new ServerModelDeploymentRemove(deploymentUniqueName, true));
     }
 
-    private ServerModelDeploymentFullReplaceUpdate(ServerModelDeploymentAddUpdate add,
-                                                   ServerModelDeploymentRemoveUpdate remove) {
+    private ServerModelDeploymentFullReplaceUpdate(ServerModelDeploymentAdd add,
+                                                   ServerModelDeploymentRemove remove) {
         addUpdate = add;
         removeUpdate = remove;
     }

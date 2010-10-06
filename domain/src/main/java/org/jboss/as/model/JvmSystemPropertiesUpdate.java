@@ -23,37 +23,40 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * Updates a {@link JvmElement}'s {@link JvmElement#getEnvironmentVariables() environment variables}.
+ *
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class JvmSystemPropertiesUpdate extends AbstractModelUpdate<JvmElement, Void> {
 
-    private final String name;
-    private final String profile;
+    private static final long serialVersionUID = -3406895728835596414L;
 
-    public ServerGroupAdd(final String name, final String profile) {
-        this.name = name;
-        this.profile = profile;
+    private final AbstractPropertyUpdate propertyUpdate;
+
+    public JvmSystemPropertiesUpdate(final AbstractPropertyUpdate propertyUpdate) {
+        this.propertyUpdate = propertyUpdate;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        if (! element.addServerGroup(name, profile)) {
-            throw new UpdateFailedException("Duplicate server group " + name);
-        }
+    public JvmSystemPropertiesUpdate getCompensatingUpdate(JvmElement original) {
+        return new JvmSystemPropertiesUpdate(propertyUpdate.getCompensatingUpdate(original.getEnvironmentVariables()));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
-    }
-
-    /** {@inheritDoc} */
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // JvmElement changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
         return null;
     }
+
+    @Override
+    protected void applyUpdate(JvmElement element) throws UpdateFailedException {
+        propertyUpdate.applyUpdate(element.getSystemProperties());
+    }
+
+    @Override
+    public Class<JvmElement> getModelElementType() {
+        return JvmElement.class;
+    }
+
 }

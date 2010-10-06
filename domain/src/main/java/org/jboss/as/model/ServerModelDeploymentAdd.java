@@ -32,7 +32,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
 
     private static final long serialVersionUID = -5804608026829597800L;
 
@@ -41,7 +41,7 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
     private final byte[] deploymentHash;
     private final ServerDeploymentStartStopHandler startStopHandler;
 
-    public ServerModelDeploymentAddUpdate(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] deploymentHash,
+    public ServerModelDeploymentAdd(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] deploymentHash,
             boolean deploy) {
         if (deploymentUniqueName == null)
             throw new IllegalArgumentException("deploymentUniqueName is null");
@@ -61,8 +61,8 @@ public class ServerModelDeploymentAddUpdate extends AbstractServerModelUpdate<Se
     }
 
     @Override
-    public ServerModelDeploymentRemoveUpdate getCompensatingUpdate(ServerModel original) {
-        return new ServerModelDeploymentRemoveUpdate(deploymentUniqueName, startStopHandler != null);
+    public ServerModelDeploymentRemove getCompensatingUpdate(ServerModel original) {
+        return new ServerModelDeploymentRemove(deploymentUniqueName, startStopHandler != null);
     }
 
     @Override

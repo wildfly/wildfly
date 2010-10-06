@@ -23,37 +23,42 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * Update to add a {@link JvmElement} to a {@link ServerGroupElement}.
+ *
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
-    private static final long serialVersionUID = 8526537198264820276L;
+public class ServerGroupSocketBindingGroupUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
+
+    private static final long serialVersionUID = -5766717739615737224L;
 
     private final String name;
-    private final String profile;
 
-    public ServerGroupAdd(final String name, final String profile) {
+    public ServerGroupSocketBindingGroupUpdate(final String name) {
+        if (name == null)
+            throw new IllegalArgumentException("name is null");
         this.name = name;
-        this.profile = profile;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        if (! element.addServerGroup(name, profile)) {
-            throw new UpdateFailedException("Duplicate server group " + name);
-        }
+    public ServerGroupSocketBindingGroupUpdate getCompensatingUpdate(ServerGroupElement original) {
+        return new ServerGroupSocketBindingGroupUpdate(original.getSocketBindingGroupName());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
-    }
-
-    /** {@inheritDoc} */
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // Socket binding changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
         return null;
     }
+
+    @Override
+    protected void applyUpdate(ServerGroupElement element) throws UpdateFailedException {
+        element.setSocketBindingGroupName(name);
+    }
+
+    @Override
+    public Class<ServerGroupElement> getModelElementType() {
+        return ServerGroupElement.class;
+    }
+
 }

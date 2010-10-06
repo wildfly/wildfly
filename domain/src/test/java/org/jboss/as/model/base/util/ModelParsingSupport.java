@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.Element;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -81,6 +82,20 @@ public class ModelParsingSupport {
         StringBuffer sb = new StringBuffer(getElementStart(wrapperElement, null, null));
         sb.append(toWrap);
         sb.append(getElementEnd(wrapperElement));
+        return sb.toString();
+    }
+
+    public static String wrapServerGroup(final String toWrap) {
+        StringBuffer sb = new StringBuffer("<server-group name=\"test\" profile=\"test\">");
+        sb.append(toWrap);
+        sb.append(getElementEnd("server-group"));
+        return wrap(Element.SERVER_GROUPS.getLocalName(), sb.toString());
+    }
+
+    public static String wrapJvm(final String toWrap) {
+        StringBuffer sb = new StringBuffer("<jvm name=\"test\">");
+        sb.append(toWrap);
+        sb.append(getElementEnd("jvm"));
         return sb.toString();
     }
 

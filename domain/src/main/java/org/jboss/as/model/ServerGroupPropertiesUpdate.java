@@ -27,7 +27,7 @@ package org.jboss.as.model;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupPropertiesUpdate extends AbstractDomainModelUpdate<Void> {
+public class ServerGroupPropertiesUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
 
     private static final long serialVersionUID = -466918965014839469L;
 
@@ -40,24 +40,27 @@ public class ServerGroupPropertiesUpdate extends AbstractDomainModelUpdate<Void>
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        final ServerGroupElement group = element.getServerGroup(groupName);
-        if(group == null) {
-            throw new UpdateFailedException(String.format("Server group (%s) does not exist", groupName));
-        }
-        update.applyUpdate(group.getSystemProperties());
+    @Override
+    protected void applyUpdate(ServerGroupElement element) throws UpdateFailedException {
+        update.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel element) {
-        final ServerGroupElement group = element.getServerGroup(groupName);
-        final PropertiesElement original = group.getSystemProperties();
+    @Override
+    public ServerGroupPropertiesUpdate getCompensatingUpdate(ServerGroupElement element) {
+        final PropertiesElement original = element.getSystemProperties();
         return new ServerGroupPropertiesUpdate(groupName, update.getCompensatingUpdate(original));
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerSystemPropertyUpdate(update);
+    }
+
+    @Override
+    public Class<ServerGroupElement> getModelElementType() {
+        return ServerGroupElement.class;
     }
 
 }

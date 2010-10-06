@@ -33,6 +33,8 @@ import java.util.zip.Checksum;
 import junit.framework.TestCase;
 
 import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.ModelXmlParsers;
+import org.jboss.as.model.base.util.MockSubystemElementParser;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -89,7 +91,13 @@ public abstract class DomainModelElementTestBase extends TestCase {
      * @return
      * @throws Exception
      */
-    protected abstract XMLMapper createXMLMapper() throws Exception;
+    protected XMLMapper createXMLMapper() throws Exception{
+
+        XMLMapper mapper = XMLMapper.Factory.create();
+        ModelXmlParsers.registerAll(mapper);
+        MockSubystemElementParser.registerXMLElementReaders(mapper);
+        return mapper;
+    }
 
     /**
      * Gets the namespace that will be used in tests.
