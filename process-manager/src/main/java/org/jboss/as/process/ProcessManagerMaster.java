@@ -275,9 +275,11 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         if (shutdown.get()) {
             return;
         }
+
+        ManagedProcess serverManagerProcess;
         synchronized (processes) {
             try {
-                ManagedProcess serverManagerProcess = processes.get(SERVER_MANAGER_PROCESS_NAME);
+                serverManagerProcess = processes.get(SERVER_MANAGER_PROCESS_NAME);
                 if (serverManagerProcess != null)
                     serverManagerProcess.down(serverName);
             } catch (IOException e) {
@@ -338,16 +340,19 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
             log.errorf("Port should be a number %d", smPort);
              return;
         }
+
+        ManagedProcess process;
         synchronized (processes) {
-            ManagedProcess process = processes.get(server);
+            process = processes.get(server);
             if (process == null) {
                 return;
             }
-            try {
-                process.reconnectToServerManager(smAddress, port);
-            } catch (IOException e) {
-                log.warnf("Could not send RECONNECT_SERVER_MANAGER command to " + process.getProcessName());
-            }
+        }
+
+        try {
+            process.reconnectToServerManager(smAddress, port);
+        } catch (IOException e) {
+            log.warnf("Could not send RECONNECT_SERVER_MANAGER command to " + process.getProcessName());
         }
     }
 

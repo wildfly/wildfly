@@ -179,26 +179,31 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
             return;
 
         long wait = 0;
+        boolean sendDownToMaster = false;
         synchronized (this) {
             if (stopped || start)
                 return;
 
             commandStream.close();
-            if (respawnPolicy == null) {
-                master.downServer(processName);
-                return;
-            }
-
-            wait = respawnPolicy.getTimeOutMs(++respawnCount);
-            if (wait < 0){
-                log.info(processName + " has crashed " + respawnCount + " times, stopping it");
-                try {
-                    stop();
-                } catch (IOException e) {
-                    log.warn("Error stopping crashed " + processName, e);
+            if (respawnPolicy != null) {
+                wait = respawnPolicy.getTimeOutMs(++respawnCount);
+                if (wait < 0){
+                    log.info(processName + " has crashed " + respawnCount + " times, stopping it");
+                    try {
+                        stop();
+                    } catch (IOException e) {
+                        log.warn("Error stopping crashed " + processName, e);
+                    }
+                    return;
                 }
-                return;
+            } else {
+                sendDownToMaster = true;
             }
+        }
+
+        if (sendDownToMaster) {
+            master.downServer(processName);
+            return;
         }
 
         try {
