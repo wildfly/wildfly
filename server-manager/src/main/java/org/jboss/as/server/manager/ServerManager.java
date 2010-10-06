@@ -55,10 +55,10 @@ import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
+import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.as.server.manager.ServerManagerProtocol.Command;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
@@ -495,9 +495,9 @@ public class ServerManager implements ShutdownListener {
 
         final ManagementElement managementElement = hostConfig.getManagementElement();
 
-        final Set<ServerInterfaceElement> hostInterfaces = hostConfig.getInterfaces();
+        final Set<InterfaceElement> hostInterfaces = hostConfig.getInterfaces();
         if(hostInterfaces != null) {
-            for(ServerInterfaceElement interfaceElement : hostInterfaces) {
+            for(InterfaceElement interfaceElement : hostInterfaces) {
                 if(interfaceElement.getName().equals(managementElement.getInterfaceName())) {
                     interfaceElement.activate(serviceActivatorContext);
                     break;

@@ -22,41 +22,42 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
 
 /**
- * The abstract socket binding update.
+ * Update removing a {@link InterfaceElement} from the {@link HostModel}.
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractSocketBindingUpdate extends AbstractModelElementUpdate<SocketBindingGroupElement> {
+public class HostInterfaceRemove extends AbstractHostModelUpdate<Void> {
 
-    private static final long serialVersionUID = 8177705582229479376L;
+    private static final long serialVersionUID = -857258938550699575L;
+    private final String interfaceName;
 
-    protected AbstractSocketBindingUpdate() {
-        //
+    public HostInterfaceRemove(String name) {
+        this.interfaceName = name;
     }
 
     /** {@inheritDoc} */
-    public abstract AbstractSocketBindingUpdate getCompensatingUpdate(SocketBindingGroupElement original);
-
-    /** {@inheritDoc} */
-    public Class<SocketBindingGroupElement> getModelElementType() {
-        return SocketBindingGroupElement.class;
+    protected void applyUpdate(HostModel element) throws UpdateFailedException {
+        if(element.removeInterface(interfaceName)) {
+            throw new UpdateFailedException(String.format("network interface (%s) not found", interfaceName));
+        }
     }
 
+    /** {@inheritDoc} */
+    public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
+        final InterfaceElement element = original.getInterface(interfaceName);
+        if(element == null) {
+            return null;
+        }
+        return new HostInterfaceAdd(new InterfaceAdd(element));
+    }
+
+    /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSocketBindingUpdate(this);
+        return new ServerModelInterfaceRemove(interfaceName);
     }
-
-    /**
-     * Apply update when run within a {@link ServerSocketBindingUpdate}.
-     *
-     * @param <P> the param type
-     * @param updateContext the update context
-     * @param resultHandler the update result handler
-     * @param param the param
-     */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
 }

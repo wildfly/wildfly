@@ -29,7 +29,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -39,14 +38,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.as.services.net.NetworkInterfaceService;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -54,10 +45,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  */
-public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElement<E>> extends AbstractModelElement<E> implements ServiceActivator {
+public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElement<E>> extends AbstractModelElement<E> {
 
     private static final long serialVersionUID = -5256526713311518506L;
-    private static final Logger log = Logger.getLogger("org.jboss.as.socket");
 
     private final String name;
     private boolean anyLocalV4;
@@ -71,101 +61,15 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
         this.name = name;
     }
 
-    /**
-     * Creates a new AbstractInterfaceElement by parsing an xml stream
-     *
-     * @param reader stream reader used to the xml
-     * @param criteriaRequired <code>true</code> if the element content must
-     *         include criteria to identify the IP address to use for the
-     *         interface; <code>false</code> if that is not required
-     *
-     * @throws XMLStreamException if an error occurs
-     */
-    protected AbstractInterfaceElement(XMLExtendedStreamReader reader, boolean criteriaRequired) throws XMLStreamException {
-        super();
-        // Handle attributes
-        String name = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
+    protected AbstractInterfaceElement(String name, List<AbstractInterfaceCriteriaElement<?>> criteriaList) {
+        if (name == null)
+            throw new IllegalArgumentException("name is null");
+        if (criteriaList == null)
+            throw new IllegalArgumentException("criteria is null");
         this.name = name;
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case ANY_ADDRESS: {
-                            validateAnyLocalAllowed(element, reader);
-                            ParseUtils.requireNoAttributes(reader);
-                            ParseUtils.requireNoContent(reader);
-                            anyLocal = true;
-                            break;
-                        }
-                        case ANY_IPV4_ADDRESS: {
-                            validateAnyLocalAllowed(element, reader);
-                            ParseUtils.requireNoAttributes(reader);
-                            ParseUtils.requireNoContent(reader);
-                            anyLocalV4 = true;
-                            break;
-                        }
-                        case ANY_IPV6_ADDRESS: {
-                            validateAnyLocalAllowed(element, reader);
-                            ParseUtils.requireNoAttributes(reader);
-                            ParseUtils.requireNoContent(reader);
-                            anyLocalV6 = true;
-                            break;
-                        }
-                        case ANY:
-                        case NOT:{
-                            validateNotAnyLocal(element, reader);
-                            CompoundCriteriaElement criteria = new CompoundCriteriaElement(reader, element == Element.ANY);
-                            interfaceCriteria.put(criteria.getElement(), criteria);
-                            break;
-                        }
-                        default: {
-                            validateNotAnyLocal(element, reader);
-                            AbstractInterfaceCriteriaElement<?> criteria = ParsingUtil.parseSimpleInterfaceCriteria(reader, element);
-                            interfaceCriteria.put(criteria.getElement(), criteria);
-                            break;
-                        }
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
+        for (AbstractInterfaceCriteriaElement<?> criteria : criteriaList) {
+            interfaceCriteria.put(criteria.getElement(), criteria);
         }
-        if (criteriaRequired && !anyLocal && !anyLocalV4 && !anyLocalV6 && interfaceCriteria.isEmpty()) {
-            throw new XMLStreamException("Either an inet-address element or some other interface criteria element is required", reader.getLocation());
-        }
-    }
-
-    protected AbstractInterfaceElement(AbstractInterfaceElement<?> toCopy) {
-        if (toCopy == null)
-            throw new IllegalArgumentException("toCopy is null");
-        this.name = toCopy.name;
-        this.anyLocal = toCopy.anyLocal;
-        this.anyLocalV4 = toCopy.anyLocalV4;
-        this.anyLocalV6 = toCopy.anyLocalV6;
-        interfaceCriteria.putAll(toCopy.interfaceCriteria);
     }
 
     /**
@@ -185,12 +89,28 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
         return anyLocal;
     }
 
+    void setAnyLocal(boolean anyLocal) {
+        this.anyLocal = anyLocal;
+    }
+
     public boolean isAnyLocalV4Address() {
         return anyLocalV4;
     }
 
+    void setAnyLocalV4(boolean anyLocalV4) {
+        this.anyLocalV4 = anyLocalV4;
+    }
+
     public boolean isAnyLocalV6Address() {
         return anyLocalV6;
+    }
+
+    void setAnyLocalV6(boolean anyLocalV6) {
+        this.anyLocalV6 = anyLocalV6;
+    }
+
+    protected void addCriteria(AbstractInterfaceCriteriaElement<?> criteria) {
+        this.interfaceCriteria.put(criteria.getElement(), criteria);
     }
 
     /**
@@ -232,32 +152,26 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
         streamWriter.writeEndElement();
     }
 
-    @Override
-    public void activate(ServiceActivatorContext context) {
-        log.info("Activating interface element:" + name);
-        context.getBatchBuilder().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()),
-                new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
-    }
-
     List<AbstractInterfaceCriteriaElement<?>> getCriteriaElements() {
         synchronized (interfaceCriteria) {
             return new ArrayList<AbstractInterfaceCriteriaElement<?>>(interfaceCriteria.values());
         }
     }
 
-    private void validateAnyLocalAllowed(Element element, XMLExtendedStreamReader reader) throws XMLStreamException {
-        if (interfaceCriteria.size() > 0)
-            throw new XMLStreamException(element + " cannot be combined with " + interfaceCriteria.keySet().iterator().next(), reader.getLocation());
-        validateNotAnyLocal(element, reader);
+    protected void validateAnyLocalAllowed(Element element) throws IllegalStateException {
+        if (interfaceCriteria.size() > 0) {
+            throw new IllegalStateException(element + " cannot be combined with " + interfaceCriteria.keySet().iterator().next());
+        }
+        validateNotAnyLocal(element);
     }
 
-    private void validateNotAnyLocal(Element element, XMLExtendedStreamReader reader) throws XMLStreamException {
+    private void validateNotAnyLocal(Element element) throws IllegalStateException {
         if (anyLocal)
-            throw new XMLStreamException(element + " cannot be combined with " + Element.ANY_ADDRESS.getLocalName(), reader.getLocation());
+            throw new IllegalStateException(element + " cannot be combined with " + Element.ANY_ADDRESS.getLocalName());
         if (anyLocalV4)
-            throw new XMLStreamException(element + " cannot be combined with " + Element.ANY_IPV4_ADDRESS.getLocalName(), reader.getLocation());
+            throw new IllegalStateException(element + " cannot be combined with " + Element.ANY_IPV4_ADDRESS.getLocalName());
         if (anyLocalV6)
-            throw new XMLStreamException(element + " cannot be combined with " + Element.ANY_IPV6_ADDRESS.getLocalName(), reader.getLocation());
+            throw new IllegalStateException(element + " cannot be combined with " + Element.ANY_IPV6_ADDRESS.getLocalName());
     }
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {

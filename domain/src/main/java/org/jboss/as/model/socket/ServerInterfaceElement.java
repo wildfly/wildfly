@@ -3,10 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 /**
  * A named interface definition that is associated with a Server. Differs from
  * {@link InterfaceElement} in that it is required to specify
@@ -20,14 +16,8 @@ public class ServerInterfaceElement extends AbstractInterfaceElement<ServerInter
 
     private static final long serialVersionUID = 3412142474527180840L;
 
-    /**
-     * Creates a new ServerInterfaceElement by parsing an xml stream
-     *
-     * @param reader stream reader used to read the xml
-     * @throws XMLStreamException if an error occurs
-     */
-    public ServerInterfaceElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        super(reader, true);
+    public ServerInterfaceElement(final String name) {
+        super(name);
     }
 
     /**

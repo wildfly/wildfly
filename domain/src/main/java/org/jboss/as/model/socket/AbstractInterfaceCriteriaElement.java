@@ -3,8 +3,6 @@
  */
 package org.jboss.as.model.socket;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Element;
 
@@ -30,10 +28,8 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      * their constructor.
      *
      * @param element the element being read
-     *
-     * @throws XMLStreamException if an error occurs
      */
-    protected AbstractInterfaceCriteriaElement(final Element element) throws XMLStreamException {
+    protected AbstractInterfaceCriteriaElement(final Element element) {
         if (element == null)
             throw new IllegalArgumentException("element is null");
         this.element = element;
@@ -45,10 +41,8 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      * @param element the element being read
      * @param interfaceCriteria the criteria to use to check whether an network
      *         interface and address is acceptable for use by an interface
-     *
-     * @throws XMLStreamException if an error occurs
      */
-    protected AbstractInterfaceCriteriaElement(final Element element, final InterfaceCriteria interfaceCriteria) throws XMLStreamException {
+    protected AbstractInterfaceCriteriaElement(final Element element, final InterfaceCriteria interfaceCriteria) {
         this(element);
         setInterfaceCriteria(interfaceCriteria);
     }
@@ -60,7 +54,7 @@ public abstract class AbstractInterfaceCriteriaElement<T extends AbstractInterfa
      *                  before any subclass constructor has completed; otherwise
      *                  will not be <code>null</code>
      */
-    InterfaceCriteria getInterfaceCriteria() {
+    public InterfaceCriteria getInterfaceCriteria() {
         return interfaceCriteria;
     }
 

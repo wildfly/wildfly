@@ -22,31 +22,48 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.msc.service.ServiceController;
 
 /**
+ * Update removing a {@link InterfaceElement} from the {@link ServerModel}.
+ *
  * @author Emanuel Muckenhuber
  */
-public class ServerSocketBindingUpdate extends AbstractServerModelUpdate<Void> {
+public class ServerModelInterfaceRemove extends AbstractServerModelUpdate<Void> {
 
-    private static final long serialVersionUID = 5150307080530039250L;
-    private final AbstractSocketBindingUpdate bindingUpdate;
+    private static final long serialVersionUID = -4178671085310775352L;
+    private final String interfaceName;
 
-    public ServerSocketBindingUpdate(AbstractSocketBindingUpdate bindingUpdate) {
-        this.bindingUpdate = bindingUpdate;
+    public ServerModelInterfaceRemove(final String name) {
+        this.interfaceName = name;
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        bindingUpdate.applyUpdate(element.getSocketBindings());
+        if(element.removeInterface(interfaceName)) {
+            throw new UpdateFailedException(String.format("network interface (%s) not found", interfaceName));
+        }
     }
 
     /** {@inheritDoc} */
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerSocketBindingUpdate(bindingUpdate.getCompensatingUpdate(original.getSocketBindings()));
+        final InterfaceElement element = original.getInterface(interfaceName);
+        if(element == null) {
+            return null;
+        }
+        return new ServerModelInterfaceAdd(new InterfaceAdd(element));
     }
 
     public <P> void applyUpdate(UpdateContext updateContext, org.jboss.as.model.UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        bindingUpdate.applyUpdate(updateContext, resultHandler, param);
+        final ServiceController<?> controller = updateContext.getServiceContainer().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName));
+        if(controller == null) {
+            resultHandler.handleSuccess(null, param);
+            return;
+        }
+        controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
     }
 
 }

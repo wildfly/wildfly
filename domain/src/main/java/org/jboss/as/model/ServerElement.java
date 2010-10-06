@@ -30,7 +30,7 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -45,7 +45,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
     private final String name;
     private final String serverGroup;
-    private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
+    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private boolean start;
     private SocketBindingGroupRefElement bindingGroup;
     private JvmElement jvm;
@@ -106,10 +106,16 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         this.jvm = jvm;
     }
 
-    public Set<ServerInterfaceElement> getInterfaces() {
-        Set<ServerInterfaceElement> intfs = new LinkedHashSet<ServerInterfaceElement>();
+    public InterfaceElement getInterface(final String name) {
+        synchronized(interfaces) {
+            return interfaces.get(name);
+        }
+    }
+
+    public Set<InterfaceElement> getInterfaces() {
+        Set<InterfaceElement> intfs = new LinkedHashSet<InterfaceElement>();
         synchronized (interfaces) {
-            for (Map.Entry<String, ServerInterfaceElement> entry : interfaces.entrySet()) {
+            for (Map.Entry<String, InterfaceElement> entry : interfaces.entrySet()) {
                 intfs.add(entry.getValue());
             }
         }
@@ -162,7 +168,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
         if (! interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
-            for (ServerInterfaceElement element : interfaces.values()) {
+            for (InterfaceElement element : interfaces.values()) {
                 streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                 element.writeContent(streamWriter);
             }
@@ -185,5 +191,18 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             jvm.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
+    }
+
+    InterfaceElement addInterface(final String name) {
+        if(interfaces.containsKey(name)) {
+            return null;
+        }
+        final InterfaceElement networkInterface = new InterfaceElement(name);
+        interfaces.put(name, networkInterface);
+        return networkInterface;
+    }
+
+    boolean removeInterface(final String name) {
+        return interfaces.remove(name) != null;
     }
 }

@@ -28,8 +28,10 @@ import org.jboss.as.model.AbstractSocketBindingUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceRegistryException;
 
 /**
@@ -79,10 +81,9 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
-        SocketBindingService.addService(builder, this);
-        final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param);
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        final BatchServiceBuilder<SocketBinding> builder = SocketBindingService.addService(batchBuilder, this);
+        final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param);
         builder.addListener(listener);
         try {
             batchBuilder.install();

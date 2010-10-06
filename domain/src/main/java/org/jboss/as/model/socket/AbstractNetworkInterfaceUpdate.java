@@ -20,33 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.model.socket;
 
+import org.jboss.as.model.AbstractModelElementUpdate;
 
 /**
+ * Base class for {@code InterfaceElement} updates.
+ *
  * @author Emanuel Muckenhuber
  */
-public class ServerSocketBindingUpdate extends AbstractServerModelUpdate<Void> {
+public abstract class AbstractNetworkInterfaceUpdate extends AbstractModelElementUpdate<InterfaceElement> {
 
-    private static final long serialVersionUID = 5150307080530039250L;
-    private final AbstractSocketBindingUpdate bindingUpdate;
-
-    public ServerSocketBindingUpdate(AbstractSocketBindingUpdate bindingUpdate) {
-        this.bindingUpdate = bindingUpdate;
-    }
+    private static final long serialVersionUID = -1727543037365605341L;
 
     /** {@inheritDoc} */
-    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        bindingUpdate.applyUpdate(element.getSocketBindings());
-    }
-
-    /** {@inheritDoc} */
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerSocketBindingUpdate(bindingUpdate.getCompensatingUpdate(original.getSocketBindings()));
-    }
-
-    public <P> void applyUpdate(UpdateContext updateContext, org.jboss.as.model.UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        bindingUpdate.applyUpdate(updateContext, resultHandler, param);
+    public Class<InterfaceElement> getModelElementType() {
+        return InterfaceElement.class;
     }
 
 }

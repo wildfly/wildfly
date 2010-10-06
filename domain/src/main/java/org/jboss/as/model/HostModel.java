@@ -24,16 +24,16 @@ package org.jboss.as.model;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -52,7 +52,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     private final Set<String> extensions = new HashSet<String>();
-    private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
+    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
     private String name;
@@ -97,7 +97,7 @@ public final class HostModel extends AbstractModel<HostModel> {
      * @return the interface configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
      */
-    public ServerInterfaceElement getInterface(String name) {
+    public InterfaceElement getInterface(String name) {
         synchronized (interfaces) {
             return interfaces.get(name);
         }
@@ -108,9 +108,9 @@ public final class HostModel extends AbstractModel<HostModel> {
      *
      * @return the interfaces. May be empty but will not be <code>null</code>
      */
-    public Set<ServerInterfaceElement> getInterfaces() {
+    public Set<InterfaceElement> getInterfaces() {
         synchronized (interfaces) {
-            return new HashSet<ServerInterfaceElement>(interfaces.values());
+            return new HashSet<InterfaceElement>(interfaces.values());
         }
     }
 
@@ -200,7 +200,7 @@ public final class HostModel extends AbstractModel<HostModel> {
 
         if (!interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-            for (ServerInterfaceElement element : interfaces.values()) {
+            for (InterfaceElement element : interfaces.values()) {
                 streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                 element.writeContent(streamWriter);
             }
@@ -240,4 +240,18 @@ public final class HostModel extends AbstractModel<HostModel> {
     Set<String> getExtensions() {
         return extensions;
     }
+
+    InterfaceElement addInterface(final String name) {
+        if(interfaces.containsKey(name)) {
+            return null;
+        }
+        final InterfaceElement networkInterface = new InterfaceElement(name);
+        interfaces.put(name, networkInterface);
+        return networkInterface;
+    }
+
+    boolean removeInterface(final String name) {
+        return interfaces.remove(name) != null;
+    }
+
 }

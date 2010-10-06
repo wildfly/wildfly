@@ -4,16 +4,10 @@
 package org.jboss.as.model.socket;
 
 import java.util.HashSet;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -26,53 +20,26 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<CompoundCriteriaElement> {
 
     private static final long serialVersionUID = -649277969243521207L;
+    private final Set<AbstractInterfaceCriteriaElement<?>> interfaceCriteria;
 
-    private final NavigableMap<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria =
-            new TreeMap<Element, AbstractInterfaceCriteriaElement<?>>();
-    /**
-     * Creates a new CompoundCriteriaElement by parsing an xml stream
-     *
-     * @param reader stream reader used to read the xml
-     * @param isAny true if this type {@link Element#ANY}, false if it is {@link Element#NOT}.
-     *
-     * @throws XMLStreamException if an error occurs
-     */
-    public CompoundCriteriaElement(XMLExtendedStreamReader reader, boolean isAny) throws XMLStreamException {
+    public CompoundCriteriaElement(Set<AbstractInterfaceCriteriaElement<?>> interfaceCriteria, boolean isAny) {
         super(isAny ? Element.ANY : Element.NOT);
 
         Set<InterfaceCriteria> criteria = new HashSet<InterfaceCriteria>(interfaceCriteria.size());
-        for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria.values()) {
+        for (AbstractInterfaceCriteriaElement<?> element : interfaceCriteria) {
             criteria.add(element.getInterfaceCriteria());
         }
 
         InterfaceCriteria ours = isAny ? new AnyInterfaceCriteria(criteria) : new NotInterfaceCriteria(criteria);
+
+        this.interfaceCriteria = interfaceCriteria;
         setInterfaceCriteria(ours);
-
-
-        // Handle attributes
-        ParseUtils.requireNoAttributes(reader);
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    AbstractInterfaceCriteriaElement<?> aice = ParsingUtil.parseSimpleInterfaceCriteria(reader, element);
-                    interfaceCriteria.put(aice.getElement(), aice);
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-        if (interfaceCriteria.isEmpty()) {
-            throw ParsingUtil.missingCriteria(reader, ParsingUtil.SIMPLE_CRITERIA_STRING);
-        }
     }
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         synchronized (interfaceCriteria) {
-            for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria.values()) {
+            for (AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria) {
                 streamWriter.writeStartElement(criteria.getElement().getLocalName());
                 criteria.writeContent(streamWriter);
             }
@@ -84,7 +51,4 @@ public class CompoundCriteriaElement extends AbstractInterfaceCriteriaElement<Co
     protected Class<CompoundCriteriaElement> getElementClass() {
         return CompoundCriteriaElement.class;
     }
-
-
-
 }

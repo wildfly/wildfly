@@ -9,8 +9,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -22,20 +20,16 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class NicCriteriaElement extends AbstractInterfaceCriteriaElement<NicCriteriaElement> {
 
     private static final long serialVersionUID = 52177844089594172L;
-
     private String name;
 
     /**
-     * Creates a new NicCriteriaElement by parsing an xml stream
+     * Create a new NicCriteriaElement.
      *
-     * @param reader stream reader used to read the xml
-     * @throws XMLStreamException if an error occurs
+     *  @param the nic name
      */
-    public NicCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public NicCriteriaElement(final String name) {
         super(Element.NIC);
-
-        this.name = ParseUtils.readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-
+        this.name = name;
         setInterfaceCriteria(new NicInterfaceCriteria(name));
     }
 

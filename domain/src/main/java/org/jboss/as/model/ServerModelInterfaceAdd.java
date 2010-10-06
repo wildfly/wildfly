@@ -22,31 +22,40 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
+
 /**
+ * Update adding a {@link InterfaceElement} to the {@link ServerModel}.
+ *
  * @author Emanuel Muckenhuber
  */
-public class HostSystemPropertiesUpdate extends AbstractHostModelUpdate<Void> {
+public class ServerModelInterfaceAdd extends AbstractServerModelUpdate<Void> {
 
-    private static final long serialVersionUID = -2265026354029603981L;
-    private final AbstractPropertyUpdate update;
+    private static final long serialVersionUID = 5788850965210749543L;
+    private final InterfaceAdd delegate;
 
-    public HostSystemPropertiesUpdate(AbstractPropertyUpdate update) {
-        this.update = update;
+    public ServerModelInterfaceAdd(InterfaceAdd delegate) {
+        this.delegate = delegate;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(HostModel element) throws UpdateFailedException {
-        update.applyUpdate(element.getSystemProperties());
+    protected void applyUpdate(ServerModel element) throws UpdateFailedException {
+        final InterfaceElement networkInterface = element.addInterface(delegate.getName());
+        if(networkInterface == null) {
+            throw new UpdateFailedException("duplicate network interface " + delegate.getName());
+        }
+        delegate.applyUpdate(networkInterface);
     }
 
     /** {@inheritDoc} */
-    public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
-        return new HostSystemPropertiesUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
+    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
+        return new ServerModelInterfaceRemove(delegate.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(update);
+    public <P> void applyUpdate(UpdateContext updateContext, org.jboss.as.model.UpdateResultHandler<? super Void,P> resultHandler, P param) {
+        delegate.applyUpdate(updateContext, resultHandler, param);
     }
 
 }

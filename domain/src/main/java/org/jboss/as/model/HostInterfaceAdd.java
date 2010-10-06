@@ -22,41 +22,40 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
 
 /**
- * The abstract socket binding update.
+ * Update adding a {@link InterfaceElement} from the {@link HostModel}.
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractSocketBindingUpdate extends AbstractModelElementUpdate<SocketBindingGroupElement> {
+public class HostInterfaceAdd extends AbstractHostModelUpdate<Void> {
 
-    private static final long serialVersionUID = 8177705582229479376L;
+    private static final long serialVersionUID = 8657276301755318586L;
+    private final InterfaceAdd delegate;
 
-    protected AbstractSocketBindingUpdate() {
-        //
+    public HostInterfaceAdd(InterfaceAdd add) {
+        this.delegate = add;
     }
 
     /** {@inheritDoc} */
-    public abstract AbstractSocketBindingUpdate getCompensatingUpdate(SocketBindingGroupElement original);
-
-    /** {@inheritDoc} */
-    public Class<SocketBindingGroupElement> getModelElementType() {
-        return SocketBindingGroupElement.class;
+    protected void applyUpdate(HostModel element) throws UpdateFailedException {
+        final InterfaceElement networkInterface = element.addInterface(delegate.getName());
+        if(networkInterface == null) {
+            throw new UpdateFailedException("duplicate interface binding " + delegate.getName());
+        }
+        delegate.applyUpdate(networkInterface);
     }
 
+    /** {@inheritDoc} */
+    public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
+        return new HostInterfaceRemove(delegate.getName());
+    }
+
+    /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSocketBindingUpdate(this);
+        return new ServerModelInterfaceAdd(delegate);
     }
-
-    /**
-     * Apply update when run within a {@link ServerSocketBindingUpdate}.
-     *
-     * @param <P> the param type
-     * @param updateContext the update context
-     * @param resultHandler the update result handler
-     * @param param the param
-     */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
 }

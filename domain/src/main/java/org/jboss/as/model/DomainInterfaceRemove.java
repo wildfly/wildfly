@@ -22,33 +22,42 @@
 
 package org.jboss.as.model;
 
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
+
 /**
- * Domain level system properties update.
+ * Update removing a {@link InterfaceElement} from the {@link DomainModel}.
  *
  * @author Emanuel Muckenhuber
  */
-public class DomainPropertiesUpdate extends AbstractDomainModelUpdate<Void> {
+public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
 
-    private static final long serialVersionUID = 839243584557763930L;
-    private final AbstractPropertyUpdate update;
+    private static final long serialVersionUID = -9182707456362234629L;
+    private final String name;
 
-    public DomainPropertiesUpdate(AbstractPropertyUpdate update) {
-        this.update = update;
+    public DomainInterfaceRemove(String name) {
+        this.name = name;
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        update.applyUpdate(element.getSystemProperties());
+        if(!element.removeInterface(name)) {
+            throw new UpdateFailedException("failed to remove network interface " + name);
+        }
     }
 
     /** {@inheritDoc} */
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new DomainPropertiesUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
+        final InterfaceElement element = original.getInterface(name);
+        if(element == null) {
+            return null;
+        }
+        return new DomainInterfaceAdd(new InterfaceAdd(element));
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(update);
+        return new ServerModelInterfaceRemove(name);
     }
 
 }

@@ -24,13 +24,26 @@ public class SocketBindingGroupRefElement extends AbstractModelElement<SocketBin
     private static final long serialVersionUID = 4250004070765682113L;
 
     private final String ref;
-    private int portOffset;
+    private int portOffset = -1;
 
     /**
+     * Creates a SocketBindingGroupRefElement
+     *
+     * @param ref the referenced binding-group
      */
-    public SocketBindingGroupRefElement(final String ref, final int portOffset) {
+    public SocketBindingGroupRefElement(final String ref) {
+        this.ref  = ref;
+    }
+
+    /**
+     * Creates a SocketBindingGroupRefElement
+     *
+     * @param ref the referenced binding-group
+     * @param portOffSet the port offset
+     */
+    public SocketBindingGroupRefElement(final String ref, final int portOffSet) {
         this.ref = ref;
-        this.portOffset = portOffset;
+        this.portOffset = portOffSet;
     }
 
     /**

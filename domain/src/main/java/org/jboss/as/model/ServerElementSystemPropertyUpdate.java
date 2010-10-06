@@ -22,41 +22,31 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupElement;
-
 /**
- * The abstract socket binding update.
- *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractSocketBindingUpdate extends AbstractModelElementUpdate<SocketBindingGroupElement> {
+public class ServerElementSystemPropertyUpdate extends AbstractModelElementUpdate<ServerElement> {
 
-    private static final long serialVersionUID = 8177705582229479376L;
+    private static final long serialVersionUID = -2162643350016256639L;
+    private final AbstractPropertyUpdate update;
 
-    protected AbstractSocketBindingUpdate() {
-        //
+    public ServerElementSystemPropertyUpdate(AbstractPropertyUpdate update) {
+        this.update = update;
     }
 
     /** {@inheritDoc} */
-    public abstract AbstractSocketBindingUpdate getCompensatingUpdate(SocketBindingGroupElement original);
+    public Class<ServerElement> getModelElementType() {
+        return ServerElement.class;
+    }
 
     /** {@inheritDoc} */
-    public Class<SocketBindingGroupElement> getModelElementType() {
-        return SocketBindingGroupElement.class;
+    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
+        update.applyUpdate(element.getSystemProperties());
     }
 
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSocketBindingUpdate(this);
+    /** {@inheritDoc} */
+    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(ServerElement original) {
+        return new ServerElementSystemPropertyUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
     }
-
-    /**
-     * Apply update when run within a {@link ServerSocketBindingUpdate}.
-     *
-     * @param <P> the param type
-     * @param updateContext the update context
-     * @param resultHandler the update result handler
-     * @param param the param
-     */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
 
 }

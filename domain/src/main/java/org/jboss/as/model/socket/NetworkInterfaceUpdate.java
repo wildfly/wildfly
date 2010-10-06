@@ -22,13 +22,9 @@
 
 package org.jboss.as.model.socket;
 
-import org.jboss.as.model.AbstractModelElementUpdate;
-
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractInterfaceUpdate<E extends AbstractInterfaceElement<E>> extends AbstractModelElementUpdate<E> {
-
-    private static final long serialVersionUID = 420978785185368587L;
+public class NetworkInterfaceUpdate {
 
 }

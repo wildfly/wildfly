@@ -4,16 +4,11 @@
 package org.jboss.as.model.socket;
 
 import java.net.NetworkInterface;
-import java.util.Collections;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -29,45 +24,13 @@ public class NicMatchCriteriaElement extends AbstractInterfaceCriteriaElement<Ni
     private Pattern pattern;
 
     /**
-     * Creates a new NicMatchCriteriaElement by parsing an xml stream
+     * Creates a new NicMatchCriteriaElement
      *
-     * @param reader stream reader used to read the xml
-     * @throws XMLStreamException if an error occurs
+     * @param pattern the pattern
      */
-    public NicMatchCriteriaElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public NicMatchCriteriaElement(final Pattern pattern) {
         super(Element.NIC_MATCH);
-
-        // Handle attributes
-        Pattern pattern = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case PATTERN: {
-                        try {
-                            pattern = Pattern.compile(value);
-                        }
-                        catch (PatternSyntaxException e) {
-                            throw new XMLStreamException("Invalid pattern " + value + " (" + e.getLocalizedMessage() +")", reader.getLocation(), e);
-                        }
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (pattern == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PATTERN));
-        }
         this.pattern = pattern;
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-
         setInterfaceCriteria(new NicMatchInterfaceCriteria(pattern));
     }
 

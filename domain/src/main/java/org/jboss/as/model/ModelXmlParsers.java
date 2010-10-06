@@ -51,6 +51,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
+import org.jboss.as.model.socket.AbstractInterfaceCriteriaElement;
+import org.jboss.as.model.socket.CompoundCriteriaElement;
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceParsingUtils;
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 import org.jboss.modules.Module;
@@ -157,13 +161,13 @@ public final class ModelXmlParsers {
             parseProfiles(reader, list);
             element = nextElement(reader);
         }
-        Set<String> names = Collections.emptySet();
+        Set<String> interfaceNames = Collections.emptySet();
         if (element == Element.INTERFACES) {
-            names = parseInterfaces(reader, list);
+            interfaceNames = parseInterfaces(reader, list);
             element = nextElement(reader);
         }
         if (element == Element.SOCKET_BINDING_GROUPS) {
-            parseSocketBindingGroups(reader, list, names);
+            parseSocketBindingGroups(reader, list, interfaceNames);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -290,7 +294,9 @@ public final class ModelXmlParsers {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
+        final Map<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = new HashMap<Element, AbstractInterfaceCriteriaElement<?>>();
 
+        Element anyElement = null;
         while (reader.nextTag() != END_ELEMENT) {
             // Attributes
             final String name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
@@ -308,9 +314,12 @@ public final class ModelXmlParsers {
                 if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
                     throw unexpectedElement(reader);
                 }
-                switch (Element.forName(reader.getLocalName())) {
-                    case ANY_ADDRESS: {
-                        if (! first) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case ANY_ADDRESS:
+                    case ANY_IPV4_ADDRESS:
+                    case ANY_IPV6_ADDRESS: {
+                        if (! first || anyElement != null) {
                             throw unexpectedElement(reader);
                         }
                         requireNoAttributes(reader);
@@ -320,10 +329,36 @@ public final class ModelXmlParsers {
                         if (reader.nextTag() != END_ELEMENT) {
                             throw unexpectedElement(reader);
                         }
+                        // The any element
+                        anyElement = element;
+                    } default: {
+                        if (anyElement != null) {
+                            throw unexpectedElement(reader);
+                        }
+                        switch (element) {
+                            case ANY:
+                            case NOT: {
+                                final CompoundCriteriaElement criteria = InterfaceParsingUtils.createCompoundCriteria(reader, element == Element.ANY);
+                                interfaceCriteria.put(element, criteria);
+                                break;
+                            } default: {
+                                final AbstractInterfaceCriteriaElement<?> criteria = InterfaceParsingUtils.parseSimpleInterfaceCriteria(reader, element);
+                                interfaceCriteria.put(element, criteria);
+                            }
+                        }
                     }
                 }
                 first = false;
             } while (reader.nextTag() != END_ELEMENT);
+            if (anyElement == null && interfaceCriteria.isEmpty()) {
+                throw new XMLStreamException("Either an inet-address element or some other interface criteria element is required", reader.getLocation());
+            }
+            // Domain interface update
+            list.add(new DomainInterfaceAdd(new InterfaceAdd(name,
+                    anyElement == Element.ANY_IPV4_ADDRESS,
+                    anyElement == Element.ANY_IPV6_ADDRESS,
+                    anyElement == Element.ANY_ADDRESS,
+                    interfaceCriteria.values())));
         }
         return names;
     }
@@ -400,7 +435,10 @@ public final class ModelXmlParsers {
                     throw ParseUtils.unexpectedElement(reader);
             }
         }
-        final SocketBindingGroupUpdate update = new SocketBindingGroupUpdate(name, defIntf, includedGroups);
+        list.add(new DomainSocketBindingGroupAdd(new SocketBindingGroupUpdate(name, defIntf, includedGroups)));
+        for(final SocketBindingAdd bindingUpdate : bindingUpdates) {
+            list.add(new DomainSocketBindingUpdate(name, bindingUpdate));
+        }
     }
 
     static String parseSocketBinding(final XMLExtendedStreamReader reader, Set<String> interfaces, List<SocketBindingAdd> updates) throws XMLStreamException {

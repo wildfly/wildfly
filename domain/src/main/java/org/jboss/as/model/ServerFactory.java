@@ -29,8 +29,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 
@@ -71,25 +72,25 @@ public final class ServerFactory {
         // Merge interfaces
         // TODO: modify to merge each interface instead of replacing duplicates
         Set<String> unspecifiedInterfaces = new HashSet<String>();
-        Map<String, ServerInterfaceElement> interfaces = new HashMap<String, ServerInterfaceElement>();
+        Map<String, InterfaceElement> interfaces = new HashMap<String, InterfaceElement>();
         for (InterfaceElement ie : domainModel.getInterfaces()) {
             if (ie.isFullySpecified())
-                interfaces.put(ie.getName(), new ServerInterfaceElement(ie));
+                interfaces.put(ie.getName(), ie);
             else
                 unspecifiedInterfaces.add(ie.getName());
         }
-        for (ServerInterfaceElement ie : hostModel.getInterfaces()) {
+        for (InterfaceElement ie : hostModel.getInterfaces()) {
             interfaces.put(ie.getName(), ie);
             unspecifiedInterfaces.remove(ie.getName());
         }
-        for (ServerInterfaceElement ie : serverElement.getInterfaces()) {
+        for (InterfaceElement ie : serverElement.getInterfaces()) {
             interfaces.put(ie.getName(), ie);
             unspecifiedInterfaces.remove(ie.getName());
         }
         // TODO: verify that all required interfaces were specified
 
-        for (ServerInterfaceElement interfaceElement : interfaces.values()) {
-            // todo: create a ServerInterfaceAdd for each one
+        for (InterfaceElement interfaceElement : interfaces.values()) {
+            list.add(new ServerModelInterfaceAdd(new InterfaceAdd(interfaceElement)));
         }
 
         // Merge socket bindings

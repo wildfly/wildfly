@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 
-import org.jboss.as.model.socket.AbstractInterfaceElement;
+import org.jboss.as.model.socket.InterfaceCriteria;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -57,32 +57,40 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     /** The interface binding. */
     private NetworkInterfaceBinding interfaceBinding;
 
-    /** The network interface element. */
-    private final AbstractInterfaceElement<?> interfaceElement;
+    private final String name;
+    private final boolean anyLocalV4;
+    private final boolean anyLocalV6;
+    private final boolean anyLocal;
+    private final InterfaceCriteria criteria;
 
-    public NetworkInterfaceService(final AbstractInterfaceElement<?> element) {
-        this.interfaceElement = element;
+    public NetworkInterfaceService(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
+            final boolean anyLocal, final InterfaceCriteria criteria) {
+        this.name = name;
+        this.anyLocalV4 = anyLocalV4;
+        this.anyLocalV6 = anyLocalV6;
+        this.anyLocal = anyLocal;
+        this.criteria = criteria;
     }
 
     public synchronized void start(StartContext arg0) throws StartException {
         try {
-            if (this.interfaceElement.isAnyLocalV4Address()) {
+            if (anyLocalV4) {
                 this.interfaceBinding = getNetworkInterfaceBinding(IPV4_ANYLOCAL);
             }
-            else if (this.interfaceElement.isAnyLocalV6Address()) {
+            else if (anyLocalV6) {
                 this.interfaceBinding = getNetworkInterfaceBinding(IPV6_ANYLOCAL);
             }
-            else if (this.interfaceElement.isAnyLocalAddress()) {
+            else if (anyLocal) {
                 this.interfaceBinding = getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
             }
             else {
-                this.interfaceBinding = resolveInterface(interfaceElement);
+                this.interfaceBinding = resolveInterface(criteria);
             }
         } catch(Exception e) {
             throw new StartException(e);
         }
         if(this.interfaceBinding == null) {
-            throw new StartException("failed to resolve interface for " + interfaceElement.getName());
+            throw new StartException("failed to resolve interface " + name);
         }
     }
 
@@ -98,14 +106,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         return binding;
     }
 
-    static NetworkInterfaceBinding resolveInterface(final AbstractInterfaceElement<?> element) throws SocketException {
+    static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria) throws SocketException {
         final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {
             final NetworkInterface networkInterface = networkInterfaces.nextElement();
             final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
             while (interfaceAddresses.hasMoreElements()) {
                 final InetAddress address = interfaceAddresses.nextElement();
-                if (element.getInterfaceCriteria().isAcceptable(networkInterface, address)) {
+                if (criteria.isAcceptable(networkInterface, address)) {
                     final InetAddress resolved = getInterfaceAddress(networkInterface);
                     if (resolved != null) {
                         return new NetworkInterfaceBinding(Collections.singleton(networkInterface), resolved);

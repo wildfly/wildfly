@@ -22,41 +22,45 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.InterfaceAdd;
+import org.jboss.as.model.socket.InterfaceElement;
 
 /**
- * The abstract socket binding update.
+ * Update adding a {@link InterfaceElement} to the {@link ServerElement}.
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractSocketBindingUpdate extends AbstractModelElementUpdate<SocketBindingGroupElement> {
+public class ServerElementInterfaceAdd extends AbstractModelElementUpdate<ServerElement> {
 
-    private static final long serialVersionUID = 8177705582229479376L;
+    private static final long serialVersionUID = -8245273058656370269L;
+    private final InterfaceAdd delegate;
 
-    protected AbstractSocketBindingUpdate() {
-        //
+    public ServerElementInterfaceAdd(InterfaceAdd delegate) {
+        this.delegate = delegate;
     }
 
     /** {@inheritDoc} */
-    public abstract AbstractSocketBindingUpdate getCompensatingUpdate(SocketBindingGroupElement original);
-
-    /** {@inheritDoc} */
-    public Class<SocketBindingGroupElement> getModelElementType() {
-        return SocketBindingGroupElement.class;
+    protected void applyUpdate(final ServerElement server) throws UpdateFailedException {
+        final InterfaceElement networkInterface = server.addInterface(delegate.getName());
+        if(networkInterface == null) {
+            throw new UpdateFailedException();
+        }
+        delegate.applyUpdate(networkInterface);
     }
 
+    /** {@inheritDoc} */
+    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(final ServerElement server) {
+        return new ServerElementInterfaceRemove(delegate.getName());
+    }
+
+    /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerSocketBindingUpdate(this);
+        return new ServerModelInterfaceAdd(delegate);
     }
 
-    /**
-     * Apply update when run within a {@link ServerSocketBindingUpdate}.
-     *
-     * @param <P> the param type
-     * @param updateContext the update context
-     * @param resultHandler the update result handler
-     * @param param the param
-     */
-    protected abstract <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param);
+    /** {@inheritDoc} */
+    public Class<ServerElement> getModelElementType() {
+        return ServerElement.class;
+    }
 
 }

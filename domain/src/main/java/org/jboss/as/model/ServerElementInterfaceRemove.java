@@ -25,38 +25,43 @@ package org.jboss.as.model;
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
 
-
 /**
- * Update adding a {@link InterfaceElement} to the {@link DomainModel}.
+ * Update removing a {@link InterfaceElement} from the {@link ServerElement}.
  *
  * @author Emanuel Muckenhuber
  */
-public class DomainInterfaceAdd extends AbstractDomainModelUpdate<Void> {
+public class ServerElementInterfaceRemove extends AbstractModelElementUpdate<ServerElement> {
 
-    private static final long serialVersionUID = -8081711642455069769L;
-    private final InterfaceAdd delegate;
+    private static final long serialVersionUID = -2830177164001085749L;
+    private final String interfaceName;
 
-    public DomainInterfaceAdd(InterfaceAdd delegate) {
-        this.delegate = delegate;
+    public ServerElementInterfaceRemove(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     /** {@inheritDoc} */
-    protected void applyUpdate(DomainModel element) throws UpdateFailedException {
-        final InterfaceElement networkInterface = element.addInterface(delegate.getName());
-        if(networkInterface == null) {
-            throw new UpdateFailedException("duplicate interface binding " + delegate.getName());
+    protected void applyUpdate(final ServerElement server) throws UpdateFailedException {
+        if(! server.removeInterface(interfaceName)) {
+            throw new UpdateFailedException();
         }
-        delegate.applyUpdate(networkInterface);
     }
 
     /** {@inheritDoc} */
-    public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new DomainInterfaceRemove(delegate.getName());
+    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(ServerElement original) {
+        final InterfaceElement networkInterface = original.getInterface(interfaceName);
+        if(networkInterface == null) {
+            return null;
+        }
+        return new ServerElementInterfaceAdd(new InterfaceAdd(networkInterface));
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerModelInterfaceAdd(delegate);
+        return new ServerModelInterfaceRemove(interfaceName);
     }
 
+    /** {@inheritDoc} */
+    public Class<ServerElement> getModelElementType() {
+        return ServerElement.class;
+    }
 }

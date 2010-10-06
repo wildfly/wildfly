@@ -22,12 +22,21 @@
 
 package org.jboss.as.model;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
-import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
@@ -35,18 +44,9 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -75,7 +75,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
     private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
     private final Set<String> extensions = new HashSet<String>();
-    private final NavigableMap<String, ServerInterfaceElement> interfaces = new TreeMap<String, ServerInterfaceElement>();
+    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final ProfileElement profile;
     private final SocketBindingGroupElement socketBindings;
     private final int portOffset;
@@ -140,7 +140,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         synchronized (interfaces) {
             if (! interfaces.isEmpty()) {
                 streamWriter.writeStartElement(Element.INTERFACES.getLocalName());
-                for (ServerInterfaceElement element : interfaces.values()) {
+                for (InterfaceElement element : interfaces.values()) {
                     streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
                     element.writeContent(streamWriter);
                 }
@@ -193,13 +193,13 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 //        profile.activate(context);
 
         // Activate Interfaces
-        final Map<String, ServerInterfaceElement> interfaces;
-        synchronized (this.interfaces) {
-            interfaces = new TreeMap<String, ServerInterfaceElement>(this.interfaces);
-        }
-        for(ServerInterfaceElement interfaceElement : interfaces.values()) {
-            interfaceElement.activate(context);
-        }
+//        final Map<String, ServerInterfaceElement> interfaces;
+//        synchronized (this.interfaces) {
+//            interfaces = new TreeMap<String, ServerInterfaceElement>(this.interfaces);
+//        }
+//        for(ServerInterfaceElement interfaceElement : interfaces.values()) {
+//            interfaceElement.activate(context);
+//        }
 
         // TODO move service binding manager to somewhere else?
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
@@ -276,6 +276,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         }
     }
 
+    public InterfaceElement getInterface(final String name) {
+        synchronized(interfaces) {
+            return interfaces.get(name);
+        }
+    }
+
     boolean addSubsystem(final String namespaceUri, final AbstractSubsystemElement<?> element) {
         return profile.addSubsystem(namespaceUri, element);
     }
@@ -288,4 +294,16 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return socketBindings;
     }
 
+    InterfaceElement addInterface(final String name) {
+        if(interfaces.containsKey(name)) {
+            return null;
+        }
+        final InterfaceElement element = new InterfaceElement(name);
+        this.interfaces.put(name, element);
+        return element;
+    }
+
+    boolean removeInterface(final String name) {
+        return interfaces.remove(name) != null;
+    }
 }

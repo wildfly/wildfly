@@ -86,7 +86,7 @@ public class SocketBindingService implements Service<SocketBinding> {
         return interfaceBinding;
     }
 
-    public static void addService(BatchBuilder builder, SocketBindingElement element) {
+    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingElement element) {
         SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
                    element.getMulticastAddress(), element.getMulticastPort());
         BatchServiceBuilder<SocketBinding> batch = builder
@@ -96,9 +96,10 @@ public class SocketBindingService implements Service<SocketBinding> {
         batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
                 SocketBindingManager.class, service.getSocketBindings());
         batch.setInitialMode(Mode.ON_DEMAND);
+        return batch;
     }
 
-    public static void addService(BatchBuilder builder, SocketBindingAdd element) {
+    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd element) {
         SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
                    element.getMulticastAddress(), element.getMulticastPort());
         BatchServiceBuilder<SocketBinding> batch = builder
@@ -108,6 +109,7 @@ public class SocketBindingService implements Service<SocketBinding> {
         batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
                 SocketBindingManager.class, service.getSocketBindings());
         batch.setInitialMode(Mode.ON_DEMAND);
+        return batch;
     }
 
 }
