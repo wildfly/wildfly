@@ -340,6 +340,9 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
         }
         synchronized (processes) {
             ManagedProcess process = processes.get(server);
+            if (process == null) {
+                return;
+            }
             try {
                 process.reconnectToServerManager(smAddress, port);
             } catch (IOException e) {

@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.logging.Logger;

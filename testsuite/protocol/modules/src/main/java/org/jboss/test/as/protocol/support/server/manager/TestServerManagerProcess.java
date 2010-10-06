@@ -31,12 +31,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.server.manager.Main;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
-import org.jboss.test.as.protocol.support.process.NoopExiter;
+import org.jboss.as.server.manager.SystemExiter;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
 
 /**
@@ -87,7 +86,7 @@ public class TestServerManagerProcess extends ServerManager {
     }
 
     public static TestServerManagerProcess createServerManager(Managed managed, List<String> command, InputStream stdin, PrintStream stdout, PrintStream stderr) throws Exception {
-        SystemExiter.initialize(new NoopExiter());
+        SystemExiter.initialize(new ServerManagerNoopExiter());
 
         //The command created by TestProcessManager only contains the args
         String[] args = command.toArray(new String[command.size()]);

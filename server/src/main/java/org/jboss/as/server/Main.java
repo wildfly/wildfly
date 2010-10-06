@@ -33,7 +33,6 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;

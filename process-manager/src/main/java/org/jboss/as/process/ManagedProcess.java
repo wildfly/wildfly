@@ -262,6 +262,11 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         }
     }
 
+    @Override
+    public String toString() {
+        return "ManagedProcess[name=" + processName + "; start=" + start + "; stopped=" + true + "]";
+    }
+
     private static final class ErrorStreamHandler implements Runnable {
         private static final Logger log = Logger.getLogger("org.jboss.as.process.stderr");
 

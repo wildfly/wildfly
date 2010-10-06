@@ -34,7 +34,6 @@ import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.ManagedProcess;
 import org.jboss.as.process.Status;
 import org.jboss.as.process.StreamUtils;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;

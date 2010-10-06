@@ -58,7 +58,7 @@ public class TestProcessManager extends ProcessManagerMaster {
     private final BlockingQueue<String> startedQueue = new LinkedBlockingQueue<String>();
     private final BlockingQueue<String> stoppedQueue = new LinkedBlockingQueue<String>();
     private final BlockingQueue<String> removedQueue = new LinkedBlockingQueue<String>();
-    private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
+    private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     private final BlockingQueue<String> reconnectServers = new LinkedBlockingQueue<String>();
     private volatile NewConnectionListener newConnectionListener;
 
@@ -141,13 +141,14 @@ public class TestProcessManager extends ProcessManagerMaster {
     @Override
     public void shutdown() {
         super.shutdown();
+        shutdownLatch.countDown();
     }
 
-//    @Override
-//    public void serversShutdown() {
-//        super.serversShutdown();
-//        shutdownServersLatch.countDown();
-//    }
+    public void waitForShutdown() throws InterruptedException {
+        if (!shutdownLatch.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Wait for shutdown timed out");
+        }
+    }
 
     @Override
     public void reconnectServersToServerManager(String smAddress, String smPort) {
@@ -165,12 +166,6 @@ public class TestProcessManager extends ProcessManagerMaster {
     protected void acceptedConnection(String processName, SocketConnection connection) {
         if (newConnectionListener != null)
             newConnectionListener.acceptedConnection(processName, connection);
-    }
-
-    public void waitForServersShutdown() throws InterruptedException {
-        if (!shutdownServersLatch.await(10, TimeUnit.SECONDS)) {
-            throw new RuntimeException("Wait timed out");
-        }
     }
 
     public List<String> pollAddedProcess(int expectedNumber) throws InterruptedException {

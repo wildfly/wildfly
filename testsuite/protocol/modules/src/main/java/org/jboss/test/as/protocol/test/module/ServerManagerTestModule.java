@@ -40,6 +40,7 @@ import org.jboss.test.as.protocol.support.process.TestProcessHandler;
 import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
 import org.jboss.test.as.protocol.support.server.MockServerProcess;
+import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerProcess;
 import org.jboss.test.as.protocol.test.base.ServerManagerTest;
 
@@ -97,10 +98,11 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.waitForShutdownCommand();
         svr2.waitForShutdownCommand();
 
+        pm.waitForShutdown();
+
         //Check PM and SM sockets are no longer listening
         waitForManagerToStop(svr1.getSmAddress(), svr1.getSmPort(), 5000);
         waitForManagerToStop(svr1.getPmAddress(), svr1.getPmPort(), 5000);
-
     }
 
     @Override
@@ -146,7 +148,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         Assert.assertEquals(addCount, pm.getAddCount());
         Assert.assertEquals(removeCount, pm.getRemoveCount());
 
-        shutdownProcessManagerNoWait(pm);
+        shutdownProcessManagerAndWait(pm);
     }
 
     @Override
@@ -193,7 +195,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         pm.pollRemovedProcess(1);
         Assert.assertEquals(removeCount + 1, pm.getRemoveCount());
 
-        shutdownProcessManagerNoWait(pm);
+        shutdownProcessManagerAndWait(pm);
     }
 
     @Override
@@ -248,7 +250,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         Assert.assertEquals(addCount, pm.getAddCount());
         Assert.assertEquals(removeCount, pm.getRemoveCount());
 
-        shutdownProcessManagerNoWait(pm);
+        shutdownProcessManagerAndWait(pm);
     }
 
     public void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception {
@@ -280,6 +282,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
     }
 
     private void testServersGetReconnectMessageFollowingRestartedServerManager(ServerState state, boolean receiveConfig) throws Exception {
+        ServerNoopExiter.reset();
         setDomainConfigDir("standard");
         TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(true, false);
         final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0);
@@ -330,13 +333,15 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
             } catch (RuntimeException expected) {
             }
             checkServerManagerServers(sm, 5000, new ServerManagerCheck("Server:server-two", state));
-
         } else {
 
             Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
         }
 
-        shutdownProcessManagerNoWait(pm);
+        //Check that taking down SM did not close the server
+        Assert.assertNull(ServerNoopExiter.getStatus());
+
+        shutdownProcessManagerAndWait(pm);
     }
 
 
@@ -376,10 +381,17 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         } catch (Exception expected) {
         }
 
-        shutdownProcessManagerNoWait(pm);
+        shutdownProcessManagerAndWait(pm);
     }
 
-    private void shutdownProcessManagerNoWait(final TestProcessManager pm) {
+
+
+    private void shutdownProcessManagerAndWait(final TestProcessManager pm) throws InterruptedException {
+        shutdownProcessManagerNoWait(pm);
+        pm.waitForShutdown();
+    }
+
+    private void shutdownProcessManagerNoWait(final TestProcessManager pm) throws InterruptedException {
         new Thread(new Runnable() {
             @Override
             public void run() {

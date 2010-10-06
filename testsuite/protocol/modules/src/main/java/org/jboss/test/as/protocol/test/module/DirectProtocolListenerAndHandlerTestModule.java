@@ -26,14 +26,14 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.server.DirectServerSideCommunicationHandler;
 import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.test.as.protocol.support.process.NoopExiter;
+import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.TestServerSideMessageHandler;
 import org.jboss.test.as.protocol.support.server.manager.MockServerManagerProcess;
+import org.jboss.test.as.protocol.support.server.manager.ServerManagerNoopExiter;
 import org.jboss.test.as.protocol.support.server.manager.TestDirectServerManagerCommunicationListener;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler;
 import org.jboss.test.as.protocol.test.base.DirectProtocolListenerAndHandlerTest;
@@ -46,7 +46,8 @@ import org.jboss.test.as.protocol.test.base.DirectProtocolListenerAndHandlerTest
 public class DirectProtocolListenerAndHandlerTestModule implements DirectProtocolListenerAndHandlerTest{
 
     static {
-        SystemExiter.initialize(new NoopExiter());
+        org.jboss.as.server.manager.SystemExiter.initialize(new ServerManagerNoopExiter());
+        org.jboss.as.server.SystemExiter.initialize(new ServerNoopExiter());
     }
 
     @Override

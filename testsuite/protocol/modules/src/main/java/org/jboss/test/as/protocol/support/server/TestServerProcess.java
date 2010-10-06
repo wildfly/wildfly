@@ -32,14 +32,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.Server;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
+import org.jboss.as.server.SystemExiter;
 import org.jboss.as.server.manager.ServerState;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.test.as.protocol.support.process.NoopExiter;
 
 /**
  * Starts a real server instance in-process. It differs from the proper server
@@ -76,7 +75,7 @@ public class TestServerProcess extends Server {
     }
 
     public static TestServerProcess createServer(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        SystemExiter.initialize(new NoopExiter());
+        SystemExiter.initialize(new ServerNoopExiter());
 
         ServerEnvironment config = Main.determineEnvironment(args, System.getProperties(), stdin, stdout, stderr);
         if (config == null) {

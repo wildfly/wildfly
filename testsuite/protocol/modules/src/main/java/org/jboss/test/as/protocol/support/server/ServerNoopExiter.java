@@ -19,19 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.as.protocol.support.process;
+package org.jboss.test.as.protocol.support.server;
 
-import org.jboss.as.process.SystemExiter.Exiter;
+import org.jboss.as.server.SystemExiter.Exiter;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NoopExiter implements Exiter {
-    public static int status;
+public class ServerNoopExiter implements Exiter {
+    private static volatile Integer status;
     @Override
     public void exit(int status) {
-        NoopExiter.status = status;
+        ServerNoopExiter.status = status;
+        new Exception("SETTING STATUS " + status).printStackTrace();
+    }
+
+    public static Integer getStatus() {
+        return status;
+    }
+
+    public static void reset() {
+        status = null;
     }
 }

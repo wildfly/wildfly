@@ -30,7 +30,6 @@ import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.process.StreamUtils;
-import org.jboss.as.process.SystemExiter;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 
 /**
@@ -99,14 +98,6 @@ public class DirectServerSideCommunicationHandler extends ServerCommunicationHan
         void shutdown() {
             if (!shutdown.getAndSet(true)) {
                 DirectServerSideCommunicationHandler.this.shutdown();
-
-                final Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        SystemExiter.exit(0);
-                    }
-                });
-                thread.setName("Exit thread");
-                thread.start();
             }
         }
     }
