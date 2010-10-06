@@ -163,7 +163,7 @@ public final class ModelXmlParsers {
         }
         Set<String> interfaceNames = Collections.emptySet();
         if (element == Element.INTERFACES) {
-            interfaceNames = parseInterfaces(reader, list);
+            interfaceNames = parseDomainInterfaces(reader, list);
             element = nextElement(reader);
         }
         if (element == Element.SOCKET_BINDING_GROUPS) {
@@ -290,10 +290,49 @@ public final class ModelXmlParsers {
         }
     }
 
-    static Set<String> parseInterfaces(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+    static Set<String> parseHostInterfaces(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        final List<InterfaceAdd> updates = new ArrayList<InterfaceAdd>();
+        final Set<String> names = new HashSet<String>();
+        parseInterfaces(reader, names, updates, true);
+        for(final InterfaceAdd update : updates) {
+            list.add(new HostInterfaceAdd(update));
+        }
+        return names;
+    }
+
+    static Set<String> parseServerElementInterfaces(final String serverName, final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        final List<InterfaceAdd> updates = new ArrayList<InterfaceAdd>();
+        final Set<String> names = new HashSet<String>();
+        parseInterfaces(reader, names, updates, true);
+        for(final InterfaceAdd update : updates) {
+            list.add(new ServerElementUpdate<Void>(serverName, new ServerElementInterfaceAdd(update)));
+        }
+        return names;
+    }
+
+    static Set<String> parseServerModelInterfaces(final XMLExtendedStreamReader reader, final List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+        final List<InterfaceAdd> updates = new ArrayList<InterfaceAdd>();
+        final Set<String> names = new HashSet<String>();
+        parseInterfaces(reader, names, updates, true);
+        for(final InterfaceAdd update : updates) {
+            list.add(new ServerModelInterfaceAdd(update));
+        }
+        return names;
+    }
+
+    static Set<String> parseDomainInterfaces(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+        final List<InterfaceAdd> updates = new ArrayList<InterfaceAdd>();
+        final Set<String> names = new HashSet<String>();
+        parseInterfaces(reader, names, updates, false);
+        for(final InterfaceAdd update : updates) {
+            list.add(new DomainInterfaceAdd(update));
+        }
+        return names;
+    }
+
+    static Set<String> parseInterfaces(final XMLExtendedStreamReader reader, final Set<String> names, final List<InterfaceAdd> list, boolean checkSpecified) throws XMLStreamException {
         requireNoAttributes(reader);
 
-        final Set<String> names = new HashSet<String>();
         final Map<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = new HashMap<Element, AbstractInterfaceCriteriaElement<?>>();
 
         Element anyElement = null;
@@ -350,15 +389,15 @@ public final class ModelXmlParsers {
                 }
                 first = false;
             } while (reader.nextTag() != END_ELEMENT);
-            if (anyElement == null && interfaceCriteria.isEmpty()) {
+            if (checkSpecified && anyElement == null && interfaceCriteria.isEmpty()) {
                 throw new XMLStreamException("Either an inet-address element or some other interface criteria element is required", reader.getLocation());
             }
             // Domain interface update
-            list.add(new DomainInterfaceAdd(new InterfaceAdd(name,
+            list.add(new InterfaceAdd(name,
                     anyElement == Element.ANY_IPV4_ADDRESS,
                     anyElement == Element.ANY_IPV6_ADDRESS,
                     anyElement == Element.ANY_ADDRESS,
-                    interfaceCriteria.values())));
+                    interfaceCriteria.values()));
         }
         return names;
     }

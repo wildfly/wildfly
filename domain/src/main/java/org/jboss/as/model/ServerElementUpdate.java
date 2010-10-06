@@ -31,9 +31,9 @@ public class ServerElementUpdate<R> extends AbstractHostModelUpdate<R> {
 
     private static final long serialVersionUID = 1656392748485415899L;
     private final String serverName;
-    private final AbstractModelUpdate<ServerElement, R> serverUpdate;
+    private final AbstractModelElementUpdate<ServerElement> serverUpdate;
 
-    public ServerElementUpdate(String serverName, AbstractModelUpdate<ServerElement, R> serverUpdate) {
+    public ServerElementUpdate(String serverName, AbstractModelElementUpdate<ServerElement> serverUpdate) {
         this.serverName = serverName;
         this.serverUpdate = serverUpdate;
     }
