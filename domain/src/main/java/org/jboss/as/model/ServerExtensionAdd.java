@@ -52,7 +52,7 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
 
     /** {@inheritDoc}
      * @param updateContext*/
-    protected void applyUpdateBootAction(final UpdateContext updateContext) {
+    public void applyUpdateBootAction(final UpdateContext updateContext) {
         try {
             for (Extension extension : Module.loadService(moduleName, Extension.class)) {
                 extension.activate(null);

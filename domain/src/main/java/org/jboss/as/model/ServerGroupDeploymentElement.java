@@ -22,14 +22,11 @@
 
 package org.jboss.as.model;
 
-import java.util.Collections;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -71,74 +68,6 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         this.runtimeName = runtimeName;
         this.sha1Hash = sha1Hash;
         this.start = start;
-    }
-
-    public ServerGroupDeploymentElement(XMLExtendedStreamReader reader, final RefResolver<String, DeploymentRepositoryElement> repositoryResolver) throws XMLStreamException {
-        super();
-        if (repositoryResolver == null) {
-            throw new IllegalArgumentException("repositoryResolver is null");
-        }
-
-        // Handle attributes
-        String uniqueInput = null;
-        String runtimeInput = null;
-        byte[] hashInput = null;
-        String start = null;
-        final int count = reader.getAttributeCount();
-        for(int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        uniqueInput = value;
-                        break;
-                    }
-                    case RUNTIME_NAME: {
-                        runtimeInput = value;
-                        break;
-                    }
-                    case SHA1: {
-                        try {
-                            hashInput = ParseUtils.hexStringToByteArray(value);
-                        }
-                        catch (Exception e) {
-                            throw new XMLStreamException("Value " + value +
-                                    " for attribute " + attribute.getLocalName() +
-                                    " does not represent a properly hex-encoded SHA1 hash",
-                                    reader.getLocation(), e);
-                        }
-                        break;
-                    }
-                    case START: {
-                        start = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (uniqueInput == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if (runtimeInput == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
-        }
-        if (hashInput == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
-        }
-
-        this.uniqueName = uniqueInput;
-        this.runtimeName = runtimeInput;
-        this.sha1Hash = hashInput;
-        this.start = start == null ? true : Boolean.valueOf(start);
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
-
-        // TODO:  Read in serialized DIs
     }
 
     /**

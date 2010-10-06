@@ -95,7 +95,7 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
      *
      * @param updateContext the update context
      */
-    protected void applyUpdateBootAction(UpdateContext updateContext) {
+    public void applyUpdateBootAction(UpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 

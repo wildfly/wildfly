@@ -194,7 +194,7 @@ public class ServerManager implements ShutdownListener {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
                 log.info("Starting server " + serverEl.getName());
-                ServerModel serverConf = new ServerModel(domainConfig, hostConfig, serverEl.getName());
+                ServerModel serverConf = new ServerModel(domainConfig, serverEl.getName());
                 JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
 
@@ -245,7 +245,7 @@ public class ServerManager implements ShutdownListener {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
                 log.info("Creating reconnected server " + serverEl.getName());
-                ServerModel serverConf = new ServerModel(domainConfig, hostConfig, serverEl.getName());
+                ServerModel serverConf = new ServerModel(domainConfig, serverEl.getName());
                 JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
                 try {
 

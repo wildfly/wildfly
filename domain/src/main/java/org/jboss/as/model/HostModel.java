@@ -62,13 +62,13 @@ public final class HostModel extends AbstractModel<HostModel> {
 
     private PropertiesElement systemProperties;
 
+    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.HOST.getLocalName());
+
     /**
      * Construct a new instance.
-     *
-     * @param elementName the name of this host element
      */
-    public HostModel(final QName elementName) {
-        super(elementName);
+    public HostModel() {
+        super(ELEMENT_NAME);
     }
 
     /**
@@ -82,10 +82,8 @@ public final class HostModel extends AbstractModel<HostModel> {
      * @return the jvm configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
      */
-    public JvmElement getJvm(String name) {
-        synchronized (jvms) {
-            return jvms.get(name);
-        }
+    JvmElement getJvm(String name) {
+        return jvms.get(name);
     }
 
     /**

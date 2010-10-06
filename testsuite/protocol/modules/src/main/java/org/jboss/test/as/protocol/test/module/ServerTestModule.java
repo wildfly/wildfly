@@ -23,6 +23,8 @@ package org.jboss.test.as.protocol.test.module;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -30,9 +32,11 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.jboss.as.communication.SocketConnection;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ServerElement;
+import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
@@ -167,7 +171,13 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         HostModel host = ConfigParser.parseHost(file);
         ServerElement el = host.getServer(serverName);
         Assert.assertNotNull(el);
-        return new ServerModel(domain, host, serverName);
+        final List<AbstractServerModelUpdate<?>> list = new ArrayList<AbstractServerModelUpdate<?>>();
+        ServerFactory.combine(domain, host, serverName, list);
+        final ServerModel model = new ServerModel(serverName, 0);
+        for (AbstractServerModelUpdate<?> update : list) {
+            model.update(update);
+        }
+        return model;
     }
 
     private static class QueuedNewConnectionListener implements NewConnectionListener {

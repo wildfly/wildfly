@@ -82,9 +82,12 @@ public final class NewMain {
             System.exit(1);
             throw new IllegalStateException();
         }
-        for (;;) try {
+        try {
             while (initialInput.read() != -1) {}
-            break;
+        } catch (IOException e) {
+        }
+        try {
+            initialInput.close();
         } catch (IOException e) {
         }
     }

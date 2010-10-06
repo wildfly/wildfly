@@ -27,11 +27,8 @@ import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
-import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
-import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
@@ -84,93 +81,18 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private final int portOffset;
     private PropertiesElement systemProperties;
 
-
     /**
-     * Assemble a standalone server configuration from the domain/host model.
+     * Construct a new instance.
      *
-     * @param domain the domain
-     * @param host the host
-     * @param serverName the name of the server to initialize
-     * @return the standalone server model
+     * @param serverName the server name
+     * @param portOffset the port offset
      */
-    public ServerModel(final DomainModel domain, final HostModel host, final String serverName) {
+    public ServerModel(final String serverName, final int portOffset) {
         super(ELEMENT_NAME);
-        if (domain == null) {
-            throw new IllegalArgumentException("domain is null");
-        }
-        if (host == null) {
-            throw new IllegalArgumentException("host is null");
-        }
-        if (serverName == null) {
-            throw new IllegalArgumentException("serverName is null");
-        }
-
-        ServerElement server = host.getServer(serverName);
-        if (server == null)
-            throw new IllegalStateException("Server " + serverName + " is not listed in Host");
-
         this.serverName = serverName;
-
-        String serverGroupName = server.getServerGroup();
-        ServerGroupElement serverGroup = domain.getServerGroup(serverGroupName);
-        if (serverGroup == null)
-            throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
-
-        String profileName = serverGroup.getProfileName();
-        ProfileElement domainProfile = domain.getProfile(profileName);
-        if (domainProfile == null)
-            throw new IllegalStateException("Profile" + profileName + " is not listed in Domain");
-        this.profile = new ProfileElement(domainProfile);
-
-        Set<ServerGroupDeploymentElement> groupDeployments = serverGroup.getDeployments();
-        for (ServerGroupDeploymentElement dep : groupDeployments) {
-            deployments.put(dep.getUniqueName(), dep);
-        }
-
-        SocketBindingGroupRefElement bindingRef = server.getSocketBindingGroup();
-        if (bindingRef == null) {
-            bindingRef = serverGroup.getSocketBindingGroup();
-        }
-        SocketBindingGroupElement domainBindings = domain.getSocketBindingGroup(bindingRef.getRef());
-        this.socketBindings = domainBindings == null ? null : new SocketBindingGroupElement(domainBindings);
-        this.portOffset = bindingRef.getPortOffset();
-
-        this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true,
-                domain.getSystemProperties(), serverGroup.getSystemProperties(),
-                host.getSystemProperties(), server.getSystemProperties());
-
-        Set<String> unspecifiedInterfaces = new HashSet<String>();
-        for (InterfaceElement ie : domain.getInterfaces()) {
-            if (ie.isFullySpecified())
-                interfaces.put(ie.getName(), new ServerInterfaceElement(ie));
-            else
-                unspecifiedInterfaces.add(ie.getName());
-        }
-        for (ServerInterfaceElement ie : host.getInterfaces()) {
-            interfaces.put(ie.getName(), ie);
-            unspecifiedInterfaces.remove(ie.getName());
-        }
-        for (ServerInterfaceElement ie : server.getInterfaces()) {
-            interfaces.put(ie.getName(), ie);
-            unspecifiedInterfaces.remove(ie.getName());
-        }
-        if (unspecifiedInterfaces.size() > 0) {
-            // Config didn't fully specify bindings declared in domain; WARN
-            // or fail
-            if (unspecifiedInterfaces.contains(this.socketBindings.getDefaultInterface())) {
-                throw new IllegalStateException("The default interface for socket binding group " + this.socketBindings.getName() +
-                        " references interface " + this.socketBindings.getDefaultInterface() +
-                        " but the Server and Host configurations do not specify how to assign an IP address to that interface");
-            }
-            for (SocketBindingElement binding : this.socketBindings.getAllSocketBindings()) {
-                if (unspecifiedInterfaces.contains(binding.getInterfaceName())) {
-                    throw new IllegalStateException("Socket binding " + binding.getName() +
-                            " references interface " + binding.getInterfaceName() +
-                            " but the Server and Host configurations do not specify how to assign an IP address to that interface");
-                }
-            }
-            // TODO log a WARN about interfaces that aren't referenced via socket bindings
-        }
+        profile = new ProfileElement((String) null);
+        socketBindings = new SocketBindingGroupElement((String) null);
+        this.portOffset = portOffset;
     }
 
     /**

@@ -48,7 +48,7 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
     }
 
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-
+        subsystemAdd.applyUpdate(updateContext, handler, param);
     }
 
     public ServerSubsystemRemove getCompensatingUpdate(final ServerModel original) {

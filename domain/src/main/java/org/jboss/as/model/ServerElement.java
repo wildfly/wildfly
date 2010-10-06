@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -33,7 +32,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -61,96 +59,6 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         this.name = name;
         this.serverGroup = serverGroup;
     }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
-     */
-    public ServerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Handle attributes
-        String name = null;
-        String group = null;
-        Boolean start = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case GROUP: {
-                        group = value;
-                        break;
-                    }
-                    case START: {
-                        start = Boolean.valueOf(value);
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if (group == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.GROUP));
-        }
-        this.name = name;
-        this.serverGroup = group;
-        this.start = start == null ? true : start.booleanValue();
-
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INTERFACE_SPECS: {
-                            parseInterfaces(reader);
-                            break;
-                        }
-                        case JVM: {
-                            if (jvm != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
-                            }
-                            jvm = new JvmElement(reader);
-                            break;
-                        }
-                        case SOCKET_BINDING_GROUP: {
-                            if (bindingGroup != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
-                            }
-                            bindingGroup = new SocketBindingGroupRefElement(reader);
-                            break;
-                        }
-                        case SYSTEM_PROPERTIES: {
-                            if (systemProperties != null) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            this.systemProperties = new PropertiesElement(reader);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-
-    }
-
 
     /**
      * Gets whether this server should be started.
@@ -252,15 +160,13 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
         }
 
-        synchronized (interfaces) {
-            if (! interfaces.isEmpty()) {
-                streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
-                for (ServerInterfaceElement element : interfaces.values()) {
-                    streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
-                    element.writeContent(streamWriter);
-                }
-                streamWriter.writeEndElement();
+        if (! interfaces.isEmpty()) {
+            streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
+            for (ServerInterfaceElement element : interfaces.values()) {
+                streamWriter.writeStartElement(Element.INTERFACE.getLocalName());
+                element.writeContent(streamWriter);
             }
+            streamWriter.writeEndElement();
         }
 
         if (bindingGroup != null) {
@@ -279,30 +185,5 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             jvm.writeContent(streamWriter);
         }
         streamWriter.writeEndElement();
-    }
-
-    private void parseInterfaces(XMLExtendedStreamReader reader) throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INTERFACE: {
-                            final ServerInterfaceElement interfaceEl = new ServerInterfaceElement(reader);
-                            if (interfaces.containsKey(interfaceEl.getName())) {
-                                throw new XMLStreamException("Interface " + interfaceEl.getName() + " already declared", reader.getLocation());
-                            }
-                            interfaces.put(interfaceEl.getName(), interfaceEl);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
     }
 }

@@ -31,7 +31,6 @@ import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -204,42 +203,5 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
         }
 
         streamWriter.writeEndElement();
-    }
-
-    private void parseDeployments(XMLExtendedStreamReader reader) throws XMLStreamException {
-        // FIXME replace with SimpleRefResolver
-        final RefResolver<String, DeploymentRepositoryElement> resolver = new RefResolver<String, DeploymentRepositoryElement>() {
-            private static final long serialVersionUID = 1L;
-            /** Always returns <code>null</code> since full domain does not support deployment-repository */
-            @Override
-            public DeploymentRepositoryElement resolveRef(String ref) {
-                return null;
-            }
-        };
-
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case DEPLOYMENT: {
-                            final ServerGroupDeploymentElement deployment = new ServerGroupDeploymentElement(reader, resolver);
-                            if (deploymentMappings.containsKey(deployment.getUniqueName())) {
-                                throw new XMLStreamException("Deployment " + deployment.getUniqueName() +
-                                        " with sha1 hash " + bytesToHexString(deployment.getSha1Hash()) +
-                                        " already declared", reader.getLocation());
-                            }
-                            deploymentMappings.put(deployment.getUniqueName(), deployment);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
     }
 }

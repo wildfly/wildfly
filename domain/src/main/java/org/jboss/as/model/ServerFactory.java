@@ -23,9 +23,16 @@
 package org.jboss.as.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.ServerInterfaceElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,17 +49,60 @@ public final class ServerFactory {
      * @param hostModel the host model
      * @param serverName the name of the server to bootstrap
      * @param list the list to which the updates should be appended
-     * @return TBD
      */
     @SuppressWarnings({ "RawUseOfParameterizedType" })
-    public static Void combine(DomainModel domainModel, HostModel hostModel, String serverName, List<AbstractServerModelUpdate<?>> list) {
+    public static void combine(DomainModel domainModel, HostModel hostModel, String serverName, List<AbstractServerModelUpdate<?>> list) {
+        // Validate the model
         final ServerElement serverElement = hostModel.getServer(serverName);
+        if (serverElement == null) {
+            throw new IllegalArgumentException("Host model does not contain a server named '" + serverName + "'");
+        }
         final String serverGroupName = serverElement.getServerGroup();
         final ServerGroupElement serverGroup = domainModel.getServerGroup(serverGroupName);
+        if (serverGroup == null) {
+            throw new IllegalArgumentException("Domain model does not contain a server group named '" + serverGroupName + "'");
+        }
         final String profileName = serverGroup.getProfileName();
         final ProfileElement leafProfile = domainModel.getProfile(profileName);
+        if (profileName == null) {
+            throw new IllegalArgumentException("Domain model does not contain a profile named '" + profileName + "'");
+        }
 
         // Merge interfaces
+        // TODO: modify to merge each interface instead of replacing duplicates
+        Set<String> unspecifiedInterfaces = new HashSet<String>();
+        Map<String, ServerInterfaceElement> interfaces = new HashMap<String, ServerInterfaceElement>();
+        for (InterfaceElement ie : domainModel.getInterfaces()) {
+            if (ie.isFullySpecified())
+                interfaces.put(ie.getName(), new ServerInterfaceElement(ie));
+            else
+                unspecifiedInterfaces.add(ie.getName());
+        }
+        for (ServerInterfaceElement ie : hostModel.getInterfaces()) {
+            interfaces.put(ie.getName(), ie);
+            unspecifiedInterfaces.remove(ie.getName());
+        }
+        for (ServerInterfaceElement ie : serverElement.getInterfaces()) {
+            interfaces.put(ie.getName(), ie);
+            unspecifiedInterfaces.remove(ie.getName());
+        }
+        // TODO: verify that all required interfaces were specified
+
+        for (ServerInterfaceElement interfaceElement : interfaces.values()) {
+            // todo: create a ServerInterfaceAdd for each one
+        }
+
+        // Merge socket bindings
+        SocketBindingGroupRefElement bindingRef = serverElement.getSocketBindingGroup();
+        if (bindingRef == null) {
+            bindingRef = serverGroup.getSocketBindingGroup();
+        }
+        SocketBindingGroupElement domainBindings = domainModel.getSocketBindingGroup(bindingRef.getRef());
+        if (domainBindings == null) {
+            domainBindings = new SocketBindingGroupElement(domainBindings);
+        }
+        int portOffset = bindingRef.getPortOffset();
+        // TODO: add each socket binding
 
         // Merge extensions
         final Set<String> extensionNames = new LinkedHashSet<String>();
@@ -72,11 +122,14 @@ public final class ServerFactory {
             processSubsystem((AbstractSubsystemElement) subsystemElement, list);
         }
 
-        // Merge deployer config stuff
-
         // Merge deployments
+        for (ServerGroupDeploymentElement element : serverGroup.getDeployments()) {
+            final ServerModelDeploymentAddUpdate add = new ServerModelDeploymentAddUpdate(element.getUniqueName(), element.getRuntimeName(), element.getSha1Hash(), element.isStart());
+            list.add(add);
+        }
 
-        return null;
+        // Merge system properties
+        // todo after PropertiesElement is eliminated
     }
 
     private static <E extends AbstractSubsystemElement<E>> void processSubsystem(E subsystemElement, List<AbstractServerModelUpdate<?>> list) {
