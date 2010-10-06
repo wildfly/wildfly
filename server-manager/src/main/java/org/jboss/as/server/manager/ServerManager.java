@@ -189,82 +189,9 @@ public class ServerManager implements ShutdownListener {
         this.serverMaker = new ServerMaker(environment, processManagerSlave, processManagerCommmandHandler, variables);
     }
 
-    public void startServers() {
-        for (ServerElement serverEl : hostConfig.getServers()) {
-            // TODO take command line input on what servers to start
-            if (serverEl.isStart()) {
-                log.info("Starting server " + serverEl.getName());
-                ServerModel serverConf = new ServerModel(domainConfig, serverEl.getName());
-                JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
-                try {
-
-                    Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
-                    servers.put(getServerProcessName(serverConf), server);
-                    // Now that the server is in the servers map we can start it
-                    startServer(serverConf, server);
-                } catch (IOException e) {
-                    // FIXME handle failure to start server
-                    log.error("Failed to start server " + serverEl.getName(), e);
-                }
-            }
-            else log.info("Server " + serverEl.getName() + " is configured to not be started");
-        }
-    }
-
-    private void startServer(final ServerModel serverModel, final Server server) throws IOException {
-        // We need to make sure we have all the deployments locally
-        final Set<ServerGroupDeploymentElement> deployments = serverModel.getDeployments();
-        final FileRepository localFileRepository = this.fileRepository;
-        final FileRepository dcFileRepository = this.domainControllerConnection.getRemoteFileRepository();
-        for(ServerGroupDeploymentElement deployment : deployments) {
-            final String deploymentPath = generateDeploymentPath(deployment);
-            if(!localFileRepository.getDeploymentFile(deploymentPath).exists() && !dcFileRepository.getDeploymentFile(deploymentPath).exists()) {
-                throw new RuntimeException("Unable to get content for deployment [" + deployment.getRuntimeName() + "] from domain controller ");
-            }
-        }
-        processManagerSlave.startProcess(server.getServerProcessName());
-    }
-
     private String generateDeploymentPath(final ServerGroupDeploymentElement deployment) {
         final String id = deployment.getSha1HashAsHexString();
         return id.substring(0, 2) + "/" + id.substring(2);
-    }
-
-    private RespawnPolicy getRespawnPolicy(ServerModel serverConf) {
-        //TODO JBAS-8390 Read respawn policy from host or domain?
-        return RespawnPolicy.DefaultRespawnPolicy.INSTANCE;
-    }
-
-    /**
-     * Sends the RECONNECT_SERVERS <SM_ADDRESS> <SM_PORT> command to the
-     * servers following a restart of the server manager
-     */
-    private void reconnectServers() {
-        //Create the server proxies
-        for (ServerElement serverEl : hostConfig.getServers()) {
-            // TODO take command line input on what servers to start
-            if (serverEl.isStart()) {
-                log.info("Creating reconnected server " + serverEl.getName());
-                ServerModel serverConf = new ServerModel(domainConfig, serverEl.getName());
-                JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, serverEl.getName());
-                try {
-
-                    Server server = serverMaker.makeServer(serverConf, jvmElement, getRespawnPolicy(serverConf));
-                    servers.put(getServerProcessName(serverConf), server);
-                } catch (IOException e) {
-                    // FIXME handle failure to start server
-                    log.error("Failed to start server " + serverEl.getName(), e);
-                }
-            }
-            else log.info("Server " + serverEl.getName() + " is configured to not be started");
-        }
-
-        //Tell PM to tell servers to reconnect
-        try {
-            processManagerSlave.reconnectServers(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
-        } catch (IOException e) {
-            log.error("Failed to send RECONNECT_SERVERS", e);
-        }
     }
 
     /**
@@ -667,9 +594,9 @@ public class ServerManager implements ShutdownListener {
         this.domainConfig = domain;
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
-                startServers();
+//                startServers();
             } else {
-                reconnectServers();
+//                reconnectServers();
             }
         }
     }

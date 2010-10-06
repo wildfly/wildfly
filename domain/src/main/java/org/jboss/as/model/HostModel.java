@@ -82,7 +82,7 @@ public final class HostModel extends AbstractModel<HostModel> {
      * @return the jvm configuration, or <code>null</code> if there is none with
      *         the given <code>name</name>
      */
-    JvmElement getJvm(String name) {
+    public JvmElement getJvm(String name) {
         return jvms.get(name);
     }
 
