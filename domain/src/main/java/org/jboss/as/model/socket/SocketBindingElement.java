@@ -4,20 +4,10 @@
 package org.jboss.as.model.socket;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
-import org.jboss.as.model.Element;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.as.model.RefResolver;
-import org.jboss.as.services.net.SocketBindingService;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -25,7 +15,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  */
-public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> implements ServiceActivator {
+public class SocketBindingElement extends AbstractModelElement<SocketBindingElement> {
 
     private static final long serialVersionUID = 6868487634991345679L;
 
@@ -36,120 +26,22 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     private InetAddress multicastAddress;
     private String interfaceName;
     private String defaultInterfaceName;
-    private final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
 
     /**
      * Construct a new instance.
      *
      * @param name the name of the group. Cannot be <code>null</code>
-     * @param interfaceResolver {@link org.jboss.as.model.RefResolver} to use to resolve references
-     *           to interfaces. May be used safely in the constructor
+     * @oaram defaultInterfaceName the default interface name. Cannot be <code>null</code>
      */
-    public SocketBindingElement(final String name, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) {
-        this.name = name;
-
-        if (interfaceResolver == null)
-            throw new IllegalArgumentException("interfaceResolver is null");
-        this.interfaceResolver = interfaceResolver;
-
-        if (defaultInterfaceName == null)
-            throw new IllegalArgumentException("defaultInterfaceName is null");
-        this.defaultInterfaceName = defaultInterfaceName;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @param interfaceResolver {@link RefResolver} to use to resolve references
-     *           to interfaces. May be used safely in the constructor
-     *           itself. Cannot be <code>null</code>
-     * @throws XMLStreamException if an error occurs
-     */
-    public SocketBindingElement(XMLExtendedStreamReader reader, final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver, final String defaultInterfaceName) throws XMLStreamException {
-
-        if (interfaceResolver == null)
-            throw new IllegalArgumentException("interfaceResolver is null");
-        this.interfaceResolver = interfaceResolver;
-
-        if (defaultInterfaceName == null)
-            throw new IllegalArgumentException("defaultInterfaceName is null");
-        this.defaultInterfaceName = defaultInterfaceName;
-
-        // Handle attributes
-        String name = null;
-        String intf = null;
-        Integer port = null;
-        Boolean fixPort = null;
-        InetAddress mcastAddr = null;
-        Integer mcastPort = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case INTERFACE: {
-                        if (this.interfaceResolver.resolveRef(value) == null) {
-                            throw new XMLStreamException("Unknown interface " + value +
-                                    " " + attribute.getLocalName() + " must be declared in element " +
-                                    Element.INTERFACES.getLocalName(), reader.getLocation());
-                        }
-                        intf = value;
-                        break;
-                    }
-                    case PORT: {
-                        port = Integer.valueOf(parsePort(value, attribute, reader, true));
-                        break;
-                    }
-                    case FIXED_PORT: {
-                        fixPort = Boolean.valueOf(value);
-                        break;
-                    }
-                    case MULTICAST_ADDRESS: {
-                        try {
-                            mcastAddr = InetAddress.getByName(value);
-                            if (!mcastAddr.isMulticastAddress()) {
-                                throw new XMLStreamException("Value " + value + " for attribute " +
-                                        attribute.getLocalName() + " is not a valid multicast address",
-                                        reader.getLocation());
-                            }
-                        } catch (UnknownHostException e) {
-                            throw new XMLStreamException("Value " + value + " for attribute " +
-                                    attribute.getLocalName() + " is not a valid multicast address",
-                                    reader.getLocation(), e);
-                        }
-                    }
-                    case MULTICAST_PORT: {
-                        mcastPort = Integer.valueOf(parsePort(value, attribute, reader, false));
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+    public SocketBindingElement(final String name, final String defaultInterfaceName) {
+        if(name == null) {
+            throw new IllegalArgumentException("name is null");
         }
         this.name = name;
-        this.interfaceName = intf;
-        this.port = port == null ? 0 : port;
-        this.fixedPort = fixPort == null ? false : fixPort.booleanValue();
-        this.multicastAddress = mcastAddr;
-        this.multicastPort = mcastAddr == null ? -1 : mcastPort != null ? mcastPort.intValue() : -1;
-        if (this.multicastPort == -1 && this.multicastAddress != null) {
-            throw new XMLStreamException("Must configure " + Attribute.MULTICAST_PORT +
-                    " if " + Attribute.MULTICAST_ADDRESS + " is configured", reader.getLocation());
+        if (defaultInterfaceName == null) {
+            throw new IllegalArgumentException("defaultInterfaceName is null");
         }
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
+        this.defaultInterfaceName = defaultInterfaceName;
     }
 
     /**
@@ -332,31 +224,6 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
             streamWriter.writeAttribute(Attribute.MULTICAST_PORT.getLocalName(), String.valueOf(multicastPort));
         }
         streamWriter.writeEndElement();
-    }
-
-    private int parsePort(String value, Attribute attribute, XMLExtendedStreamReader reader, boolean allowEphemeral) throws XMLStreamException {
-        int legal;
-        try {
-            legal = Integer.parseInt(value);
-            int min = allowEphemeral ? 0 : 1;
-            if (legal < min || legal >= 65536) {
-                throw new XMLStreamException("Illegal value " + value +
-                        " for attribute '" + attribute.getLocalName() +
-                        "' must be between " + min + " and 65536", reader.getLocation());
-            }
-        }
-        catch (NumberFormatException nfe) {
-            throw new XMLStreamException("Illegal value " + value +
-                    " for attribute '" + attribute.getLocalName() +
-                    "' must be an integer", reader.getLocation(), nfe);
-        }
-        return legal;
-    }
-
-
-    public void activate(ServiceActivatorContext activatorContext) {
-        // create the binding service
-        SocketBindingService.addService(activatorContext.getBatchBuilder(), this);
     }
 
 }

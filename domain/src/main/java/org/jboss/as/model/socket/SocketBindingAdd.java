@@ -68,7 +68,7 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
 
     /** {@inheritDoc} */
     protected void applyUpdate(SocketBindingGroupElement group) throws UpdateFailedException {
-        final SocketBindingElement socketBinding = new SocketBindingElement(name, group.getInterfaceResolver(), group.getDefaultInterface());
+        final SocketBindingElement socketBinding = new SocketBindingElement(name, group.getDefaultInterface());
         socketBinding.setConfiguredInterfaceName(interfaceName);
         socketBinding.setFixedPort(fixedPort);
         socketBinding.setPort(port);

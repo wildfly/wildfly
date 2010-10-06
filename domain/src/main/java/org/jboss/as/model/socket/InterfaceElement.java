@@ -110,6 +110,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     }
 
     void setAnyLocal(boolean anyLocal) {
+        validateAnyLocalAllowed(Element.ANY_ADDRESS);
         this.anyLocal = anyLocal;
     }
 
@@ -118,6 +119,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     }
 
     void setAnyLocalV4(boolean anyLocalV4) {
+        validateAnyLocalAllowed(Element.ANY_IPV4_ADDRESS);
         this.anyLocalV4 = anyLocalV4;
     }
 
@@ -126,6 +128,7 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     }
 
     void setAnyLocalV6(boolean anyLocalV6) {
+        validateAnyLocalAllowed(Element.ANY_IPV6_ADDRESS);
         this.anyLocalV6 = anyLocalV6;
     }
 

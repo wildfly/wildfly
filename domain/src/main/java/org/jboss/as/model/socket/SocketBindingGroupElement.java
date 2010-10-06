@@ -4,9 +4,7 @@
 package org.jboss.as.model.socket;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -16,14 +14,6 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
-import org.jboss.as.model.Namespace;
-import org.jboss.as.model.ParseUtils;
-import org.jboss.as.model.RefResolver;
-import org.jboss.as.model.SimpleRefResolver;
-import org.jboss.msc.service.Location;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -32,7 +22,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  */
-public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> implements ServiceActivator {
+public class SocketBindingGroupElement extends AbstractModelElement<SocketBindingGroupElement> {
 
     private static final long serialVersionUID = -7389975620327080290L;
 
@@ -41,191 +31,13 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
     private final NavigableMap<String, SocketBindingGroupIncludeElement> includedGroups = new TreeMap<String, SocketBindingGroupIncludeElement>();
     private final NavigableMap<String, SocketBindingElement> socketBindings = new TreeMap<String, SocketBindingElement>();
 
-    private RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver;
-    private RefResolver<String, SocketBindingGroupElement> includedGroupResolver;
-
+    /**
+     * Create a new {@code SocketBindinggroupElement}
+     *
+     * @param name the binding group name.
+     */
     public SocketBindingGroupElement(final String name) {
         this.name = name;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param location the declaration location of the element
-     * @param name the name of the group. Cannot be <code>null</code>
-     * @param defaultInterface the name of the interface to use by default when
-     *            nested {@link SocketBindingGroupElement}s do not declare an interface.
-     *            Cannot be <code>null</code>
-     * @param interfaceResolver {@link RefResolver} to use to resolve references
-     *           to interfaces. May be used safely in the constructor
-     *           itself. Cannot be <code>null</code>
-     * @param includedGroupResolver {@link RefResolver} to use to resolve references
-     *           to included socket binding groups. Should not be used in the constructor
-     *           itself as referenced groups may not have been created yet.
-     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an
-     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
-     */
-    public SocketBindingGroupElement(Location location, final String name, final String defaultInterface,
-            final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver,
-            final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) {
-        super();
-
-        if (name == null)
-            throw new IllegalArgumentException("name is null");
-        this.name = name;
-
-        if (interfaceResolver == null)
-            throw new IllegalArgumentException("interfaceResolver is null");
-        this.interfaceResolver = interfaceResolver;
-
-        if (defaultInterface == null)
-            throw new IllegalArgumentException("defaultInterface is null");
-
-        if (this.interfaceResolver.resolveRef(defaultInterface) == null) {
-            throw new IllegalArgumentException("Unknown interface " + defaultInterface);
-        }
-        this.defaultInterface = defaultInterface;
-
-        this.includedGroupResolver = includedGroupResolver;
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @param interfaceResolver {@link RefResolver} to use to resolve references
-     *           to interfaces. May be used safely in the constructor
-     *           itself
-     * @param includedGroupResolver {@link RefResolver} to use to resolve references
-     *           to included socket binding groups. Should not be used in the constructor
-     *           itself as referenced groups may not have been created yet.
-     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
-     *           element will result in an
-     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
-     *
-     * @throws XMLStreamException if an error occurs
-     */
-    public SocketBindingGroupElement(XMLExtendedStreamReader reader,
-            final RefResolver<String, ? extends AbstractInterfaceElement<?>> interfaceResolver,
-            final RefResolver<String, SocketBindingGroupElement> includedGroupResolver) throws XMLStreamException {
-        super();
-
-        if (interfaceResolver == null)
-            throw new IllegalArgumentException("interfaceResolver is null");
-        this.interfaceResolver = interfaceResolver;
-
-        this.includedGroupResolver = includedGroupResolver;
-
-        // Handle attributes
-        String name = null;
-        String defIntf = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case DEFAULT_INTERFACE: {
-                        if (this.interfaceResolver.resolveRef(value) == null) {
-                            throw new XMLStreamException("Unknown interface " + value +
-                                    " " + attribute.getLocalName() + " must be declared in element " +
-                                    Element.INTERFACES.getLocalName(), reader.getLocation());
-                        }
-                        defIntf = value;
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if (defIntf == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.DEFAULT_INTERFACE));
-        }
-        this.name = name;
-        this.defaultInterface = defIntf;
-        // Handle elements
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case INCLUDE: {
-                            if (includedGroupResolver == null) {
-                                throw ParseUtils.unexpectedElement(reader);
-                            }
-                            final SocketBindingGroupIncludeElement include = new SocketBindingGroupIncludeElement(reader);
-                            if (includedGroups.containsKey(include.getGroupName())) {
-                                throw new XMLStreamException("Included socket-binding-group " + include.getGroupName() + " already declared", reader.getLocation());
-                            }
-                            includedGroups.put(include.getGroupName(), include);
-                            break;
-                        }
-                        case SOCKET_BINDING: {
-                            final SocketBindingElement include = new SocketBindingElement(reader, interfaceResolver, this.defaultInterface);
-                            if (socketBindings.containsKey(include.getName())) {
-                                throw new XMLStreamException("socket-binding " + include.getName() + " already declared", reader.getLocation());
-                            }
-                            socketBindings.put(include.getName(), include);
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
-                    }
-                    break;
-                }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
-            }
-        }
-    }
-
-    /**
-     * Creates a new SocketBindingGroupElement based on an existing element. The key thing
-     * this constructor does is use the given <code>source</code> element's
-     * {@link RefResolver} to resolve any included binding groups. It then creates
-     * its own RefResolver from only those included binding groups. The effect of this
-     * is to eliminate any extraneous SocketBindingGroupElement references that may be
-     * associated with <code>source</code>'s object graph.
-     *
-     * @param source
-     */
-    public SocketBindingGroupElement(SocketBindingGroupElement source) {
-        super();
-
-        this.name = source.name;
-        this.defaultInterface = source.defaultInterface;
-        this.interfaceResolver = source.interfaceResolver;
-        synchronized (source.socketBindings) {
-            this.socketBindings.putAll(source.socketBindings);
-        }
-        synchronized (source.includedGroups) {
-            this.includedGroups.putAll(source.includedGroups);
-        }
-
-        final NavigableMap<String, SocketBindingGroupElement> resolvedGroups = new TreeMap<String, SocketBindingGroupElement>();
-
-
-        for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : this.includedGroups.entrySet()) {
-            SocketBindingGroupElement group = source.includedGroupResolver.resolveRef(entry.getKey());
-            if (group == null) {
-                throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
-                        "' refers to non-existent " + Element.SOCKET_BINDING_GROUP + " '" +
-                        entry.getValue().getGroupName() + "'");
-            }
-            resolvedGroups.put(entry.getKey(), new SocketBindingGroupElement(group));
-        }
-        this.includedGroupResolver = new SimpleRefResolver<String, SocketBindingGroupElement>(resolvedGroups);
     }
 
     /**
@@ -253,35 +65,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
 
     public Set<String> getIncludedSocketBindingGroups() {
         return Collections.unmodifiableSet(new HashSet<String>(includedGroups.keySet()));
-    }
-
-    public Set<SocketBindingElement> getAllSocketBindings() {
-        if (this.includedGroups.size() == 0)
-            return Collections.unmodifiableSet(new HashSet<SocketBindingElement>(socketBindings.values()));
-        else {
-            Map<String, SocketBindingElement> result = new HashMap<String, SocketBindingElement>();
-            for (Map.Entry<String, SocketBindingGroupIncludeElement> entry : includedGroups.entrySet()) {
-                SocketBindingGroupElement group = includedGroupResolver.resolveRef(entry.getKey());
-                if (group == null) {
-                    throw new IllegalStateException("Socket binding group referenced by '" + Element.INCLUDE.getLocalName() +
-                            "' refers to non-existent " + Element.SOCKET_BINDING_GROUP + " '" +
-                            entry.getValue().getGroupName() + "'");
-                }
-                Set<SocketBindingElement> included = group.getAllSocketBindings();
-                for (SocketBindingElement binding : included) {
-                    result.put(binding.getName(), binding);
-                }
-            }
-            result.putAll(socketBindings);
-            return Collections.unmodifiableSet(new HashSet<SocketBindingElement>(result.values()));
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void activate(ServiceActivatorContext serviceActivatorContext) {
-        for(SocketBindingElement element : getAllSocketBindings()) {
-            element.activate(serviceActivatorContext);
-        }
     }
 
     /* (non-Javadoc)
@@ -313,10 +96,6 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         }
 
         streamWriter.writeEndElement();
-    }
-
-    public RefResolver<String, ? extends AbstractInterfaceElement<?>> getInterfaceResolver() {
-        return interfaceResolver;
     }
 
     void addIncludedGroup(final String groupName) {

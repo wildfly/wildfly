@@ -100,7 +100,7 @@ public final class ServerFactory {
         }
         SocketBindingGroupElement domainBindings = domainModel.getSocketBindingGroup(bindingRef.getRef());
         if (domainBindings == null) {
-            domainBindings = new SocketBindingGroupElement(domainBindings);
+            domainBindings = new SocketBindingGroupElement("domainBindings");
         }
         int portOffset = bindingRef.getPortOffset();
         // TODO: add each socket binding

@@ -206,7 +206,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                 new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
 
         // Activate socket bindings
-        socketBindings.activate(context);
+        // socketBindings.activate(context);
 
         // Activate deployment module loader
         batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
