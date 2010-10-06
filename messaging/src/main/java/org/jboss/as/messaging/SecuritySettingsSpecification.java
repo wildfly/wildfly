@@ -22,37 +22,28 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Set;
+import org.hornetq.core.security.Role;
 
 /**
  * @author John Bailey
  */
-public abstract class AbstractTransportAdd extends AbstractMessagingSubsystemUpdate<Void> {
-    private final String name;
-    private Map<String, Object> params;
-    private String factoryClass;
+public class SecuritySettingsSpecification implements Serializable {
+    private static final long serialVersionUID = -35697785671908094L;
+    private final String match;
+    private final Set<Role> roles;
 
-    protected AbstractTransportAdd(String name) {
-        this.name = name;
+    public SecuritySettingsSpecification(final String match, final Set<Role> roles) {
+        this.match = match;
+        this.roles = roles;
     }
 
-    public String getName() {
-        return name;
+    public String getMatch() {
+        return match;
     }
 
-    public Map<String, Object> getParams() {
-        return params;
-    }
-
-    public void setParams(final Map<String, Object> params) {
-        this.params = params;
-    }
-
-    public String getFactoryClassName() {
-        return factoryClass;
-    }
-
-    public void setFactoryClassName(final String factoryClass) {
-        this.factoryClass = factoryClass;
+    public Set<Role> getRoles() {
+        return roles;
     }
 }

@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Set;
-import org.hornetq.core.security.Role;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
@@ -33,22 +31,21 @@ import org.jboss.as.model.UpdateResultHandler;
  */
 public class SecuritySettingAdd extends AbstractMessagingSubsystemUpdate<Void> {
     private static final long serialVersionUID = -5826472860381258935L;
-    private final String match;
-    private final Set<Role> roles;
 
-    public SecuritySettingAdd(final String match, final Set<Role> roles) {
-        this.match = match;
-        this.roles = roles;
+    private final SecuritySettingsSpecification securitySettingsSpecification;
+
+    public SecuritySettingAdd(SecuritySettingsSpecification securitySettingsSpecification) {
+        this.securitySettingsSpecification = securitySettingsSpecification;
     }
 
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
-        return new SecuritySettingRemove(match);
+        return new SecuritySettingRemove(securitySettingsSpecification.getMatch());
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> pUpdateResultHandler, P param) {
     }
 
     protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
-        element.addSecuritySetting(match, roles);
+        element.addSecuritySetting(securitySettingsSpecification.getMatch(), securitySettingsSpecification.getRoles());
     }
 }

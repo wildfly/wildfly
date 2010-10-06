@@ -45,11 +45,11 @@ public class AcceptorRemove extends AbstractMessagingSubsystemUpdate<Void> {
     }
 
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
-        final AcceptorAdd add = new AcceptorAdd(name);
         final TransportElement acceptorElement = element.getAcceptor(name);
-        add.setFactoryClassName(acceptorElement.getFactoryClassName());
-        add.setParams(acceptorElement.getParams());
-        return add;
+        final TransportSpecification transportSpecification = new TransportSpecification(name);
+        transportSpecification.setFactoryClassName(acceptorElement.getFactoryClassName());
+        transportSpecification.setParams(acceptorElement.getParams());
+        return new AcceptorAdd(transportSpecification);
     }
 
     protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {

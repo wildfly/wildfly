@@ -48,11 +48,11 @@ public class ConnectorRemove extends AbstractMessagingSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
-        final ConnectorAdd add = new ConnectorAdd(name);
-        final TransportElement acceptorElement = element.getConnector(name);
-        add.setFactoryClassName(acceptorElement.getFactoryClassName());
-        add.setParams(acceptorElement.getParams());
-        return add;
+        final TransportElement connectorElement = element.getConnector(name);
+        final TransportSpecification transportSpecification = new TransportSpecification(name);
+        transportSpecification.setFactoryClassName(connectorElement.getFactoryClassName());
+        transportSpecification.setParams(connectorElement.getParams());
+        return new ConnectorAdd(transportSpecification);
     }
 
     /** {@inheritDoc} */

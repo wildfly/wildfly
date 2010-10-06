@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
@@ -34,134 +32,35 @@ import org.jboss.as.model.UpdateResultHandler;
  * @author Emanuel Muckenhuber
  */
 public class AddressSettingsAdd extends AbstractMessagingSubsystemUpdate<Void> {
-    private static final long serialVersionUID = -1629954652094107618L;
-    private final String name;
-    private SimpleString deadLetterAddress;
-    private SimpleString expiryAddress;
-    private long redeliveryDelay;
-    private int messageCounterHistoryDayLimit;
-    private AddressFullMessagePolicy addressFullMessagePolicy;
-    private boolean lastValueQueue;
-    private int maxDeliveryAttempts;
-    private long redistributionDelay;
-    private boolean sendToDLAOnNoRoute;
-    private long maxSizeBytes;
-    private long pageSizeBytes;
+    private static final long serialVersionUID = 2382439965275000913L;
+    private final AddressSettingsSpecification addressSettingsSpecification;
 
-    public AddressSettingsAdd(final String name) {
-        this.name = name;
+    public AddressSettingsAdd(final AddressSettingsSpecification addressSettingsSpecification) {
+        this.addressSettingsSpecification = addressSettingsSpecification;
     }
 
-    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
-        return new AddressSettingsRemove(name);
+    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
+        return new AddressSettingsRemove(addressSettingsSpecification.getMatch());
     }
 
     protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
-        final AddressSettingsElement addressSettingsElement = element.addAddressSettings(name);
-        addressSettingsElement.setAddressFullMessagePolicy(getAddressFullMessagePolicy());
-        addressSettingsElement.setDeadLetterAddress(getDeadLetterAddress());
-        addressSettingsElement.setExpiryAddress(getExpiryAddress());
-        addressSettingsElement.setLastValueQueue(isLastValueQueue());
-        addressSettingsElement.setMaxDeliveryAttempts(getMaxDeliveryAttempts());
-        addressSettingsElement.setMaxSizeBytes(getMaxSizeBytes());
-        addressSettingsElement.setMessageCounterHistoryDayLimit(getMessageCounterHistoryDayLimit());
-        addressSettingsElement.setPageSizeBytes(getPageSizeBytes());
-        addressSettingsElement.setRedeliveryDelay(getRedeliveryDelay());
-        addressSettingsElement.setRedistributionDelay(getRedistributionDelay());
-        addressSettingsElement.setSendToDLAOnNoRoute(isSendToDLAOnNoRoute());
+        final AddressSettingsElement addressSettingsElement = element.addAddressSettings(addressSettingsSpecification.getMatch());
+        addressSettingsElement.setAddressFullMessagePolicy(addressSettingsSpecification.getAddressFullMessagePolicy());
+        addressSettingsElement.setDeadLetterAddress(addressSettingsSpecification.getDeadLetterAddress());
+        addressSettingsElement.setExpiryAddress(addressSettingsSpecification.getExpiryAddress());
+        addressSettingsElement.setLastValueQueue(addressSettingsSpecification.isLastValueQueue());
+        addressSettingsElement.setMaxDeliveryAttempts(addressSettingsSpecification.getMaxDeliveryAttempts());
+        addressSettingsElement.setMaxSizeBytes(addressSettingsSpecification.getMaxSizeBytes());
+        addressSettingsElement.setMessageCounterHistoryDayLimit(addressSettingsSpecification.getMessageCounterHistoryDayLimit());
+        addressSettingsElement.setPageSizeBytes(addressSettingsSpecification.getPageSizeBytes());
+        addressSettingsElement.setRedeliveryDelay(addressSettingsSpecification.getRedeliveryDelay());
+        addressSettingsElement.setRedistributionDelay(addressSettingsSpecification.getRedistributionDelay());
+        addressSettingsElement.setSendToDLAOnNoRoute(addressSettingsSpecification.isSendToDLAOnNoRoute());
     }
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         // TODO Auto-generated method stub
 
-    }
-
-    public SimpleString getDeadLetterAddress() {
-        return deadLetterAddress;
-    }
-
-    public void setDeadLetterAddress(SimpleString deadLetterAddress) {
-        this.deadLetterAddress = deadLetterAddress;
-    }
-
-    public SimpleString getExpiryAddress() {
-        return expiryAddress;
-    }
-
-    public void setExpiryAddress(SimpleString expiryAddress) {
-        this.expiryAddress = expiryAddress;
-    }
-
-    public long getRedeliveryDelay() {
-        return redeliveryDelay;
-    }
-
-    public void setRedeliveryDelay(long redeliveryDelay) {
-        this.redeliveryDelay = redeliveryDelay;
-    }
-
-    public int getMessageCounterHistoryDayLimit() {
-        return messageCounterHistoryDayLimit;
-    }
-
-    public void setMessageCounterHistoryDayLimit(int messageCounterHistoryDayLimit) {
-        this.messageCounterHistoryDayLimit = messageCounterHistoryDayLimit;
-    }
-
-    public AddressFullMessagePolicy getAddressFullMessagePolicy() {
-        return addressFullMessagePolicy;
-    }
-
-    public void setAddressFullMessagePolicy(AddressFullMessagePolicy addressFullMessagePolicy) {
-        this.addressFullMessagePolicy = addressFullMessagePolicy;
-    }
-
-    public boolean isLastValueQueue() {
-        return lastValueQueue;
-    }
-
-    public void setLastValueQueue(boolean lastValueQueue) {
-        this.lastValueQueue = lastValueQueue;
-    }
-
-    public int getMaxDeliveryAttempts() {
-        return maxDeliveryAttempts;
-    }
-
-    public void setMaxDeliveryAttempts(int maxDeliveryAttempts) {
-        this.maxDeliveryAttempts = maxDeliveryAttempts;
-    }
-
-    public long getRedistributionDelay() {
-        return redistributionDelay;
-    }
-
-    public void setRedistributionDelay(long redistributionDelay) {
-        this.redistributionDelay = redistributionDelay;
-    }
-
-    public boolean isSendToDLAOnNoRoute() {
-        return sendToDLAOnNoRoute;
-    }
-
-    public void setSendToDLAOnNoRoute(boolean sendToDLAOnNoRoute) {
-        this.sendToDLAOnNoRoute = sendToDLAOnNoRoute;
-    }
-
-    public long getMaxSizeBytes() {
-        return maxSizeBytes;
-    }
-
-    public void setMaxSizeBytes(long maxSizeBytes) {
-        this.maxSizeBytes = maxSizeBytes;
-    }
-
-    public long getPageSizeBytes() {
-        return pageSizeBytes;
-    }
-
-    public void setPageSizeBytes(long pageSizeBytes) {
-        this.pageSizeBytes = pageSizeBytes;
     }
 }

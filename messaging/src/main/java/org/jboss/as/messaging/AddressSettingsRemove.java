@@ -48,19 +48,19 @@ public class AddressSettingsRemove extends AbstractMessagingSubsystemUpdate<Void
 
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
         final AddressSettingsElement addressSettingsElement = element.getAddressSettingsElement(name);
-        final AddressSettingsAdd add = new AddressSettingsAdd(name);
-        add.setAddressFullMessagePolicy(addressSettingsElement.getAddressFullMessagePolicy());
-        add.setDeadLetterAddress(addressSettingsElement.getDeadLetterAddress());
-        add.setExpiryAddress(addressSettingsElement.getExpiryAddress());
-        add.setLastValueQueue(addressSettingsElement.isLastValueQueue());
-        add.setMaxDeliveryAttempts(addressSettingsElement.getMaxDeliveryAttempts());
-        add.setMaxSizeBytes(addressSettingsElement.getMaxSizeBytes());
-        add.setMessageCounterHistoryDayLimit(addressSettingsElement.getMessageCounterHistoryDayLimit());
-        add.setPageSizeBytes(addressSettingsElement.getPageSizeBytes());
-        add.setRedeliveryDelay(addressSettingsElement.getRedeliveryDelay());
-        add.setRedistributionDelay(addressSettingsElement.getRedistributionDelay());
-        add.setSendToDLAOnNoRoute(addressSettingsElement.isSendToDLAOnNoRoute());
-        return add;
+        final AddressSettingsSpecification addressSettingsSpecification = new AddressSettingsSpecification(name);
+        addressSettingsSpecification.setAddressFullMessagePolicy(addressSettingsElement.getAddressFullMessagePolicy());
+        addressSettingsSpecification.setDeadLetterAddress(addressSettingsElement.getDeadLetterAddress());
+        addressSettingsSpecification.setExpiryAddress(addressSettingsElement.getExpiryAddress());
+        addressSettingsSpecification.setLastValueQueue(addressSettingsElement.isLastValueQueue());
+        addressSettingsSpecification.setMaxDeliveryAttempts(addressSettingsElement.getMaxDeliveryAttempts());
+        addressSettingsSpecification.setMaxSizeBytes(addressSettingsElement.getMaxSizeBytes());
+        addressSettingsSpecification.setMessageCounterHistoryDayLimit(addressSettingsElement.getMessageCounterHistoryDayLimit());
+        addressSettingsSpecification.setPageSizeBytes(addressSettingsElement.getPageSizeBytes());
+        addressSettingsSpecification.setRedeliveryDelay(addressSettingsElement.getRedeliveryDelay());
+        addressSettingsSpecification.setRedistributionDelay(addressSettingsElement.getRedistributionDelay());
+        addressSettingsSpecification.setSendToDLAOnNoRoute(addressSettingsElement.isSendToDLAOnNoRoute());
+        return new AddressSettingsAdd(addressSettingsSpecification);
     }
 
     protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {

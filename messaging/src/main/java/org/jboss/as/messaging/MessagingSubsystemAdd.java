@@ -23,11 +23,16 @@
 package org.jboss.as.messaging;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.messaging.hornetq.HornetQService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
@@ -56,6 +61,11 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private int journalFileSize = -1;
     private JournalType journalType;
 
+    private Set<TransportSpecification> acceptors = new HashSet<TransportSpecification>();
+    private Set<TransportSpecification> connectors = new HashSet<TransportSpecification>();
+    private Set<SecuritySettingsSpecification> securitySettings = new HashSet<SecuritySettingsSpecification>();
+    private Set<AddressSettingsSpecification> addressSettings = new HashSet<AddressSettingsSpecification>();
+
     public MessagingSubsystemAdd() {
         super(Namespace.MESSAGING_1_0.getUriString());
     }
@@ -73,39 +83,59 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         hqConfig.setJournalFileSize(getJournalFileSize());
         hqConfig.setJournalType(getJournalType());
 
+        // Configure address settings
+        final Map<String, AddressSettings> configAddressSettings = hqConfig.getAddressesSettings();
+        for(AddressSettingsSpecification addressSpec : addressSettings) {
+            final AddressSettings settings = new AddressSettings();
+            settings.setDeadLetterAddress(addressSpec.getDeadLetterAddress());
+            settings.setExpiryAddress(addressSpec.getExpiryAddress());
+            settings.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
+            settings.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
+            settings.setMessageCounterHistoryDayLimit(addressSpec.getMessageCounterHistoryDayLimit());
+            settings.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
+            settings.setLastValueQueue(addressSpec.isLastValueQueue());
+            settings.setMaxDeliveryAttempts(addressSpec.getMaxDeliveryAttempts());
+            settings.setRedistributionDelay(addressSpec.getRedistributionDelay());
+            settings.setSendToDLAOnNoRoute(addressSpec.isSendToDLAOnNoRoute());
+            settings.setMaxSizeBytes(addressSpec.getMaxSizeBytes());
+            settings.setPageSizeBytes(addressSpec.getPageSizeBytes());
+            configAddressSettings.put(addressSpec.getMatch(), settings);
+        }
+        //  Configure security roles
+        final Map<String, Set<Role>> hqSecurityRoles = hqConfig.getSecurityRoles();
+        for(SecuritySettingsSpecification securitySetting : securitySettings) {
+            hqSecurityRoles.put(securitySetting.getMatch(), securitySetting.getRoles());
+        }
+
         hqservice.setConfiguration(hqConfig);
 
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-
         final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice);
 
-//        // Add the dependencies on the connectors and acceptors
-//        Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
-//        Collection<TransportConfiguration> connectors = hqConfig.getConnectorConfigurations().values();
-//        if (connectors != null) {
-//            for (TransportConfiguration tc : connectors) {
-//                Object socketRef = tc.getParams().get("socket-ref");
-//                // Add a dependency on a SocketBinding if there is a socket-ref
-//                if (socketRef != null) {
-//                    String name = socketRef.toString();
-//                    ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
-//                    serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
-//                }
-//            }
-//        }
-//        //
-//        if (acceptors != null) {
-//            for (TransportConfiguration tc : acceptors) {
-//                Object socketRef = tc.getParams().get("socket-ref");
-//                // Add a dependency on a SocketBinding if there is a socket-ref
-//                if (socketRef != null) {
-//                    String name = socketRef.toString();
-//                    ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
-//                    serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
-//                }
-//            }
-//        }
+        final Collection<TransportConfiguration> connectors = hqConfig.getConnectorConfigurations().values();
+        for(TransportSpecification connectorSpec : this.connectors) {
+            connectors.add(new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName()));
 
+            final Object socketRef = connectorSpec.getParams().get("socket-ref");
+            // Add a dependency on a SocketBinding if there is a socket-ref
+            if (socketRef != null) {
+                final String name = socketRef.toString();
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            }
+        }
+
+        final Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
+        for(TransportSpecification acceptorSpec : this.acceptors) {
+            acceptors.add(new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName()));
+            final Object socketRef = acceptorSpec.getParams().get("socket-ref");
+            // Add a dependency on a SocketBinding if there is a socket-ref
+            if (socketRef != null) {
+                final String name = socketRef.toString();
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+            }
+        }
         serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 
@@ -184,5 +214,21 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
     public void setJournalType(JournalType journalType) {
         this.journalType = journalType;
+    }
+
+    void addAcceptor(final TransportSpecification transportSpecification) {
+        acceptors.add(transportSpecification);
+    }
+
+    void addConnector(final TransportSpecification transportSpecification) {
+        connectors.add(transportSpecification);
+    }
+
+    void addAddressSettings(final AddressSettingsSpecification addressSettingsSpecification) {
+        addressSettings.add(addressSettingsSpecification);
+    }
+
+    void addSecuritySettings(final SecuritySettingsSpecification securitySettingsSpecification) {
+        securitySettings.add(securitySettingsSpecification);
     }
 }

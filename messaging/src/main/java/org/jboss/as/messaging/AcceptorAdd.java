@@ -31,11 +31,13 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Emanuel Muckenhuber
  */
-public class AcceptorAdd extends AbstractTransportAdd {
+public class AcceptorAdd extends AbstractMessagingSubsystemUpdate<Void> {
     private static final long serialVersionUID = 1L;
 
-    public AcceptorAdd(final String name) {
-        super(name);
+    private final TransportSpecification transportSpecification;
+
+    public AcceptorAdd(final TransportSpecification transportSpecification) {
+        this.transportSpecification = transportSpecification;
     }
 
     /** {@inheritDoc} */
@@ -45,14 +47,14 @@ public class AcceptorAdd extends AbstractTransportAdd {
 
     /** {@inheritDoc} */
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
-        return new AcceptorRemove(getName());
+        return new AcceptorRemove(transportSpecification.getName());
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
-        final TransportElement acceptorElement = element.addAcceptor(getName());
-        acceptorElement.setFactoryClassName(getFactoryClassName());
-        acceptorElement.setParams(getParams());
+        final TransportElement acceptorElement = element.addAcceptor(transportSpecification.getName());
+        acceptorElement.setFactoryClassName(transportSpecification.getFactoryClassName());
+        acceptorElement.setParams(transportSpecification.getParams());
     }
 
 

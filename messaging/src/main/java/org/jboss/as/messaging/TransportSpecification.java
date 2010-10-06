@@ -22,31 +22,39 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author John Bailey
  */
-public class SecuritySettingRemove extends AbstractMessagingSubsystemUpdate<Void> {
-    private static final long serialVersionUID = -1937486321192173002L;
-    private final String match;
+public class TransportSpecification implements Serializable {
+    private static final long serialVersionUID = -8803500050889387041L;
+    private final String name;
+    private Map<String, Object> params;
+    private String factoryClass;
 
-    public SecuritySettingRemove(String match) {
-        this.match = match;
+    protected TransportSpecification(String name) {
+        this.name = name;
     }
 
-    public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(final MessagingSubsystemElement element) {
-        final SecuritySettingElement securitySettingElement = element.getSecuritySetting(match);
-        final SecuritySettingsSpecification securitySettingsSpecification = new SecuritySettingsSpecification(match, securitySettingElement.getRoles());
-        return new SecuritySettingAdd(securitySettingsSpecification);
+    public String getName() {
+        return name;
     }
 
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> pUpdateResultHandler, P param) {
+    public Map<String, Object> getParams() {
+        return params;
     }
 
-    protected void applyUpdate(final MessagingSubsystemElement element) throws UpdateFailedException {
-        element.removeSecuritySetting(match);
+    public void setParams(final Map<String, Object> params) {
+        this.params = params;
+    }
+
+    public String getFactoryClassName() {
+        return factoryClass;
+    }
+
+    public void setFactoryClassName(final String factoryClass) {
+        this.factoryClass = factoryClass;
     }
 }

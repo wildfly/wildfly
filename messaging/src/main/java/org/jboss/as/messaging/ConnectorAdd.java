@@ -31,24 +31,25 @@ import org.jboss.as.model.UpdateResultHandler;
  *
  * @author Emanuel Muckenhuber
  */
-public class ConnectorAdd extends AbstractTransportAdd {
-
+public class ConnectorAdd extends AbstractMessagingSubsystemUpdate<Void> {
     private static final long serialVersionUID = -7363968924387259998L;
 
-    public ConnectorAdd(String name) {
-        super(name);
+    private final TransportSpecification transportSpecification;
+
+    public ConnectorAdd(final TransportSpecification transportSpecification) {
+        this.transportSpecification = transportSpecification;
     }
 
     /** {@inheritDoc} */
     public AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element) {
-        return new ConnectorRemove(getName());
+        return new ConnectorRemove(transportSpecification.getName());
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(MessagingSubsystemElement element) throws UpdateFailedException {
-        final TransportElement connectorElement = element.addConnector(getName());
-        connectorElement.setFactoryClassName(getFactoryClassName());
-        connectorElement.setParams(getParams());
+        final TransportElement connectorElement = element.addConnector(transportSpecification.getName());
+        connectorElement.setFactoryClassName(transportSpecification.getFactoryClassName());
+        connectorElement.setParams(transportSpecification.getParams());
     }
 
     /** {@inheritDoc} */

@@ -63,11 +63,11 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case ACCEPTORS:
                     // add acceptors
-                    processAcceptors(reader, updates);
+                    processAcceptors(reader, messagingSubsystemAdd);
                     break;
                 case ADDRESS_SETTINGS:
                     // add address settings
-                    processAddressSettings(reader, updates);
+                    processAddressSettings(reader, messagingSubsystemAdd);
                     break;
                 case ASYNC_CONNECTION_EXECUTION_ENABLED:
                     unhandledElement(reader, element);
@@ -106,7 +106,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     break;
                 case CONNECTORS:
                     // process connectors
-                    processConnectors(reader, updates);
+                    processConnectors(reader, messagingSubsystemAdd);
                     break;
                 case CONNECTOR_REF:
                     unhandledElement(reader, element);
@@ -268,7 +268,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     break;
                 case SECURITY_SETTINGS:
                     // process security settings
-                    processSecuritySettings(reader, updates);
+                    processSecuritySettings(reader, messagingSubsystemAdd);
                     break;
                 case SERVER_DUMP_INTERVAL:
                     unhandledElement(reader, element);
@@ -337,7 +337,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
      * Process acceptors.
      *
      * @param reader the stream reader
-     * @param updates the updates
+     * @param messagingSubsystemAdd the messaging subsystem add
      * @throws XMLStreamException
      */
     /*
@@ -347,7 +347,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
            <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
         </acceptor>
      */
-    void processAcceptors(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
+    void processAcceptors(XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
         String localName = null;
         do {
             reader.nextTag();
@@ -356,19 +356,14 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case ACCEPTOR:
                     String name = reader.getAttributeValue(0);
-                    final AcceptorAdd acceptorAdd = parseAcceptorConfiguration(reader, name, Element.ACCEPTOR);
+                    final TransportSpecification transportSpecification = parseTransportConfiguration(reader, name, Element.ACCEPTOR);
                     // Add acceptor
-                    updates.add(acceptorAdd);
+                    messagingSubsystemAdd.addAcceptor(transportSpecification);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.ACCEPTOR.getLocalName()));
     }
 
-    AcceptorAdd parseAcceptorConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement) throws XMLStreamException {
-        final AcceptorAdd add = new AcceptorAdd(name);
-        parseTransportConfiguration(reader, name, parentElement, add);
-        return add;
-    }
 
     /*
     <address-settings>
@@ -383,7 +378,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
        </address-setting>
     </address-settings>
      */
-    void processAddressSettings(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
+    void processAddressSettings(final XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
         int tag = reader.getEventType();
         String localName = null;
         do {
@@ -393,16 +388,16 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case ADDRESS_SETTING:
                     String match = reader.getAttributeValue(0);
-                    final AddressSettingsAdd addressSettingsAdd = parseAddressSettings(reader, match);
+                    final AddressSettingsSpecification addressSettingsSpec = parseAddressSettings(reader, match);
                     // Add address settings
-                    updates.add(addressSettingsAdd);
+                    messagingSubsystemAdd.addAddressSettings(addressSettingsSpec);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
     }
 
-    static AddressSettingsAdd parseAddressSettings(final XMLExtendedStreamReader reader, String name) throws XMLStreamException {
-        final AddressSettingsAdd addressSettingsAdd = new AddressSettingsAdd(name);
+    static AddressSettingsSpecification parseAddressSettings(final XMLExtendedStreamReader reader, String name) throws XMLStreamException {
+        final AddressSettingsSpecification addressSettingsSpec = new AddressSettingsSpecification(name);
 
         int tag = reader.getEventType();
         String localName = null;
@@ -414,28 +409,28 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case DEAD_LETTER_ADDRESS_NODE_NAME: {
                     SimpleString queueName = new SimpleString(reader.getElementText().trim());
-                    addressSettingsAdd.setDeadLetterAddress(queueName);
+                    addressSettingsSpec.setDeadLetterAddress(queueName);
                 }
                     break;
                 case EXPIRY_ADDRESS_NODE_NAME: {
                     SimpleString queueName = new SimpleString(reader.getElementText().trim());
-                    addressSettingsAdd.setExpiryAddress(queueName);
+                    addressSettingsSpec.setExpiryAddress(queueName);
                 }
                     break;
                 case REDELIVERY_DELAY_NODE_NAME: {
-                    addressSettingsAdd.setRedeliveryDelay(Long.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setRedeliveryDelay(Long.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case MAX_SIZE_BYTES_NODE_NAME: {
-                    addressSettingsAdd.setMaxSizeBytes(Long.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setMaxSizeBytes(Long.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case PAGE_SIZE_BYTES_NODE_NAME: {
-                    addressSettingsAdd.setPageSizeBytes(Long.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setPageSizeBytes(Long.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME: {
-                    addressSettingsAdd.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setMessageCounterHistoryDayLimit(Integer.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME: {
@@ -450,23 +445,23 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     } else if (value.equals(AddressFullMessagePolicy.PAGE.toString())) {
                         policy = AddressFullMessagePolicy.PAGE;
                     }
-                    addressSettingsAdd.setAddressFullMessagePolicy(policy);
+                    addressSettingsSpec.setAddressFullMessagePolicy(policy);
                 }
                     break;
                 case LVQ_NODE_NAME: {
-                    addressSettingsAdd.setLastValueQueue(Boolean.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setLastValueQueue(Boolean.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case MAX_DELIVERY_ATTEMPTS: {
-                    addressSettingsAdd.setMaxDeliveryAttempts(Integer.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setMaxDeliveryAttempts(Integer.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case REDISTRIBUTION_DELAY_NODE_NAME: {
-                    addressSettingsAdd.setRedistributionDelay(Long.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setRedistributionDelay(Long.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 case SEND_TO_DLA_ON_NO_ROUTE: {
-                    addressSettingsAdd.setSendToDLAOnNoRoute(Boolean.valueOf(reader.getElementText().trim()));
+                    addressSettingsSpec.setSendToDLAOnNoRoute(Boolean.valueOf(reader.getElementText().trim()));
                 }
                     break;
                 default:
@@ -477,7 +472,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
         } while (!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName())
                 && reader.getEventType() != XMLExtendedStreamReader.END_ELEMENT);
 
-        return addressSettingsAdd;
+        return addressSettingsSpec;
     }
 
     /*
@@ -487,7 +482,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
        <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
     </connector>
      */
-    void processConnectors(XMLExtendedStreamReader reader, List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
+    void processConnectors(final XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
         // Handle elements
         int tag = reader.getEventType();
         String localName = null;
@@ -498,22 +493,16 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case CONNECTOR:
                     String name = reader.getAttributeValue(0);
-                    ConnectorAdd connectorAdd = parseConnectorConfiguration(reader, name, Element.CONNECTOR);
-                    updates.add(connectorAdd);
+                    TransportSpecification transportSpecification = parseTransportConfiguration(reader, name, Element.CONNECTOR);
+                    messagingSubsystemAdd.addConnector(transportSpecification);
                     break;
             }
         } while (reader.hasNext() && localName.equals(org.jboss.as.messaging.Element.CONNECTOR.getLocalName()));
     }
 
 
-    ConnectorAdd parseConnectorConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement) throws XMLStreamException {
-        final ConnectorAdd add = new ConnectorAdd(name);
-        parseTransportConfiguration(reader, name, parentElement, add);
-        return add;
-    }
-
-    void parseTransportConfiguration(final XMLExtendedStreamReader reader, String name, Element parentElement, AbstractTransportAdd add) throws XMLStreamException {
-
+    TransportSpecification parseTransportConfiguration(final XMLExtendedStreamReader reader, final String name, final Element parentElement) throws XMLStreamException {
+        final TransportSpecification transportSpecification = new TransportSpecification(name);
         Map<String, Object> params = new HashMap<String, Object>();
 
         int tag = reader.getEventType();
@@ -555,8 +544,9 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             // Scan to element end
         } while (reader.hasNext());
 
-        add.setFactoryClassName(clazz);
-        add.setParams(params);
+        transportSpecification.setFactoryClassName(clazz);
+        transportSpecification.setParams(params);
+        return transportSpecification;
     }
 
     /*
@@ -567,8 +557,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             <permission type="send" roles="guest"/>
         </security-setting>
      */
-    void processSecuritySettings(XMLExtendedStreamReader reader,
-            List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates) throws XMLStreamException {
+    void processSecuritySettings(final XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
         int tag = reader.getEventType();
         String localName = null;
         do {
@@ -579,8 +568,8 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
             switch (element) {
                 case SECURITY_SETTING:
                     String match = reader.getAttributeValue(0);
-                    final SecuritySettingAdd securitySettingAdd = parseSecurityRoles(reader, match);
-                    updates.add(securitySettingAdd);
+                    final SecuritySettingsSpecification securitySettingsSpec = parseSecurityRoles(reader, match);
+                    messagingSubsystemAdd.addSecuritySettings(securitySettingsSpec);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.SECURITY_SETTING.getLocalName()));
@@ -591,7 +580,7 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
         reader.discardRemainder();
     }
 
-    SecuritySettingAdd parseSecurityRoles(final XMLExtendedStreamReader reader, String match) throws XMLStreamException {
+    SecuritySettingsSpecification parseSecurityRoles(final XMLExtendedStreamReader reader, final String match) throws XMLStreamException {
         final Set<Role> securityRoles = new HashSet<Role>();
 
         ArrayList<String> send = new ArrayList<String>();
@@ -667,6 +656,6 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                             .contains(role), manageRoles.contains(role)));
         }
 
-        return new SecuritySettingAdd(match, securityRoles);
+        return new SecuritySettingsSpecification(match, securityRoles);
     }
 }
