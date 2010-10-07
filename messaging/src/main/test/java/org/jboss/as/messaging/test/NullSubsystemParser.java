@@ -2,10 +2,11 @@ package org.jboss.as.messaging.test;
 
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.ParseResult;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * A noop implementation of XMLElementReader that simply skips over the content
@@ -14,12 +15,11 @@ import javax.xml.stream.XMLStreamException;
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class NullSubsystemParser<Object> implements XMLElementReader<List<?>> {
+public class NullSubsystemParser implements XMLElementReader<ParseResult<List<?>>> {
 
     /** {@inheritDoc} */
-    public void readElement(XMLExtendedStreamReader arg0, List<?> arg1) throws XMLStreamException {
-        // TODO Auto-generated method stub
-
+    public void readElement(XMLExtendedStreamReader reader, ParseResult<List<?>> arg1) throws XMLStreamException {
+        reader.discardRemainder();
     }
 
 }

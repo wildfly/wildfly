@@ -2,42 +2,29 @@ package org.jboss.as.messaging.test;
 
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsystemElement<Object>> {
+public class NullSubsystemElement extends AbstractSubsystemElement<NullSubsystemElement> {
 
-    public NullSubsystemElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public NullSubsystemElement() {
         super("");
-        reader.discardRemainder();
-    }
-
-    @Override
-    protected Class<NullSubsystemElement<Object>> getElementClass() {
-        Class<NullSubsystemElement<Object>> c = (Class<NullSubsystemElement<Object>>) getClass();
-        return c;
-    }
-
-    @Override
-    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        // To change body of implemented methods use File | Settings | File
-        // Templates.
     }
 
     /** {@inheritDoc} */
-    protected void getUpdates(List<? super AbstractSubsystemUpdate<NullSubsystemElement<Object>, ?>> list) {
+    protected void getUpdates(List<? super AbstractSubsystemUpdate<NullSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
+
     }
 
     /** {@inheritDoc} */
@@ -46,10 +33,44 @@ public class NullSubsystemElement<T> extends AbstractSubsystemElement<NullSubsys
         return false;
     }
 
-    protected AbstractSubsystemAdd<NullSubsystemElement<Object>> getAdd() {
-        return null;
+    /** {@inheritDoc} */
+    protected AbstractSubsystemAdd<NullSubsystemElement> getAdd() {
+        return new NullSubsystemAdd();
     }
 
-    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+    /** {@inheritDoc} */
+    protected <P> void applyRemove(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /** {@inheritDoc} */
+    protected Class<NullSubsystemElement> getElementClass() {
+        return NullSubsystemElement.class;
+    }
+
+    /** {@inheritDoc} */
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        // TODO Auto-generated method stub
+
+    }
+
+    class NullSubsystemAdd extends AbstractSubsystemAdd<NullSubsystemElement> {
+
+        protected NullSubsystemAdd() {
+            super("");
+        }
+
+        /** {@inheritDoc} */
+        protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+            // TODO Auto-generated method stub
+
+        }
+
+        /** {@inheritDoc} */
+        protected NullSubsystemElement createSubsystemElement() {
+            return new NullSubsystemElement();
+        }
+
     }
 }

@@ -20,8 +20,9 @@ import org.hornetq.core.server.JournalType;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.messaging.Namespace;
-import org.jboss.as.model.AbstractSubsystemUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ModelXmlParsers;
+import org.jboss.as.model.ServerModel;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,18 +46,18 @@ public class ConfigParsingUnitTestCase {
          Assert.assertNotNull("standalone-with-messaging.xml url is not null", configURL);
          System.out.println("configURL = " + configURL);
          BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
-         List<AbstractSubsystemUpdate<?, ?>> updates = new ArrayList<AbstractSubsystemUpdate<?,?>>();
+         List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
          mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(reader));
 
-         MessagingSubsystemElement subsystem = new MessagingSubsystemElement();
-         Configuration jmsConfig = subsystem.getConfiguration();
-
-
-         for(final AbstractSubsystemUpdate<?, ?> update : updates) {
-             // update?
+         final ServerModel model = new ServerModel();
+         for(final AbstractServerModelUpdate<?> update : updates) {
+             model.update(update);
          }
+         MessagingSubsystemElement subsystem = (MessagingSubsystemElement) model.getProfile().getSubsystem(Namespace.MESSAGING_1_0.getUriString());
+         Assert.assertNotNull(subsystem);
+         Configuration jmsConfig = null;
 
-         Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", jmsConfig.getBindingsDirectory());
+         Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", subsystem.getBindingsDirectory());
          Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());
          Assert.assertEquals("journal-min-files", 10, jmsConfig.getJournalMinFiles());
          Assert.assertEquals("journal-file-size", 1048576, jmsConfig.getJournalFileSize());
@@ -148,13 +149,13 @@ public class ConfigParsingUnitTestCase {
     */
    protected XMLMapper createXMLMapper() throws Exception {
       XMLMapper mapper = XMLMapper.Factory.create();
-      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.HOST_XML_READER);
-      NullSubsystemParser<Object> threadsParser = new NullSubsystemParser();
-      mapper.registerRootElement(new QName("urn:jboss:domain:threads:1.0", "subsystem"), threadsParser);
-      NullSubsystemParser<Object> namingParser = new NullSubsystemParser();
-      mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), namingParser);
-      NullSubsystemParser<Object> remotingParser = new NullSubsystemParser();
-      mapper.registerRootElement(new QName("urn:jboss:domain:remoting:1.0", "subsystem"), remotingParser);
+      mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
+//      NullSubsystemParser threadsParser = new NullSubsystemParser();
+//      mapper.registerRootElement(new QName("urn:jboss:domain:threads:1.0", "subsystem"), threadsParser);
+//      NullSubsystemParser namingParser = new NullSubsystemParser();
+//      mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), namingParser);
+//      NullSubsystemParser remotingParser = new NullSubsystemParser();
+//      mapper.registerRootElement(new QName("urn:jboss:domain:remoting:1.0", "subsystem"), remotingParser);
       mapper.registerRootElement(Namespace.MESSAGING_1_0.getQName(), MessagingSubsystemParser.getInstance());
       return mapper;
    }

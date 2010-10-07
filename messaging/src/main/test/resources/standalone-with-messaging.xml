@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0"
+<standalone xmlns="urn:jboss:domain:1.0"
             xmlns:remoting="urn:jboss:domain:remoting:1.0"
             xmlns:threads="urn:jboss:domain:threads:1.0"
             xmlns:naming="urn:jboss:domain:naming:1.0"
@@ -36,14 +36,6 @@
     <name>Standalone</name>
 
     <profile name="something">
-        <threads:subsystem>
-            <threads:scheduled-thread-pool name="remoting">
-                <threads:max-threads count="10" per-cpu="20"/>
-                <threads:keepalive-time time="10" unit="sec"/>
-            </threads:scheduled-thread-pool>
-        </threads:subsystem>
-        <naming:subsystem/>
-        <remoting:subsystem thread-pool="remoting"/>
         <messaging:subsystem>
             <!-- A standard hornetq configuration -->
             <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
@@ -154,4 +146,4 @@
     <deployments>
     </deployments>
 
-</server>
+</standalone>
