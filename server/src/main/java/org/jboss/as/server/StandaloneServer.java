@@ -24,12 +24,15 @@ package org.jboss.as.server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 
-import org.jboss.as.model.ParseResult;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
@@ -57,16 +60,25 @@ public class StandaloneServer extends AbstractServer {
         if(! standalone.canWrite() ) {
             throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writeable.");
         }
-        final ParseResult<ServerModel> parseResult = new ParseResult<ServerModel>();
+        final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardStandaloneReaders(mapper);
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(standalone))));
+            mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(standalone))));
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
+        // TODO move to AbstractServer
+        final ServerModel config = new ServerModel();
+        try {
+            for(final AbstractServerModelUpdate<?> update : updates) {
+                config.update(update);
+            }
+        } catch(UpdateFailedException e) {
+            throw new ServerStartException("failed to process updates", e);
+        }
 
-        start(parseResult.getResult());
+        start(config);
         // TODO remove life thread
         new Thread() { {
                 setName("Server Life Thread");
