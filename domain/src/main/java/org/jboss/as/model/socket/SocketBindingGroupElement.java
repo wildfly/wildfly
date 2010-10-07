@@ -67,6 +67,10 @@ public class SocketBindingGroupElement extends AbstractModelElement<SocketBindin
         return Collections.unmodifiableSet(new HashSet<String>(includedGroups.keySet()));
     }
 
+    public Set<SocketBindingElement> getSocketBindings() {
+        return Collections.unmodifiableSet(new HashSet<SocketBindingElement>(socketBindings.values()));
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.model.AbstractModelElement#getElementClass()
      */

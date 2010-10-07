@@ -78,6 +78,15 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
     }
 
     /**
+     * Sets the name of the interface to use for this socket binding.
+     *
+     * @param interfaceName the name. May be <code>null</code>
+     */
+    void setConfiguredInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
+    /**
      * Gets the name of the default interface to use for this socket binding if
      * no specific interface was {@link #getConfiguredInterfaceName() configured}.
      * This value comes from the enclosing {@link SocketBindingGroupElement}.
@@ -90,15 +99,6 @@ public class SocketBindingElement extends AbstractModelElement<SocketBindingElem
 
     void setDefaultInterfaceName(String defaultInterfaceName) {
         this.defaultInterfaceName = defaultInterfaceName;
-    }
-
-    /**
-     * Sets the name of the interface to use for this socket binding.
-     *
-     * @param interfaceName the name. May be <code>null</code>
-     */
-    void setConfiguredInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
     }
 
     /**

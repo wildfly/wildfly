@@ -115,6 +115,19 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     }
 
     /**
+     * Gets the portOffset of the server.
+     *
+     * @return the portOffset
+     */
+    public int getPortOffset() {
+        return portOffset;
+    }
+
+    void setPortOffset(int portOffset) {
+        this.portOffset = portOffset;
+    }
+
+    /**
      * Gets any system properties defined for this server.
      *
      * @return the system properties, or <code>null</code> if there are none

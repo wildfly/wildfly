@@ -52,7 +52,7 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
         this.port = port;
     }
 
-    SocketBindingAdd(SocketBindingElement original) {
+    public SocketBindingAdd(SocketBindingElement original) {
         this.name = original.getName();
         this.port = original.getPort();
         this.fixedPort = original.isFixedPort();
@@ -74,7 +74,6 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
         socketBinding.setPort(port);
         socketBinding.setMulticastAddress(multicastAddress);
         socketBinding.setMulticastPort(multicastPort);
-        socketBinding.setDefaultInterfaceName(group.getDefaultInterface());
         if(group.addSocketBinding(name, socketBinding)) {
             throw new UpdateFailedException(String.format("duplicate socket-binding (%s) in binding-group (%s)", name, group.getName()));
         }

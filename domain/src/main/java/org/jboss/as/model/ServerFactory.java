@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -32,7 +33,10 @@ import java.util.Set;
 
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.SocketBindingAdd;
+import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
+import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -68,15 +72,30 @@ public final class ServerFactory {
             throw new IllegalArgumentException("Domain model does not contain a profile named '" + profileName + "'");
         }
 
+        list.add(new ServerNameUpdate(serverName));
+
+        // Merge extensions
+        final Set<String> extensionNames = new LinkedHashSet<String>();
+        for (String name : domainModel.getExtensions()) {
+            extensionNames.add(name);
+        }
+        for (String name : hostModel.getExtensions()) {
+            extensionNames.add(name);
+        }
+        for (String name : extensionNames) {
+            list.add(new ServerExtensionAdd(name));
+        }
+
         // Merge interfaces
         // TODO: modify to merge each interface instead of replacing duplicates
         Set<String> unspecifiedInterfaces = new HashSet<String>();
         Map<String, InterfaceElement> interfaces = new HashMap<String, InterfaceElement>();
         for (InterfaceElement ie : domainModel.getInterfaces()) {
-            if (ie.isFullySpecified())
+            if (ie.isFullySpecified()) {
                 interfaces.put(ie.getName(), ie);
-            else
+            } else {
                 unspecifiedInterfaces.add(ie.getName());
+            }
         }
         for (InterfaceElement ie : hostModel.getInterfaces()) {
             interfaces.put(ie.getName(), ie);
@@ -99,22 +118,21 @@ public final class ServerFactory {
             bindingRef = serverGroup.getSocketBindingGroupName();
             portOffset = serverGroup.getSocketBindingPortOffset();
         }
+        list.add(new ServerPortOffsetUpdate(portOffset));
+
+        // TODO: add check for duplicate socket bindings
         SocketBindingGroupElement domainBindings = domainModel.getSocketBindingGroup(bindingRef);
         if (domainBindings == null) {
             domainBindings = new SocketBindingGroupElement("domainBindings");
         }
-        // TODO: add each socket binding
-
-        // Merge extensions
-        final Set<String> extensionNames = new LinkedHashSet<String>();
-        for (String name : domainModel.getExtensions()) {
-            extensionNames.add(name);
-        }
-        for (String name : hostModel.getExtensions()) {
-            extensionNames.add(name);
-        }
-        for (String name : extensionNames) {
-            list.add(new ServerExtensionAdd(name));
+        list.add(new ServerSocketBindingGroupUpdate(new SocketBindingGroupUpdate(domainBindings.getName(), domainBindings.getDefaultInterface(), Collections.<String>emptySet())));
+        processSocketBindings(domainBindings, list);
+        for(final String socketInclude : domainBindings.getIncludedSocketBindingGroups()) {
+            final SocketBindingGroupElement include = domainModel.getSocketBindingGroup(socketInclude);
+            if(include == null) {
+                throw new IllegalStateException("failed to resolve binding-group " + socketInclude);
+            }
+            processSocketBindings(include, list);
         }
 
         // Merge subsystems
@@ -131,6 +149,22 @@ public final class ServerFactory {
 
         // Merge system properties
         // todo after PropertiesElement is eliminated
+
+        // TODO add domain deployment repository
+
+    }
+
+    private static void processSocketBindings(final SocketBindingGroupElement group, List<AbstractServerModelUpdate<?>> list) {
+        final String defaultInterface = group.getDefaultInterface();
+        for(final SocketBindingElement binding : group.getSocketBindings()) {
+            final SocketBindingAdd update = new SocketBindingAdd(binding);
+            // TODO we only have one socketBindingGroup on the server
+            if(update.getInterfaceName() == null) {
+                update.setInterfaceName(defaultInterface);
+            }
+            list.add(new ServerSocketBindingUpdate(update));
+        }
+
     }
 
     private static <E extends AbstractSubsystemElement<E>> void processSubsystem(E subsystemElement, List<AbstractServerModelUpdate<?>> list) {
