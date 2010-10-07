@@ -594,11 +594,12 @@ public final class ModelXmlParsers {
                         requireNoContent(reader);
 
                         // no others allowed
-                        if (reader.nextTag() != END_ELEMENT) {
-                            throw unexpectedElement(reader);
-                        }
+//                        if (reader.nextTag() != END_ELEMENT) {
+//                            throw unexpectedElement(reader);
+//                        }
                         // The any element
                         anyElement = element;
+                        break;
                     } default: {
                         if (anyElement != null) {
                             throw unexpectedElement(reader);
