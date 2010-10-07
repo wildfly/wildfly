@@ -31,8 +31,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -44,12 +46,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.ManagementElement;
-import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupDeploymentElement;
@@ -572,11 +574,15 @@ public class ServerManager implements ShutdownListener {
         }
 
         try {
-            ParseResult<HostModel> parseResult = new ParseResult<HostModel>();
+            final List<AbstractHostModelUpdate<?>> hostUpdates = new ArrayList<AbstractHostModelUpdate<?>>();
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardHostReaders(mapper);
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
-            return parseResult.getResult();
+            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
+            final HostModel hostModel = new HostModel();
+            for(final AbstractHostModelUpdate<?> update : hostUpdates) {
+                hostModel.update(update);
+            }
+            return hostModel;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
