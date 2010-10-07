@@ -569,7 +569,8 @@ public final class ModelXmlParsers {
         Element anyElement = null;
         while (reader.nextTag() != END_ELEMENT) {
             // Attributes
-            final String name = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+            requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+            final String name = reader.getAttributeValue(0);
             if (! names.add(name)) {
                 throw new XMLStreamException("Duplicate interface declaration", reader.getLocation());
             }

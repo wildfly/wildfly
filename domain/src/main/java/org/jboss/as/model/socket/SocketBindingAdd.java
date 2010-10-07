@@ -73,7 +73,9 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
         socketBinding.setFixedPort(fixedPort);
         socketBinding.setPort(port);
         socketBinding.setMulticastAddress(multicastAddress);
-        socketBinding.setMulticastPort(multicastPort);
+        if(multicastAddress != null) {
+            socketBinding.setMulticastPort(multicastPort);
+        }
         if(group.addSocketBinding(name, socketBinding)) {
             throw new UpdateFailedException(String.format("duplicate socket-binding (%s) in binding-group (%s)", name, group.getName()));
         }
