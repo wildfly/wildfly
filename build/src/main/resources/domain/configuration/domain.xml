@@ -40,7 +40,7 @@
             <subsystem xmlns="urn:jboss:domain:threads:1.0">
                 <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="sec"/>
+                    <keepalive-time time="10" unit="seconds"/>
                 </scheduled-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
