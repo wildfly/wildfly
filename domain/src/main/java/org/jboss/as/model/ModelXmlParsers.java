@@ -1531,11 +1531,7 @@ public final class ModelXmlParsers {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SERVER:
-                            NamedModelUpdates<JvmElement> jvm = parseJvm(reader, names);
-                            list.add(new HostJvmAdd(jvm.name));
-                            for (AbstractModelUpdate<JvmElement, ?> update : jvm.updates) {
-                                list.add(HostJvmUpdate.create(jvm.name, update));
-                            }
+                            parseServer(reader, list, names);
                             break;
                         default:
                             throw unexpectedElement(reader);
