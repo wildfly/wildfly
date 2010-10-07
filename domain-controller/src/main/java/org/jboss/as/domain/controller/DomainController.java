@@ -22,13 +22,16 @@
 
 package org.jboss.as.domain.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.DomainModel;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.jboss.as.model.ParseResult;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -118,9 +121,13 @@ public class DomainController implements Service<DomainController> {
         }
 
         try {
-            final ParseResult<DomainModel> parseResult = new ParseResult<DomainModel>();
-            mapper.parseDocument(parseResult, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
-            return parseResult.getResult();
+            final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
+            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
+            final DomainModel domainModel = new DomainModel();
+            for(final AbstractDomainModelUpdate<?> update : domainUpdates) {
+                domainModel.update(update);
+            }
+            return domainModel;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
