@@ -25,9 +25,6 @@ package org.jboss.as.logging;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,32 +33,14 @@ public final class RootLoggerElement extends AbstractLoggerElement<RootLoggerEle
 
     private static final long serialVersionUID = 5284930321162426129L;
 
-    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.ROOT_LOGGER.getLocalName());
-
     RootLoggerElement() {
     }
 
     BatchServiceBuilder<Logger> createService(final BatchBuilder builder) {
-        return builder.addService(LoggingSubsystemElement.JBOSS_LOGGING.append("logger", "root"), new LoggerLevelService(""));
-    }
-
-    void configureService(final BatchServiceBuilder<Logger> serviceBuilder, final BatchBuilder builder, final AbstractLoggerService loggerService) {
-        super.configureService(serviceBuilder, builder, loggerService);
-    }
-
-    QName getElementName() {
-        return ELEMENT_NAME;
+        return builder.addService(LogServices.JBOSS_LOGGING.append("logger", "root"), new LoggerLevelService(""));
     }
 
     protected Class<RootLoggerElement> getElementClass() {
         return RootLoggerElement.class;
-    }
-
-    ServiceName getLoggerServiceName() {
-        return null;
-    }
-
-    AbstractLoggerService getLoggerService() {
-        return null;
     }
 }

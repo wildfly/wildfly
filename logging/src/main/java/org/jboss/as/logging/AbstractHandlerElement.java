@@ -26,14 +26,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.jboss.as.model.AbstractModelRootElement;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
@@ -60,7 +57,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
     }
 
     public List<String> getSubhandlers() {
-        return Arrays.asList(subhandlers);
+        return Arrays.asList(subhandlers.clone());
     }
 
     public String getName() {
@@ -89,10 +86,6 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
 
     public PropertiesElement getProperties() {
         return properties;
-    }
-
-    private long elementHash() {
-        return 0;
     }
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
@@ -136,8 +129,6 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         }
     }
 
-    abstract BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder);
-
     void setLevel(final Level level) {
         this.level = level;
     }
@@ -162,7 +153,19 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         this.properties = properties;
     }
 
-    void setSubhandlers(final List<String> subhandlers) {
-        this.subhandlers = subhandlers.toArray(new String[subhandlers.size()]);
+    void setSubhandlers(final String[] subhandlers) {
+        this.subhandlers = subhandlers.clone();
     }
+
+    AbstractHandlerAdd getAdd() {
+        final AbstractHandlerAdd add = createAdd(name);
+        add.setLevel(level);
+        add.setAutoflush(autoflush);
+        add.setEncoding(encoding);
+        add.setFormatter(formatter.getSpecification());
+        add.setSubhandlers(subhandlers.clone());
+        return add;
+    }
+
+    abstract AbstractHandlerAdd createAdd(String name);
 }

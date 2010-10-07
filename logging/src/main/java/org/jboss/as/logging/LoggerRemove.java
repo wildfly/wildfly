@@ -22,45 +22,39 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-
-import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
+import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 
 /**
+ * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandlerElement<PeriodicRotatingFileHandlerElement> {
+public class LoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = -9165961552395250206L;
+    private static final long serialVersionUID = -9178350859833986971L;
+    private final String name;
 
-    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
-
-    private String suffix;
-
-    protected PeriodicRotatingFileHandlerElement(final String name) {
-        super(name, ELEMENT_NAME);
+    public LoggerRemove(String name) {
+        this.name = name;
     }
 
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
+    /** {@inheritDoc} */
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
     }
 
-    protected Class<PeriodicRotatingFileHandlerElement> getElementClass() {
-        return PeriodicRotatingFileHandlerElement.class;
+    /** {@inheritDoc} */
+    public LoggerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
+        final LoggerElement loggerElement = original.getLogger(name);
+        return new LoggerAdd(name, loggerElement.getLevel(), loggerElement.isUseParentHandlers());
     }
 
-    void setSuffix(final String suffix) {
-        this.suffix = suffix;
+    /** {@inheritDoc} */
+    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
+        final AbstractLoggerElement<?> logger = element.removeLogger(name);
+        if(logger == null) {
+            throw new UpdateFailedException(String.format("logger (%s) does not exist", name));
+        }
     }
 
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
-    }
-
-    AbstractHandlerAdd createAdd(final String name) {
-        return null;
-    }
 }

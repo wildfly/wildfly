@@ -33,6 +33,7 @@ public enum Attribute {
 
     APPEND("append"),
     AUTOFLUSH("autoflush"),
+    CATEGORY("category"),
     ENCODING("encoding"),
     FILE_NAME("file-name"),
     MIN_INCLUSIVE("min-inclusive"),

@@ -66,4 +66,12 @@ public final class AsyncHandlerElement extends AbstractHandlerElement<AsyncHandl
         streamWriter.writeAttribute(Attribute.OVERFLOW_ACTION.getLocalName(), overflowAction.name().toLowerCase(Locale.US));
         super.writeContent(streamWriter);
     }
+
+    AbstractHandlerAdd getAdd() {
+        return super.getAdd();
+    }
+
+    AbstractHandlerAdd createAdd(final String name) {
+        return null;
+    }
 }

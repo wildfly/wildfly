@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,33 +22,52 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+
+import java.util.logging.Level;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class LoggerElement extends AbstractLoggerElement<LoggerElement> {
+final class LoggerService extends AbstractLoggerService {
 
-    private static final long serialVersionUID = -7380623095970294691L;
-
-    private final String name;
     private boolean useParentHandlers = true;
+    private Level level;
 
-    LoggerElement(final String name) {
-        this.name = name;
+    protected LoggerService(final String name) {
+        super(name);
     }
 
-    protected Class<LoggerElement> getElementClass() {
-        return LoggerElement.class;
+    protected void start(final StartContext context, final Logger logger) throws StartException {
+        logger.setLevel(level);
+        logger.setUseParentHandlers(useParentHandlers);
     }
 
-    public String getName() {
-        return name;
+    protected void stop(final StopContext context, final Logger logger) {
+        logger.setLevel(null);
+        logger.setUseParentHandlers(true);
     }
 
-    public boolean isUseParentHandlers() {
+    public synchronized boolean isUseParentHandlers() {
         return useParentHandlers;
     }
 
-    void setUseParentHandlers(final boolean useParentHandlers) {
+    public synchronized void setUseParentHandlers(final boolean useParentHandlers) {
         this.useParentHandlers = useParentHandlers;
+        final Logger logger = getLogger();
+        if (logger != null) {
+            logger.setUseParentHandlers(useParentHandlers);
+        }
+    }
+
+    public synchronized Level getLevel() {
+        return level;
+    }
+
+    public synchronized void setLevel(final Level level) {
+        this.level = level;
     }
 }

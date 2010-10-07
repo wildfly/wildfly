@@ -22,45 +22,37 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
-import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
+import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandlerElement<PeriodicRotatingFileHandlerElement> {
+final class RootLoggerService extends AbstractLoggerService {
 
-    private static final long serialVersionUID = -9165961552395250206L;
+    private Level level;
 
-    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
-
-    private String suffix;
-
-    protected PeriodicRotatingFileHandlerElement(final String name) {
-        super(name, ELEMENT_NAME);
+    protected RootLoggerService() {
+        super("");
     }
 
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
+    protected void start(final StartContext context, final Logger logger) throws StartException {
+        logger.setLevel(level);
     }
 
-    protected Class<PeriodicRotatingFileHandlerElement> getElementClass() {
-        return PeriodicRotatingFileHandlerElement.class;
+    protected void stop(final StopContext context, final Logger logger) {
+        logger.setLevel(null);
     }
 
-    void setSuffix(final String suffix) {
-        this.suffix = suffix;
+    public synchronized Level getLevel() {
+        return level;
     }
 
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
-    }
-
-    AbstractHandlerAdd createAdd(final String name) {
-        return null;
+    public synchronized void setLevel(final Level level) {
+        this.level = level;
     }
 }

@@ -39,33 +39,30 @@ public final class PatternFormatterElement extends AbstractFormatterElement<Patt
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.PATTERN_FORMATTER.getLocalName());
 
-    private String pattern;
+    private final String pattern;
 
-    protected PatternFormatterElement() {
+    protected PatternFormatterElement(final String pattern) {
         super(ELEMENT_NAME);
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern is null");
+        }
+        this.pattern = pattern;
     }
 
     protected Formatter createFormatter() {
-        if (pattern == null) {
-            throw new IllegalArgumentException("Missing pattern string");
-        }
         return new PatternFormatter(pattern);
-    }
-
-    private long elementHash() {
-        return pattern.hashCode() & 0xffffffffL;
     }
 
     protected Class<PatternFormatterElement> getElementClass() {
         return PatternFormatterElement.class;
     }
 
-    void setPattern(final String pattern) {
-        this.pattern = pattern;
-    }
-
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("pattern", pattern);
         streamWriter.writeEndElement();
+    }
+
+    public AbstractFormatterSpec getSpecification() {
+        return new PatternFormatterSpec(pattern);
     }
 }

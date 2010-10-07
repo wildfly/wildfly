@@ -49,4 +49,12 @@ public final class FileHandlerElement extends AbstractFileHandlerElement<FileHan
     protected Class<FileHandlerElement> getElementClass() {
         return FileHandlerElement.class;
     }
+
+    AbstractHandlerAdd getAdd() {
+        return super.getAdd();
+    }
+
+    AbstractHandlerAdd createAdd(final String name) {
+        return null;
+    }
 }

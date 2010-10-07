@@ -48,7 +48,7 @@ public class HandlerRemoveUpdate extends AbstractLoggingSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(LoggingSubsystemElement original) {
-        return new HandlerAddUpdate(original.getHandler(name));
+        return null;
     }
 
     /** {@inheritDoc} */

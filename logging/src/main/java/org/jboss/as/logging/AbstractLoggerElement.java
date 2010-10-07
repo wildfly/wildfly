@@ -25,13 +25,8 @@ package org.jboss.as.logging;
 import java.util.Arrays;
 import java.util.List;
 import org.jboss.as.model.AbstractModelElement;
-import org.jboss.logmanager.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.util.logging.Level;
@@ -51,25 +46,6 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
     private FilterElement filter;
 
     AbstractLoggerElement() {
-    }
-
-    final BatchServiceBuilder<Logger> addServices(BatchBuilder builder) {
-        final AbstractLoggerService loggerService = getLoggerService();
-        final BatchServiceBuilder<Logger> serviceBuilder = builder.addService(getLoggerServiceName(), loggerService);
-        configureService(serviceBuilder, builder, loggerService);
-        return serviceBuilder;
-    }
-
-    abstract ServiceName getLoggerServiceName();
-
-    abstract AbstractLoggerService getLoggerService();
-
-    void configureService(BatchServiceBuilder<Logger> serviceBuilder, BatchBuilder builder, final AbstractLoggerService loggerService) {
-
-    }
-
-    private long elementHash() {
-        return 0;
     }
 
     void setLevel(final Level level) {
@@ -98,5 +74,11 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
         }
     }
 
-    abstract QName getElementName();
+    public Level getLevel() {
+        return level;
+    }
+
+    public FilterElement getFilter() {
+        return filter;
+    }
 }

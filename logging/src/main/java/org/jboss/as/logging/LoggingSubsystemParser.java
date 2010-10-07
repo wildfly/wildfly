@@ -114,45 +114,45 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     encountered.add(element);
                     switch (element) {
                         case LOGGER: {
-                            LoggerElement loggerElement = parseLoggerElement(reader);
-                            updates.add(new LoggerAddUpdate(loggerElement.getName(), loggerElement));
+                            LoggerAdd add = parseLoggerElement(reader);
+                            updates.add(add);
                             break;
                         }
                         case ROOT_LOGGER: {
-                            RootLoggerElement loggerElement = parseRootLoggerElement(reader);
-                            updates.add(new LoggerAddUpdate("", loggerElement));
+//                            RootLoggerAdd add = parseRootLoggerElement(reader);
+//                            updates.add(add);
                             break;
                         }
                         case CONSOLE_HANDLER: {
-                            ConsoleHandlerElement handlerElement = parseConsoleHandlerElement(reader);
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            ConsoleHandlerAdd add = parseConsoleHandlerElement(reader);
+//                            updates.add(new HandlerAdd(add));
                             break;
                         }
                         case FILE_HANDLER: {
-                            FileHandlerElement handlerElement = parseFileHandlerElement(reader);
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            FileHandlerElement handlerElement = parseFileHandlerElement(reader);
+//                            updates.add(new HandlerAdd(handlerElement));
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
-                            PeriodicRotatingFileHandlerElement handlerElement = parsePeriodicRotatingFileHandlerElement(reader);
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            PeriodicRotatingFileHandlerElement handlerElement = parsePeriodicRotatingFileHandlerElement(reader);
+//                            updates.add(new HandlerAdd(handlerElement));
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
-                            SizeRotatingFileHandlerElement handlerElement = parseSizeRotatingHandlerElement(reader);
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            SizeRotatingFileHandlerElement handlerElement = parseSizeRotatingHandlerElement(reader);
+//                            updates.add(new HandlerAdd(handlerElement));
                             break;
                         }
                         case ASYNC_HANDLER: {
-                            AsyncHandlerElement handlerElement = parseAsyncHandlerElement(reader);
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            AsyncHandlerElement handlerElement = parseAsyncHandlerElement(reader);
+//                            updates.add(new HandlerAdd(handlerElement));
                             break;
                         }
                         default: {
                             final ParseResult<AbstractHandlerElement<?>> result = new ParseResult<AbstractHandlerElement<?>>();
                             reader.handleAny(result);
                             AbstractHandlerElement<?> handlerElement = result.getResult();
-                            updates.add(new HandlerAddUpdate(handlerElement));
+//                            updates.add(new HandlerAdd(handlerElement));
                             break;
                         }
                     }
@@ -165,7 +165,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         }
     }
 
-    private static LoggerElement parseLoggerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private static LoggerAdd parseLoggerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
 
         // Attributes
         String name = null;
@@ -178,7 +178,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
-                    case NAME: {
+                    case CATEGORY: {
                         name = value;
                         break;
                     }
@@ -191,7 +191,8 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
             throw missingRequired(reader, required);
         }
         assert name != null;
-        final LoggerElement loggerElement = new LoggerElement(name);
+        final LoggerAdd add = new LoggerAdd(name);
+        Level level = null;
 
         // Elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -205,15 +206,15 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            loggerElement.setLevel(parseLevelElement(reader));
+                            add.setLevel(parseLevelElement(reader));
                             break;
                         }
                         case FILTER: {
-                            loggerElement.setFilter(parseFilterElement(reader));
+//                            add.setFilter(parseFilterElement(reader));
                             break;
                         }
                         case HANDLERS: {
-                            loggerElement.setHandlers(parseHandlersElement(reader));
+//                            add.setHandlers(parseHandlersElement(reader));
                             break;
                         }
                         default: throw unexpectedElement(reader);
@@ -225,7 +226,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
-        return loggerElement;
+        return add;
     }
 
     private static Level parseLevelElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -330,7 +331,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                             break;
                         }
                         case SUBHANDLERS: {
-                            handlerElement.setSubhandlers(parseHandlersElement(reader));
+//                            handlerElement.setSubhandlers(parseHandlersElement(reader));
                             break;
                         }
                         case PROPERTIES: {
@@ -409,8 +410,8 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (reader.nextTag() != END_ELEMENT) {
             throw unexpectedElement(reader);
         }
-        final PatternFormatterElement element = new PatternFormatterElement();
-        element.setPattern(pattern);
+        final PatternFormatterElement element = new PatternFormatterElement(pattern);
+//        element.setPattern(pattern);
         return element;
     }
 

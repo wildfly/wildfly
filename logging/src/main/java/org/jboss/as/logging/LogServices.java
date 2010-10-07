@@ -22,34 +22,32 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.logmanager.Logger;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class LoggerFilterService extends AbstractLoggerService {
-    private FilterType filter;
+public final class LogServices {
 
-    protected LoggerFilterService(final String name) {
-        super(name);
+    public static final ServiceName JBOSS_LOGGING = ServiceName.JBOSS.append("logging");
+    public static final ServiceName LOGGER = JBOSS_LOGGING.append("logger");
+    public static final ServiceName ROOT_LOGGER = JBOSS_LOGGING.append("root-logger");
+    public static final ServiceName LOGGER_HANDLER = JBOSS_LOGGING.append("logger-handler");
+    public static final ServiceName ROOT_LOGGER_HANDLER = JBOSS_LOGGING.append("root-logger-handler");
+    public static final ServiceName HANDLER = JBOSS_LOGGING.append("handler");
+
+    private LogServices() {
     }
 
-    public synchronized void setFilterSpec(final FilterType filter) {
-        this.filter = filter;
-        final Logger logger = getLogger();
-        if (logger != null) {
-            logger.setFilter(filter.createFilterInstance());
-        }
+    public static ServiceName getLoggerName(final String name) {
+        return LOGGER.append(name);
     }
 
-    protected void start(final StartContext context, final Logger logger) throws StartException {
-        logger.setFilter(filter.createFilterInstance());
+    public static ServiceName loggerHandlerName(final String loggerName, final String handlerName) {
+        return loggerName.length() == 0 ? ROOT_LOGGER_HANDLER.append(handlerName) : LOGGER_HANDLER.append(loggerName, handlerName);
     }
 
-    protected void stop(final StopContext context, final Logger logger) {
-        logger.setFilter(null);
+    public static ServiceName handlerName(final String name) {
+        return HANDLER.append(name);
     }
 }

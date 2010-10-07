@@ -52,8 +52,4 @@ public final class FilterElement extends AbstractModelElement<FilterElement> {
         // end our element
         streamWriter.writeEndElement();
     }
-
-    private long elementHash() {
-        return value.hashCode() & 0xFFFFFFFFL;
-    }
 }

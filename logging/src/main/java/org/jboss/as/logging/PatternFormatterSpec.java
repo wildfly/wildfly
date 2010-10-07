@@ -22,45 +22,20 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-
-import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandlerElement<PeriodicRotatingFileHandlerElement> {
+public final class PatternFormatterSpec extends AbstractFormatterSpec {
 
-    private static final long serialVersionUID = -9165961552395250206L;
+    private static final long serialVersionUID = -5660853321019821898L;
 
-    private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
+    private final String pattern;
 
-    private String suffix;
-
-    protected PeriodicRotatingFileHandlerElement(final String name) {
-        super(name, ELEMENT_NAME);
+    public PatternFormatterSpec(final String pattern) {
+        this.pattern = pattern;
     }
 
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
-    }
-
-    protected Class<PeriodicRotatingFileHandlerElement> getElementClass() {
-        return PeriodicRotatingFileHandlerElement.class;
-    }
-
-    void setSuffix(final String suffix) {
-        this.suffix = suffix;
-    }
-
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
-    }
-
-    AbstractHandlerAdd createAdd(final String name) {
-        return null;
+    protected void apply(final AbstractHandlerElement<?> handlerElement) {
+        handlerElement.setFormatter(new PatternFormatterElement(pattern));
     }
 }

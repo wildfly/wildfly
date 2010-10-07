@@ -22,36 +22,14 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.logmanager.Logger;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class LoggerParentHandlerFlagService extends AbstractLoggerService {
-    private boolean setting;
+public abstract class AbstractFormatterSpec implements Serializable {
 
-    protected LoggerParentHandlerFlagService(final String name) {
-        super(name);
-    }
+    private static final long serialVersionUID = -2383088369142242658L;
 
-    public synchronized void setFlag(final boolean setting) {
-        if (setting != this.setting) {
-            this.setting = setting;
-            final Logger logger = getLogger();
-            if (logger != null) {
-                logger.setUseParentHandlers(setting);
-            }
-        }
-    }
-
-    protected void start(final StartContext context, final Logger logger) throws StartException {
-        logger.setUseParentHandlers(setting);
-    }
-
-    protected void stop(final StopContext context, final Logger logger) {
-        logger.setUseParentHandlers(true);
-    }
+    protected abstract void apply(AbstractHandlerElement<?> handlerElement);
 }

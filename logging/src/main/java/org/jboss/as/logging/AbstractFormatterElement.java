@@ -40,4 +40,6 @@ public abstract class AbstractFormatterElement<E extends AbstractFormatterElemen
     }
 
     protected abstract Formatter createFormatter();
+
+    public abstract AbstractFormatterSpec getSpecification();
 }

@@ -54,4 +54,12 @@ public final class ConsoleHandlerElement extends AbstractHandlerElement<ConsoleH
     protected Class<ConsoleHandlerElement> getElementClass() {
         return ConsoleHandlerElement.class;
     }
+
+    AbstractHandlerAdd getAdd() {
+        return super.getAdd();
+    }
+
+    AbstractHandlerAdd createAdd(final String name) {
+        return null;
+    }
 }

@@ -57,4 +57,12 @@ public final class SizeRotatingFileHandlerElement extends AbstractFileHandlerEle
     void setMaxBackupIndex(final int maxBackupIndex) {
         this.maxBackupIndex = maxBackupIndex;
     }
+
+    AbstractHandlerAdd getAdd() {
+        return super.getAdd();
+    }
+
+    AbstractHandlerAdd createAdd(final String name) {
+        return null;
+    }
 }
