@@ -29,6 +29,10 @@
     <extensions>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.threads"/>
+        <extension module="org.jboss.as.naming"/>
+        <extension module="org.jboss.as.remoting"/>
+        <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
     </extensions>
@@ -37,10 +41,10 @@
         <subsystem xmlns="urn:jboss:domain:threads:1.0">
             <scheduled-thread-pool name="remoting">
                 <max-threads count="10" per-cpu="20"/>
-                <keepalive-time time="10" unit="sec"/>
+                <keepalive-time time="10" unit="SECONDS"/>
             </scheduled-thread-pool>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:naming:1.0" bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>

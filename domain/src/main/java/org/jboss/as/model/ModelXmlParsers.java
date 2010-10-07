@@ -386,11 +386,8 @@ public final class ModelXmlParsers {
         final Set<String> found = new HashSet<String>();
 
         while (reader.nextTag() != END_ELEMENT) {
-            // Attributes
+            // Attribute && require no content
             final String moduleName = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
-
-            // Content
-            requireNoContent(reader);
 
             if (! found.add(moduleName)) {
                 // duplicate module name
