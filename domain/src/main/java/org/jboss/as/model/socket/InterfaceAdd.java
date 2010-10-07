@@ -76,9 +76,14 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
 
     /** {@inheritDoc} */
     public void applyUpdate(InterfaceElement element) throws UpdateFailedException {
-        element.setAnyLocal(anyLocal);
-        element.setAnyLocalV4(anyLocalV4);
-        element.setAnyLocalV6(anyLocalV6);
+        if(interfaceCriteria != null && interfaceCriteria.size() > 0) {
+            for(AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria) {
+                element.addCriteria(criteria);
+            }
+        }
+        if(anyLocal) element.setAnyLocal(anyLocal);
+        if(anyLocalV4) element.setAnyLocalV4(anyLocalV4);
+        if(anyLocalV6) element.setAnyLocalV6(anyLocalV6);
     }
 
     /** {@inheritDoc} */
