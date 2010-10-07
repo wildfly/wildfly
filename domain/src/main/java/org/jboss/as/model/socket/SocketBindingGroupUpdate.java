@@ -74,4 +74,8 @@ public class SocketBindingGroupUpdate extends AbstractModelElementUpdate<SocketB
         }
     }
 
+    public Set<String> getIncludedGroups() {
+        return includedGroups;
+    }
+
 }

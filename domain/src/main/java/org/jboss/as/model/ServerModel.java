@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -71,15 +72,22 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
 
-    private final String serverName;
+    private String serverName;
+    private final Set<String> extensions = new HashSet<String>();
     private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
     private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
-    private final Set<String> extensions = new HashSet<String>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-    private final ProfileElement profile;
-    private final SocketBindingGroupElement socketBindings;
-    private final int portOffset;
-    private PropertiesElement systemProperties;
+    private ProfileElement profile;
+    private SocketBindingGroupElement socketBindings;
+    private int portOffset;
+    private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
+
+    /**
+     * Construct a new instance.
+     */
+    public ServerModel() {
+        super(ELEMENT_NAME);
+    }
 
     /**
      * Construct a new instance.
@@ -90,8 +98,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     public ServerModel(final String serverName, final int portOffset) {
         super(ELEMENT_NAME);
         this.serverName = serverName;
-        profile = new ProfileElement((String) null);
-        socketBindings = new SocketBindingGroupElement((String) null);
         this.portOffset = portOffset;
     }
 
@@ -102,6 +108,10 @@ public final class ServerModel extends AbstractModel<ServerModel> {
      */
     public String getServerName() {
         return serverName;
+    }
+
+    void setServerName(final String name) {
+        this.serverName = name;
     }
 
     /**
@@ -115,6 +125,20 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     public ServerGroupDeploymentElement getDeployment(String deploymentName) {
         return deployments.get(deploymentName);
+    }
+
+    public Collection<String> getDeploymentRepositories() {
+        return new HashSet<String>(repositories.keySet());
+    }
+
+    /**
+     * Get a deployment repository.
+     *
+     * @param path the repository path
+     * @return the repository, <code>null</code> if it does not exist
+     */
+    public DeploymentRepositoryElement getDeploymentRepository(final String path) {
+        return repositories.get(path);
     }
 
     /** {@inheritDoc} */
@@ -235,15 +259,15 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         synchronized (repositories) {
             repos = new TreeMap<String, DeploymentRepositoryElement>(repositories);
         }
-        for (DeploymentRepositoryElement repo : repos.values()) {
-            try {
-                repo.activate(context);
-            }
-            catch(Throwable t) {
-                // TODO: Rollback deployments services added before failure?
-                log.error("Failed to activate deployment repository " + repo.getPath(), t);
-            }
-        }
+//        for (DeploymentRepositoryElement repo : repos.values()) {
+//            try {
+//                repo.activate(context);
+//            }
+//            catch(Throwable t) {
+//                // TODO: Rollback deployments services added before failure?
+//                log.error("Failed to activate deployment repository " + repo.getPath(), t);
+//            }
+//        }
     }
 
     boolean addExtension(final String name) {
@@ -286,12 +310,20 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return profile.addSubsystem(namespaceUri, element);
     }
 
-    ProfileElement getProfile() {
+    public ProfileElement getProfile() {
         return profile;
+    }
+
+    void setProfile(ProfileElement profile) {
+        this.profile = profile;
     }
 
     SocketBindingGroupElement getSocketBindings() {
         return socketBindings;
+    }
+
+    void setSocketBindings(SocketBindingGroupElement socketBindings) {
+        this.socketBindings = socketBindings;
     }
 
     InterfaceElement addInterface(final String name) {
@@ -305,5 +337,18 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     boolean removeInterface(final String name) {
         return interfaces.remove(name) != null;
+    }
+
+    boolean addDeploymentRepository(final String path) {
+        if(repositories.containsKey(path)) {
+            return false;
+        }
+        final DeploymentRepositoryElement repository = new DeploymentRepositoryElement(path);
+        repositories.put(path, repository);
+        return true;
+    }
+
+    boolean removeDeploymentRepository(final String path) {
+        return repositories.remove(path) != null;
     }
 }

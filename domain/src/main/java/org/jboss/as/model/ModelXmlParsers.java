@@ -109,6 +109,117 @@ public final class ModelXmlParsers {
     public static void parseServerRootElement(final XMLExtendedStreamReader reader, final List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
         final List<NamespacePrefix> prefixes = readNamespaces(reader);
         if (! prefixes.isEmpty()) list.add(new ServerNamespaceUpdate(prefixes));
+
+        // Read attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
+                case DOMAIN_1_0: {
+                    throw unexpectedAttribute(reader, i);
+                }
+                case XML_SCHEMA_INSTANCE: {
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case SCHEMA_LOCATION: {
+                            final List<SchemaLocation> locationList = readSchemaLocations(reader, i);
+                            list.add(new ServerSchemaLocationUpdate(locationList));
+                            break;
+                        }
+                        case NO_NAMESPACE_SCHEMA_LOCATION: {
+                            // todo, jeez
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Content
+        // Handle elements : sequence
+
+        Element element = nextElement(reader);
+        if (element == Element.NAME) {
+            list.add(new ServerNameUpdate(reader.getElementText().trim()));
+            reader.require(END_ELEMENT, null, null);
+            element = nextElement(reader);
+        }
+        if (element == Element.EXTENSIONS) {
+            Set<String> extensionModules = parseExtensions(reader);
+            for (String moduleName : extensionModules) {
+                list.add(new ServerExtensionAdd(moduleName));
+            }
+            element = nextElement(reader);
+        }
+        // Single profile
+        if (element == Element.PROFILE) {
+            parseServerProfile(reader, list);
+            element = nextElement(reader);
+        }
+        // Interfaces
+        Set<String> interfaceNames = null;
+        if (element == Element.INTERFACES) {
+            interfaceNames = parseServerModelInterfaces(reader, list);
+            element = nextElement(reader);
+        }
+        // Single socket binding group
+        if (element == Element.SOCKET_BINDING_GROUP) {
+            final List<SocketBindingAdd> bindingUpdates = new ArrayList<SocketBindingAdd>();
+            final SocketBindingGroupUpdate group = parseSocketBindingGroup(reader, bindingUpdates, interfaceNames, false);
+            // Build updates
+            list.add(new ServerSocketBindingGroupUpdate(group));
+            for(final SocketBindingAdd bindingUpdate : bindingUpdates) {
+                list.add(new ServerSocketBindingUpdate(bindingUpdate));
+            }
+            element = nextElement(reader);
+        }
+        // System properties
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseServerModelSystemProperties(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.DEPLOYMENT_REPOSITORY) {
+            // Handle attributes
+            boolean enabled = true;
+            int interval = 0;
+            String path = DeploymentRepositoryElement.DEFAULT_STANDALONE_PATH;
+            final int attrCount = reader.getAttributeCount();
+            for (int i = 0; i < attrCount; i ++) {
+                final String value = reader.getAttributeValue(i);
+                if (reader.getAttributeNamespace(i) != null) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case PATH: {
+                            path = value;
+                            break;
+                        }
+                        case SCAN_INTERVAL: {
+                            interval = Integer.valueOf(value);
+                            break;
+                        }
+                        case SCAN_ENABLED: {
+                            enabled = Boolean.parseBoolean(value);
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            requireNoContent(reader);
+            list.add(new ServerDeploymentRepositoryAdd(path, interval, enabled));
+            element = nextElement(reader);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseServerDeployments(reader, list);
+            element = nextElement(reader);
+        }
+        if (element != null) {
+            throw unexpectedElement(reader);
+        }
     }
 
     public static void parseHostRootElement(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
@@ -246,7 +357,7 @@ public final class ModelXmlParsers {
             element = nextElement(reader);
         }
         if (element == Element.SOCKET_BINDING_GROUPS) {
-            parseSocketBindingGroups(reader, list, interfaceNames);
+            parseDomainSocketBindingGroups(reader, list, interfaceNames);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -369,6 +480,47 @@ public final class ModelXmlParsers {
         }
     }
 
+    static void parseServerProfile(final XMLExtendedStreamReader reader, List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+        // Attributes
+        requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+        final String name = reader.getAttributeValue(0);
+
+        list.add(new ServerProfileUpdate(name));
+
+        // Content
+        final Set<String> configuredSubsystemTypes = new HashSet<String>();
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case UNKNOWN: {
+                    if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
+                        throw unexpectedElement(reader);
+                    }
+                    if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
+                        throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
+                    }
+                    // parse content
+                    final ParseResult<ExtensionContext.SubsystemConfiguration<?>> result = new ParseResult<ExtensionContext.SubsystemConfiguration<?>>();
+                    reader.handleAny(result);
+                    list.add(new ServerSubsystemAdd(result.getResult().getSubsystemAdd()));
+                    for (AbstractSubsystemUpdate<?, ?> update : result.getResult().getUpdates()) {
+                        // I don't think this is really an unchecked cast (even though ? is bounded by Object, the class
+                        // specifies an additional bound for E so it should be considered safe), but IDEA thinks it is...
+                        //noinspection unchecked
+                        list.add(ServerSubsystemUpdate.create(update));
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        if (configuredSubsystemTypes.size() == 0) {
+            throw new XMLStreamException("Profile has no subsystem configurations", reader.getLocation());
+        }
+    }
+
     static Set<String> parseHostInterfaces(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
         final List<InterfaceAdd> updates = new ArrayList<InterfaceAdd>();
         final Set<String> names = new HashSet<String>();
@@ -481,13 +633,45 @@ public final class ModelXmlParsers {
         return names;
     }
 
-    static void parseSocketBindingGroups(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list, Set<String> interfaces) throws XMLStreamException {
+    static void parseDomainSocketBindingGroups(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list, Set<String> interfaces) throws XMLStreamException {
+        final Set<String> groupNames = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SOCKET_BINDING_GROUP: {
+                            final List<SocketBindingAdd> bindingUpdates = new ArrayList<SocketBindingAdd>();
+                            // parse binding-group
+                            final SocketBindingGroupUpdate group = parseSocketBindingGroup(reader, bindingUpdates, interfaces, true);
+                            final String name = group.getName();
+                            if(groupNames.add(name)) {
+                                ParseUtils.unexpectedElement(reader);
+                            }
+                            // Create domain updates
+                            list.add(new DomainSocketBindingGroupAdd(group));
+                            for(final SocketBindingAdd bindingUpdate : bindingUpdates) {
+                                list.add(new DomainSocketBindingUpdate(name, bindingUpdate));
+                            }
+
+                            break;
+                        } default: {
+                            throw ParseUtils.unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    static SocketBindingGroupUpdate parseSocketBindingGroup(final XMLExtendedStreamReader reader, List<SocketBindingAdd> bindingUpdates, Set<String> interfaces, boolean allowInclude) throws XMLStreamException {
         String name = null;
         String defIntf = null;
         Set<String> includedGroups = new HashSet<String>();
         Set<String> socketBindings = new HashSet<String>();
-
-        List<SocketBindingAdd> bindingUpdates = new ArrayList<SocketBindingAdd>();
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -529,6 +713,10 @@ public final class ModelXmlParsers {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case INCLUDE: {
+                            if(! allowInclude) {
+                                // no include in standalone
+                                throw ParseUtils.unexpectedElement(reader);
+                            }
                             final String includedGroup = ParseUtils.readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
                             if (includedGroups.contains(includedGroup)) {
                                 throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
@@ -553,10 +741,7 @@ public final class ModelXmlParsers {
                     throw ParseUtils.unexpectedElement(reader);
             }
         }
-        list.add(new DomainSocketBindingGroupAdd(new SocketBindingGroupUpdate(name, defIntf, includedGroups)));
-        for(final SocketBindingAdd bindingUpdate : bindingUpdates) {
-            list.add(new DomainSocketBindingUpdate(name, bindingUpdate));
-        }
+        return new SocketBindingGroupUpdate(name, defIntf, includedGroups);
     }
 
     static String parseSocketBinding(final XMLExtendedStreamReader reader, Set<String> interfaces, List<SocketBindingAdd> updates) throws XMLStreamException {
@@ -716,6 +901,81 @@ public final class ModelXmlParsers {
         }
     }
 
+    static void parseServerDeployments(final XMLExtendedStreamReader reader, final List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        final Set<String> names = new HashSet<String>();
+
+        while (reader.nextTag() != END_ELEMENT) {
+            // Handle attributes
+            String uniqueName = null;
+            String runtimeName = null;
+            byte[] hash = null;
+            String startInput = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i ++) {
+                final String value = reader.getAttributeValue(i);
+                if (reader.getAttributeNamespace(i) != null) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (!names.add(value)) {
+                                throw ParseUtils.duplicateNamedElement(reader, value);
+                            }
+                            uniqueName = value;
+                            break;
+                        }
+                        case RUNTIME_NAME: {
+                            runtimeName = value;
+                            break;
+                        }
+                        case SHA1: {
+                            try {
+                                hash = ParseUtils.hexStringToByteArray(value);
+                            }
+                            catch (Exception e) {
+                               throw new XMLStreamException("Value " + value +
+                                       " for attribute " + attribute.getLocalName() +
+                                       " does not represent a properly hex-encoded SHA1 hash",
+                                       reader.getLocation(), e);
+                            }
+                            break;
+                        }
+                        case ALLOWED: {
+                            if (!Boolean.valueOf(value)) {
+                                throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
+                            }
+                            break;
+                        }
+                        case START: {
+                            startInput = value;
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if (uniqueName == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+            if (runtimeName == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.RUNTIME_NAME));
+            }
+            if (hash == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
+            }
+            boolean toStart = startInput == null ? true : Boolean.valueOf(startInput);
+
+            // Handle elements
+            ParseUtils.requireNoContent(reader);
+
+            list.add(new ServerModelDeploymentAdd(uniqueName, runtimeName, hash, toStart));
+        }
+    }
+
     static void parseServerGroups(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
@@ -838,6 +1098,12 @@ public final class ModelXmlParsers {
     static void parseHostSystemProperties(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
         for(final PropertyAdd propertyUpdate : parseProperties(reader, Element.PROPERTY, true)) {
             list.add(new HostSystemPropertyUpdate(propertyUpdate));
+        }
+    }
+
+    static void parseServerModelSystemProperties(final XMLExtendedStreamReader reader, final List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+        for(final PropertyAdd propertyUpdate : parseProperties(reader, Element.PROPERTY, true)) {
+            list.add(new ServerSystemPropertyUpdate(propertyUpdate));
         }
     }
 

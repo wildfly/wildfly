@@ -22,14 +22,8 @@
 
 package org.jboss.as.model;
 
-import java.io.File;
-
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.deployment.filesystem.FileSystemDeploymentService;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -37,7 +31,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author Brian Stansberry
  */
-public class DeploymentRepositoryElement extends AbstractModelElement<DeploymentRepositoryElement> implements ServiceActivator {
+public class DeploymentRepositoryElement extends AbstractModelElement<DeploymentRepositoryElement> {
 
     private static final long serialVersionUID = -8564235225752540162L;
 
@@ -46,6 +40,15 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
     private final String path;
     private int interval = 0;
     private boolean enabled = true;
+
+    /**
+     * Creates a new {@code DeploymentRepsoitoryElement}
+     *
+     * @param path the repository path
+     */
+    public DeploymentRepositoryElement(String path) {
+        this.path = path;
+    }
 
     /**
      * @param location
@@ -57,48 +60,6 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         this.path = path;
         this.interval = interval;
         this.enabled = enabled;
-    }
-
-    /**
-     * @param reader
-     * @throws XMLStreamException
-     */
-    public DeploymentRepositoryElement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        this(reader, DEFAULT_STANDALONE_PATH);
-    }
-
-    public DeploymentRepositoryElement(XMLExtendedStreamReader reader, String defaultPath) throws XMLStreamException {
-        super();
-        // Handle attributes
-        String path = defaultPath;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case PATH: {
-                        path = value;
-                        break;
-                    }
-                    case SCAN_INTERVAL: {
-                        interval = Integer.valueOf(value);
-                        break;
-                    }
-                    case SCAN_ENABLED: {
-                        enabled = Boolean.parseBoolean(value);
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        this.path = path;
-        // Handle elements
-        ParseUtils.requireNoContent(reader);
     }
 
     /**
@@ -115,8 +76,16 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         return interval;
     }
 
+    void setInterval(int interval) {
+        this.interval = interval;
+    }
+
     public boolean isScanEnabled() {
         return enabled;
+    }
+
+    void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
@@ -134,24 +103,5 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
         streamWriter.writeEndElement();
     }
 
-    @Override
-    public void activate(ServiceActivatorContext serviceActivatorContext) {
-        String absolutePath = getAbsolutePath(path);
-        FileSystemDeploymentService.addService(serviceActivatorContext.getBatchBuilder(), absolutePath, interval, enabled);
-    }
-
-    private String getAbsolutePath(String path) {
-        if (File.separatorChar == '/') {
-            if (path.startsWith(File.separator)) {
-                return path;
-            }
-        }
-        else if (path.indexOf(":\\") == 1) {
-            return path;
-        }
-        // TODO. Yuck. Better would be to use ServerEnvironment
-        String jbossHome = System.getProperty("jboss.home.dir");
-        return jbossHome.endsWith(File.separator) ? jbossHome + path : jbossHome + File.separatorChar + path;
-    }
 
 }

@@ -49,6 +49,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -72,11 +73,11 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
         return BASE_SERVICE_NAME.append(path);
     }
 
-    public static void addService(final BatchBuilder batchBuilder, final String path, final int scanInterval, final boolean scanEnabled) {
+    public static BatchServiceBuilder<FileSystemDeploymentService> addService(final BatchBuilder batchBuilder, final String path, final int scanInterval, final boolean scanEnabled) {
         FileSystemDeploymentService service = new FileSystemDeploymentService(new File(path), scanInterval, scanEnabled);
         ServiceName name = getServiceName(path);
 
-        batchBuilder.addService(name, service)
+        BatchServiceBuilder<FileSystemDeploymentService> serviceBuilder = batchBuilder.addService(name, service)
             .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager)
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.injectedDeploymentRepository)
             .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.injectedServerModel);
@@ -84,6 +85,7 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
         // FIXME inject ScheduledExecutorService from an external service dependency
         final ScheduledExecutorService hack = Executors.newSingleThreadScheduledExecutor();
         service.injectedScheduleExecutor.inject(hack);
+        return serviceBuilder;
     }
 
     // FIXME get this list from elsewhere

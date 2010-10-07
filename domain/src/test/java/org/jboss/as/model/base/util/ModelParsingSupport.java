@@ -33,8 +33,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -110,6 +112,19 @@ public class ModelParsingSupport {
             result.update(update);
         }
         return result;
+    }
+
+    public static ServerModel parseServerModel(final XMLMapper mapper, final String xmlContent) throws XMLStreamException, UpdateFailedException {
+        System.out.println("Parsing " + xmlContent);
+        final Reader reader = new StringReader(xmlContent);
+        XMLStreamReader xmlReader = XMLInputFactory.newInstance().createXMLStreamReader(reader);
+        final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
+        mapper.parseDocument(updates, xmlReader);
+        final ServerModel model = new ServerModel();
+        for(final AbstractServerModelUpdate<?> update : updates) {
+            model.update(update);
+        }
+        return model;
     }
 
     private ModelParsingSupport() {}
