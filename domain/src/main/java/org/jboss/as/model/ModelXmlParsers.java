@@ -360,16 +360,16 @@ public final class ModelXmlParsers {
             parseDomainSocketBindingGroups(reader, list, interfaceNames);
             element = nextElement(reader);
         }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseDomainSystemProperties(reader, list);
+            element = nextElement(reader);
+        }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, list, null);
             element = nextElement(reader);
         }
         if (element == Element.SERVER_GROUPS) {
             parseServerGroups(reader, list);
-            element = nextElement(reader);
-        }
-        if (element == Element.SYSTEM_PROPERTIES) {
-            parseDomainSystemProperties(reader, list);
             element = nextElement(reader);
         }
         if (element != null) {
@@ -563,7 +563,6 @@ public final class ModelXmlParsers {
 
         final Map<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = new HashMap<Element, AbstractInterfaceCriteriaElement<?>>();
 
-        Element anyElement = null;
         while (reader.nextTag() != END_ELEMENT) {
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
@@ -575,9 +574,14 @@ public final class ModelXmlParsers {
             // Content
             // nested choices
             if (reader.nextTag() == END_ELEMENT) {
+                if(checkSpecified == false) {
+                    // in the domain it does not need to be complete
+                    continue;
+                }
                 throw unexpectedEndElement(reader);
             }
             boolean first = true;
+            Element anyElement = null;
             do {
                 if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
                     throw unexpectedElement(reader);
