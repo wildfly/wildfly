@@ -128,6 +128,14 @@ public class MockServerProcess {
         return messageHandler.waitForReconnectServer();
     }
 
+    public String waitForReconnectServer(long timeoutMs) throws InterruptedException {
+        return messageHandler.waitForReconnectServer(timeoutMs);
+    }
+
+    public void closeProcessManagerConnection() {
+        pmHandler.shutdown();
+    }
+
     public void closeServerManagerConnection() {
         smHandler.shutdown();
     }

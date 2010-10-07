@@ -129,8 +129,8 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         final int removeCount = pm.getRemoveCount();
         int stopCount = pm.getStopCount();
         int startCount = pm.getStartCount();
-        for (int i = 0 ; i <= 2 ; i++ ) {
-            if (i < 2) {
+        for (int i = 0 ; i <= 4 ; i++ ) {
+            if (i < 4) {
                 processHandlerFactory.resetLatch("Server:server-two");
                 svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_START_FAILED);
                 pm.pollStoppedProcess(1);
@@ -253,6 +253,73 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         shutdownProcessManagerAndWait(pm);
     }
 
+    @Override
+    public void testRespawnCrashedServerDelayBetweenClosedStreamAndProcessEnded() throws Exception {
+        setDomainConfigDir("standard");
+        TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(true, false);
+        final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0);
+
+        pm.pollAddedProcess(3); //SM + 2 servers
+        pm.pollStartedProcess(3);
+
+        TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
+        MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
+        MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+
+        Assert.assertEquals("server-one", assertReadStartCommand(svr1).getServerName());
+        Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
+
+        Assert.assertTrue(managerAlive(svr1.getSmAddress(), svr1.getSmPort()));
+        Assert.assertTrue(managerAlive(svr1.getPmAddress(), svr1.getPmPort()));
+
+        svr1.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
+        final int addCount = pm.getAddCount();
+        final int removeCount = pm.getRemoveCount();
+        int stopCount = pm.getStopCount();
+        int startCount = pm.getStartCount();
+
+        for (int i = 0 ; i <= 4 ; i++) {
+            svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_STARTED);
+            if (i < 4) {
+                final MockServerProcess proc = svr2;
+                sm.resetDownLatch();
+                processHandlerFactory.resetLatch("Server:server-two");
+                proc.closeProcessManagerConnection();
+                Thread.sleep(50);
+                proc.closeServerManagerConnection();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                        proc.crashServer(1);
+                    }
+                }).start();
+                sm.waitForDown();
+
+                pm.pollStoppedProcess(1);
+                pm.pollStartedProcess(1);
+                try {
+                    svr2.waitForReconnectServer(200);
+                    Assert.fail("Expected no reconnect message");
+                } catch (Throwable expected) {
+                }
+                Assert.assertEquals(++stopCount, pm.getStopCount());
+                Assert.assertEquals(++startCount, pm.getStartCount());
+                svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
+                svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
+                Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
+            }
+        }
+        Assert.assertEquals(addCount, pm.getAddCount());
+        Assert.assertEquals(removeCount, pm.getRemoveCount());
+
+        shutdownProcessManagerAndWait(pm);
+    }
+
     public void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception {
         testServersGetReconnectMessageFollowingRestartedServerManager(ServerState.STARTING, false);
     }
@@ -282,7 +349,6 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
     }
 
     private void testServersGetReconnectMessageFollowingRestartedServerManager(ServerState state, boolean receiveConfig) throws Exception {
-        ServerNoopExiter.reset();
         setDomainConfigDir("standard");
         TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(true, false);
         final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0);
@@ -302,6 +368,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
 
         sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_STARTED, svr1, svr2);
 
+        ServerNoopExiter.reset();
         sm.stop();
 
         final TestServerManagerProcess proc = sm;
@@ -338,7 +405,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
             Assert.assertEquals("server-two", assertReadStartCommand(svr2).getServerName());
         }
 
-        //Check that taking down SM did not close the server
+        //Check that taking down SM did not close the servers
         Assert.assertNull(ServerNoopExiter.getStatus());
 
         shutdownProcessManagerAndWait(pm);

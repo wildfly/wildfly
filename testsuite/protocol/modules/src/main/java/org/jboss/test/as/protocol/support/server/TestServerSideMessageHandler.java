@@ -41,7 +41,7 @@ public class TestServerSideMessageHandler extends ServerManagerToServerCommandHa
 
     final BlockingQueue<byte[]> data = new LinkedBlockingQueue<byte[]>();
     final BlockingQueue<String> reconnectServer = new LinkedBlockingQueue<String>();
-    final CountDownLatch countDownLatch = new CountDownLatch(1);
+    final CountDownLatch shutDownLatch = new CountDownLatch(1);
 
 
     @Override
@@ -51,11 +51,11 @@ public class TestServerSideMessageHandler extends ServerManagerToServerCommandHa
 
     @Override
     public void handleShutdown() {
-        countDownLatch.countDown();
+        shutDownLatch.countDown();
     }
 
     public void waitForShutdownCommand() throws InterruptedException {
-        if (!countDownLatch.await(10, TimeUnit.SECONDS)) {
+        if (!shutDownLatch.await(10, TimeUnit.SECONDS)) {
             throw new IllegalStateException("Wait for shutdown timed out");
         }
     }
@@ -81,7 +81,11 @@ public class TestServerSideMessageHandler extends ServerManagerToServerCommandHa
     }
 
     public String waitForReconnectServer() throws InterruptedException {
-        String info = reconnectServer.poll(10, TimeUnit.SECONDS);
+        return waitForReconnectServer(10000);
+    }
+
+    public String waitForReconnectServer(long timeoutMs) throws InterruptedException {
+        String info = reconnectServer.poll(timeoutMs, TimeUnit.MILLISECONDS);
         if (info == null)
             throw new RuntimeException("Read timed out");
         return info;

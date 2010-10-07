@@ -33,7 +33,6 @@ public class ServerNoopExiter implements Exiter {
     @Override
     public void exit(int status) {
         ServerNoopExiter.status = status;
-        new Exception("SETTING STATUS " + status).printStackTrace();
     }
 
     public static Integer getStatus() {

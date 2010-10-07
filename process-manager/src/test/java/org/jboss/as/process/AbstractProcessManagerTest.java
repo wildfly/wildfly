@@ -60,6 +60,7 @@ public abstract class AbstractProcessManagerTest {
 
     @Before
     public void beforeTest() throws IOException, UnknownHostException{
+        System.err.println("------------> beforeTest" );
         testManager = TestProcessUtils
                 .createStreamManager(new TestProcessController() {
 

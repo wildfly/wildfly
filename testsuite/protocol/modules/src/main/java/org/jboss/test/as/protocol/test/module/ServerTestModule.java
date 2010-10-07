@@ -83,6 +83,7 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         assertReadServerCommand(sm, "Server:server-one", ServerToServerManagerProtocolCommand.SERVER_STOPPED);
 
         TestServerProcess proc1 = processHandlerFactory.getProcessHandler("Server:server-one").getTestServerProcess();
+        proc1.awaitShutdown();
 
         new Thread(new Runnable() {
             public void run() {
@@ -91,7 +92,6 @@ public class ServerTestModule extends AbstractProtocolTestModule implements Serv
         }).start();
 
         sm.waitForShutdownCommand();
-        proc1.awaitShutdown();
         sm.stop();
     }
 

@@ -126,16 +126,16 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
 
     void stop() throws IOException {
         synchronized (this) {
-            if (!start) {
-                return;
-            }
+            boolean wasStart = start;
             start = false;
             stopped = true;
-            OutgoingPmCommand.SHUTDOWN.sendStop(commandStream);
+            if (wasStart) {
+                OutgoingPmCommand.SHUTDOWN.sendStop(commandStream);
+            }
         }
     }
 
-    boolean isStart() {
+    synchronized boolean isStart() {
         return start;
     }
 
@@ -152,16 +152,18 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     void down(String stoppedProcessName) throws IOException {
         checkServerManager(OutgoingPmCommand.DOWN);
         synchronized (this) {
-            if (!start)
+            if (!start) {
                 return;
+            }
             OutgoingPmCommand.DOWN.sendDown(commandStream, stoppedProcessName);
         }
     }
 
     void reconnectToServerManager (String addr, int port) throws IOException {
         synchronized (this) {
-            if (!start)
+            if (!start) {
                 return;
+            }
             OutgoingPmCommand.RECONNECT_SERVER_MANAGER.sendReconnectToServerManager(commandStream, addr, port);
         }
     }
@@ -226,7 +228,7 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     public void processEnded(int exitCode) {
         log.infof("Process %s has finished", processName);
         boolean respawn = false;
-        synchronized (ManagedProcess.this) {
+        synchronized (this) {
             start = false;
             if (exitCode != 0)
                 respawn = !stopped;
@@ -237,7 +239,10 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
     }
 
     @Override
-    public void closeCommandStream() {
+    public void processInputClosed() {
+        synchronized (this) {
+            start = false;
+        }
         commandStream.close();
     }
 

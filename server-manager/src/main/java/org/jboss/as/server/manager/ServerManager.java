@@ -758,6 +758,14 @@ public class ServerManager implements ShutdownListener {
         @Override
         public void handleShutdown() {
             ServerManager.this.stop();
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SystemExiter.exit(0);
+                }
+            }, "Server Manager Exit Thread");
+            t.start();
         }
 
         @Override

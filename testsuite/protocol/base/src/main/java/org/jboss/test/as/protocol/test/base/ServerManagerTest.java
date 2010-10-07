@@ -39,7 +39,8 @@ public interface ServerManagerTest extends BaseTest{
     void testServerStartFailedAndRespawnExpires() throws Exception;
 
     void testServerCrashedAfterStartGetsRespawned() throws Exception;
-    //More tests for server crashing in different states
+
+    void testRespawnCrashedServerDelayBetweenClosedStreamAndProcessEnded() throws Exception;
 
     void testServersGetReconnectMessageFollowingRestartedServerManager_StartingDoesNotGetStarted() throws Exception;
 

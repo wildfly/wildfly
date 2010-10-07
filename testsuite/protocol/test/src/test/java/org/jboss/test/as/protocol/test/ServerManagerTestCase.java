@@ -64,6 +64,11 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
 		getTestInstance().testServerCrashedAfterStartGetsRespawned();
     }
 
+    @Test
+    public void testRespawnCrashedServerDelayBetweenClosedStreamAndProcessEnded() throws Exception {
+        getTestInstance().testRespawnCrashedServerDelayBetweenClosedStreamAndProcessEnded();
+    }
+
 	@Test
 	public void testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted() throws Exception {
 	    getTestInstance().testServersGetReconnectMessageFollowingRestartedServerManager_StartedDoesNotGetStarted();
@@ -103,4 +108,5 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
     public void testServerGetsReconnectedFollowingBrokenConnection() throws Exception {
         getTestInstance().testServerGetsReconnectedFollowingBrokenConnection();
     }
+
 }

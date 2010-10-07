@@ -94,6 +94,7 @@ public class Server extends AbstractServer {
         state = ServerState.STOPPED;
         log.info("Server stopped");
         shutdownCommunicationHandlers();
+
     }
 
     public void reconnectToServerManager(String host, String port) {

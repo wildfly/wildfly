@@ -56,7 +56,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
                 Status status = StreamUtils.readWord(inputStream, b);
                 if (status == Status.END_OF_STREAM) {
                     log.info("Received end of stream, shutting down " + processName);
-                    managed.closeCommandStream();
+                    managed.processInputClosed();
                     // no more input
                     return;
                 }
@@ -72,11 +72,11 @@ public final class ProcessOutputStreamHandler implements Runnable {
             }
         } catch (SocketException e) {
             log.error("Socket closed for " + processName + ", shutting down");
-            managed.closeCommandStream();
+            managed.processInputClosed();
         } catch (Exception e) {
             // exception caught, shut down channel and exit
             log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
-            managed.closeCommandStream();
+            managed.processInputClosed();
 
         } finally {
             ManagedProcess.safeClose(inputStream);
@@ -97,7 +97,7 @@ public final class ProcessOutputStreamHandler implements Runnable {
 
     public interface Managed {
         String getProcessName();
-        void closeCommandStream();
+        void processInputClosed();
         void processEnded(int exitCode);
     }
 }
