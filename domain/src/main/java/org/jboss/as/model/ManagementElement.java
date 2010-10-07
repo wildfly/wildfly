@@ -22,14 +22,12 @@
 
 package org.jboss.as.model;
 
-import java.util.Collections;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Configuration for a server manager management port on a {@link org.jboss.as.model.HostModel}.
+ * Configuration for a server manager management socket on a {@link org.jboss.as.model.HostModel}.
  *
  * @author John Bailey
  */
@@ -49,52 +47,6 @@ public final class ManagementElement extends AbstractModelElement<ManagementElem
         this.port = port;
     }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws javax.xml.stream.XMLStreamException if an error occurs
-     */
-    public ManagementElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super();
-        // Handle attributes
-        String interfaceName = null;
-        int port = -1;
-
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
-            final String value = reader.getAttributeValue(i);
-            if (reader.getAttributeNamespace(i) != null) {
-                throw ParseUtils.unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case INTERFACE: {
-                        interfaceName = value;
-                        break;
-                    }
-                    case PORT: {
-                        port = Integer.parseInt(value);
-                        break;
-                    }
-                    case MAX_THREADS: {
-                        maxThreads = Integer.parseInt(value);
-                        break;
-                    }
-                    default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        if(interfaceName == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
-        }
-        this.interfaceName = interfaceName;
-        this.port = port;
-
-        reader.discardRemainder();
-    }
-
     public String getInterfaceName() {
         return interfaceName;
     }
@@ -108,21 +60,21 @@ public final class ManagementElement extends AbstractModelElement<ManagementElem
     }
 
     /** {@inheritDoc} */
-    private long elementHash() {
-        long cksum = interfaceName.hashCode() & 0xffffffffL;
-        return cksum;
-    }
-
-    /** {@inheritDoc} */
+    @Override
     protected Class<ManagementElement> getElementClass() {
         return ManagementElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.INTERFACE.getLocalName(), interfaceName);
         streamWriter.writeAttribute(Attribute.PORT.getLocalName(), Integer.toString(port));
         streamWriter.writeAttribute(Attribute.MAX_THREADS.getLocalName(), Integer.toString(maxThreads));
         streamWriter.writeEndElement();
+    }
+
+    void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
     }
 }

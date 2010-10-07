@@ -114,8 +114,84 @@ public final class ModelXmlParsers {
     public static void parseHostRootElement(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
         final List<NamespacePrefix> prefixes = readNamespaces(reader);
         if (! prefixes.isEmpty()) list.add(new HostNamespaceUpdate(prefixes));
-    }
 
+        // Read attributes
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
+                case DOMAIN_1_0: {
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            name = value;
+                            break;
+                        }
+                        default: throw unexpectedAttribute(reader, i);
+                    }
+                }
+                case XML_SCHEMA_INSTANCE: {
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case SCHEMA_LOCATION: {
+                            final List<SchemaLocation> locationList = readSchemaLocations(reader, i);
+                            list.add(new HostSchemaLocationUpdate(locationList));
+                            break;
+                        }
+                        case NO_NAMESPACE_SCHEMA_LOCATION: {
+                            // TODO, jeez
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            name = HostModel.DEFAULT_NAME;
+        }
+        list.add(new HostNameUpdate(name));
+
+        // Content
+        // Handle elements: sequence
+
+        Element element = nextElement(reader);
+
+        if (element == Element.EXTENSIONS) {
+            Set<String> extensionModules = parseExtensions(reader);
+            for (String moduleName : extensionModules) {
+                list.add(new HostExtensionAdd(moduleName));
+            }
+            element = nextElement(reader);
+        }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseHostSystemProperties(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.MANAGEMENT) {
+            parseManagement(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.DOMAIN_CONTROLLER) {
+            parseDomainController(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.INTERFACES) {
+            parseHostInterfaces(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.JVMS) {
+            parseJvms(reader, list);
+            element = nextElement(reader);
+        }
+        if (element == Element.SERVERS) {
+            parseServers(reader, list);
+            element = nextElement(reader);
+        }
+    }
 
     public static void parseDomainRootElement(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
 
@@ -138,7 +214,7 @@ public final class ModelXmlParsers {
                             break;
                         }
                         case NO_NAMESPACE_SCHEMA_LOCATION: {
-                            // todo, jeez
+                            // TODO, jeez
                             break;
                         }
                         default: {
@@ -154,7 +230,10 @@ public final class ModelXmlParsers {
 
         Element element = nextElement(reader);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, list);
+            Set<String> extensionModules = parseExtensions(reader);
+            for (String moduleName : extensionModules) {
+                list.add(new DomainExtensionAdd(moduleName));
+            }
             element = nextElement(reader);
         }
         if (element == Element.PROFILES) {
@@ -187,7 +266,8 @@ public final class ModelXmlParsers {
         }
     }
 
-    static void parseExtensions(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+
+    static Set<String> parseExtensions(final XMLExtendedStreamReader reader) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final ExtensionContext extensionContext = new ExtensionContextImpl(reader);
@@ -214,10 +294,9 @@ public final class ModelXmlParsers {
             } catch (ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
             }
-
-            // Create the update
-            list.add(new DomainExtensionAdd(moduleName));
         }
+
+        return found;
     }
 
     static void parseProfiles(final XMLExtendedStreamReader reader, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
@@ -753,6 +832,12 @@ public final class ModelXmlParsers {
         }
     }
 
+    static void parseHostSystemProperties(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        for(final PropertyAdd propertyUpdate : parseProperties(reader, Element.PROPERTY, true)) {
+            list.add(new HostSystemPropertyUpdate(propertyUpdate));
+        }
+    }
+
     static Collection<PropertyAdd> parseProperties(final XMLExtendedStreamReader reader, final Element propertyType, final boolean allowNullValue) throws XMLStreamException {
         Map<String, PropertyAdd> properties = new HashMap<String, PropertyAdd>();
         // Handle attributes
@@ -816,7 +901,35 @@ public final class ModelXmlParsers {
         return properties.values();
     }
 
-    static NamedModelUpdates<JvmElement> parseJvm(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static void parseJvms(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case JVM:
+                            NamedModelUpdates<JvmElement> jvm = parseJvm(reader);
+                            list.add(new HostJvmAdd(jvm.name));
+                            for (AbstractModelUpdate<JvmElement, ?> update : jvm.updates) {
+                                list.add(HostJvmUpdate.create(jvm.name, update));
+                            }
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    static NamedModelUpdates<JvmElement> parseJvm(final XMLExtendedStreamReader reader) throws XMLStreamException {
 
         List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
 
@@ -974,6 +1087,164 @@ public final class ModelXmlParsers {
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
+    }
+
+    static void parseManagement(final XMLExtendedStreamReader reader,
+            final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+
+        // Handle attributes
+        String interfaceName = null;
+        int port = 0;
+        int maxThreads = -1;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case INTERFACE: {
+                        interfaceName = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = Integer.parseInt(value);
+                        if (port < 0) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + port + " -- cannot be negative",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        maxThreads = Integer.parseInt(value);
+                        if (maxThreads < 1) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + maxThreads + " -- must be greater than 0",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if(interfaceName == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+        list.add(new HostManagementSocketAdd(interfaceName, port));
+
+        if (maxThreads > 0) {
+            list.add(new HostManagementSocketThreadsUpdate(maxThreads));
+        }
+        reader.discardRemainder();
+    }
+
+    static void parseDomainController(final XMLExtendedStreamReader reader,
+            final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+
+        requireNoAttributes(reader);
+
+        boolean hasLocal = false;
+        boolean hasRemote = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case LOCAL: {
+                            if (hasLocal) {
+                                throw new XMLStreamException("Child " + element.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
+                                        " already declared", reader.getLocation());
+                            }
+                            else if (hasRemote) {
+                                throw new XMLStreamException("Child " + Element.REMOTE.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
+                                        " already declared", reader.getLocation());
+                            }
+                            requireNoAttributes(reader);
+                            requireNoContent(reader);
+                            list.add(new HostLocalDomainControllerAdd());
+                            hasLocal = true;
+                            break;
+                        }
+                        case REMOTE: {
+                            if (hasRemote) {
+                                throw new XMLStreamException("Child " + element.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
+                                        " already declared", reader.getLocation());
+                            }
+                            else if (hasLocal) {
+                                throw new XMLStreamException("Child " + Element.LOCAL.getLocalName() +
+                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
+                                        " already declared", reader.getLocation());
+                            }
+                            parseRemoteDomainController(reader, list);
+                            hasRemote = true;
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
+        if (!hasLocal && !hasRemote) {
+            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " +
+                    Element.LOCAL.getLocalName() + " domain controller configuration must be declared.", reader.getLocation());
+        }
+    }
+
+    static void parseRemoteDomainController(XMLExtendedStreamReader reader,
+            List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        // Handle attributes
+        String host = null;
+        Integer port = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case HOST: {
+                        host = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = Integer.valueOf(value);
+                        if (port < 1) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + port + " -- cannot be less than one",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if(host == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
+        }
+        if(port == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
+        }
+
+        list.add(new HostRemoteDomainControllerAdd(host, port.intValue()));
+
+        reader.discardRemainder();
+    }
+
+    static void parseServers(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        // TODO parse
     }
 
     private static Element nextElement(XMLExtendedStreamReader reader) throws XMLStreamException {

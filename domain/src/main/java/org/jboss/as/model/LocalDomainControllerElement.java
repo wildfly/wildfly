@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
@@ -43,28 +42,14 @@ public final class LocalDomainControllerElement extends AbstractModelElement<Loc
     public LocalDomainControllerElement() {
     }
 
-    /**
-     * Construct a new instance.
-     *
-     * @param reader the reader from which to build this element
-     * @throws XMLStreamException if an error occurs
-     */
-    public LocalDomainControllerElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        super();
-        ParseUtils.requireNoContent(reader);
-    }
-
     /** {@inheritDoc} */
-    public long elementHash() {
-        return 42;
-    }
-
-    /** {@inheritDoc} */
+    @Override
     protected Class<LocalDomainControllerElement> getElementClass() {
         return LocalDomainControllerElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
     }

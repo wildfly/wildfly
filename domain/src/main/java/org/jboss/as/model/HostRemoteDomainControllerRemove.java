@@ -22,42 +22,40 @@
 
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
 /**
- * A configuration element for a remote domain controller.
+ * An update which removes a {@link RemoteDomainControllerElement} from a host element.
  *
- * @author John E. Bailey
+ * @author Brian Stansberry
  */
-public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDomainControllerElement> {
-    private static final long serialVersionUID = -2704285433730705139L;
+public final class HostRemoteDomainControllerRemove extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private String host;
-    private int port;
-
-    public RemoteDomainControllerElement(final String host, final int port) {
-        this.host = host;
-        this.port = port;
+    /**
+     * Construct a new instance.
+     */
+    public HostRemoteDomainControllerRemove() {
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected Class<RemoteDomainControllerElement> getElementClass() {
-        return RemoteDomainControllerElement.class;
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        if (!element.removeRemoteDomainController()) {
+            throw new UpdateFailedException("No remote domain controller configured");
+        }
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.HOST.getLocalName(), host);
-        streamWriter.writeAttribute(Attribute.PORT.getLocalName(), Integer.toString(port));
+    public HostRemoteDomainControllerAdd getCompensatingUpdate(final HostModel original) {
+        RemoteDomainControllerElement dc = original.getRemoteDomainControllerElement();
+        if (dc == null)
+            return null;
+        return new HostRemoteDomainControllerAdd(dc.getHost(), dc.getPort());
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }

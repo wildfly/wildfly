@@ -35,14 +35,21 @@ public final class DomainExtensionRemove extends AbstractDomainModelUpdate<Void>
         this.moduleName = moduleName;
     }
 
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        element.removeExtension(moduleName);
+        if (!element.removeExtension(moduleName)) {
+            throw new UpdateFailedException("Extension " + moduleName + " was not configured");
+        }
     }
 
+    @Override
     public DomainExtensionAdd getCompensatingUpdate(final DomainModel original) {
-        return new DomainExtensionAdd(moduleName);
+        if (original.getExtensions().contains(moduleName))
+            return new DomainExtensionAdd(moduleName);
+        return null;
     }
 
+    @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }

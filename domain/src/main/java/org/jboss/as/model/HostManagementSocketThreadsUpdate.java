@@ -23,37 +23,45 @@
 package org.jboss.as.model;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * An update which changes a {@link ManagementElement}'s max-threads setting.
+ *
+ * @author Brian Stansberry
  */
-public final class DomainExtensionAdd extends AbstractDomainModelUpdate<Void> {
+public final class HostManagementSocketThreadsUpdate extends AbstractHostModelUpdate<Void> {
 
-    private static final long serialVersionUID = 3718982114819320314L;
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private final String moduleName;
+    private final int maxThreads;
 
-    public DomainExtensionAdd(final String moduleName) {
-        this.moduleName = moduleName;
+    /**
+     * Construct a new instance.
+     */
+    public HostManagementSocketThreadsUpdate(final int maxThreads) {
+        this.maxThreads = maxThreads;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        if (!element.addExtension(moduleName)) {
-            throw new UpdateFailedException("Extension " + moduleName + " already configured");
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        ManagementElement me = element.getManagementElement();
+        if (me == null) {
+            throw new UpdateFailedException("No management socket configured");
         }
+        me.setMaxThreads(maxThreads);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DomainExtensionRemove getCompensatingUpdate(final DomainModel original) {
-        if(original.getExtensions().contains(moduleName))
+    public HostManagementSocketThreadsUpdate getCompensatingUpdate(final HostModel original) {
+        ManagementElement me = original.getManagementElement();
+        if (me == null)
             return null;
-        return new DomainExtensionRemove(moduleName);
+        return new HostManagementSocketThreadsUpdate(me.getMaxThreads());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ServerExtensionAdd getServerModelUpdate() {
-        return new ServerExtensionAdd(moduleName);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }

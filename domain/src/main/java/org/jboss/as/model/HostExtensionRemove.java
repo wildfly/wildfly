@@ -23,37 +23,43 @@
 package org.jboss.as.model;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * An update which removes an extension from a host element.
+ *
+ * @author Brian Stansberry
  */
-public final class DomainExtensionAdd extends AbstractDomainModelUpdate<Void> {
-
-    private static final long serialVersionUID = 3718982114819320314L;
+public final class HostExtensionRemove extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
     private final String moduleName;
 
-    public DomainExtensionAdd(final String moduleName) {
+    /**
+     * Construct a new instance.
+     *
+     * @param moduleName the name of the extension module
+     */
+    public HostExtensionRemove(final String moduleName) {
         this.moduleName = moduleName;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        if (!element.addExtension(moduleName)) {
-            throw new UpdateFailedException("Extension " + moduleName + " already configured");
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        if (!element.removeExtension(moduleName)) {
+            throw new UpdateFailedException("Extension " + moduleName + " was not configured");
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public DomainExtensionRemove getCompensatingUpdate(final DomainModel original) {
-        if(original.getExtensions().contains(moduleName))
-            return null;
-        return new DomainExtensionRemove(moduleName);
+    public HostExtensionRemove getCompensatingUpdate(final HostModel original) {
+        if (original.getExtensions().contains(moduleName))
+            return new HostExtensionRemove(moduleName);
+        else return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ServerExtensionAdd getServerModelUpdate() {
-        return new ServerExtensionAdd(moduleName);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }

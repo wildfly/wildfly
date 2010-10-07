@@ -254,4 +254,61 @@ public final class HostModel extends AbstractModel<HostModel> {
         return interfaces.remove(name) != null;
     }
 
+    void setName(String name) {
+        this.name = name;
+    }
+
+    boolean addJvm(String jvmName) {
+        if (jvms.containsKey(jvmName))
+            return false;
+        jvms.put(jvmName, new JvmElement(jvmName));
+        return true;
+    }
+
+    boolean removeJvm(String jvmName) {
+        return jvms.remove(jvmName) != null;
+    }
+
+    boolean addManagementElement(String interfaceName, int port) {
+        if (managementElement != null)
+            return false;
+        managementElement = new ManagementElement(interfaceName, port);
+        return true;
+    }
+
+    boolean removeManagementElement() {
+        if (managementElement != null) {
+            managementElement = null;
+            return true;
+        }
+        return false;
+    }
+
+    boolean addRemoteDomainController(String host, int port) {
+        if (localDomainController != null || remoteDomainController != null)
+            return false;
+        remoteDomainController = new RemoteDomainControllerElement(host, port);
+        return true;
+    }
+
+    boolean removeRemoteDomainController() {
+        if (remoteDomainController == null)
+            return false;
+        remoteDomainController = null;
+        return true;
+    }
+
+    boolean addLocalDomainController() {
+        if (localDomainController != null || remoteDomainController != null)
+            return false;
+        localDomainController = new LocalDomainControllerElement();
+        return true;
+    }
+
+    boolean removeLocalDomainController() {
+        if (localDomainController == null)
+            return false;
+        localDomainController = null;
+        return true;
+    }
 }

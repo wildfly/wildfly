@@ -23,37 +23,46 @@
 package org.jboss.as.model;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * An update which adds a {@link ManagementElement} to a host element.
+ *
+ * @author Brian Stansberry
  */
-public final class DomainExtensionAdd extends AbstractDomainModelUpdate<Void> {
+public final class HostManagementSocketAdd extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private static final long serialVersionUID = 3718982114819320314L;
+    private final String interfaceName;
+    private final int port;
 
-    private final String moduleName;
-
-    public DomainExtensionAdd(final String moduleName) {
-        this.moduleName = moduleName;
+    /**
+     * Construct a new instance.
+     *
+     * @param interfaceName the name of the interface to use for the management socket
+     * @param port the port to use for the management socket
+     */
+    public HostManagementSocketAdd(final String interfaceName, final int port) {
+        this.interfaceName = interfaceName;
+        this.port = port;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
-        if (!element.addExtension(moduleName)) {
-            throw new UpdateFailedException("Extension " + moduleName + " already configured");
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        if (!element.addManagementElement(interfaceName, port)) {
+            throw new UpdateFailedException("Management socket already configured");
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public DomainExtensionRemove getCompensatingUpdate(final DomainModel original) {
-        if(original.getExtensions().contains(moduleName))
+    public HostManagementSocketRemove getCompensatingUpdate(final HostModel original) {
+        if (original.getManagementElement() != null)
             return null;
-        return new DomainExtensionRemove(moduleName);
+        return new HostManagementSocketRemove();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ServerExtensionAdd getServerModelUpdate() {
-        return new ServerExtensionAdd(moduleName);
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }

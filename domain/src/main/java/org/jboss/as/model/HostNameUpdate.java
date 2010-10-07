@@ -22,42 +22,41 @@
 
 package org.jboss.as.model;
 
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
- * A configuration element for a remote domain controller.
+ * An update which changes the name property on a host element.
  *
- * @author John E. Bailey
+ * @author Brian Stansberry
  */
-public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDomainControllerElement> {
-    private static final long serialVersionUID = -2704285433730705139L;
+public final class HostNameUpdate extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private String host;
-    private int port;
+    private final String name;
 
-    public RemoteDomainControllerElement(final String host, final int port) {
-        this.host = host;
-        this.port = port;
+    /**
+     * Construct a new instance.
+     *
+     * @param name the name of the host
+     */
+    public HostNameUpdate(final String name) {
+        this.name = name;
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected Class<RemoteDomainControllerElement> getElementClass() {
-        return RemoteDomainControllerElement.class;
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        element.setName(name);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.HOST.getLocalName(), host);
-        streamWriter.writeAttribute(Attribute.PORT.getLocalName(), Integer.toString(port));
+    public HostNameUpdate getCompensatingUpdate(final HostModel original) {
+        return new HostNameUpdate(original.getName());
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
 }
