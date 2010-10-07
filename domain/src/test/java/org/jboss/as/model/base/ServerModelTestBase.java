@@ -95,7 +95,7 @@ public abstract class ServerModelTestBase extends DomainModelElementTestBase {
     }
 
     String getFullContent(final String content) {
-        return ModelParsingSupport.getXmlContent("server", getTargetNamespace(), getTargetNamespaceLocation(), content);
+        return ModelParsingSupport.getXmlContent("standalone", getTargetNamespace(), getTargetNamespaceLocation(), content);
     }
 
 }

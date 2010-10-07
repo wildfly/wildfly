@@ -24,11 +24,11 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd">
 
+    <management interface="public" port="9999"/>
+
     <domain-controller>
        <local/>
     </domain-controller>
-
-    <management interface="public" port="9999"/>
 
     <interfaces>
         <interface name="public">

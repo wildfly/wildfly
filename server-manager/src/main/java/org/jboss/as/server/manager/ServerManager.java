@@ -496,7 +496,9 @@ public class ServerManager implements ShutdownListener {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
         final ManagementElement managementElement = hostConfig.getManagementElement();
-
+        if(managementElement == null) {
+            throw new IllegalStateException("null management configuration");
+        }
         final Set<InterfaceElement> hostInterfaces = hostConfig.getInterfaces();
         if(hostInterfaces != null) {
             for(InterfaceElement interfaceElement : hostInterfaces) {
