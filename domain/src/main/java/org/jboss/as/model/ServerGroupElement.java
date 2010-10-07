@@ -105,19 +105,6 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
      * assignment for this server group.
      *
      * @return the socket binding group reference, or <code>null</code>
-     * @deprecated use {@link #getSocketBindingGroupName()}
-     */
-    @Deprecated
-    public org.jboss.as.model.socket.SocketBindingGroupRefElement getSocketBindingGroup() {
-        return bindingGroup == null ? null : new org.jboss.as.model.socket.SocketBindingGroupRefElement(bindingGroup, portOffset);
-    }
-
-    /**
-     * Gets the default
-     * {@link DomainModel#getSocketBindingGroup(String) domain-level socket binding group}
-     * assignment for this server group.
-     *
-     * @return the socket binding group reference, or <code>null</code>
      */
     public String getSocketBindingGroupName() {
         return bindingGroup;

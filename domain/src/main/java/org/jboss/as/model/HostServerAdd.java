@@ -23,38 +23,46 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * An update which adds a {@link ServerElement} to a host element.
+ *
+ * @author Brian Stansberry
  */
-public class ServerElementSystemPropertyUpdate extends AbstractModelUpdate<ServerElement, Void> {
+public final class HostServerAdd extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private static final long serialVersionUID = -2162643350016256639L;
-    private final AbstractPropertyUpdate update;
+    private final String serverName;
+    private final String groupName;
 
-    public ServerElementSystemPropertyUpdate(AbstractPropertyUpdate update) {
-        this.update = update;
+    /**
+     * Construct a new instance.
+     *
+     * @param serverName the name of the server
+     * @param groupName the name of the server group the server is a member of
+     */
+    public HostServerAdd(final String serverName, final String groupName) {
+        this.serverName = serverName;
+        this.groupName = groupName;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Class<ServerElement> getModelElementType() {
-        return ServerElement.class;
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        if (!element.addServer(serverName, groupName)) {
+            throw new UpdateFailedException("Server " + serverName + " already configured");
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
-        update.applyUpdate(element.getSystemProperties());
+    public HostServerRemove getCompensatingUpdate(final HostModel original) {
+        if (original.getServer(serverName) != null)
+            return null;
+        return new HostServerRemove(serverName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ServerElementSystemPropertyUpdate getCompensatingUpdate(ServerElement original) {
-        return new ServerElementSystemPropertyUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
-
-    @Override
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(update);
-    }
-
 }

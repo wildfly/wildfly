@@ -384,7 +384,7 @@ public final class ModelXmlParsers {
         final Set<String> names = new HashSet<String>();
         parseInterfaces(reader, names, updates, true);
         for(final InterfaceAdd update : updates) {
-            list.add(new ServerElementUpdate<Void>(serverName, new ServerElementInterfaceAdd(update)));
+            list.add(HostServerUpdate.create(serverName, new ServerElementInterfaceAdd(update)));
         }
         return names;
     }
@@ -770,7 +770,7 @@ public final class ModelXmlParsers {
             // Handle elements
 
             NamedModelUpdates<JvmElement> jvm = null;
-            boolean sawBindingGroup = false;
+            NameOffset socketBinding = null;
             boolean sawDeployments = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -789,11 +789,14 @@ public final class ModelXmlParsers {
                                 break;
                             }
                             case SOCKET_BINDING_GROUP: {
-                                if (sawBindingGroup) {
+                                if (socketBinding != null) {
                                     throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
                                 }
-                                sawBindingGroup = true;
-                                parseSocketBindingGroupRef(reader, name, list);
+                                socketBinding = parseSocketBindingGroupRef(reader);
+                                list.add(DomainServerGroupUpdate.create(name, new ServerGroupSocketBindingGroupUpdate(socketBinding.name)));
+                                if (socketBinding.offset > 0) {
+                                    list.add(DomainServerGroupUpdate.create(name, new ServerGroupSocketBindingPortOffsetUpdate(socketBinding.offset)));
+                                }
                                 break;
                             }
                             case DEPLOYMENTS: {
@@ -902,8 +905,10 @@ public final class ModelXmlParsers {
     }
 
     static void parseJvms(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+
         requireNoAttributes(reader);
 
+        Set<String> names = new HashSet<String>();
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -911,7 +916,7 @@ public final class ModelXmlParsers {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case JVM:
-                            NamedModelUpdates<JvmElement> jvm = parseJvm(reader);
+                            NamedModelUpdates<JvmElement> jvm = parseJvm(reader, names);
                             list.add(new HostJvmAdd(jvm.name));
                             for (AbstractModelUpdate<JvmElement, ?> update : jvm.updates) {
                                 list.add(HostJvmUpdate.create(jvm.name, update));
@@ -930,6 +935,11 @@ public final class ModelXmlParsers {
     }
 
     static NamedModelUpdates<JvmElement> parseJvm(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        Set<String> empty = new HashSet<String>();
+        return parseJvm(reader, empty);
+    }
+
+    static NamedModelUpdates<JvmElement> parseJvm(final XMLExtendedStreamReader reader, Set<String> jvmNames) throws XMLStreamException {
 
         List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
 
@@ -947,6 +957,10 @@ public final class ModelXmlParsers {
                     case NAME: {
                         if (name != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+
+                        if (!jvmNames.add(value)) {
+                            throw new XMLStreamException("Duplicate JVM declaration " + value, reader.getLocation());
+                        }
                         name = value;
                         break;
                     }
@@ -1041,7 +1055,7 @@ public final class ModelXmlParsers {
         return updates;
     }
 
-    static void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final String serverGroupName, final List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+    static NameOffset parseSocketBindingGroupRef(final XMLExtendedStreamReader reader) throws XMLStreamException {
         // Handle attributes
         String name = null;
         int offset = -1;
@@ -1057,7 +1071,6 @@ public final class ModelXmlParsers {
                         if (name != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         name = value;
-                        list.add(DomainServerGroupUpdate.create(serverGroupName, new ServerGroupSocketBindingGroupUpdate(name)));
                         break;
                     }
                     case PORT_OFFSET: {
@@ -1070,7 +1083,6 @@ public final class ModelXmlParsers {
                                         attribute.getLocalName() + " -- must be greater than zero",
                                         reader.getLocation());
                             }
-                            list.add(DomainServerGroupUpdate.create(serverGroupName, new ServerGroupSocketBindingPortOffsetUpdate(offset)));
                         } catch (NumberFormatException e) {
                             throw new XMLStreamException(offset + " is not a valid " +
                                     attribute.getLocalName(), reader.getLocation(), e);
@@ -1087,6 +1099,8 @@ public final class ModelXmlParsers {
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
+
+        return new NameOffset(name, offset);
     }
 
     static void parseManagement(final XMLExtendedStreamReader reader,
@@ -1242,9 +1256,132 @@ public final class ModelXmlParsers {
     }
 
     static void parseServers(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
-        requireNoAttributes(reader);
 
-        // TODO parse
+        requireNoAttributes(reader);
+        // Handle elements
+        Set<String> names = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case SERVER:
+                            NamedModelUpdates<JvmElement> jvm = parseJvm(reader, names);
+                            list.add(new HostJvmAdd(jvm.name));
+                            for (AbstractModelUpdate<JvmElement, ?> update : jvm.updates) {
+                                list.add(HostJvmUpdate.create(jvm.name, update));
+                            }
+                            break;
+                        default:
+                            throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    static void parseServer(final XMLExtendedStreamReader reader, final List<? super AbstractHostModelUpdate<?>> list, Set<String> serverNames) throws XMLStreamException {
+        // Handle attributes
+        String name = null;
+        String group = null;
+        Boolean start = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+
+                        if (!serverNames.add(value)) {
+                            throw new XMLStreamException("Duplicate server declaration " + value, reader.getLocation());
+                        }
+                        name = value;
+                        break;
+                    }
+                    case GROUP: {
+                        group = value;
+                        break;
+                    }
+                    case START: {
+                        start = Boolean.valueOf(value);
+                        break;
+                    }
+                    default: throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (group == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.GROUP));
+        }
+        list.add(new HostServerAdd(name, group));
+
+        // Handle elements
+        NamedModelUpdates<JvmElement> jvm = null;
+        Collection<PropertyAdd> systemProperties = null;
+        NameOffset socketBinding = null;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case INTERFACE_SPECS: {
+                            parseServerElementInterfaces(name, reader, list);
+                            break;
+                        }
+                        case JVM: {
+                            if (jvm != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+
+                            jvm = parseJvm(reader);
+                            list.add(HostServerUpdate.create(name, new ServerElementJvmAdd(jvm.name)));
+                            for (AbstractModelUpdate<JvmElement, ?> update : jvm.updates) {
+                                list.add(HostServerUpdate.create(name, ServerElementJvmUpdate.create(update)));
+                            }
+                            break;
+                        }
+                        case SOCKET_BINDING_GROUP: {
+                            if (socketBinding != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
+                            }
+                            socketBinding = parseSocketBindingGroupRef(reader);
+                            list.add(HostServerUpdate.create(name, new ServerElementSocketBindingGroupUpdate(socketBinding.name)));
+                            if (socketBinding.offset > 0) {
+                                list.add(HostServerUpdate.create(name, new ServerElementSocketBindingPortOffsetUpdate(socketBinding.offset)));
+                            }
+                            break;
+                        }
+                        case SYSTEM_PROPERTIES: {
+                            if (systemProperties != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            systemProperties = parseProperties(reader, Element.PROPERTY, true);
+                            for(final PropertyAdd propertyUpdate : systemProperties) {
+                                list.add(HostServerUpdate.create(name, new ServerElementSystemPropertyUpdate(propertyUpdate)));
+                            }
+                            break;
+                        }
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
+
+        boolean isStart = start == null ? true : start.booleanValue();
+        list.add(HostServerUpdate.create(name, new ServerElementStartStopUpdate(isStart)));
+
     }
 
     private static Element nextElement(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -1298,6 +1435,17 @@ public final class ModelXmlParsers {
             this.name = name;
             this.updates = updates;
         }
+    }
+
+    static class NameOffset {
+        final String name;
+        final int offset;
+
+        NameOffset(String name, int offset) {
+            this.name = name;
+            this.offset = offset;
+        }
+
     }
 
 }

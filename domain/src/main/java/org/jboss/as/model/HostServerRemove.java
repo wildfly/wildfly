@@ -23,38 +23,44 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * An update which removes a {@link ServerElement} from a host element.
+ *
+ * @author Brian Stansberry
  */
-public class ServerElementSystemPropertyUpdate extends AbstractModelUpdate<ServerElement, Void> {
+public final class HostServerRemove extends AbstractHostModelUpdate<Void> {
+    private static final long serialVersionUID = 6075488950873140885L;
 
-    private static final long serialVersionUID = -2162643350016256639L;
-    private final AbstractPropertyUpdate update;
+    private final String serverName;
 
-    public ServerElementSystemPropertyUpdate(AbstractPropertyUpdate update) {
-        this.update = update;
+    /**
+     * Construct a new instance.
+     *
+     * @param serverName the name of the server
+     */
+    public HostServerRemove(final String serverName) {
+        this.serverName = serverName;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Class<ServerElement> getModelElementType() {
-        return ServerElement.class;
+    protected void applyUpdate(final HostModel element) throws UpdateFailedException {
+        if (!element.removeServer(serverName)) {
+            throw new UpdateFailedException("Server " + serverName + " was not configured");
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
-        update.applyUpdate(element.getSystemProperties());
+    public HostServerAdd getCompensatingUpdate(final HostModel original) {
+        ServerElement se = original.getServer(serverName);
+        if (se != null)
+            return new HostServerAdd(se.getName(), se.getServerGroup());
+        else return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ServerElementSystemPropertyUpdate getCompensatingUpdate(ServerElement original) {
-        return new ServerElementSystemPropertyUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return null;
     }
-
-    @Override
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(update);
-    }
-
 }

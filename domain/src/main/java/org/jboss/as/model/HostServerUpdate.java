@@ -27,22 +27,23 @@ package org.jboss.as.model;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerElementUpdate<R> extends AbstractHostModelUpdate<R> {
+public class HostServerUpdate<R> extends AbstractHostModelUpdate<R> {
 
     private static final long serialVersionUID = 1656392748485415899L;
     private final String serverName;
-    private final AbstractModelElementUpdate<ServerElement> serverUpdate;
+    private final AbstractModelUpdate<ServerElement, R> serverUpdate;
 
-    public ServerElementUpdate(String serverName, AbstractModelElementUpdate<ServerElement> serverUpdate) {
+    public HostServerUpdate(String serverName, AbstractModelUpdate<ServerElement, R> serverUpdate) {
         this.serverName = serverName;
         this.serverUpdate = serverUpdate;
     }
 
-    public static <T> ServerElementUpdate<T> create(final String serverName, final AbstractModelUpdate<ServerElement, T> serverUpdate) {
-        return new ServerElementUpdate<T>(serverName, serverUpdate);
+    public static <T> HostServerUpdate<T> create(final String serverName, final AbstractModelUpdate<ServerElement, T> serverUpdate) {
+        return new HostServerUpdate<T>(serverName, serverUpdate);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
         final ServerElement server = element.getServer(serverName);
         if(server == null) {
@@ -52,15 +53,17 @@ public class ServerElementUpdate<R> extends AbstractHostModelUpdate<R> {
     }
 
     /** {@inheritDoc} */
-    public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
+    @Override
+    public HostServerUpdate<?> getCompensatingUpdate(HostModel original) {
         final ServerElement server = original.getServer(serverName);
         if(server == null) {
             return null;
         }
-        return null;
+        return HostServerUpdate.create(serverName, serverUpdate.getCompensatingUpdate(server));
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractServerModelUpdate<R> getServerModelUpdate() {
         // TODO Auto-generated method stub
         return null;

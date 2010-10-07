@@ -31,7 +31,6 @@ import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -47,7 +46,8 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private final String serverGroup;
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private boolean start;
-    private SocketBindingGroupRefElement bindingGroup;
+    private String bindingGroup;
+    private int portOffset = 0;
     private JvmElement jvm;
     private PropertiesElement systemProperties;
 
@@ -122,8 +122,19 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         return intfs;
     }
 
-    public SocketBindingGroupRefElement getSocketBindingGroup() {
+    /**
+     * Gets the default
+     * {@link DomainModel#getSocketBindingGroup(String) domain-level socket binding group}
+     * assignment for this server group.
+     *
+     * @return the socket binding group reference, or <code>null</code>
+     */
+    public String getSocketBindingGroupName() {
         return bindingGroup;
+    }
+
+    public int getSocketBindingPortOffset() {
+        return portOffset;
     }
 
     /**
@@ -176,8 +187,11 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         }
 
         if (bindingGroup != null) {
-            streamWriter.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-            bindingGroup.writeContent(streamWriter);
+            streamWriter.writeEmptyElement(Element.SOCKET_BINDING_GROUP.getLocalName());
+            streamWriter.writeAttribute(Attribute.REF.getLocalName(), bindingGroup);
+            if (portOffset != 0) {
+                streamWriter.writeAttribute(Attribute.PORT_OFFSET.getLocalName(), String.valueOf(portOffset));
+            }
         }
 
         if (systemProperties != null) {
@@ -204,5 +218,26 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
     boolean removeInterface(final String name) {
         return interfaces.remove(name) != null;
+    }
+
+    boolean addJvm(String jvmName) {
+        if (jvm != null)
+            return false;
+        jvm = new JvmElement(jvmName);
+        return true;
+    }
+
+    void removeJvm() {
+        this.jvm = null;
+    }
+
+    void setSocketBindingGroupName(String name) {
+        this.bindingGroup = name;
+    }
+
+    void setSocketBindingPortOffset(int offset) {
+        if (offset < 0)
+            throw new IllegalArgumentException("Offset " + offset + " is less than zero");
+        this.portOffset = offset;
     }
 }

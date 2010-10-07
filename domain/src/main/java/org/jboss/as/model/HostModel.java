@@ -311,4 +311,15 @@ public final class HostModel extends AbstractModel<HostModel> {
         localDomainController = null;
         return true;
     }
+
+    boolean addServer(String serverName, String groupName) {
+        if (servers.containsKey(serverName))
+            return false;
+        servers.put(serverName, new ServerElement(serverName, groupName));
+        return true;
+    }
+
+    boolean removeServer(String serverName) {
+        return servers.remove(serverName) != null;
+    }
 }

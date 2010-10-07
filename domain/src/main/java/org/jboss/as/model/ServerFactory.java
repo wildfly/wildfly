@@ -33,7 +33,6 @@ import java.util.Set;
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -94,15 +93,16 @@ public final class ServerFactory {
         }
 
         // Merge socket bindings
-        SocketBindingGroupRefElement bindingRef = serverElement.getSocketBindingGroup();
+        String bindingRef = serverElement.getSocketBindingGroupName();
+        int portOffset = serverElement.getSocketBindingPortOffset();
         if (bindingRef == null) {
-            bindingRef = serverGroup.getSocketBindingGroup();
+            bindingRef = serverGroup.getSocketBindingGroupName();
+            portOffset = serverGroup.getSocketBindingPortOffset();
         }
-        SocketBindingGroupElement domainBindings = domainModel.getSocketBindingGroup(bindingRef.getRef());
+        SocketBindingGroupElement domainBindings = domainModel.getSocketBindingGroup(bindingRef);
         if (domainBindings == null) {
             domainBindings = new SocketBindingGroupElement("domainBindings");
         }
-        int portOffset = bindingRef.getPortOffset();
         // TODO: add each socket binding
 
         // Merge extensions

@@ -23,38 +23,38 @@
 package org.jboss.as.model;
 
 /**
- * @author Emanuel Muckenhuber
+ * Update to remove a {@link JvmElement} from a {@link ServerElement}.
+ *
+ * @author Brian Stansberry
  */
-public class ServerElementSystemPropertyUpdate extends AbstractModelUpdate<ServerElement, Void> {
+public class ServerElementJvmRemove extends AbstractModelUpdate<ServerElement, Void> {
 
-    private static final long serialVersionUID = -2162643350016256639L;
-    private final AbstractPropertyUpdate update;
+    private static final long serialVersionUID = -5766717739615737224L;
 
-    public ServerElementSystemPropertyUpdate(AbstractPropertyUpdate update) {
-        this.update = update;
+    public ServerElementJvmRemove() {
     }
 
-    /** {@inheritDoc} */
+    @Override
+    public ServerElementJvmAdd getCompensatingUpdate(ServerElement original) {
+        JvmElement jvm = original.getJvm();
+        return jvm == null ? null : new ServerElementJvmAdd(jvm.getName());
+    }
+
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        // JvmElement changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
+        return null;
+    }
+
+    @Override
+    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
+        element.removeJvm();
+    }
+
     @Override
     public Class<ServerElement> getModelElementType() {
         return ServerElement.class;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
-        update.applyUpdate(element.getSystemProperties());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ServerElementSystemPropertyUpdate getCompensatingUpdate(ServerElement original) {
-        return new ServerElementSystemPropertyUpdate(update.getCompensatingUpdate(original.getSystemProperties()));
-    }
-
-    @Override
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
-        return new ServerSystemPropertyUpdate(update);
     }
 
 }

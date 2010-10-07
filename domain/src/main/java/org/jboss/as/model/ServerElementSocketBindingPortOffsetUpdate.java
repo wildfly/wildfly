@@ -22,46 +22,40 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.model.socket.InterfaceAdd;
-import org.jboss.as.model.socket.InterfaceElement;
-
 /**
- * Update adding a {@link InterfaceElement} to the {@link ServerElement}.
+ * Update to add a {@link JvmElement} to a {@link ServerElement}.
  *
- * @author Emanuel Muckenhuber
+ * @author Brian Stansberry
  */
-public class ServerElementInterfaceAdd extends AbstractModelUpdate<ServerElement, Void> {
+public class ServerElementSocketBindingPortOffsetUpdate extends AbstractModelUpdate<ServerElement, Void> {
 
-    private static final long serialVersionUID = -8245273058656370269L;
-    private final InterfaceAdd delegate;
+    private static final long serialVersionUID = -5766717739615737224L;
 
-    public ServerElementInterfaceAdd(InterfaceAdd delegate) {
-        this.delegate = delegate;
+    private final int offset;
+
+    public ServerElementSocketBindingPortOffsetUpdate(final int offset) {
+        if (offset < 0)
+            throw new IllegalArgumentException("Offset " + offset + " is less than zero");
+        this.offset = offset;
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected void applyUpdate(final ServerElement server) throws UpdateFailedException {
-        final InterfaceElement networkInterface = server.addInterface(delegate.getName());
-        if(networkInterface == null) {
-            throw new UpdateFailedException();
-        }
-        delegate.applyUpdate(networkInterface);
+    public ServerElementSocketBindingPortOffsetUpdate getCompensatingUpdate(ServerElement original) {
+        return new ServerElementSocketBindingPortOffsetUpdate(original.getSocketBindingPortOffset());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public ServerElementInterfaceRemove getCompensatingUpdate(final ServerElement server) {
-        return new ServerElementInterfaceRemove(delegate.getName());
-    }
-
-    /** {@inheritDoc} */
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        return new ServerModelInterfaceAdd(delegate);
+        // Socket binding changes do not affect running servers; they are picked up by
+        // ServerManager when it launches servers
+        return null;
     }
 
-    /** {@inheritDoc} */
+    @Override
+    protected void applyUpdate(ServerElement element) throws UpdateFailedException {
+        element.setSocketBindingPortOffset(offset);
+    }
+
     @Override
     public Class<ServerElement> getModelElementType() {
         return ServerElement.class;

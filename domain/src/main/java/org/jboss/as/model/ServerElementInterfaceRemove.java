@@ -30,7 +30,7 @@ import org.jboss.as.model.socket.InterfaceElement;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerElementInterfaceRemove extends AbstractModelElementUpdate<ServerElement> {
+public class ServerElementInterfaceRemove extends AbstractModelUpdate<ServerElement, Void> {
 
     private static final long serialVersionUID = -2830177164001085749L;
     private final String interfaceName;
@@ -40,6 +40,7 @@ public class ServerElementInterfaceRemove extends AbstractModelElementUpdate<Ser
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final ServerElement server) throws UpdateFailedException {
         if(! server.removeInterface(interfaceName)) {
             throw new UpdateFailedException();
@@ -47,7 +48,8 @@ public class ServerElementInterfaceRemove extends AbstractModelElementUpdate<Ser
     }
 
     /** {@inheritDoc} */
-    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(ServerElement original) {
+    @Override
+    public ServerElementInterfaceAdd getCompensatingUpdate(ServerElement original) {
         final InterfaceElement networkInterface = original.getInterface(interfaceName);
         if(networkInterface == null) {
             return null;
@@ -56,11 +58,13 @@ public class ServerElementInterfaceRemove extends AbstractModelElementUpdate<Ser
     }
 
     /** {@inheritDoc} */
+    @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceRemove(interfaceName);
     }
 
     /** {@inheritDoc} */
+    @Override
     public Class<ServerElement> getModelElementType() {
         return ServerElement.class;
     }
