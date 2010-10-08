@@ -22,9 +22,6 @@
 
 package org.jboss.as.model.base;
 
-import java.util.Map;
-import java.util.Set;
-
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
@@ -41,8 +38,11 @@ import org.jboss.as.model.base.util.ModelParsingSupport;
  * system properties in a server group {@link JvmElement}.
  *
  * @author Brian Stansberry
+ * @author Kabir Khan
  */
 public abstract class ServerGroupJvmSystemPropertiesTestBase extends DomainModelElementTestBase {
+
+    JvmSystemPropertiesTestCommon delegate;
 
     /**
      * @param name
@@ -52,83 +52,56 @@ public abstract class ServerGroupJvmSystemPropertiesTestBase extends DomainModel
     }
 
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        delegate = new JvmSystemPropertiesTestCommon(new JvmSystemPropertiesTestCommon.ContentAndPropertiesGetter(getXMLMapper(), getTargetNamespace(), getTargetNamespaceLocation()) {
+
+            @Override
+            PropertiesElement getTestProperties(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
+                    UpdateFailedException {
+                DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
+                ServerGroupElement sge = root.getServerGroup("test");
+                assertNotNull(sge);
+                JvmElement jvm = sge.getJvm();
+                assertNotNull(jvm);
+                PropertiesElement testee = jvm.getSystemProperties();
+                assertNotNull(testee);
+                return testee;
+            }
+
+            @Override
+            String getFullContent(String testContent) {
+                testContent = ModelParsingSupport.wrapJvm(testContent);
+                testContent = ModelParsingSupport.wrapServerGroup(testContent);
+                String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+                return fullcontent;
+            }
+        });
+    }
+
     public void testBasicProperties() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\" value=\"value2\"/></system-properties>");
-        PropertiesElement testee = getTestProperties(fullcontent);
-        Map<String, String> props = testee.getProperties();
-        assertEquals(2, props.size());
-        assertEquals("value1", props.get("prop1"));
-        assertEquals("value1", testee.getProperty("prop1"));
-        assertEquals("value2", props.get("prop2"));
-        assertEquals("value2", testee.getProperty("prop2"));
-        Set<String> names = testee.getPropertyNames();
-        assertEquals(2, names.size());
-        assertTrue(names.contains("prop1"));
-        assertTrue(names.contains("prop2"));
+        delegate.testBasicProperties();
     }
 
     public void testNullProperties() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property name=\"prop1\"/><property name=\"prop2\"/></system-properties>");
-        PropertiesElement testee = getTestProperties(fullcontent);
-        Map<String, String> props = testee.getProperties();
-        assertEquals(2, props.size());
-        assertNull(props.get("prop1"));
-        assertNull(testee.getProperty("prop1"));
-        assertNull(props.get("prop2"));
-        assertNull(testee.getProperty("prop2"));
-        Set<String> names = testee.getPropertyNames();
-        assertEquals(2, names.size());
-        assertTrue(names.contains("prop1"));
-        assertTrue(names.contains("prop2"));
+        delegate.testNullProperties();
     }
 
     public void testMissingName() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property value=\"value1\"/></system-properties>");
-
-        try {
-            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-            fail("Missing name attribute did not cause parsing failure");
-        }
-        catch (XMLStreamException good) {
-         // TODO validate the location stuff in the exception message
-        }
+        delegate.testMissingName();
     }
 
     public void testBogusAttribute() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property name=\"prop1\" value=\"value1\" bogus=\"bad\"/></system-properties>");
-
-        try {
-            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-            fail("Bogus attribute did not cause parsing failure");
-        }
-        catch (XMLStreamException good) {
-         // TODO validate the location stuff in the exception message
-        }
+        delegate.testBogusAttribute();
     }
 
     public void testBogusChild() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop1\" value=\"value1\"/></system-properties>");
-
-        try {
-            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-            fail("Bogus child element did not cause parsing failure");
-        }
-        catch (XMLStreamException good) {
-         // TODO validate the location stuff in the exception message
-        }
+        delegate.testBogusChild();
     }
 
     public void testNoChildren() throws Exception {
-        String fullcontent = getFullContent("<system-properties/>");
-
-        try {
-            ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-            fail("Missing child element did not cause parsing failure");
-        }
-        catch (XMLStreamException good) {
-         // TODO validate the location stuff in the exception message
-        }
-
+        delegate.testNoChildren();
     }
 
     /* (non-Javadoc)
@@ -136,36 +109,6 @@ public abstract class ServerGroupJvmSystemPropertiesTestBase extends DomainModel
      */
     @Override
     public void testSerializationDeserialization() throws Exception {
-        String fullcontent = getFullContent("<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\" value=\"value2\"/></system-properties>");
-        PropertiesElement testee = getTestProperties(fullcontent);
-
-        byte[] bytes = serialize(testee);
-        PropertiesElement testee1 = deserialize(bytes, PropertiesElement.class);
-
-        assertEquals(testee.elementHash(), testee1.elementHash());
-        assertEquals(testee.size(), testee1.size());
-        for (String name : testee.getPropertyNames()) {
-            assertEquals("Property values match for " + name, testee.getProperty(name), testee1.getProperty(name));
-        }
+        delegate.testSerializationDeserialization();
     }
-
-    private String getFullContent(String testContent) {
-        testContent = ModelParsingSupport.wrapJvm(testContent);
-        testContent = ModelParsingSupport.wrapServerGroup(testContent);
-        String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
-        return fullcontent;
-    }
-
-    private PropertiesElement getTestProperties(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
-            UpdateFailedException {
-        DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-        ServerGroupElement sge = root.getServerGroup("test");
-        assertNotNull(sge);
-        JvmElement jvm = sge.getJvm();
-        assertNotNull(jvm);
-        PropertiesElement testee = jvm.getSystemProperties();
-        assertNotNull(testee);
-        return testee;
-    }
-
 }

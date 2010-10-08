@@ -19,12 +19,26 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
 
     private static final long serialVersionUID = 4963103173530602991L;
 
+    //Attributes
     private final String name;
     private String javaHome;
+    private Boolean debugEnabled;
+    private String debugOptions;
+    private Boolean envClasspathIgnored;
+
+    //Elements
     private String heapSize;
     private String maxHeap;
+    private String permgenSize;
+    private String maxPermgen;
+    private String agentPath;
+    private String agentLib;
+    private String javaagent;
+    private String stack;
+    private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
     private PropertiesElement environmentVariables = new PropertiesElement(Element.VARIABLE, true);
     private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
+
 
     /**
      */
@@ -56,6 +70,18 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                         home = value;
                         break;
                     }
+                    case DEBUG_ENABLED: {
+                        debugEnabled = Boolean.valueOf(value);
+                        break;
+                    }
+                    case DEBUG_OPTIONS: {
+                        debugOptions = value;
+                        break;
+                    }
+                    case ENV_CLASSPATH_IGNORED: {
+                        envClasspathIgnored = Boolean.valueOf(value);
+                        break;
+                    }
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -77,7 +103,24 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case HEAP: {
-                            parseHeap(reader);
+                            if (heapSize != null || maxHeap != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseMinMax(reader, new HeapSetter());
+                            break;
+                        }
+                        case PERMGEN: {
+                            if (permgenSize != null || maxPermgen != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseMinMax(reader, new PermGenSetter());
+                            break;
+                        }
+                        case STACK : {
+                            if (stack != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            parseStack(reader);
                             break;
                         }
                         case ENVIRONMENT_VARIABLES: {
@@ -92,6 +135,30 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                                 throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                             }
                             this.systemProperties = new PropertiesElement(reader);
+                            break;
+                        }
+                        case AGENT_LIB: {
+                            if (agentLib != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            if (agentPath != null) {
+                                throw new XMLStreamException(element.getLocalName() + " when we already also have a " + Element.AGENT_PATH, reader.getLocation());
+                            }
+                            agentLib = parseValue(reader);
+                            break;
+                        }
+                        case AGENT_PATH: {
+                            if (agentPath != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            if (agentLib != null) {
+                                throw new XMLStreamException(element.getLocalName() + " when we already also have a " + Element.AGENT_LIB, reader.getLocation());
+                            }
+                            agentPath = parseValue(reader);
+                            break;
+                        }
+                        case JAVA_AGENT: {
+                            javaagent = parseValue(reader);
                             break;
                         }
                         default:
@@ -118,11 +185,38 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             if (element.getJavaHome() != null) {
                 this.javaHome = element.getJavaHome();
             }
+            if (element.getDebugOptions() != null) {
+                this.debugOptions = element.getDebugOptions();
+            }
+            if (element.isDebugEnabled() != null) {
+                this.debugEnabled = element.isDebugEnabled();
+            }
+            if (element.isEnvClasspathIgnored() != null) {
+                this.envClasspathIgnored = element.isEnvClasspathIgnored();
+            }
+            if (element.getPermgenSize() != null) {
+                this.permgenSize = element.getPermgenSize();
+            }
+            if (element.getMaxPermgen() != null) {
+                this.maxPermgen = element.getMaxPermgen();
+            }
             if (element.getHeapSize() != null) {
                 this.heapSize = element.getHeapSize();
             }
             if (element.getMaxHeap() != null) {
                 this.maxHeap = element.getMaxHeap();
+            }
+            if (element.getStack() != null) {
+                this.stack = element.getStack();
+            }
+            if (element.getAgentLib() != null) {
+                this.agentLib = element.getAgentLib();
+            }
+            if (element.getAgentPath() != null) {
+                this.agentPath = element.getAgentPath();
+            }
+            if (element.getJavaagent() != null) {
+                this.javaagent = element.getJavaagent();
             }
         }
 
@@ -139,14 +233,28 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, combinedSysp);
     }
 
-
-
     public String getJavaHome() {
         return javaHome;
     }
 
     void setJavaHome(String javaHome) {
         this.javaHome = javaHome;
+    }
+
+    public String getPermgenSize() {
+        return permgenSize;
+    }
+
+    public void setPermgenSize(String permgenSize) {
+        this.permgenSize = permgenSize;
+    }
+
+    public String getMaxPermgen() {
+        return maxPermgen;
+    }
+
+    public void setMaxPermgen(String maxPermgen) {
+        this.maxPermgen = maxPermgen;
     }
 
     public String getHeapSize() {
@@ -169,12 +277,78 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return name;
     }
 
+    public Boolean isDebugEnabled() {
+        return debugEnabled;
+    }
+
+    public void setDebugEnabled(Boolean debugEnabled) {
+        this.debugEnabled = debugEnabled;
+    }
+
+    public String getDebugOptions() {
+        return debugOptions;
+    }
+
+    public void setDebugOptions(String debugOptions) {
+        this.debugOptions = debugOptions;
+    }
+
+    public String getStack() {
+        return stack;
+    }
+
+    public void setStack(String stack) {
+        this.stack = stack;
+    }
+
+    public Boolean isEnvClasspathIgnored() {
+        return envClasspathIgnored;
+    }
+
+    public void setEnvClasspathIgnored(Boolean envClasspathIgnored) {
+        this.envClasspathIgnored = envClasspathIgnored;
+    }
+
+    public JvmOptionsElement getJvmOptions() {
+        return jvmOptionsElement;
+    }
+
     public PropertiesElement getEnvironmentVariables() {
         return environmentVariables;
     }
 
     public PropertiesElement getSystemProperties() {
         return systemProperties;
+    }
+
+    public String getAgentPath() {
+        return agentPath;
+    }
+
+    public void setAgentPath(String agentPath) {
+        if (agentLib != null) {
+            throw new IllegalArgumentException("Attempting to set 'agent-path' when 'agent-lib' was already set");
+        }
+        this.agentPath = agentPath;
+    }
+
+    public String getAgentLib() {
+        return agentLib;
+    }
+
+    public void setAgentLib(String agentLib) {
+        if (agentPath != null) {
+            throw new IllegalArgumentException("Attempting to set 'agent-lib' when 'agent-path' was already set");
+        }
+        this.agentLib = agentLib;
+    }
+
+    public String getJavaagent() {
+        return javaagent;
+    }
+
+    public void setJavaagent(String javaagent) {
+        this.javaagent = javaagent;
     }
 
     /* (non-Javadoc)
@@ -196,12 +370,57 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             streamWriter.writeAttribute(Attribute.JAVA_HOME.getLocalName(), javaHome);
         }
 
+        if (debugEnabled != null) {
+            streamWriter.writeAttribute(Attribute.DEBUG_ENABLED.getLocalName(), debugEnabled.toString());
+        }
+
+        if (debugOptions != null) {
+            streamWriter.writeAttribute(Attribute.DEBUG_OPTIONS.getLocalName(), debugOptions.toString());
+        }
+
+        if (envClasspathIgnored != null) {
+            streamWriter.writeAttribute(Attribute.ENV_CLASSPATH_IGNORED.getLocalName(), envClasspathIgnored.toString());
+        }
+
         if (heapSize != null || maxHeap != null) {
             streamWriter.writeStartElement(Element.HEAP.getLocalName());
             if (heapSize != null)
                 streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), heapSize);
             if (maxHeap != null)
-                streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), maxHeap);
+                streamWriter.writeAttribute(Attribute.MAX_SIZE.getLocalName(), maxHeap);
+            streamWriter.writeEndElement();
+        }
+
+        if (permgenSize != null || maxPermgen != null) {
+            streamWriter.writeStartElement(Element.PERMGEN.getLocalName());
+            if (permgenSize != null)
+                streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), permgenSize);
+            if (maxPermgen != null)
+                streamWriter.writeAttribute(Attribute.MAX_SIZE.getLocalName(), permgenSize);
+            streamWriter.writeEndElement();
+        }
+
+        if (stack != null) {
+            streamWriter.writeStartElement(Element.STACK.getLocalName());
+            streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), stack);
+            streamWriter.writeEndElement();
+        }
+
+        if (agentLib != null) {
+            streamWriter.writeStartElement(Element.AGENT_LIB.getLocalName());
+            streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), agentLib);
+            streamWriter.writeEndElement();
+        }
+
+        if (agentPath != null) {
+            streamWriter.writeStartElement(Element.AGENT_PATH.getLocalName());
+            streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), agentPath);
+            streamWriter.writeEndElement();
+        }
+
+        if (javaagent != null) {
+            streamWriter.writeStartElement(Element.JAVA_AGENT.getLocalName());
+            streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), javaagent);
             streamWriter.writeEndElement();
         }
 
@@ -216,7 +435,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         }
     }
 
-    private void parseHeap(XMLExtendedStreamReader reader) throws XMLStreamException {
+    private void parseMinMax(XMLExtendedStreamReader reader, MinMaxSetter setter) throws XMLStreamException {
         // Handle attributes
         String size = null;
         String max = null;
@@ -241,9 +460,90 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                 }
             }
         }
-        this.heapSize = size;
-        this.maxHeap = max;
+
+        setter.setMinMax(size, max);
         // Handle elements
         ParseUtils.requireNoContent(reader);
     }
+
+    private void parseStack(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // Handle attributes
+        String size = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        size = value;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (size == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SIZE));
+        }
+        this.stack = size;
+
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private String parseValue(XMLExtendedStreamReader reader) throws XMLStreamException {
+        String found = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        found = value;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (found == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+
+        return found;
+    }
+
+    private interface MinMaxSetter {
+        void setMinMax(String min, String max);
+    }
+
+    private class HeapSetter implements MinMaxSetter {
+
+        @Override
+        public void setMinMax(String min, String max) {
+            heapSize = min;
+            maxHeap = max;
+        }
+    }
+
+    private class PermGenSetter implements MinMaxSetter {
+
+        @Override
+        public void setMinMax(String min, String max) {
+            permgenSize = min;
+            maxHeap = max;
+        }
+    }
+
 }

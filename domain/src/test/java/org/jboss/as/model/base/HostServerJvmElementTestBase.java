@@ -19,31 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.model.base;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
-import junit.framework.Assert;
-
-import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.JvmElement;
-import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.base.JvmElementTestCommon.ContentAndElementGetter;
 import org.jboss.as.model.base.util.ModelParsingSupport;
 
 /**
- * Base class for unit tests of {@link JvmElement} as a child of
- * a {@link ServerGroupElement}.
+ * Test JvmElement as a child of jvms.
  *
- * @author Brian Stansberry
- * @author Kabir Khan
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @version $Revision: 1.1 $
  */
-public abstract class ServerGroupJvmElementTestBase extends DomainModelElementTestBase {
-
+public abstract class HostServerJvmElementTestBase extends HostModelTestBase {
     JvmElementTestCommon delegate;
 
     @Override
@@ -53,19 +48,18 @@ public abstract class ServerGroupJvmElementTestBase extends DomainModelElementTe
 
             @Override
             public String getFullContent(String testContent) {
-                testContent = ModelParsingSupport.wrapServerGroup(testContent);
-                String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), targetNamespace, targetNamespaceLocation, testContent);
+                testContent = ModelParsingSupport.wrapServer(testContent);
+                String fullcontent = ModelParsingSupport.getXmlContent(Element.HOST.getLocalName(), targetNamespace, targetNamespaceLocation, testContent);
                 return fullcontent;
             }
 
             @Override
-            public JvmElement getTestJvmElement(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
-                    UpdateFailedException {
-                DomainModel root = ModelParsingSupport.parseDomainModel(mapper, fullcontent);
-                ServerGroupElement sge = root.getServerGroup("test");
-                Assert.assertNotNull(sge);
-                JvmElement jvm = sge.getJvm();
-                Assert.assertNotNull(jvm);
+            public JvmElement getTestJvmElement(String fullcontent) throws XMLStreamException, FactoryConfigurationError, UpdateFailedException {
+                HostModel root = ModelParsingSupport.parseHostModel(mapper, fullcontent);
+                ServerElement server = root.getServer("test");
+                assertNotNull(server);
+                JvmElement jvm = server.getJvm();
+                assertNotNull(jvm);
                 return jvm;
             }
         });
@@ -74,7 +68,7 @@ public abstract class ServerGroupJvmElementTestBase extends DomainModelElementTe
     /**
      * @param name
      */
-    public ServerGroupJvmElementTestBase(String name) {
+    public HostServerJvmElementTestBase(String name) {
         super(name);
     }
 

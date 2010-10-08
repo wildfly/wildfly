@@ -25,11 +25,11 @@ package org.jboss.as.model.base;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
+import org.jboss.as.model.HostModel;
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.base.util.ModelParsingSupport;
 
@@ -39,13 +39,13 @@ import org.jboss.as.model.base.util.ModelParsingSupport;
  *
  * @author Brian Stansberry
  */
-public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainModelElementTestBase {
+public abstract class HostServerJvmEnvironmentVariablesTestBase extends DomainModelElementTestBase {
 
     JvmEnvironmentVariablesTestCommon delegate;
     /**
      * @param name
      */
-    public ServerGroupJvmEnvironmentVariablesTestBase(String name) {
+    public HostServerJvmEnvironmentVariablesTestBase(String name) {
         super(name);
     }
 
@@ -57,10 +57,10 @@ public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainM
             @Override
             PropertiesElement getTestProperties(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
                     UpdateFailedException {
-                DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
-                ServerGroupElement sge = root.getServerGroup("test");
-                assertNotNull(sge);
-                JvmElement jvm = sge.getJvm();
+                HostModel root = ModelParsingSupport.parseHostModel(getXMLMapper(), fullcontent);
+                ServerElement server = root.getServer("test");
+                assertNotNull(server);
+                JvmElement jvm = server.getJvm();
                 assertNotNull(jvm);
                 PropertiesElement testee = jvm.getEnvironmentVariables();
                 assertNotNull(testee);
@@ -71,8 +71,8 @@ public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainM
             @Override
             String getFullContent(String testContent) {
                 testContent = ModelParsingSupport.wrapJvm(testContent);
-                testContent = ModelParsingSupport.wrapServerGroup(testContent);
-                String fullcontent = ModelParsingSupport.getXmlContent(Element.DOMAIN.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
+                testContent = ModelParsingSupport.wrapServer(testContent);
+                String fullcontent = ModelParsingSupport.getXmlContent(Element.HOST.getLocalName(), getTargetNamespace(), getTargetNamespaceLocation(), testContent);
                 return fullcontent;
             }
         });

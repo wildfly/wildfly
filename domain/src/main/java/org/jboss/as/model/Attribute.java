@@ -41,18 +41,22 @@ public enum Attribute {
     // domain 1.0 attributes in alpha order
     ALLOWED("allowed"),
     DEFAULT_INTERFACE("default-interface"),
+    DEBUG_ENABLED("debug-enabled"),
+    DEBUG_OPTIONS("debug-options"),
+    ENV_CLASSPATH_IGNORED("env-classpath-ignored"),
     FIXED_PORT("fixed-port"),
     GROUP("group"),
+    HOST("host"),
     INTERFACE("interface"),
     JAVA_HOME("java-home"),
-    NAME("name"),
     MAX_SIZE("max-size"),
+    MAX_THREADS("max-threads"),
     MODULE("module"),
     MULTICAST_ADDRESS("multicast-address"),
     MULTICAST_PORT("multicast-port"),
+    NAME("name"),
     PATH("path"),
     PATTERN("pattern"),
-    HOST("host"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
     PREFIX("prefix"),
@@ -67,8 +71,7 @@ public enum Attribute {
     SIZE("size"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     START("start"),
-    VALUE("value"),
-    MAX_THREADS("max-threads"),
+    VALUE("value")
     ;
 
     private final String name;

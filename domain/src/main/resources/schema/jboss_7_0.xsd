@@ -1058,6 +1058,9 @@
             <xs:element name="permgen" type="bounded-memory-sizeType" minOccurs="0"/>
             <!-- Xss -->
             <xs:element name="stack" type="memory-sizeType" minOccurs="0"/>
+            <xs:element name="agent-lib" type="jvm-agentLibType" minOccurs="0"/>
+            <xs:element name="agent-path" type="jvm-agentPathType" minOccurs="0"/>
+            <xs:element name="javaagent" type="jvm-javaagentType" minOccurs="0"/>
             <xs:element name="jvm-options" type="jvm-optionsType" minOccurs="0"/>
             <xs:element name="environment-variables" type="environmentVariablesType" minOccurs="0"/>
             <xs:element name="system-properties" type="properties" minOccurs="0"/>
@@ -1099,6 +1102,30 @@
         <xs:attribute name="value" use="required">
             <xs:annotation>
                 <xs:documentation>JVM option value</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="jvm-agentLibType">
+        <xs:attribute name="value" use="required">
+            <xs:annotation>
+                <xs:documentation>JVM agent lib value </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="jvm-agentPathType">
+        <xs:attribute name="value" use="required">
+            <xs:annotation>
+                <xs:documentation>JVM agent path value </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="jvm-javaagentType">
+        <xs:attribute name="value" use="required">
+            <xs:annotation>
+                <xs:documentation>JVM javaagent value </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

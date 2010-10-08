@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.JvmOptionsElement;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.UpdateFailedException;
@@ -39,30 +40,31 @@ import org.jboss.as.model.base.util.ModelParsingSupport;
  *
  * @author Brian Stansberry
  */
-public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainModelElementTestBase {
+public abstract class ServerGroupJvmOptionsTestBase extends DomainModelElementTestBase {
 
-    JvmEnvironmentVariablesTestCommon delegate;
+    JvmOptionsTestCommon delegate;
+
     /**
      * @param name
      */
-    public ServerGroupJvmEnvironmentVariablesTestBase(String name) {
+    public ServerGroupJvmOptionsTestBase(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        delegate = new JvmEnvironmentVariablesTestCommon(new JvmEnvironmentVariablesTestCommon.ContentAndPropertiesGetter(getXMLMapper(), getTargetNamespace(), getTargetNamespaceLocation()) {
+        delegate = new JvmOptionsTestCommon(new JvmOptionsTestCommon.ContentAndPropertiesGetter(getXMLMapper(), getTargetNamespace(), getTargetNamespaceLocation()) {
 
             @Override
-            PropertiesElement getTestProperties(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
+            JvmOptionsElement getTestOptions(String fullcontent) throws XMLStreamException, FactoryConfigurationError,
                     UpdateFailedException {
                 DomainModel root = ModelParsingSupport.parseDomainModel(getXMLMapper(), fullcontent);
                 ServerGroupElement sge = root.getServerGroup("test");
                 assertNotNull(sge);
                 JvmElement jvm = sge.getJvm();
                 assertNotNull(jvm);
-                PropertiesElement testee = jvm.getEnvironmentVariables();
+                JvmOptionsElement testee = jvm.getJvmOptions();
                 assertNotNull(testee);
                 return testee;
             }
@@ -84,24 +86,8 @@ public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainM
         delegate.testBasicProperties();
     }
 
-    public void testNullProperties() throws Exception {
-        delegate.testNullProperties();
-    }
-
-    public void testMissingName() throws Exception {
-        delegate.testMissingName();
-    }
-
-    public void testBogusAttribute() throws Exception {
-        delegate.testBogusAttribute();
-    }
-
-    public void testBogusChild() throws Exception {
-        delegate.testBogusChild();
-    }
-
-    public void testNoChildren() throws Exception {
-        delegate.testNoChildren();
+    public void testMissingValue() throws Exception {
+        delegate.testMissingValue();
     }
 
     /* (non-Javadoc)
@@ -110,5 +96,13 @@ public abstract class ServerGroupJvmEnvironmentVariablesTestBase extends DomainM
     @Override
     public void testSerializationDeserialization() throws Exception {
         delegate.testSerializationDeserialization();
+    }
+
+    public void testInvalidAttribute() throws Exception {
+        delegate.testInvalidAttribute();
+    }
+
+    public void testNoChildren() throws Exception {
+        delegate.testNoChildren();
     }
 }

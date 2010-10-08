@@ -35,6 +35,8 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain 1.0 elements in alpha order
+    AGENT_LIB("agent-lib"),
+    AGENT_PATH("agent-path"),
     ANY("any"),
     ANY_ADDRESS("any-address"),
     ANY_IPV4_ADDRESS("any-ipv4-address"),
@@ -59,8 +61,10 @@ public enum Element {
     INTERFACE_SPECS("interface-specs"),
     INTERFACES("interfaces"),
 
+    JAVA_AGENT("java-agent"),
     JVM("jvm"),
     JVMS("jvms"),
+    JVM_OPTIONS("jvm-options"),
 
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
@@ -74,9 +78,13 @@ public enum Element {
     NIC_MATCH("nic-match"),
     NOT("not"),
 
+    OPTION("option"),
+
     PATH("path"),
     PATHS("paths"),
+
     POINT_TO_POINT("point-to-point"),
+    PERMGEN("permgen"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
@@ -93,6 +101,7 @@ public enum Element {
     SOCKET_BINDING("socket-binding"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_GROUPS("socket-binding-groups"),
+    STACK("stack"),
     STANDALONE("standalone"),
     SUBNET_MATCH("subnet-match"),
     SUBSYSTEM("subsystem"),

@@ -27,7 +27,6 @@ import java.io.File;
 import org.jboss.as.deployment.filesystem.FileSystemDeploymentService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * Update adding a new {@code DeploymentRepositoryElement} to a {@code ServerModel}.
@@ -49,6 +48,7 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(ServerModel element) throws UpdateFailedException {
         if(! element.addDeploymentRepository(path)) {
             throw new UpdateFailedException("duplicate deployment repository " + path);
@@ -59,11 +59,13 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
         return new ServerDeploymentRepositoryRemove(path);
     }
 
     /** {@inheritDoc} */
+    @Override
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batch = updateContext.getBatchBuilder();
         // FIXME

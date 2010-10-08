@@ -103,6 +103,20 @@ public class ModelParsingSupport {
         return sb.toString();
     }
 
+    public static String wrapJvms(final String toWrap) {
+        StringBuilder sb = new StringBuilder("<jvms>");
+        sb.append(toWrap);
+        sb.append(getElementEnd("jvms"));
+        return sb.toString();
+    }
+
+    public static String wrapServer(final String toWrap) {
+        StringBuffer sb = new StringBuffer("<server name=\"test\" group=\"test\">");
+        sb.append(toWrap);
+        sb.append(getElementEnd("server"));
+        return wrap(Element.SERVERS.getLocalName(), sb.toString());
+    }
+
     public static DomainModel parseDomainModel(final XMLMapper mapper, final String xmlContent) throws XMLStreamException, FactoryConfigurationError, UpdateFailedException {
         System.out.println("Parsing " + xmlContent);
         Reader reader = new StringReader(xmlContent);

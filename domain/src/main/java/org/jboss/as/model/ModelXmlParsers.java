@@ -1227,6 +1227,9 @@ public final class ModelXmlParsers {
         // Handle attributes
         String name = null;
         String home = null;
+        Boolean debugEnabled = null;
+        String debugOptions = null;
+        Boolean envClasspathIgnored = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -1248,7 +1251,29 @@ public final class ModelXmlParsers {
                     case JAVA_HOME: {
                         if (home != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        home = value;
                         updates.add(new JvmHomeUpdate(value));
+                        break;
+                    }
+                    case DEBUG_ENABLED: {
+                        if (debugEnabled != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        debugEnabled = Boolean.valueOf(value);
+                        updates.add(new JvmDebugEnabledUpdate(debugEnabled));
+                        break;
+                    }
+                    case DEBUG_OPTIONS: {
+                        if (debugOptions != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        debugOptions = value;
+                        updates.add(new JvmDebugOptionsUpdate(value));
+                        break;
+                    }
+                    case ENV_CLASSPATH_IGNORED: {
+                        if (envClasspathIgnored != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        envClasspathIgnored = Boolean.valueOf(value);
+                        updates.add(new JvmEnvClasspathIgnoredUpdate(envClasspathIgnored));
                         break;
                     }
                     default:
@@ -1264,6 +1289,7 @@ public final class ModelXmlParsers {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
         // Handle elements
+        Collection<JvmOptionAdd> jvmOptions = null;
         Collection<PropertyAdd> environmentVariables = null;
         Collection<PropertyAdd> systemProperties = null;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1273,6 +1299,26 @@ public final class ModelXmlParsers {
                     switch (element) {
                         case HEAP: {
                             updates.addAll(parseHeap(reader));
+                            break;
+                        }
+                        case PERMGEN: {
+                            updates.addAll(parsePermgen(reader));
+                            break;
+                        }
+                        case STACK: {
+                            updates.addAll(parseStack(reader));
+                            break;
+                        }
+                        case AGENT_LIB: {
+                            updates.addAll(parseAgentLib(reader));
+                            break;
+                        }
+                        case AGENT_PATH: {
+                            updates.addAll(parseAgentPath(reader));
+                            break;
+                        }
+                        case JAVA_AGENT: {
+                            updates.addAll(parseJavaagent(reader));
                             break;
                         }
                         case ENVIRONMENT_VARIABLES: {
@@ -1292,6 +1338,16 @@ public final class ModelXmlParsers {
                             systemProperties = parseProperties(reader, Element.PROPERTY, true);
                             for (PropertyAdd propAdd : systemProperties) {
                                 updates.add(new JvmSystemPropertiesUpdate(propAdd));
+                            }
+                            break;
+                        }
+                        case JVM_OPTIONS: {
+                            if (jvmOptions != null) {
+                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                            }
+                            jvmOptions = parseJvmOptions(reader);
+                            for (JvmOptionAdd optAdd : jvmOptions) {
+                                updates.add(new JvmOptionsUpdate(optAdd));
                             }
                             break;
                         }
@@ -1334,6 +1390,200 @@ public final class ModelXmlParsers {
         // Handle elements
         ParseUtils.requireNoContent(reader);
         return updates;
+    }
+
+    static List<AbstractModelUpdate<JvmElement, ?>> parsePermgen(XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        updates.add(new JvmPermgenUpdate(value));
+                        break;
+                    }
+                    case MAX_SIZE: {
+                        updates.add(new JvmMaxPermgenUpdate(value));
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+        return updates;
+    }
+
+    static List<AbstractModelUpdate<JvmElement, ?>> parseStack(XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SIZE: {
+                        updates.add(new JvmStackUpdate(value));
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (updates.size() == 0) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SIZE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+        return updates;
+    }
+
+    static List<AbstractModelUpdate<JvmElement, ?>> parseAgentLib(XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        updates.add(new JvmAgentLibUpdate(value));
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (updates.size() == 0) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+        return updates;
+    }
+
+    static List<AbstractModelUpdate<JvmElement, ?>> parseAgentPath(XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        updates.add(new JvmAgentPathUpdate(value));
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (updates.size() == 0) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+        return updates;
+    }
+
+    static List<AbstractModelUpdate<JvmElement, ?>> parseJavaagent(XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<AbstractModelUpdate<JvmElement, ?>> updates = new ArrayList<AbstractModelUpdate<JvmElement, ?>>();
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case VALUE: {
+                        updates.add(new JvmJavaagentUpdate(value));
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (updates.size() == 0) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        }
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+        return updates;
+    }
+
+    static Collection<JvmOptionAdd> parseJvmOptions(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        List<JvmOptionAdd> options = new ArrayList<JvmOptionAdd>();
+        // Handle attributes
+        ParseUtils.requireNoAttributes(reader);
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (element == Element.OPTION) {
+                        // Handle attributes
+                        String option = null;
+                        int count = reader.getAttributeCount();
+                        for (int i = 0; i < count; i++) {
+                            final String attrValue = reader.getAttributeValue(i);
+                            if (reader.getAttributeNamespace(i) != null) {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                            else {
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case VALUE: {
+                                        option = attrValue;
+                                        break;
+                                    }
+                                    default:
+                                        throw ParseUtils.unexpectedAttribute(reader, i);
+                                }
+                            }
+                        }
+                        if (option == null) {
+                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                        }
+
+                        // PropertyAdd
+                        options.add(new JvmOptionAdd(option));
+                        // Handle elements
+                        ParseUtils.requireNoContent(reader);
+                    } else {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+        if (options.size() == 0) {
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.OPTION));
+        }
+        return options;
     }
 
     static NameOffset parseSocketBindingGroupRef(final XMLExtendedStreamReader reader) throws XMLStreamException {
