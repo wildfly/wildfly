@@ -54,9 +54,10 @@ public class DeploymentFailureListener extends AbstractServiceListener<Object>{
     }
 
     /** {@inheritDoc} */
+    @Override
     public void serviceFailed(ServiceController<?> serviceController, StartException reason) {
         if(deploymentStopped.compareAndSet(false, true)) {
-            log.errorf("Deployment [%s] failed to start correctly.  Completely shutting down deployment.  Please see additional errors for details.", deploymentServiceName);
+            log.errorf(reason, "Deployment [%s] failed to start correctly.  Completely shutting down deployment.  Please see additional errors for details.", deploymentServiceName);
             final ServiceContainer serviceContainer = serviceController.getServiceContainer();
             final ServiceController<?> deploymentService = serviceContainer.getService(deploymentServiceName);
             if(deploymentService != null) {

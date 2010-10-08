@@ -73,7 +73,7 @@ public class StandaloneServer {
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
-        final ServerStartTask startTask = new ServerStartTask("server name", 0, null, Collections.<ServiceActivator>emptyList(), updates);
+        final ServerStartTask startTask = new ServerStartTask("server name", 0, null, Collections.<ServiceActivator>emptyList(), updates, environment);
         startTask.run(Collections.<ServiceActivator>emptyList());
 
         // TODO remove life thread
@@ -83,6 +83,7 @@ public class StandaloneServer {
                 setPriority(MIN_PRIORITY);
             }
 
+            @Override
             public void run() {
                 for (;;)
                     try {

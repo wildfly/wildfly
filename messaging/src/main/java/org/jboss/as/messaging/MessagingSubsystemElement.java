@@ -86,51 +86,64 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
        ElementUtils.writeSimpleElement(Element.PAGING_DIRECTORY, getPagingDirectory(), streamWriter);
 
-
-        streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
-        for(TransportElement acceptor : acceptors.values()) {
-            streamWriter.writeStartElement(Element.ACCEPTOR.getLocalName());
-            acceptor.writeContent(streamWriter);
+        if (acceptors.size() > 0) {
+            streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
+            for(TransportElement acceptor : acceptors.values()) {
+                streamWriter.writeStartElement(Element.ACCEPTOR.getLocalName());
+                acceptor.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
-        streamWriter.writeEndElement();
 
-        streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
-        for(AddressSettingsElement addressSettingsElement : addressSettings.values()) {
-            streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
-            addressSettingsElement.writeContent(streamWriter);
+        if (addressSettings.size() > 0) {
+            streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
+            for(AddressSettingsElement addressSettingsElement : addressSettings.values()) {
+                streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
+                addressSettingsElement.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
-        streamWriter.writeEndElement();
 
-        streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
-        for(TransportElement connector : connectors.values()) {
-            streamWriter.writeStartElement(Element.CONNECTOR.getLocalName());
-            connector.writeContent(streamWriter);
+        if (connectors.size() > 0) {
+            streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
+            for(TransportElement connector : connectors.values()) {
+                streamWriter.writeStartElement(Element.CONNECTOR.getLocalName());
+                connector.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
-        streamWriter.writeEndElement();
 
-        streamWriter.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
-        for(SecuritySettingElement securitySettingElement : securitySettings.values()) {
-            streamWriter.writeStartElement(Element.SECURITY_SETTING.getLocalName());
-            securitySettingElement.writeContent(streamWriter);
+        if (securitySettings.size() > 0) {
+            streamWriter.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
+            for(SecuritySettingElement securitySettingElement : securitySettings.values()) {
+                streamWriter.writeStartElement(Element.SECURITY_SETTING.getLocalName());
+                securitySettingElement.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
         }
+
         streamWriter.writeEndElement();
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
     /** {@inheritDoc} */
+    @Override
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
     }
 
+    @Override
     protected AbstractSubsystemAdd<MessagingSubsystemElement> getAdd() {
         return new MessagingSubsystemAdd();
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 

@@ -75,20 +75,18 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
         if (deploymentElement != null) {
-            // FIXME coordinate results!!!
-            startStopHandler.undeploy(toReplace, updateContext.getServiceContainer(), resultHandler, param);
-            startStopHandler.deploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
-                    updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
+            startStopHandler.redeploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
+                    updateContext.getServiceContainer(), resultHandler, param);
         }
         else if (resultHandler != null) {
             // We shouldn't be able to get here, as the model update should have failed,
             // but just in case
-            throw new IllegalStateException("Unknown deployment " + newDeployment);
+            resultHandler.handleFailure(new IllegalStateException("Unknown deployment " + newDeployment), param);
         }
     }
 
     @Override
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
+    public ServerModelDeploymentReplaceUpdate getCompensatingUpdate(ServerModel original) {
 
         ServerGroupDeploymentElement deploymentElement = original.getDeployment(newDeployment);
         ServerGroupDeploymentElement undeploymentElement = original.getDeployment(toReplace);

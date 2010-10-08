@@ -33,38 +33,57 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     private static final long serialVersionUID = 5773083013951607950L;
 //    private static final Logger log = Logger.getLogger("org.jboss.as.model");
 
-    private final ServerModelDeploymentAdd addUpdate;
-    private final ServerModelDeploymentRemove removeUpdate;
+    private final String deploymentUniqueName;
+    private final String deploymentRuntimeName;
+    private final byte[] hash;
+    private final boolean redeploy;
 
-    public ServerModelDeploymentFullReplaceUpdate(final String deploymentUniqueName, final String deploymentFileName, byte[] hash) {
-        this(new ServerModelDeploymentAdd(deploymentUniqueName, deploymentFileName, hash, true),
-             new ServerModelDeploymentRemove(deploymentUniqueName, true));
-    }
-
-    private ServerModelDeploymentFullReplaceUpdate(ServerModelDeploymentAdd add,
-                                                   ServerModelDeploymentRemove remove) {
+    public ServerModelDeploymentFullReplaceUpdate(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] hash, final boolean redeploy) {
         super(false, true);
-        addUpdate = add;
-        removeUpdate = remove;
+        if (deploymentUniqueName == null)
+            throw new IllegalStateException("deploymentUniqueName is null");
+        if (deploymentRuntimeName == null)
+            throw new IllegalStateException("deploymentRuntimeName is null");
+        if (hash == null)
+            throw new IllegalStateException("hash is null");
+        this.deploymentUniqueName = deploymentUniqueName;
+        this.deploymentRuntimeName = deploymentRuntimeName;
+        this.hash = hash;
+        this.redeploy = redeploy;
     }
-
 
     @Override
     public void applyUpdate(ServerModel element) throws UpdateFailedException {
-        removeUpdate.applyUpdate(element);
-        addUpdate.applyUpdate(element);
+        ServerGroupDeploymentElement toRemove = element.getDeployment(deploymentUniqueName);
+        if (toRemove != null) {
+            if (!redeploy && toRemove.isStart()) {
+                throw new UpdateFailedException("Cannot remove deployment " +
+                        deploymentUniqueName + " as its " + Attribute.START +
+                        " attribute is 'true'. Deployment must be undeployed before removal.");
+            }
+            element.removeDeployment(deploymentUniqueName);
+        }
+        element.addDeployment(new ServerGroupDeploymentElement(deploymentUniqueName, deploymentRuntimeName, hash, redeploy));
     }
 
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
-        removeUpdate.applyUpdate(updateContext, resultHandler, param);
-        addUpdate.applyUpdate(updateContext, resultHandler, param);
+        if (redeploy) {
+            ServerDeploymentStartStopHandler startStopHandler = new ServerDeploymentStartStopHandler();
+            startStopHandler.redeploy(deploymentUniqueName, deploymentRuntimeName, hash, updateContext.getServiceContainer(), resultHandler, param);
+        }
+        else if (resultHandler != null) {
+            resultHandler.handleSuccess(null, param);
+        }
     }
 
     @Override
-    public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerModelDeploymentFullReplaceUpdate(removeUpdate.getCompensatingUpdate(original),
-                addUpdate.getCompensatingUpdate(original));
+    public ServerModelDeploymentFullReplaceUpdate getCompensatingUpdate(ServerModel original) {
+        ServerGroupDeploymentElement deployment = original.getDeployment(deploymentUniqueName);
+        if (deployment == null) {
+            return null;
+        }
+        return new ServerModelDeploymentFullReplaceUpdate(deploymentUniqueName, deployment.getRuntimeName(), deployment.getSha1Hash(), redeploy);
     }
 }

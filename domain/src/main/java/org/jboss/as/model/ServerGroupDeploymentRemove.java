@@ -64,7 +64,7 @@ public class ServerGroupDeploymentRemove extends AbstractModelUpdate<ServerGroup
 
     @Override
     protected ServerModelDeploymentRemove getServerModelUpdate() {
-        return new ServerModelDeploymentRemove(uniqueName, true);
+        return new ServerModelDeploymentRemove(uniqueName);
     }
 
     @Override

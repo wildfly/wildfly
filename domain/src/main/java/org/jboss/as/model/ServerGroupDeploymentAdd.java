@@ -107,7 +107,7 @@ public class ServerGroupDeploymentAdd extends AbstractModelUpdate<ServerGroupEle
 
     @Override
     protected ServerModelDeploymentAdd getServerModelUpdate() {
-        return new ServerModelDeploymentAdd(uniqueName, runtimeName, hash, start);
+        return new ServerModelDeploymentAdd(uniqueName, runtimeName, hash);
     }
 
     @Override

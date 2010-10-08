@@ -35,19 +35,22 @@ import org.jboss.as.deployment.client.api.server.ServerUpdateActionResult.Result
 public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
     private static final long serialVersionUID = 5773083013951607950L;
 
-    private final ServerGroupDeploymentStartStopUpdate elementUpdate;
     private final ServerDeploymentStartStopHandler startStopHandler;
     private ServerGroupDeploymentElement deploymentElement;
+    private final String deploymentUnitName;
+    private final boolean isStart;
 
-    public ServerModelDeploymentStartStopUpdate(final ServerGroupDeploymentStartStopUpdate elementUpdate) {
+    public ServerModelDeploymentStartStopUpdate(final String deploymentUnitName, boolean isStart) {
         super(false, true);
-        assert elementUpdate != null : "elementUpdate is null";
-        this.elementUpdate = elementUpdate;
+        if (deploymentUnitName == null)
+            throw new IllegalArgumentException("deploymentUnitName is null");
+        this.deploymentUnitName = deploymentUnitName;
+        this.isStart = isStart;
         this.startStopHandler = new  ServerDeploymentStartStopHandler();
     }
 
     public String getDeploymentUnitName() {
-        return elementUpdate.getDeploymentUnitName();
+        return deploymentUnitName;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         if (element == null) {
             return null;
         }
-        return new ServerModelDeploymentStartStopUpdate(elementUpdate.getCompensatingUpdate(element));
+        return new ServerModelDeploymentStartStopUpdate(deploymentUnitName, !isStart);
     }
 
     @Override
@@ -65,15 +68,16 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         // has a bad smell
         deploymentElement = serverModel.getDeployment(getDeploymentUnitName());
         if (deploymentElement != null) {
-            elementUpdate.applyUpdate(deploymentElement);
+            deploymentElement.setStart(isStart);
         }
     }
 
+    @Override
     public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
         if (deploymentElement != null) {
-            if (elementUpdate.isStart()) {
+            if (isStart) {
                 startStopHandler.deploy(deploymentElement.getUniqueName(), deploymentElement.getRuntimeName(),
                         deploymentElement.getSha1Hash(), updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
             }

@@ -69,15 +69,23 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private final Runnable logConfigurator;
     private final List<ServiceActivator> startServices;
     private final List<AbstractServerModelUpdate<?>> updates;
+    private final ServerEnvironment providedEnvironment;
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
+    /** Constructor variant for use by the ServerManager */
     public ServerStartTask(final String serverName, final int portOffset, final Runnable logConfigurator, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
+        this(serverName, portOffset, logConfigurator, startServices, updates, null);
+    }
+
+    /** Constructor variant for use by StandaloneServer */
+    public ServerStartTask(final String serverName, final int portOffset, final Runnable logConfigurator, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
         this.serverName = serverName;
         this.portOffset = portOffset;
         this.logConfigurator = logConfigurator;
         this.startServices = startServices;
         this.updates = updates;
+        this.providedEnvironment = environment;
     }
 
     public void run(final List<ServiceActivator> startServices) {
@@ -117,7 +125,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ServerModel serverModel = new ServerModel(serverName, portOffset);
 
         final Properties systemProperties = System.getProperties();
-        final ServerEnvironment environment = new ServerEnvironment(systemProperties, serverName, false);
+        final ServerEnvironment environment = providedEnvironment != null
+                        ? providedEnvironment
+                        : new ServerEnvironment(systemProperties, serverName, false);
 
         log.info("Activating core services");
 

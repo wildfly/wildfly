@@ -54,7 +54,7 @@ import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
 import org.jboss.as.deployment.client.impl.server.DeploymentPlanImpl;
 import org.jboss.as.deployment.client.impl.server.DeploymentPlanResultImpl;
 import org.jboss.as.deployment.client.impl.server.InitialDeploymentPlanBuilderFactory;
-import org.jboss.as.model.ServerGroupDeploymentStartStopUpdate;
+import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerModelDeploymentAdd;
 import org.jboss.as.model.ServerModelDeploymentFullReplaceUpdate;
@@ -122,7 +122,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
      *
      * @throws IllegalArgumentException if a required parameter is <code>null</code>
      */
-    public ServerDeploymentManagerImpl(ServerModel serverConfiguration, ServiceContainer serviceContainer) {
+    public ServerDeploymentManagerImpl(final ServerModel serverConfiguration, ServiceContainer serviceContainer) {
         if (serverConfiguration == null)
             throw new IllegalArgumentException("serverConfiguration is null");
         if (serviceContainer == null)
@@ -132,15 +132,17 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
 
         this.contentDistributor = new DeploymentContentDistributor() {
             @Override
-            public byte[] distributeDeploymentContent(String name, String commonName, InputStream stream)
+            public byte[] distributeDeploymentContent(String name, String runtimeName, InputStream stream)
                     throws IOException, DuplicateDeploymentNameException {
-                // FIXME check for duplicates
-                return getDeploymentRepository().addDeploymentContent(name, stream);
+                if (ServerDeploymentManagerImpl.this.serverConfiguration.getDeployment(name) != null) {
+                    throw new DuplicateDeploymentNameException(name, false);
+                }
+                return getDeploymentRepository().addDeploymentContent(name, runtimeName, stream);
             }
             @Override
-            public byte[] distributeReplacementDeploymentContent(String name, String commonName, InputStream stream)
+            public byte[] distributeReplacementDeploymentContent(String name, String runtimeName, InputStream stream)
                     throws IOException {
-                return getDeploymentRepository().addDeploymentContent(name, stream);
+                return getDeploymentRepository().addDeploymentContent(name, runtimeName, stream);
             }
         };
     }
@@ -200,7 +202,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         final SimpleFuture<ServerDeploymentPlanResult> resultFuture = new SimpleFuture<ServerDeploymentPlanResult>();
         final UpdateResultHandlerImpl resultHandler = new UpdateResultHandlerImpl(resultFuture, plan);
         final ServerUpdateController controller = new ServerUpdateController(getServerConfiguration(), getServiceContainer(),
-                getDeploymentExecutor(), resultHandler, plan.isGlobalRollback(), plan.isShutdown());
+                getDeploymentExecutor(), resultHandler, plan.isGlobalRollback(), !plan.isShutdown());
 
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
 
@@ -292,25 +294,23 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
      * @param resultHandler the handler for the result of the action
      * @param overallUpdate the overall update
      */
-    private void addServerGroupDeploymentUpdate(DeploymentActionImpl action, UpdateResultHandler<ServerDeploymentActionResult, UUID> resultHandler, final ServerUpdateController controller) {
+    private void addServerGroupDeploymentUpdate(DeploymentActionImpl action, UpdateResultHandler<? super ServerDeploymentActionResult, UUID> resultHandler, final ServerUpdateController controller) {
 
         switch (action.getType()) {
             case ADD: {
-                controller.addServerModelUpdate(new ServerModelDeploymentAdd(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash(), false), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentAdd(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash()), resultHandler, action.getId());
                 break;
             }
             case REMOVE: {
-                controller.addServerModelUpdate(new ServerModelDeploymentRemove(action.getDeploymentUnitUniqueName(), false), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentRemove(action.getDeploymentUnitUniqueName()), resultHandler, action.getId());
                 break;
             }
             case DEPLOY: {
-                ServerGroupDeploymentStartStopUpdate support = new ServerGroupDeploymentStartStopUpdate(action.getDeploymentUnitUniqueName(), true);
-                controller.addServerModelUpdate(new ServerModelDeploymentStartStopUpdate(support), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentStartStopUpdate(action.getDeploymentUnitUniqueName(), true), resultHandler, action.getId());
                 break;
             }
             case UNDEPLOY: {
-                ServerGroupDeploymentStartStopUpdate support = new ServerGroupDeploymentStartStopUpdate(action.getDeploymentUnitUniqueName(), false);
-                controller.addServerModelUpdate(new ServerModelDeploymentStartStopUpdate(support), resultHandler, action.getId());
+                controller.addServerModelUpdate(new ServerModelDeploymentStartStopUpdate(action.getDeploymentUnitUniqueName(), false), resultHandler, action.getId());
                 break;
             }
             case REDEPLOY: {
@@ -322,7 +322,9 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
                 break;
             }
             case FULL_REPLACE:
-                controller.addServerModelUpdate(new ServerModelDeploymentFullReplaceUpdate(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash()), resultHandler, action.getId());
+                ServerGroupDeploymentElement deployment = serverConfiguration.getDeployment(action.getDeploymentUnitUniqueName());
+                boolean redeploy = deployment != null && deployment.isStart();
+                controller.addServerModelUpdate(new ServerModelDeploymentFullReplaceUpdate(action.getDeploymentUnitUniqueName(), action.getNewContentFileName(), action.getNewContentHash(), redeploy), resultHandler, action.getId());
                 break;
             default: {
                 throw new IllegalStateException("Unknown type " + action.getType());
@@ -358,7 +360,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         return path.substring(idx + 1);
     }
 
-    private class UpdateResultHandlerImpl implements UpdateResultHandler<ServerDeploymentActionResult, UUID>, ServerUpdateCommitHandler {
+    private class UpdateResultHandlerImpl implements UpdateResultHandler<Object, UUID>, ServerUpdateCommitHandler {
 
         private final Map<UUID, ServerDeploymentActionResult> updateResults = new HashMap<UUID, ServerDeploymentActionResult>();
         private final Set<UUID> successfulRollbacks = new HashSet<UUID>();
@@ -376,12 +378,15 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         @Override
         public void handleCancellation(UUID param) {
             synchronized (updateResults) {
+                // FIXME we need to clarify the semantics of a cancellation
+                updateResults.put(param, new SimpleServerDeploymentActionResult(param, Result.NOT_EXECUTED));
             }
         }
 
         @Override
         public void handleFailure(Throwable cause, UUID param) {
             synchronized (updateResults) {
+                updateResults.put(param, new SimpleServerDeploymentActionResult(param, cause));
             }
         }
 
@@ -414,15 +419,22 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         }
 
         @Override
-        public void handleSuccess(ServerDeploymentActionResult result, UUID param) {
+        public void handleSuccess(Object result, UUID param) {
             synchronized (updateResults) {
-                updateResults.put(param, result);
+                if (result instanceof ServerDeploymentActionResult) {
+                    updateResults.put(param, (ServerDeploymentActionResult) result);
+                }
+                else {
+                    updateResults.put(param, new SimpleServerDeploymentActionResult(param, Result.EXECUTED));
+                }
             }
         }
 
         @Override
         public void handleTimeout(UUID param) {
             synchronized (updateResults) {
+                // FIXME clarify meaning of "timeout"
+                updateResults.put(param, new SimpleServerDeploymentActionResult(param, Result.FAILED));
             }
         }
 
@@ -448,7 +460,12 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
 
             Map<UUID, ServerDeploymentActionResult> planResults = new HashMap<UUID, ServerDeploymentActionResult>();
             for (Map.Entry<UUID, ServerDeploymentActionResult> entry : updateResults.entrySet()) {
-                if (entry.getValue().getResult() != Result.NOT_EXECUTED) {
+                ServerDeploymentActionResult actionResult = entry.getValue();
+                if (actionResult == null) {
+                    // Treat as success
+                    actionResult = new SimpleServerDeploymentActionResult(entry.getKey(), Result.EXECUTED);
+                }
+                if (actionResult.getResult() != Result.NOT_EXECUTED) {
                     ServerDeploymentActionResult rollbackResult = null;
                     if (successfulRollbacks.contains(entry.getKey())) {
                         rollbackResult = new SimpleServerDeploymentActionResult(entry.getKey(), Result.EXECUTED);
@@ -462,7 +479,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
                     }
                 }
 
-                planResults.put(entry.getKey(), entry.getValue());
+                planResults.put(entry.getKey(), actionResult);
             }
             DeploymentPlanResultImpl result = new DeploymentPlanResultImpl(plan.getId(), planResults);
 

@@ -43,6 +43,7 @@ public final class ScheduledThreadPoolAdd extends AbstractExecutorAdd {
         super(name, maxThreads);
     }
 
+    @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
         final ScaledCount maxThreadsCount = getMaxThreads();
@@ -54,11 +55,12 @@ public final class ScheduledThreadPoolAdd extends AbstractExecutorAdd {
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
     }
 
+    @Override
     protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
-        final UnboundedQueueThreadPoolElement poolElement = new UnboundedQueueThreadPoolElement(getName());
+        final ScheduledThreadPoolElement poolElement = new ScheduledThreadPoolElement(getName());
         poolElement.setKeepaliveTime(getKeepaliveTime());
         poolElement.setThreadFactory(getThreadFactory());
         poolElement.setMaxThreads(getMaxThreads());
-        element.addExecutor(getName(), new ChildElement<UnboundedQueueThreadPoolElement>(Element.UNBOUNDED_QUEUE_THREAD_POOL.getLocalName(), poolElement));
+        element.addExecutor(getName(), new ChildElement<ScheduledThreadPoolElement>(Element.SCHEDULED_THREAD_POOL.getLocalName(), poolElement));
     }
 }

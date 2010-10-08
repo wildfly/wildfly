@@ -61,6 +61,9 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
 
     @Override
     public void removeModule(Module module) {
-        unloadModuleLocal(module);
+        if (moduleSpecs.remove(module.getIdentifier()) != null) {
+            unloadModuleLocal(module);
+        }
+        else throw new IllegalStateException("Unknown module " + module);
     }
 }

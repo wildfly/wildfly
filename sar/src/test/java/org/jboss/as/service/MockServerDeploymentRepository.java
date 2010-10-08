@@ -58,12 +58,12 @@ public class MockServerDeploymentRepository implements ServerDeploymentRepositor
     }
 
     @Override
-    public byte[] addDeploymentContent(String name, InputStream stream) throws IOException {
+    public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException {
         return null;
     }
 
     @Override
-    public Closeable mountDeploymentContent(String name, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
+    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
         Closeable handle = null;
         File content = new File(root, name);
         if (content.isFile()) {

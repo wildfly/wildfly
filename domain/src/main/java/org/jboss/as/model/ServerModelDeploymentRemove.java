@@ -34,24 +34,17 @@ public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Serve
     private static final long serialVersionUID = -3612085673646053177L;
 
     private final String deploymentName;
-    private final ServerDeploymentStartStopHandler startStopHandler;
 
-    public ServerModelDeploymentRemove(final String deploymentName, boolean undeploy) {
+    public ServerModelDeploymentRemove(final String deploymentName) {
         super(false, true);
         this.deploymentName = deploymentName;
-        if (undeploy) {
-            startStopHandler = new ServerDeploymentStartStopHandler();
-        }
-        else {
-            startStopHandler = null;
-        }
     }
 
     @Override
     public void applyUpdate(ServerModel standalone) throws UpdateFailedException {
         ServerGroupDeploymentElement toRemove = standalone.getDeployment(deploymentName);
         if (toRemove != null) {
-            if (startStopHandler == null && toRemove.isStart()) {
+            if (toRemove.isStart()) {
                 throw new UpdateFailedException("Cannot remove deployment " +
                         deploymentName + " as its " + Attribute.START +
                         " attribute is 'true'. Deployment must be undeployed before removal.");
@@ -63,8 +56,8 @@ public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Serve
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
-        if (startStopHandler != null) {
-            startStopHandler.undeploy(deploymentName, updateContext.getServiceContainer(), resultHandler, param);
+        if (resultHandler != null) {
+            resultHandler.handleSuccess(null, param);
         }
     }
 
@@ -74,6 +67,6 @@ public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Serve
         if (toRemove == null) {
             return null;
         }
-        return new ServerModelDeploymentAdd(toRemove.getUniqueName(), toRemove.getRuntimeName(), toRemove.getSha1Hash(), startStopHandler != null);
+        return new ServerModelDeploymentAdd(toRemove.getUniqueName(), toRemove.getRuntimeName(), toRemove.getSha1Hash());
     }
 }

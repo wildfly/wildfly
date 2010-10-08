@@ -170,7 +170,7 @@ public class ServerConfigurationPersisterImpl implements ServerConfigurationPers
         }
 
         if (env.isStandalone()) {
-            File configDir = serverEnvironment.getValue().getServerConfigurationDir();
+            File configDir = env.getServerConfigurationDir();
             if (configDir.exists()) {
                 if (!configDir.isDirectory()) {
                     throw new StartException(configDir.getAbsolutePath() + " is not a directory");

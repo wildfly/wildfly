@@ -22,21 +22,15 @@
 
 package org.jboss.as.deployment;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.Closeable;
 
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VFSUtils;
 
 /**
  * Service that represents a deployment.  Should be used as a dependency for all services registered for the deployment.
@@ -48,7 +42,14 @@ public class DeploymentService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
-    private final Map<ServiceName, ServiceController<?>> dependents = new HashMap<ServiceName, ServiceController<?>>();
+    private final Closeable deploymentMount;
+
+    public DeploymentService(Closeable deploymentMount) {
+        if (deploymentMount == null) {
+            throw new IllegalArgumentException("deploymentMount is null");
+        }
+        this.deploymentMount = deploymentMount;
+    }
 
     /**
      * Start the deployment.  This will re-mount the deployment root if service is restarted.
@@ -65,86 +66,11 @@ public class DeploymentService implements Service<Void> {
      * @param context The stop context
      */
     public void stop(StopContext context) {
+        VFSUtils.safeClose(deploymentMount);
     }
 
     /** {@inheritDoc} **/
     public Void getValue() throws IllegalStateException {
         return null;
     }
-
-    /**
-     * Gets the names of any services associated with the deployment.
-     *
-     * @return the service names. Will not return <code>null</code>
-     */
-    public Set<ServiceName> getDependentServiceNames() {
-        synchronized(dependents) {
-            return new HashSet<ServiceName>(dependents.keySet());
-        }
-    }
-
-    /**
-     * Gets any exceptions that occurred during start of the services that
-     * are associated with this deployment.
-     *
-     * @return the exceptions keyed by the name of the service. Will not be <code>null</code>
-     */
-    public Map<ServiceName, StartException> getDependentStartupExceptions() {
-        synchronized(dependents) {
-            Map<ServiceName, StartException> result = new HashMap<ServiceName, StartException>();
-            for (Map.Entry<ServiceName, ServiceController<?>> entry : dependents.entrySet()) {
-                StartException se = entry.getValue().getStartException();
-                if (se != null)
-                    result.put(entry.getKey(), se);
-            }
-            return result;
-        }
-    }
-
-    /**
-     * Gets the {@link ServiceController.State state} of the services that
-     * are associated with this deployment.
-     *
-     * @return the services and their current state. Will not be <code>null</code>
-     */
-    public Map<ServiceName, ServiceController.State> getDependentStates() {
-        synchronized(dependents) {
-            Map<ServiceName, ServiceController.State> result = new HashMap<ServiceName, ServiceController.State>(dependents.size());
-            for (Map.Entry<ServiceName, ServiceController<?>> entry : dependents.entrySet()) {
-                result.put(entry.getKey(), entry.getValue().getState());
-            }
-            return result;
-        }
-    }
-
-    /**
-     * Gets a {@link ServiceListener} that can track startup events for
-     * services associated with the deployment this service represents. This
-     * listener should
-     * be associated with a {@link BatchBuilder#subBatchBuilder() sub-batch}
-     * of this services batch that encapsulates the creation of services that
-     * are associated with the deployment.
-     *
-     * @return the service listener
-     */
-    public ServiceListener<Object> getDependentStartupListener() {
-        return new DependentServiceListener();
-    }
-
-    private class DependentServiceListener extends AbstractServiceListener<Object> {
-
-        /**
-         * This will be called for all dependent services before the
-         * BatchBuilder.install() call returns. So at that point we know what
-         * the dependent services are.
-         */
-        @Override
-        public void listenerAdded(ServiceController<?> controller) {
-            synchronized(dependents) {
-                dependents.put(controller.getName(), controller);
-            }
-        }
-
-    }
-
 }

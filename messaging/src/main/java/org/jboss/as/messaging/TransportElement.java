@@ -42,10 +42,12 @@ public class TransportElement extends AbstractModelElement<TransportElement> {
         this.name = name;
     }
 
+    @Override
     protected Class<TransportElement> getElementClass() {
         return TransportElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), getName());
         writeSimpleElement(Element.FACTORY_CLASS, getFactoryClassName(), streamWriter);
@@ -57,6 +59,7 @@ public class TransportElement extends AbstractModelElement<TransportElement> {
                 streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().toString());
             }
         }
+        streamWriter.writeEndElement();
     }
 
     public String getName() {

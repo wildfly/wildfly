@@ -47,7 +47,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
 
     private String recoveryBindingName;
     private String recoveryStatusBindingName;
-    private String nodeIdentifier;
+    private String nodeIdentifier = "1";
     private String bindingName;
     private boolean coordinatorEnableStatistics;
     private String objectStorePathRef = "jboss.server.data.dir";

@@ -39,10 +39,8 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDe
     private final String deploymentUniqueName;
     private final String deploymentRuntimeName;
     private final byte[] deploymentHash;
-    private final ServerDeploymentStartStopHandler startStopHandler;
 
-    public ServerModelDeploymentAdd(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] deploymentHash,
-            boolean deploy) {
+    public ServerModelDeploymentAdd(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] deploymentHash) {
         super(false, true);
         if (deploymentUniqueName == null)
             throw new IllegalArgumentException("deploymentUniqueName is null");
@@ -53,17 +51,11 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDe
         this.deploymentUniqueName = deploymentUniqueName;
         this.deploymentRuntimeName = deploymentRuntimeName;
         this.deploymentHash = deploymentHash;
-        if (deploy) {
-            startStopHandler = new ServerDeploymentStartStopHandler();
-        }
-        else {
-            startStopHandler = null;
-        }
     }
 
     @Override
     public ServerModelDeploymentRemove getCompensatingUpdate(ServerModel original) {
-        return new ServerModelDeploymentRemove(deploymentUniqueName, startStopHandler != null);
+        return new ServerModelDeploymentRemove(deploymentUniqueName);
     }
 
     @Override
@@ -82,8 +74,8 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDe
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
             UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
-        if (startStopHandler != null) {
-            startStopHandler.deploy(deploymentUniqueName, deploymentRuntimeName, deploymentHash, updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
+        if (resultHandler != null) {
+            resultHandler.handleSuccess(null, param);
         }
     }
 }

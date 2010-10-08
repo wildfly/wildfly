@@ -57,6 +57,7 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server.deployment");
 
+    private static final String CONTENT = "content";
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
     private File repoRoot;
     private MessageDigest messageDigest;
@@ -80,7 +81,7 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
 
 
     @Override
-    public byte[] addDeploymentContent(String name, InputStream stream)
+    public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream)
             throws IOException {
 
         log.debugf("Adding content with name %s", name);
@@ -113,7 +114,7 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
         if (!realDir.exists() && !realDir.mkdirs()) {
             throw new IllegalStateException("Cannot create directory " + realDir.getAbsolutePath());
         }
-        File realFile = new File(realDir, "content");
+        File realFile = new File(realDir, CONTENT);
         if (realFile.exists()) {
             // we've already got this content
             if (!tmp.delete()) {
@@ -130,14 +131,14 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
     }
 
     @Override
-    public Closeable mountDeploymentContent(String name, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
+    public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
         // TODO recognize exploded content stored in a hot-deploy dir
         String sha1 = bytesToHexString(deploymentHash);
         String partA = sha1.substring(0,2);
         String partB = sha1.substring(2);
         File base = new File(repoRoot, partA);
         File hashDir = new File(base, partB);
-        File content = new File(hashDir, "content");
+        File content = new File(hashDir, CONTENT);
         return VFS.mountZip(content, mountPoint, TempFileProviderService.provider());
     }
 

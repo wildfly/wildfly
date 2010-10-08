@@ -221,7 +221,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
 
         for (TransportSpecification connectorSpec : connectors) {
-            TransportElement connectorEl = element.addAcceptor(connectorSpec.getName());
+            TransportElement connectorEl = element.addConnector(connectorSpec.getName());
             connectorEl.setFactoryClassName(connectorSpec.getFactoryClassName());
             connectorEl.setParams(connectorSpec.getParams());
         }

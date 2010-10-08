@@ -46,24 +46,25 @@ public interface ServerDeploymentRepository {
      * Add the given content to the repository.
      *
      * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
+     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
      * @param stream stream from which the content can be read. Cannot be <code>null</code>
      * @return the hash of the content that will be used as an internal identifier
      *         for the content. Will not be <code>null</code>
      * @throws IOException
      */
-    byte[] addDeploymentContent(String name, InputStream stream) throws IOException;
+    byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) throws IOException;
 
     /**
      * Requests that the content with the given unique name and hash be mounted
      * in VFS at the given {@code mountPoint}.
      *
      * @param name unique name for the content as provided by the end user. Cannot be <code>null</code>
+     * @param runtimeName the name the deployment file should be known as to the runtime. Cannot be <code>null</code>
      * @param deploymentHash internal identification hash. Cannot be <code>null</code>
      * @param mountPoint VFS location where the content should be mounted. Cannot be <code>null</code>
-     *
      * @return {@link Closeable} that can be used to close the mount
      *
      * @throws IOException
      */
-    Closeable mountDeploymentContent(String name, byte[] deploymentHash, VirtualFile mountPoint) throws IOException;
+    Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException;
 }

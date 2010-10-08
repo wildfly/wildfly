@@ -46,6 +46,7 @@ import org.jboss.as.deployment.client.api.server.DeploymentPlan;
 import org.jboss.as.deployment.client.api.server.DeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
+import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
@@ -326,34 +327,43 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
                 DeploymentPlanBuilder currentBuilder = builder;
 
                 boolean uploaded = false;
-                if (deployed.contains(fileName)) {
+                boolean replace = false;
+                ServerGroupDeploymentElement deployment = injectedServerModel.getValue().getDeployment(fileName);
+                if (deployment != null) {
+                    if (deployment.isStart()) {
+                        replace = true;
+                    }
+                    else {
+                        // A replace(child) will not result in deploying the new
+                        // content, which is not the semantic we want with
+                        // filesystem hot deployment. So clean out the
+                        // existing deployment from the config and do a new
+                        // add+deploy below
+                        builder = builder.remove(fileName);
+                    }
+                }
+
+                try {
+                    if (replace) {
+                        builder = builder.replace(child);
+                    }
+                    else {
+                        builder = builder.add(child).andDeploy();
+                    }
+                    uploaded = true;
+                } catch (IOException e) {
+                    log.errorf(e, "Failed adding deployment content at %s", child.getAbsolutePath());
+                } catch (DuplicateDeploymentNameException e) {
+                    // Content with same name must have been added via some
+                    // other means. Warn and replace
+                    log.warnf("Deployment content with name %s is already installed " +
+                            "but was unknown to this filesystem deployment scanner. " +
+                            "Replacing the existing content with new content %s.", fileName, child.getAbsolutePath());
                     try {
                         builder = builder.replace(child);
                         uploaded = true;
-                    } catch (IOException e) {
-                        log.errorf(e, "Failed replacing %s with content at %s", fileName, child.getAbsolutePath());
-                    }
-                }
-                else {
-                    try {
-                        builder = builder.add(child).andDeploy();
-                        uploaded = true;
-                    } catch (IOException e) {
-                        log.errorf(e, "Failed adding deployment content at %s", child.getAbsolutePath());
-                    } catch (DuplicateDeploymentNameException e) {
-                        // Content with same name must have been added via some
-                        // other means. Warn and replace
-                        log.warnf(e, "Deployment content with name %s is already installed " +
-                                "but was unknown to this filesystem deployment scanner. " +
-                                "Replacing the existing content with new content %s. Mixing " +
-                                "mechanisms to deploy content with the same name is not " +
-                                "recommended.", fileName, child.getAbsolutePath());
-                        try {
-                            builder = builder.replace(child);
-                            uploaded = true;
-                        } catch (IOException e1) {
-                            log.errorf(e1, "Failed replacing %s with content at %s", fileName, child.getAbsolutePath());
-                        }
+                    } catch (IOException e1) {
+                        log.errorf(e1, "Failed replacing %s with content at %s", fileName, child.getAbsolutePath());
                     }
                 }
 

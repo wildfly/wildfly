@@ -35,7 +35,7 @@ import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
  */
 public interface DeploymentContentDistributor {
 
-    byte[] distributeDeploymentContent(String uniqueName, String commonName, InputStream stream) throws IOException, DuplicateDeploymentNameException;
+    byte[] distributeDeploymentContent(String uniqueName, String runtimeName, InputStream stream) throws IOException, DuplicateDeploymentNameException;
 
-    byte[] distributeReplacementDeploymentContent(String uniqueName, String commonName, InputStream stream) throws IOException;
+    byte[] distributeReplacementDeploymentContent(String uniqueName, String runtimeName, InputStream stream) throws IOException;
 }

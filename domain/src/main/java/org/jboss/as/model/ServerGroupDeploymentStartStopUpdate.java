@@ -60,7 +60,7 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
 
     @Override
     protected ServerModelDeploymentStartStopUpdate getServerModelUpdate() {
-        return new ServerModelDeploymentStartStopUpdate(this);
+        return new ServerModelDeploymentStartStopUpdate(deploymentUnitName, isStart);
     }
 
     @Override

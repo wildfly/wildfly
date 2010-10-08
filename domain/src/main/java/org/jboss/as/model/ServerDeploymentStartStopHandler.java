@@ -26,7 +26,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVir
 
 import java.io.Closeable;
 import java.io.IOException;
-
+import java.util.UUID;
 import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.DeploymentService;
@@ -82,12 +82,44 @@ class ServerDeploymentStartStopHandler {
         try {
             ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
             // Add a listener so we can get ahold of the DeploymentService
-            batchBuilder.addListener(new DeploymentServiceTracker<P>(resultHandler, param, deploymentServiceName, false));
+            batchBuilder.addListener(new DeploymentServiceTracker<P>(resultHandler, param));
 
             activate(deploymentName, runtimeName, deploymentHash, deploymentServiceName, new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
         }
         catch (RuntimeException e) {
             resultHandler.handleFailure(e, param);
+        }
+    }
+
+    <P> void redeploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
+            final ServiceContainer serviceContainer, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+        try {
+            ServiceName deploymentServiceName = getDeploymentServiceName(deploymentName);
+            @SuppressWarnings("unchecked")
+            final ServiceController<DeploymentService> controller = (ServiceController<DeploymentService>) serviceContainer.getService(deploymentServiceName);
+            if(controller != null && controller.getMode() != ServiceController.Mode.REMOVE) {
+                RedeploymentServiceTracker tracker = new RedeploymentServiceTracker();
+                controller.addListener(tracker);
+                synchronized (tracker) {
+                    controller.setMode(ServiceController.Mode.REMOVE);
+                    try {
+                        tracker.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        if (resultHandler != null) {
+                            resultHandler.handleFailure(e, param);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            deploy(deploymentName, runtimeName, deploymentHash, serviceContainer, resultHandler, param);
+        }
+        catch (RuntimeException e) {
+            if (resultHandler != null) {
+                resultHandler.handleFailure(e, param);
+            }
         }
     }
 
@@ -98,11 +130,12 @@ class ServerDeploymentStartStopHandler {
             @SuppressWarnings("unchecked")
             final ServiceController<DeploymentService> controller = (ServiceController<DeploymentService>) serviceContainer.getService(deploymentServiceName);
             if(controller != null) {
-                controller.addListener(new DeploymentServiceTracker<P>(resultHandler, param, deploymentServiceName, true));
+                controller.addListener(new UndeploymentServiceTracker<P>(resultHandler, param));
                 controller.setMode(ServiceController.Mode.REMOVE);
             }
             else if (resultHandler != null) {
-                resultHandler.handleSuccess(new SimpleServerDeploymentActionResult(null, Result.EXECUTED), param);
+                SimpleServerDeploymentActionResult result = (param instanceof UUID) ? new SimpleServerDeploymentActionResult((UUID) param, Result.EXECUTED) : null;
+                resultHandler.handleSuccess(result, param);
             }
         }
         catch (RuntimeException e) {
@@ -124,14 +157,14 @@ class ServerDeploymentStartStopHandler {
 
             // Mount virtual file
             try {
-                handle = deploymentRepo.mountDeploymentContent(deploymentName, deploymentHash, deploymentRoot);
+                handle = deploymentRepo.mountDeploymentContent(deploymentName, runtimeName, deploymentHash, deploymentRoot);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to mount deployment archive", e);
             }
 
             final BatchBuilder batchBuilder = context.getBatchBuilder();
             // Create deployment service
-            DeploymentService deploymentService = new DeploymentService();
+            DeploymentService deploymentService = new DeploymentService(handle);
             BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
 
             // Create a sub-batch for this deployment
@@ -139,9 +172,6 @@ class ServerDeploymentStartStopHandler {
 
             // Setup a batch level dependency on deployment service
             deploymentSubBatch.addDependency(deploymentServiceName);
-
-            // Let deploymentService listen to services in the subbatch
-            deploymentSubBatch.addListener(deploymentService.getDependentStartupListener());
 
             // Add a deployment failure listener to the batch
             deploymentSubBatch.addListener(new DeploymentFailureListener(deploymentServiceName));
@@ -187,46 +217,74 @@ class ServerDeploymentStartStopHandler {
 //        return (path.endsWith(File.separator)) ? path + fileName : path + File.separator + fileName;
 //    }
 
-    private class DeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
+    private static class AbstractDeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
 
-        private final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler;
-        private final P param;
-        private final ServiceName deploymentServiceName;
-        private final boolean undeploy;
+        protected final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler;
+        protected final P param;
 
-        private DeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
-                final P param, final ServiceName deploymentServiceName, final boolean undeploy) {
+        protected AbstractDeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
+                final P param) {
             this.resultHandler = resultHandler;
             this.param = param;
-            this.deploymentServiceName = deploymentServiceName;
-            this.undeploy = undeploy;
         }
 
         @Override
         public void serviceFailed(ServiceController<?> controller, StartException reason) {
 
-            if (resultHandler != null && controller.getName().equals(deploymentServiceName)) {
+            if (resultHandler != null) {
                 resultHandler.handleFailure(reason, param);
             }
         }
 
+        protected void recordResult(ServiceController<? extends Object> controller) {
+            // FIXME UpdateResultHandler should take ServiceName as result type
+            SimpleServerDeploymentActionResult result =
+                (param instanceof UUID) ? new SimpleServerDeploymentActionResult((UUID) param, Result.EXECUTED)
+                                        : null;
+            resultHandler.handleSuccess(result, param);
+        }
+
+    }
+
+    private static class DeploymentServiceTracker<P> extends AbstractDeploymentServiceTracker<P> {
+
+        private DeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
+                final P param) {
+            super(resultHandler, param);
+        }
+
         @Override
         public void serviceStarted(ServiceController<?> controller) {
-            if (!undeploy && resultHandler != null && controller.getName().equals(deploymentServiceName)) {
+            if (resultHandler != null) {
                 recordResult(controller);
             }
+        }
+
+    }
+
+    private static class UndeploymentServiceTracker<P> extends AbstractDeploymentServiceTracker<P> {
+
+        private UndeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
+                final P param) {
+            super(resultHandler, param);
         }
 
         @Override
         public void serviceStopped(ServiceController<?> controller) {
-            if (undeploy && resultHandler != null && controller.getName().equals(deploymentServiceName)) {
+            if (resultHandler != null) {
                 recordResult(controller);
             }
         }
 
-        private void recordResult(ServiceController<?> controller) {
-            SimpleServerDeploymentActionResult result = new SimpleServerDeploymentActionResult(null, Result.EXECUTED);
-            resultHandler.handleSuccess(result, param);
+    }
+
+    private static class RedeploymentServiceTracker extends AbstractServiceListener<Object> {
+
+        @Override
+        public void serviceRemoved(ServiceController<? extends Object> controller) {
+            synchronized (this) {
+                notifyAll();
+            }
         }
 
     }

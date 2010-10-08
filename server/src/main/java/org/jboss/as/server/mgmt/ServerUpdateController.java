@@ -121,7 +121,7 @@ public class ServerUpdateController {
      *
      * @throws IllegalStateException if {@link #getStatus()} is not {@link Status#PENDING}
      */
-    public <R, P> void addServerModelUpdate(AbstractServerModelUpdate<R> update, UpdateResultHandler<R, P> resultHandler, P param) {
+    public <R, P> void addServerModelUpdate(AbstractServerModelUpdate<R> update, UpdateResultHandler<? super R, P> resultHandler, P param) {
         synchronized (this) {
             if (status != Status.PENDING)
                 throw new IllegalStateException("Cannot add updates after executeUpdates() has been invoked");
@@ -389,11 +389,11 @@ public class ServerUpdateController {
     private class ServerModelUpdateTuple<R, P> {
 
         private final AbstractServerModelUpdate<R> update;
-        private final DelegatingUpdateResultHandler<R, P> resultHandler;
+        private final DelegatingUpdateResultHandler<? super R, P> resultHandler;
         private final P param;
 
         public ServerModelUpdateTuple(final AbstractServerModelUpdate<R> update,
-                final UpdateResultHandler<R, P> resultHandler,
+                final UpdateResultHandler<? super R, P> resultHandler,
                 final P param) {
             if (update == null) {
                 throw new IllegalArgumentException("update is null");
@@ -429,9 +429,9 @@ public class ServerUpdateController {
 
     private class DelegatingUpdateResultHandler<R, P> implements UpdateResultHandler<R, P> {
 
-        private final UpdateResultHandler<R, P> delegate;
+        private final UpdateResultHandler<? super R, P> delegate;
 
-        private DelegatingUpdateResultHandler(final UpdateResultHandler<R, P> delegate) {
+        private DelegatingUpdateResultHandler(final UpdateResultHandler<? super R, P> delegate) {
             this.delegate = delegate;
         }
 
@@ -449,6 +449,7 @@ public class ServerUpdateController {
             if (delegate != null) {
                 delegate.handleFailure(cause, param);
             }
+            logger.errorf(cause, "Caught exception handling update (param is %s)", param);
         }
 
         @Override
@@ -473,6 +474,7 @@ public class ServerUpdateController {
             if (delegate != null) {
                 delegate.handleRollbackFailure(cause, param);
             }
+            logger.errorf(cause, "Caught exception handling rollback of an update (param is %s)", param);
         }
 
         @Override
@@ -499,7 +501,7 @@ public class ServerUpdateController {
             }
         }
 
-        private UpdateResultHandler<R, P> getDelegate() {
+        private UpdateResultHandler<? super R, P> getDelegate() {
             return this.delegate;
         }
     }
