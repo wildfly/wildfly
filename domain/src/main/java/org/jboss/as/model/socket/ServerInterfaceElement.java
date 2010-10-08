@@ -42,7 +42,7 @@ public class ServerInterfaceElement extends AbstractInterfaceElement<ServerInter
      *             returns {@code false}.
      */
     public ServerInterfaceElement(InterfaceElement fullySpecified) {
-        super(fullySpecified.getName(), fullySpecified.getCriteriaElements());
+        super(fullySpecified);
         if (!fullySpecified.isFullySpecified()) {
             throw new IllegalArgumentException(fullySpecified + " is not fully specified");
         }

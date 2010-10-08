@@ -128,16 +128,14 @@ public abstract class AbstractInterfaceElement<E extends AbstractInterfaceElemen
         }
     }
 
-    protected AbstractInterfaceElement(String name, List<AbstractInterfaceCriteriaElement<?>> criteriaList) {
-        if (name == null)
-            throw new IllegalArgumentException("name is null");
-        if (criteriaList == null)
-            throw new IllegalArgumentException("criteria is null");
-        this.name = name;
-        for (AbstractInterfaceCriteriaElement<?> criteria : criteriaList) {
-            interfaceCriteria.put(criteria.getElement(), criteria);
-        }
-
+    protected AbstractInterfaceElement(AbstractInterfaceElement<?> toCopy) {
+        if (toCopy == null)
+            throw new IllegalArgumentException("toCopy is null");
+        this.name = toCopy.name;
+        this.anyLocal = toCopy.anyLocal;
+        this.anyLocalV4 = toCopy.anyLocalV4;
+        this.anyLocalV6 = toCopy.anyLocalV6;
+        interfaceCriteria.putAll(toCopy.interfaceCriteria);
     }
 
     /**
