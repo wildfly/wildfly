@@ -307,10 +307,15 @@ public class ProcessManagerMaster implements ProcessOutputStreamHandler.Master{
              return;
         }
         synchronized (processes) {
+            ManagedProcess sm = processes.get(SERVER_MANAGER_PROCESS_NAME);
             for (ManagedProcess process : processes.values()) {
                 if (!process.getProcessName().equals(SERVER_MANAGER_PROCESS_NAME)) {
                     try {
-                        process.reconnectToServerManager(smAddress, port);
+                        if (process.isStart()) {
+                            process.reconnectToServerManager(smAddress, port);
+                        } else {
+                            sm.down(process.getProcessName());
+                        }
                     } catch (IOException e) {
                         log.warnf("Could not send RECONNECT_SERVER_MANAGER command to " + process.getProcessName());
                     }

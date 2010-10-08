@@ -127,6 +127,22 @@ public final class ServerMaker {
         return server;
     }
 
+    void removeAndAddProcess(Server server, JvmElement jvmElement) throws IOException {
+        processManagerSlave.removeProcess(server.getServerProcessName());
+        String serverName = server.getServerConfig().getServerName();
+        List<String> command = getServerLaunchCommand(
+                server.getServerConfig().getServerName(),
+                server.getServerProcessName(),
+                jvmElement,
+                server.getServerConfig().getSystemProperties());
+
+        Map<String, String> env = getServerLaunchEnvironment(jvmElement);
+
+        //Add to process manager
+        processManagerSlave.addProcess(server.getServerProcessName(), command, env, environment.getHomeDir().getAbsolutePath());
+
+    }
+
     private List<String> getServerLaunchCommand(final String serverName, final String serverProcessName, final JvmElement jvm, final PropertiesElement systemProperties) {
         List<String> command = new ArrayList<String>();
 

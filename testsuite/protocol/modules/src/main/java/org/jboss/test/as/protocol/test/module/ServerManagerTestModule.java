@@ -29,6 +29,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerMaster;
+import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.server.manager.Server;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
@@ -451,6 +452,71 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         shutdownProcessManagerAndWait(pm);
     }
 
+    @Override
+    public void testServerCrashedWhileServerManagerIsDownGetsRestarted() throws Exception {
+        setDomainConfigDir("standard");
+        TestProcessHandlerFactory processHandlerFactory = new TestProcessHandlerFactory(true, false);
+        final TestProcessManager pm = TestProcessManager.create(processHandlerFactory, InetAddress.getLocalHost(), 0, null, true, new RespawnPolicy() {
+
+            @Override
+            public long getTimeOutMs(int retryCount) {
+                //Put in a longish respawn wait to make sure SM is down while we crash server 1
+                return 3000;
+            }
+        });
+
+        pm.pollAddedProcess(3); //SM + 2 servers
+        pm.pollStartedProcess(3);
+        TestServerManagerProcess sm = assertGetServerManager(processHandlerFactory);
+
+        MockServerProcess svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
+        MockServerProcess svr2 = assertGetServer(processHandlerFactory, "Server:server-two");
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1, svr2);
+
+        ServerNoopExiter.reset();
+        sm.stop();
+
+        final TestServerManagerProcess smProc = sm;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                smProc.crashServerManager(1);
+            }
+        }).start();
+
+
+        final MockServerProcess svr1Proc = svr1;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                svr1Proc.crashServer(1);
+            }
+        }).start();
+
+        //SM should get restarted
+
+        int newSmPort = parsePort(pm.waitForReconnectServers());
+        Assert.assertEquals(newSmPort, parsePort(svr2.waitForReconnectServer()));
+        svr2.reconnnectToServerManagerAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.AVAILABLE);
+        svr2.sendMessageToManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE);
+        Command<ServerManagerToServerProtocolCommand> start2 = assertReadCommand(svr2, ServerManagerToServerProtocolCommand.START_SERVER);
+
+        //SM restart
+        sm = assertGetServerManager(processHandlerFactory);
+
+        //Check server1 got restarted
+        pm.pollStartedProcess(1);
+        MockServerProcess oldSvr1 = svr1;
+        svr1 = assertGetServer(processHandlerFactory, "Server:server-one");
+        Assert.assertNotSame(oldSvr1, svr1);
+        sendMessageToServerManager(ServerToServerManagerProtocolCommand.SERVER_AVAILABLE, svr1);
+        Command<ServerManagerToServerProtocolCommand> start1 = assertReadCommand(svr1, ServerManagerToServerProtocolCommand.START_SERVER);
+
+        Assert.assertEquals("server-one", ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, start1).getServerName());
+        Assert.assertEquals("server-two", ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, start2).getServerName());
+
+        shutdownProcessManagerAndWait(pm);
+    }
 
 
     private void shutdownProcessManagerAndWait(final TestProcessManager pm) throws InterruptedException {

@@ -72,22 +72,22 @@ public class TestProcessManager extends ProcessManagerMaster {
     }
 
     public static TestProcessManager create(TestProcessHandlerFactory processHandlerFactory, InetAddress addr, int port, boolean startServerManager) throws Exception {
-        return create(processHandlerFactory, addr, port, null, startServerManager);
+        return create(processHandlerFactory, addr, port, null, startServerManager, null);
     }
 
     public static TestProcessManager create(TestProcessHandlerFactory processHandlerFactory, InetAddress addr, int port, NewConnectionListener newConnectionListener) throws Exception {
-        return create(processHandlerFactory, addr, port, newConnectionListener, true);
+        return create(processHandlerFactory, addr, port, newConnectionListener, true, null);
     }
-    public static TestProcessManager create(TestProcessHandlerFactory processHandlerFactory, InetAddress addr, int port, NewConnectionListener newConnectionListener, boolean startServerManager) throws Exception {
+    public static TestProcessManager create(TestProcessHandlerFactory processHandlerFactory, InetAddress addr, int port, NewConnectionListener newConnectionListener, boolean startServerManager, RespawnPolicy respawnPolicy) throws Exception {
         TestProcessManager pm = new TestProcessManager(processHandlerFactory, addr, port);
         if (newConnectionListener != null)
             pm.setNewConnectionListener(newConnectionListener);
         pm.start();
-        pm.addAndStartServerManager(startServerManager);
+        pm.addAndStartServerManager(startServerManager, respawnPolicy);
         return pm;
     }
 
-    private void addAndStartServerManager(boolean startServerManager) throws Exception {
+    private void addAndStartServerManager(boolean startServerManager, RespawnPolicy respawnPolicy) throws Exception {
         List<String> command = new ArrayList<String>();
         command.add(CommandLineConstants.INTERPROCESS_PM_ADDRESS);
         command.add(getInetAddress().getHostAddress());
@@ -100,7 +100,7 @@ public class TestProcessManager extends ProcessManagerMaster {
         command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
         command.add("0");
 
-        addProcess(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), ".", RespawnPolicy.DefaultRespawnPolicy.INSTANCE);
+        addProcess(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), ".", respawnPolicy != null ? respawnPolicy : RespawnPolicy.DefaultRespawnPolicy.INSTANCE);
         if (startServerManager)
             startProcess(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME);
     }

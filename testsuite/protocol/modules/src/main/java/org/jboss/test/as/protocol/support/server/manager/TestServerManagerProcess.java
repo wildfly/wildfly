@@ -48,7 +48,6 @@ public class TestServerManagerProcess extends ServerManager {
 
     private final Managed managed;
 
-    private final CountDownLatch shutdownServersLatch = new CountDownLatch(1);
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     private volatile CountDownLatch domainModelLatch = new CountDownLatch(1);
     private volatile CountDownLatch downLatch = new CountDownLatch(1);

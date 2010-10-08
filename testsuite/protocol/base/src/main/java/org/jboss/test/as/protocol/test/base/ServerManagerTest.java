@@ -57,4 +57,6 @@ public interface ServerManagerTest extends BaseTest{
     void testServersGetReconnectMessageFollowingRestartedServerManager_FailedGetsStarted() throws Exception;
 
     void testServerGetsReconnectedFollowingBrokenConnection() throws Exception;
+
+    void testServerCrashedWhileServerManagerIsDownGetsRestarted() throws Exception;
 }

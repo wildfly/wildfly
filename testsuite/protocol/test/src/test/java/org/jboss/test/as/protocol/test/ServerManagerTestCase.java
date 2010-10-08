@@ -109,4 +109,9 @@ public class ServerManagerTestCase extends AbstractProtocolTest<ServerManagerTes
         getTestInstance().testServerGetsReconnectedFollowingBrokenConnection();
     }
 
+    @Test
+    public void testServerCrashedWhileServerManagerIsDownGetsRestarted() throws Exception{
+        getTestInstance().testServerCrashedWhileServerManagerIsDownGetsRestarted();
+    }
+
 }
