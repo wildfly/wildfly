@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.protocol;
 
 import java.io.DataOutput;
 import org.jboss.marshalling.ByteOutput;

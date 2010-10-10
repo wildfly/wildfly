@@ -30,8 +30,8 @@ import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
-import org.jboss.as.process.Status;
-import org.jboss.as.process.StreamUtils;
+import org.jboss.as.protocol.Status;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 import org.jboss.logging.Logger;
 

@@ -30,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.server.DirectServerSideCommunicationHandler;
-import org.jboss.as.server.ProcessManagerServerCommunicationHandler;
 import org.jboss.as.server.manager.ServerManagerProtocolUtils;
 import org.jboss.as.server.manager.ServerState;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;

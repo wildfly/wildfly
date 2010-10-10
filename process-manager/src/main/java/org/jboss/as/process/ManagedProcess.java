@@ -126,12 +126,9 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
 
     void stop() throws IOException {
         synchronized (this) {
-            boolean wasStart = start;
             start = false;
             stopped = true;
-            if (wasStart) {
-                OutgoingPmCommand.SHUTDOWN.sendStop(commandStream);
-            }
+            stdinStream.close();
         }
     }
 

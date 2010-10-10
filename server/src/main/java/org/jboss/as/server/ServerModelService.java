@@ -32,6 +32,8 @@ import org.jboss.msc.service.StopContext;
 /**
  * Exposes the {@link ServerModel} via a {@link Service}.
  *
+ * TODO: replace with ServerController
+ *
  * @author Brian Stansberry
  */
 public class ServerModelService implements Service<ServerModel> {

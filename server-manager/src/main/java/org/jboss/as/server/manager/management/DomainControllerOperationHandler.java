@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;

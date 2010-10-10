@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
+import org.jboss.as.protocol.Status;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 
 public final class ProcessOutputStreamHandler implements Runnable {

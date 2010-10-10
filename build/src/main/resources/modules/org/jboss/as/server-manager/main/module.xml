@@ -35,6 +35,7 @@
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.domain"/>
         <module name="org.jboss.as.process-manager"/>
+        <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.domain-controller"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.logging"/>

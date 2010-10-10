@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.protocol;
 
 import java.io.IOException;
+import java.io.InputStream;
 import org.jboss.marshalling.ByteInput;
 
 /**
@@ -30,11 +31,11 @@ import org.jboss.marshalling.ByteInput;
  * by the length of the chunk.  At the end of all the chunks it will run into a {@code END} byte, which will appear as the end
  * of the stream.  This is used when you need to ensure a consumer of the input can not read more than necessary.  This is handy
  * if the consumer of the stream is prone to over-buffering. Note this will only work for byte streams that were written using a
- * {@link org.jboss.as.server.manager.management.ChunkyByteOutput}.
+ * {@link ChunkyByteOutput}.
  *
  * @author John Bailey
  */
-public class ChunkyByteInput implements ByteInput {
+public class ChunkyByteInput extends InputStream implements ByteInput {
     public static final int CHUNK_START = 0x98;
     public static final int END = 0x99;
     private ByteInput input;

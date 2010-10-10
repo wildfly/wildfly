@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.ManagedProcess;
-import org.jboss.as.process.Status;
-import org.jboss.as.process.StreamUtils;
+import org.jboss.as.protocol.Status;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.process.ProcessManagerProtocol.IncomingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;

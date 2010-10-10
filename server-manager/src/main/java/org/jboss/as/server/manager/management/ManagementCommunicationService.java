@@ -23,8 +23,6 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,6 +31,10 @@ import org.jboss.as.communication.InitialSocketRequestException;
 import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;

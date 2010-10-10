@@ -45,52 +45,6 @@ public final class Server {
     private final AtomicInteger respawnCount = new AtomicInteger();
     private volatile ServerState state;
 
-//    public Server(final InputStream errorStream, final InputStream inputStream, final OutputStream outputStream) {
-//        this.processManagerSlave = null;
-//        final Thread thread = FACTORY.newThread(new Runnable() {
-//            public void run() {
-//                try {
-//                    final InputStreamReader reader = new InputStreamReader(errorStream);
-//                    final BufferedReader bufferedReader = new BufferedReader(reader);
-//                    String line;
-//                    try {
-//                        while ((line = bufferedReader.readLine()) != null) {
-//                            System.err.println("Server reported error: " + line.trim());
-//                        }
-//                    } catch (IOException e) {
-//                        // todo log it
-//                    }
-//                } finally {
-//                    try {
-//                        errorStream.close();
-//                    } catch (IOException e) {
-//                        // todo log
-//                    }
-//                }
-//            }
-//        });
-//        thread.start();
-//        FACTORY.newThread(new Runnable() {
-//            public void run() {
-//                String cmd;
-//                try {
-//                    while ((cmd = readCommand(inputStream)) != null) {
-//                        System.out.println("Got msg: " + cmd);
-//                    }
-//                } catch (IOException e) {
-//                    // todo log it
-//                } finally {
-//                    try {
-//                        inputStream.close();
-//                    } catch (IOException e) {
-//                        // todo log
-//                    }
-//                }
-//            }
-//
-//        });
-//    }
-
     public Server(ServerModel serverConfig, RespawnPolicy respawnPolicy) {
         if (serverConfig == null) {
             throw new IllegalArgumentException("serverConfig is null");
@@ -102,7 +56,6 @@ public final class Server {
         this.serverConfig = serverConfig;
         this.respawnPolicy = respawnPolicy;
         this.state = ServerState.BOOTING;
-//        this.communicationHandler = communicationHandler;
     }
 
     public ServerState getState() {

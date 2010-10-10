@@ -20,12 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager;
+package org.jboss.as.protocol;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import org.jboss.as.server.manager.management.ChunkyByteInput;
-import org.jboss.as.server.manager.management.ChunkyByteOutput;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshalling;

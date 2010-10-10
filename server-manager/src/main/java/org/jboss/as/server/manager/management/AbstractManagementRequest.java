@@ -25,6 +25,9 @@ package org.jboss.as.server.manager.management;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.ScheduledExecutorService;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
 /**

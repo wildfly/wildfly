@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.manager.management;
 
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+
 /**
  * Interface for handling management operations coming into a server manager process.  Each handler
  * is identified by a single byte that will be used to route the operation request to the correct handler.

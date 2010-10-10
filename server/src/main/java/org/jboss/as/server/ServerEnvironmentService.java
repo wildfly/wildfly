@@ -68,7 +68,7 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
         batchBuilder.addService(SERVICE_NAME, new ServerEnvironmentService(serverEnvironment));
     }
 
-    private final ServerEnvironment environment;
+    private final ServerEnvironment serverEnvironment;
 
     /**
      * Creates a ServerEnvironmentService that uses the given {@code serverEnvironment}
@@ -80,7 +80,7 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
         if (serverEnvironment == null) {
             throw new IllegalArgumentException("serverEnvironment is null");
         }
-        this.environment = serverEnvironment;
+        this.serverEnvironment = serverEnvironment;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
 
     @Override
     public ServerEnvironment getValue() throws IllegalStateException {
-        return environment;
+        return serverEnvironment;
     }
 
 }

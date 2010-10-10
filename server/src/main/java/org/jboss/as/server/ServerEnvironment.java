@@ -26,13 +26,10 @@
 package org.jboss.as.server;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
 import java.util.Properties;
 
 /**
- * Encapsulates the runtime environment for a {@link Server}.
+ * Encapsulates the runtime environment for a server.
  *
  * @author Brian Stansberry
  */
@@ -108,12 +105,8 @@ public class ServerEnvironment {
      */
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
 
-    private final Properties props;
     private final String processName;
-    private final InetAddress processManagerAddress;
-    private final Integer processManagerPort;
-    private final InetAddress serverManagerAddress;
-    private final Integer serverManagerPort;
+
     private final File homeDir;
     private final File modulesDir;
     private final File serverBaseDir;
@@ -124,184 +117,72 @@ public class ServerEnvironment {
     private final File serverTempDir;
     private final boolean standalone;
 
-    private final InputStream stdin;
-    private final PrintStream stdout;
-    private final PrintStream stderr;
-
-    public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr,
-            String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress, Integer serverManagerPort, boolean standalone) {
+    public ServerEnvironment(Properties props, String processName, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
-        this.props = props;
-
-        if (stdin == null) {
-             throw new IllegalArgumentException("stdin is null");
-        }
-        this.stdin = stdin;
-
-        if (stdout == null) {
-             throw new IllegalArgumentException("stdout is null");
-        }
-        this.stdout = stdout;
-
-        if (stderr == null) {
-             throw new IllegalArgumentException("stderr is null");
-        }
-        this.stderr = stderr;
 
         if (processName == null && !standalone) {
             throw new IllegalArgumentException("processName is null");
         }
-        if (processManagerAddress == null && !standalone) {
-            throw new IllegalArgumentException("processManagerAddress is null");
-        }
-        if (processManagerPort == null && !standalone) {
-            throw new IllegalArgumentException("processManagerPort is null");
-        }
-        if (serverManagerAddress == null && !standalone) {
-            throw new IllegalArgumentException("serverManagerAddress is null");
-        }
-        if (serverManagerPort == null && !standalone) {
-            throw new IllegalArgumentException("serverManagerPort is null");
-        }
         this.processName = processName;
-        this.processManagerPort = processManagerPort;
-        this.processManagerAddress = processManagerAddress;
-        this.serverManagerAddress = serverManagerAddress;
-        this.serverManagerPort = serverManagerPort;
 
         // Must have HOME_DIR
-        this.homeDir = getFileFromProperty(HOME_DIR);
+        homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null)
            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
         System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
 
-        File tmp = getFileFromProperty(MODULES_DIR);
+        File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.homeDir, "modules");
+            tmp = new File(homeDir, "modules");
         }
-        this.modulesDir = tmp;
-        System.setProperty(MODULES_DIR, this.modulesDir.getAbsolutePath());
+        modulesDir = tmp;
+        System.setProperty(MODULES_DIR, modulesDir.getAbsolutePath());
 
-        tmp = getFileFromProperty(SERVER_BASE_DIR);
+        tmp = getFileFromProperty(SERVER_BASE_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.homeDir, "standalone");
+            tmp = new File(homeDir, "standalone");
         }
-        this.serverBaseDir = tmp;
-        System.setProperty(SERVER_BASE_DIR, this.serverBaseDir.getAbsolutePath());
+        serverBaseDir = tmp;
+        System.setProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
 
-        tmp = getFileFromProperty(SERVER_CONFIG_DIR);
+        tmp = getFileFromProperty(SERVER_CONFIG_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.serverBaseDir, "configuration");
+            tmp = new File(serverBaseDir, "configuration");
         }
-        this.serverConfigurationDir = tmp;
-        System.setProperty(SERVER_CONFIG_DIR, this.serverConfigurationDir.getAbsolutePath());
+        serverConfigurationDir = tmp;
+        System.setProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
 
-        tmp = getFileFromProperty(SERVER_DATA_DIR);
+        tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.serverBaseDir, "data");
+            tmp = new File(serverBaseDir, "data");
         }
-        this.serverDataDir = tmp;
-        System.setProperty(SERVER_DATA_DIR, this.serverDataDir.getAbsolutePath());
+        serverDataDir = tmp;
+        System.setProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
 
-        tmp = getFileFromProperty(SERVER_DEPLOY_DIR);
+        tmp = getFileFromProperty(SERVER_DEPLOY_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.serverDataDir, "deployments");
+            tmp = new File(serverDataDir, "deployments");
         }
-        this.serverDeployDir = tmp;
-        System.setProperty(SERVER_DEPLOY_DIR, this.serverDeployDir.getAbsolutePath());
+        serverDeployDir = tmp;
+        System.setProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
 
-
-        tmp = getFileFromProperty(SERVER_LOG_DIR);
+        tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.serverBaseDir, "log");
+            tmp = new File(serverBaseDir, "log");
         }
-        this.serverLogDir = tmp;
+        serverLogDir = tmp;
+        System.setProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
 
-        System.setProperty(SERVER_LOG_DIR, this.serverLogDir.getAbsolutePath());
-
-        tmp = getFileFromProperty(SERVER_TEMP_DIR);
+        tmp = getFileFromProperty(SERVER_TEMP_DIR, props);
         if (tmp == null) {
-            tmp = new File(this.serverBaseDir, "tmp");
+            tmp = new File(serverBaseDir, "tmp");
         }
-        this.serverTempDir = tmp;
-        System.setProperty(SERVER_TEMP_DIR, this.serverTempDir.getAbsolutePath());
+        serverTempDir = tmp;
+        System.setProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
 
-    }
-
-    /**
-     * Gets the original System.in for this process. This should only
-     * be used for communication with the process manager that spawned this process.
-     *
-     * @return stdin
-     */
-    public InputStream getStdin() {
-        return stdin;
-    }
-
-    /**
-     * Gets the original System.out for this process. This should only
-     * be used for communication with the process manager that spawned this process.
-     *
-     * @return stdout
-     */
-    public PrintStream getStdout() {
-        return stdout;
-    }
-
-    /**
-     * Gets the original System.err for this process. This should only
-     * be used for communication with the process manager that spawned this process.
-     *
-     * @return stderr
-     */
-    public PrintStream getStderr() {
-        return stderr;
-    }
-
-    /**
-     * Gets the address, if any, the process manager passed to this process
-     * to use in communicating with it.
-     *
-     * @return the process manager's address, or <code>null</code> if
-     *         none was provided
-     */
-    public InetAddress getProcessManagerAddress() {
-        return processManagerAddress;
-    }
-
-    /**
-     * Gets the port number, if any, the process manager passed to this process
-     * to use in communicating with it.
-     *
-     * @return the process manager's port, or <code>null</code> if
-     *         none was provided
-     */
-    public Integer getProcessManagerPort() {
-        return processManagerPort;
-    }
-
-    /**
-     * Gets the address, if any, of the server manager that we need to connect to.
-     *
-     * @return the server manager's address, or <code>null</code> if
-     *         none was provided
-     */
-    public InetAddress getServerManagerAddress() {
-        return serverManagerAddress;
-    }
-
-    /**
-     * Gets the port number, if any, of the server manager that we need to connect to.
-     * to use in communicating with it.
-     *
-     * @return the server manager's port, or <code>null</code> if
-     *         none was provided
-     */
-    public Integer getServerManagerPort() {
-        return serverManagerPort;
     }
 
     /**
@@ -353,7 +234,7 @@ public class ServerEnvironment {
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.
      */
-    private File getFileFromProperty(final String name) {
+    private File getFileFromProperty(final String name, final Properties props) {
        String value = props.getProperty(name, null);
        if (value != null) {
           File f = new File(value);

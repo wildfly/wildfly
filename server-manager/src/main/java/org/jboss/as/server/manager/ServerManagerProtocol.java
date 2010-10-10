@@ -71,7 +71,6 @@ public class ServerManagerProtocol {
         private static final Map<Byte, ServerManagerToServerProtocolCommand> COMMANDS;
         static {
             Map<Byte, ServerManagerToServerProtocolCommand> cmds = new HashMap<Byte, ServerManagerToServerProtocolCommand>();
-            cmds.put(START_SERVER.getId(), START_SERVER);
             cmds.put(STOP_SERVER.getId(), STOP_SERVER);
             COMMANDS = Collections.unmodifiableMap(cmds);
         }

@@ -65,6 +65,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-protocol</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>

@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.process.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 
 /**

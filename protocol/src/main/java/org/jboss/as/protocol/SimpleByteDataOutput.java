@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,12 +28,12 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataOutput;
 
 /**
- * Simple implementation of the {@link org.jboss.as.server.manager.management.ByteDataOutput} that delegates to a
+ * Simple implementation of the {@link ByteDataOutput} that delegates to a
  * {@link org.jboss.marshalling.SimpleDataOutput}.
  *
  * @author John Bailey
  */
-public class SimpleByteDataOutput implements ByteDataOutput {
+public class SimpleByteDataOutput extends OutputStream implements ByteDataOutput {
     private final SimpleDataOutput output;
 
     public SimpleByteDataOutput(final OutputStream outputStream) {

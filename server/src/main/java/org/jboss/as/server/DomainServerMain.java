@@ -22,16 +22,18 @@
 
 package org.jboss.as.server;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.PrintStream;
+import java.util.Collections;
 import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
+import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -42,9 +44,9 @@ import org.jboss.stdio.StdioContext;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class NewMain {
+public final class DomainServerMain {
 
-    private NewMain() {
+    private DomainServerMain() {
     }
 
     /**
@@ -53,6 +55,10 @@ public final class NewMain {
      * @param args ignored
      */
     public static void main(String[] args) {
+        // TODO: privileged block
+        System.setProperty("log4j.defaultInitOverride", "true");
+        new BridgeRepositorySelector().start();
+
         final InputStream initialInput = System.in;
         final PrintStream initialError = System.err;
 
@@ -60,8 +66,8 @@ public final class NewMain {
         StdioContext.install();
         final StdioContext context = StdioContext.create(
             new NullInputStream(),
-            new LoggingOutputStream(Logger.getLogger("stdout"), Level.INFO),
-            new LoggingOutputStream(Logger.getLogger("stderr"), Level.ERROR)
+            new LoggingOutputStream(org.jboss.logmanager.Logger.getLogger("stdout"), Level.INFO),
+            new LoggingOutputStream(org.jboss.logmanager.Logger.getLogger("stderr"), Level.ERROR)
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
@@ -72,23 +78,27 @@ public final class NewMain {
             configuration.setClassTable(ModularClassTable.getInstance());
             final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
             unmarshaller.start(Marshalling.createByteInput(initialInput));
-            final Runnable task = unmarshaller.readObject(Runnable.class);
+            final ServerTask task = unmarshaller.readObject(ServerTask.class);
             unmarshaller.finish();
             unmarshaller.close();
             initialInput.close();
-            task.run();
+            task.run(Collections.<ServiceActivator>emptyList());
         } catch (Exception e) {
             e.printStackTrace(initialError);
             System.exit(1);
-            throw new IllegalStateException();
+            throw new IllegalStateException(); // not reached
         }
-        try {
+        for (;;) try {
             while (initialInput.read() != -1) {}
-        } catch (IOException e) {
+            break;
+        } catch (InterruptedIOException e) {
+            Thread.interrupted();
+            // ignore
+        } catch (Exception e) {
+            break;
         }
-        try {
-            initialInput.close();
-        } catch (IOException e) {
-        }
+        // Once the input stream is cut off, shut down
+        System.exit(0);
+        throw new IllegalStateException(); // not reached
     }
 }

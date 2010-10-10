@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.process.ProcessOutputStreamHandler.Master;
+import org.jboss.as.protocol.Status;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  *
@@ -411,21 +413,6 @@ public class ProcessManagerProtocol {
         }
 
         /**
-         * Tell PM to send a message to a process
-         *
-         * @param output output stream to PM
-         * @param recipient the name of the process to send message to
-         * @param message the message bytes
-         * @param workingDirectory the working directory for the process
-         * @throws IOException if the command could not be sent to PM
-         * @throws IllegalStateException if this is not {@link #SEND}
-         */
-        public void sendMessage(final OutputStream output, final String recipient, final byte[] message) throws IOException {
-            throw new IllegalStateException("Illegal operation for " + this);
-        }
-
-
-        /**
          * Tell PM to send a message to a process via its stdin
          *
          * @param output output stream to PM
@@ -435,30 +422,6 @@ public class ProcessManagerProtocol {
          * @throws IllegalStateException if this is not {@link #SEND_STDIN}
          */
         public void sendStdin(final OutputStream output, final String recipient, final byte[] message) throws IOException {
-            throw new IllegalStateException("Illegal operation for " + this);
-        }
-
-        /**
-         * Tell PM to send a message to all processes
-         *
-         * @param output output stream to PM
-         * @param message the message bytes
-         * @throws IOException if the command could not be sent to PM
-         * @throws IllegalStateException if this is not {@link #BROADCAST}
-         */
-        public void broadcastMessage(final OutputStream output, final byte[] message) throws IOException {
-            throw new IllegalStateException("Illegal operation for " + this);
-        }
-
-        /**
-         * SM tells PM that all the services have been shutdown in response to the
-         * {@link OutgoingPmCommand#SHUTDOWN_SERVERS} command
-         *
-         * @param output output stream to PM
-         * @throws IOException if the command could not be sent to PM
-         * @throws IllegalStateException if this is not {@link #SERVERS_SHUTDOWN}
-         */
-        public void sendServersShutdown(final OutputStream output) throws IOException {
             throw new IllegalStateException("Illegal operation for " + this);
         }
 
@@ -590,17 +553,6 @@ public class ProcessManagerProtocol {
         }
 
         /**
-         * Tell SM to stop all server processes
-         *
-         * @param output output stream to SM
-         * @throws IOException if the command could not be sent to process
-         * @throws IllegalStateException if this is not {@link #SHUTDOWN_SERVERS}
-         */
-        boolean sendShutdownServers(final OutputStream output) throws IOException {
-            throw new IllegalStateException("Illegal operation for " + this);
-        }
-
-        /**
          * Tell Server process to reconnect to SM
          *
          * @param output output stream to SM
@@ -610,19 +562,6 @@ public class ProcessManagerProtocol {
          * @throws IllegalStateException if this is not {@link #RECONNECT_SERVER_MANAGER}
          */
         void sendReconnectToServerManager (final OutputStream output, String addr, int port) throws IOException {
-            throw new IllegalStateException("Illegal operation for " + this);
-        }
-
-        /**
-         * Send a message to the process
-         *
-         * @param output output stream to process
-         * @param sender the name of the sending process
-         * @param msg the message
-         * @throws IOException if the command could not be sent to process
-         * @throws IllegalStateException if this is not {@link #MSG}
-         */
-        void sendMsg(final OutputStream output, final String sender, final byte[] msg) throws IOException {
             throw new IllegalStateException("Illegal operation for " + this);
         }
 
@@ -645,10 +584,5 @@ public class ProcessManagerProtocol {
         void handleShutdown();
         void handleDown(String serverName);
         void handleReconnectServerManager(String address, String port);
-    }
-
-    public interface IncomingPmCommandHandler {
-        void handleShutdown();
-        void handleReconnectServer(String addr, String port);
     }
 }

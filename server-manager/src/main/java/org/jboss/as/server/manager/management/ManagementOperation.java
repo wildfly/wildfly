@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.manager.management;
 
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+
 /**
  * Management operation interface used to establish a general contract for operation handlers to conform to.
  *

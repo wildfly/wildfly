@@ -42,6 +42,8 @@ import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.process.ManagedProcess.ProcessHandler;
 import org.jboss.as.process.ManagedProcess.RealProcessHandler;
 import org.jboss.as.process.ManagedProcess.StopProcessListener;
+import org.jboss.as.protocol.Status;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 
 /**

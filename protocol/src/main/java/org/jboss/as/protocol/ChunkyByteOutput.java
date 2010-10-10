@@ -20,20 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.protocol;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import org.jboss.marshalling.ByteOutput;
 
 /**
  * Byte output implementation that writes the bytes out in chunks.  Each invocation of flush will first write a
  * {@code CHUNK_START} header followed by the size of the chunk being flushed.  Once the closed, this will write out a
- * {@code END} byte.  This should be used to write data that can be read by a {@link org.jboss.as.server.manager.management.ChunkyByteInput}
+ * {@code END} byte.  This should be used to write data that can be read by a {@link ChunkyByteInput}
  * to ensure the reader can not read more than available.  This is handy if the consumer of the stream is prone to over-buffering.
  *
  * @author John Bailey
  */
-public class ChunkyByteOutput implements ByteOutput {
+public class ChunkyByteOutput extends OutputStream implements ByteOutput {
     public static final int CHUNK_START = 0x98;
     public static final int END = 0x99;
     private final ByteOutput output;

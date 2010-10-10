@@ -20,13 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.protocol;
+
+import java.io.DataInput;
+import org.jboss.marshalling.ByteInput;
 
 /**
-* @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
-*/
-public enum Status {
-    MORE,
-    END_OF_LINE,
-    END_OF_STREAM;
+ * Interface used to establish a contract for a class that complies to both the DataInput and ByteInput contract.
+ *
+ * @author John Bailey
+ */
+public interface ByteDataInput extends DataInput, ByteInput {
 }

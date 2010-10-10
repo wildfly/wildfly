@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Main;
-import org.jboss.as.server.Server;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
 import org.jboss.as.server.SystemExiter;
@@ -77,7 +76,7 @@ public class TestServerProcess extends Server {
     public static TestServerProcess createServer(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         SystemExiter.initialize(new ServerNoopExiter());
 
-        ServerEnvironment config = Main.determineEnvironment(args, System.getProperties(), stdin, stdout, stderr);
+        ServerEnvironment config = Main.determineEnvironment(args, System.getProperties());
         if (config == null) {
             throw new RuntimeException("Could not determine server environment");
         } else {

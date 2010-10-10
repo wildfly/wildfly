@@ -29,7 +29,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import org.jboss.as.process.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 
 /**

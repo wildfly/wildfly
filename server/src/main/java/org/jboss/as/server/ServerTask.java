@@ -20,15 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.server;
 
-import java.io.DataInput;
-import org.jboss.marshalling.ByteInput;
+import java.util.List;
+import org.jboss.msc.service.ServiceActivator;
 
 /**
- * Interface used to establish a contract for a class that complies to both the DataInput and ByteInput contract.
- *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ByteDataInput extends DataInput, ByteInput {
+public interface ServerTask {
+    void run(List<ServiceActivator> startServices);
 }

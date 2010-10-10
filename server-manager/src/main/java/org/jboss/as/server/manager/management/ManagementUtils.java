@@ -24,6 +24,8 @@ package org.jboss.as.server.manager.management;
 
 import java.io.DataInput;
 import java.io.IOException;
+import org.jboss.as.protocol.ChunkyByteInput;
+import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshaller;

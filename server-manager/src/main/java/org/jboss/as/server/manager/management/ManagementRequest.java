@@ -30,6 +30,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote server manager

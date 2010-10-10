@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.process.ManagedProcess.StopProcessListener;
+import static org.jboss.as.process.ManagedProcess.StopProcessListener;
 import org.jboss.as.process.support.TestFileUtils;
 import org.jboss.as.process.support.TestProcessUtils;
 import org.jboss.as.process.support.TestFileUtils.TestFile;
@@ -59,7 +59,7 @@ public abstract class AbstractProcessManagerTest {
 
 
     @Before
-    public void beforeTest() throws IOException, UnknownHostException{
+    public void beforeTest() throws IOException {
         System.err.println("------------> beforeTest" );
         testManager = TestProcessUtils
                 .createStreamManager(new TestProcessController() {

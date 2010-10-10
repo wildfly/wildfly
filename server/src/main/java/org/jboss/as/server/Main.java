@@ -24,12 +24,8 @@ package org.jboss.as.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
@@ -55,11 +51,6 @@ public final class Main {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        // Grab copies of our streams.
-        final InputStream in = System.in;
-        final PrintStream out = System.out;
-        final PrintStream err = System.err;
-
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();
         final StdioContext context = StdioContext.create(
@@ -73,12 +64,12 @@ public final class Main {
         System.setProperty("log4j.defaultInitOverride", "true");
         new BridgeRepositorySelector().start();
 
-        create(args, in, out, err);
+        create(args);
     }
 
-    private static AbstractServer create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private static StandaloneServer create(String[] args) {
         Main main = new Main();
-        return main.boot(args, stdin, stdout, stderr);
+        return main.boot(args);
     }
 
     // TODO: privileged block
@@ -87,17 +78,17 @@ public final class Main {
     private Main() {
     }
 
-    private AbstractServer boot(final String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        AbstractServer server = null;
+    private StandaloneServer boot(final String[] args) {
+        StandaloneServer server = null;
         try {
-            ServerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
+            ServerEnvironment config = determineEnvironment(args, props);
             if (config == null) {
                 abort(null);
             } else {
                 if(config.isStandalone()) {
                     server = new StandaloneServer(config);
                 } else {
-                    server = new Server(config);
+                    throw new IllegalStateException();
                 }
                 // Start the server.
                 server.start();
@@ -123,13 +114,8 @@ public final class Main {
         }
     }
 
-    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        Integer pmPort = null;
-        InetAddress pmAddress = null;
+    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties) {
         String procName = null;
-        Integer smPort = null;
-        InetAddress smAddress = null;
-        boolean standalone = false;
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -148,39 +134,6 @@ public final class Main {
                         System.err.printf("Unable to load properties from URL %s\n", url);
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_PM_PORT.equals(arg)) {
-                    try {
-                        pmPort = Integer.valueOf(args[++i]);
-                    } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PM_PORT, args[i]);
-                        return null;
-                    }
-                } else if (CommandLineConstants.INTERPROCESS_PM_ADDRESS.equals(arg)) {
-                    try {
-                        pmAddress = InetAddress.getByName(args[++i]);
-                    } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PM_ADDRESS, args[i]);
-                        return null;
-                    }
-                } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
-                    procName = args[++i];
-                } else if (CommandLineConstants.INTERPROCESS_SM_PORT.equals(arg)) {
-                    try {
-                        smPort = Integer.valueOf(args[++i]);
-                    } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_SM_PORT, args[i]);
-                        return null;
-                    }
-                } else if (CommandLineConstants.INTERPROCESS_SM_ADDRESS.equals(arg)) {
-                    try {
-                        smAddress = InetAddress.getByName(args[++i]);
-                    } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_SM_ADDRESS, args[i]);
-                        return null;
-                    }
-                }else if (arg.equals(CommandLineConstants.STANDALONE)) {
-                    // Start in standalone mode
-                    standalone = true;
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -204,7 +157,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, standalone);
+        return new ServerEnvironment(systemProperties, procName, true);
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

@@ -191,11 +191,6 @@ public class ServerManager implements ShutdownListener {
         this.serverMaker = new ServerMaker(environment, processManagerSlave, processManagerCommmandHandler, variables);
     }
 
-    private String generateDeploymentPath(final ServerGroupDeploymentElement deployment) {
-        final String id = deployment.getSha1HashAsHexString();
-        return id.substring(0, 2) + "/" + id.substring(2);
-    }
-
     /**
      * The connection from a server to SM was closed
      */
@@ -533,11 +528,6 @@ public class ServerManager implements ShutdownListener {
             }
         }).addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryValue);
 
-//        final ScheduledThreadPoolService executorService = new ScheduledThreadPoolService(20, TimeSpec.DEFAULT_KEEPALIVE);
-//        batchBuilder.addService(executorServiceName, executorService)
-//            .addDependency(threadFactoryServiceName, ThreadFactory.class, executorService.getThreadFactoryInjector());
-
-
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
         batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
@@ -733,23 +723,6 @@ public class ServerManager implements ShutdownListener {
         public void handleDown(String serverName) {
             ServerManager.this.downServer(serverName);
         }
-
-//        public void registerServer(String serverName, Server server) {
-//            if (serverName == null) {
-//                throw new IllegalArgumentException("serverName is null");
-//            }
-//            if (server == null) {
-//                throw new IllegalArgumentException("server is null");
-//            }
-//            servers.put(serverName, server);
-//        }
-    //
-//        public void unregisterServer(String serverName) {
-//            if (serverName == null) {
-//                throw new IllegalArgumentException("serverName is null");
-//            }
-//            servers.remove(serverName);
-//        }
     }
 
 }

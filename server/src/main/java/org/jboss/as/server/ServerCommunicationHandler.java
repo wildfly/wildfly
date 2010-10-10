@@ -36,20 +36,20 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class ServerCommunicationHandler {
-    protected final Logger logger = Logger.getLogger(this.getClass());
+    protected final Logger logger = Logger.getLogger(getClass());
 
     private final InputStream input;
     private final OutputStream output;
     final SocketConnection managerConnection;
 
-    public ServerCommunicationHandler(String processName, InetAddress addr, Integer port){
+    protected ServerCommunicationHandler(String processName, InetAddress addr, Integer port){
         if (processName == null) {
             throw new IllegalArgumentException("processName is null");
         }
 
-        this.managerConnection = SocketConnection.connect(addr, port, "CONNECTED", processName);
-        this.input = managerConnection.getInputStream();
-        this.output = managerConnection.getOutputStream();
+        managerConnection = SocketConnection.connect(addr, port, "CONNECTED", processName);
+        input = managerConnection.getInputStream();
+        output = managerConnection.getOutputStream();
     }
 
     abstract Runnable getController();

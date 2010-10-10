@@ -60,7 +60,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public final class ServerModel extends AbstractModel<ServerModel> {
 
     /**
-     * ServiceName under which a {@link org.jboss.msc.service.Service}<ServerModel>}
+     * ServiceName under which a {@link org.jboss.msc.service.Service}<ServerModel>
      * will be registered on a running server.
      *
      * TODO see if exposing the ServerModel this way can be avoided.
