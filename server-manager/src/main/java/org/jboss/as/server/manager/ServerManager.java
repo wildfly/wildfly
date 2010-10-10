@@ -355,7 +355,7 @@ public class ServerManager implements ShutdownListener {
         try {
             processManagerSlave.stopProcess(server.getServerProcessName());
         } catch (IOException e) {
-            log.errorf(e, "Error respawning server % s", server.getServerProcessName());
+            log.errorf(e, "Error respawning server %s", server.getServerProcessName());
         }
 
 
@@ -366,7 +366,7 @@ public class ServerManager implements ShutdownListener {
             try {
                 processManagerSlave.removeProcess(server.getServerProcessName());
             } catch (IOException e) {
-                log.errorf(e, "Error stopping respawned server % s", server.getServerProcessName());
+                log.errorf(e, "Error stopping respawned server %s", server.getServerProcessName());
             }
             return;
         }
@@ -378,7 +378,7 @@ public class ServerManager implements ShutdownListener {
             server.setState(ServerState.BOOTING);
             processManagerSlave.startProcess(server.getServerProcessName());
         } catch (IOException e) {
-            log.errorf(e, "Error respawning server % s", server.getServerProcessName());
+            log.errorf(e, "Error respawning server %s", server.getServerProcessName());
         }
     }
 
