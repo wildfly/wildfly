@@ -22,33 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.server">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.server-manager">
 
-    <main-class name="org.jboss.as.server.DomainServerMain"/>
+    <main-class name="org.jboss.as.server.Main"/>
 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.logmanager"/>
-        <module name="org.jboss.logmanager.log4j"/>
-        <module name="org.jboss.stdio"/>
-        <module name="org.jboss.as.deployment-client"/>
-        <module name="org.jboss.as.domain"/>
-        <module name="org.jboss.as.logging"/>
-        <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.as.process-manager"/>
-        <module name="org.jboss.as.protocol"/>
-        <module name="org.jboss.as.remoting"/>
-        <module name="org.jboss.as.server-manager"/>
-        <module name="org.jboss.as.threads"/>
-        <module name="org.jboss.as.transactions"/>
-        <module name="system"/>
+        <module name="org.jboss.as.server" export="true"/>
     </dependencies>
 </module>
