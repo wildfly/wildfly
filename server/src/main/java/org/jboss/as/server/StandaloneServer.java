@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -58,10 +60,6 @@ public class StandaloneServer {
 
     static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-    private ServerModel config;
-
-    private ServiceContainer serviceContainer;
-
     private final ServerEnvironment environment;
 
     protected StandaloneServer(ServerEnvironment environment) {
@@ -73,7 +71,7 @@ public class StandaloneServer {
     }
 
     public void start() throws ServerStartException {
-        final File standalone = new File(getEnvironment().getServerConfigurationDir(), STANDALONE_XML);
+        final File standalone = new File(environment.getServerConfigurationDir(), STANDALONE_XML);
         if(! standalone.isFile()) {
             throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
         }
@@ -88,16 +86,9 @@ public class StandaloneServer {
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
-        final ServerModel config = new ServerModel(null, 0);
-        try {
-            for(final AbstractServerModelUpdate<?> update : updates) {
-                config.update(update);
-            }
-        } catch(UpdateFailedException e) {
-            throw new ServerStartException("failed to process updates", e);
-        }
+        final ServerStartTask startTask = new ServerStartTask("server name", 0, null, Collections.<ServiceActivator>emptyList(), updates);
+        startTask.run(Collections.<ServiceActivator>emptyList());
 
-        start(config);
         // TODO remove life thread
         new Thread() { {
                 setName("Server Life Thread");
@@ -131,104 +122,6 @@ public class StandaloneServer {
                 }
             }
         };
-    }
-
-    /**
-     * Get the server environment.
-     *
-     * @return the server environment
-     */
-    public ServerEnvironment getEnvironment() {
-        return environment;
-    }
-
-    /**
-     * Get the standalone configuration.
-     *
-     * @return the standalone configuration
-     */
-    public ServerModel getConfig() {
-        if(config == null) {
-            throw new IllegalStateException("null configuration");
-        }
-        return config;
-    }
-
-    /**
-     * Start the server.
-     *
-     * @param config the server
-     * @throws org.jboss.as.server.ServerStartException
-     */
-    void start(final ServerModel config) throws ServerStartException {
-        if(config == null)  {
-            throw new IllegalArgumentException("null standalone config");
-        }
-        this.config = config;
-        log.infof("Starting server '%s'", environment.getProcessName());
-        serviceContainer = ServiceContainer.Factory.create();
-
-        final ServerStartupListener listener = new ServerStartupListener(createListenerCallback());
-
-        try {
-            // Activate subsystems
-            final ServerStartBatchBuilder subsystemBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
-            subsystemBatchBuilder.addListener(listener);
-
-            // Activate core services not configured via ServerModel
-            // TODO move creation of serviceContainer and installation of these
-            // kinds of core services that aren't configured via the ServerModel
-            // into whatever creates the ServerModel
-            activateCoreServices(config, subsystemBatchBuilder);
-
-            final ServiceActivatorContext subsystemActivatorContext = new ServiceActivatorContextImpl(subsystemBatchBuilder);
-            config.activateSubsystems(subsystemActivatorContext);
-            listener.startBatch(new Runnable() {
-                @Override
-                public void run() {
-                    // Activate deployments once the first batch is complete.
-                    final ServerStartBatchBuilder deploymentBatchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), listener);
-                    deploymentBatchBuilder.addListener(listener);
-                    final ServiceActivatorContext deploymentActivatorContext = new ServiceActivatorContextImpl(deploymentBatchBuilder);
-                    listener.startBatch(null);
-                    config.activateDeployments(deploymentActivatorContext, serviceContainer);
-                    listener.finish(); // We have finished adding everything for the server start
-                    try {
-                        deploymentBatchBuilder.install();
-                        listener.finishBatch();
-                    } catch (ServiceRegistryException e) {
-                        throw new RuntimeException(e); // TODO: better exception handling.
-                    }
-                }
-            });
-            subsystemBatchBuilder.install();
-            listener.finishBatch();
-        } catch (Throwable t) {
-            throw new ServerStartException("Failed to start server", t);
-        }
-    }
-
-    /**
-     * Stop the server.
-     *
-     */
-    public void stop() {
-        log.infof("Stopping server '%s'", config.getServerName());
-        final ServiceContainer container = this.serviceContainer;
-        if(container != null) {
-            container.shutdown();
-        }
-        this.config = null;
-        this.serviceContainer = null;
-    }
-
-    private void activateCoreServices(ServerModel serverConfiguration, ServerStartBatchBuilder batchBuilder) throws ServiceRegistryException {
-        log.info("Activating core services");
-        ServerEnvironmentService.addService(environment, batchBuilder);
-        ServerDeploymentRepositoryImpl.addService(batchBuilder);
-        ShutdownHandlerImpl.addService(batchBuilder);
-        ServerConfigurationPersisterImpl.addService(serverConfiguration, batchBuilder);
-        ServerDeploymentManagerImpl.addService(serverConfiguration, serviceContainer, batchBuilder);
     }
 }
 
