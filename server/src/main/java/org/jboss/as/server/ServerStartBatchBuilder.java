@@ -121,120 +121,120 @@ public class ServerStartBatchBuilder implements BatchBuilder {
         }
 
         @Override
-        public BatchServiceBuilder addAliases(ServiceName... aliases) {
+        public BatchServiceBuilder<T> addAliases(ServiceName... aliases) {
             delegate.addAliases(aliases);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder setLocation() {
+        public BatchServiceBuilder<T> setLocation() {
             delegate.setLocation();
             return this;
         }
 
         @Override
-        public BatchServiceBuilder setLocation(Location location) {
+        public BatchServiceBuilder<T> setLocation(Location location) {
             delegate.setLocation(location);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder setInitialMode(ServiceController.Mode mode) {
+        public BatchServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
             if(mode.equals(ServiceController.Mode.ON_DEMAND)) {
-                ServerStartBatchBuilder.this.serverStartupListener.expectOnDemand(serviceName);
+                serverStartupListener.expectOnDemand(serviceName);
             } else {
-                ServerStartBatchBuilder.this.serverStartupListener.unexpectOnDemand(serviceName);
+                serverStartupListener.unexpectOnDemand(serviceName);
             }
             delegate.setInitialMode(mode);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addDependencies(ServiceName... dependencies) {
+        public BatchServiceBuilder<T> addDependencies(ServiceName... dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addOptionalDependencies(ServiceName... dependencies) {
+        public BatchServiceBuilder<T> addOptionalDependencies(ServiceName... dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addDependencies(Iterable<ServiceName> dependencies) {
+        public BatchServiceBuilder<T> addDependencies(Iterable<ServiceName> dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addOptionalDependencies(Iterable<ServiceName> dependencies) {
+        public BatchServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addDependency(ServiceName dependency) {
+        public BatchServiceBuilder<T> addDependency(ServiceName dependency) {
             delegate.addDependency(dependency);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addOptionalDependency(ServiceName dependency) {
+        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency) {
             delegate.addOptionalDependency(dependency);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addDependency(ServiceName dependency, Injector<Object> target) {
+        public BatchServiceBuilder<T> addDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addDependency(dependency, target);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addOptionalDependency(ServiceName dependency, Injector<Object> target) {
+        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addOptionalDependency(dependency, target);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addDependency(ServiceName dependency, Class type, Injector target) {
+        public <I> BatchServiceBuilder<T> addDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addDependency(dependency, type, target);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addOptionalDependency(ServiceName dependency, Class type, Injector target) {
+        public <I> BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addOptionalDependency(dependency, type, target);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addInjection(Injector target, Object value) {
+        public <I> BatchServiceBuilder<T> addInjection(Injector<? super I> target, I value) {
             delegate.addInjection(target, value);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addInjectionValue(Injector target, Value value) {
-            delegate.addInjection(target, value);
+        public <I> BatchServiceBuilder<T> addInjectionValue(Injector<? super I> target, Value<I> value) {
+            delegate.<I>addInjectionValue(target, value);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addListener(ServiceListener serviceListener) {
+        public BatchServiceBuilder<T> addListener(ServiceListener<? super T> serviceListener) {
             delegate.addListener(serviceListener);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addListener(ServiceListener... serviceListeners) {
+        public BatchServiceBuilder<T> addListener(ServiceListener<? super T>... serviceListeners) {
             delegate.addListener(serviceListeners);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder addListener(Collection<? extends ServiceListener<? super T>> collection) {
+        public BatchServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> collection) {
             delegate.addListener(collection);
             return this;
         }
