@@ -214,6 +214,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
         </module-def>
 
+        <module-def name="org.jboss.as.protocol">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-protocol"/>
+        </module-def>
+
         <module-def name="org.jboss.as.remoting">
             <maven-resource group="org.jboss.as" artifact="jboss-as-remoting"/>
         </module-def>
@@ -229,7 +233,9 @@
         <module-def name="org.jboss.as.server-manager">
             <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
-        
+
+        <module-def name="org.jboss.as.standalone"/>
+
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>
