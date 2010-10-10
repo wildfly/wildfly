@@ -27,25 +27,12 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
-import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
-import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
-import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -105,23 +92,6 @@ public class StandaloneServer {
                     }
             }
         }.start();
-    }
-
-    ServerStartupListener.Callback createListenerCallback() {
-        return new ServerStartupListener.Callback() {
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
-                if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
-                } else {
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
-                    buff.append("\nThe following services failed to start:\n");
-                    for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
-                        buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
-                    }
-                    log.error(buff.toString());
-                }
-            }
-        };
     }
 }
 
