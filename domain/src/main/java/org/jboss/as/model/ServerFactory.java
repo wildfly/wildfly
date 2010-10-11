@@ -155,13 +155,8 @@ public final class ServerFactory {
     }
 
     private static void processSocketBindings(final SocketBindingGroupElement group, List<AbstractServerModelUpdate<?>> list) {
-        final String defaultInterface = group.getDefaultInterface();
         for(final SocketBindingElement binding : group.getSocketBindings()) {
             final SocketBindingAdd update = new SocketBindingAdd(binding);
-            // TODO we only have one socketBindingGroup on the server
-            if(update.getInterfaceName() == null) {
-                update.setInterfaceName(defaultInterface);
-            }
             list.add(new ServerSocketBindingUpdate(update));
         }
 

@@ -40,27 +40,31 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
 
     private static final long serialVersionUID = -4940876367809265620L;
     private final String name;
+    private final String interfaceName;
     private final int port;
     private boolean fixedPort;
     private int multicastPort;
     private InetAddress multicastAddress;
-    private String interfaceName;
 
-    public SocketBindingAdd(String name, int port) {
+    public SocketBindingAdd(final String interfaceName, final String name, final int port) {
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
+        if (interfaceName == null) {
+            throw new IllegalArgumentException("interfaceName is null");
+        }
+        this.interfaceName = interfaceName;
         this.name = name;
         this.port = port;
     }
 
     public SocketBindingAdd(SocketBindingElement original) {
-        this.name = original.getName();
-        this.port = original.getPort();
-        this.fixedPort = original.isFixedPort();
-        this.multicastPort = original.getMulticastPort();
-        this.multicastAddress = original.getMulticastAddress();
-        this.interfaceName = original.getInterfaceName();
+        name = original.getName();
+        port = original.getPort();
+        fixedPort = original.isFixedPort();
+        multicastPort = original.getMulticastPort();
+        multicastAddress = original.getMulticastAddress();
+        interfaceName = original.getInterfaceName();
     }
 
     /** {@inheritDoc} */
@@ -125,9 +129,4 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
     public String getInterfaceName() {
         return interfaceName;
     }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
 }

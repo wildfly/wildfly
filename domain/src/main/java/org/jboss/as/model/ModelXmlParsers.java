@@ -197,7 +197,7 @@ public final class ModelXmlParsers {
                             break;
                         }
                         case SCAN_INTERVAL: {
-                            interval = Integer.valueOf(value);
+                            interval = Integer.parseInt(value);
                             break;
                         }
                         case SCAN_ENABLED: {
@@ -728,7 +728,7 @@ public final class ModelXmlParsers {
                             break;
                         }
                         case SOCKET_BINDING: {
-                            final String bindingName = parseSocketBinding(reader, interfaces, bindingUpdates);
+                            final String bindingName = parseSocketBinding(reader, interfaces, bindingUpdates, defIntf);
                             if (socketBindings.contains(bindingName)) {
                                 throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
                             }
@@ -747,10 +747,10 @@ public final class ModelXmlParsers {
         return new SocketBindingGroupUpdate(name, defIntf, includedGroups);
     }
 
-    static String parseSocketBinding(final XMLExtendedStreamReader reader, Set<String> interfaces, List<SocketBindingAdd> updates) throws XMLStreamException {
+    static String parseSocketBinding(final XMLExtendedStreamReader reader, Set<String> interfaces, List<SocketBindingAdd> updates, final String inheritedInterfaceName) throws XMLStreamException {
 
         String name = null;
-        String intf = null;
+        String interfaceName = null;
         Integer port = null;
         Boolean fixPort = null;
         InetAddress mcastAddr = null;
@@ -775,7 +775,7 @@ public final class ModelXmlParsers {
                                     " " + attribute.getLocalName() + " must be declared in element " +
                                     Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
-                        intf = value;
+                        interfaceName = value;
                         break;
                     }
                     case PORT: {
@@ -815,9 +815,8 @@ public final class ModelXmlParsers {
         // Handle elements
         ParseUtils.requireNoContent(reader);
 
-        final SocketBindingAdd update = new SocketBindingAdd(name, port == null ? 0 : port);
+        final SocketBindingAdd update = new SocketBindingAdd(interfaceName == null ? inheritedInterfaceName : interfaceName, name, port == null ? 0 : port.intValue());
         update.setFixedPort(fixPort == null ? false : fixPort.booleanValue());
-        update.setInterfaceName(intf);
         update.setMulticastAddress(mcastAddr);
         update.setMulticastPort(mcastAddr == null ? -1 : mcastPort != null ? mcastPort.intValue() : -1);
         updates.add(update);
@@ -867,7 +866,7 @@ public final class ModelXmlParsers {
                             break;
                         }
                         case ALLOWED: {
-                            if (!Boolean.valueOf(value)) {
+                            if (! Boolean.parseBoolean(value)) {
                                 throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
                             }
                             break;
@@ -890,7 +889,7 @@ public final class ModelXmlParsers {
             if (hash == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            boolean toStart = startInput == null ? true : Boolean.valueOf(startInput);
+            boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             // Handle elements
             ParseUtils.requireNoContent(reader);
@@ -947,7 +946,7 @@ public final class ModelXmlParsers {
                             break;
                         }
                         case ALLOWED: {
-                            if (!Boolean.valueOf(value)) {
+                            if (!Boolean.parseBoolean(value)) {
                                 throw new XMLStreamException("Attribute '" + attribute.getLocalName() + "' is not allowed", reader.getLocation());
                             }
                             break;
@@ -970,7 +969,7 @@ public final class ModelXmlParsers {
             if (hash == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SHA1));
             }
-            boolean toStart = startInput == null ? true : Boolean.valueOf(startInput);
+            boolean toStart = startInput == null ? true : Boolean.parseBoolean(startInput);
 
             // Handle elements
             ParseUtils.requireNoContent(reader);
