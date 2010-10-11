@@ -34,10 +34,11 @@ import org.jboss.msc.service.ServiceContainer;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ServerControllerImpl implements ServerController {
-    private final ServiceContainer container = ServiceContainer.Factory.create();
+    private final ServiceContainer container;
     private final ServerModel serverModel = new ServerModel();
 
-    ServerControllerImpl() {
+    ServerControllerImpl(final ServiceContainer container) {
+        this.container = container;
     }
 
     public <R, P> void update(final AbstractServerModelUpdate<R> update, final UpdateResultHandler<R, P> resultHandler, final P param) {

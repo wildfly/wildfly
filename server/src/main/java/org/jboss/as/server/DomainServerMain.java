@@ -33,6 +33,8 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
@@ -71,7 +73,12 @@ public final class DomainServerMain {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        final MarshallerFactory factory = Marshalling.getMarshallerFactory("river");
+        final MarshallerFactory factory;
+        try {
+            factory = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.river"));
+        } catch (ModuleLoadException e) {
+            throw new IllegalStateException("Failed to start server", e);
+        }
         try {
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setVersion(2);
