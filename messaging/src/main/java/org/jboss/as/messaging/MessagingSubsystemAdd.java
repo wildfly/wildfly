@@ -112,9 +112,9 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice);
 
-        final Collection<TransportConfiguration> connectors = hqConfig.getConnectorConfigurations().values();
+        final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
         for(TransportSpecification connectorSpec : this.connectors) {
-            connectors.add(new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName()));
+            connectors.put(connectorSpec.getName(), new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName()));
 
             final Object socketRef = connectorSpec.getParams().get("socket-ref");
             // Add a dependency on a SocketBinding if there is a socket-ref
