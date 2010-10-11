@@ -561,8 +561,6 @@ public final class ModelXmlParsers {
     static Set<String> parseInterfaces(final XMLExtendedStreamReader reader, final Set<String> names, final List<InterfaceAdd> list, boolean checkSpecified) throws XMLStreamException {
         requireNoAttributes(reader);
 
-        final Map<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = new HashMap<Element, AbstractInterfaceCriteriaElement<?>>();
-
         while (reader.nextTag() != END_ELEMENT) {
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
@@ -580,6 +578,8 @@ public final class ModelXmlParsers {
                 }
                 throw unexpectedEndElement(reader);
             }
+
+            final Map<Element, AbstractInterfaceCriteriaElement<?>> interfaceCriteria = new HashMap<Element, AbstractInterfaceCriteriaElement<?>>();
             boolean first = true;
             Element anyElement = null;
             do {
