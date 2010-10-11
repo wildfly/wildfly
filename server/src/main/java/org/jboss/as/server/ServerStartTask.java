@@ -30,6 +30,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.jboss.as.deployment.chain.JarDeploymentActivator;
+import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
+import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
@@ -38,6 +43,8 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
+import org.jboss.as.services.net.SocketBindingManager;
+import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -139,6 +146,23 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Server configuration persister - TODO: move into startServices, only start in standalone mode
         ServerConfigurationPersisterImpl.addService(serverModel, batchBuilder);
+
+        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
+                new SocketBindingManagerService(portOffset)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+
+        // Activate deployment module loader
+        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
+
+        final DeploymentModuleLoaderService deploymentModuleLoaderService = new DeploymentModuleLoaderService(new DeploymentModuleLoaderImpl());
+        batchBuilder.addService(DeploymentModuleLoaderService.SERVICE_NAME, deploymentModuleLoaderService)
+            .addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, new ClassifyingModuleLoaderInjector("deployment", deploymentModuleLoaderService));
+
+        // todo move elsewhere...
+        new JarDeploymentActivator().activate(new ServiceActivatorContext() {
+            public BatchBuilder getBatchBuilder() {
+                return batchBuilder;
+            }
+        });
 
         for (AbstractServerModelUpdate<?> update : updates) {
             try {

@@ -216,45 +216,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         streamWriter.writeEndElement();
     }
 
-    /**
-     * Activate the standalone server.  Starts up all the services and deployments in this server.
-     *
-     * @param context the service activator context
-     */
-    public void activateSubsystems(final ServiceActivatorContext context) {
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-
-        // Activate extensions
-
-        // Activate profile
-//        profile.activate(context);
-
-        // Activate Interfaces
-//        final Map<String, ServerInterfaceElement> interfaces;
-//        synchronized (this.interfaces) {
-//            interfaces = new TreeMap<String, ServerInterfaceElement>(this.interfaces);
-//        }
-//        for(ServerInterfaceElement interfaceElement : interfaces.values()) {
-//            interfaceElement.activate(context);
-//        }
-
-        // TODO move service binding manager to somewhere else?
-        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-                new SocketBindingManagerService(portOffset)).setInitialMode(Mode.ON_DEMAND);
-
-        // Activate socket bindings
-        // socketBindings.activate(context);
-
-        // Activate deployment module loader
-        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
-
-        final DeploymentModuleLoaderService deploymentModuleLoaderService = new DeploymentModuleLoaderService(new DeploymentModuleLoaderImpl());
-        batchBuilder.addService(DeploymentModuleLoaderService.SERVICE_NAME, deploymentModuleLoaderService)
-            .addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, new ClassifyingModuleLoaderInjector("deployment", deploymentModuleLoaderService));
-
-        new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
-    }
-
     public void activateDeployments(final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
         final Map<String, ServerGroupDeploymentElement> deployments;
         synchronized (this.deployments) {
