@@ -137,8 +137,7 @@ while true; do
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
-         org.jboss.as.server \
-         -standalone \
+         org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@"
       JBOSS_STATUS=$?
@@ -149,7 +148,6 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.standalone \
-         -standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@" "&"
       JBOSS_PID=$!
