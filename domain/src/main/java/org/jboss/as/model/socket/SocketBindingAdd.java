@@ -32,7 +32,6 @@ import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -48,6 +47,9 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
     private String interfaceName;
 
     public SocketBindingAdd(String name, int port) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
         this.name = name;
         this.port = port;
     }
@@ -86,11 +88,6 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
         final BatchServiceBuilder<SocketBinding> builder = SocketBindingService.addService(batchBuilder, this);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param);
         builder.addListener(listener);
-        try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            resultHandler.handleFailure(e, param);
-        }
     }
 
     public String getName() {

@@ -100,11 +100,6 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
                 createInterfaceService())
                 .setInitialMode(Mode.ON_DEMAND);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-        try {
-            batch.install();
-        } catch (ServiceRegistryException e) {
-            resultHandler.handleFailure(e, param);
-        }
     }
 
     /**

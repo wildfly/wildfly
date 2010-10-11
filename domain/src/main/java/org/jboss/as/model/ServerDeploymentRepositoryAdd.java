@@ -69,11 +69,6 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
         final String absolutePath = getAbsolutePath(path);
         final BatchServiceBuilder<?> builder = FileSystemDeploymentService.addService(batch, absolutePath, interval, enabled);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
-        try {
-            batch.install();
-        } catch (ServiceRegistryException e) {
-            resultHandler.handleFailure(e, param);
-        }
     }
 
     private String getAbsolutePath(String path) {

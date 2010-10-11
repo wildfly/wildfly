@@ -24,7 +24,6 @@ package org.jboss.as.services.net;
 import java.net.InetAddress;
 
 import org.jboss.as.model.socket.SocketBindingAdd;
-import org.jboss.as.model.socket.SocketBindingElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
@@ -53,6 +52,9 @@ public class SocketBindingService implements Service<SocketBinding> {
 
     SocketBindingService(final String name, int port, boolean isFixedPort,
                   InetAddress multicastAddress, int multicastPort) {
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
         this.name = name;
         this.port = port;
         this.isFixedPort = isFixedPort;
@@ -86,25 +88,12 @@ public class SocketBindingService implements Service<SocketBinding> {
         return interfaceBinding;
     }
 
-    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingElement element) {
-        SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
-                   element.getMulticastAddress(), element.getMulticastPort());
+    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd add) {
+        SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
+                   add.getMulticastAddress(), add.getMulticastPort());
         BatchServiceBuilder<SocketBinding> batch = builder
-            .addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
-        batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()),
-                NetworkInterfaceBinding.class, service.getInterfaceBinding());
-        batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
-                SocketBindingManager.class, service.getSocketBindings());
-        batch.setInitialMode(Mode.ON_DEMAND);
-        return batch;
-    }
-
-    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd element) {
-        SocketBindingService service = new SocketBindingService(element.getName(), element.getPort(), element.isFixedPort(),
-                   element.getMulticastAddress(), element.getMulticastPort());
-        BatchServiceBuilder<SocketBinding> batch = builder
-            .addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
-        batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()),
+            .addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service);
+        batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()),
                 NetworkInterfaceBinding.class, service.getInterfaceBinding());
         batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
                 SocketBindingManager.class, service.getSocketBindings());
