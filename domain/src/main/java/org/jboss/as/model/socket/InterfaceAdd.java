@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,21 +54,22 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
     private boolean anyLocalV4;
     private boolean anyLocalV6;
     private boolean anyLocal;
-    private Collection<AbstractInterfaceCriteriaElement<?>> interfaceCriteria;
+    private Collection<AbstractInterfaceCriteriaElement<?>> interfaceCriteria = Collections.emptySet();
 
     public InterfaceAdd(String name, boolean anyLocalV4, boolean anyLocalV6, boolean anyLocal, Collection<AbstractInterfaceCriteriaElement<?>> interfaceCriteria) {
         this.name = name;
         this.anyLocalV4 = anyLocalV4;
         this.anyLocalV6 = anyLocalV6;
         this.anyLocal = anyLocal;
+        this.interfaceCriteria = interfaceCriteria;
     }
 
     public InterfaceAdd(final InterfaceElement networkInterface) {
-        this.name = networkInterface.getName();
-        this.anyLocal = networkInterface.isAnyLocalAddress();
-        this.anyLocalV4 = networkInterface.isAnyLocalV4Address();
-        this.anyLocalV6 = networkInterface.isAnyLocalV6Address();
-        this.interfaceCriteria = networkInterface.getCriteriaElements();
+        name = networkInterface.getName();
+        anyLocal = networkInterface.isAnyLocalAddress();
+        anyLocalV4 = networkInterface.isAnyLocalV4Address();
+        anyLocalV6 = networkInterface.isAnyLocalV6Address();
+        interfaceCriteria = networkInterface.getCriteriaElements();
     }
 
     public String getName() {
@@ -124,7 +126,7 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
         private final Set<InterfaceCriteria> interfaceCriteria;
 
         public OverallInterfaceCriteria(Set<InterfaceCriteria> criteria) {
-            this.interfaceCriteria = criteria;
+            interfaceCriteria = criteria;
         }
 
         /** {@inheritDoc} */
