@@ -34,6 +34,7 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
@@ -112,15 +113,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // Next-stage services
         final BatchBuilder batchBuilder = container.batchBuilder();
         batchBuilder.addListener(serverStartupListener);
-        final UpdateContext context = new UpdateContext() {
-            public BatchBuilder getBatchBuilder() {
-                return batchBuilder;
-            }
-
-            public ServiceContainer getServiceContainer() {
-                return container;
-            }
-        };
 
         // Initial model
         final ServerModel serverModel = new ServerModel(serverName, portOffset);
@@ -145,6 +137,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // Server deployment manager - TODO: move into startServices, only start in standalone mode
         ServerDeploymentManagerImpl.addService(serverModel, container, batchBuilder);
 
+        // Server configuration persister - TODO: move into startServices, only start in standalone mode
+        ServerConfigurationPersisterImpl.addService(serverModel, batchBuilder);
+
         for (AbstractServerModelUpdate<?> update : updates) {
             try {
                 serverModel.update(update);
@@ -153,12 +148,30 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
+        try {
+            batchBuilder.install();
+        } catch (ServiceRegistryException e) {
+            throw new IllegalStateException("Failed to start server", e);
+        }
+
+        final BatchBuilder updatesBatchBuilder = container.batchBuilder();
+
+        final UpdateContext context = new UpdateContext() {
+            public BatchBuilder getBatchBuilder() {
+                return updatesBatchBuilder;
+            }
+
+            public ServiceContainer getServiceContainer() {
+                return container;
+            }
+        };
+
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(context);
         }
 
         try {
-            batchBuilder.install();
+            updatesBatchBuilder.install();
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
