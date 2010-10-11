@@ -128,7 +128,8 @@ public final class ManagedProcess implements ProcessOutputStreamHandler.Managed{
         synchronized (this) {
             start = false;
             stopped = true;
-            stdinStream.close();
+            if (stdinStream != null)
+                stdinStream.close();
         }
     }
 
