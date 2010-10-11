@@ -73,7 +73,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     }
 
     public void run(final List<ServiceActivator> startServices) {
-        logConfigurator.run();
+        if (logConfigurator != null) logConfigurator.run();
         log.infof("Starting server \"%s\"", serverName);
         final ServiceContainer container = ServiceContainer.Factory.create();
 
@@ -121,11 +121,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 return container;
             }
         };
-        try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new IllegalStateException("Failed to install boot services", e);
-        }
 
         // Initial model
         final ServerModel serverModel = new ServerModel(serverName, portOffset);
@@ -160,6 +155,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(context);
+        }
+
+        try {
+            batchBuilder.install();
+        } catch (ServiceRegistryException e) {
+            throw new IllegalStateException("Failed to install boot services", e);
         }
         serverStartupListener.finish();
     }
