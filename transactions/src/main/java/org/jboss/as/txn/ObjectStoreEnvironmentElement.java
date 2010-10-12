@@ -48,7 +48,7 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.DIRECTORY.getLocalName(), directory);
+        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), directory);
         streamWriter.writeEndElement();
     }
 
@@ -70,11 +70,11 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
      *
      * @return the directory
      */
-    public String getDirectory() {
+    public String getPath() {
         return directory;
     }
 
-    void setDirectory(String directory) {
+    void setPath(String directory) {
         this.directory = directory;
     }
 

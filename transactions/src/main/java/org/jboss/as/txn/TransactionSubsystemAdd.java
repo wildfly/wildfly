@@ -51,7 +51,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
     private String bindingName;
     private boolean coordinatorEnableStatistics;
     private String objectStorePathRef = "jboss.server.data.dir";
-    private String objectStoreDirectory = "tx-object-store";
+    private String objectStorePath = "tx-object-store";
     private int maxPorts = 10;
     private int coordinatorDefaultTimeout = 300;
 
@@ -66,8 +66,6 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         final XATerminatorService xaTerminatorService = new XATerminatorService();
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.IMMEDIATE);
 
-        RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStoreDirectory, objectStorePathRef, builder);
-
         final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
         final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
         transactionManagerServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector());
@@ -75,8 +73,10 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
-        transactionManagerServiceBuilder.addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), AbstractPathService.class, transactionManagerService.getPathInjector());
+        transactionManagerServiceBuilder.addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector());
         transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+        RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, builder);
     }
 
     @Override
@@ -87,7 +87,8 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         element.getCoreEnvironmentElement().setNodeIdentifier(nodeIdentifier);
         element.getRecoveryEnvironmentElement().setBindingRef(recoveryBindingName);
         element.getRecoveryEnvironmentElement().setStatusBindingRef(recoveryStatusBindingName);
-        element.setObjectStoreDirectory(objectStoreDirectory);
+        element.getObjectStoreEnvironmentElement().setRelativeTo(objectStorePathRef);
+        element.getObjectStoreEnvironmentElement().setPath(objectStorePath);
         element.setCoordinatorDefaultTimeout(coordinatorDefaultTimeout);
         element.setCoordinatorEnableStatistics(coordinatorEnableStatistics);
         return element;
@@ -138,7 +139,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
     }
 
     public String getObjectStoreDirectory() {
-        return objectStoreDirectory;
+        return objectStorePath;
     }
 
     public String getObjectStorePathRef() {
@@ -150,7 +151,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
     }
 
     public void setObjectStoreDirectory(final String objectStoreDirectory) {
-        this.objectStoreDirectory = objectStoreDirectory;
+        this.objectStorePath = objectStoreDirectory;
     }
 
     public int getMaxPorts() {

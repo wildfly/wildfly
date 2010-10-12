@@ -61,11 +61,15 @@ public class RelativePathService extends AbstractPathService {
             }
             this.relativePath = relativePath.substring(1);
         }
-        else if (relativePath.indexOf(";\\") == 1) {
+        else if (relativePath.indexOf(":\\") == 1) {
             throw new IllegalArgumentException(relativePath + " is a Windows absolute path");
         }
         else {
-            this.relativePath = relativePath;
+            if(isWindows()) {
+                this.relativePath = relativePath.replace("/", File.separator);
+            } else {
+                this.relativePath = relativePath.replace("\\", File.separator);
+            }
         }
     }
 
@@ -75,6 +79,10 @@ public class RelativePathService extends AbstractPathService {
         base = base.endsWith(File.separator) ? base.substring(0, base.length() -1) : base;
         String relative = relativePath.startsWith(File.separator) ? relativePath.substring(0, relativePath.length() -1) : relativePath;
         return base + File.separatorChar + relative;
+    }
+
+    private static boolean isWindows(){
+        return File.separatorChar == '\\';
     }
 
 }

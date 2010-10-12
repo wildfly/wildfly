@@ -207,11 +207,9 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
                 switch (attribute) {
                     case RELATIVE_TO:
                         add.setObjectStorePathRef(value);
-                        element.setRelativeTo(value);
                         break;
-                    case DIRECTORY:
+                    case PATH:
                         add.setObjectStoreDirectory(value);
-                        element.setDirectory(value);
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);

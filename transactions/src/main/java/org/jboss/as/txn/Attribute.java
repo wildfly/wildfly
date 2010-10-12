@@ -38,8 +38,8 @@ enum Attribute {
     SOCKET_PROCESS_ID_MAX_PORTS("socket-process-id-max-ports"),
     ENABLE_STATISTICS("enable-statistics"),
     DEFAULT_TIMEOUT("default-timeout"),
-    DIRECTORY("directory"),
     RELATIVE_TO("relative-to"),
+    PATH("path"),
     ;
     private final String name;
 

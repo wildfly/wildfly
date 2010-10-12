@@ -101,12 +101,12 @@
                 
                 The "relative-to" references a global path configuration in the domain model, with the default
                 to the JBoss Application data directory (jboss.server.data.dir).
-                The "directory" represents the directory based on the referenced path.
+                The "path" the directory based on the referenced path.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
-        <xs:attribute name="directory" type="xs:string" default="tx-object-store"/>
+        <xs:attribute name="path" type="xs:string" default="tx-object-store"/>
     </xs:complexType>
 
 </xs:schema>

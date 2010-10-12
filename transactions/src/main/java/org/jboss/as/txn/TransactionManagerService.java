@@ -32,8 +32,6 @@ import java.util.List;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.services.net.SocketBinding;
-import org.jboss.as.services.path.AbstractPathService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -80,7 +78,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
     private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
-    private final InjectedValue<AbstractPathService> pathInjector = new InjectedValue<AbstractPathService>();
+    private final InjectedValue<String> pathInjector = new InjectedValue<String>();
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private RecoveryManagerService recoveryManagerService;
@@ -98,6 +96,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
     }
 
     public synchronized void start(final StartContext context) throws StartException {
+
         // JTS expects the TCCL to be set to something that can find the log factory class.
         AccessController.doPrivileged(new SetContextLoaderAction(TransactionManagerService.class.getClassLoader()));
         try {
@@ -139,10 +138,10 @@ final class TransactionManagerService implements Service<TransactionManager> {
             coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
 
             final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
-            objectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue().getValue());
+            objectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue());
 
             try {
-                Logger.getLogger("org.jboss.tx").info(ObjStoreBean.getObjectStoreBrowserBean().getStore().storeDir());
+                ObjStoreBean.getObjectStoreBrowserBean();
             } catch (Exception e) {
                 throw new StartException("Failed to configure object store browser bean", e);
             }
@@ -256,7 +255,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
         return socketProcessBindingInjector;
     }
 
-    InjectedValue<AbstractPathService> getPathInjector() {
+    InjectedValue<String> getPathInjector() {
         return pathInjector;
     }
 

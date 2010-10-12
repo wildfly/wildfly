@@ -93,10 +93,6 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         return objectStoreEnvironmentElement;
     }
 
-    public void setObjectStoreDirectory(String directory) {
-        this.objectStoreEnvironmentElement.setDirectory(directory);
-    }
-
     /** {@inheritDoc} */
     @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
@@ -119,7 +115,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         add.setRecoveryStatusBindingName(recoveryEnvironmentElement.getStatusBindingRef());
         add.setCoordinatorEnableStatistics(coordinatorEnvironmentElement.isEnableStatistics());
         add.setCoordinatorDefaultTimeout(coordinatorEnvironmentElement.getDefaultTimeout());
-        add.setObjectStoreDirectory(objectStoreEnvironmentElement.getDirectory());
+        add.setObjectStoreDirectory(objectStoreEnvironmentElement.getPath());
         return add;
     }
 
