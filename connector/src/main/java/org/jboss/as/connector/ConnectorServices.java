@@ -32,6 +32,8 @@ public final class ConnectorServices {
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
+    public static final ServiceName RESOURCE_ADAPTER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra");
+
     /**
      * convenient method to check notNull of value
      * @param <T> type of the value

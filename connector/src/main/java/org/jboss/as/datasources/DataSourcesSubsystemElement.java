@@ -20,55 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.datasources;
 
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.XMLStreamException;
+
 /**
- * A ConnectorSubsystemElement.
+ * A DataSourcesSubsystemElement.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-final class ConnectorSubsystemElement extends AbstractSubsystemElement<ConnectorSubsystemElement> {
+final class DataSourcesSubsystemElement extends AbstractSubsystemElement<DataSourcesSubsystemElement> {
 
     /** The serialVersionUID */
     private static final long serialVersionUID = 6451041006443208660L;
 
-    private boolean archiveValidation = true;
-    private boolean archiveValidationFailOnError = true;
-    private boolean archiveValidationFailOnWarn = false;
-    private boolean beanValidation = true;
+    private DataSources datasources;
 
-    public ConnectorSubsystemElement() {
-        super(Namespace.CONNECTOR_1_0.getUriString());
+    public DataSourcesSubsystemElement() {
+        super(Namespace.CURRENT.getUriString());
     }
 
     @Override
-    protected Class<ConnectorSubsystemElement> getElementClass() {
-        return ConnectorSubsystemElement.class;
+    protected Class<DataSourcesSubsystemElement> getElementClass() {
+        return DataSourcesSubsystemElement.class;
     }
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
-        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(beanValidation));
-
-        streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
-        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(archiveValidation));
-        streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), Boolean.toString(archiveValidationFailOnWarn));
-        streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), Boolean.toString(archiveValidationFailOnError));
-
-        streamWriter.writeEndElement();
+        // TODO
     }
 
-    protected void getUpdates(final List<? super AbstractSubsystemUpdate<ConnectorSubsystemElement, ?>> objects) {
+    protected void getUpdates(final List<? super AbstractSubsystemUpdate<DataSourcesSubsystemElement, ?>> objects) {
         // empty
     }
 
@@ -76,12 +65,9 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
         return true;
     }
 
-    protected ConnectorSubsystemAdd getAdd() {
-        final ConnectorSubsystemAdd add = new ConnectorSubsystemAdd();
-        add.setArchiveValidation(archiveValidation);
-        add.setArchiveValidationFailOnError(archiveValidationFailOnError);
-        add.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
-        add.setBeanValidation(beanValidation);
+    protected DataSourcesAdd getAdd() {
+        final DataSourcesAdd add = new DataSourcesAdd();
+        add.setDatasources(datasources);
         return add;
     }
 

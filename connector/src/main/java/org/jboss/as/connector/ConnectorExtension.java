@@ -24,22 +24,24 @@ package org.jboss.as.connector;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
- *
  * A ConnectorExtension.
- *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ConnectorExtension implements Extension {
+    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     public void initialize(final ExtensionContext context) {
-        context.<ConnectorSubsystemElement>registerSubsystem(Namespace.CONNECTOR_1_0.getUriString(), null /* new ConnectorSubsystemElementParser() */);
+        context.<ConnectorSubsystemElement> registerSubsystem(Namespace.CONNECTOR_1_0.getUriString(),
+                new ConnectorSubsystemElementParser());
     }
 
     @Override
-   public void activate(final ServiceActivatorContext context) {
-   }
+    public void activate(final ServiceActivatorContext context) {
+        log.info("Activating Connector Extension");
+    }
 }

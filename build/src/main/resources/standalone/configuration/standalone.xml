@@ -35,6 +35,7 @@
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
+        <extension module="org.jboss.as.connector"/>
     </extensions>
 
     <profile name="something">
@@ -53,6 +54,12 @@
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:connector:1.0">
+            <archive-validation enabled="true" />
+            <bean-validation enabled="true" />
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <persistence-enabled>false</persistence-enabled>
             <journal-type>NIO</journal-type>

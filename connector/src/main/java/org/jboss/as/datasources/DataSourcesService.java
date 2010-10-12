@@ -20,54 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.datasources;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * A Namespace.
+ * A ConnectorConfigService.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public enum Namespace {
-    // must be first
-    UNKNOWN(null),
+final class DataSourcesService implements Service<DataSources> {
 
-    CONNECTOR_1_0("urn:jboss:domain:connector:1.0");
+    private final DataSources value;
 
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = CONNECTOR_1_0;
-
-    private final String name;
-
-    Namespace(final String name) {
-        this.name = name;
+    /** create an instance **/
+    public DataSourcesService(DataSources value) {
+        this.value = value;
     }
 
-    /**
-     * Get the URI of this namespace.
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
+    @Override
+    public DataSources getValue() throws IllegalStateException {
+        return DataSourcesServices.notNull(value);
     }
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null)
-                map.put(name, namespace);
-        }
-        MAP = map;
+    @Override
+    public void start(StartContext context) throws StartException {
+        // TODO invoke dsDeployer, merging and registering to mdr/jndi
     }
 
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    @Override
+    public void stop(StopContext context) {
+
     }
+
 }

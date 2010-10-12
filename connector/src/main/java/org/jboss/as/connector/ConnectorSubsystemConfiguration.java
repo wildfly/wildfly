@@ -32,6 +32,13 @@ import org.jboss.jca.deployers.common.Configuration;
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
 public class ConnectorSubsystemConfiguration implements Configuration {
+    @Override
+    public String toString() {
+        return "ConnectorSubsystemConfiguration [beanValidation=" + beanValidation + ", archiveValidation=" + archiveValidation
+                + ", archiveValidationFailOnWarn=" + archiveValidationFailOnWarn + ", archiveValidationFailOnError="
+                + archiveValidationFailOnError + "]";
+    }
+
     /** Preform bean validation */
     private final AtomicBoolean beanValidation = new AtomicBoolean(true);
 

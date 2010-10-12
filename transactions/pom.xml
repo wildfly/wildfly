@@ -70,8 +70,8 @@
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.resource</groupId>
-            <artifactId>jboss-connector-api_1.5_spec</artifactId>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-spec-api</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -26,6 +26,8 @@ import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -33,7 +35,6 @@ import org.jboss.msc.service.BatchBuilder;
 public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorSubsystemElement> {
 
     private static final long serialVersionUID = -874698675049495644L;
-
     private boolean archiveValidation = true;
     private boolean archiveValidationFailOnError = true;
     private boolean archiveValidationFailOnWarn = false;
@@ -43,11 +44,9 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         super(Namespace.CURRENT.getUriString());
     }
 
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        // requires restart
-    }
-
-    protected void applyUpdateBootAction(final UpdateContext updateContext) {
+    @Override
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
+            final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
         final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
@@ -58,7 +57,11 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         config.setBeanValidation(beanValidation);
 
         final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-        builder.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
+
+        final BatchServiceBuilder<ConnectorSubsystemConfiguration> serviceBuilder = builder.addService(
+                ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
+        serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+
     }
 
     protected ConnectorSubsystemElement createSubsystemElement() {

@@ -107,7 +107,7 @@
         </module-def>
 
         <module-def name="javax.resource.api">
-            <maven-resource group="org.jboss.spec.javax.resource" artifact="jboss-connector-api_1.5_spec"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-spec-api"/>
         </module-def>
 
         <module-def name="javax.security.auth.message.api">
@@ -248,8 +248,23 @@
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
 
+        <module-def name="org.jboss.integration.jboss-jca-spi">
+            <maven-resource group="org.jboss.integration" artifact="jboss-jca-spi"/>
+        </module-def>
+
         <module-def name="org.jboss.integration.jboss-transaction-spi">
             <maven-resource group="org.jboss.integration" artifact="jboss-transaction-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.ironjacamar">
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-api"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-impl"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-common-spi"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-api"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-impl"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-core-spi"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-deployers-common"/>
+            <maven-resource group="org.jboss.ironjacamar" artifact="ironjacamar-validator"/>
         </module-def>
 
         <module-def name="org.jboss.jts">
@@ -316,6 +331,12 @@
         
         <module-def name="org.jboss.staxmapper">
             <maven-resource group="org.jboss" artifact="staxmapper"/>
+        </module-def>
+
+        <module-def name="org.picketbox">
+            <maven-resource group="org.picketbox" artifact="jboss-security-spi"/>
+            <maven-resource group="org.picketbox" artifact="jbosssx"/>
+            <maven-resource group="org.picketbox" artifact="picketbox-bare"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">

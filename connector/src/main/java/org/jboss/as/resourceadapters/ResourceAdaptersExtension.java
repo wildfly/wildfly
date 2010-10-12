@@ -20,54 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.resourceadapters;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
- * A Namespace.
+ * A ConnectorExtension.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public enum Namespace {
-    // must be first
-    UNKNOWN(null),
+public final class ResourceAdaptersExtension implements Extension {
+    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
-    CONNECTOR_1_0("urn:jboss:domain:connector:1.0");
-
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = CONNECTOR_1_0;
-
-    private final String name;
-
-    Namespace(final String name) {
-        this.name = name;
+    public void initialize(final ExtensionContext context) {
+        context.<ResourceAdaptersSubsystemElement> registerSubsystem(Namespace.CURRENT.getUriString(),
+                new ResourceAdaptersSubsystemElementParser());
     }
 
-    /**
-     * Get the URI of this namespace.
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
-    }
-
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null)
-                map.put(name, namespace);
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    @Override
+    public void activate(final ServiceActivatorContext context) {
+        log.info("Activating ResourceAdapters Extension");
     }
 }

@@ -20,54 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.datasources;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * A Namespace.
+ * A ConnectorServices.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */
-public enum Namespace {
-    // must be first
-    UNKNOWN(null),
+public final class DataSourcesServices {
 
-    CONNECTOR_1_0("urn:jboss:domain:connector:1.0");
+    public static final ServiceName DATASOURCES_SERVICE = ServiceName.JBOSS.append("datasources");
 
     /**
-     * The current namespace version.
+     * convenient method to check notNull of value
+     * @param <T> type of the value
+     * @param value the value
+     * @return the value or throw an {@link IllegalStateException} if value is
+     *         null (a.k.a. service not started)
      */
-    public static final Namespace CURRENT = CONNECTOR_1_0;
-
-    private final String name;
-
-    Namespace(final String name) {
-        this.name = name;
+    public static <T> T notNull(T value) {
+        if (value == null)
+            throw new IllegalStateException("Service not started");
+        return value;
     }
 
-    /**
-     * Get the URI of this namespace.
-     * @return the URI
-     */
-    public String getUriString() {
-        return name;
-    }
-
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null)
-                map.put(name, namespace);
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
+    private DataSourcesServices() {
     }
 }

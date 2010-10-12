@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector;
+package org.jboss.as.datasources;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +33,12 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    CONNECTOR_1_0("urn:jboss:domain:connector:1.0");
+    DATASOURCES_1_0("urn:jboss:domain:datasources:1.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = CONNECTOR_1_0;
+    public static final Namespace CURRENT = DATASOURCES_1_0;
 
     private final String name;
 

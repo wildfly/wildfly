@@ -36,9 +36,12 @@ import static javax.xml.stream.XMLStreamConstants.*;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConnectorSubsystemElementParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ConnectorSubsystemElement>>> {
+public final class ConnectorSubsystemElementParser implements
+        XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ConnectorSubsystemElement>>> {
 
-    public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<ConnectorSubsystemElement>> result) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader,
+            final ParseResult<ExtensionContext.SubsystemConfiguration<ConnectorSubsystemElement>> result)
+            throws XMLStreamException {
         final ConnectorSubsystemAdd add = new ConnectorSubsystemAdd();
 
         final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
@@ -46,16 +49,13 @@ public final class ConnectorSubsystemElementParser implements XMLElementReader<P
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case CONNECTOR_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (! visited.add(element)) {
+                    if (!visited.add(element)) {
                         throw unexpectedElement(reader);
                     }
                     switch (element) {
                         case ARCHIVE_VALIDATION: {
                             final int cnt = reader.getAttributeCount();
-                            for (int i = 0; i < cnt; i ++) {
-                                if (reader.getAttributeName(i) != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
+                            for (int i = 0; i < cnt; i++) {
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                                 switch (attribute) {
                                     case ENABLED: {

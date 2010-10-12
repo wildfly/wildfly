@@ -6,6 +6,8 @@ target
 .project
 .classpath
 .settings
+*/bin/
+**bin
 # ignore IDEA files
 *.iml
 *.ipr

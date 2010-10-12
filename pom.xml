@@ -61,6 +61,7 @@
         <version.junit>4.6</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
+        <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.ironjacamar>1.0.0-SNAPSHOT</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.0.Beta2</version.org.jboss.jandex>
@@ -84,7 +85,6 @@
         <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.0.Beta1</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
-        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.5_spec>1.0.0.Beta1</version.org.jboss.spec.javax.resource.jboss-connector-api_1.5_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.0.Beta1</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.0.Beta2</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Beta2</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
@@ -100,6 +100,7 @@
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
+        <version.org.picketbox>4.0.0.Alpha1</version.org.picketbox>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
     </properties>
@@ -470,6 +471,26 @@
 
             <dependency>
                 <groupId>org.jboss.integration</groupId>
+                <artifactId>jboss-jca-spi</artifactId>
+                <version>${version.org.jboss.integration.jboss-jca-spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.aop</groupId>
+                        <artifactId>jboss-aop</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-jca-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.integration</groupId>
                 <artifactId>jboss-transaction-spi</artifactId>
                 <version>${version.org.jboss.integration.jboss-transaction-spi}</version>
                 <exclusions>
@@ -487,11 +508,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-core-spi</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-core-api</artifactId>
@@ -511,6 +534,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-core-impl</artifactId>
@@ -546,16 +570,19 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-common-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-common-spi</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-common-impl</artifactId>
@@ -575,16 +602,25 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-           <dependency>
+
+            <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-deployers-common</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
-           </dependency>
-           <dependency>
+            </dependency>
+ 
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>ironjacamar-spec-api</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-validator</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.jbossts</groupId>
                 <artifactId>jbossjts</artifactId>
@@ -923,23 +959,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.spec.javax.resource</groupId>
-                <artifactId>jboss-connector-api_1.5_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.5_spec}</version>
-                <exclusions>
-                    <!-- Remove these when JBEE-55 is fixed -->
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.spec.javax.security.auth.message</groupId>
                 <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec}</version>
@@ -1038,6 +1057,66 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms</artifactId>
                 <version>${version.org.hornetq.hornetq-jms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>jboss-security-spi</artifactId>
+                <version>${version.org.picketbox}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>jbosssx</artifactId>
+                <version>${version.org.picketbox}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-bare</artifactId>
+                <version>${version.org.picketbox}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>identity-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>authorization-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>acl-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>picketbox-acl-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>picketbox-identity-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.persistence</groupId>
+                        <artifactId>persistence-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

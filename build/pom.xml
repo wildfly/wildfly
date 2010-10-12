@@ -219,6 +219,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.integration</groupId>
+            <artifactId>jboss-jca-spi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
@@ -258,6 +268,10 @@
             <artifactId>ironjacamar-deployers-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-spec-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-validator</artifactId>
@@ -354,11 +368,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.resource</groupId>
-            <artifactId>jboss-connector-api_1.5_spec</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.spec.javax.security.auth.message</groupId>
             <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
         </dependency>
@@ -434,6 +443,21 @@
         <dependency>
           <groupId>org.hornetq</groupId>
           <artifactId>hornetq-jms</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>jboss-security-spi</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>jbosssx</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>picketbox-bare</artifactId>
         </dependency>
 
         <dependency>

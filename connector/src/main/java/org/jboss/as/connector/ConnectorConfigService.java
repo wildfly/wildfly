@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector;
 
+import org.jboss.jca.Version;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -35,6 +37,8 @@ final class ConnectorConfigService implements Service<ConnectorSubsystemConfigur
 
     private final ConnectorSubsystemConfiguration value;
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
+
     /** create an instance **/
     public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
         this.value = value;
@@ -47,7 +51,8 @@ final class ConnectorConfigService implements Service<ConnectorSubsystemConfigur
 
     @Override
     public void start(StartContext context) throws StartException {
-
+        log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
+        log.infof("config=%s", value);
     }
 
     @Override
