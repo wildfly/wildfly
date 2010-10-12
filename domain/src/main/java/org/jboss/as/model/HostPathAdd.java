@@ -51,14 +51,12 @@ public class HostPathAdd extends AbstractHostModelUpdate<Void> {
 
     /** {@inheritDoc} */
     public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
-        // TODO Auto-generated method stub
-        return null;
+        return new HostPathRemove(update.getName());
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ServerPathAdd(update);
     }
 
 }

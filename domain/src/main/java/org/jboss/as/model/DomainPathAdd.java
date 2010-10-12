@@ -48,14 +48,12 @@ public class DomainPathAdd extends AbstractDomainModelUpdate<Void> {
 
     /** {@inheritDoc} */
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        // TODO Auto-generated method stub
-        return null;
+        return new DomainPathRemove(update.getName());
     }
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ServerPathAdd(update);
     }
 
 }

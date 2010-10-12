@@ -52,8 +52,7 @@ public class HostPathRemove extends AbstractHostModelUpdate<Void> {
 
     /** {@inheritDoc} */
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ServerPathRemove(name);
     }
 
 }
