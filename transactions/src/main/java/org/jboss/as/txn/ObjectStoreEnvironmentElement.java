@@ -34,7 +34,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectStoreEnvironmentElement> {
     private static final long serialVersionUID = 5036917797026753281L;
-    private String directory = "/tmp/tx-object-store";
+    private String relativeTo = "jboss.server.data.dir";
+    private String directory = "tx-object-store";
 
     protected ObjectStoreEnvironmentElement() {
         //
@@ -51,11 +52,29 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
         streamWriter.writeEndElement();
     }
 
+    /**
+     * Get the relative path reference.
+     *
+     * @return the relativeTo ref
+     */
+    public String getRelativeTo() {
+        return relativeTo;
+    }
+
+    void setRelativeTo(String relativeTo) {
+        this.relativeTo = relativeTo;
+    }
+
+    /**
+     * Get the directory, based on the relative path.
+     *
+     * @return the directory
+     */
     public String getDirectory() {
         return directory;
     }
 
-    public void setDirectory(String directory) {
+    void setDirectory(String directory) {
         this.directory = directory;
     }
 

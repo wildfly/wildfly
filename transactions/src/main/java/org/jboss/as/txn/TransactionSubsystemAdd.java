@@ -22,10 +22,14 @@
 
 package org.jboss.as.txn;
 
+import javax.transaction.TransactionManager;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -33,21 +37,21 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
-import javax.transaction.TransactionManager;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<TransactionsSubsystemElement> {
 
     private static final long serialVersionUID = 6904905763469774913L;
+    private static final String INTERNAL_OBJECTSTORE_PATH = "jboss.transactions.object.store.path";
 
     private String recoveryBindingName;
     private String recoveryStatusBindingName;
     private String nodeIdentifier;
     private String bindingName;
     private boolean coordinatorEnableStatistics;
-    private String objectStoreDirectory;
+    private String objectStorePathRef = "jboss.server.data.dir";
+    private String objectStoreDirectory = "tx-object-store";
     private int maxPorts = 10;
     private int coordinatorDefaultTimeout = 300;
 
@@ -62,13 +66,16 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         final XATerminatorService xaTerminatorService = new XATerminatorService();
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.IMMEDIATE);
 
-        final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout, objectStoreDirectory);
+        RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStoreDirectory, objectStorePathRef, builder);
+
+        final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
         final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
         transactionManagerServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector());
         transactionManagerServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
+        transactionManagerServiceBuilder.addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), AbstractPathService.class, transactionManagerService.getPathInjector());
         transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 
@@ -132,6 +139,14 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
 
     public String getObjectStoreDirectory() {
         return objectStoreDirectory;
+    }
+
+    public String getObjectStorePathRef() {
+        return objectStorePathRef;
+    }
+
+    public void setObjectStorePathRef(String objectStorePathRef) {
+        this.objectStorePathRef = objectStorePathRef;
     }
 
     public void setObjectStoreDirectory(final String objectStoreDirectory) {

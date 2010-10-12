@@ -22,7 +22,6 @@
 
 package org.jboss.as.services.path;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -52,7 +51,6 @@ public abstract class AbstractPathService implements Service<String> {
     @Override
     public void start(StartContext context) throws StartException {
         this.path = resolvePath();
-        Logger.getLogger("org.jboss.paths").info(path);
     }
 
     @Override
@@ -61,7 +59,11 @@ public abstract class AbstractPathService implements Service<String> {
 
     @Override
     public String getValue() throws IllegalStateException {
-        return this.path;
+        final String path = this.path;
+        if(path == null) {
+            throw new IllegalStateException();
+        }
+        return path;
     }
 
     // ------------------------------------------------------------  Protected

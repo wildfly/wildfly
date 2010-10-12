@@ -39,6 +39,7 @@ enum Attribute {
     ENABLE_STATISTICS("enable-statistics"),
     DEFAULT_TIMEOUT("default-timeout"),
     DIRECTORY("directory"),
+    RELATIVE_TO("relative-to"),
     ;
     private final String name;
 

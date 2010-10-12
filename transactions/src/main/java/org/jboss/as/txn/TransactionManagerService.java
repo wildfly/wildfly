@@ -22,6 +22,28 @@
 
 package org.jboss.as.txn;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.transaction.TransactionManager;
+
+import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.LastResource;
+import org.omg.CORBA.ORB;
+
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
@@ -46,24 +68,6 @@ import com.arjuna.common.internal.util.logging.LoggingEnvironmentBean;
 import com.arjuna.common.internal.util.logging.commonPropertyManager;
 import com.arjuna.common.internal.util.logging.jakarta.JakartaRelevelingLogFactory;
 import com.arjuna.common.internal.util.logging.jakarta.Log4JLogger;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import org.jboss.as.services.net.SocketBinding;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.tm.JBossXATerminator;
-import org.jboss.tm.LastResource;
-import org.omg.CORBA.ORB;
-
-import javax.transaction.TransactionManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -76,6 +80,7 @@ final class TransactionManagerService implements Service<TransactionManager> {
     private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<AbstractPathService> pathInjector = new InjectedValue<AbstractPathService>();
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
     private RecoveryManagerService recoveryManagerService;
@@ -84,18 +89,15 @@ final class TransactionManagerService implements Service<TransactionManager> {
     private int coreSocketProcessIdMaxPorts;
     private boolean coordinatorEnableStatistics;
     private int coordinatorDefaultTimeout;
-    private String objectStoreDirectory;
 
-    TransactionManagerService(final String coreNodeIdentifier, final int coreSocketProcessIdMaxPorts, final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout, final String objectStoreDirectory) {
+    TransactionManagerService(final String coreNodeIdentifier, final int coreSocketProcessIdMaxPorts, final boolean coordinatorEnableStatistics, final int coordinatorDefaultTimeout) {
         this.coreNodeIdentifier = coreNodeIdentifier;
         this.coreSocketProcessIdMaxPorts = coreSocketProcessIdMaxPorts;
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
         this.coordinatorDefaultTimeout = coordinatorDefaultTimeout;
-        this.objectStoreDirectory = objectStoreDirectory;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-
         // JTS expects the TCCL to be set to something that can find the log factory class.
         AccessController.doPrivileged(new SetContextLoaderAction(TransactionManagerService.class.getClassLoader()));
         try {
@@ -137,10 +139,10 @@ final class TransactionManagerService implements Service<TransactionManager> {
             coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
 
             final ObjectStoreEnvironmentBean objectStoreEnvironmentBean = arjPropertyManager.getObjectStoreEnvironmentBean();
-            objectStoreEnvironmentBean.setObjectStoreDir(objectStoreDirectory);
+            objectStoreEnvironmentBean.setObjectStoreDir(pathInjector.getValue().getValue());
 
             try {
-                ObjStoreBean.getObjectStoreBrowserBean();
+                Logger.getLogger("org.jboss.tx").info(ObjStoreBean.getObjectStoreBrowserBean().getStore().storeDir());
             } catch (Exception e) {
                 throw new StartException("Failed to configure object store browser bean", e);
             }
@@ -252,6 +254,10 @@ final class TransactionManagerService implements Service<TransactionManager> {
 
     Injector<SocketBinding> getSocketProcessBindingInjector() {
         return socketProcessBindingInjector;
+    }
+
+    InjectedValue<AbstractPathService> getPathInjector() {
+        return pathInjector;
     }
 
     private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);

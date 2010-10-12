@@ -59,7 +59,6 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<TransactionsSubsystemElement>> result) throws XMLStreamException {
 
         List<AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<TransactionsSubsystemElement,?>>();
-
         // no attributes
         if (reader.getAttributeCount() > 0) {
             throw ParseUtils.unexpectedAttribute(reader, 0);
@@ -206,8 +205,13 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
+                    case RELATIVE_TO:
+                        add.setObjectStorePathRef(value);
+                        element.setRelativeTo(value);
+                        break;
                     case DIRECTORY:
                         add.setObjectStoreDirectory(value);
+                        element.setDirectory(value);
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);
