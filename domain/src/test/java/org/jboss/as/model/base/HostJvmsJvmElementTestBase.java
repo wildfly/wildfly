@@ -73,6 +73,14 @@ public abstract class HostJvmsJvmElementTestBase extends HostModelTestBase {
         delegate.testSimpleParse();
     }
 
+    public void testJvmInvalidType() throws Exception{
+        delegate.testJvmInvalidType();
+    }
+
+    public void testJvmDefaultType() throws Exception {
+        delegate.testJvmDefaultType();
+    }
+
     public void testBothAgentPathAndAgentLibFails() throws Exception {
         delegate.testBothAgentPathAndAgentLibFails();
     }

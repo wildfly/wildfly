@@ -1066,6 +1066,22 @@
             <xs:element name="system-properties" type="properties" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="java-home" type="xs:string"/>
+        <xs:attribute name="type" default="SUN">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="SUN">
+			            <xs:annotation>
+			                <xs:documentation>Allows the full set of JVM options to be set via the jvm schema elements</xs:documentation>
+			            </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="IBM">
+                        <xs:annotation>
+                            <xs:documentation>Sets a subset of the JVM options via the jvm schema elements</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
         <xs:attribute name="debug-enabled" type="xs:boolean" default="false"/>
         <xs:attribute name="debug-options" type="xs:string" default="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"/>
         <xs:attribute name="env-classpath-ignored" default="true" type="xs:boolean"/>

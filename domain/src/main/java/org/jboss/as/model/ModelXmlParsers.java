@@ -1226,6 +1226,7 @@ public final class ModelXmlParsers {
 
         // Handle attributes
         String name = null;
+        String type = null;
         String home = null;
         Boolean debugEnabled = null;
         String debugOptions = null;
@@ -1253,6 +1254,21 @@ public final class ModelXmlParsers {
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         home = value;
                         updates.add(new JvmHomeUpdate(value));
+                        break;
+                    }
+                    case TYPE: {
+                        if (type != null)
+                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                        type = value;
+
+                        JvmType jvmType;
+                        try {
+                            jvmType = Enum.valueOf(JvmType.class, value);
+                        } catch (IllegalArgumentException e) {
+                            throw ParseUtils.invalidAttributeValue(reader, i);
+                        }
+
+                        updates.add(new JvmTypeUpdate(jvmType));
                         break;
                     }
                     case DEBUG_ENABLED: {
@@ -1288,6 +1304,10 @@ public final class ModelXmlParsers {
             // domain and host levels aren't mixed in. OR make name required in xsd always
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
+        if (type == null) {
+            updates.add(new JvmTypeUpdate(JvmType.SUN));
+        }
+
         // Handle elements
         Collection<JvmOptionAdd> jvmOptions = null;
         Collection<PropertyAdd> environmentVariables = null;

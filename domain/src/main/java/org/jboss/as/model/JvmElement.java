@@ -21,6 +21,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
 
     //Attributes
     private final String name;
+    private JvmType type;
     private String javaHome;
     private Boolean debugEnabled;
     private String debugOptions;
@@ -53,6 +54,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
     public JvmElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         // Handle attributes
         String name = null;
+        String type = null;
         String home = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
@@ -64,6 +66,15 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
                 switch (attribute) {
                     case NAME: {
                         name = value;
+                        break;
+                    }
+                    case TYPE: {
+                        type = value;
+                        try {
+                            this.type = Enum.valueOf(JvmType.class, type.toUpperCase());
+                        } catch (Exception e) {
+                            throw ParseUtils.invalidAttributeValue(reader, i);
+                        }
                         break;
                     }
                     case JAVA_HOME: {
@@ -96,6 +107,11 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         }
         this.name = name;
         this.javaHome = home;
+
+        if (type == null) {
+            this.type = JvmType.SUN;
+        }
+
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -185,6 +201,9 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             if (element.getJavaHome() != null) {
                 this.javaHome = element.getJavaHome();
             }
+            if (element.getJvmType() != null) {
+                this.type = element.getJvmType();
+            }
             if (element.getDebugOptions() != null) {
                 this.debugOptions = element.getDebugOptions();
             }
@@ -241,11 +260,19 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         this.javaHome = javaHome;
     }
 
+    public JvmType getJvmType() {
+        return type;
+    }
+
+    void setJvmType(JvmType type) {
+        this.type = type;
+    }
+
     public String getPermgenSize() {
         return permgenSize;
     }
 
-    public void setPermgenSize(String permgenSize) {
+    void setPermgenSize(String permgenSize) {
         this.permgenSize = permgenSize;
     }
 
@@ -253,7 +280,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return maxPermgen;
     }
 
-    public void setMaxPermgen(String maxPermgen) {
+    void setMaxPermgen(String maxPermgen) {
         this.maxPermgen = maxPermgen;
     }
 
@@ -281,7 +308,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return debugEnabled;
     }
 
-    public void setDebugEnabled(Boolean debugEnabled) {
+    void setDebugEnabled(Boolean debugEnabled) {
         this.debugEnabled = debugEnabled;
     }
 
@@ -289,7 +316,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return debugOptions;
     }
 
-    public void setDebugOptions(String debugOptions) {
+    void setDebugOptions(String debugOptions) {
         this.debugOptions = debugOptions;
     }
 
@@ -297,7 +324,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return stack;
     }
 
-    public void setStack(String stack) {
+    void setStack(String stack) {
         this.stack = stack;
     }
 
@@ -305,7 +332,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return envClasspathIgnored;
     }
 
-    public void setEnvClasspathIgnored(Boolean envClasspathIgnored) {
+    void setEnvClasspathIgnored(Boolean envClasspathIgnored) {
         this.envClasspathIgnored = envClasspathIgnored;
     }
 
@@ -325,7 +352,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return agentPath;
     }
 
-    public void setAgentPath(String agentPath) {
+    void setAgentPath(String agentPath) {
         if (agentLib != null) {
             throw new IllegalArgumentException("Attempting to set 'agent-path' when 'agent-lib' was already set");
         }
@@ -336,7 +363,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return agentLib;
     }
 
-    public void setAgentLib(String agentLib) {
+    void setAgentLib(String agentLib) {
         if (agentPath != null) {
             throw new IllegalArgumentException("Attempting to set 'agent-lib' when 'agent-path' was already set");
         }
@@ -347,7 +374,7 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         return javaagent;
     }
 
-    public void setJavaagent(String javaagent) {
+    void setJavaagent(String javaagent) {
         this.javaagent = javaagent;
     }
 
@@ -368,6 +395,10 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
 
         if (javaHome != null) {
             streamWriter.writeAttribute(Attribute.JAVA_HOME.getLocalName(), javaHome);
+        }
+
+        if (type != null) {
+            streamWriter.writeAttribute(Attribute.TYPE.getLocalName(), type.toString());
         }
 
         if (debugEnabled != null) {

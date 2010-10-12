@@ -71,6 +71,7 @@ public enum Attribute {
     SIZE("size"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     START("start"),
+    TYPE("type"),
     VALUE("value")
     ;
 

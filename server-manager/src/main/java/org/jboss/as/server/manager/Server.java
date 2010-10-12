@@ -213,7 +213,7 @@ public final class Server {
 
         command.add(getJavaCommand());
 
-        appendJavaOptions(command);
+        JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
 
         for (Map.Entry<String, String> prop : systemProperties.entrySet()) {
             StringBuilder sb = new StringBuilder("-D");
@@ -314,26 +314,6 @@ public final class Server {
         return f.getAbsolutePath();
     }
 
-    private void appendJavaOptions(List<String> command) {
-
-        String heap = jvmElement.getHeapSize();
-        String max = jvmElement.getMaxHeap();
-
-        // FIXME not the correct place to establish defaults
-        if (max == null && heap != null) {
-            max = heap;
-        }
-        if (heap == null && max != null) {
-            heap = max;
-        }
-
-        if (heap != null) {
-            command.add("-Xms"+ heap);
-        }
-        if (max != null) {
-            command.add("-Xmx"+ max);
-        }
-    }
 
     /**
      * Equivalent to default JAVA_OPTS in < AS 7 run.conf file

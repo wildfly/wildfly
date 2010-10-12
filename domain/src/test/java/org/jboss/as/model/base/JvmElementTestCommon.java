@@ -33,6 +33,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.JvmOptionsElement;
+import org.jboss.as.model.JvmType;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.UpdateFailedException;
@@ -75,7 +76,7 @@ public class JvmElementTestCommon extends Assert {
     }
 
     public void testFullParse() throws Exception {
-        String testContent = "<jvm name=\"test\" java-home=\"/home/test\" debug-enabled=\"true\" debug-options=\"Debug Me\" env-classpath-ignored=\"false\">";
+        String testContent = "<jvm name=\"test\" type=\"SUN\" java-home=\"/home/test\" debug-enabled=\"true\" debug-options=\"Debug Me\" env-classpath-ignored=\"false\">";
         testContent += "<permgen size=\"64M\" max-size=\"96M\"/>";
         testContent += "<heap size=\"128M\" max-size=\"256M\"/>";
         testContent += "<stack size=\"1M\"/>";
@@ -91,6 +92,7 @@ public class JvmElementTestCommon extends Assert {
         String fullcontent = getter.getFullContent(testContent);
         JvmElement testee = getter.getTestJvmElement(fullcontent);
         assertEquals("test", testee.getName());
+        assertEquals(JvmType.SUN, testee.getJvmType());
         assertEquals("/home/test", testee.getJavaHome());
         assertTrue(testee.isDebugEnabled());
         assertEquals("Debug Me", testee.getDebugOptions());
@@ -143,7 +145,7 @@ public class JvmElementTestCommon extends Assert {
      * @see org.jboss.as.model.base.DomainModelElementTestBase#testSerializationDeserialization()
      */
     public void testSerializationDeserialization() throws Exception {
-        String testContent = "<jvm name=\"test\" java-home=\"/home/test\" debug-enabled=\"true\" debug-options=\"Debug Me\" env-classpath-ignored=\"false\">";
+        String testContent = "<jvm name=\"test\" type=\"IBM\" java-home=\"/home/test\" debug-enabled=\"true\" debug-options=\"Debug Me\" env-classpath-ignored=\"false\">";
         testContent += "<permgen size=\"64M\" max-size=\"96M\"/>";
         testContent += "<heap size=\"128M\" max-size=\"256M\"/>";
         testContent += "<stack size=\"1M\"/>";
@@ -160,6 +162,7 @@ public class JvmElementTestCommon extends Assert {
         JvmElement testee1 = DomainModelElementTestBase.deserialize(bytes, JvmElement.class);
 
         assertEquals("test", testee1.getName());
+        assertEquals(JvmType.IBM, testee.getJvmType());
         assertEquals("/home/test", testee1.getJavaHome());
         assertTrue(testee.isDebugEnabled());
         assertEquals("Debug Me", testee.getDebugOptions());
@@ -188,6 +191,31 @@ public class JvmElementTestCommon extends Assert {
             System.out.println("Caught expected exception " + good.getMessage());
          // TODO validate the location stuff in the exception message
         }
+    }
+
+    public void testJvmInvalidType() throws Exception {
+        String testContent = "<jvm name=\"test\" type=\"BAD\" />";
+        String fullcontent = getter.getFullContent(testContent);
+        try {
+            ModelParsingSupport.parseDomainModel(getter.getMapper(), fullcontent);
+            fail("Should not be able to parse 'wrong' attribute");
+        }
+        catch (XMLStreamException good) {
+            System.out.println("Caught expected exception " + good.getMessage());
+         // TODO validate the location stuff in the exception message
+        }
+    }
+
+    public void testJvmDefaultType() throws Exception {
+        String testContent = "<jvm name=\"test\"/>";
+        String fullcontent = getter.getFullContent(testContent);
+        JvmElement testee = getter.getTestJvmElement(fullcontent);
+
+        byte[] bytes = DomainModelElementTestBase.serialize(testee);
+        JvmElement testee1 = DomainModelElementTestBase.deserialize(bytes, JvmElement.class);
+
+        assertEquals("test", testee1.getName());
+        assertEquals(JvmType.SUN, testee.getJvmType());
     }
 
     public void testPermgenMissingSize() throws Exception {
