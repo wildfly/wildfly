@@ -34,15 +34,15 @@ public class AddressSettingsSpecification implements Serializable {
     private final String match;
     private SimpleString deadLetterAddress;
     private SimpleString expiryAddress;
-    private long redeliveryDelay;
-    private int messageCounterHistoryDayLimit;
+    private Long redeliveryDelay;
+    private Integer messageCounterHistoryDayLimit;
     private AddressFullMessagePolicy addressFullMessagePolicy;
-    private boolean lastValueQueue;
-    private int maxDeliveryAttempts;
-    private long redistributionDelay;
-    private boolean sendToDLAOnNoRoute;
-    private long maxSizeBytes;
-    private long pageSizeBytes;
+    private Boolean lastValueQueue;
+    private Integer maxDeliveryAttempts;
+    private Long redistributionDelay;
+    private Boolean sendToDLAOnNoRoute;
+    private Long maxSizeBytes;
+    private Long pageSizeBytes;
 
     public AddressSettingsSpecification(final String match) {
         this.match = match;
@@ -69,7 +69,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.expiryAddress = expiryAddress;
     }
 
-    public long getRedeliveryDelay() {
+    public Long getRedeliveryDelay() {
         return redeliveryDelay;
     }
 
@@ -77,7 +77,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.redeliveryDelay = redeliveryDelay;
     }
 
-    public int getMessageCounterHistoryDayLimit() {
+    public Integer getMessageCounterHistoryDayLimit() {
         return messageCounterHistoryDayLimit;
     }
 
@@ -93,7 +93,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.addressFullMessagePolicy = addressFullMessagePolicy;
     }
 
-    public boolean isLastValueQueue() {
+    public Boolean isLastValueQueue() {
         return lastValueQueue;
     }
 
@@ -101,7 +101,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.lastValueQueue = lastValueQueue;
     }
 
-    public int getMaxDeliveryAttempts() {
+    public Integer getMaxDeliveryAttempts() {
         return maxDeliveryAttempts;
     }
 
@@ -109,7 +109,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.maxDeliveryAttempts = maxDeliveryAttempts;
     }
 
-    public long getRedistributionDelay() {
+    public Long getRedistributionDelay() {
         return redistributionDelay;
     }
 
@@ -117,7 +117,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.redistributionDelay = redistributionDelay;
     }
 
-    public boolean isSendToDLAOnNoRoute() {
+    public Boolean isSendToDLAOnNoRoute() {
         return sendToDLAOnNoRoute;
     }
 
@@ -125,7 +125,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.sendToDLAOnNoRoute = sendToDLAOnNoRoute;
     }
 
-    public long getMaxSizeBytes() {
+    public Long getMaxSizeBytes() {
         return maxSizeBytes;
     }
 
@@ -133,7 +133,7 @@ public class AddressSettingsSpecification implements Serializable {
         this.maxSizeBytes = maxSizeBytes;
     }
 
-    public long getPageSizeBytes() {
+    public Long getPageSizeBytes() {
         return pageSizeBytes;
     }
 

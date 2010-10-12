@@ -56,9 +56,9 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private String journalDirectory;
     private String largeMessagesDirectory;
     private String pagingDirectory;
-    private boolean clustered;
-    private int journalMinFiles = -1;
-    private int journalFileSize = -1;
+    private Boolean clustered;
+    private Integer journalMinFiles;
+    private Integer journalFileSize;
     private JournalType journalType;
 
     private Set<TransportSpecification> acceptors = new HashSet<TransportSpecification>();
@@ -70,35 +70,67 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         super(Namespace.MESSAGING_1_0.getUriString());
     }
 
+    @Override
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final HornetQService hqservice = new HornetQService();
         final Configuration hqConfig = new ConfigurationImpl();
 
-        hqConfig.setBindingsDirectory(getBindingsDirectory());
-        hqConfig.setJournalDirectory(getJournalDirectory());
-        hqConfig.setLargeMessagesDirectory(getLargeMessagesDirectory());
-        hqConfig.setPagingDirectory(getPagingDirectory());
-        hqConfig.setClustered(isClustered());
-        hqConfig.setJournalMinFiles(getJournalMinFiles());
-        hqConfig.setJournalFileSize(getJournalFileSize());
-        hqConfig.setJournalType(getJournalType());
+        if (bindingsDirectory != null) {
+            hqConfig.setBindingsDirectory(bindingsDirectory);
+        }
+        if (journalDirectory != null) {
+            hqConfig.setJournalDirectory(journalDirectory);
+        }
+        if (largeMessagesDirectory != null) {
+            hqConfig.setLargeMessagesDirectory(largeMessagesDirectory);
+        }
+        if (pagingDirectory != null) {
+            hqConfig.setPagingDirectory(pagingDirectory);
+        }
+        if (clustered != null) {
+            hqConfig.setClustered(clustered);
+        }
+        if (journalMinFiles != null) {
+            hqConfig.setJournalMinFiles(journalMinFiles);
+        }
+        if (journalFileSize != null) {
+            hqConfig.setJournalFileSize(journalFileSize);
+        }
+        if (journalType != null) {
+            hqConfig.setJournalType(journalType);
+        }
 
         // Configure address settings
         final Map<String, AddressSettings> configAddressSettings = hqConfig.getAddressesSettings();
         for(AddressSettingsSpecification addressSpec : addressSettings) {
             final AddressSettings settings = new AddressSettings();
+            settings.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
             settings.setDeadLetterAddress(addressSpec.getDeadLetterAddress());
             settings.setExpiryAddress(addressSpec.getExpiryAddress());
-            settings.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
-            settings.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
-            settings.setMessageCounterHistoryDayLimit(addressSpec.getMessageCounterHistoryDayLimit());
-            settings.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
-            settings.setLastValueQueue(addressSpec.isLastValueQueue());
-            settings.setMaxDeliveryAttempts(addressSpec.getMaxDeliveryAttempts());
-            settings.setRedistributionDelay(addressSpec.getRedistributionDelay());
-            settings.setSendToDLAOnNoRoute(addressSpec.isSendToDLAOnNoRoute());
-            settings.setMaxSizeBytes(addressSpec.getMaxSizeBytes());
-            settings.setPageSizeBytes(addressSpec.getPageSizeBytes());
+            if (addressSpec.isLastValueQueue() != null) {
+                settings.setLastValueQueue(addressSpec.isLastValueQueue());
+            }
+            if (addressSpec.getMaxDeliveryAttempts() != null) {
+                settings.setMaxDeliveryAttempts(addressSpec.getMaxDeliveryAttempts());
+            }
+            if (addressSpec.getMaxSizeBytes() != null) {
+                settings.setMaxSizeBytes(addressSpec.getMaxSizeBytes());
+            }
+            if (addressSpec.getMessageCounterHistoryDayLimit() != null) {
+                settings.setMessageCounterHistoryDayLimit(addressSpec.getMessageCounterHistoryDayLimit());
+            }
+            if (addressSpec.getPageSizeBytes() != null) {
+                settings.setPageSizeBytes(addressSpec.getPageSizeBytes());
+            }
+            if (addressSpec.getRedeliveryDelay() != null) {
+                settings.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
+            }
+            if (addressSpec.getRedistributionDelay() != null) {
+                settings.setRedistributionDelay(addressSpec.getRedistributionDelay());
+            }
+            if (addressSpec.isSendToDLAOnNoRoute() != null) {
+                settings.setSendToDLAOnNoRoute(addressSpec.isSendToDLAOnNoRoute());
+            }
             configAddressSettings.put(addressSpec.getMatch(), settings);
         }
         //  Configure security roles
@@ -139,16 +171,64 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 
+    @Override
     protected MessagingSubsystemElement createSubsystemElement() {
         final MessagingSubsystemElement element = new MessagingSubsystemElement();
         if (bindingsDirectory != null) element.setBindingsDirectory(getBindingsDirectory());
         if (journalDirectory != null) element.setJournalDirectory(getJournalDirectory());
         if (largeMessagesDirectory != null) element.setLargeMessagesDirectory(getLargeMessagesDirectory());
         if (pagingDirectory != null) element.setPagingDirectory(getPagingDirectory());
-        element.setClustered(isClustered());
-        if (journalMinFiles != -1) element.setJournalMinFiles(getJournalMinFiles());
-        if (journalFileSize != -1) element.setJournalFileSize(getJournalFileSize());
+        if (clustered != null) element.setClustered(isClustered());
+        if (journalMinFiles != null) element.setJournalMinFiles(getJournalMinFiles());
+        if (journalFileSize != null) element.setJournalFileSize(getJournalFileSize());
         if (journalType != null) element.setJournalType(getJournalType());
+
+        for (TransportSpecification acceptorSpec : acceptors) {
+            TransportElement acceptorEl = element.addAcceptor(acceptorSpec.getName());
+            acceptorEl.setFactoryClassName(acceptorSpec.getFactoryClassName());
+            acceptorEl.setParams(acceptorSpec.getParams());
+        }
+
+        for (AddressSettingsSpecification addressSpec : addressSettings) {
+            AddressSettingsElement addressEl = element.addAddressSettings(addressSpec.getMatch());
+            addressEl.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
+            addressEl.setDeadLetterAddress(addressSpec.getDeadLetterAddress());
+            addressEl.setExpiryAddress(addressSpec.getExpiryAddress());
+            if (addressSpec.isLastValueQueue() != null) {
+                addressEl.setLastValueQueue(addressSpec.isLastValueQueue());
+            }
+            if (addressSpec.getMaxDeliveryAttempts() != null) {
+                addressEl.setMaxDeliveryAttempts(addressSpec.getMaxDeliveryAttempts());
+            }
+            if (addressSpec.getMaxSizeBytes() != null) {
+                addressEl.setMaxSizeBytes(addressSpec.getMaxSizeBytes());
+            }
+            if (addressSpec.getMessageCounterHistoryDayLimit() != null) {
+                addressEl.setMessageCounterHistoryDayLimit(addressSpec.getMessageCounterHistoryDayLimit());
+            }
+            if (addressSpec.getPageSizeBytes() != null) {
+                addressEl.setPageSizeBytes(addressSpec.getPageSizeBytes());
+            }
+            if (addressSpec.getRedeliveryDelay() != null) {
+                addressEl.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
+            }
+            if (addressSpec.getRedistributionDelay() != null) {
+                addressEl.setRedistributionDelay(addressSpec.getRedistributionDelay());
+            }
+            if (addressSpec.isSendToDLAOnNoRoute() != null) {
+                addressEl.setSendToDLAOnNoRoute(addressSpec.isSendToDLAOnNoRoute());
+            }
+        }
+
+        for (TransportSpecification connectorSpec : connectors) {
+            TransportElement connectorEl = element.addAcceptor(connectorSpec.getName());
+            connectorEl.setFactoryClassName(connectorSpec.getFactoryClassName());
+            connectorEl.setParams(connectorSpec.getParams());
+        }
+
+        for (SecuritySettingsSpecification securitySetting : securitySettings) {
+            element.addSecuritySetting(securitySetting.getMatch(), securitySetting.getRoles());
+        }
         return element;
     }
 
@@ -184,7 +264,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.pagingDirectory = pagingDirectory;
     }
 
-    public boolean isClustered() {
+    public Boolean isClustered() {
         return clustered;
     }
 
@@ -192,7 +272,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.clustered = clustered;
     }
 
-    public int getJournalMinFiles() {
+    public Integer getJournalMinFiles() {
         return journalMinFiles;
     }
 
@@ -200,7 +280,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.journalMinFiles = journalMinFiles;
     }
 
-    public int getJournalFileSize() {
+    public Integer getJournalFileSize() {
         return journalFileSize;
     }
 
