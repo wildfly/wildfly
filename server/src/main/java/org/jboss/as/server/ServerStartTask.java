@@ -179,6 +179,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
 
         final BatchBuilder updatesBatchBuilder = container.batchBuilder();
+        updatesBatchBuilder.addListener(serverStartupListener);
 
         final UpdateContext context = new UpdateContext() {
             public BatchBuilder getBatchBuilder() {
@@ -195,11 +196,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
 
         try {
+            serverStartupListener.finish();
             updatesBatchBuilder.install();
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
-        serverStartupListener.finish();
+
     }
 
     ServerStartupListener.Callback createListenerCallback() {
