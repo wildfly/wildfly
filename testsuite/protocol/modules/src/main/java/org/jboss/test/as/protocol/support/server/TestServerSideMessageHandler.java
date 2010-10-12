@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 
 /**
  * A server side Handler implementation that allows us to see the commands

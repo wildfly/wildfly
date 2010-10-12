@@ -19,16 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.manager;
+package org.jboss.as.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 
-import org.jboss.as.server.manager.ServerManagerProtocol.Command;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
+import org.jboss.as.server.ServerManagerProtocol.Command;
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;

@@ -60,7 +60,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     private RemoteDomainControllerElement remoteDomainController;
     private ManagementElement managementElement;
 
-    private PropertiesElement systemProperties;
+    private final PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.HOST.getLocalName());
 

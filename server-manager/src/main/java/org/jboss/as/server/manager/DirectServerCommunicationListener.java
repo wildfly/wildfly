@@ -32,7 +32,7 @@ import org.jboss.as.communication.SocketListener;
 import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.protocol.Status;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 import org.jboss.logging.Logger;
 
 /**

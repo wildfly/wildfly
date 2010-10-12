@@ -49,7 +49,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private String bindingGroup;
     private int portOffset = 0;
     private JvmElement jvm;
-    private PropertiesElement systemProperties;
+    private final PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     /**
      * Construct a new instance.

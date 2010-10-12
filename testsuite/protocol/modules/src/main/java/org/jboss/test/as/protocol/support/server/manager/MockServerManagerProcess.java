@@ -30,13 +30,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
+import org.jboss.as.server.ServerManagerProtocolUtils;
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.as.server.manager.ProcessManagerSlave;
 import org.jboss.as.server.manager.ProcessManagerSlaveFactory;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
-import org.jboss.as.server.manager.ServerManagerProtocolUtils;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.test.as.protocol.support.server.TestServerProcess;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler.ServerMessage;
 

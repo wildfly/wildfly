@@ -35,9 +35,9 @@ import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
+import org.jboss.as.server.ServerState;
 import org.jboss.as.server.SystemExiter;
-import org.jboss.as.server.manager.ServerState;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 
 /**
  * Starts a real server instance in-process. It differs from the proper server

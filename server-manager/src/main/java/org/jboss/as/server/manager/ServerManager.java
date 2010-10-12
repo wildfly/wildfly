@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,23 +49,19 @@ import javax.xml.stream.XMLInputFactory;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
-import org.jboss.as.model.JvmElement;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
-import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.as.model.ServerGroupElement;
-import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.server.ServerState;
+import org.jboss.as.server.ServerManagerProtocol.Command;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerCommandHandler;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
-import org.jboss.as.server.manager.ServerManagerProtocol.Command;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
 import org.jboss.as.server.manager.management.ManagementCommunicationService;
 import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
@@ -114,7 +111,6 @@ public class ServerManager implements ShutdownListener {
     private HostModel hostConfig;
     private DomainModel domainConfig;
     private DomainControllerConnection domainControllerConnection;
-    private ServerMaker serverMaker;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
     private final AtomicBoolean stopping = new AtomicBoolean();
@@ -159,8 +155,6 @@ public class ServerManager implements ShutdownListener {
         // creates a daemon thread to keep this process alive
         launchProcessManagerSlave();
 
-        initializeServerMaker();
-
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(new AbstractServiceListener<Object>() {
             @Override
@@ -184,11 +178,6 @@ public class ServerManager implements ShutdownListener {
         } catch (ServiceRegistryException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void initializeServerMaker() {
-        CommunicationVariables variables = new CommunicationVariables(environment, this);
-        this.serverMaker = new ServerMaker(environment, processManagerSlave, processManagerCommmandHandler, variables);
     }
 
     /**
@@ -240,7 +229,7 @@ public class ServerManager implements ShutdownListener {
 
             server.setState(ServerState.AVAILABLE);
             log.infof("Sending config to server %s", serverName);
-            server.start();
+            server.startServerProcess();
             server.setState(ServerState.STARTING);
         } catch (IOException e) {
             log.errorf(e, "Could not start server %s", serverName);
@@ -265,7 +254,9 @@ public class ServerManager implements ShutdownListener {
     }
 
     /**
-     * Callback for when we receive the SERVER_STOPPED message from a Server
+     * Callback for when we receive the
+     * {@link ServerToServerManagerProtocolCommand#SERVER_STOPPED}
+     * message from a Server
      *
      * @param serverName the name of the server
      */
@@ -297,7 +288,9 @@ public class ServerManager implements ShutdownListener {
     }
 
     /**
-     * Callback for when we receive the SERVER_STARTED message from a Server
+     * Callback for when we receive the
+     * {@link ServerToServerManagerProtocolCommand#SERVER_STARTED}
+     * message from a Server
      *
      * @param serverName the name of the server
      */
@@ -312,7 +305,9 @@ public class ServerManager implements ShutdownListener {
     }
 
     /**
-     * Callback for when we receive the SERVER_START_FAILED message from a Server
+     * Callback for when we receive the
+     * {@link ServerToServerManagerProtocolCommand#SERVER_START_FAILED}
+     * message from a Server
      *
      * @param serverName the name of the server
      */
@@ -327,6 +322,14 @@ public class ServerManager implements ShutdownListener {
         respawn(server);
     }
 
+    /**
+     * Callback for when we receive the
+     * {@link ServerToServerManagerProtocolCommand#SERVER_RECONNECT_STATUS}
+     * message from a Server
+     *
+     * @param serverName the name of the server
+     * @param state the server's state
+     */
     void reconnectedServer(String serverName, ServerState state) {
         Server server = servers.get(serverName);
         if (server == null) {
@@ -338,19 +341,18 @@ public class ServerManager implements ShutdownListener {
 
         if (state.isRestartOnReconnect()) {
             try {
-                server.start();
+                server.startServerProcess();
             } catch (IOException e) {
                 log.errorf(e, "Could not start reconnected server %s", server.getServerProcessName());
             }
-            server.setState(ServerState.STARTING);
         }
     }
 
     private void respawn(Server server){
         try {
-            processManagerSlave.stopProcess(server.getServerProcessName());
+            server.stopServerProcess();
         } catch (IOException e) {
-            log.errorf(e, "Error respawning server %s", server.getServerProcessName());
+            log.errorf(e, "Error stopping server %s before respawning", server.getServerProcessName());
         }
 
 
@@ -359,9 +361,9 @@ public class ServerManager implements ShutdownListener {
         if (timeout < 0 ) {
             server.setState(ServerState.MAX_FAILED);
             try {
-                processManagerSlave.removeProcess(server.getServerProcessName());
+                server.removeServerProcess();
             } catch (IOException e) {
-                log.errorf(e, "Error stopping respawned server %s", server.getServerProcessName());
+                log.errorf(e, "Error removing server %s before respawning", server.getServerProcessName());
             }
             return;
         }
@@ -370,13 +372,18 @@ public class ServerManager implements ShutdownListener {
         //Thread.sleep(timeout);
 
         try {
-            server.setState(ServerState.BOOTING);
-            processManagerSlave.startProcess(server.getServerProcessName());
+            server.startServerProcess();
         } catch (IOException e) {
             log.errorf(e, "Error respawning server %s", server.getServerProcessName());
         }
     }
 
+    /**
+     * Handles a notification from the ProcessManager that a server has
+     * gone down.
+     *
+     * @param downServerName the process name of the server.
+     */
     public void downServer(String downServerName) {
         Server server = servers.get(downServerName);
         if (server == null) {
@@ -387,15 +394,15 @@ public class ServerManager implements ShutdownListener {
         if (environment.isRestart() && server.getState() == ServerState.BOOTING && environment.getServerManagerPort() == 0) {
             //If this was a restarted SM and a server went down while we were down, PM will send the DOWN message. If the port
             //is 0, it will be different following a restart so remove and re-add the server with the new port here
-            JvmElement jvmElement = getServerJvmElement(domainConfig, hostConfig, server.getServerConfig().getServerName());
             try {
-                serverMaker.removeAndAddProcess(server, jvmElement);
+                server.removeServerProcess();
+                server.addServerProcess();
             } catch (IOException e) {
                 log.errorf("Error removing and adding process %s", downServerName);
                 return;
             }
             try {
-                processManagerSlave.startProcess(downServerName);
+                server.startServerProcess();
             } catch (IOException e) {
                 // AutoGenerated
                 throw new RuntimeException(e);
@@ -592,64 +599,15 @@ public class ServerManager implements ShutdownListener {
         this.domainConfig = domain;
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
-//                startServers();
+                startServers();
             } else {
 //                reconnectServers();
             }
         }
     }
 
-    /**
-     * Combines information from the domain, server group, host and server levels
-     * to come up with an overall JVM configuration for a server.
-     *
-     * @param domain the domain configuration object
-     * @param host the host configuration object
-     * @param serverName the name of the server
-     * @return the JVM configuration object
-     */
-    private JvmElement getServerJvmElement(DomainModel domain, HostModel host, String serverName) {
-
-        ServerElement server = host.getServer(serverName);
-        if (server == null)
-            throw new IllegalStateException("Server " + serverName + " is not listed in Host");
-
-        String serverGroupName = server.getServerGroup();
-        ServerGroupElement serverGroup = domain.getServerGroup(serverGroupName);
-        if (serverGroup == null)
-            throw new IllegalStateException("Server group" + serverGroupName + " is not listed in Domain");
-
-        JvmElement serverVM = server.getJvm();
-        String serverVMName = serverVM != null ? serverVM.getName() : null;
-
-        JvmElement groupVM = serverGroup.getJvm();
-        String groupVMName = groupVM != null ? groupVM.getName() : null;
-
-        String ourVMName = serverVMName != null ? serverVMName : groupVMName;
-        if (ourVMName == null) {
-            throw new IllegalStateException("Neither " + Element.SERVER_GROUP.getLocalName() +
-                    " nor " + Element.SERVER.getLocalName() + " has declared a JVM configuration; one or the other must");
-        }
-
-        if (!ourVMName.equals(groupVMName)) {
-            // the server setting replaced the group, so ignore group
-            groupVM = null;
-        }
-        JvmElement hostVM = host.getJvm(ourVMName);
-
-        return new JvmElement(groupVM, hostVM, serverVM);
-    }
-
     Server getServer(String name) {
         return servers.get(name);
-    }
-
-    static String getServerProcessName(ServerModel serverConfig) {
-        return getServerProcessName(serverConfig.getServerName());
-    }
-
-    static String getServerProcessName(String name) {
-        return ServerMaker.SERVER_PROCESS_NAME_PREFIX + name;
     }
 
     private void checkState(Server server, ServerState expected) {
@@ -667,6 +625,28 @@ public class ServerManager implements ShutdownListener {
 
     DirectServerCommunicationListener getDirectServerCommunicationListener() {
         return directServerCommunicationListener;
+    }
+
+
+    private void startServers() {
+        InetSocketAddress managementSocket = new InetSocketAddress(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
+        for (ServerElement serverEl : hostConfig.getServers()) {
+            // TODO take command line input on what servers to start
+            if (serverEl.isStart()) {
+                log.info("Starting server " + serverEl.getName());
+                try {
+                    Server server = new Server(serverEl.getName(), domainConfig, hostConfig, environment, processManagerSlave, managementSocket);
+                    servers.put(server.getServerProcessName(), server);
+                    // Now that the server is in the servers map we can start it
+                    server.addServerProcess();
+                    server.startServerProcess();
+                } catch (IOException e) {
+                    // FIXME handle failure to start server
+                    log.error("Failed to start server " + serverEl.getName(), e);
+                }
+            }
+            else log.info("Server " + serverEl.getName() + " is configured to not be started");
+        }
     }
 
     /**

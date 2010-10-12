@@ -30,7 +30,7 @@ import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerManagerToServerCommandHandler;
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerCommandHandler;
 
 /**
  * Communication Handler for direct communication between this Server and the

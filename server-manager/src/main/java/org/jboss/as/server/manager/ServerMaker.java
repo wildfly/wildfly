@@ -23,11 +23,9 @@
 package org.jboss.as.server.manager;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,15 +45,8 @@ import org.jboss.marshalling.ModularClassTable;
  */
 public final class ServerMaker {
 
-    /**
-     * Prefix applied to a server's name to create it's process name.
-     */
-    static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
-
     private final ProcessManagerSlave processManagerSlave;
 
-    @SuppressWarnings("unused")
-    private final OutgoingPmCommandHandler messageHandler;
     private final ServerManagerEnvironment environment;
 
     private final CommunicationVariables communicationVariables;
@@ -78,21 +69,16 @@ public final class ServerMaker {
         if (messageHandler == null) {
             throw new IllegalArgumentException("messageHandler is null");
         }
-        this.messageHandler = messageHandler;
         if (communicationVariables == null) {
             throw new IllegalArgumentException("communicationVariables is null");
         }
         this.communicationVariables = communicationVariables;
     }
 
-    void removeAndAddProcess(Server server, JvmElement jvmElement) throws IOException {
+    void addProcess(Server server, JvmElement jvmElement) throws IOException {
         final String serverProcessName = server.getServerProcessName();
-        processManagerSlave.removeProcess(serverProcessName);
-        String serverName = server.getServerConfig().getServerName();
-        List<String> command = getServerLaunchCommand(
-                server.getServerConfig().getServerName(),
-                jvmElement,
-                server.getServerConfig().getSystemProperties());
+        String serverName = server.getServerName();
+        List<String> command = server.getServerLaunchCommand();
 
         Map<String, String> env = getServerLaunchEnvironment(jvmElement);
 
@@ -109,155 +95,7 @@ public final class ServerMaker {
         final Marshaller marshaller = marshallerFactory.createMarshaller(configuration);
         marshaller.start(Marshalling.createByteOutput(baos));
         processManagerSlave.sendStdin(serverProcessName, baos.toByteArray());
-    }
 
-    private List<String> getServerLaunchCommand(final String serverName, final JvmElement jvm, final PropertiesElement systemProperties) {
-        List<String> command = new ArrayList<String>();
-
-//      if (false) {
-//          // Example: run at high priority on *NIX
-//          args.add("/usr/bin/nice");
-//          args.add("-n");
-//          args.add("-10");
-//      }
-//      if (false) {
-//          // Example: run only on processors 1-4 on Linux
-//          args.add("/usr/bin/taskset");
-//          args.add("0x0000000F");
-//      }
-
-        command.add(getJavaCommand(jvm));
-
-        Map<String, String> sysProps = appendJavaOptions(jvm, command);
-
-        command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-        command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/logs/boot.log");
-        command.add("-jar");
-        command.add("jboss-modules.jar");
-        command.add("-mp");
-        command.add("modules");
-        command.add("-logmodule");
-        command.add("org.jboss.logmanager");
-        command.add("org.jboss.as.server");
-
-        appendArgsToMain(serverName, sysProps, systemProperties, command);
-
-        return command;
-    }
-
-    private String getJavaCommand(JvmElement jvm) {
-        String javaHome = jvm.getJavaHome();
-        if (javaHome == null) { // TODO should this be possible?
-            if(environment.getDefaultJVM() != null) {
-                return environment.getDefaultJVM().getAbsolutePath();
-            }
-            return "java"; // hope for the best
-        }
-
-        File f = new File(javaHome);
-        f = new File(f, "bin");
-        f = new File (f, "java");
-        return f.getAbsolutePath();
-    }
-
-    private Map<String, String> appendJavaOptions(JvmElement jvm, List<String> command) {
-
-        String heap = jvm.getHeapSize();
-        String max = jvm.getMaxHeap();
-
-        // FIXME not the correct place to establish defaults
-        if (max == null && heap != null) {
-            max = heap;
-        }
-        if (heap == null && max != null) {
-            heap = max;
-        }
-
-        if (heap != null) {
-            command.add("-Xms"+ heap);
-        }
-        if (max != null) {
-            command.add("-Xmx"+ max);
-        }
-
-        PropertiesElement propsEl = jvm.getSystemProperties();
-        Map<String, String> sysProps = propsEl == null ? new HashMap<String, String>() : propsEl.getProperties();
-        addStandardProperties(sysProps);
-
-        for (Map.Entry<String, String> prop : sysProps.entrySet()) {
-            StringBuilder sb = new StringBuilder("-D");
-            sb.append(prop.getKey());
-            sb.append('=');
-            sb.append(prop.getValue() == null ? "true" : prop.getValue());
-            command.add(sb.toString());
-        }
-
-        return sysProps;
-    }
-
-    private void appendArgsToMain(final String serverName, final Map<String, String> jvmProps, final PropertiesElement propertiesElement, final List<String> command) {
-
-        // Pass through as args to main any sys props that are read at primordial boot
-        Map<String, String> sysProps = null;
-        if (propertiesElement == null) {
-            sysProps = Collections.emptyMap();
-        }
-        else {
-            sysProps = propertiesElement.getProperties();
-        }
-
-        StringBuilder sb = new StringBuilder("-D");
-        sb.append(ServerManagerEnvironment.HOME_DIR);
-        sb.append('=');
-        sb.append(getPropertyValue(ServerManagerEnvironment.HOME_DIR, jvmProps, sysProps, environment.getHomeDir().getAbsolutePath()));
-        command.add(sb.toString());
-
-        String key = "jboss.server.base.dir";  // TODO fragile! common constant between server-manager and server modules
-        sb = new StringBuilder("-D");
-        sb.append(key);
-        sb.append('=');
-        File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
-        sb.append(getPropertyValue(key, jvmProps, sysProps, serverBaseDir.getAbsolutePath()));
-        command.add(sb.toString());
-
-        // TODO fragile! common constants between server-manager and server modules
-        String[] keys = {"jboss.server.config.dir", "jboss.server.config.dir",
-                "jboss.server.data.dir", "jboss.server.log.dir", "jboss.server.temp.dir"};
-        for (String propkey : keys) {
-            if (sysProps.containsKey(propkey)) {
-                sb = new StringBuilder("-D");
-                sb.append(propkey);
-                sb.append('=');
-                sb.append(sysProps.get(propkey));
-                command.add(sb.toString());
-            }
-        }
-
-    }
-
-    private static String getPropertyValue(String property, Map<String, String> jvmProps, Map<String, String> sysProps, String defaultVal) {
-        String result = jvmProps.get(property);
-        if (result == null) {
-            result = sysProps.get(property);
-        }
-        return result == null ? defaultVal : result;
-    }
-
-    /**
-     * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
-     *
-     * TODO externalize this somewhere if doing this at all is the right thing
-     *
-     * @param sysProps
-     */
-    private void addStandardProperties(Map<String, String> sysProps) {
-        //
-        if (!sysProps.containsKey("sun.rmi.dgc.client.gcInterval")) {
-            sysProps.put("sun.rmi.dgc.client.gcInterval","3600000");
-        }
-        if (!sysProps.containsKey("sun.rmi.dgc.server.gcInterval")) {
-            sysProps.put("sun.rmi.dgc.server.gcInterval","3600000");
-        }
     }
 
     private Map<String, String> getServerLaunchEnvironment(JvmElement jvm) {

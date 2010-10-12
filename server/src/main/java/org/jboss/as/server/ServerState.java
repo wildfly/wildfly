@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.manager;
+package org.jboss.as.server;
 
 /**
  *
@@ -27,20 +27,20 @@ package org.jboss.as.server.manager;
  * @version $Revision: 1.1 $
  */
 public enum ServerState {
-    /** We have told the PM to start the server and are waiting for the SERVER_AVAILABLE message back from the server */
+    /** ServerManager has told the PM to start the server and is waiting for the SERVER_AVAILABLE message back from the server */
     BOOTING (true),
 
     /** The server has sent the available command back to the SERVER_MANAGER */
     AVAILABLE (true),
 
-    /** We have received the SERVER_AVAILABLE message from the server process and have sent the config
-     *  to the server and are waiting for the SERVER_STARTED or SERVER_FAILED message */
+    /** ServerManager has received the SERVER_AVAILABLE message from the server process, has sent the config
+     *  to the server and is waiting for the SERVER_STARTED or SERVER_FAILED message */
     STARTING (false),
 
     /** The server sent back the SERVER_STARTED message and is up and running */
     STARTED (false),
 
-    /** We have told the server to stop and are waiting for the SERVER_STOPPED message */
+    /** ServerManager has told the server to stop and is waiting for the SERVER_STOPPED message */
     STOPPING (false),
 
     /** We have received the SERVER_STOPPED message */
@@ -59,7 +59,7 @@ public enum ServerState {
         this.restartOnReconnect = restartedReconnect;
     }
 
-    boolean isRestartOnReconnect() {
+    public boolean isRestartOnReconnect() {
         return restartOnReconnect;
     }
 }

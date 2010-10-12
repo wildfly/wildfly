@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.manager;
+package org.jboss.as.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
 
 /**
@@ -48,15 +47,6 @@ public class ServerManagerProtocol {
      * Commands sent from SM->Server
      */
     public enum ServerManagerToServerProtocolCommand {
-
-        /** Message sent from ServerManager to Server containing the bytes of a {@link org.jboss.as.model.ServerModel} */
-        START_SERVER((byte)1, true) {
-
-            @Override
-            public void handleCommand(ServerManagerToServerCommandHandler handler, Command<ServerManagerToServerProtocolCommand> cmd) throws IOException, ClassNotFoundException {
-                handler.handleStartServer(ServerManagerProtocolUtils.unmarshallCommandData(ServerModel.class, cmd));
-            }
-        },
 
         /** Message sent from ServerManager to Server. No data */
         STOP_SERVER((byte)2) {
@@ -87,7 +77,7 @@ public class ServerManagerProtocol {
             this.hasData = hasData;
         }
 
-        byte getId() {
+        public byte getId() {
             return id;
         }
 
@@ -106,7 +96,7 @@ public class ServerManagerProtocol {
             return all;
         }
 
-        static ServerManagerToServerProtocolCommand parse(byte id) {
+        public static ServerManagerToServerProtocolCommand parse(byte id) {
             ServerManagerToServerProtocolCommand cmd = COMMANDS.get(id);
             if (cmd == null)
                 throw new IllegalArgumentException("Unknown command " + id);
@@ -191,7 +181,7 @@ public class ServerManagerProtocol {
             this.hasData = hasData;
         }
 
-        byte getId() {
+        public byte getId() {
             return id;
         }
 
@@ -210,7 +200,7 @@ public class ServerManagerProtocol {
             return all;
         }
 
-        static ServerToServerManagerProtocolCommand parse(byte id) {
+        public static ServerToServerManagerProtocolCommand parse(byte id) {
             ServerToServerManagerProtocolCommand cmd = COMMANDS.get(id);
             if (cmd == null)
                 throw new IllegalArgumentException("Unknown command " + id);
@@ -272,7 +262,6 @@ public class ServerManagerProtocol {
             }
         }
 
-        public abstract void handleStartServer(ServerModel serverModel);
         public abstract void handleStopServer();
     }
 

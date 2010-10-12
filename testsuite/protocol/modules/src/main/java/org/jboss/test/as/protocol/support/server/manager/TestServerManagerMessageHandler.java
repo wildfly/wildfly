@@ -27,8 +27,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
-import org.jboss.as.server.manager.ServerState;
-import org.jboss.as.server.manager.ServerManagerProtocol.ServerToServerManagerCommandHandler;
+import org.jboss.as.server.ServerState;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerCommandHandler;
 
 /**
  * A server manager side Handler implementation that allows us to see the commands

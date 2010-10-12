@@ -24,6 +24,10 @@ package org.jboss.as.server;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerCommandHandler;
+import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -39,7 +43,11 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ServerManagerCommunicationsActivator implements ServiceActivator, Serializable {
+public final class ServerManagerCommunicationsActivator implements ServiceActivator, Serializable {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
+
+    private final String processName;
     private final byte[] securityToken;
     private final InetSocketAddress serverManagerAddress;
 
@@ -47,34 +55,54 @@ final class ServerManagerCommunicationsActivator implements ServiceActivator, Se
 
     private static final long serialVersionUID = 6029538240578468990L;
 
-    ServerManagerCommunicationsActivator(final byte[] securityToken, final InetSocketAddress serverManagerAddress) {
+    public ServerManagerCommunicationsActivator(final String processName, final byte[] securityToken, final InetSocketAddress serverManagerAddress) {
+        this.processName = processName;
         this.securityToken = securityToken;
         this.serverManagerAddress = serverManagerAddress;
     }
 
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder builder = context.getBatchBuilder();
-        final ServiceImpl service = new ServiceImpl(securityToken, serverManagerAddress);
+        final ServiceImpl service = new ServiceImpl(processName, securityToken, serverManagerAddress);
         final BatchServiceBuilder<Void> serviceBuilder = builder.addService(NAME, service);
-        serviceBuilder.addDependency(ServerController.SERVICE_NAME, ServerController.class, service.getServerControllerInjector());
+        // FIXME add this dependency back when we ServerController is doing something
+//        serviceBuilder.addDependency(ServerController.SERVICE_NAME, ServerController.class, service.getServerControllerInjector());
     }
 
     static final class ServiceImpl implements Service<Void> {
-
+        private final String processName;
         private final byte[] token;
         private final InetSocketAddress serverManagerAddress;
         private final InjectedValue<ServerController> serverController = new InjectedValue<ServerController>();
+        private ServerCommunicationHandler serverCommunicationHandler;
 
-        ServiceImpl(final byte[] token, final InetSocketAddress serverManagerAddress) {
+        ServiceImpl(final String processName, final byte[] token, final InetSocketAddress serverManagerAddress) {
+            this.processName = processName;
             this.token = token;
             this.serverManagerAddress = serverManagerAddress;
         }
 
         public void start(final StartContext context) throws StartException {
-            // TODO: establish & maintain SM connection
+
+            // FIXME this is a temporary communication mechanism
+            ServerManagerToServerCommandHandler handler = new ServerManagerToServerCommandHandler() {
+
+                @Override
+                public void handleStopServer() {
+                    throw new UnsupportedOperationException(ServerManagerToServerProtocolCommand.STOP_SERVER + " is not a valid command");
+                }
+
+            };
+            this.serverCommunicationHandler = DirectServerSideCommunicationHandler.create(processName, serverManagerAddress.getAddress(), serverManagerAddress.getPort(), handler);
+            serverCommunicationHandler.start();
+            log.info("Started Server to ServerManager communications");
         }
 
         public void stop(final StopContext context) {
+            if (serverCommunicationHandler != null) {
+                serverCommunicationHandler.shutdown();
+            }
+            log.info("Stopped Server to ServerManager communications");
         }
 
         public Void getValue() throws IllegalStateException {
