@@ -66,6 +66,9 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         streamWriter.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
         coreEnvironmentElement.writeContent(streamWriter);
 
+        streamWriter.writeStartElement(Element.OBJECT_STORE.getLocalName());
+        objectStoreEnvironmentElement.writeContent(streamWriter);
+
         streamWriter.writeEndElement();
     }
 
