@@ -24,6 +24,12 @@ package org.jboss.as.threads;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
+
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -77,6 +83,17 @@ public abstract class AbstractExecutorAdd extends AbstractThreadsSubsystemUpdate
 
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    protected <T> BatchServiceBuilder<T> addThreadFactoryDependency(final ServiceName serviceName, BatchServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, BatchBuilder builder) {
+        final ServiceName threadFactoryName;
+        if (threadFactory == null) {
+            threadFactoryName = serviceName.append("thread-factory");
+            builder.addService(threadFactoryName, new ThreadFactoryService());
+        } else {
+            threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
+        }
+        return serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, injector);
     }
 
     public final ExecutorRemove getCompensatingUpdate(final ThreadsSubsystemElement original) {

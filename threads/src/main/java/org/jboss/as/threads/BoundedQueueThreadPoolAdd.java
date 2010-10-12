@@ -22,11 +22,15 @@
 
 package org.jboss.as.threads;
 
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.model.ChildElement;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -58,8 +62,10 @@ public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
         final int coreThreads = coreThreadsCount == null ? maxThreads : coreThreadsCount.getScaledCount();
         final int queueLength = this.queueLength.getScaledCount();
         final String name = getName();
+        final ServiceName serviceName = ThreadsServices.executorName(name);
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(coreThreads, maxThreads, queueLength, blocking, getKeepaliveTime(), allowCoreTimeout);
-        builder.addService(ThreadsServices.executorName(name), service);
+        final BatchServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
+        addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
     }
 
     protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {
