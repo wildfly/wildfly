@@ -22,7 +22,9 @@
 
 package org.jboss.as.naming.context;
 
+import javax.naming.RefAddr;
 import javax.naming.Reference;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Reference implementation that captures a module name and allows object factories to be loaded and created from
@@ -32,18 +34,31 @@ import javax.naming.Reference;
  */
 public class ModularReference extends Reference {
     private static final long serialVersionUID = -4805781394834948096L;
-    private final String moduleName;
+    private final ModuleIdentifier moduleIdentifier;
 
     /**
      * Create an instance.
      *
      * @param className The class name of the target object type
      * @param factory The object factory class name
-     * @param moduleName The module name to load the factroy class
+     * @param moduleIdentifier The module name to load the factory class
      */
-    public ModularReference(final String className, final String factory, final String moduleName) {
+    public ModularReference(final String className, final String factory, final ModuleIdentifier moduleIdentifier) {
         super(className, factory, null);
-        this.moduleName = moduleName;
+        this.moduleIdentifier = moduleIdentifier;
+    }
+
+    /**
+     * Create an instance.
+     *
+     * @param className The class name of the target object type
+     * @param addr The address of the object
+     * @param factory The object factory class name
+     * @param moduleIdentifier The module name to load the factory class
+     */
+    public ModularReference(final String className, final RefAddr addr, final String factory, final ModuleIdentifier moduleIdentifier) {
+        super(className, addr, factory, null);
+        this.moduleIdentifier = moduleIdentifier;
     }
 
     /**
@@ -51,7 +66,7 @@ public class ModularReference extends Reference {
      *
      * @return The module name
      */
-    public String getModuleName() {
-        return moduleName;
+    public ModuleIdentifier getModuleIdentifier() {
+        return moduleIdentifier;
     }
 }

@@ -45,8 +45,8 @@ public class MethodResourceInjection<T> extends ResourceInjection<T> {
      * @param methodValue The method value to use for injection
      * @param primitive Is the argument type primitive
      */
-    public MethodResourceInjection(final Value<Method> methodValue, final boolean primitive) {
-        super(primitive);
+    public MethodResourceInjection(final Value<Method> methodValue, final Value<T> value, final boolean primitive) {
+        super(value, primitive);
         this.methodValue = methodValue;
     }
 

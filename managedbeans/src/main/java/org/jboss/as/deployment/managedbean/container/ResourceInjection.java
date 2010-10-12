@@ -24,6 +24,7 @@ package org.jboss.as.deployment.managedbean.container;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * Helper object used to coordinate resource injection.  This class will hold onto an injector and an injected value
@@ -34,15 +35,16 @@ import org.jboss.msc.value.InjectedValue;
  * @author John E. Bailey
  */
 public abstract class ResourceInjection <T> {
-    private final InjectedValue<T> value = new InjectedValue<T>();
+    private final Value<T> value;
     private final boolean primitiveTarget;
 
     /**
      * Construct new instance.
      * @param primitiveTarget Is the injection target a primitive value
      */
-    protected ResourceInjection(final boolean primitiveTarget) {
+    protected ResourceInjection(final Value<T> value, final boolean primitiveTarget) {
         this.primitiveTarget = primitiveTarget;
+        this.value = value;
     }
 
     /**
@@ -57,15 +59,6 @@ public abstract class ResourceInjection <T> {
             return; // Skip the injection of null into a primitive target
         }
         injector.inject(theValue);
-    }
-
-    /**
-     * Get the value injector.
-     *
-     * @return An injector
-     */
-    public Injector<T> getValueInjector() {
-        return value;
     }
 
     /**

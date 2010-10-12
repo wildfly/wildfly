@@ -112,6 +112,9 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
         final TestManagedBean testManagedBean = managedBeanContainer.createInstance();
         assertNotNull(testManagedBean);
         assertFalse(testManagedBean.equals(managedBeanContainer.createInstance()));
+
+
+        System.out.println(javaContext.lookup("java:global/" + expectedDeploymentName + "/TestBean"));
     }
 
     @Test

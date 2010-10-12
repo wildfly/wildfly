@@ -38,6 +38,7 @@ import org.jboss.as.deployment.naming.ContextService;
 import org.jboss.as.deployment.naming.DuplicateBindingException;
 import org.jboss.as.deployment.naming.JndiName;
 import org.jboss.as.deployment.naming.ModuleContextConfig;
+import org.jboss.as.deployment.naming.NamingLookupValue;
 import org.jboss.as.deployment.naming.ResourceBinder;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -45,6 +46,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
 import javax.naming.Context;
@@ -122,7 +124,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector());
 
         // Add an object factory reference for this managed bean
-        final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName);
+        final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName.toString());
         final ResourceBinder<Reference> managedBeanFactoryBinder = new ResourceBinder<Reference>(moduleContext.getContextName().append(managedBeanName), Values.immediateValue(managedBeanFactoryReference));
         final ServiceName referenceBinderName = moduleContextServiceName.append(managedBeanName);
         batchBuilder.addService(referenceBinderName, managedBeanFactoryBinder)
@@ -138,12 +140,14 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final JndiName localContextName = managedBeanContextJndiName.append(resourceConfiguration.getLocalContextName());
         final String targetContextName = resourceConfiguration.getTargetContextName();
 
-        final ResourceInjection<T> resourceInjection = getResourceInjection(valueType, resourceConfiguration);
+        final NamingLookupValue<T> lookupValue = new NamingLookupValue<T>(localContextName);
+        final ResourceInjection<T> resourceInjection = getResourceInjection(resourceConfiguration, lookupValue);
 
         // Now add a binder for the local context
         final ServiceName binderName = beanContextServiceName.append(localContextName.getLocalName());
         if(resourceInjection != null) {
-            serviceBuilder.addDependency(binderName, valueType, resourceInjection.getValueInjector());
+            serviceBuilder.addDependency(binderName);
+            serviceBuilder.addDependency(beanContextServiceName, Context.class, lookupValue.getContextInjector());
         }
 
         final LinkRef linkRef = new LinkRef(targetContextName.startsWith("java") ? targetContextName : moduleContext.getContextName().append(targetContextName).getAbsoluteName());
@@ -169,12 +173,12 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         return resourceInjection;
     }
 
-    private <T> ResourceInjection<T> getResourceInjection(final Class<T> injectedType, final ResourceConfiguration resourceConfiguration) {
+    private <T> ResourceInjection<T> getResourceInjection(final ResourceConfiguration resourceConfiguration, Value<T> value) {
         switch(resourceConfiguration.getTargetType()) {
             case FIELD:
-                return new FieldResourceInjection<T>(Values.immediateValue(Field.class.cast(resourceConfiguration.getTarget())), resourceConfiguration.getInjectedType().isPrimitive());
+                return new FieldResourceInjection<T>(Values.immediateValue(Field.class.cast(resourceConfiguration.getTarget())), value, resourceConfiguration.getInjectedType().isPrimitive());
             case METHOD:
-                return new MethodResourceInjection<T>(Values.immediateValue(Method.class.cast(resourceConfiguration.getTarget())), resourceConfiguration.getInjectedType().isPrimitive());
+                return new MethodResourceInjection<T>(Values.immediateValue(Method.class.cast(resourceConfiguration.getTarget())), value, resourceConfiguration.getInjectedType().isPrimitive());
             default:
                 return null;
         }

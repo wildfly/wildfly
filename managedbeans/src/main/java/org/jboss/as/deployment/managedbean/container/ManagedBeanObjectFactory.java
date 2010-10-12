@@ -22,7 +22,8 @@
 
 package org.jboss.as.deployment.managedbean.container;
 
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.naming.context.ModularReference;
+import org.jboss.modules.Module;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -53,7 +54,7 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         final Reference reference = Reference.class.cast(obj);
         RefAddr refAddr = reference.get(0);
-        final ServiceName managedBeanName = (ServiceName)refAddr.getContent();
+        final String managedBeanName = (String)refAddr.getContent();
         final ManagedBeanContainer<?> managedBeanService = ManagedBeanRegistry.get(managedBeanName);
         if(managedBeanService == null) {
             throw new NamingException("Managed bean does not exist with name: " + managedBeanName);
@@ -65,27 +66,27 @@ public class ManagedBeanObjectFactory implements ObjectFactory {
      * Create a reference used to bind an instance into a naming context.
      *
      * @param managedBeanClass The managed bean's class
-     * @param serviceName The service name for the manage bean service
+     * @param beanName The name for the manage bean
      * @return A reference instance
      */
-    public static Reference createReference(final Class<?> managedBeanClass, final ServiceName serviceName) {
-        final RefAddr refAddr = new ManagedBeanObjectFactory.ServiceNameRefAdr(serviceName);
-        return new Reference(managedBeanClass.getName(), refAddr, ManagedBeanObjectFactory.class.getName(), null);
+    public static ModularReference createReference(final Class<?> managedBeanClass, final String beanName) {
+        final RefAddr refAddr = new ManagedBeanObjectFactory.ServiceNameRefAdr(beanName);
+        return new ModularReference(managedBeanClass.getName(), refAddr, ManagedBeanObjectFactory.class.getName(), Module.forClass(ManagedBeanObjectFactory.class).getIdentifier());
     }
 
     public static final class ServiceNameRefAdr extends RefAddr {
         private static final long serialVersionUID = -8030736501810800377L;
 
-        private final ServiceName serviceName;
+        private final String beanName;
 
-        public ServiceNameRefAdr(final ServiceName serviceName) {
-            super("ServiceName");
-            this.serviceName = serviceName;
+        public ServiceNameRefAdr(final String beanName) {
+            super("ManagedBeanName");
+            this.beanName = beanName;
         }
 
         @Override
         public Object getContent() {
-            return serviceName;
+            return beanName;
         }
     }
 }

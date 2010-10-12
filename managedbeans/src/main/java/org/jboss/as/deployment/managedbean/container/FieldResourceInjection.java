@@ -45,8 +45,8 @@ public class FieldResourceInjection<T> extends ResourceInjection<T> {
      * @param fieldValue The field on the target.
      * @param primitive Is the field type primitive
      */
-    public FieldResourceInjection(final Value<Field> fieldValue, final boolean primitive) {
-        super(primitive);
+    public FieldResourceInjection(final Value<Field> fieldValue, final Value<T> value, final boolean primitive) {
+        super(value, primitive);
         this.fieldValue = fieldValue;
     }
 

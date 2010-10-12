@@ -352,7 +352,7 @@ public class InMemoryNamingStore implements NamingStore {
             currentName = currentName.getSuffix(1);
             final TreeNode node = contextNode.children.get(childName);
             if (node == null) {
-                throw nameNotFoundException(childName, currentName);
+                throw nameNotFoundException(childName, contextNode.fullName);
             }
             return node.accept(this);
         }

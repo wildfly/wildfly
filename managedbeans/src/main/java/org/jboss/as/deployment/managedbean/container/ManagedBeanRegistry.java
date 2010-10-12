@@ -22,8 +22,6 @@
 
 package org.jboss.as.deployment.managedbean.container;
 
-import org.jboss.msc.service.ServiceName;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author John E. Bailey
  */
 public class ManagedBeanRegistry {
-    private static final ConcurrentMap<ServiceName, ManagedBeanContainer<?>> registry = new ConcurrentHashMap<ServiceName, ManagedBeanContainer<?>>();
+    private static final ConcurrentMap<String, ManagedBeanContainer<?>> registry = new ConcurrentHashMap<String, ManagedBeanContainer<?>>();
 
     /**
      * Register a managed bean service.
@@ -42,7 +40,7 @@ public class ManagedBeanRegistry {
      * @param managedBeanContainer The container
      * @throws DuplicateMangedBeanException if multiple instances are registered with the same name
      */
-    public static void register(final ServiceName name, final ManagedBeanContainer<?> managedBeanContainer) throws DuplicateMangedBeanException {
+    public static void register(final String name, final ManagedBeanContainer<?> managedBeanContainer) throws DuplicateMangedBeanException {
         if(registry.putIfAbsent(name, managedBeanContainer) != null) {
             throw new DuplicateMangedBeanException("ManagedBean bound to '%s' already exists in registry.", name);
         }
@@ -54,7 +52,7 @@ public class ManagedBeanRegistry {
      * @param name The managed bean service name
      * @return The managed bean service if it exists in the registry, null if no.
      */
-    public static ManagedBeanContainer<?> get(final ServiceName name) {
+    public static ManagedBeanContainer<?> get(final String name) {
         return registry.get(name);
     }
 
@@ -64,7 +62,7 @@ public class ManagedBeanRegistry {
      * @param name The service name
      * @param managedBeanContainer The service
      */
-    public static void unregister(final ServiceName name, final ManagedBeanContainer<?> managedBeanContainer) {
+    public static void unregister(final String name, final ManagedBeanContainer<?> managedBeanContainer) {
         registry.remove(name, managedBeanContainer);
     }
 

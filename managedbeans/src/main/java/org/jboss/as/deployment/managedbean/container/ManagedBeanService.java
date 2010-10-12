@@ -51,7 +51,7 @@ public class ManagedBeanService<T> implements Service<ManagedBeanContainer<T>> {
         try {
             final ServiceName serviceName = context.getController().getName();
             log.infof("Starting managed bean %s", serviceName);
-            ManagedBeanRegistry.register(serviceName, container);
+            ManagedBeanRegistry.register(serviceName.toString(), container);
         } catch (ManagedBeanRegistry.DuplicateMangedBeanException e) {
             throw new StartException("Failed to register with the managed bean registry");
         }
@@ -61,7 +61,7 @@ public class ManagedBeanService<T> implements Service<ManagedBeanContainer<T>> {
     public synchronized void stop(StopContext context) {
         final ServiceName serviceName = context.getController().getName();
         log.infof("Stopping managed bean %s", serviceName);
-        ManagedBeanRegistry.unregister(context.getController().getName(), container);
+        ManagedBeanRegistry.unregister(context.getController().getName().toString(), container);
     }
 
     /**
