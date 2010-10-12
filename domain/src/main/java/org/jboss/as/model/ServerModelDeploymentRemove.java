@@ -37,6 +37,7 @@ public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Serve
     private final ServerDeploymentStartStopHandler startStopHandler;
 
     public ServerModelDeploymentRemove(final String deploymentName, boolean undeploy) {
+        super(false, true);
         this.deploymentName = deploymentName;
         if (undeploy) {
             startStopHandler = new ServerDeploymentStartStopHandler();

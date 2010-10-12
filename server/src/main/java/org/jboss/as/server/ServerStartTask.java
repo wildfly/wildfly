@@ -86,18 +86,19 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ServiceContainer container = ServiceContainer.Factory.create();
 
         final ServerStartupListener serverStartupListener = new ServerStartupListener(createListenerCallback());
-
+        final ServerStartBatchBuilder batchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
+        batchBuilder.addListener(serverStartupListener);
+        
         // First-stage (boot) services
-        final BatchBuilder bootBatchBuilder = container.batchBuilder();
-        bootBatchBuilder.addListener(serverStartupListener);
+
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             public BatchBuilder getBatchBuilder() {
-                return bootBatchBuilder;
+                return batchBuilder;
             }
         };
 
         // Root service
-        final BatchServiceBuilder<Void> builder = bootBatchBuilder.addService(ServiceName.JBOSS.append("as", "server"), Service.NULL);
+        final BatchServiceBuilder<Void> builder = batchBuilder.addService(ServiceName.JBOSS.append("as", "server"), Service.NULL);
         builder.setInitialMode(ServiceController.Mode.IMMEDIATE);
 
         // Services specified by the creator of this object
@@ -110,16 +111,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             service.activate(serviceActivatorContext);
         }
 
-        // Install the boot services
-        try {
-            bootBatchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new IllegalStateException("Failed to install boot services", e);
-        }
-
         // Next-stage services
-        final BatchBuilder batchBuilder = container.batchBuilder();
-        batchBuilder.addListener(serverStartupListener);
 
         // Initial model
         final ServerModel serverModel = new ServerModel(serverName, portOffset);
@@ -172,18 +164,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
-        try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new IllegalStateException("Failed to start server", e);
-        }
-
-        final BatchBuilder updatesBatchBuilder = container.batchBuilder();
-        updatesBatchBuilder.addListener(serverStartupListener);
-
         final UpdateContext context = new UpdateContext() {
             public BatchBuilder getBatchBuilder() {
-                return updatesBatchBuilder;
+                return batchBuilder;
             }
 
             public ServiceContainer getServiceContainer() {
@@ -192,16 +175,53 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         };
 
         for (AbstractServerModelUpdate<?> update : updates) {
-            update.applyUpdateBootAction(context);
+            if(!update.isDeploymentUpdate()) {
+                update.applyUpdateBootAction(context);
+            }
         }
 
         try {
-            serverStartupListener.finish();
-            updatesBatchBuilder.install();
+            serverStartupListener.startBatch(createDeploymentTask(container, serverStartupListener));
+            batchBuilder.install();
+            serverStartupListener.finishBatch();
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
+    }
 
+    private Runnable createDeploymentTask(final ServiceContainer container, final ServerStartupListener serverStartupListener) {
+        return new Runnable() {
+            public void run() {
+                // Activate deployments once the first batch is complete.
+                final ServerStartBatchBuilder deploymentBatchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
+                deploymentBatchBuilder.addListener(serverStartupListener);
+                serverStartupListener.startBatch(null);
+
+                final UpdateContext context = new UpdateContext() {
+                    public BatchBuilder getBatchBuilder() {
+                        return deploymentBatchBuilder;
+                    }
+
+                    public ServiceContainer getServiceContainer() {
+                        return container;
+                    }
+                };
+
+                for (AbstractServerModelUpdate<?> update : updates) {
+                    if(update.isDeploymentUpdate()) {
+                        update.applyUpdateBootAction(context);
+                    }
+                }
+
+                serverStartupListener.finish(); // We have finished adding everything for the server start
+                try {
+                    deploymentBatchBuilder.install();
+                    serverStartupListener.finishBatch();
+                } catch (ServiceRegistryException e) {
+                    throw new RuntimeException(e); // TODO: better exception handling.
+                }
+            }
+        };
     }
 
     ServerStartupListener.Callback createListenerCallback() {

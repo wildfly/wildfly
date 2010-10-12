@@ -36,6 +36,7 @@ public class ServerDeploymentRepositoryRemove extends AbstractServerModelUpdate<
     private final String path;
 
     public ServerDeploymentRepositoryRemove(String path) {
+        super(false, true);
         this.path = path;
     }
 

@@ -32,7 +32,7 @@ public final class ServerSubsystemRemove extends AbstractServerModelUpdate<Void>
     private final SubsystemRemove subsystemRemove;
 
     public ServerSubsystemRemove(final SubsystemRemove subsystemRemove) {
-        super(true);
+        super(true, false);
         this.subsystemRemove = subsystemRemove;
     }
 

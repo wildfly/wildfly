@@ -39,7 +39,6 @@ public final class ServerSystemPropertyUpdate extends AbstractServerModelUpdate<
      * @param propertyUpdate the property update to apply
      */
     public ServerSystemPropertyUpdate(final AbstractPropertyUpdate propertyUpdate) {
-        super(false);
         this.propertyUpdate = propertyUpdate;
     }
 

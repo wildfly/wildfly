@@ -40,6 +40,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
     private ServerGroupDeploymentElement deploymentElement;
 
     public ServerModelDeploymentStartStopUpdate(final ServerGroupDeploymentStartStopUpdate elementUpdate) {
+        super(false, true);
         assert elementUpdate != null : "elementUpdate is null";
         this.elementUpdate = elementUpdate;
         this.startStopHandler = new  ServerDeploymentStartStopHandler();

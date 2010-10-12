@@ -32,7 +32,7 @@ public final class ServerExtensionRemove extends AbstractServerModelUpdate<Void>
     private final String moduleName;
 
     public ServerExtensionRemove(final String moduleName) {
-        super(true);
+        super(true, false);
         this.moduleName = moduleName;
     }
 

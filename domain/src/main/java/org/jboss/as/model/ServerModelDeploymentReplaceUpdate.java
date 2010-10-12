@@ -40,6 +40,7 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     private ServerGroupDeploymentElement deploymentElement;
 
     public ServerModelDeploymentReplaceUpdate(final String newDeployment, final String toReplace) {
+        super(false, true);
         if (newDeployment == null)
             throw new IllegalArgumentException("newDeployment is null");
         if (toReplace == null)

@@ -43,6 +43,7 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
 
     private ServerModelDeploymentFullReplaceUpdate(ServerModelDeploymentAdd add,
                                                    ServerModelDeploymentRemove remove) {
+        super(false, true);
         addUpdate = add;
         removeUpdate = remove;
     }

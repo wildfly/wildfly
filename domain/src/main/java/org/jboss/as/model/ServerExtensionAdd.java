@@ -36,7 +36,7 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
     private final String moduleName;
 
     public ServerExtensionAdd(final String moduleName) {
-        super(true);
+        super(true, false);
         this.moduleName = moduleName;
     }
 

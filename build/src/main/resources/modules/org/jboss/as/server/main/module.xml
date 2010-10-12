@@ -38,6 +38,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager"/>
         <module name="org.jboss.logmanager.log4j"/>
+        <module name="org.jboss.vfs"/>
         <module name="org.jboss.stdio"/>
         <module name="org.jboss.as.deployment-client"/>
         <module name="org.jboss.as.domain"/>

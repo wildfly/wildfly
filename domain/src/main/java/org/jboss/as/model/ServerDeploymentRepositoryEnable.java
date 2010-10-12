@@ -36,7 +36,7 @@ public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<
     private final String path;
 
     public ServerDeploymentRepositoryEnable(String path) {
-        super();
+        super(false, true);
         this.path = path;
     }
 

@@ -30,41 +30,36 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
- * Value that either has the value injected or looks it up from a naming context.
+ * Value that is looked up from a naming context.
  *
  * @author John E. Bailey
  */
-public class OptionalNamingLookupValue <T> implements Value<T> {
+public class NamingLookupValue<T> implements Value<T> {
     private final InjectedValue<Context> contextValue = new InjectedValue<Context>();
-    private final InjectedValue<T> injectedValue = new InjectedValue<T>();
-    private final String contextName;
+    private final JndiName contextName;
 
     /**
      * Create a new instance.
      *
      * @param contextName The context name to lookup if the value is not injected
      */
-    public OptionalNamingLookupValue(final String contextName) {
+    public NamingLookupValue(final JndiName contextName) {
         this.contextName = contextName;
     }
 
     /**
-     * If the value was injected, return it, if not lookup the value from the naming context.
+     * Lookup the value from the naming context.
      *
      * @return the injected value if present, the value retrieved from the context if not.
      * @throws IllegalStateException The name is not found in the context when called
      */
     public T getValue() throws IllegalStateException {
-        T value = injectedValue.getOptionalValue();
-        if(value == null) {
-            final Context context = contextValue.getValue();
-            try {
-                value = (T)context.lookup(contextName);
-            } catch (NamingException e) {
-                throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'");
-            }
+        final Context context = contextValue.getValue();
+        try {
+            return (T)context.lookup(contextName.getLocalName());
+        } catch (NamingException e) {
+            throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'");
         }
-        return value;
     }
 
     /**
@@ -74,14 +69,5 @@ public class OptionalNamingLookupValue <T> implements Value<T> {
      */
     public Injector<Context> getContextInjector() {
         return contextValue;
-    }
-
-    /**
-     * Get the value injector.
-     *
-     * @return The value inejector
-     */
-    public Injector<T> getValueInjector() {
-        return injectedValue;
     }
 }

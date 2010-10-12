@@ -40,21 +40,24 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
     private static final long serialVersionUID = 1977647714406421073L;
 
     private final boolean requiresRestart;
+    private final boolean isDeploymentUpdate;
 
     /**
      * Construct a new instance.  The {@code requiresRestart} flag is set to {@code false}.
      */
     protected AbstractServerModelUpdate() {
-        this(false);
+        this(false, false);
     }
 
     /**
      * Construct a new instance.
      *
      * @param requiresRestart {@code true} if this update requires a restart, {@code false} otherwise
+     * @param isDeployment {@code true} if the update should be applied to the deployment batch
      */
-    protected AbstractServerModelUpdate(final boolean requiresRestart) {
+    protected AbstractServerModelUpdate(final boolean requiresRestart, final boolean isDeployment) {
         this.requiresRestart = requiresRestart;
+        this.isDeploymentUpdate = isDeployment;
     }
 
     /** {@inheritDoc} */
@@ -70,6 +73,15 @@ public abstract class AbstractServerModelUpdate<R> extends AbstractModelUpdate<S
      */
     public final boolean requiresRestart() {
         return requiresRestart;
+    }
+
+    /**
+     * Determine whether this update should be applied to the deployment service batch.
+     *
+     * @return {@code true} if the update should be applied to the deployment batch
+     */
+    public boolean isDeploymentUpdate() {
+        return isDeploymentUpdate;
     }
 
     /** {@inheritDoc} */

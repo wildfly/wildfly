@@ -43,6 +43,7 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDe
 
     public ServerModelDeploymentAdd(final String deploymentUniqueName, final String deploymentRuntimeName, final byte[] deploymentHash,
             boolean deploy) {
+        super(false, true);
         if (deploymentUniqueName == null)
             throw new IllegalArgumentException("deploymentUniqueName is null");
         if (deploymentRuntimeName == null)

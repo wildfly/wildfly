@@ -42,6 +42,7 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     private boolean enabled = true;
 
     public ServerDeploymentRepositoryAdd(String path, int interval, boolean enabled) {
+        super(false, true);
         this.path = path;
         this.interval = interval;
         this.enabled = enabled;
