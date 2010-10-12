@@ -27,6 +27,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -64,6 +65,11 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
                 NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
         } catch (NamingException e) {
             log.warn("Failed to set InitialContextFactoryBuilder", e);
+        }
+        try {
+            NamingManager.setObjectFactoryBuilder(new ObjectFactoryBuilder());
+        } catch(Throwable t) {
+            log.warn("Failed to set ObjectFactoryBuilder", t);
         }
 
         // Create the Naming Service
