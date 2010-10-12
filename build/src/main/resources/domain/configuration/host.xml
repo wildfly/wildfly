@@ -38,7 +38,7 @@
 
     <jvms>
         <!-- all jvm settings e.g. sys props, -->
-        <jvm name="icedtea1" java-home="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home">
+        <jvm name="icedtea1">
             <environment-variables>
                 <variable name="foo"/>
             </environment-variables>
