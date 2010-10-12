@@ -22,6 +22,7 @@
 
 package org.jboss.as.services.path;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -37,7 +38,7 @@ public abstract class AbstractPathService implements Service<String> {
 
     private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("server", "path");
 
-    public static ServiceName getPathServiceName(String pathName) {
+    public static ServiceName pathNameOf(String pathName) {
         if (pathName == null) {
             throw new IllegalArgumentException("pathName is null");
         }
@@ -51,6 +52,7 @@ public abstract class AbstractPathService implements Service<String> {
     @Override
     public void start(StartContext context) throws StartException {
         this.path = resolvePath();
+        Logger.getLogger("org.jboss.paths").info(path);
     }
 
     @Override

@@ -152,6 +152,10 @@ public final class ModelXmlParsers {
             }
             element = nextElement(reader);
         }
+        if (element == Element.PATHS) {
+            parseServerModelPaths(reader, list);
+            element = nextElement(reader);
+        }
         // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, list);
@@ -278,6 +282,10 @@ public final class ModelXmlParsers {
             }
             element = nextElement(reader);
         }
+        if (element == Element.PATHS) {
+            parseHostPaths(reader, list);
+            element = nextElement(reader);
+        }
         if (element == Element.SYSTEM_PROPERTIES) {
             parseHostSystemProperties(reader, list);
             element = nextElement(reader);
@@ -345,6 +353,10 @@ public final class ModelXmlParsers {
             for (String moduleName : extensionModules) {
                 list.add(new DomainExtensionAdd(moduleName));
             }
+            element = nextElement(reader);
+        }
+        if (element == Element.PATHS) {
+            parseDomainPaths(reader, list);
             element = nextElement(reader);
         }
         if (element == Element.PROFILES) {
@@ -1562,7 +1574,6 @@ public final class ModelXmlParsers {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NAME: {
-
                         if (!serverNames.add(value)) {
                             throw new XMLStreamException("Duplicate server declaration " + value, reader.getLocation());
                         }
@@ -1614,6 +1625,11 @@ public final class ModelXmlParsers {
                             }
                             break;
                         }
+                        case PATHS : {
+                            for(PathElementUpdate path : parsePaths(reader, true)) {
+                                list.add(HostServerUpdate.create(name, new ServerElementPathAdd(path)));
+                            }
+                        }
                         case SOCKET_BINDING_GROUP: {
                             if (socketBinding != null) {
                                 throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
@@ -1645,7 +1661,94 @@ public final class ModelXmlParsers {
 
         boolean isStart = start == null ? true : start.booleanValue();
         list.add(HostServerUpdate.create(name, new ServerElementStartStopUpdate(isStart)));
+    }
 
+    static void parseDomainPaths(final XMLExtendedStreamReader reader, List<? super AbstractDomainModelUpdate<?>> list) throws XMLStreamException {
+        for(final PathElementUpdate update : parsePaths(reader, false)) {
+            list.add(new DomainPathAdd(update));
+        }
+    }
+
+    static void parseHostPaths(final XMLExtendedStreamReader reader, List<? super AbstractHostModelUpdate<?>> list) throws XMLStreamException {
+        for(final PathElementUpdate update : parsePaths(reader, true)) {
+            list.add(new HostPathAdd(update));
+        }
+    }
+
+    static void parseServerModelPaths(final XMLExtendedStreamReader reader, List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+        for(final PathElementUpdate update : parsePaths(reader, true)) {
+            list.add(new ServerPathAdd(update));
+        }
+    }
+
+    static Collection<PathElementUpdate> parsePaths(final XMLExtendedStreamReader reader, final boolean requirePath) throws XMLStreamException {
+        final Set<String> pathNames = new HashSet<String>();
+        final List<PathElementUpdate> updates = new ArrayList<PathElementUpdate>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DOMAIN_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case PATH: {
+                            final PathElementUpdate update = parsePath(reader, requirePath);
+                            if(! pathNames.add(update.getName())) {
+                                throw new XMLStreamException(update.getName() + " already defined", reader.getLocation());
+                            }
+                            updates.add(update);
+                            break;
+                        } default: {
+                            throw unexpectedElement(reader);
+                        }
+                    }
+                    break;
+                } default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        return updates;
+    }
+
+    static PathElementUpdate parsePath(final XMLExtendedStreamReader reader, final boolean requirePath) throws XMLStreamException {
+        String name = null;
+        String path = null;
+        String relativeTo = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value.trim();
+                        if(PathElement.RESTRICTED.contains(value)) {
+                            throw ParseUtils.invalidAttributeValue(reader, i);
+                        }
+                        break;
+                    } case PATH: {
+                        path = value;
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if(name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if(requirePath && path == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PATH));
+        }
+        ParseUtils.requireNoContent(reader);
+        return new PathElementUpdate(name, path, relativeTo);
     }
 
     private static Element nextElement(XMLExtendedStreamReader reader) throws XMLStreamException {

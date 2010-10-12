@@ -74,6 +74,8 @@ public enum Element {
     NIC_MATCH("nic-match"),
     NOT("not"),
 
+    PATH("path"),
+    PATHS("paths"),
     POINT_TO_POINT("point-to-point"),
     PROFILE("profile"),
     PROFILES("profiles"),

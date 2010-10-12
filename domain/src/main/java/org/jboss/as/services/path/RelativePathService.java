@@ -25,6 +25,7 @@ package org.jboss.as.services.path;
 import java.io.File;
 
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
@@ -39,12 +40,12 @@ public class RelativePathService extends AbstractPathService {
     private final String relativePath;
     private final InjectedValue<String> injectedPath = new InjectedValue<String>();
 
-    public static final void addService(final String name, final String relativePath,
+    public static final BatchServiceBuilder<String> addService(final String name, final String relativePath,
             final String relativeTo, final BatchBuilder batchBuilder) {
-        ServiceName sname = getPathServiceName(name);
+        ServiceName sname = pathNameOf(name);
         RelativePathService service = new RelativePathService(relativePath);
-        batchBuilder.addService(sname, service)
-                    .addDependency(getPathServiceName(relativeTo), String.class, service.injectedPath);
+        return batchBuilder.addService(sname, service)
+                    .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath);
     }
 
     public RelativePathService(final String relativePath) {

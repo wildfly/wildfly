@@ -24,6 +24,8 @@ package org.jboss.as.model;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -55,6 +57,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
     private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
     private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
+    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
     private String name;
     private LocalDomainControllerElement localDomainController;
     private RemoteDomainControllerElement remoteDomainController;
@@ -169,6 +172,25 @@ public final class HostModel extends AbstractModel<HostModel> {
         return name;
     }
 
+    /**
+     * Get the paths.
+     *
+     * @return the paths
+     */
+    public Collection<PathElement> getPaths() {
+        return Collections.unmodifiableCollection(new HashSet<PathElement>(paths.values()));
+    }
+
+    /**
+     * Get a path element.
+     *
+     * @param name the path name
+     * @return the path configuration, or <code>null</code> if there is none
+     */
+    public PathElement getPath(final String name) {
+        return paths.get(name);
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Class<HostModel> getElementClass() {
@@ -180,6 +202,26 @@ public final class HostModel extends AbstractModel<HostModel> {
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         writeNamespaces(streamWriter);
+
+        if (! extensions.isEmpty()) {
+            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+            for (String extension : extensions) {
+                streamWriter.writeEmptyElement(Element.EXTENSION.getLocalName());
+                streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), extension);
+            }
+            streamWriter.writeEndElement();
+        }
+
+        synchronized(paths) {
+            if(! paths.isEmpty()) {
+                streamWriter.writeStartElement(Element.PATHS.getLocalName());
+                for(final PathElement path : paths.values()) {
+                    streamWriter.writeStartElement(Element.PATH.getLocalName());
+                    path.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            }
+        }
 
         if (systemProperties != null) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
@@ -321,5 +363,18 @@ public final class HostModel extends AbstractModel<HostModel> {
 
     boolean removeServer(String serverName) {
         return servers.remove(serverName) != null;
+    }
+
+    PathElement addPath(final String name) {
+        if(paths.containsKey(name)) {
+            return null;
+        }
+        final PathElement element = new PathElement(name);
+        paths.put(name, element);
+        return element;
+    }
+
+    boolean removePath(final String name) {
+        return paths.remove(name) != null;
     }
 }

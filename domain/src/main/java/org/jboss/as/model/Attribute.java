@@ -58,6 +58,7 @@ public enum Attribute {
     PREFIX("prefix"),
     PROFILE("profile"),
     REF("ref"),
+    RELATIVE_TO("relative-to"),
     REPOSITORY("repository"),
     RUNTIME_NAME("runtime-name"),
     SCAN_ENABLED("scan-enabled"),

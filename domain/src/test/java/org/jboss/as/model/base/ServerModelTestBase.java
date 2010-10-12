@@ -51,6 +51,32 @@ public abstract class ServerModelTestBase extends DomainModelElementTestBase {
         assertEquals("default", model.getServerName());
     }
 
+    public void testPaths() throws Exception {
+        final String content = "<paths><path name=\"dev.null\" path=\"/dev/null\" /><path name=\"relative.to\" path=\"test\" relative-to=\"dev.null\" /></paths>";
+        final ServerModel model = parse(content);
+        assertNotNull(model.getPath("dev.null"));
+    }
+
+    public void testRestrictedPaths() throws Exception {
+        final String content = "<paths><path name=\"jboss.home.dir\" path=\"/opt/jboss-as7\" /></paths>";
+        try {
+            parse(content);
+            fail("jboss.home.dir");
+        } catch(Exception ok) {
+            //
+        }
+    }
+
+    public void testMissingPaths() throws Exception {
+        final String content = "<paths><path name=\"no.path\" /></paths>";
+        try {
+            parse(content);
+            fail("no path");
+        } catch(Exception ok) {
+            //
+        }
+    }
+
     public void testProfile() throws Exception {
         final String content = "<profile name=\"default\">" + MockSubsystemElement.getFullXmlContent() + "</profile>";
         final ServerModel model = parse(content);

@@ -24,7 +24,6 @@ package org.jboss.as.model;
 
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartException;
 
 /**

@@ -86,6 +86,28 @@ public final class ServerFactory {
             list.add(new ServerExtensionAdd(name));
         }
 
+        // Merge paths
+        final Set<String> unspecifiedPaths = new HashSet<String>();
+        final Map<String, ServerPathAdd> paths = new HashMap<String, ServerPathAdd>();
+        for(final PathElement path : domainModel.getPaths()) {
+            if(! path.isSpecified()) {
+                unspecifiedPaths.add(path.getName());
+            } else {
+                paths.put(path.getName(), new ServerPathAdd(path));
+            }
+        }
+        for(final PathElement path : hostModel.getPaths()) {
+            unspecifiedPaths.remove(path.getName());
+            paths.put(path.getName(), new ServerPathAdd(path));
+        }
+        for(final PathElement path : serverElement.getPaths()) {
+            unspecifiedPaths.remove(path.getName());
+            paths.put(path.getName(), new ServerPathAdd(path));
+        }
+        if(unspecifiedPaths.size() > 0) {
+            throw new IllegalStateException("unspecified paths " + unspecifiedPaths);
+        }
+
         // Merge interfaces
         // TODO: modify to merge each interface instead of replacing duplicates
         Set<String> unspecifiedInterfaces = new HashSet<String>();

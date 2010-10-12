@@ -121,8 +121,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         log.info("Activating core services");
 
-        // Server env
-        ServerEnvironmentService.addService(environment, batchBuilder);
+        // Server environment services
+        ServerEnvironmentServices.addServices(environment, batchBuilder);
 
         // Deployment repository
         ServerDeploymentRepositoryImpl.addService(batchBuilder);

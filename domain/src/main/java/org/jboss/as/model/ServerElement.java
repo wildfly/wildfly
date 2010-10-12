@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -45,6 +48,7 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
     private final String name;
     private final String serverGroup;
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
+    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
     private boolean start;
     private String bindingGroup;
     private int portOffset = 0;
@@ -104,6 +108,25 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
      */
     void setJvm(JvmElement jvm) {
         this.jvm = jvm;
+    }
+
+    /**
+     * Get the paths.
+     *
+     * @return the paths
+     */
+    public Collection<PathElement> getPaths() {
+        return Collections.unmodifiableCollection(new HashSet<PathElement>(paths.values()));
+    }
+
+    /**
+     * Get a path element.
+     *
+     * @param name the path name
+     * @return the path configuration, or <code>null</code> if there is none
+     */
+    public PathElement getPath(final String name) {
+        return paths.get(name);
     }
 
     public InterfaceElement getInterface(final String name) {
@@ -177,6 +200,17 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             streamWriter.writeAttribute(Attribute.START.getLocalName(), "false");
         }
 
+        synchronized(paths) {
+            if(! paths.isEmpty()) {
+                streamWriter.writeStartElement(Element.PATHS.getLocalName());
+                for(final PathElement path : paths.values()) {
+                    streamWriter.writeStartElement(Element.PATH.getLocalName());
+                    path.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            }
+        }
+
         if (! interfaces.isEmpty()) {
             streamWriter.writeStartElement(Element.INTERFACE_SPECS.getLocalName());
             for (InterfaceElement element : interfaces.values()) {
@@ -239,5 +273,18 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
         if (offset < 0)
             throw new IllegalArgumentException("Offset " + offset + " is less than zero");
         this.portOffset = offset;
+    }
+
+    PathElement addPath(final String name) {
+        if(paths.containsKey(name)) {
+            return null;
+        }
+        final PathElement element = new PathElement(name);
+        paths.put(name, element);
+        return element;
+    }
+
+    boolean removePath(final String name) {
+        return paths.remove(name) != null;
     }
 }

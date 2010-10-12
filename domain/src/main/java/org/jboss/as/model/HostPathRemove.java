@@ -23,48 +23,35 @@
 package org.jboss.as.model;
 
 /**
- * Update a {@link ServerElement} within a {@link HostModel}
- *
  * @author Emanuel Muckenhuber
  */
-public class HostServerUpdate<R> extends AbstractHostModelUpdate<R> {
+public class HostPathRemove extends AbstractHostModelUpdate<Void> {
 
-    private static final long serialVersionUID = 1656392748485415899L;
-    private final String serverName;
-    private final AbstractModelElementUpdate<ServerElement> serverUpdate;
+    private static final long serialVersionUID = 8637955118179300666L;
+    private final String name;
 
-    public HostServerUpdate(String serverName, AbstractModelElementUpdate<ServerElement> serverUpdate) {
-        this.serverName = serverName;
-        this.serverUpdate = serverUpdate;
-    }
-
-    public static <T> HostServerUpdate<T> create(final String serverName, final AbstractModelElementUpdate<ServerElement> serverUpdate) {
-        return new HostServerUpdate<T>(serverName, serverUpdate);
+    public HostPathRemove(String name) {
+        this.name = name;
     }
 
     /** {@inheritDoc} */
-    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
-        final ServerElement server = element.getServer(serverName);
-        if(server == null) {
-            throw new UpdateFailedException(String.format("server (%s) does not exist", serverName));
+        if(! element.removePath(name)) {
+            throw new UpdateFailedException(String.format("path (%s) does not exist", name));
         }
-        serverUpdate.applyUpdate(server);
     }
 
     /** {@inheritDoc} */
-    @Override
-    public HostServerUpdate<?> getCompensatingUpdate(HostModel original) {
-        final ServerElement server = original.getServer(serverName);
-        if(server == null) {
+    public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
+        final PathElement path = original.getPath(name);
+        if(path == null) {
             return null;
         }
-        return HostServerUpdate.create(serverName, serverUpdate.getCompensatingUpdate(server));
+        return new HostPathAdd(new PathElementUpdate(name, path.getPath(), path.getRelativeTo()));
     }
 
     /** {@inheritDoc} */
-    @Override
-    protected AbstractServerModelUpdate<R> getServerModelUpdate() {
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         // TODO Auto-generated method stub
         return null;
     }

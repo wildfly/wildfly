@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -32,20 +33,11 @@ import java.util.TreeMap;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.deployment.chain.JarDeploymentActivator;
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
-import org.jboss.as.services.net.SocketBindingManager;
-import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -77,6 +69,7 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
     private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
     private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
+    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
     private ProfileElement profile;
     private SocketBindingGroupElement socketBindings;
     private int portOffset;
@@ -154,6 +147,25 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return repositories.get(path);
     }
 
+    /**
+     * Get the paths.
+     *
+     * @return the paths
+     */
+    public Collection<PathElement> getPaths() {
+        return Collections.unmodifiableCollection(new HashSet<PathElement>(paths.values()));
+    }
+
+    /**
+     * Get a path element.
+     *
+     * @param name the path name
+     * @return the path, <code>null</code> if it does not exist
+     */
+    public PathElement getPath(final String name) {
+        return paths.get(name);
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Class<ServerModel> getElementClass() {
@@ -170,6 +182,26 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         streamWriter.writeStartElement(Element.NAME.getLocalName());
         streamWriter.writeCharacters(serverName);
         streamWriter.writeEndElement();
+
+        if (! extensions.isEmpty()) {
+            streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());
+            for (String extension : extensions) {
+                streamWriter.writeEmptyElement(Element.EXTENSION.getLocalName());
+                streamWriter.writeAttribute(Attribute.MODULE.getLocalName(), extension);
+            }
+            streamWriter.writeEndElement();
+        }
+
+        synchronized(paths) {
+            if(! paths.isEmpty()) {
+                streamWriter.writeStartElement(Element.PATHS.getLocalName());
+                for(final PathElement path : paths.values()) {
+                    streamWriter.writeStartElement(Element.PATH.getLocalName());
+                    path.writeContent(streamWriter);
+                }
+                streamWriter.writeEndElement();
+            }
+        }
 
         streamWriter.writeStartElement(Element.PROFILE.getLocalName());
         profile.writeContent(streamWriter);
@@ -311,6 +343,19 @@ public final class ServerModel extends AbstractModel<ServerModel> {
 
     boolean removeInterface(final String name) {
         return interfaces.remove(name) != null;
+    }
+
+    PathElement addPath(final String name) {
+        if(paths.containsKey(name)) {
+            return null;
+        }
+        final PathElement path = new PathElement(name);
+        paths.put(name, path);
+        return path;
+    }
+
+    boolean removePath(final String name) {
+        return paths.remove(name) != null;
     }
 
     boolean addDeploymentRepository(final String path) {
