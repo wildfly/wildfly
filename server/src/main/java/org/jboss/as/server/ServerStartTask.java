@@ -88,7 +88,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final ServerStartupListener serverStartupListener = new ServerStartupListener(createListenerCallback());
         final ServerStartBatchBuilder batchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
         batchBuilder.addListener(serverStartupListener);
-        
+
         // First-stage (boot) services
 
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
