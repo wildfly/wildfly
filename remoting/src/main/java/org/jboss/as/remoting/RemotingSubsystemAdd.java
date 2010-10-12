@@ -23,6 +23,7 @@
 package org.jboss.as.remoting;
 
 import java.util.concurrent.Executor;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -32,6 +33,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.remoting3.Endpoint;
+import org.jboss.xnio.OptionMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -50,6 +52,8 @@ public final class RemotingSubsystemAdd extends AbstractSubsystemAdd<RemotingSub
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         // create endpoint
         final EndpointService endpointService = new EndpointService();
+        // todo configure option map
+        endpointService.setOptionMap(OptionMap.EMPTY);
         final BatchServiceBuilder<Endpoint> endpointBuilder = updateContext.getBatchBuilder().addService(RemotingServices.ENDPOINT, endpointService);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         endpointBuilder.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class));
