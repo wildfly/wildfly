@@ -23,7 +23,6 @@
 package org.jboss.as.remoting;
 
 
-import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
@@ -32,7 +31,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.util.Collections;
@@ -141,10 +139,12 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         return false;
     }
 
+    @Override
     protected RemotingSubsystemAdd getAdd() {
         return new RemotingSubsystemAdd(threadPoolName);
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final ServiceContainer container = updateContext.getServiceContainer();
         final ServiceController<?> controller = container.getService(RemotingServices.ENDPOINT);

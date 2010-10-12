@@ -55,6 +55,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         super(Namespace.CURRENT.getUriString());
     }
 
+    @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
         // XATerminator has no deps, so just add it in there
@@ -71,8 +72,18 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
     }
 
+    @Override
     protected TransactionsSubsystemElement createSubsystemElement() {
-        return new TransactionsSubsystemElement();
+        TransactionsSubsystemElement element = new TransactionsSubsystemElement();
+        element.getCoreEnvironmentElement().setBindingRef(bindingName);
+        element.getCoreEnvironmentElement().setMaxPorts(maxPorts);
+        element.getCoreEnvironmentElement().setNodeIdentifier(nodeIdentifier);
+        element.getRecoveryEnvironmentElement().setBindingRef(recoveryBindingName);
+        element.getRecoveryEnvironmentElement().setStatusBindingRef(recoveryStatusBindingName);
+        element.setObjectStoreDirectory(objectStoreDirectory);
+        element.setCoordinatorDefaultTimeout(coordinatorDefaultTimeout);
+        element.setCoordinatorEnableStatistics(coordinatorEnableStatistics);
+        return element;
     }
 
     public String getRecoveryBindingName() {
@@ -113,6 +124,10 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
 
     public void setCoordinatorEnableStatistics(final boolean coordinatorEnableStatistics) {
         this.coordinatorEnableStatistics = coordinatorEnableStatistics;
+    }
+
+    public void setCoordinatorDefaultTimeout(final int timeout) {
+        this.coordinatorDefaultTimeout = timeout;
     }
 
     public String getObjectStoreDirectory() {

@@ -43,8 +43,8 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     private final RecoveryEnvironmentElement recoveryEnvironmentElement = new RecoveryEnvironmentElement();
     private final CoreEnvironmentElement coreEnvironmentElement = new CoreEnvironmentElement();
-    private CoordinatorEnvironmentElement coordinatorEnvironmentElement;
-    private ObjectStoreEnvironmentElement objectStoreEnvironmentElement;
+    private final CoordinatorEnvironmentElement coordinatorEnvironmentElement = new CoordinatorEnvironmentElement();
+    private final ObjectStoreEnvironmentElement objectStoreEnvironmentElement = new ObjectStoreEnvironmentElement();
 
     public TransactionsSubsystemElement() {
         super(Namespace.TRANSACTIONS_1_0.getUriString());
@@ -81,33 +81,49 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         return coordinatorEnvironmentElement;
     }
 
-    public void setCoordinatorEnvironmentElement(CoordinatorEnvironmentElement coordinatorEnvironmentElement) {
-        this.coordinatorEnvironmentElement = coordinatorEnvironmentElement;
+    public void setCoordinatorEnableStatistics(final boolean enable) {
+        this.coordinatorEnvironmentElement.setEnableStatistics(enable);
+    }
+
+    public void setCoordinatorDefaultTimeout(final int timeout) {
+        this.coordinatorEnvironmentElement.setDefaultTimeout(timeout);
     }
 
     public ObjectStoreEnvironmentElement getObjectStoreEnvironmentElement() {
         return objectStoreEnvironmentElement;
     }
 
-    public void setObjectStoreEnvironmentElement(ObjectStoreEnvironmentElement objectStoreEnvironmentElement) {
-        this.objectStoreEnvironmentElement = objectStoreEnvironmentElement;
+    public void setObjectStoreDirectory(String directory) {
+        this.objectStoreEnvironmentElement.setDirectory(directory);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<TransactionsSubsystemElement, ?>> list) {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected boolean isEmpty() {
         return true;
     }
 
+    @Override
     protected TransactionSubsystemAdd getAdd() {
         final TransactionSubsystemAdd add = new TransactionSubsystemAdd();
+        // TODO why not new TransactionSubsystemAdd(this) and do this in c'tor?
         add.setBindingName(coreEnvironmentElement.getBindingRef());
+        add.setMaxPorts(coreEnvironmentElement.getMaxPorts());
+        add.setNodeIdentifier(coreEnvironmentElement.getNodeIdentifier());
+        add.setRecoveryBindingName(recoveryEnvironmentElement.getBindingRef());
+        add.setRecoveryStatusBindingName(recoveryEnvironmentElement.getStatusBindingRef());
+        add.setCoordinatorEnableStatistics(coordinatorEnvironmentElement.isEnableStatistics());
+        add.setCoordinatorDefaultTimeout(coordinatorEnvironmentElement.getDefaultTimeout());
+        add.setObjectStoreDirectory(objectStoreEnvironmentElement.getDirectory());
         return add;
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final ServiceContainer container = updateContext.getServiceContainer();
         final ServiceController<?> tmController = container.getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);

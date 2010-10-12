@@ -58,30 +58,36 @@ final class ManagedBeansSubsystemElement extends AbstractSubsystemElement<Manage
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<ManagedBeansSubsystemElement> getElementClass() {
         return ManagedBeansSubsystemElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<ManagedBeansSubsystemElement, ?>> list) {
         // TODO Auto-generated method stub
     }
 
     /** {@inheritDoc} */
+    @Override
     protected boolean isEmpty() {
         // TODO Auto-generated method stub
         return false;
     }
 
+    @Override
     protected AbstractSubsystemAdd<ManagedBeansSubsystemElement> getAdd() {
-        return null;
+        return new ManagedBeansSubsystemAdd();
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

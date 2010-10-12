@@ -135,6 +135,7 @@ public final class ServerFactory {
             processSocketBindings(include, list);
         }
 
+        list.add(new ServerProfileUpdate(serverGroup.getProfileName()));
         // Merge subsystems
         for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystemElement : leafProfile.getSubsystems()) {
             // todo: find a better way around this generics issue
@@ -148,9 +149,11 @@ public final class ServerFactory {
         }
 
         // Merge system properties
-        // todo after PropertiesElement is eliminated
+        // todo after PropertiesElement exposes flags as to whether individual properties
+        // are passed to java.lang.Process or go through the model
 
         // TODO add domain deployment repository
+        // BES 2010/10/12 -- why?
 
     }
 
@@ -164,6 +167,9 @@ public final class ServerFactory {
 
     private static <E extends AbstractSubsystemElement<E>> void processSubsystem(E subsystemElement, List<AbstractServerModelUpdate<?>> list) {
         final AbstractSubsystemAdd<E> subsystemAdd = subsystemElement.getAdd();
+        if (subsystemAdd == null) {
+            throw new IllegalStateException(subsystemElement + " did not provide an " + AbstractSubsystemAdd.class.getSimpleName());
+        }
         list.add(new ServerSubsystemAdd(subsystemAdd));
         final List<AbstractSubsystemUpdate<E, ?>> subsystemList = new ArrayList<AbstractSubsystemUpdate<E,?>>();
         subsystemElement.getUpdates(subsystemList);

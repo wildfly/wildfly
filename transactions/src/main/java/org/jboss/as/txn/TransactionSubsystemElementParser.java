@@ -173,8 +173,7 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
         return element;
     }
 
-    CoordinatorEnvironmentElement parseCoordinatorEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
-        final CoordinatorEnvironmentElement element = new CoordinatorEnvironmentElement();
+    void parseCoordinatorEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -184,10 +183,10 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLE_STATISTICS:
-                        element.setEnableStatistics(Boolean.parseBoolean(value));
+                        add.setCoordinatorEnableStatistics(Boolean.parseBoolean(value));
                         break;
                     case DEFAULT_TIMEOUT:
-                        element.setDefaultTimeout(Integer.parseInt(value));
+                        add.setCoordinatorDefaultTimeout(Integer.parseInt(value));
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);
@@ -196,11 +195,9 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
-        return element;
     }
 
-    ObjectStoreEnvironmentElement parseObjectStoreEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
-        final ObjectStoreEnvironmentElement element = new ObjectStoreEnvironmentElement();
+    void parseObjectStoreEnvironmentElement(XMLExtendedStreamReader reader, final TransactionSubsystemAdd add) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i ++) {
             final String value = reader.getAttributeValue(i);
@@ -210,7 +207,7 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case DIRECTORY:
-                        element.setDirectory(value);
+                        add.setObjectStoreDirectory(value);
                         break;
                     default:
                         ParseUtils.unexpectedAttribute(reader, i);
@@ -219,7 +216,6 @@ final class TransactionSubsystemElementParser implements XMLStreamConstants, XML
         }
         // Handle elements
         ParseUtils.requireNoContent(reader);
-        return element;
     }
 
 }

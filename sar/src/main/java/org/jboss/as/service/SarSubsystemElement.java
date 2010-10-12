@@ -26,7 +26,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
@@ -49,29 +48,35 @@ final class SarSubsystemElement extends AbstractSubsystemElement<SarSubsystemEle
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<SarSubsystemElement> getElementClass() {
         return SarSubsystemElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeEndElement();
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<SarSubsystemElement, ?>> list) {
         // nothing to do
     }
 
     /** {@inheritDoc} */
+    @Override
     protected boolean isEmpty() {
         return true;
     }
 
+    @Override
     protected AbstractSubsystemAdd<SarSubsystemElement> getAdd() {
-        return null;
+        return new SarSubsystemAdd();
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }
