@@ -118,6 +118,7 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
         add.setRecoveryStatusBindingName(recoveryEnvironmentElement.getStatusBindingRef());
         add.setCoordinatorEnableStatistics(coordinatorEnvironmentElement.isEnableStatistics());
         add.setCoordinatorDefaultTimeout(coordinatorEnvironmentElement.getDefaultTimeout());
+        add.setObjectStorePathRef(objectStoreEnvironmentElement.getRelativeTo());
         add.setObjectStoreDirectory(objectStoreEnvironmentElement.getPath());
         return add;
     }
