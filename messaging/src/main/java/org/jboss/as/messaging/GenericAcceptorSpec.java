@@ -49,4 +49,9 @@ public class GenericAcceptorSpec extends AbstractTransportElement<GenericAccepto
         return GenericAcceptorSpec.class;
     }
 
+    /** {@inheritDoc} */
+    protected boolean isWriteFactoryClass() {
+        return true;
+    }
+
 }

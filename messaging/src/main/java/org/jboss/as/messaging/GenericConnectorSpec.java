@@ -49,4 +49,8 @@ public class GenericConnectorSpec extends AbstractTransportElement<GenericConnec
         return GenericConnectorSpec.class;
     }
 
+    /** {@inheritDoc} */
+    protected boolean isWriteFactoryClass() {
+        return true;
+    }
 }

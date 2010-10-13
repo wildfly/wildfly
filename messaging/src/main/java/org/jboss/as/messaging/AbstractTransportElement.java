@@ -89,6 +89,9 @@ public abstract class AbstractTransportElement<E extends AbstractTransportElemen
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         if(name != null) streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         if(socketBindingRef != null) streamWriter.writeAttribute(Attribute.SOCKET_BINDING.getLocalName(), socketBindingRef);
+        if(isWriteFactoryClass() && getFactoryClassName() != null) {
+            ElementUtils.writeSimpleElement(Element.FACTORY_CLASS, getFactoryClassName(), streamWriter);
+        }
         if (params != null && ! params.isEmpty()) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 streamWriter.writeEmptyElement(Element.PARAM.getLocalName());
@@ -97,6 +100,10 @@ public abstract class AbstractTransportElement<E extends AbstractTransportElemen
             }
         }
         streamWriter.writeEndElement();
+    }
+
+    protected boolean isWriteFactoryClass() {
+        return false;
     }
 
 }

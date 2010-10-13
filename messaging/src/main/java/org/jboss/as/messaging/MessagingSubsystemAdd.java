@@ -284,7 +284,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.journalType = journalType;
     }
 
-    public void setPersistenceEnabled(boolean enabled) {
+    public void setPersistenceEnabled(Boolean enabled) {
         persistenceEnabled = enabled;
     }
 

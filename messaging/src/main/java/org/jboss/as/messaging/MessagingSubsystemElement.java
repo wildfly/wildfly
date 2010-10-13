@@ -164,7 +164,33 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
     @Override
     protected AbstractSubsystemAdd<MessagingSubsystemElement> getAdd() {
-        return new MessagingSubsystemAdd();
+        MessagingSubsystemAdd element = new MessagingSubsystemAdd();
+        if (bindingsDirectory != null) element.setBindingsDirectory(getBindingsDirectory());
+        if (journalDirectory != null) element.setJournalDirectory(getJournalDirectory());
+        if (largeMessagesDirectory != null) element.setLargeMessagesDirectory(getLargeMessagesDirectory());
+        if (pagingDirectory != null) element.setPagingDirectory(getPagingDirectory());
+        if (clustered != null) element.setClustered(isClustered());
+        if (persistenceEnabled != null) element.setPersistenceEnabled(persistenceEnabled);
+        if (journalMinFiles != -1) element.setJournalMinFiles(getJournalMinFiles());
+        if (journalFileSize != -1) element.setJournalFileSize(getJournalFileSize());
+        if (journalType != null) element.setJournalType(getJournalType());
+
+        for (AbstractTransportElement<?> acceptorSpec : acceptors.values()) {
+            element.addAcceptor(acceptorSpec);
+        }
+        for (AddressSettingsElement addressSpec : addressSettings.values()) {
+            element.addAddressSettings(addressSpec);
+        }
+        for (AbstractTransportElement<?> connectorSpec : connectors.values()) {
+            element.addConnector(connectorSpec);
+        }
+        for (SecuritySettingsElement securitySetting : securitySettings.values()) {
+            element.addSecuritySettings(securitySetting);
+        }
+        for(QueueElement queue : queues.values()) {
+            element.addQueue(queue);
+        }
+        return element;
     }
 
     @Override
