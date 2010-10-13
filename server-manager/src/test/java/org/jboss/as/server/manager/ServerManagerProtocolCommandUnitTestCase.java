@@ -26,8 +26,10 @@ import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.fail;
 
 import java.util.Collections;
+
 import org.jboss.as.server.ServerManagerProtocol.Command;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
+import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
 import org.junit.Test;
 
 /**
@@ -36,6 +38,18 @@ import org.junit.Test;
  * @version $Revision: 1.1 $
  */
 public class ServerManagerProtocolCommandUnitTestCase {
+
+    @Test
+    public void testCommandWithData() throws Exception {
+        byte[] data = new byte[] {10, 11, 12, 13, 14, 15};
+        byte[] bytes = ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS.createCommandBytes(data);
+        Command<ServerToServerManagerProtocolCommand> start = ServerToServerManagerProtocolCommand.readCommand(bytes);
+        assertSame(ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS, start.getCommand());
+
+        assertEquals(data.length, start.getData().length);
+        for (int i = 0 ; i < data.length ; i++)
+           assertEquals(data[i], start.getData()[i]);
+    }
 
     @Test
     public void testSmStop() throws Exception {
@@ -56,15 +70,15 @@ public class ServerManagerProtocolCommandUnitTestCase {
         fail("Should have picked up not expected data");
     }
 
-//    @Test
-//    public void testFailArgsCommandWithNoData() throws Exception {
-//        try {
-//            ServerManagerToServerProtocolCommand.STOP_SERVER.createCommandBytes(null);
-//        }catch (Exception ignore) {
-//            return;
-//        }
-//        fail("Should have picked up missing data");
-//    }
+    @Test
+    public void testFailArgsCommandWithNoData() throws Exception {
+        try {
+            ServerToServerManagerProtocolCommand.SERVER_RECONNECT_STATUS.createCommandBytes(null);
+        }catch (Exception ignore) {
+            return;
+        }
+        fail("Should have picked up missing data");
+    }
 
     @Test
     public void testParseServerManagerProtocolCommands() {
