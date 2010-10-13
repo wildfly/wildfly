@@ -22,31 +22,29 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.core.config.Configuration;
-import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateFailedException;
-
 /**
- * The base class for messaging subsystem updates.
- *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractMessagingSubsystemUpdate<R> extends AbstractSubsystemUpdate<MessagingSubsystemElement, R> {
+public class NettyConnectorSpec extends AbstractTransportSpecification<NettyConnectorSpec> {
 
-    private static final long serialVersionUID = 4638051676467089281L;
+    private static final long serialVersionUID = 2982696917652064205L;
+    private static final String FACTORY_CLASS = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
 
-    protected AbstractMessagingSubsystemUpdate() {
-        super(Namespace.MESSAGING_1_0.getUriString());
-    }
-
-    protected AbstractMessagingSubsystemUpdate(boolean restart) {
-        super(Namespace.MESSAGING_1_0.getUriString(), restart);
+    protected NettyConnectorSpec(String name) {
+        super(Element.NETTY_CONNECTOR, name);
+        if(name == null) {
+            throw new IllegalArgumentException("null name");
+        }
     }
 
     /** {@inheritDoc} */
-    public Class<MessagingSubsystemElement> getModelElementType() {
-        return MessagingSubsystemElement.class;
+    public String getFactoryClassName() {
+        return FACTORY_CLASS;
     }
 
-    public abstract AbstractMessagingSubsystemUpdate<?> getCompensatingUpdate(MessagingSubsystemElement element);
+    /** {@inheritDoc} */
+    protected Class<NettyConnectorSpec> getElementClass() {
+        return NettyConnectorSpec.class;
+    }
+
 }

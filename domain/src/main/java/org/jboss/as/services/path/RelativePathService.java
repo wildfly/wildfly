@@ -42,9 +42,13 @@ public class RelativePathService extends AbstractPathService {
 
     public static final BatchServiceBuilder<String> addService(final String name, final String relativePath,
             final String relativeTo, final BatchBuilder batchBuilder) {
-        ServiceName sname = pathNameOf(name);
+        return addService(pathNameOf(name), relativePath, relativeTo, batchBuilder);
+    }
+
+    public static final BatchServiceBuilder<String> addService(final ServiceName name, final String relativePath,
+            final String relativeTo, final BatchBuilder batchBuilder) {
         RelativePathService service = new RelativePathService(relativePath);
-        return batchBuilder.addService(sname, service)
+        return batchBuilder.addService(name, service)
                     .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath);
     }
 

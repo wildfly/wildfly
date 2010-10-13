@@ -30,10 +30,10 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     /** The service name "jboss.messaging". */
     public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
 
-    private String bindingsDirectory;
-    private String journalDirectory;
-    private String largeMessagesDirectory;
-    private String pagingDirectory;
+    private DirectoryElement bindingsDirectory;
+    private DirectoryElement journalDirectory;
+    private DirectoryElement largeMessagesDirectory;
+    private DirectoryElement pagingDirectory;
     private boolean clustered;
     private int journalMinFiles = -1;
     private int journalFileSize = -1;
@@ -61,13 +61,27 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
      */
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        ElementUtils.writeSimpleElement(Element.BINDINGS_DIRECTORY, getBindingsDirectory(), streamWriter);
+
+        if(bindingsDirectory != null) {
+            streamWriter.writeStartElement(Element.BINDINGS_DIRECTORY.getLocalName());
+            bindingsDirectory.writeContent(streamWriter);
+        }
+        if(largeMessagesDirectory != null) {
+            streamWriter.writeStartElement(Element.LARGE_MESSAGES_DIRECTORY.getLocalName());
+            largeMessagesDirectory.writeContent(streamWriter);
+        }
+        if(pagingDirectory != null) {
+            streamWriter.writeStartElement(Element.PAGING_DIRECTORY.getLocalName());
+            pagingDirectory.writeContent(streamWriter);
+        }
+        if(journalDirectory != null) {
+            streamWriter.writeStartElement(Element.JOURNAL_DIRECTORY.getLocalName());
+            journalDirectory.writeContent(streamWriter);
+        }
 
        // Note we have to write this even if it wasn't in the original content
        // since the "null" possibility isn't preserved
        ElementUtils.writeSimpleElement(Element.CLUSTERED, String.valueOf(isClustered()), streamWriter);
-
-       ElementUtils.writeSimpleElement(Element.JOURNAL_DIRECTORY, getJournalDirectory(), streamWriter);
 
        // Note we have to write this even if it wasn't in the original content
        // since the "null" possibility isn't preserved
@@ -81,10 +95,6 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
        // Note we have to write this even if it wasn't in the original content
        // since the "null" possibility isn't preserved
        ElementUtils.writeSimpleElement(Element.JOURNAL_FILE_SIZE, String.valueOf(getJournalFileSize()), streamWriter);
-
-       ElementUtils.writeSimpleElement(Element.LARGE_MESSAGES_DIRECTORY, getLargeMessagesDirectory(), streamWriter);
-
-       ElementUtils.writeSimpleElement(Element.PAGING_DIRECTORY, getPagingDirectory(), streamWriter);
 
         if (acceptors.size() > 0) {
             streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
@@ -147,35 +157,35 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 
-    public String getBindingsDirectory() {
+    public DirectoryElement getBindingsDirectory() {
         return bindingsDirectory;
     }
 
-    public void setBindingsDirectory(String bindingDirectory) {
-        this.bindingsDirectory = bindingDirectory;
+    public void setBindingsDirectory(DirectoryElement bindingsDirectory) {
+        this.bindingsDirectory = bindingsDirectory;
     }
 
-    public String getJournalDirectory() {
+    public DirectoryElement getJournalDirectory() {
         return journalDirectory;
     }
 
-    public void setJournalDirectory(String journalDirectory) {
+    public void setJournalDirectory(DirectoryElement journalDirectory) {
         this.journalDirectory = journalDirectory;
     }
 
-    public String getLargeMessagesDirectory() {
+    public DirectoryElement getLargeMessagesDirectory() {
         return largeMessagesDirectory;
     }
 
-    public void setLargeMessagesDirectory(String largeMessagesDirectory) {
+    public void setLargeMessagesDirectory(DirectoryElement largeMessagesDirectory) {
         this.largeMessagesDirectory = largeMessagesDirectory;
     }
 
-    public String getPagingDirectory() {
+    public DirectoryElement getPagingDirectory() {
         return pagingDirectory;
     }
 
-    public void setPagingDirectory(String pagingDirectory) {
+    public void setPagingDirectory(DirectoryElement pagingDirectory) {
         this.pagingDirectory = pagingDirectory;
     }
 

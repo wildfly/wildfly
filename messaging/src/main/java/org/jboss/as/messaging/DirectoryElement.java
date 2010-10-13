@@ -22,39 +22,47 @@
 
 package org.jboss.as.messaging;
 
-import java.io.Serializable;
-import java.util.Map;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * @author John Bailey
+ * @author Emanuel Muckenhuber
  */
-public class TransportSpecification implements Serializable {
-    private static final long serialVersionUID = -8803500050889387041L;
-    private final String name;
-    private Map<String, Object> params;
-    private String factoryClass;
+public class DirectoryElement extends AbstractModelElement<DirectoryElement> {
 
-    protected TransportSpecification(String name) {
-        this.name = name;
+    private static final long serialVersionUID = 9166819010121182724L;
+
+    private String relativeTo;
+    private String path;
+
+    public String getPath() {
+        return path;
     }
 
-    public String getName() {
-        return name;
+    public void setPath(String path) {
+        this.path = path;
     }
 
-    public Map<String, Object> getParams() {
-        return params;
+    public String getRelativeTo() {
+        return relativeTo;
     }
 
-    public void setParams(final Map<String, Object> params) {
-        this.params = params;
+    public void setRelativeTo(String relativeTo) {
+        this.relativeTo = relativeTo;
     }
 
-    public String getFactoryClassName() {
-        return factoryClass;
+    /** {@inheritDoc} */
+    protected Class<DirectoryElement> getElementClass() {
+        return DirectoryElement.class;
     }
 
-    public void setFactoryClassName(final String factoryClass) {
-        this.factoryClass = factoryClass;
+    /** {@inheritDoc} */
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
+        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), path);
+        streamWriter.writeEndElement();
     }
+
 }

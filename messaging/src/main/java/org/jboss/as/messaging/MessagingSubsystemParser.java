@@ -1,12 +1,15 @@
 package org.jboss.as.messaging;
 
+import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.hornetq.api.core.SimpleString;
@@ -18,7 +21,6 @@ import org.jboss.as.ExtensionContext;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
-import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -28,7 +30,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author scott.stark@jboss.org
  */
-public class MessagingSubsystemParser implements XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>>> {
+public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>>> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
     private static final MessagingSubsystemParser INSTANCE = new MessagingSubsystemParser();
@@ -79,10 +81,8 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     unhandledElement(reader, element);
                     break;
                 case BINDINGS_DIRECTORY: {
-                    String text = reader.getElementText();
-                    if (text != null && text.length() > 0) {
-                        messagingSubsystemAdd.setBindingsDirectory(text.trim());
-                    }
+                    final DirectoryElement dir = parseDirectory(reader);
+                    messagingSubsystemAdd.setBindingsDirectory(dir);
                 }
                     break;
                 case BROADCAST_PERIOD:
@@ -151,10 +151,8 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     unhandledElement(reader, element);
                     break;
                 case JOURNAL_DIRECTORY: {
-                    String text = reader.getElementText();
-                    if (text != null && text.length() > 0) {
-                        messagingSubsystemAdd.setJournalDirectory(text.trim());
-                    }
+                    final DirectoryElement dir = parseDirectory(reader);
+                    messagingSubsystemAdd.setJournalDirectory(dir);
                 }
                     break;
                 case JOURNAL_MIN_FILES: {
@@ -190,10 +188,8 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     unhandledElement(reader, element);
                     break;
                 case LARGE_MESSAGES_DIRECTORY: {
-                    String text = reader.getElementText();
-                    if (text != null && text.length() > 0) {
-                        messagingSubsystemAdd.setLargeMessagesDirectory(text.trim());
-                    }
+                    final DirectoryElement dir = parseDirectory(reader);
+                    messagingSubsystemAdd.setLargeMessagesDirectory(dir);
                 }
                     break;
                 case LOCAL_BIND_ADDRESS:
@@ -233,10 +229,8 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
                     unhandledElement(reader, element);
                     break;
                 case PAGING_DIRECTORY: {
-                    String text = reader.getElementText();
-                    if (text != null && text.length() > 0) {
-                        messagingSubsystemAdd.setPagingDirectory(text.trim());
-                    }
+                    final DirectoryElement dir = parseDirectory(reader);
+                    messagingSubsystemAdd.setPagingDirectory(dir);
                 }
                     break;
                 case PERF_BLAST_PAGES:
@@ -348,20 +342,52 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
         </acceptor>
      */
     void processAcceptors(XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
-        String localName = null;
-        do {
-            reader.nextTag();
-            localName = reader.getLocalName();
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String socketBinding = null;
+            int serverId = 0;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    }
+                    case SOCKET_BINDING: {
+                        socketBinding = attrValue;
+                        break;
+                    }
+                    case SERVER_ID: {
+                        serverId = Integer.valueOf(attrValue);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case ACCEPTOR:
-                    String name = reader.getAttributeValue(0);
-                    final TransportSpecification transportSpecification = parseTransportConfiguration(reader, name, Element.ACCEPTOR);
-                    // Add acceptor
-                    messagingSubsystemAdd.addAcceptor(transportSpecification);
+                case NETTY_ACCEPTOR: {
+                    final NettyAcceptorSpec acceptor = new NettyAcceptorSpec(name);
+                    acceptor.setSocketBindingRef(socketBinding);
+                    parseTransportConfigurationParams(reader, acceptor, element);
+                    messagingSubsystemAdd.addAcceptor(acceptor);
                     break;
+                } case IN_VM_ACCEPTOR: {
+                    final InVMAcceptorSpec acceptor = new InVMAcceptorSpec(name);
+                    acceptor.setServerId(serverId);
+                    parseTransportConfigurationParams(reader, acceptor, element);
+                    messagingSubsystemAdd.addAcceptor(acceptor);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
-        } while (reader.hasNext() && localName.equals(Element.ACCEPTOR.getLocalName()));
+        }
     }
 
 
@@ -475,78 +501,86 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
         return addressSettingsSpec;
     }
 
-    /*
-    <connector name="netty">
-       <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-       <param key="host"  value="${jboss.bind.address:localhost}"/>
-       <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
-    </connector>
-     */
     void processConnectors(final XMLExtendedStreamReader reader, final MessagingSubsystemAdd messagingSubsystemAdd) throws XMLStreamException {
-        // Handle elements
-        int tag = reader.getEventType();
-        String localName = null;
-        do {
-            tag = reader.nextTag();
-            localName = reader.getLocalName();
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String socketBinding = null;
+            int serverId = 0;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    }
+                    case SOCKET_BINDING: {
+                        socketBinding = attrValue;
+                        break;
+                    }
+                    case SERVER_ID: {
+                        serverId = Integer.valueOf(attrValue);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case CONNECTOR:
-                    String name = reader.getAttributeValue(0);
-                    TransportSpecification transportSpecification = parseTransportConfiguration(reader, name, Element.CONNECTOR);
-                    messagingSubsystemAdd.addConnector(transportSpecification);
+                case NETTY_CONNECTOR: {
+                    final NettyConnectorSpec connector = new NettyConnectorSpec(name);
+                    connector.setSocketBindingRef(socketBinding);
+                    parseTransportConfigurationParams(reader, connector, element);
+                    messagingSubsystemAdd.addConnector(connector);
                     break;
+                } case IN_VM_CONNECTOR: {
+                    final InVMConnectorSpec connector = new InVMConnectorSpec(name);
+                    connector.setServerId(serverId);
+                    parseTransportConfigurationParams(reader, connector, element);
+                    messagingSubsystemAdd.addConnector(connector);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
-        } while (reader.hasNext() && localName.equals(org.jboss.as.messaging.Element.CONNECTOR.getLocalName()));
+        }
     }
 
-
-    TransportSpecification parseTransportConfiguration(final XMLExtendedStreamReader reader, final String name, final Element parentElement) throws XMLStreamException {
-        final TransportSpecification transportSpecification = new TransportSpecification(name);
+    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final AbstractTransportSpecification<?> spec, final Element parentElement) throws XMLStreamException {
         Map<String, Object> params = new HashMap<String, Object>();
 
-        int tag = reader.getEventType();
-        String localName = null;
-        String clazz = null;
-        do {
-            tag = reader.nextTag();
-            localName = reader.getLocalName();
-            Element element = Element.forName(localName);
-            if (localName.equals(parentElement.getLocalName()) == true)
-                break;
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
-            switch (element) {
-                case FACTORY_CLASS:
-                    clazz = reader.getElementText().trim();
-                    break;
-                case PARAM:
-                    int count = reader.getAttributeCount();
-                    String key = null,
-                    value = null;
-                    for (int n = 0; n < count; n++) {
-                        String attrName = reader.getAttributeLocalName(n);
-                        Attribute attribute = Attribute.forName(attrName);
-                        switch (attribute) {
-                            case KEY:
-                                key = reader.getAttributeValue(n);
-                                break;
-                            case VALUE:
-                                value = reader.getAttributeValue(n);
-                                break;
-                            default:
-                                throw unexpectedAttribute(reader, n);
-                        }
-                    }
-                    reader.discardRemainder();
-                    params.put(key, value);
-                    break;
+            String localString = reader.getLocalName();
+            if(Element.PARAM.getLocalName().equals(localString) == false) {
+                throw ParseUtils.unexpectedElement(reader);
             }
-            // Scan to element end
-        } while (reader.hasNext());
 
-        transportSpecification.setFactoryClassName(clazz);
-        transportSpecification.setParams(params);
-        return transportSpecification;
+            int count = reader.getAttributeCount();
+            String key = null;
+            String value = null;
+            for (int n = 0; n < count; n++) {
+                String attrName = reader.getAttributeLocalName(n);
+                Attribute attribute = Attribute.forName(attrName);
+                switch (attribute) {
+                    case KEY:
+                        key = reader.getAttributeValue(n);
+                        break;
+                    case VALUE:
+                        value = reader.getAttributeValue(n);
+                        break;
+                    default:
+                        throw unexpectedAttribute(reader, n);
+                }
+            }
+            params.put(key, value);
+            ParseUtils.requireNoContent(reader);
+        }
+        spec.setParams(params);
     }
 
     /*
@@ -657,5 +691,30 @@ public class MessagingSubsystemParser implements XMLElementReader<ParseResult<Ex
         }
 
         return new SecuritySettingsSpecification(match, securityRoles);
+    }
+
+    static DirectoryElement parseDirectory(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final DirectoryElement element = new DirectoryElement();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                final String value = reader.getAttributeValue(i);
+                switch (attribute) {
+                    case RELATIVE_TO:
+                        element.setRelativeTo(value.trim());
+                        break;
+                    case PATH:
+                        element.setPath(value.trim());
+                        break;
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+        return element;
     }
 }

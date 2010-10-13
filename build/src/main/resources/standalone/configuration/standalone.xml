@@ -45,61 +45,39 @@
             </scheduled-thread-pool>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
+        <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
         <subsystem xmlns="urn:jboss:domain:transactions:1.0">
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
-            <!-- A standard hornetq configuration -->
-            <bindings-directory>hornetq/bindings</bindings-directory>
             <journal-type>NIO</journal-type>
-            <journal-directory>hornetq/journal</journal-directory>
-
+            <bindings-directory relative-to="jboss.server.data.dir" path="hornetq/bindings" />
+            <large-messages-directory relative-to="jboss.server.data.dir" path="hornetq/largemessages" />
+            <paging-directory relative-to="jboss.server.data.dir" path="/hornetq/paging" />
+            <journal-directory relative-to="jboss.server.data.dir" path="hornetq/journal" />
             <journal-min-files>2</journal-min-files>
-            <!-- Default journal file size is 10Mb, reduced here to 1Mb for faster first boot -->
-            <journal-file-size>1048576</journal-file-size>
-
-            <large-messages-directory>hornetq/largemessages</large-messages-directory>
-
-            <paging-directory>/hornetq/paging</paging-directory>
+            <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+            <journal-file-size>102400</journal-file-size>         
 
             <connectors>
-               <connector name="netty">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-                  <param key="socket-ref" value="netty" />
-               </connector>
-
-               <connector name="netty-throughput">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+               <in-vm-connector name="in-vm" server-id="0" />
+               <netty-connector name="netty" socket-binding="netty" />
+               <netty-connector name="netty-throughput" socket-binding="netty-throughput">
                   <param key="batch-delay" value="50"/>
-                  <param key="socket-ref" value="netty-throughput" />
-               </connector>
-
-               <connector name="in-vm">
-                  <factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
-                  <param key="server-id" value="${hornetq.server-id:0}"/>
-               </connector>
-
+               </netty-connector>
             </connectors>
 
             <acceptors>
-               <acceptor name="netty">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-                  <param key="socket-ref" value="netty" />
-               </acceptor>
-
-               <acceptor name="netty-throughput">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
+               <in-vm-acceptor name="in-vm" server-id="0" />
+               <netty-acceptor name="netty" socket-binding="netty" />
+               <netty-acceptor name="netty-throughput" socket-binding="netty-throughput">
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
-                  <param key="socket-ref" value="netty-throughput" />
-               </acceptor>
-
-               <acceptor name="in-vm">
-                 <factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-                 <param key="server-id" value="0"/>
-               </acceptor>
-
+               </netty-acceptor>
             </acceptors>
 
             <security-settings>
@@ -123,10 +101,6 @@
                </address-setting>
             </address-settings>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
-        <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
     </profile>
 
     <interfaces>

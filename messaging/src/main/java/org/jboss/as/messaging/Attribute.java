@@ -20,8 +20,12 @@ public enum Attribute {
    MANAGE_NAME("manage"),
    MATCH("match"),
    NAME("name"),
+   PATH("path"),
+   RELATIVE_TO("relative-to"),
    ROLES_ATTR_NAME("roles"),
    SEND_NAME("send"),
+   SERVER_ID("server-id"),
+   SOCKET_BINDING("socket-binding"),
    TYPE_ATTR_NAME("type"),
    VALUE("value"),
    ;

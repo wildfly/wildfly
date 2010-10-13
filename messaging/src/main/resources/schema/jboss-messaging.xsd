@@ -20,8 +20,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:messaging:1.0"
            xmlns="urn:jboss:domain:messaging:1.0"
+           targetNamespace="urn:jboss:domain:messaging:1.0"
            elementFormDefault="unqualified"
            attributeFormDefault="unqualified"
            version="1.0">
@@ -87,14 +87,22 @@
           <xs:element maxOccurs="1" minOccurs="0" name="connectors">
               <xs:complexType>
                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-connector" type="netty-connectorType" />
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-connector" type="inVM-connectorType" />
+                      <!-- TODO generic connector ? 
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="connector" type="connectorType" />
+                       -->
                   </xs:sequence>
               </xs:complexType>
           </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="acceptors">
               <xs:complexType>
                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="1" name="netty-acceptor" type="netty-acceptorType" />
+                      <xs:element maxOccurs="unbounded" minOccurs="1" name="in-vm-acceptor" type="inVM-acceptorType" />
+                      <!-- TODO generic acceptor ?
                       <xs:element maxOccurs="unbounded" minOccurs="1" name="acceptor" type="acceptorType" />
+                       -->
                   </xs:sequence>
               </xs:complexType>
           </xs:element>
@@ -220,17 +228,75 @@
        <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="connectorType">
+    <xs:complexType name="netty-connectorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              The netty connector type.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-connectorType">
+             <xs:attribute name="socket-binding" type="xs:string" use="required" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="inVM-connectorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              The inVM connector type.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-connectorType">
+             <xs:attribute name="server-id" type="xs:int" use="optional" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="base-connectorType">
        <xs:sequence>
-          <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
           <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:ID" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="acceptorType">
+    <xs:complexType name="netty-acceptorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              The netty acceptor type.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-acceptorType">
+             <xs:attribute name="socket-binding" type="xs:string" use="required" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="inVM-acceptorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              The inVM connector type.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-acceptorType">
+             <xs:attribute name="server-id" type="xs:int" use="optional" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="base-acceptorType">
        <xs:sequence>
-          <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
           <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="optional"/>

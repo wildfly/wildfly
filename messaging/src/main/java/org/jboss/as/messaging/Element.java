@@ -52,6 +52,10 @@ public enum Element {
    GROUP_PORT("group-port"),
    GROUPING_HANDLER("grouping-handler"),
    ID_CACHE_SIZE("id-cache-size"),
+
+   IN_VM_ACCEPTOR("in-vm-acceptor"),
+   IN_VM_CONNECTOR("in-vm-connector"),
+
    JMX_DOMAIN("jmx-domain"),
    JMX_MANAGEMENT_ENABLED("jmx-management-enabled"),
    JOURNAL_BUFFER_SIZE("journal-buffer-size"),
@@ -78,6 +82,10 @@ public enum Element {
    MESSAGE_COUNTER_SAMPLE_PERIOD("message-counter-sample-period"),
    MESSAGE_EXPIRY_SCAN_PERIOD("message-expiry-scan-period"),
    MESSAGE_EXPIRY_THREAD_PRIORITY("message-expiry-thread-priority"),
+
+   NETTY_ACCEPTOR("netty-acceptor"),
+   NETTY_CONNECTOR("netty-connector"),
+
    PAGING_DIRECTORY("paging-directory"),
    PERF_BLAST_PAGES("perf-blast-pages"),
    PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY("persist-delivery-count-before-delivery"),
@@ -118,7 +126,7 @@ public enum Element {
    MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME("message-counter-history-day-limit"),
    LVQ_NODE_NAME("last-value-queue"),
    REDISTRIBUTION_DELAY_NODE_NAME("redistribution-delay"),
-   SEND_TO_DLA_ON_NO_ROUTE("send-to-dla-on-no-route")
+   SEND_TO_DLA_ON_NO_ROUTE("send-to-dla-on-no-route"),
    ;
 
    private final String name;

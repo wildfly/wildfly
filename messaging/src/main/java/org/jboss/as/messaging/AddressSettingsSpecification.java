@@ -22,14 +22,17 @@
 
 package org.jboss.as.messaging;
 
-import java.io.Serializable;
+import javax.xml.stream.XMLStreamException;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author John Bailey
  */
-public class AddressSettingsSpecification implements Serializable {
+public class AddressSettingsSpecification extends AbstractModelElement<AddressSettingsSpecification> {
     private static final long serialVersionUID = -9199912333707812250L;
     private final String match;
     private SimpleString deadLetterAddress;
@@ -51,7 +54,6 @@ public class AddressSettingsSpecification implements Serializable {
     public String getMatch() {
         return match;
     }
-
 
     public SimpleString getDeadLetterAddress() {
         return deadLetterAddress;
@@ -140,4 +142,31 @@ public class AddressSettingsSpecification implements Serializable {
     public void setPageSizeBytes(long pageSizeBytes) {
         this.pageSizeBytes = pageSizeBytes;
     }
+
+    /** {@inheritDoc} */
+    protected Class<AddressSettingsSpecification> getElementClass() {
+        return AddressSettingsSpecification.class;
+    }
+
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        // TODO move this detail out of this class
+        streamWriter.writeAttribute(Attribute.MATCH.getLocalName(), match);
+        ElementUtils.writeSimpleElement(Element.DEAD_LETTER_ADDRESS_NODE_NAME, getDeadLetterAddress(), streamWriter);
+        ElementUtils.writeSimpleElement(Element.EXPIRY_ADDRESS_NODE_NAME, getExpiryAddress(), streamWriter);
+        ElementUtils.writeSimpleElement(Element.REDELIVERY_DELAY_NODE_NAME, String.valueOf(getRedeliveryDelay()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.MAX_SIZE_BYTES_NODE_NAME, String.valueOf(getMaxSizeBytes()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.PAGE_SIZE_BYTES_NODE_NAME, String.valueOf(getPageSizeBytes()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME, String.valueOf(getMessageCounterHistoryDayLimit()), streamWriter);
+        AddressFullMessagePolicy policy = getAddressFullMessagePolicy();
+        if (policy != null) {
+            ElementUtils.writeSimpleElement(Element.ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, policy.toString(), streamWriter);
+         }
+        ElementUtils.writeSimpleElement(Element.LVQ_NODE_NAME, String.valueOf(isLastValueQueue()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.MAX_DELIVERY_ATTEMPTS, String.valueOf(getMaxDeliveryAttempts()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.REDISTRIBUTION_DELAY_NODE_NAME, String.valueOf(getRedistributionDelay()), streamWriter);
+        ElementUtils.writeSimpleElement(Element.SEND_TO_DLA_ON_NO_ROUTE, String.valueOf(isSendToDLAOnNoRoute()), streamWriter);
+
+        streamWriter.writeEndElement();
+     }
+
 }

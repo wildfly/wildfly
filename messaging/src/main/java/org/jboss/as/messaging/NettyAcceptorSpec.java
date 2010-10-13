@@ -22,50 +22,26 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Map;
-
-import org.hornetq.api.core.Pair;
-import org.jboss.as.model.UpdateFailedException;
-
 /**
- * The abstract pair update.
- *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractPairUpdate<A, B> extends AbstractMessagingSubsystemUpdate<Void> {
+public class NettyAcceptorSpec extends AbstractTransportSpecification<NettyAcceptorSpec> {
 
-    private static final long serialVersionUID = 6172053691870351651L;
+    private static final long serialVersionUID = 6658113870391109250L;
+    private static final String FACTORY_CLASS = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
 
-    /** The pair. */
-    private final Pair<A, B> pair;
-
-    public AbstractPairUpdate(final Pair<A, B> pair) {
-        super();
-        this.pair = pair;
+    protected NettyAcceptorSpec(String name) {
+        super(Element.NETTY_ACCEPTOR, name);
     }
 
-    public AbstractPairUpdate(final Pair<A, B> pair, boolean restart) {
-        super(restart);
-        this.pair = pair;
+    /** {@inheritDoc} */
+    public String getFactoryClassName() {
+        return FACTORY_CLASS;
     }
 
-    A getKey() {
-        return pair.a;
-    }
-
-    B getValue() {
-        return pair.b;
-    }
-
-    void add(Map<A, B> map) throws UpdateFailedException {
-        if(map.containsKey(getKey())) {
-            throw new UpdateFailedException("duplicate key " + getKey());
-        }
-        map.put(getKey(), getValue());
-    }
-
-    B get(Map<A, B> map) {
-        return map.get(getKey());
+    /** {@inheritDoc} */
+    protected Class<NettyAcceptorSpec> getElementClass() {
+        return NettyAcceptorSpec.class;
     }
 
 }

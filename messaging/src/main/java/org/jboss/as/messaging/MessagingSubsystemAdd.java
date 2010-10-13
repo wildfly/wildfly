@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -38,6 +39,7 @@ import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.SocketBinding;
+import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -51,18 +53,20 @@ import org.jboss.msc.service.ServiceName;
 public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsystemElement> {
 
     private static final long serialVersionUID = -1306547303259739030L;
+    private static final ServiceName PATH_BASE = MessagingSubsystemElement.JBOSS_MESSAGING.append("paths");
+    private static final String PATH_RELATIVE_TO = "jboss.server.data.dir";
 
-    private String bindingsDirectory;
-    private String journalDirectory;
-    private String largeMessagesDirectory;
-    private String pagingDirectory;
+    private DirectoryElement bindingsDirectory;
+    private DirectoryElement journalDirectory;
+    private DirectoryElement largeMessagesDirectory;
+    private DirectoryElement pagingDirectory;
     private Boolean clustered;
     private Integer journalMinFiles;
     private Integer journalFileSize;
     private JournalType journalType;
 
-    private Set<TransportSpecification> acceptors = new HashSet<TransportSpecification>();
-    private Set<TransportSpecification> connectors = new HashSet<TransportSpecification>();
+    private Set<AbstractTransportSpecification> acceptors = new HashSet<AbstractTransportSpecification>();
+    private Set<AbstractTransportSpecification> connectors = new HashSet<AbstractTransportSpecification>();
     private Set<SecuritySettingsSpecification> securitySettings = new HashSet<SecuritySettingsSpecification>();
     private Set<AddressSettingsSpecification> addressSettings = new HashSet<AddressSettingsSpecification>();
 
@@ -75,18 +79,6 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         final HornetQService hqservice = new HornetQService();
         final Configuration hqConfig = new ConfigurationImpl();
 
-        if (bindingsDirectory != null) {
-            hqConfig.setBindingsDirectory(bindingsDirectory);
-        }
-        if (journalDirectory != null) {
-            hqConfig.setJournalDirectory(journalDirectory);
-        }
-        if (largeMessagesDirectory != null) {
-            hqConfig.setLargeMessagesDirectory(largeMessagesDirectory);
-        }
-        if (pagingDirectory != null) {
-            hqConfig.setPagingDirectory(pagingDirectory);
-        }
         if (clustered != null) {
             hqConfig.setClustered(clustered);
         }
@@ -144,28 +136,39 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice);
 
-        final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
-        for(TransportSpecification connectorSpec : this.connectors) {
-            connectors.put(connectorSpec.getName(), new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName()));
+        // Create path services
+        createRelativePathService("bindings", bindingsDirectory, batchBuilder);
+        addPathDependency("bindings", hqservice, serviceBuilder);
+        createRelativePathService("journal", journalDirectory, batchBuilder);
+        addPathDependency("journal", hqservice, serviceBuilder);
+        createRelativePathService("largemessages", largeMessagesDirectory, batchBuilder);
+        addPathDependency("largemessages", hqservice, serviceBuilder);
+        createRelativePathService("paging", pagingDirectory, batchBuilder);
+        addPathDependency("paging", hqservice, serviceBuilder);
 
-            final Object socketRef = connectorSpec.getParams().get("socket-ref");
+        final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
+        for(AbstractTransportSpecification connectorSpec : this.connectors) {
+            final TransportConfiguration transport = new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName());
+            connectorSpec.processHQConfig(transport);
+            connectors.put(connectorSpec.getName(), transport);
             // Add a dependency on a SocketBinding if there is a socket-ref
+            final String socketRef = connectorSpec.getSocketBindingRef();
             if (socketRef != null) {
-                final String name = socketRef.toString();
-                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
-                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketRef);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(socketRef));
             }
         }
 
         final Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
-        for(TransportSpecification acceptorSpec : this.acceptors) {
-            acceptors.add(new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName()));
-            final Object socketRef = acceptorSpec.getParams().get("socket-ref");
+        for(AbstractTransportSpecification acceptorSpec : this.acceptors) {
+            final TransportConfiguration transport = new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName());
+            acceptorSpec.processHQConfig(transport);
+            acceptors.add(transport);
             // Add a dependency on a SocketBinding if there is a socket-ref
+            final String socketRef = acceptorSpec.getSocketBindingRef();
             if (socketRef != null) {
-                final String name = socketRef.toString();
-                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(name);
-                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(name));
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketRef);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(socketRef));
             }
         }
         serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
@@ -183,7 +186,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         if (journalFileSize != null) element.setJournalFileSize(getJournalFileSize());
         if (journalType != null) element.setJournalType(getJournalType());
 
-        for (TransportSpecification acceptorSpec : acceptors) {
+        for (AbstractTransportSpecification acceptorSpec : acceptors) {
             TransportElement acceptorEl = element.addAcceptor(acceptorSpec.getName());
             acceptorEl.setFactoryClassName(acceptorSpec.getFactoryClassName());
             acceptorEl.setParams(acceptorSpec.getParams());
@@ -220,7 +223,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
             }
         }
 
-        for (TransportSpecification connectorSpec : connectors) {
+        for (AbstractTransportSpecification connectorSpec : connectors) {
             TransportElement connectorEl = element.addConnector(connectorSpec.getName());
             connectorEl.setFactoryClassName(connectorSpec.getFactoryClassName());
             connectorEl.setParams(connectorSpec.getParams());
@@ -232,35 +235,35 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         return element;
     }
 
-    public String getBindingsDirectory() {
+    public DirectoryElement getBindingsDirectory() {
         return bindingsDirectory;
     }
 
-    public void setBindingsDirectory(String bindingsDirectory) {
+    public void setBindingsDirectory(DirectoryElement bindingsDirectory) {
         this.bindingsDirectory = bindingsDirectory;
     }
 
-    public String getJournalDirectory() {
+    public DirectoryElement getJournalDirectory() {
         return journalDirectory;
     }
 
-    public void setJournalDirectory(String journalDirectory) {
+    public void setJournalDirectory(DirectoryElement journalDirectory) {
         this.journalDirectory = journalDirectory;
     }
 
-    public String getLargeMessagesDirectory() {
+    public DirectoryElement getLargeMessagesDirectory() {
         return largeMessagesDirectory;
     }
 
-    public void setLargeMessagesDirectory(String largeMessagesDirectory) {
+    public void setLargeMessagesDirectory(DirectoryElement largeMessagesDirectory) {
         this.largeMessagesDirectory = largeMessagesDirectory;
     }
 
-    public String getPagingDirectory() {
+    public DirectoryElement getPagingDirectory() {
         return pagingDirectory;
     }
 
-    public void setPagingDirectory(String pagingDirectory) {
+    public void setPagingDirectory(DirectoryElement pagingDirectory) {
         this.pagingDirectory = pagingDirectory;
     }
 
@@ -296,11 +299,11 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.journalType = journalType;
     }
 
-    void addAcceptor(final TransportSpecification transportSpecification) {
+    void addAcceptor(final AbstractTransportSpecification transportSpecification) {
         acceptors.add(transportSpecification);
     }
 
-    void addConnector(final TransportSpecification transportSpecification) {
+    void addConnector(final AbstractTransportSpecification transportSpecification) {
         connectors.add(transportSpecification);
     }
 
@@ -310,5 +313,25 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
     void addSecuritySettings(final SecuritySettingsSpecification securitySettingsSpecification) {
         securitySettings.add(securitySettingsSpecification);
+    }
+
+    static void addPathDependency(String name, HornetQService hqService, BatchServiceBuilder<?> serviceBuilder) {
+        serviceBuilder.addDependency(PATH_BASE.append(name), String.class, hqService.getPathInjector(name));
+    }
+
+    static void createRelativePathService(String name, DirectoryElement dir, BatchBuilder builder) {
+        if(dir != null) {
+            createRelativePathService(name, dir.getRelativeTo(), dir.getPath(), builder);
+        } else {
+            createRelativePathService(name, PATH_RELATIVE_TO, "hornetq/"+name, builder);
+        }
+    }
+
+    static void createRelativePathService(String name, String relativeTo, String relativePath, BatchBuilder builder) {
+        RelativePathService.addService(PATH_BASE.append(name),
+                // default to hornetq/name
+                relativePath != null ? relativePath : "hornetq/" + name,
+                // default to data dir
+                relativeTo != null ? relativeTo : PATH_RELATIVE_TO, builder);
     }
 }
