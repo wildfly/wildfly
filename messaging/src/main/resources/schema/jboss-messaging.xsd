@@ -135,11 +135,11 @@
               </xs:complexType>
           </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType" />
-          <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xs:boolean" />
-          <xs:element maxOccurs="1" minOccurs="0" name="journal-directory" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="paging-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-directory" type="directoryType" />
+          <xs:element maxOccurs="1" minOccurs="0" name="create-journal-dir" type="directoryType" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-type" type="journalType" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-timeout" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-buffer-size" type="xs:long" />
@@ -156,7 +156,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xs:long" />
-          <xs:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="xs:string" />
+          <xs:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="directoryType" />
           <xs:element maxOccurs="1" minOccurs="0" name="security-settings" type="security-settingsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="address-settings" type="address-settingsType" />
           <xs:element maxOccurs="1" minOccurs="0" name="connector-services">
@@ -399,11 +399,28 @@
     </xs:simpleType>
  
     <xs:complexType name="connectorServiceType">
-      <xs:sequence>
-         <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
-         <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
-      </xs:sequence>
-      <xs:attribute name="name" type="xs:string" use="optional"/>
+       <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
+       </xs:sequence>
+       <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="directoryType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The directory configuration. All paths defined by the messaging subsystems have to relative
+                to the domain path configuration.
+                
+                The "relative-to" references a global path configuration in the domain model, with the default
+                to the JBoss Application data directory (jboss.server.data.dir).
+                The "path" the directory relative to the referenced path.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
+        <xs:attribute name="path" type="xs:string" />
     </xs:complexType>
 
 </xs:schema>
