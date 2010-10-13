@@ -34,6 +34,7 @@ public enum Element {
    UNKNOWN(null),
    // Messaging 1.0 elements in alpha order
    ACCEPTORS("acceptors"),
+   ADDRESS("address"),
    ADDRESS_SETTINGS("address-settings"),
    ASYNC_CONNECTION_EXECUTION_ENABLED("async-connection-execution-enabled"),
    BACKUP("backup"),
@@ -47,6 +48,7 @@ public enum Element {
    CONNECTOR_REF("connector-ref"),
    CREATE_BINDINGS_DIR("create-bindings-dir"),
    CREATE_JOURNAL_DIR("create-journal-dir"),
+   DURABLE("durable"),
    FILE_DEPLOYMENT_ENABLED("file-deployment-enabled"),
    GROUP_ADDRESS("group-address"),
    GROUP_PORT("group-port"),
@@ -91,6 +93,10 @@ public enum Element {
    PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY("persist-delivery-count-before-delivery"),
    PERSIST_ID_CACHE("persist-id-cache"),
    PERSISTENCE_ENABLED("persistence-enabled"),
+
+   QUEUES("queues"),
+   QUEUE("queue"),
+
    REFRESH_TIMEOUT("refresh-timeout"),
    REMOTING_INTERCEPTORS("remoting-interceptors"),
    RUN_SYNC_SPEED_TEST("run-sync-speed-test"),
@@ -107,7 +113,9 @@ public enum Element {
    ACCEPTOR("acceptor"),
    CONNECTORS("connectors"),
    CONNECTOR("connector"),
+
    FACTORY_CLASS("factory-class"),
+   FILTER("filter"),
    PARAM("param"),
 
    // Security Parsing

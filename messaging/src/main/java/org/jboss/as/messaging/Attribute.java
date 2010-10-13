@@ -26,6 +26,7 @@ public enum Attribute {
    SEND_NAME("send"),
    SERVER_ID("server-id"),
    SOCKET_BINDING("socket-binding"),
+   STRING("string"),
    TYPE_ATTR_NAME("type"),
    VALUE("value"),
    ;

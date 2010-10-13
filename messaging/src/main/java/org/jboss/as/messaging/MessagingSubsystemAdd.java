@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -69,6 +70,8 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private Set<AbstractTransportElement<?>> connectors = new HashSet<AbstractTransportElement<?>>();
     private Set<SecuritySettingsElement> securitySettings = new HashSet<SecuritySettingsElement>();
     private Set<AddressSettingsElement> addressSettings = new HashSet<AddressSettingsElement>();
+
+    private Set<QueueElement> queues = new HashSet<QueueElement>();
 
     public MessagingSubsystemAdd() {
         super(Namespace.MESSAGING_1_0.getUriString());
@@ -129,6 +132,11 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         final Map<String, Set<Role>> hqSecurityRoles = hqConfig.getSecurityRoles();
         for(SecuritySettingsElement securitySetting : securitySettings) {
             hqSecurityRoles.put(securitySetting.getMatch(), securitySetting.getRoles());
+        }
+
+        // Configure queues
+        for(final QueueElement queue : queues) {
+            hqConfig.getQueueConfigurations().add(new CoreQueueConfiguration(queue.getAddress(), queue.getName(), queue.getFilter(), queue.isDurable()));
         }
 
         hqservice.setConfiguration(hqConfig);
@@ -197,6 +205,9 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
         for (SecuritySettingsElement securitySetting : securitySettings) {
             element.addSecuritySetting(securitySetting);
+        }
+        for(QueueElement queue : queues) {
+            element.addQueue(queue);
         }
         return element;
     }
@@ -279,6 +290,10 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
     void addSecuritySettings(final SecuritySettingsElement securitySettingsSpecification) {
         securitySettings.add(securitySettingsSpecification);
+    }
+
+    void addQueue(final QueueElement queue) {
+        queues.add(queue);
     }
 
     static void addPathDependency(String name, HornetQService hqService, BatchServiceBuilder<?> serviceBuilder) {

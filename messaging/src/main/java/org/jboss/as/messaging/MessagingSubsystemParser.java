@@ -3,6 +3,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.model.ParseUtils.unexpectedAttribute;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -311,6 +312,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case SEND_TO_DLA_ON_NO_ROUTE:
                     unhandledElement(reader, element);
                     break;
+                case QUEUES:
+                    parseQueues(reader, messagingSubsystemAdd);
+                    break;
                 case SUBSYSTEM:
                     // The end of the subsystem element
                     break;
@@ -381,6 +385,65 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     acceptor.setServerId(serverId);
                     parseTransportConfigurationParams(reader, acceptor, element);
                     messagingSubsystemAdd.addAcceptor(acceptor);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    static void parseQueues(final XMLExtendedStreamReader reader, final MessagingSubsystemAdd add) throws XMLStreamException {
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case QUEUE: {
+                    if(name == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
+                    }
+                    final QueueElement queue = new QueueElement(name);
+                    parseQueue(reader, queue);
+                    if(queue.getAddress() == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Element.ADDRESS.getLocalName()));
+                    }
+                    add.addQueue(queue);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    static void parseQueue(final XMLExtendedStreamReader reader, final QueueElement queue) throws XMLStreamException {
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ADDRESS: {
+                    queue.setAddress(reader.getElementText().trim());
+                    break;
+                } case FILTER: {
+                    queue.setFilter(reader.getAttributeValue(0).trim());
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                } case DURABLE: {
+                    queue.setDurable(Boolean.valueOf(reader.getElementText()));
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -613,7 +676,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         reader.discardRemainder();
     }
 
-    SecuritySettingsElement parseSecurityRoles(final XMLExtendedStreamReader reader, final String match) throws XMLStreamException {
+    static SecuritySettingsElement parseSecurityRoles(final XMLExtendedStreamReader reader, final String match) throws XMLStreamException {
         final Set<Role> securityRoles = new HashSet<Role>();
 
         ArrayList<String> send = new ArrayList<String>();

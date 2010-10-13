@@ -45,6 +45,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     private final NavigableMap<String, AddressSettingsElement> addressSettings = new TreeMap<String, AddressSettingsElement>();
     private final NavigableMap<String, SecuritySettingsElement> securitySettings = new TreeMap<String, SecuritySettingsElement>();
 
+    private final NavigableMap<String, QueueElement> queues = new TreeMap<String, QueueElement>();
+
     public MessagingSubsystemElement() {
         super(Namespace.MESSAGING_1_0.getUriString());
     }
@@ -278,4 +280,13 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return securitySettings.remove(match) != null;
     }
 
+    boolean addQueue(final QueueElement queue) {
+        if(queues.containsKey(queue.getName())) return false;
+        queues.put(queue.getName(), queue);
+        return true;
+    }
+
+    boolean removeQueue(final String name) {
+        return queues.remove(name) != null;
+    }
 }
