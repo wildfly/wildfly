@@ -24,17 +24,14 @@ package org.jboss.as.messaging;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
  * The implementation of the Messaging extension.
  *
  * @author scott.stark@jboss.org
- * @author Emanuel Muckenhuber
  */
 public final class MessagingExtension implements Extension {
-    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
    /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
@@ -43,7 +40,7 @@ public final class MessagingExtension implements Extension {
 
     /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Messaging Extension");
+        //
     }
 
 }

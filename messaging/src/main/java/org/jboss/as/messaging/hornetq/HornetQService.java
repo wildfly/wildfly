@@ -21,8 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Service configuring and starting the {@code HornetQService}.
+ *
  * @author scott.stark@jboss.org
- * @version $Revision:$
  */
 public class HornetQService implements Service<HornetQServer> {
     private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
@@ -69,7 +70,7 @@ public class HornetQService implements Service<HornetQServer> {
 
         // Setup paths
         configuration.setBindingsDirectory(paths.get("bindings"));
-        configuration.setLargeMessagesDirectory("largemessages");
+        configuration.setLargeMessagesDirectory(paths.get("largemessages"));
         configuration.setJournalDirectory(paths.get("journal"));
         configuration.setPagingDirectory(paths.get("paging"));
 
