@@ -32,7 +32,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author John Bailey
  */
-public class AddressSettingsSpecification extends AbstractModelElement<AddressSettingsSpecification> {
+public class AddressSettingsElement extends AbstractModelElement<AddressSettingsElement> {
     private static final long serialVersionUID = -9199912333707812250L;
     private final String match;
     private SimpleString deadLetterAddress;
@@ -47,7 +47,7 @@ public class AddressSettingsSpecification extends AbstractModelElement<AddressSe
     private Long maxSizeBytes;
     private Long pageSizeBytes;
 
-    public AddressSettingsSpecification(final String match) {
+    public AddressSettingsElement(final String match) {
         this.match = match;
     }
 
@@ -144,8 +144,8 @@ public class AddressSettingsSpecification extends AbstractModelElement<AddressSe
     }
 
     /** {@inheritDoc} */
-    protected Class<AddressSettingsSpecification> getElementClass() {
-        return AddressSettingsSpecification.class;
+    protected Class<AddressSettingsElement> getElementClass() {
+        return AddressSettingsElement.class;
     }
 
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {

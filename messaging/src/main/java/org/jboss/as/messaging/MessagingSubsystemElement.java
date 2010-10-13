@@ -37,10 +37,10 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     private int journalFileSize = -1;
     private JournalType journalType;
 
-    private final NavigableMap<String, AbstractTransportSpecification<?>> acceptors = new TreeMap<String, AbstractTransportSpecification<?>>();
-    private final NavigableMap<String, AbstractTransportSpecification<?>> connectors = new TreeMap<String, AbstractTransportSpecification<?>>();
-    private final NavigableMap<String, AddressSettingsSpecification> addressSettings = new TreeMap<String, AddressSettingsSpecification>();
-    private final NavigableMap<String, SecuritySettingsSpecification> securitySettings = new TreeMap<String, SecuritySettingsSpecification>();
+    private final NavigableMap<String, AbstractTransportElement<?>> acceptors = new TreeMap<String, AbstractTransportElement<?>>();
+    private final NavigableMap<String, AbstractTransportElement<?>> connectors = new TreeMap<String, AbstractTransportElement<?>>();
+    private final NavigableMap<String, AddressSettingsElement> addressSettings = new TreeMap<String, AddressSettingsElement>();
+    private final NavigableMap<String, SecuritySettingsElement> securitySettings = new TreeMap<String, SecuritySettingsElement>();
 
     public MessagingSubsystemElement() {
         super(Namespace.MESSAGING_1_0.getUriString());
@@ -96,7 +96,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (acceptors.size() > 0) {
             streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
-            for(AbstractTransportSpecification<?> acceptor : acceptors.values()) {
+            for(AbstractTransportElement<?> acceptor : acceptors.values()) {
                 streamWriter.writeStartElement(acceptor.getElement().getLocalName());
                 acceptor.writeContent(streamWriter);
             }
@@ -105,7 +105,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (addressSettings.size() > 0) {
             streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
-            for(AddressSettingsSpecification addressSettingsElement : addressSettings.values()) {
+            for(AddressSettingsElement addressSettingsElement : addressSettings.values()) {
                 streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
                 addressSettingsElement.writeContent(streamWriter);
             }
@@ -114,7 +114,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (connectors.size() > 0) {
             streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
-            for(AbstractTransportSpecification<?> connector : connectors.values()) {
+            for(AbstractTransportElement<?> connector : connectors.values()) {
                 streamWriter.writeStartElement(connector.getElement().getLocalName());
                 connector.writeContent(streamWriter);
             }
@@ -123,7 +123,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (securitySettings.size() > 0) {
             streamWriter.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
-            for(SecuritySettingsSpecification securitySettingElement : securitySettings.values()) {
+            for(SecuritySettingsElement securitySettingElement : securitySettings.values()) {
                 streamWriter.writeStartElement(Element.SECURITY_SETTING.getLocalName());
                 securitySettingElement.writeContent(streamWriter);
             }
@@ -219,7 +219,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         this.journalType = journalType;
     }
 
-    boolean addAcceptor(AbstractTransportSpecification<?> acceptor) {
+    boolean addAcceptor(AbstractTransportElement<?> acceptor) {
         if(acceptors.containsKey(acceptor.getName())) return false;
         acceptors.put(acceptor.getName(), acceptor);
         return true;
@@ -229,13 +229,13 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return acceptors.remove(name) != null;
     }
 
-    boolean addConnector(AbstractTransportSpecification<?> connector) {
+    boolean addConnector(AbstractTransportElement<?> connector) {
         if(connectors.containsKey(connector.getName())) return false;
         connectors.put(connector.getName(), connector);
         return true;
     }
 
-    boolean addAddressSettings(AddressSettingsSpecification spec) {
+    boolean addAddressSettings(AddressSettingsElement spec) {
         if(addressSettings.containsKey(spec.getMatch())) return false;
         addressSettings.put(spec.getMatch(), spec);
         return true;
@@ -245,7 +245,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return addressSettings.remove(match) != null;
     }
 
-    boolean addSecuritySetting(SecuritySettingsSpecification spec) {
+    boolean addSecuritySetting(SecuritySettingsElement spec) {
         if(securitySettings.containsKey(spec.getMatch())) return false;
         securitySettings.put(spec.getMatch(), spec);
         return true;

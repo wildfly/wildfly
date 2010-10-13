@@ -32,7 +32,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public class InVMAcceptorSpec extends AbstractTransportSpecification<InVMAcceptorSpec> {
+public class InVMAcceptorSpec extends AbstractTransportElement<InVMAcceptorSpec> {
 
     private static final long serialVersionUID = -1268193638124263821L;
     private static final String FACTORY_CLASS = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";

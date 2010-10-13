@@ -35,12 +35,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author John Bailey
  */
-public class SecuritySettingsSpecification extends AbstractModelElement<SecuritySettingsSpecification> {
+public class SecuritySettingsElement extends AbstractModelElement<SecuritySettingsElement> {
     private static final long serialVersionUID = -35697785671908094L;
     private final String match;
     private final Set<Role> roles;
 
-    public SecuritySettingsSpecification(final String match, final Set<Role> roles) {
+    public SecuritySettingsElement(final String match, final Set<Role> roles) {
         this.match = match;
         this.roles = roles;
     }
@@ -94,8 +94,8 @@ public class SecuritySettingsSpecification extends AbstractModelElement<Security
     }
 
     /** {@inheritDoc} */
-    protected Class<SecuritySettingsSpecification> getElementClass() {
-        return SecuritySettingsSpecification.class;
+    protected Class<SecuritySettingsElement> getElementClass() {
+        return SecuritySettingsElement.class;
     }
 
     public String getMatch() {

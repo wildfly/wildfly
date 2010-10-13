@@ -34,7 +34,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractTransportSpecification<E extends AbstractTransportSpecification<E>> extends AbstractModelElement<E> {
+public abstract class AbstractTransportElement<E extends AbstractTransportElement<E>> extends AbstractModelElement<E> {
 
     private static final long serialVersionUID = -2921301251096974402L;
     private final Element element;
@@ -42,7 +42,7 @@ public abstract class AbstractTransportSpecification<E extends AbstractTransport
     private String socketBindingRef;
     private Map<String, Object> params = new HashMap<String, Object>();
 
-    protected AbstractTransportSpecification(Element element, String name) {
+    protected AbstractTransportElement(Element element, String name) {
         this.element = element;
         this.name = name;
     }

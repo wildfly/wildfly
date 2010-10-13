@@ -414,7 +414,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case ADDRESS_SETTING:
                     String match = reader.getAttributeValue(0);
-                    final AddressSettingsSpecification addressSettingsSpec = parseAddressSettings(reader, match);
+                    final AddressSettingsElement addressSettingsSpec = parseAddressSettings(reader, match);
                     // Add address settings
                     messagingSubsystemAdd.addAddressSettings(addressSettingsSpec);
                     break;
@@ -422,8 +422,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
     }
 
-    static AddressSettingsSpecification parseAddressSettings(final XMLExtendedStreamReader reader, String name) throws XMLStreamException {
-        final AddressSettingsSpecification addressSettingsSpec = new AddressSettingsSpecification(name);
+    static AddressSettingsElement parseAddressSettings(final XMLExtendedStreamReader reader, String name) throws XMLStreamException {
+        final AddressSettingsElement addressSettingsSpec = new AddressSettingsElement(name);
 
         int tag = reader.getEventType();
         String localName = null;
@@ -550,7 +550,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final AbstractTransportSpecification<?> spec, final Element parentElement) throws XMLStreamException {
+    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final AbstractTransportElement<?> spec, final Element parentElement) throws XMLStreamException {
         Map<String, Object> params = new HashMap<String, Object>();
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -602,7 +602,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case SECURITY_SETTING:
                     String match = reader.getAttributeValue(0);
-                    final SecuritySettingsSpecification securitySettingsSpec = parseSecurityRoles(reader, match);
+                    final SecuritySettingsElement securitySettingsSpec = parseSecurityRoles(reader, match);
                     messagingSubsystemAdd.addSecuritySettings(securitySettingsSpec);
                     break;
             }
@@ -614,7 +614,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         reader.discardRemainder();
     }
 
-    SecuritySettingsSpecification parseSecurityRoles(final XMLExtendedStreamReader reader, final String match) throws XMLStreamException {
+    SecuritySettingsElement parseSecurityRoles(final XMLExtendedStreamReader reader, final String match) throws XMLStreamException {
         final Set<Role> securityRoles = new HashSet<Role>();
 
         ArrayList<String> send = new ArrayList<String>();
@@ -690,7 +690,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             .contains(role), manageRoles.contains(role)));
         }
 
-        return new SecuritySettingsSpecification(match, securityRoles);
+        return new SecuritySettingsElement(match, securityRoles);
     }
 
     static DirectoryElement parseDirectory(final XMLExtendedStreamReader reader) throws XMLStreamException {

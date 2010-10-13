@@ -65,10 +65,10 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private Integer journalFileSize;
     private JournalType journalType;
 
-    private Set<AbstractTransportSpecification<?>> acceptors = new HashSet<AbstractTransportSpecification<?>>();
-    private Set<AbstractTransportSpecification<?>> connectors = new HashSet<AbstractTransportSpecification<?>>();
-    private Set<SecuritySettingsSpecification> securitySettings = new HashSet<SecuritySettingsSpecification>();
-    private Set<AddressSettingsSpecification> addressSettings = new HashSet<AddressSettingsSpecification>();
+    private Set<AbstractTransportElement<?>> acceptors = new HashSet<AbstractTransportElement<?>>();
+    private Set<AbstractTransportElement<?>> connectors = new HashSet<AbstractTransportElement<?>>();
+    private Set<SecuritySettingsElement> securitySettings = new HashSet<SecuritySettingsElement>();
+    private Set<AddressSettingsElement> addressSettings = new HashSet<AddressSettingsElement>();
 
     public MessagingSubsystemAdd() {
         super(Namespace.MESSAGING_1_0.getUriString());
@@ -94,7 +94,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         // Configure address settings
         final Map<String, AddressSettings> configAddressSettings = hqConfig.getAddressesSettings();
-        for(AddressSettingsSpecification addressSpec : addressSettings) {
+        for(AddressSettingsElement addressSpec : addressSettings) {
             final AddressSettings settings = new AddressSettings();
             settings.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
             settings.setDeadLetterAddress(addressSpec.getDeadLetterAddress());
@@ -127,7 +127,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
         //  Configure security roles
         final Map<String, Set<Role>> hqSecurityRoles = hqConfig.getSecurityRoles();
-        for(SecuritySettingsSpecification securitySetting : securitySettings) {
+        for(SecuritySettingsElement securitySetting : securitySettings) {
             hqSecurityRoles.put(securitySetting.getMatch(), securitySetting.getRoles());
         }
 
@@ -147,7 +147,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         addPathDependency("paging", hqservice, serviceBuilder);
 
         final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
-        for(AbstractTransportSpecification<?> connectorSpec : this.connectors) {
+        for(AbstractTransportElement<?> connectorSpec : this.connectors) {
             final TransportConfiguration transport = new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName());
             connectorSpec.processHQConfig(transport);
             connectors.put(connectorSpec.getName(), transport);
@@ -160,7 +160,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
 
         final Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
-        for(AbstractTransportSpecification<?> acceptorSpec : this.acceptors) {
+        for(AbstractTransportElement<?> acceptorSpec : this.acceptors) {
             final TransportConfiguration transport = new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName());
             acceptorSpec.processHQConfig(transport);
             acceptors.add(transport);
@@ -186,16 +186,16 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         if (journalFileSize != null) element.setJournalFileSize(getJournalFileSize());
         if (journalType != null) element.setJournalType(getJournalType());
 
-        for (AbstractTransportSpecification<?> acceptorSpec : acceptors) {
+        for (AbstractTransportElement<?> acceptorSpec : acceptors) {
             element.addAcceptor(acceptorSpec);
         }
-        for (AddressSettingsSpecification addressSpec : addressSettings) {
+        for (AddressSettingsElement addressSpec : addressSettings) {
             element.addAddressSettings(addressSpec);
         }
-        for (AbstractTransportSpecification<?> connectorSpec : connectors) {
+        for (AbstractTransportElement<?> connectorSpec : connectors) {
             element.addConnector(connectorSpec);
         }
-        for (SecuritySettingsSpecification securitySetting : securitySettings) {
+        for (SecuritySettingsElement securitySetting : securitySettings) {
             element.addSecuritySetting(securitySetting);
         }
         return element;
@@ -265,19 +265,19 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.journalType = journalType;
     }
 
-    void addAcceptor(final AbstractTransportSpecification<?> transportSpecification) {
+    void addAcceptor(final AbstractTransportElement<?> transportSpecification) {
         acceptors.add(transportSpecification);
     }
 
-    void addConnector(final AbstractTransportSpecification<?> transportSpecification) {
+    void addConnector(final AbstractTransportElement<?> transportSpecification) {
         connectors.add(transportSpecification);
     }
 
-    void addAddressSettings(final AddressSettingsSpecification addressSettingsSpecification) {
+    void addAddressSettings(final AddressSettingsElement addressSettingsSpecification) {
         addressSettings.add(addressSettingsSpecification);
     }
 
-    void addSecuritySettings(final SecuritySettingsSpecification securitySettingsSpecification) {
+    void addSecuritySettings(final SecuritySettingsElement securitySettingsSpecification) {
         securitySettings.add(securitySettingsSpecification);
     }
 

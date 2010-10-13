@@ -25,7 +25,7 @@ package org.jboss.as.messaging;
 /**
  * @author Emanuel Muckenhuber
  */
-public class NettyAcceptorSpec extends AbstractTransportSpecification<NettyAcceptorSpec> {
+public class NettyAcceptorSpec extends AbstractTransportElement<NettyAcceptorSpec> {
 
     private static final long serialVersionUID = 6658113870391109250L;
     private static final String FACTORY_CLASS = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
