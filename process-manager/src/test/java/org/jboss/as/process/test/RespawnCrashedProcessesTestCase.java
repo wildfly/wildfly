@@ -200,9 +200,9 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
     @Test
     public void testDelayInRespawningProcessesBeforeGivingUp() throws Exception {
-	
-        if (true)
-		    return; // this test fails frequently; disabled until reliable
+
+        //if (true)
+		//    return; // this test fails frequently; disabled until reliable
         addProcess("KillMe", CrashingProcess.class, new TestRespawnPolicy());
         TestProcessListenerStream listener = startTestProcessListenerAndWait("KillMe");
         runDelayInRespawningProcessesBeforeGivingUp(listener);
@@ -256,7 +256,12 @@ public class RespawnCrashedProcessesTestCase extends AbstractProcessManagerTest 
 
         Object found = null;
         for (Object id : vmList) {
-            MonitoredVm vm = local.getMonitoredVm(new VmIdentifier("//" + id));
+            MonitoredVm vm;
+            try {
+                vm= local.getMonitoredVm(new VmIdentifier("//" + id));
+            } catch (Exception e) {
+                continue;
+            }
             String main = MonitoredVmUtil.mainClass(vm, true);
             if (main.equals(classname)) {
                 String args =  MonitoredVmUtil.mainArgs(vm);
