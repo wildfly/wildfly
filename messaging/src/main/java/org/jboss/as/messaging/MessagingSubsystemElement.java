@@ -2,6 +2,9 @@ package org.jboss.as.messaging;
 
 import java.util.List;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
@@ -225,6 +228,10 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return true;
     }
 
+    public Collection<AbstractTransportElement<?>> getAcceptors() {
+        return Collections.unmodifiableCollection(new HashSet<AbstractTransportElement<?>>(acceptors.values()));
+    }
+
     boolean removeAcceptor(final String name) {
         return acceptors.remove(name) != null;
     }
@@ -235,10 +242,22 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         return true;
     }
 
+    public Collection<AbstractTransportElement<?>> getConnectors() {
+        return Collections.unmodifiableCollection(new HashSet<AbstractTransportElement<?>>(connectors.values()));
+    }
+
+    boolean removeConnector(final String name) {
+        return connectors.remove(name) != null;
+    }
+
     boolean addAddressSettings(AddressSettingsElement spec) {
         if(addressSettings.containsKey(spec.getMatch())) return false;
         addressSettings.put(spec.getMatch(), spec);
         return true;
+    }
+
+    public Collection<AddressSettingsElement> getAddressSettings() {
+        return Collections.unmodifiableCollection(new HashSet<AddressSettingsElement>(addressSettings.values()));
     }
 
     boolean removeAddressSettings(final String match) {
@@ -249,6 +268,10 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         if(securitySettings.containsKey(spec.getMatch())) return false;
         securitySettings.put(spec.getMatch(), spec);
         return true;
+    }
+
+    public Collection<SecuritySettingsElement> getSecuritySettings() {
+        return Collections.unmodifiableCollection(new HashSet<SecuritySettingsElement>(securitySettings.values()));
     }
 
     boolean removeSecuritySetting(final String match) {

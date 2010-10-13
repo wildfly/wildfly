@@ -13,13 +13,13 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.jboss.as.messaging.AbstractTransportElement;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.messaging.Namespace;
+import org.jboss.as.messaging.SecuritySettingsElement;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.ServerModel;
@@ -31,7 +31,6 @@ import org.junit.Test;
  * Tests of the messaging/hornetq configuration parsing.
  *
  * @author scott.stark@jboss.org
- * @version $Id$
  */
 public class ConfigParsingUnitTestCase {
 
@@ -55,14 +54,17 @@ public class ConfigParsingUnitTestCase {
          }
          MessagingSubsystemElement subsystem = (MessagingSubsystemElement) model.getProfile().getSubsystem(Namespace.MESSAGING_1_0.getUriString());
          Assert.assertNotNull(subsystem);
-         Configuration jmsConfig = null;
 
-         Assert.assertEquals("bindings-directory", "${jboss.server.data.dir}/hornetq/bindings", subsystem.getBindingsDirectory());
-         Assert.assertEquals("journal-type", JournalType.NIO, jmsConfig.getJournalType());
-         Assert.assertEquals("journal-min-files", 10, jmsConfig.getJournalMinFiles());
-         Assert.assertEquals("journal-file-size", 1048576, jmsConfig.getJournalFileSize());
-         Assert.assertEquals("paging-directory", "${jboss.server.data.dir}/hornetq/paging", jmsConfig.getPagingDirectory());
-         Map<String, Set<Role>> securityRoleMap = jmsConfig.getSecurityRoles();
+         Assert.assertEquals("bindings-directory", "hornetq/bindings", subsystem.getBindingsDirectory().getPath());
+         Assert.assertEquals("journal-type", JournalType.NIO, subsystem.getJournalType());
+         Assert.assertEquals("journal-min-files", 2, subsystem.getJournalMinFiles());
+         Assert.assertEquals("journal-file-size", 102400, subsystem.getJournalFileSize());
+         Assert.assertEquals("paging-directory", "hornetq/paging", subsystem.getPagingDirectory().getPath());
+         Map<String, Set<Role>> securityRoleMap = new HashMap<String, Set<Role>>();
+         for(SecuritySettingsElement sec : subsystem.getSecuritySettings()) {
+             securityRoleMap.put(sec.getMatch(), sec.getRoles());
+         }
+
          // Security
          Assert.assertEquals("1 security roles", 1, securityRoleMap.size());
          Set<Role> securityRoles = securityRoleMap.values().iterator().next();
@@ -70,73 +72,37 @@ public class ConfigParsingUnitTestCase {
          Set<Role> expectedRoles = new HashSet<Role>();
          expectedRoles.add(expectedRole);
          Assert.assertEquals("guest role", expectedRoles, securityRoles);
-         Map<String, TransportConfiguration> connectors = jmsConfig.getConnectorConfigurations();
-         Assert.assertEquals("3 connectors", 3, connectors.size());
-         // The expected connector configuration
-         Map<String, Object> c0params = new HashMap<String, Object>();
-         c0params.put("host", "${jboss.bind.address:localhost}");
-         c0params.put("port", "${hornetq.remoting.netty.port:5445}");
-         c0params.put("socket-ref", "hq:netty");
-         TransportConfiguration c0 = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-            c0params , "netty");
-         Map<String, Object> c1params = new HashMap<String, Object>();
-         c1params.put("host", "${jboss.bind.address:localhost}");
-         c1params.put("port", "${hornetq.remoting.netty.batch.port:5455}");
-         c1params.put("batch-delay", "50");
-         c1params.put("socket-ref", "hq:netty-throughput");
-         TransportConfiguration c1 = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-            c1params , "netty-throughput");
-         Map<String, Object> c2params = new HashMap<String, Object>();
-         c2params.put("server-id", "${hornetq.server-id:0}");
-         TransportConfiguration c2 = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-            c2params , "in-vm");
-         Map<String, TransportConfiguration> expectedConnectors = new HashMap<String, TransportConfiguration>();
-         expectedConnectors.put(c0.getName(), c0);
-         expectedConnectors.put(c1.getName(), c1);
-         expectedConnectors.put(c2.getName(), c2);
-         for(String connKey : expectedConnectors.keySet()) {
-            TransportConfiguration tcex = expectedConnectors.get(connKey);
-            TransportConfiguration tc = connectors.get(connKey);
-            Assert.assertEquals(connKey, tcex, tc);
+
+         // Connectors
+         final Map<String, AbstractTransportElement<?>> connectors = new HashMap<String, AbstractTransportElement<?>>();
+         for(AbstractTransportElement<?> connector : subsystem.getConnectors()) {
+             Assert.assertNotNull(connector.getName());
+             connectors.put(connector.getName(), connector);
          }
+         Assert.assertEquals("3 connectors", 3, connectors.size());
+
+         Assert.assertEquals("netty", connectors.get("netty").getSocketBindingRef());
+         Assert.assertEquals("netty-throughput", connectors.get("netty-throughput").getSocketBindingRef());
+         Assert.assertNull(connectors.get("in-vm").getSocketBindingRef());
 
          // The expected acceptor configuration
-         Set<TransportConfiguration> acceptors = jmsConfig.getAcceptorConfigurations();
-         Assert.assertEquals("3 acceptors", 3, acceptors.size());
-                  Map<String, Object> a0params = new HashMap<String, Object>();
-         a0params.put("host", "${jboss.bind.address:localhost}");
-         a0params.put("port", "${hornetq.remoting.netty.port:5445}");
-         a0params.put("socket-ref", "hq:netty");
-         TransportConfiguration a0 = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
-            a0params , "netty");
-         Map<String, Object> a1params = new HashMap<String, Object>();
-         a1params.put("host", "${jboss.bind.address:localhost}");
-         a1params.put("port", "${hornetq.remoting.netty.batch.port:5455}");
-         a1params.put("batch-delay", "50");
-         a1params.put("direct-deliver", "false");
-         a1params.put("socket-ref", "hq:netty-throughput");
-         TransportConfiguration a1 = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
-            a1params , "netty-throughput");
-         Map<String, Object> a2params = new HashMap<String, Object>();
-         a2params.put("server-id", "0");
-         TransportConfiguration a2 = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-            a2params , "in-vm");
-         Map<String, TransportConfiguration> expectedAcceptors = new HashMap<String, TransportConfiguration>();
-         expectedAcceptors.put(a0.getName(), a0);
-         expectedAcceptors.put(a1.getName(), a1);
-         expectedAcceptors.put(a2.getName(), a2);
-         for(TransportConfiguration tc : acceptors) {
-            TransportConfiguration tcex = expectedAcceptors.get(tc.getName());
-            Assert.assertEquals(tc.getName(), tcex, tc);
+         final Map<String, AbstractTransportElement<?>> acceptors = new HashMap<String, AbstractTransportElement<?>>();
+         for(final AbstractTransportElement<?> acceptor : subsystem.getAcceptors()) {
+             Assert.assertNotNull(acceptor.getName());
+             acceptors.put(acceptor.getName(), acceptor);
          }
+         Assert.assertEquals("3 acceptors", 3, acceptors.size());
+
+         Assert.assertEquals("netty", acceptors.get("netty").getSocketBindingRef());
+         Assert.assertEquals("netty-throughput", acceptors.get("netty-throughput").getSocketBindingRef());
+         Assert.assertNull(acceptors.get("in-vm").getSocketBindingRef());
       }
       catch (Exception e) {
          throw new RuntimeException("standalone-with-messaging.xml", e);
       }
       finally {
-
+          //
       }
-
    }
 
    /**
@@ -150,12 +116,6 @@ public class ConfigParsingUnitTestCase {
    protected XMLMapper createXMLMapper() throws Exception {
       XMLMapper mapper = XMLMapper.Factory.create();
       mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
-//      NullSubsystemParser threadsParser = new NullSubsystemParser();
-//      mapper.registerRootElement(new QName("urn:jboss:domain:threads:1.0", "subsystem"), threadsParser);
-//      NullSubsystemParser namingParser = new NullSubsystemParser();
-//      mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), namingParser);
-//      NullSubsystemParser remotingParser = new NullSubsystemParser();
-//      mapper.registerRootElement(new QName("urn:jboss:domain:remoting:1.0", "subsystem"), remotingParser);
       mapper.registerRootElement(Namespace.MESSAGING_1_0.getQName(), MessagingSubsystemParser.getInstance());
       return mapper;
    }

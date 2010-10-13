@@ -52,7 +52,7 @@
                 <journal-type>NIO</journal-type>
                 <bindings-directory relative-to="jboss.server.data.dir" path="hornetq/bindings" />
                 <large-messages-directory relative-to="jboss.server.data.dir" path="hornetq/largemessages" />
-                <paging-directory relative-to="jboss.server.data.dir" path="/hornetq/paging" />
+                <paging-directory relative-to="jboss.server.data.dir" path="hornetq/paging" />
                 <journal-directory relative-to="jboss.server.data.dir" path="hornetq/journal" />
                 <journal-min-files>2</journal-min-files>
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
