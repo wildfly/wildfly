@@ -65,70 +65,78 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        if(bindingsDirectory != null) {
+        if (bindingsDirectory != null) {
             streamWriter.writeStartElement(Element.BINDINGS_DIRECTORY.getLocalName());
             bindingsDirectory.writeContent(streamWriter);
         }
-        if(largeMessagesDirectory != null) {
+        if (largeMessagesDirectory != null) {
             streamWriter.writeStartElement(Element.LARGE_MESSAGES_DIRECTORY.getLocalName());
             largeMessagesDirectory.writeContent(streamWriter);
         }
-        if(pagingDirectory != null) {
+        if (pagingDirectory != null) {
             streamWriter.writeStartElement(Element.PAGING_DIRECTORY.getLocalName());
             pagingDirectory.writeContent(streamWriter);
         }
-        if(journalDirectory != null) {
+        if (journalDirectory != null) {
             streamWriter.writeStartElement(Element.JOURNAL_DIRECTORY.getLocalName());
             journalDirectory.writeContent(streamWriter);
         }
 
-       // Note we have to write this even if it wasn't in the original content
-       // since the "null" possibility isn't preserved
-       ElementUtils.writeSimpleElement(Element.CLUSTERED, String.valueOf(isClustered()), streamWriter);
+        // Note we have to write this even if it wasn't in the original content
+        // since the "null" possibility isn't preserved
+        ElementUtils.writeSimpleElement(Element.CLUSTERED, String.valueOf(isClustered()), streamWriter);
 
-       // Note we have to write this even if it wasn't in the original content
-       // since the "null" possibility isn't preserved
-       ElementUtils.writeSimpleElement(Element.JOURNAL_MIN_FILES, String.valueOf(getJournalMinFiles()), streamWriter);
+        // Note we have to write this even if it wasn't in the original content
+        // since the "null" possibility isn't preserved
+        ElementUtils.writeSimpleElement(Element.JOURNAL_MIN_FILES, String.valueOf(getJournalMinFiles()), streamWriter);
 
-       JournalType jt = getJournalType();
-       if (jt != null) {
-           ElementUtils.writeSimpleElement(Element.JOURNAL_TYPE, jt.toString(), streamWriter);
-       }
-
-       // Note we have to write this even if it wasn't in the original content
-       // since the "null" possibility isn't preserved
-       ElementUtils.writeSimpleElement(Element.JOURNAL_FILE_SIZE, String.valueOf(getJournalFileSize()), streamWriter);
-
-        if (acceptors.size() > 0) {
-            streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
-            for(AbstractTransportElement<?> acceptor : acceptors.values()) {
-                streamWriter.writeStartElement(acceptor.getElement().getLocalName());
-                acceptor.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
+        JournalType jt = getJournalType();
+        if (jt != null) {
+            ElementUtils.writeSimpleElement(Element.JOURNAL_TYPE, jt.toString(), streamWriter);
         }
 
-        if (addressSettings.size() > 0) {
-            streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
-            for(AddressSettingsElement addressSettingsElement : addressSettings.values()) {
-                streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
-                addressSettingsElement.writeContent(streamWriter);
-            }
-            streamWriter.writeEndElement();
-        }
+        // Note we have to write this even if it wasn't in the original content
+        // since the "null" possibility isn't preserved
+        ElementUtils.writeSimpleElement(Element.JOURNAL_FILE_SIZE, String.valueOf(getJournalFileSize()), streamWriter);
 
         if (connectors.size() > 0) {
             streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
-            for(AbstractTransportElement<?> connector : connectors.values()) {
+            for (AbstractTransportElement<?> connector : connectors.values()) {
                 streamWriter.writeStartElement(connector.getElement().getLocalName());
                 connector.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
         }
 
+        if (acceptors.size() > 0) {
+            streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
+            for (AbstractTransportElement<?> acceptor : acceptors.values()) {
+                streamWriter.writeStartElement(acceptor.getElement().getLocalName());
+                acceptor.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+
+        if(queues.size() > 0) {
+            streamWriter.writeStartElement(Element.QUEUES.getLocalName());
+            for(QueueElement queue : queues.values()) {
+                streamWriter.writeStartElement(Element.QUEUE.getLocalName());
+                queue.writeContent(streamWriter);
+            }
+        }
+
+        if (addressSettings.size() > 0) {
+            streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
+            for (AddressSettingsElement addressSettingsElement : addressSettings.values()) {
+                streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
+                addressSettingsElement.writeContent(streamWriter);
+            }
+            streamWriter.writeEndElement();
+        }
+
         if (securitySettings.size() > 0) {
             streamWriter.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
-            for(SecuritySettingsElement securitySettingElement : securitySettings.values()) {
+            for (SecuritySettingsElement securitySettingElement : securitySettings.values()) {
                 streamWriter.writeStartElement(Element.SECURITY_SETTING.getLocalName());
                 securitySettingElement.writeContent(streamWriter);
             }
@@ -157,7 +165,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     @Override
-    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
+    protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
+            final P param) {
     }
 
     public DirectoryElement getBindingsDirectory() {
@@ -225,7 +234,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     boolean addAcceptor(AbstractTransportElement<?> acceptor) {
-        if(acceptors.containsKey(acceptor.getName())) return false;
+        if (acceptors.containsKey(acceptor.getName()))
+            return false;
         acceptors.put(acceptor.getName(), acceptor);
         return true;
     }
@@ -239,7 +249,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     boolean addConnector(AbstractTransportElement<?> connector) {
-        if(connectors.containsKey(connector.getName())) return false;
+        if (connectors.containsKey(connector.getName()))
+            return false;
         connectors.put(connector.getName(), connector);
         return true;
     }
@@ -253,7 +264,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     boolean addAddressSettings(AddressSettingsElement spec) {
-        if(addressSettings.containsKey(spec.getMatch())) return false;
+        if (addressSettings.containsKey(spec.getMatch()))
+            return false;
         addressSettings.put(spec.getMatch(), spec);
         return true;
     }
@@ -267,7 +279,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     boolean addSecuritySetting(SecuritySettingsElement spec) {
-        if(securitySettings.containsKey(spec.getMatch())) return false;
+        if (securitySettings.containsKey(spec.getMatch()))
+            return false;
         securitySettings.put(spec.getMatch(), spec);
         return true;
     }
@@ -281,7 +294,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     }
 
     boolean addQueue(final QueueElement queue) {
-        if(queues.containsKey(queue.getName())) return false;
+        if (queues.containsKey(queue.getName()))
+            return false;
         queues.put(queue.getName(), queue);
         return true;
     }
