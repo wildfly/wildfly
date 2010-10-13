@@ -63,6 +63,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private DirectoryElement largeMessagesDirectory;
     private DirectoryElement pagingDirectory;
     private Boolean clustered;
+    private Boolean persistenceEnabled;
     private Integer journalMinFiles;
     private Integer journalFileSize;
     private JournalType journalType;
@@ -94,6 +95,9 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
         if (journalType != null) {
             hqConfig.setJournalType(journalType);
+        }
+        if(persistenceEnabled != null) {
+            hqConfig.setPersistenceEnabled(persistenceEnabled);
         }
 
         // Configure address settings
@@ -193,6 +197,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         if (largeMessagesDirectory != null) element.setLargeMessagesDirectory(getLargeMessagesDirectory());
         if (pagingDirectory != null) element.setPagingDirectory(getPagingDirectory());
         if (clustered != null) element.setClustered(isClustered());
+        if (persistenceEnabled != null) element.setPersistenceEnabled(persistenceEnabled);
         if (journalMinFiles != null) element.setJournalMinFiles(getJournalMinFiles());
         if (journalFileSize != null) element.setJournalFileSize(getJournalFileSize());
         if (journalType != null) element.setJournalType(getJournalType());
@@ -277,6 +282,10 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
     public void setJournalType(JournalType journalType) {
         this.journalType = journalType;
+    }
+
+    public void setPersistenceEnabled(boolean enabled) {
+        persistenceEnabled = enabled;
     }
 
     void addAcceptor(final AbstractTransportElement<?> transportSpecification) {

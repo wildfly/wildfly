@@ -242,10 +242,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case PERSIST_ID_CACHE:
                     unhandledElement(reader, element);
                     break;
-                case PERSISTENCE_ENABLED:
-                    unhandledElement(reader, element);
+                case PERSISTENCE_ENABLED: {
+                    final String value = reader.getElementText();
+                    if(value != null && value.length() > 0) {
+                        boolean enabled = Boolean.valueOf(value.trim());
+                        messagingSubsystemAdd.setPersistenceEnabled(enabled);
+                    }
                     break;
-                case REFRESH_TIMEOUT:
+                } case REFRESH_TIMEOUT:
                     unhandledElement(reader, element);
                     break;
                 case REMOTING_INTERCEPTORS:

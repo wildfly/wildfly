@@ -54,6 +54,7 @@
             <core-environment socket-binding="txn-socket-process-id"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
+            <persistence-enabled>false</persistence-enabled>
             <journal-type>NIO</journal-type>
             <bindings-directory relative-to="jboss.server.data.dir" path="hornetq/bindings" />
             <large-messages-directory relative-to="jboss.server.data.dir" path="hornetq/largemessages" />

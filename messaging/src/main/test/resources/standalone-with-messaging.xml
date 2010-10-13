@@ -38,6 +38,7 @@
     <profile name="something">
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <journal-type>NIO</journal-type>
+            <persistence-enabled>false</persistence-enabled>
             <bindings-directory relative-to="jboss.server.data.dir" path="hornetq/bindings" />
             <large-messages-directory relative-to="jboss.server.data.dir" path="hornetq/largemessages" />
             <paging-directory relative-to="jboss.server.data.dir" path="hornetq/paging" />

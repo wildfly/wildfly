@@ -35,7 +35,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     private DirectoryElement journalDirectory;
     private DirectoryElement largeMessagesDirectory;
     private DirectoryElement pagingDirectory;
-    private boolean clustered;
+    private Boolean clustered;
+    private Boolean persistenceEnabled;
     private int journalMinFiles = -1;
     private int journalFileSize = -1;
     private JournalType journalType;
@@ -81,23 +82,25 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
             streamWriter.writeEmptyElement(Element.JOURNAL_DIRECTORY.getLocalName());
             journalDirectory.writeContent(streamWriter);
         }
+        if(persistenceEnabled != null) {
+            ElementUtils.writeSimpleElement(Element.PERSISTENCE_ENABLED, String.valueOf(persistenceEnabled), streamWriter);
+        }
+        if(clustered != null) {
+            ElementUtils.writeSimpleElement(Element.CLUSTERED, String.valueOf(isClustered()), streamWriter);
+        }
 
-        // Note we have to write this even if it wasn't in the original content
-        // since the "null" possibility isn't preserved
-        ElementUtils.writeSimpleElement(Element.CLUSTERED, String.valueOf(isClustered()), streamWriter);
-
-        // Note we have to write this even if it wasn't in the original content
-        // since the "null" possibility isn't preserved
-        ElementUtils.writeSimpleElement(Element.JOURNAL_MIN_FILES, String.valueOf(getJournalMinFiles()), streamWriter);
+        if(journalMinFiles != -1) {
+            ElementUtils.writeSimpleElement(Element.JOURNAL_MIN_FILES, String.valueOf(getJournalMinFiles()), streamWriter);
+        }
 
         JournalType jt = getJournalType();
         if (jt != null) {
             ElementUtils.writeSimpleElement(Element.JOURNAL_TYPE, jt.toString(), streamWriter);
         }
 
-        // Note we have to write this even if it wasn't in the original content
-        // since the "null" possibility isn't preserved
-        ElementUtils.writeSimpleElement(Element.JOURNAL_FILE_SIZE, String.valueOf(getJournalFileSize()), streamWriter);
+        if(journalFileSize != -1) {
+            ElementUtils.writeSimpleElement(Element.JOURNAL_FILE_SIZE, String.valueOf(getJournalFileSize()), streamWriter);
+        }
 
         if (connectors.size() > 0) {
             streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
@@ -231,6 +234,14 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
     public void setJournalType(JournalType journalType) {
         this.journalType = journalType;
+    }
+
+    public boolean isPersistenceEnabled() {
+        return persistenceEnabled;
+    }
+
+    public void setPersistenceEnabled(boolean persistenceEnabled) {
+        this.persistenceEnabled = persistenceEnabled;
     }
 
     boolean addAcceptor(AbstractTransportElement<?> acceptor) {

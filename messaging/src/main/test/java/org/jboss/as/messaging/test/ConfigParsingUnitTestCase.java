@@ -55,6 +55,7 @@ public class ConfigParsingUnitTestCase {
          MessagingSubsystemElement subsystem = (MessagingSubsystemElement) model.getProfile().getSubsystem(Namespace.MESSAGING_1_0.getUriString());
          Assert.assertNotNull(subsystem);
 
+         Assert.assertFalse(subsystem.isPersistenceEnabled());
          Assert.assertEquals("bindings-directory", "hornetq/bindings", subsystem.getBindingsDirectory().getPath());
          Assert.assertEquals("journal-type", JournalType.NIO, subsystem.getJournalType());
          Assert.assertEquals("journal-min-files", 2, subsystem.getJournalMinFiles());
