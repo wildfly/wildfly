@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -156,7 +157,8 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
         for(AbstractTransportElement<?> connectorSpec : this.connectors) {
-            final TransportConfiguration transport = new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName());
+            final TransportConfiguration transport = new TransportConfiguration(connectorSpec.getFactoryClassName(), new HashMap<String, Object>(), connectorSpec.getName());
+            // Process parameters
             connectorSpec.processHQConfig(transport);
             connectors.put(connectorSpec.getName(), transport);
             // Add a dependency on a SocketBinding if there is a socket-ref
@@ -169,7 +171,8 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         final Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
         for(AbstractTransportElement<?> acceptorSpec : this.acceptors) {
-            final TransportConfiguration transport = new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName());
+            final TransportConfiguration transport = new TransportConfiguration(acceptorSpec.getFactoryClassName(), new HashMap<String, Object>(), acceptorSpec.getName());
+            // Process parameters
             acceptorSpec.processHQConfig(transport);
             acceptors.add(transport);
             // Add a dependency on a SocketBinding if there is a socket-ref

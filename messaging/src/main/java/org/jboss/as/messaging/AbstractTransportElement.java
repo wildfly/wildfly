@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
@@ -40,7 +39,7 @@ public abstract class AbstractTransportElement<E extends AbstractTransportElemen
     private final Element element;
     private final String name;
     private String socketBindingRef;
-    private Map<String, Object> params = new HashMap<String, Object>();
+    private Map<String, Object> params;
 
     protected AbstractTransportElement(Element element, String name) {
         this.element = element;
@@ -74,6 +73,9 @@ public abstract class AbstractTransportElement<E extends AbstractTransportElemen
     }
 
     protected void processHQConfig(final TransportConfiguration transport) {
+        if(params != null) {
+            transport.getParams().putAll(params);
+        }
         if(socketBindingRef != null) {
             transport.getParams().put("socket-ref", socketBindingRef);
         }
