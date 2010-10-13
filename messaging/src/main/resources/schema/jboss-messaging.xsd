@@ -89,9 +89,7 @@
                   <xs:sequence>
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-connector" type="netty-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-connector" type="inVM-connectorType" />
-                      <!-- TODO generic connector ? 
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="connector" type="connectorType" />
-                       -->
                   </xs:sequence>
               </xs:complexType>
           </xs:element>
@@ -100,9 +98,7 @@
                   <xs:sequence>
                       <xs:element maxOccurs="unbounded" minOccurs="1" name="netty-acceptor" type="netty-acceptorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="1" name="in-vm-acceptor" type="inVM-acceptorType" />
-                      <!-- TODO generic acceptor ?
                       <xs:element maxOccurs="unbounded" minOccurs="1" name="acceptor" type="acceptorType" />
-                       -->
                   </xs:sequence>
               </xs:complexType>
           </xs:element>
@@ -258,6 +254,25 @@
        </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="connectorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Generic connector type, with optional socket-binding depending on whether
+              the implementation requires a Host/Port parameter.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-connectorType">
+             <xs:sequence>
+                <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
+             </xs:sequence>
+             <xs:attribute name="socket-binding" type="xs:string" use="optional" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="base-connectorType">
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
@@ -295,6 +310,25 @@
        </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="acceptorType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Generic acceptor type, with optional socket-binding depending on whether
+              the implementation requires a Host/Port parameter.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
+       <xs:complexContent>
+          <xs:extension base="base-acceptorType">
+             <xs:sequence>
+                <xs:element maxOccurs="1" minOccurs="1" name="factory-class" type="xs:string" />
+             </xs:sequence>
+             <xs:attribute name="socket-binding" type="xs:string" use="optional" />
+          </xs:extension>
+       </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="base-acceptorType">
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
@@ -302,7 +336,7 @@
        <xs:attribute name="name" type="xs:string" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="bridgeType">    
+    <xs:complexType name="bridgeType">
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="1" name="queue-name" type="xs:IDREF" />
           <xs:element maxOccurs="1" minOccurs="0" name="forwarding-address" type="xs:string" />

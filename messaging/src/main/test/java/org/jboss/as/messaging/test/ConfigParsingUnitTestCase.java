@@ -79,11 +79,14 @@ public class ConfigParsingUnitTestCase {
              Assert.assertNotNull(connector.getName());
              connectors.put(connector.getName(), connector);
          }
-         Assert.assertEquals("3 connectors", 3, connectors.size());
+         Assert.assertEquals("4 connectors", 4, connectors.size());
 
          Assert.assertEquals("netty", connectors.get("netty").getSocketBindingRef());
          Assert.assertEquals("netty-throughput", connectors.get("netty-throughput").getSocketBindingRef());
          Assert.assertNull(connectors.get("in-vm").getSocketBindingRef());
+
+         Assert.assertEquals("generic", connectors.get("generic").getSocketBindingRef());
+         Assert.assertEquals("org.jboss.test.ConnectorFactory", connectors.get("generic").getFactoryClassName());
 
          // The expected acceptor configuration
          final Map<String, AbstractTransportElement<?>> acceptors = new HashMap<String, AbstractTransportElement<?>>();
@@ -91,11 +94,14 @@ public class ConfigParsingUnitTestCase {
              Assert.assertNotNull(acceptor.getName());
              acceptors.put(acceptor.getName(), acceptor);
          }
-         Assert.assertEquals("3 acceptors", 3, acceptors.size());
+         Assert.assertEquals("4 acceptors", 4, acceptors.size());
 
          Assert.assertEquals("netty", acceptors.get("netty").getSocketBindingRef());
          Assert.assertEquals("netty-throughput", acceptors.get("netty-throughput").getSocketBindingRef());
          Assert.assertNull(acceptors.get("in-vm").getSocketBindingRef());
+
+         Assert.assertEquals("generic", acceptors.get("generic").getSocketBindingRef());
+         Assert.assertEquals("org.jboss.test.AcceptorFactory", acceptors.get("generic").getFactoryClassName());
       }
       catch (Exception e) {
          throw new RuntimeException("standalone-with-messaging.xml", e);

@@ -48,6 +48,10 @@ public abstract class AbstractTransportElement<E extends AbstractTransportElemen
 
     public abstract String getFactoryClassName();
 
+    protected void setFactoryClassName(String factoryClass) {
+        throw new IllegalStateException("factory class cannot be defined on this class");
+    }
+
     Element getElement() {
         return element;
     }

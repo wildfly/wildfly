@@ -374,16 +374,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case NETTY_ACCEPTOR: {
+                case ACCEPTOR: {
+                    final GenericAcceptorSpec acceptor = new GenericAcceptorSpec(name);
+                    acceptor.setSocketBindingRef(socketBinding);
+                    parseTransportConfigurationParams(reader, acceptor, true);
+                    messagingSubsystemAdd.addAcceptor(acceptor);
+                    break;
+                } case NETTY_ACCEPTOR: {
                     final NettyAcceptorSpec acceptor = new NettyAcceptorSpec(name);
                     acceptor.setSocketBindingRef(socketBinding);
-                    parseTransportConfigurationParams(reader, acceptor, element);
+                    parseTransportConfigurationParams(reader, acceptor, false);
                     messagingSubsystemAdd.addAcceptor(acceptor);
                     break;
                 } case IN_VM_ACCEPTOR: {
                     final InVMAcceptorSpec acceptor = new InVMAcceptorSpec(name);
                     acceptor.setServerId(serverId);
-                    parseTransportConfigurationParams(reader, acceptor, element);
+                    parseTransportConfigurationParams(reader, acceptor, false);
                     messagingSubsystemAdd.addAcceptor(acceptor);
                     break;
                 } default: {
@@ -593,16 +599,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case NETTY_CONNECTOR: {
+                case CONNECTOR: {
+                    final GenericConnectorSpec connector = new GenericConnectorSpec(name);
+                    connector.setSocketBindingRef(socketBinding);
+                    parseTransportConfigurationParams(reader, connector, true);
+                    messagingSubsystemAdd.addConnector(connector);
+                    break;
+                } case NETTY_CONNECTOR: {
                     final NettyConnectorSpec connector = new NettyConnectorSpec(name);
                     connector.setSocketBindingRef(socketBinding);
-                    parseTransportConfigurationParams(reader, connector, element);
+                    parseTransportConfigurationParams(reader, connector, false);
                     messagingSubsystemAdd.addConnector(connector);
                     break;
                 } case IN_VM_CONNECTOR: {
                     final InVMConnectorSpec connector = new InVMConnectorSpec(name);
                     connector.setServerId(serverId);
-                    parseTransportConfigurationParams(reader, connector, element);
+                    parseTransportConfigurationParams(reader, connector, false);
                     messagingSubsystemAdd.addConnector(connector);
                     break;
                 } default: {
@@ -612,16 +624,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final AbstractTransportElement<?> spec, final Element parentElement) throws XMLStreamException {
+    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final AbstractTransportElement<?> spec, final boolean generic) throws XMLStreamException {
         Map<String, Object> params = new HashMap<String, Object>();
 
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-
-            String localString = reader.getLocalName();
-            if(Element.PARAM.getLocalName().equals(localString) == false) {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-
             int count = reader.getAttributeCount();
             String key = null;
             String value = null;
@@ -639,8 +645,24 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw unexpectedAttribute(reader, n);
                 }
             }
-            params.put(key, value);
-            ParseUtils.requireNoContent(reader);
+
+            Element element = Element.forName(reader.getLocalName());
+            switch(element) {
+                case FACTORY_CLASS: {
+                    if(! generic) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    spec.setFactoryClassName(reader.getElementText().trim());
+                    break;
+                }
+                case PARAM: {
+                    params.put(key, value);
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
         }
         spec.setParams(params);
     }

@@ -52,6 +52,10 @@
                <netty-connector name="netty-throughput" socket-binding="netty-throughput">
                   <param key="batch-delay" value="50"/>
                </netty-connector>
+               <connector name="generic" socket-binding="generic">
+                  <factory-class>org.jboss.test.ConnectorFactory</factory-class>
+                  <param key="batch-delay" value="50"/>
+               </connector>
             </connectors>
 
             <acceptors>
@@ -61,6 +65,10 @@
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
+               <acceptor name="generic" socket-binding="generic">
+                  <factory-class>org.jboss.test.AcceptorFactory</factory-class>
+                  <param key="batch-delay" value="50"/>
+               </acceptor>
             </acceptors>
 
             <security-settings>
