@@ -65,8 +65,8 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
     private Integer journalFileSize;
     private JournalType journalType;
 
-    private Set<AbstractTransportSpecification> acceptors = new HashSet<AbstractTransportSpecification>();
-    private Set<AbstractTransportSpecification> connectors = new HashSet<AbstractTransportSpecification>();
+    private Set<AbstractTransportSpecification<?>> acceptors = new HashSet<AbstractTransportSpecification<?>>();
+    private Set<AbstractTransportSpecification<?>> connectors = new HashSet<AbstractTransportSpecification<?>>();
     private Set<SecuritySettingsSpecification> securitySettings = new HashSet<SecuritySettingsSpecification>();
     private Set<AddressSettingsSpecification> addressSettings = new HashSet<AddressSettingsSpecification>();
 
@@ -147,7 +147,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         addPathDependency("paging", hqservice, serviceBuilder);
 
         final Map<String, TransportConfiguration> connectors = hqConfig.getConnectorConfigurations();
-        for(AbstractTransportSpecification connectorSpec : this.connectors) {
+        for(AbstractTransportSpecification<?> connectorSpec : this.connectors) {
             final TransportConfiguration transport = new TransportConfiguration(connectorSpec.getFactoryClassName(), connectorSpec.getParams(), connectorSpec.getName());
             connectorSpec.processHQConfig(transport);
             connectors.put(connectorSpec.getName(), transport);
@@ -160,7 +160,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         }
 
         final Collection<TransportConfiguration> acceptors = hqConfig.getAcceptorConfigurations();
-        for(AbstractTransportSpecification acceptorSpec : this.acceptors) {
+        for(AbstractTransportSpecification<?> acceptorSpec : this.acceptors) {
             final TransportConfiguration transport = new TransportConfiguration(acceptorSpec.getFactoryClassName(), acceptorSpec.getParams(), acceptorSpec.getName());
             acceptorSpec.processHQConfig(transport);
             acceptors.add(transport);
@@ -186,51 +186,17 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         if (journalFileSize != null) element.setJournalFileSize(getJournalFileSize());
         if (journalType != null) element.setJournalType(getJournalType());
 
-        for (AbstractTransportSpecification acceptorSpec : acceptors) {
-            TransportElement acceptorEl = element.addAcceptor(acceptorSpec.getName());
-            acceptorEl.setFactoryClassName(acceptorSpec.getFactoryClassName());
-            acceptorEl.setParams(acceptorSpec.getParams());
+        for (AbstractTransportSpecification<?> acceptorSpec : acceptors) {
+            element.addAcceptor(acceptorSpec);
         }
-
         for (AddressSettingsSpecification addressSpec : addressSettings) {
-            AddressSettingsElement addressEl = element.addAddressSettings(addressSpec.getMatch());
-            addressEl.setAddressFullMessagePolicy(addressSpec.getAddressFullMessagePolicy());
-            addressEl.setDeadLetterAddress(addressSpec.getDeadLetterAddress());
-            addressEl.setExpiryAddress(addressSpec.getExpiryAddress());
-            if (addressSpec.isLastValueQueue() != null) {
-                addressEl.setLastValueQueue(addressSpec.isLastValueQueue());
-            }
-            if (addressSpec.getMaxDeliveryAttempts() != null) {
-                addressEl.setMaxDeliveryAttempts(addressSpec.getMaxDeliveryAttempts());
-            }
-            if (addressSpec.getMaxSizeBytes() != null) {
-                addressEl.setMaxSizeBytes(addressSpec.getMaxSizeBytes());
-            }
-            if (addressSpec.getMessageCounterHistoryDayLimit() != null) {
-                addressEl.setMessageCounterHistoryDayLimit(addressSpec.getMessageCounterHistoryDayLimit());
-            }
-            if (addressSpec.getPageSizeBytes() != null) {
-                addressEl.setPageSizeBytes(addressSpec.getPageSizeBytes());
-            }
-            if (addressSpec.getRedeliveryDelay() != null) {
-                addressEl.setRedeliveryDelay(addressSpec.getRedeliveryDelay());
-            }
-            if (addressSpec.getRedistributionDelay() != null) {
-                addressEl.setRedistributionDelay(addressSpec.getRedistributionDelay());
-            }
-            if (addressSpec.isSendToDLAOnNoRoute() != null) {
-                addressEl.setSendToDLAOnNoRoute(addressSpec.isSendToDLAOnNoRoute());
-            }
+            element.addAddressSettings(addressSpec);
         }
-
-        for (AbstractTransportSpecification connectorSpec : connectors) {
-            TransportElement connectorEl = element.addConnector(connectorSpec.getName());
-            connectorEl.setFactoryClassName(connectorSpec.getFactoryClassName());
-            connectorEl.setParams(connectorSpec.getParams());
+        for (AbstractTransportSpecification<?> connectorSpec : connectors) {
+            element.addConnector(connectorSpec);
         }
-
         for (SecuritySettingsSpecification securitySetting : securitySettings) {
-            element.addSecuritySetting(securitySetting.getMatch(), securitySetting.getRoles());
+            element.addSecuritySetting(securitySetting);
         }
         return element;
     }
@@ -299,11 +265,11 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         this.journalType = journalType;
     }
 
-    void addAcceptor(final AbstractTransportSpecification transportSpecification) {
+    void addAcceptor(final AbstractTransportSpecification<?> transportSpecification) {
         acceptors.add(transportSpecification);
     }
 
-    void addConnector(final AbstractTransportSpecification transportSpecification) {
+    void addConnector(final AbstractTransportSpecification<?> transportSpecification) {
         connectors.add(transportSpecification);
     }
 

@@ -3,11 +3,9 @@ package org.jboss.as.messaging;
 import java.util.List;
 
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
 import javax.xml.stream.XMLStreamException;
 
-import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
@@ -39,10 +37,10 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     private int journalFileSize = -1;
     private JournalType journalType;
 
-    private final NavigableMap<String, TransportElement> acceptors = new TreeMap<String, TransportElement>();
-    private final NavigableMap<String, TransportElement> connectors = new TreeMap<String, TransportElement>();
-    private final NavigableMap<String, AddressSettingsElement> addressSettings = new TreeMap<String, AddressSettingsElement>();
-    private final NavigableMap<String, SecuritySettingElement> securitySettings = new TreeMap<String, SecuritySettingElement>();
+    private final NavigableMap<String, AbstractTransportSpecification<?>> acceptors = new TreeMap<String, AbstractTransportSpecification<?>>();
+    private final NavigableMap<String, AbstractTransportSpecification<?>> connectors = new TreeMap<String, AbstractTransportSpecification<?>>();
+    private final NavigableMap<String, AddressSettingsSpecification> addressSettings = new TreeMap<String, AddressSettingsSpecification>();
+    private final NavigableMap<String, SecuritySettingsSpecification> securitySettings = new TreeMap<String, SecuritySettingsSpecification>();
 
     public MessagingSubsystemElement() {
         super(Namespace.MESSAGING_1_0.getUriString());
@@ -98,8 +96,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (acceptors.size() > 0) {
             streamWriter.writeStartElement(Element.ACCEPTORS.getLocalName());
-            for(TransportElement acceptor : acceptors.values()) {
-                streamWriter.writeStartElement(Element.ACCEPTOR.getLocalName());
+            for(AbstractTransportSpecification<?> acceptor : acceptors.values()) {
+                streamWriter.writeStartElement(acceptor.getElement().getLocalName());
                 acceptor.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
@@ -107,7 +105,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (addressSettings.size() > 0) {
             streamWriter.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
-            for(AddressSettingsElement addressSettingsElement : addressSettings.values()) {
+            for(AddressSettingsSpecification addressSettingsElement : addressSettings.values()) {
                 streamWriter.writeStartElement(Element.ADDRESS_SETTING.getLocalName());
                 addressSettingsElement.writeContent(streamWriter);
             }
@@ -116,8 +114,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (connectors.size() > 0) {
             streamWriter.writeStartElement(Element.CONNECTORS.getLocalName());
-            for(TransportElement connector : connectors.values()) {
-                streamWriter.writeStartElement(Element.CONNECTOR.getLocalName());
+            for(AbstractTransportSpecification<?> connector : connectors.values()) {
+                streamWriter.writeStartElement(connector.getElement().getLocalName());
                 connector.writeContent(streamWriter);
             }
             streamWriter.writeEndElement();
@@ -125,7 +123,7 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
         if (securitySettings.size() > 0) {
             streamWriter.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
-            for(SecuritySettingElement securitySettingElement : securitySettings.values()) {
+            for(SecuritySettingsSpecification securitySettingElement : securitySettings.values()) {
                 streamWriter.writeStartElement(Element.SECURITY_SETTING.getLocalName());
                 securitySettingElement.writeContent(streamWriter);
             }
@@ -221,59 +219,40 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
         this.journalType = journalType;
     }
 
-    TransportElement addAcceptor(final String name) {
-        final TransportElement acceptorElement = new TransportElement(name);
-        acceptors.put(name, acceptorElement);
-        return acceptorElement;
+    boolean addAcceptor(AbstractTransportSpecification<?> acceptor) {
+        if(acceptors.containsKey(acceptor.getName())) return false;
+        acceptors.put(acceptor.getName(), acceptor);
+        return true;
     }
 
-    void removeAcceptor(final String name) {
-        acceptors.remove(name);
+    boolean removeAcceptor(final String name) {
+        return acceptors.remove(name) != null;
     }
 
-    TransportElement getAcceptor(final String name) {
-        return acceptors.get(name);
+    boolean addConnector(AbstractTransportSpecification<?> connector) {
+        if(connectors.containsKey(connector.getName())) return false;
+        connectors.put(connector.getName(), connector);
+        return true;
     }
 
-    TransportElement addConnector(final String name) {
-        final TransportElement acceptorElement = new TransportElement(name);
-        connectors.put(name, acceptorElement);
-        return acceptorElement;
+    boolean addAddressSettings(AddressSettingsSpecification spec) {
+        if(addressSettings.containsKey(spec.getMatch())) return false;
+        addressSettings.put(spec.getMatch(), spec);
+        return true;
     }
 
-    void removeConnector(final String name) {
-        connectors.remove(name);
+    boolean removeAddressSettings(final String match) {
+        return addressSettings.remove(match) != null;
     }
 
-    TransportElement getConnector(final String name) {
-        return connectors.get(name);
+    boolean addSecuritySetting(SecuritySettingsSpecification spec) {
+        if(securitySettings.containsKey(spec.getMatch())) return false;
+        securitySettings.put(spec.getMatch(), spec);
+        return true;
     }
 
-    AddressSettingsElement addAddressSettings(final String match) {
-        final AddressSettingsElement addressSettingsElement = new AddressSettingsElement(match);
-        addressSettings.put(match, addressSettingsElement);
-        return addressSettingsElement;
+    boolean removeSecuritySetting(final String match) {
+        return securitySettings.remove(match) != null;
     }
 
-    void removeAddressSettings(final String match) {
-        addressSettings.remove(match);
-    }
-
-    AddressSettingsElement getAddressSettingsElement(final String match) {
-        return addressSettings.get(match);
-    }
-
-    public SecuritySettingElement addSecuritySetting(final String match, final Set<Role> roles) {
-        final SecuritySettingElement securitySettingElement = new SecuritySettingElement(match, roles);
-        securitySettings.put(match, securitySettingElement);
-        return securitySettingElement;
-    }
-
-    void removeSecuritySetting(final String match) {
-        securitySettings.remove(match);
-    }
-
-    SecuritySettingElement getSecuritySetting(final String match) {
-        return securitySettings.get(match);
-    }
 }

@@ -22,14 +22,20 @@
 
 package org.jboss.as.messaging;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.hornetq.core.security.Role;
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author John Bailey
  */
-public class SecuritySettingsSpecification implements Serializable {
+public class SecuritySettingsSpecification extends AbstractModelElement<SecuritySettingsSpecification> {
     private static final long serialVersionUID = -35697785671908094L;
     private final String match;
     private final Set<Role> roles;
@@ -37,6 +43,59 @@ public class SecuritySettingsSpecification implements Serializable {
     public SecuritySettingsSpecification(final String match, final Set<Role> roles) {
         this.match = match;
         this.roles = roles;
+    }
+
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute(Attribute.MATCH.getLocalName(), match);
+        Map<Attribute, String> rolesByType = new HashMap<Attribute, String>();
+
+        for (Role role : roles) {
+            String name = role.getName();
+            if (role.isConsume()) {
+                storeRoleToType(Attribute.CONSUME_NAME, name, rolesByType);
+            }
+            if (role.isCreateDurableQueue()) {
+                storeRoleToType(Attribute.CREATEDURABLEQUEUE_NAME, name, rolesByType);
+            }
+            if (role.isCreateNonDurableQueue()) {
+                storeRoleToType(Attribute.CREATE_NON_DURABLE_QUEUE_NAME, name, rolesByType);
+            }
+            if (role.isDeleteDurableQueue()) {
+                storeRoleToType(Attribute.DELETEDURABLEQUEUE_NAME, name, rolesByType);
+            }
+            if (role.isDeleteNonDurableQueue()) {
+                storeRoleToType(Attribute.DELETE_NON_DURABLE_QUEUE_NAME, name, rolesByType);
+            }
+            if (role.isManage()) {
+                storeRoleToType(Attribute.MANAGE_NAME, name, rolesByType);
+            }
+            if (role.isSend()) {
+                storeRoleToType(Attribute.SEND_NAME, name, rolesByType);
+            }
+        }
+
+        for (Map.Entry<Attribute, String> entry : rolesByType.entrySet()) {
+            streamWriter.writeStartElement(Element.PERMISSION_ELEMENT_NAME.getLocalName());
+            streamWriter.writeAttribute(Attribute.TYPE_ATTR_NAME.getLocalName(), entry.getKey().getLocalName());
+            streamWriter.writeAttribute(Attribute.ROLES_ATTR_NAME.getLocalName(), entry.getValue());
+            streamWriter.writeEndElement();
+        }
+        streamWriter.writeEndElement();
+    }
+
+    private void storeRoleToType(final Attribute type, final String role, final Map<Attribute, String> rolesByType) {
+        String roleList = rolesByType.get(type);
+        if (roleList == null) {
+            roleList = role;
+        } else {
+            roleList += ", " + role;
+        }
+        rolesByType.put(type, roleList);
+    }
+
+    /** {@inheritDoc} */
+    protected Class<SecuritySettingsSpecification> getElementClass() {
+        return SecuritySettingsSpecification.class;
     }
 
     public String getMatch() {
