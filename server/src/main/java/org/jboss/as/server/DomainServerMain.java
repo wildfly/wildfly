@@ -22,13 +22,18 @@
 
 package org.jboss.as.server;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.util.Collections;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
 
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
+import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -38,6 +43,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -75,32 +81,54 @@ public final class DomainServerMain {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
+        final byte[] authKey = new byte[16];
+        try {
+            StreamUtils.readFully(initialInput, authKey);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+            throw new IllegalStateException(); // not reached
+        }
+
         final MarshallerFactory factory;
         try {
             factory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
         } catch (ModuleLoadException e) {
             throw new IllegalStateException("Failed to start server", e);
         }
+        final Unmarshaller unmarshaller;
+        final ByteInput byteInput;
         try {
             final MarshallingConfiguration configuration = new MarshallingConfiguration();
             configuration.setVersion(2);
             configuration.setClassTable(ModularClassTable.getInstance());
-            final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
-            unmarshaller.start(Marshalling.createByteInput(initialInput));
+            unmarshaller = factory.createUnmarshaller(configuration);
+            byteInput = Marshalling.createByteInput(initialInput);
+            unmarshaller.start(byteInput);
             final ServerTask task = unmarshaller.readObject(ServerTask.class);
             unmarshaller.finish();
-            task.run(Collections.<ServiceActivator>emptyList());
+            task.run(Arrays.<ServiceActivator>asList(new ServiceActivator() {
+                public void activate(final ServiceActivatorContext serviceActivatorContext) {
+                    // TODO activate server manager client service
+                }
+            }));
         } catch (Exception e) {
             e.printStackTrace(initialError);
             System.exit(1);
             throw new IllegalStateException(); // not reached
         }
         for (;;) try {
-            while (initialInput.read() != -1) {}
+            unmarshaller.start(byteInput);
+            final InetSocketAddress socketAddress = unmarshaller.readObject(InetSocketAddress.class);
+            unmarshaller.finish();
+            // todo connect to the SM at socketAddress, disconnect from old
             break;
         } catch (InterruptedIOException e) {
             Thread.interrupted();
             // ignore
+        } catch (EOFException e) {
+            // this means it's time to exit
+            break;
         } catch (Exception e) {
             break;
         }

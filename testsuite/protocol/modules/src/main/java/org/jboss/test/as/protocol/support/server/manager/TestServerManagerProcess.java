@@ -57,7 +57,7 @@ public class TestServerManagerProcess extends ServerManager {
     }
 
     public TestServerManagerProcess(Managed managed, ServerManagerEnvironment environment) {
-        super(environment);
+        super(environment, authCode);
         this.managed = managed;
     }
 

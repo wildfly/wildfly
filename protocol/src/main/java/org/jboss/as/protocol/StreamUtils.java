@@ -22,11 +22,13 @@
 
 package org.jboss.as.protocol;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,28 +38,7 @@ public final class StreamUtils {
     private StreamUtils() {
     }
 
-    public static Status readWord(final InputStream input, final StringBuilder dest) throws IOException {
-        dest.setLength(0);
-        int c;
-        for (;;) {
-            c = readChar(input);
-            Status status = getStatus(c);
-            if (status != null)
-                return status;
-            dest.append((char) c);
-        }
-    }
-
     private static final String INVALID_BYTE = "Invalid byte";
-
-    public static Status getStatus(int c) {
-        switch (c) {
-        case -1: return Status.END_OF_STREAM;
-        case 0: return Status.MORE;
-        case '\n': return Status.END_OF_LINE;
-        default: return null;
-        }
-    }
 
     public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
@@ -113,28 +94,17 @@ public final class StreamUtils {
         return bytes;
     }
 
-    public static Status readStatus(final InputStream in) throws IOException{
-        int c = readChar(in);
-
-        switch (c) {
-            case -1: {
-                return Status.END_OF_STREAM;
-            }
-            case 0:  {
-                return Status.MORE;
-            }
-            case '\n': {
-                return Status.END_OF_LINE;
-            }
-            default: {
-                throw new IllegalStateException("unexpected char " + c);
-            }
-        }
+    public static boolean readBoolean(final InputStream input) throws IOException {
+        return readUnsignedByte(input) != 0;
     }
 
-//    public static CheckedBytes readCheckedBytes(final InputStream input) throws IOException {
-//        return new CheckedBytes(input);
-//    }
+    public static int readUnsignedShort(final InputStream input) throws IOException {
+        int ch1 = input.read();
+        int ch2 = input.read();
+        if ((ch1 | ch2) < 0)
+            throw new EOFException();
+        return ((ch1 << 8) + (ch2));
+    }
 
     public static int readInt(final InputStream in) throws IOException {
         int ch1 = in.read();
@@ -144,6 +114,10 @@ public final class StreamUtils {
         if ((ch1 | ch2 | ch3 | ch4) < 0)
             throw new EOFException();
         return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
+    }
+
+    public static void readFully(final InputStream in, byte[] b) throws IOException {
+        readFully(in, b, 0, b.length);
     }
 
     public static void readFully(final InputStream in, byte[] b, int off, int len) throws IOException {
@@ -198,6 +172,12 @@ public final class StreamUtils {
         }
     }
 
+
+    public static void writeShort(final OutputStream out, final int value) throws IOException {
+        out.write(value >>> 8);
+        out.write(value);
+    }
+
     public static void writeInt(final OutputStream out, final int v) throws IOException {
         out.write((v >>> 24) & 0xFF);
         out.write((v >>> 16) & 0xFF);
@@ -214,5 +194,99 @@ public final class StreamUtils {
         out.write((byte) (v >>> 16) & 0xFF);
         out.write((byte) (v >>>  8) & 0xFF);
         out.write((byte) (v >>>  0) & 0xFF);
+    }
+
+    public static void writeBoolean(final OutputStream os, final boolean b) throws IOException {
+        os.write(b ? 1 : 0);
+    }
+
+    public static byte readByte(final InputStream stream) throws IOException {
+        int b = stream.read();
+        if (b == -1) {
+            throw new EOFException();
+        }
+        return (byte) b;
+    }
+
+    public static int readUnsignedByte(final InputStream stream) throws IOException {
+        int b = stream.read();
+        if (b == -1) {
+            throw new EOFException();
+        }
+        return b;
+    }
+
+    public static void copyStream(final InputStream in, final OutputStream out) throws IOException {
+        final byte[] bytes = new byte[8192];
+        int cnt;
+        while ((cnt = in.read(bytes)) != -1) {
+            out.write(bytes, 0, cnt);
+        }
+    }
+
+    public static String readUTFZBytes(final InputStream input) throws IOException {
+        final StringBuilder builder = new StringBuilder();
+        for (;;) {
+            final int c = readUTFChar(input);
+            if (c == -1) {
+                return builder.toString();
+            }
+            builder.append((char) c);
+        }
+    }
+
+    private static int readUTFChar(final InputStream input) throws IOException {
+        final int a = input.read();
+        if (a < 0) {
+            throw new EOFException();
+        } else if (a == 0) {
+            return -1;
+        } else if (a < 0x80) {
+            return (char)a;
+        } else if (a < 0xc0) {
+            throw new UTFDataFormatException(INVALID_BYTE);
+        } else if (a < 0xe0) {
+            final int b = input.read();
+            if (b == -1) {
+                throw new EOFException();
+            } else if ((b & 0xc0) != 0x80) {
+                throw new UTFDataFormatException(INVALID_BYTE);
+            }
+            return (a & 0x1f) << 6 | b & 0x3f;
+        } else if (a < 0xf0) {
+            final int b = input.read();
+            if (b == -1) {
+                throw new EOFException();
+            } else if ((b & 0xc0) != 0x80) {
+                throw new UTFDataFormatException(INVALID_BYTE);
+            }
+            final int c = input.read();
+            if (c == -1) {
+                throw new EOFException();
+            } else if ((c & 0xc0) != 0x80) {
+                throw new UTFDataFormatException(INVALID_BYTE);
+            }
+            return (a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f;
+        } else {
+            throw new UTFDataFormatException(INVALID_BYTE);
+        }
+    }
+
+    public static void writeUTFZBytes(final OutputStream outputStream, String string) throws IOException {
+        final int len = string.length();
+        for (int i = 0; i < len; i ++) {
+            writeChar(outputStream, string.charAt(i));
+        }
+        outputStream.write(0);
+    }
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.protocol");
+
+    public static void safeClose(final Closeable closeable) {
+        try {
+            closeable.close();
+        } catch (Throwable t) {
+            log.errorf(t, "Failed to close resource %s", closeable);
+        }
     }
 }

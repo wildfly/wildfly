@@ -54,14 +54,11 @@ import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.socket.InterfaceElement;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
-import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
-import org.jboss.as.process.RespawnPolicy;
+import org.jboss.as.process.ProcessInfo;
+import org.jboss.as.process.ProcessManagerClient;
+import org.jboss.as.process.ProcessMessageHandler;
+import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.server.ServerState;
-import org.jboss.as.server.ServerManagerProtocol.Command;
-import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerCommandHandler;
-import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
 import org.jboss.as.server.manager.management.ManagementCommunicationService;
 import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
@@ -94,39 +91,38 @@ import org.jboss.staxmapper.XMLMapper;
  *
  * @author Brian Stansberry
  * @author Kabir Khan
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class ServerManager implements ShutdownListener {
-    private static final Logger log = Logger.getLogger("org.jboss.server.manager");
+public class ServerManager {
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.manager");
 
     static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("server", "manager");
 
     private final ServerManagerEnvironment environment;
     private final StandardElementReaderRegistrar extensionRegistrar;
-    private final ProcessManagerCommandHandler processManagerCommmandHandler;
     private final FileRepository fileRepository;
-    private volatile ProcessManagerSlave processManagerSlave;
-    private final ServerToServerManagerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    private volatile DirectServerCommunicationListener directServerCommunicationListener;
     private final ModelManager modelManager;
     private DomainControllerConnection domainControllerConnection;
+    private ProcessManagerClient processManagerClient;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
     private final AtomicBoolean stopping = new AtomicBoolean();
+    private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
 
-    // TODO figure out concurrency controls
-//    private final Lock hostLock = new ReentrantLock();
-//    private final Lock domainLock = new ReentrantLock();
-    private final Map<String, Server> servers = Collections.synchronizedMap(new HashMap<String, Server>());
+    /**
+     * The auth code of the server manager itself.
+     */
+    private final byte[] authCode;
 
-    public ServerManager(ServerManagerEnvironment environment) {
+    public ServerManager(ServerManagerEnvironment environment, final byte[] authCode) {
+        this.authCode = authCode;
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
         this.environment = environment;
-        this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
-        this.modelManager = new ModelManager(environment, extensionRegistrar);
-        this.processManagerCommmandHandler = new ProcessManagerCommandHandler();
-        this.fileRepository = new LocalFileRepository(environment);
+        extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
+        modelManager = new ModelManager(environment, extensionRegistrar);
+        fileRepository = new LocalFileRepository(environment);
     }
 
     public String getName() {
@@ -135,19 +131,19 @@ public class ServerManager implements ShutdownListener {
 
     /**
      * Starts the ServerManager. This brings this ServerManager to the point where
-     * it has processed it's own configuration file, registered with the DomainController
+     * it has processed its own configuration file, registered with the DomainController
      * (including starting one if the host configuration specifies that),
      * obtained the domain configuration, and launched any systems needed to make
      * this process manageable by remote clients.
      */
-    public void start() {
+    public void start() throws IOException {
 
         modelManager.start();
 
         // TODO set up logging for this process based on config in Host
 
         //Start listening for server communication on our socket
-        launchDirectServerCommunicationHandler();
+        //launchDirectServerCommunicationHandler();
 
         // Start communication with the ProcessManager. This also
         // creates a daemon thread to keep this process alive
@@ -181,12 +177,11 @@ public class ServerManager implements ShutdownListener {
     /**
      * The connection from a server to SM was closed
      */
-    @Override
     public void connectionClosed(String processName) {
         if (stopping.get())
             return;
 
-        Server server = servers.get(processName);
+        ManagedServer server = servers.get(processName);
 
         if (server == null) {
             log.errorf("No server called %s with a closed connection", processName);
@@ -198,20 +193,10 @@ public class ServerManager implements ShutdownListener {
             log.debugf("Ignoring closed connection for server %s in the %s state", processName, state);
             return;
         }
-
-        log.infof("Server %s connection was closed, tell it to reconnect", processName);
-        try {
-            processManagerSlave.reconnectServer(processName, directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
-        } catch (IOException e) {
-            if (stopping.get())
-                return;
-
-            log.error("Failed to send RECONNECT_SERVER", e);
-        }
     }
 
     public <R> R applyUpdate(final String serverName, final AbstractServerModelUpdate<R> update) throws UpdateFailedException {
-        final Server server = servers.get(serverName);
+        final ManagedServer server = servers.get(serverName);
         if(server == null) {
             throw new UpdateFailedException("No server available with name " + serverName);
         }
@@ -225,7 +210,7 @@ public class ServerManager implements ShutdownListener {
      */
     void availableServer(String serverName) {
         try {
-            Server server = servers.get(serverName);
+            ManagedServer server = servers.get(serverName);
             if (server == null) {
                 log.errorf("No server called %s available", serverName);
                 return;
@@ -250,7 +235,6 @@ public class ServerManager implements ShutdownListener {
         }
 
         log.info("Stopping ServerManager");
-        directServerCommunicationListener.shutdown();
         if(domainControllerConnection != null) {
             domainControllerConnection.unregister();
         }
@@ -269,7 +253,7 @@ public class ServerManager implements ShutdownListener {
         if (stopping.get())
             return;
 
-        Server server = servers.get(serverName);
+        ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for stop", serverName);
             return;
@@ -277,14 +261,14 @@ public class ServerManager implements ShutdownListener {
         checkState(server, ServerState.STOPPING);
 
         try {
-            processManagerSlave.stopProcess(serverName);
+            processManagerClient.stopProcess(serverName);
         } catch (IOException e) {
             if (stopping.get())
                 return;
             log.errorf(e, "Could not stop server %s in PM", serverName);
         }
         try {
-            processManagerSlave.removeProcess(serverName);
+            processManagerClient.removeProcess(serverName);
         } catch (IOException e) {
             if (stopping.get())
                 return;
@@ -300,7 +284,7 @@ public class ServerManager implements ShutdownListener {
      * @param serverName the name of the server
      */
     void startedServer(String serverName) {
-        Server server = servers.get(serverName);
+        ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists for start", serverName);
             return;
@@ -317,14 +301,13 @@ public class ServerManager implements ShutdownListener {
      * @param serverName the name of the server
      */
     void failedStartServer(String serverName) {
-        Server server = servers.get(serverName);
+        ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server called %s exists", serverName);
             return;
         }
         checkState(server, ServerState.STARTING);
         server.setState(ServerState.FAILED);
-        respawn(server);
     }
 
     /**
@@ -336,7 +319,7 @@ public class ServerManager implements ShutdownListener {
      * @param state the server's state
      */
     void reconnectedServer(String serverName, ServerState state) {
-        Server server = servers.get(serverName);
+        ManagedServer server = servers.get(serverName);
         if (server == null) {
             log.errorf("No server found for reconnected server %s", serverName);
             return;
@@ -353,36 +336,6 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-    private void respawn(Server server){
-        try {
-            server.stopServerProcess();
-        } catch (IOException e) {
-            log.errorf(e, "Error stopping server %s before respawning", server.getServerProcessName());
-        }
-
-
-        RespawnPolicy respawnPolicy = server.getRespawnPolicy();
-        long timeout = respawnPolicy.getTimeOutMs(server.incrementAndGetRespawnCount());
-        if (timeout < 0 ) {
-            server.setState(ServerState.MAX_FAILED);
-            try {
-                server.removeServerProcess();
-            } catch (IOException e) {
-                log.errorf(e, "Error removing server %s before respawning", server.getServerProcessName());
-            }
-            return;
-        }
-
-        //TODO JBAS-8390 Put in actual sleep
-        //Thread.sleep(timeout);
-
-        try {
-            server.startServerProcess();
-        } catch (IOException e) {
-            log.errorf(e, "Error respawning server %s", server.getServerProcessName());
-        }
-    }
-
     /**
      * Handles a notification from the ProcessManager that a server has
      * gone down.
@@ -390,7 +343,7 @@ public class ServerManager implements ShutdownListener {
      * @param downServerName the process name of the server.
      */
     public void downServer(String downServerName) {
-        Server server = servers.get(downServerName);
+        ManagedServer server = servers.get(downServerName);
         if (server == null) {
             log.errorf("No server called %s exists", downServerName);
             return;
@@ -415,22 +368,37 @@ public class ServerManager implements ShutdownListener {
 
         } else {
             server.setState(ServerState.FAILED);
-            respawn(server);
         }
     }
 
-    private void launchProcessManagerSlave() {
-        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, getHostModel(), processManagerCommmandHandler);
-        Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
-        t.start();
-    }
+    private void launchProcessManagerSlave() throws IOException {
+        processManagerClient = ProcessManagerClient.connect(new ProtocolClient.Configuration(), authCode, new ProcessMessageHandler() {
+            public void handleProcessAdded(final ProcessManagerClient client, final String processName) {
+            }
 
-    private void launchDirectServerCommunicationHandler() {
-        try {
-            this.directServerCommunicationListener = DirectServerCommunicationListener.create(serverCommandHandler, this, environment.getServerManagerAddress(), environment.getServerManagerPort(), 20);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            public void handleProcessStarted(final ProcessManagerClient client, final String processName) {
+            }
+
+            public void handleProcessStopped(final ProcessManagerClient client, final String processName, final long uptimeMillis) {
+            }
+
+            public void handleProcessRemoved(final ProcessManagerClient client, final String processName) {
+            }
+
+            public void handleProcessInventory(final ProcessManagerClient client, final Map<String, ProcessInfo> inventory) {
+                // TODO: reconcile our server list against the PM inventory
+            }
+
+            public void handleConnectionShutdown(final ProcessManagerClient client) {
+            }
+
+            public void handleConnectionFailure(final ProcessManagerClient client, final IOException cause) {
+            }
+
+            public void handleConnectionFinished(final ProcessManagerClient client) {
+            }
+        });
+        processManagerClient.requestProcessInventory();
     }
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
@@ -607,25 +575,21 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-    Server getServer(String name) {
+    ManagedServer getServer(String name) {
         return servers.get(name);
     }
 
-    private void checkState(Server server, ServerState expected) {
+    private void checkState(ManagedServer server, ServerState expected) {
         ServerState state = server.getState();
         if (state != expected) {
             log.warnf("Server %s is not in the expected %s state: %s" , server.getServerProcessName(), expected, state);
         }
     }
 
-    public Map<String, Server> getServers() {
+    public Map<String, ManagedServer> getServers() {
         synchronized (servers) {
             return Collections.unmodifiableMap(servers);
         }
-    }
-
-    DirectServerCommunicationListener getDirectServerCommunicationListener() {
-        return directServerCommunicationListener;
     }
 
     private void synchronizeDeployments() {
@@ -645,9 +609,9 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
-
     private void startServers() {
-        InetSocketAddress managementSocket = new InetSocketAddress(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
+        // TODO: use the actual address of the SM...
+        InetSocketAddress managementSocket = new InetSocketAddress(0);
         HostModel hostConfig = getHostModel();
         DomainModel domainConfig = getDomainModel();
         for (ServerElement serverEl : hostConfig.getServers()) {
@@ -655,7 +619,7 @@ public class ServerManager implements ShutdownListener {
             if (serverEl.isStart()) {
                 log.info("Starting server " + serverEl.getName());
                 try {
-                    Server server = new Server(serverEl.getName(), domainConfig, hostConfig, environment, processManagerSlave, managementSocket);
+                    ManagedServer server = new ManagedServer(serverEl.getName(), domainConfig, hostConfig, environment, processManagerClient, managementSocket);
                     servers.put(server.getServerProcessName(), server);
                     // Now that the server is in the servers map we can start it
                     server.addServerProcess();
@@ -668,61 +632,4 @@ public class ServerManager implements ShutdownListener {
             else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
     }
-
-    /**
-     * Callback for the {@link ServerToServerManagerProtocolCommand#handleCommand(String, ServerToServerManagerCommandHandler, Command)} calls
-     */
-    private class ServerCommandHandler extends ServerToServerManagerCommandHandler{
-
-        @Override
-        public void handleServerAvailable(String sourceProcessName) {
-            ServerManager.this.availableServer(sourceProcessName);
-        }
-
-        @Override
-        public void handleServerReconnectStatus(String sourceProcessName, ServerState state) {
-            ServerManager.this.reconnectedServer(sourceProcessName, state);
-        }
-
-        @Override
-        public void handleServerStartFailed(String sourceProcessName) {
-            ServerManager.this.failedStartServer(sourceProcessName);
-        }
-
-        @Override
-        public void handleServerStarted(String sourceProcessName) {
-            ServerManager.this.startedServer(sourceProcessName);
-        }
-
-        @Override
-        public void handleServerStopped(String sourceProcessName) {
-            ServerManager.this.stoppedServer(sourceProcessName);
-        }
-    }
-
-    private class ProcessManagerCommandHandler implements OutgoingPmCommandHandler {
-        @Override
-        public void handleShutdown() {
-            ServerManager.this.stop();
-
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    SystemExiter.exit(0);
-                }
-            }, "Server Manager Exit Thread");
-            t.start();
-        }
-
-        @Override
-        public void handleReconnectServerManager(String addr, String port) {
-            log.warn("Wrong command received " + OutgoingPmCommand.RECONNECT_SERVER_MANAGER + " for server manager");
-        }
-
-        @Override
-        public void handleDown(String serverName) {
-            ServerManager.this.downServer(serverName);
-        }
-    }
-
 }

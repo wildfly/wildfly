@@ -46,6 +46,7 @@ import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
@@ -66,7 +67,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
     private final String serverName;
     private final int portOffset;
-    private final Runnable logConfigurator;
     private final List<ServiceActivator> startServices;
     private final List<AbstractServerModelUpdate<?>> updates;
     private final ServerEnvironment providedEnvironment;
@@ -74,22 +74,22 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     /** Constructor variant for use by the ServerManager */
-    public ServerStartTask(final String serverName, final int portOffset, final Runnable logConfigurator, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
-        this(serverName, portOffset, logConfigurator, startServices, updates, null);
+    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
+        this(serverName, portOffset, startServices, updates, null);
     }
 
     /** Constructor variant for use by StandaloneServer */
-    public ServerStartTask(final String serverName, final int portOffset, final Runnable logConfigurator, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
+    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
         this.serverName = serverName;
         this.portOffset = portOffset;
-        this.logConfigurator = logConfigurator;
         this.startServices = startServices;
         this.updates = updates;
         this.providedEnvironment = environment;
     }
 
     public void run(final List<ServiceActivator> startServices) {
-        if (logConfigurator != null) logConfigurator.run();
+        MDC.put("process", "server-" + serverName);
+
         log.infof("Starting server \"%s\"", serverName);
         final ServiceContainer container = ServiceContainer.Factory.create();
 
@@ -238,9 +238,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
+                    log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", Long.valueOf(elapsedTime), Integer.valueOf(totalServices), Integer.valueOf(onDemandServices), Integer.valueOf(startedServices));
                 } else {
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", Integer.valueOf(totalServices), Long.valueOf(elapsedTime)));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
                         buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
@@ -260,9 +260,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
         if (updates == null) {
             throw new InvalidObjectException("updates is null");
-        }
-        if (logConfigurator == null) {
-            throw new InvalidObjectException("logConfigurator is null");
         }
         if (startServices == null) {
             throw new InvalidObjectException("startServices is null");

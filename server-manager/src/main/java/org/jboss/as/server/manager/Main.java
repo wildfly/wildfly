@@ -33,6 +33,8 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.stdio.LoggingOutputStream;
@@ -56,8 +58,8 @@ public final class Main {
         System.out.println("where args include:");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
         System.out.println("    -help                              Display this message and exit");
-        System.out.println("    -interprocess-pm-address <address> Address of process manager socket");
-        System.out.println("    -interprocess-pm-port <port>       Port of process manager socket");
+        System.out.println("    -pm-address <address>              Address of process manager socket");
+        System.out.println("    -pm-port <port>                    Port of process manager socket");
         System.out.println("    -interprocess-name <proc>          Name of this process, used to register the socket with the server in the process manager");
         System.out.println("    -interprocess-sm-address <address> Address this server manager's socket should listen on");
         System.out.println("    -interprocess-sm-port <port>       Port of this server manager's socket  should listen on");
@@ -72,7 +74,11 @@ public final class Main {
      * @param args
      *            the command-line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        MDC.put("process", "server manager");
+
+        final byte[] authCode = new byte[16];
+        StreamUtils.readFully(System.in, authCode);
 
         // Grab copies of our streams.
         final InputStream in = System.in;
@@ -88,7 +94,7 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        create(args, in, out, err);
+        create(args, in, out, err, authCode);
     }
 
     Properties props = new Properties(System.getProperties());
@@ -96,12 +102,12 @@ public final class Main {
     private Main() {
     }
 
-    private static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private static ServerManager create(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         Main main = new Main();
-        return main.boot(args, stdin, stdout, stderr);
+        return main.boot(args, stdin, stdout, stderr, authCode);
     }
 
-    private ServerManager boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    private ServerManager boot(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr, final byte[] authCode) {
         ServerManager sm = null;
         try {
             ServerManagerEnvironment config = determineEnvironment(args, props, stdin, stdout, stderr);
@@ -109,7 +115,7 @@ public final class Main {
                 abort(null);
                 return null;
             } else {
-                sm = new ServerManager(config);
+                sm = new ServerManager(config, authCode);
                 sm.start();
             }
         } catch (Throwable t) {
@@ -145,6 +151,13 @@ public final class Main {
         String procName = null;
         String defaultJVM = null;
         boolean isRestart = false;
+        final byte[] authKey = new byte[16];
+        try {
+            StreamUtils.readFully(stdin, authKey);
+        } catch (IOException e) {
+            System.err.printf("Failed to read authentication key: %s", e);
+            return null;
+        }
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {

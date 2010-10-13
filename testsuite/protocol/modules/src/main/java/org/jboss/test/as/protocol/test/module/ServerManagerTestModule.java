@@ -28,19 +28,13 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.process.ProcessManagerMaster;
-import org.jboss.as.process.RespawnPolicy;
-import org.jboss.as.server.ServerManagerProtocolUtils;
 import org.jboss.as.server.ServerState;
 import org.jboss.as.server.ServerManagerProtocol.Command;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.as.server.manager.Server;
+import org.jboss.as.server.manager.ManagedServer;
 import org.jboss.as.server.manager.ServerManager;
-import org.jboss.test.as.protocol.support.process.TestProcessHandler;
-import org.jboss.test.as.protocol.support.process.TestProcessHandlerFactory;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
-import org.jboss.test.as.protocol.support.server.MockServerProcess;
 import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerProcess;
 import org.jboss.test.as.protocol.test.base.ServerManagerTest;
@@ -389,8 +383,8 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         svr1.reconnnectToServerManagerAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, ServerState.STARTED);
         svr2.reconnnectToServerManagerAndSendReconnectStatus(InetAddress.getLocalHost(), newSmPort, state);
 
-        Map<String, Server> servers = checkServerManagerServers(sm, 5000, new ServerManagerCheck("Server:server-one", ServerState.STARTED));
-        Server two = servers.get("Server:server-two");
+        Map<String, ManagedServer> servers = checkServerManagerServers(sm, 5000, new ServerManagerCheck("Server:server-one", ServerState.STARTED));
+        ManagedServer two = servers.get("Server:server-two");
         Assert.assertNotNull(two);
 
 
@@ -586,14 +580,14 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         return parsePort(parts[1]);
     }
 
-    private Map<String, Server> checkServerManagerServers(ServerManager sm, int timeoutMs, ServerManagerCheck...checks) throws Exception {
+    private Map<String, ManagedServer> checkServerManagerServers(ServerManager sm, int timeoutMs, ServerManagerCheck...checks) throws Exception {
         long end = System.currentTimeMillis() + timeoutMs;
         while (System.currentTimeMillis() < end) {
-            Map<String, Server> servers = sm.getServers();
+            Map<String, ManagedServer> servers = sm.getServers();
 
             boolean allMatched = true;
             for (ServerManagerCheck check : checks) {
-                Server server = servers.get(check.getServerName());
+                ManagedServer server = servers.get(check.getServerName());
                 if (server == null || server.getState() != check.getState()) {
                     allMatched = false;
                     break;
@@ -603,9 +597,9 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
                 break;
         }
 
-        Map<String, Server> servers = sm.getServers();
+        Map<String, ManagedServer> servers = sm.getServers();
         for (ServerManagerCheck check : checks) {
-            Server server = servers.get(check.getServerName());
+            ManagedServer server = servers.get(check.getServerName());
             Assert.assertNotNull(server);
             Assert.assertSame("Actual state of " + check.getServerName() + " was: " + server.getState(), check.getState(), server.getState());
         }

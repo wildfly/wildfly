@@ -28,15 +28,11 @@ package org.jboss.as.process;
  */
 public class CommandLineConstants {
 
-    //Put these two in to get DC to compile
-    public static final String INTERPROCESS_ADDRESS = "-interprocess-address";
-    public static final String INTERPROCESS_PORT = "-interprocess-port";
-
     /** The ProcessManager address */
-    public static final String INTERPROCESS_PM_ADDRESS = "-interprocess-pm-address";
+    public static final String INTERPROCESS_PM_ADDRESS = "-pm-address";
 
     /** The ProcessManager port */
-    public static final String INTERPROCESS_PM_PORT = "-interprocess-pm-port";
+    public static final String INTERPROCESS_PM_PORT = "-pm-port";
 
     /** The name of a process started by the process manager */
     public static final String INTERPROCESS_NAME = "-interprocess-name";
@@ -53,9 +49,6 @@ public class CommandLineConstants {
     /** Configure the file to be used to read properties */
     public static final String PROPERTIES = "-properties";
 
-    /** Start a standalone server */
-    public static final String STANDALONE = "-standalone";
-
     /** Configure a default jvm */
     public static final String DEFAULT_JVM = "-default-jvm";
 
@@ -64,4 +57,7 @@ public class CommandLineConstants {
 
     /** Output usage */
     public static final String HELP = "-help";
+
+    private CommandLineConstants() {
+    }
 }

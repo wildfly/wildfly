@@ -34,10 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
-import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.process.ProcessManagerMaster;
-import org.jboss.as.process.RespawnPolicy;
 
 /**
  * Overrides {@link ProcessManagerMaster} and provides hooks for seeing when

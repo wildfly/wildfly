@@ -134,6 +134,7 @@ while true; do
       # Execute the JVM in the foreground
       eval \"$JAVA\" $JAVA_OPTS \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/logs/process-manager/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
@@ -141,6 +142,7 @@ while true; do
          "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/logs/server-manager/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
@@ -151,10 +153,14 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" $JAVA_OPTS \
+         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/logs/process-manager/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-manager \
+         -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/logs/server-manager/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
          "$JBOSS_HOME" \
          \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \

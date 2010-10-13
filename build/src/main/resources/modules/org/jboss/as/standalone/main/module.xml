@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.jboss.as.standalone">
 
-    <main-class name="org.jboss.as.server.Main"/>
+    <main-class name="org.jboss.as.server.DomainServerMain"/>
 
     <resources>
         <!-- Insert resources here -->

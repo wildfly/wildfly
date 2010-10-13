@@ -22,9 +22,9 @@
 
 package org.jboss.as.server.manager;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -45,12 +46,9 @@ import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.process.RespawnPolicy;
-import org.jboss.as.server.ServerManagerCommunicationsActivator;
-import org.jboss.as.server.ServerManagerProtocolUtils;
+import org.jboss.as.process.ProcessManagerClient;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
-import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -60,6 +58,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
  * Represents a managed server.
@@ -68,7 +67,7 @@ import org.jboss.msc.service.ServiceActivator;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  * @author Brian Stansberry
  */
-public final class Server {
+public final class ManagedServer {
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
     static {
@@ -94,30 +93,32 @@ public final class Server {
     private final JvmElement jvmElement;
     private final ServerManagerEnvironment environment;
     private final int portOffset;
-    private final ProcessManagerSlave processManagerSlave;
-    private final InetSocketAddress managementSocket;
-    private volatile DirectServerManagerCommunicationHandler communicationHandler;
-
-    private final RespawnPolicy respawnPolicy = RespawnPolicy.DefaultRespawnPolicy.INSTANCE;
+    private final ProcessManagerClient processManagerClient;
     private final AtomicInteger respawnCount = new AtomicInteger();
     private final List<AbstractServerModelUpdate<?>> updateList = new ArrayList<AbstractServerModelUpdate<?>>();
     private volatile ServerState state;
 
-    public Server(final String serverName, final DomainModel domainModel, final HostModel hostModel,
-            final ServerManagerEnvironment environment, final ProcessManagerSlave processManagerSlave,
+    private final byte[] authKey;
+
+    public ManagedServer(final String serverName, final DomainModel domainModel, final HostModel hostModel,
+            final ServerManagerEnvironment environment, final ProcessManagerClient processManagerClient,
             final InetSocketAddress managementSocket) {
         assert domainModel != null : "domainModel is null";
         assert hostModel   != null : "hostModel is null";
         assert serverName  != null : "serverName is null";
         assert environment != null : "environment is null";
-        assert processManagerSlave != null : "processManagerSlave is null";
+        assert processManagerClient != null : "processManagerSlave is null";
         assert managementSocket != null : "managementSocket is null";
+
+        final byte[] authKey = new byte[16];
+        // TODO: use a RNG with a secure seed
+        new Random().nextBytes(authKey);
+        this.authKey = authKey;
 
         this.serverName = serverName;
         this.serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverName;
         this.environment = environment;
-        this.processManagerSlave = processManagerSlave;
-        this.managementSocket = managementSocket;
+        this.processManagerClient = processManagerClient;
 
         ServerFactory.combine(domainModel, hostModel, serverName, updateList);
 
@@ -190,10 +191,6 @@ public final class Server {
         return serverName;
     }
 
-    RespawnPolicy getRespawnPolicy() {
-        return respawnPolicy;
-    }
-
     List<AbstractServerModelUpdate<?>> getUpdates() {
         return new ArrayList<AbstractServerModelUpdate<?>>(updateList);
     }
@@ -225,7 +222,6 @@ public final class Server {
             command.add(sb.toString());
         }
 
-        command.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
         command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/logs/boot.log");
         command.add("-jar");
         command.add("jboss-modules.jar");
@@ -250,60 +246,47 @@ public final class Server {
         return env;
     }
 
-    void setCommunicationHandler(DirectServerManagerCommunicationHandler communicationHandler) {
-        this.communicationHandler = communicationHandler;
-    }
-
     public void addServerProcess() throws IOException {
         List<String> command = getServerLaunchCommand();
 
         Map<String, String> env = getServerLaunchEnvironment();
 
         //Add to process manager
-        processManagerSlave.addProcess(serverProcessName, command, env, environment.getHomeDir().getAbsolutePath());
+        processManagerClient.addProcess(serverProcessName, authKey, command.toArray(new String[command.size()]), environment.getHomeDir().getAbsolutePath(), env);
     }
 
     public void startServerProcess() throws IOException {
 
         setState(ServerState.BOOTING);
 
-        processManagerSlave.startProcess(serverProcessName);
-        ServerManagerCommunicationsActivator commActivator = new ServerManagerCommunicationsActivator(serverProcessName, null, managementSocket);
-
-        Runnable fakeLogConfigurator = new FakeLogConfigurator(); // FIXME use a real one
-        ServerStartTask startTask = new ServerStartTask(serverName, portOffset, fakeLogConfigurator, Collections.<ServiceActivator>singletonList(commActivator), updateList);
-        // TODO - not efficient but it will work for now
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(32768);
+        processManagerClient.startProcess(serverProcessName);
+        ServiceActivator serverManagerCommActivator = new ServiceActivator() {
+            public void activate(final ServiceActivatorContext serviceActivatorContext) {
+                
+            }
+        };
+        ServerStartTask startTask = new ServerStartTask(serverName, portOffset, Collections.<ServiceActivator>singletonList(serverManagerCommActivator), updateList);
         final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-        marshaller.start(Marshalling.createByteOutput(baos));
+        final OutputStream os = processManagerClient.sendStdin(serverProcessName);
+        marshaller.start(Marshalling.createByteOutput(os));
         marshaller.writeObject(startTask);
         marshaller.finish();
         marshaller.close();
-        processManagerSlave.sendStdin(serverProcessName, baos.toByteArray());
 
         setState(ServerState.STARTING);
     }
 
     public void stopServerProcess() throws IOException {
-        processManagerSlave.stopProcess(serverProcessName);
+        processManagerClient.stopProcess(serverProcessName);
     }
 
     public void removeServerProcess() throws IOException {
-        processManagerSlave.removeProcess(serverProcessName);
+        processManagerClient.removeProcess(serverProcessName);
     }
 
     public <R> R applyUpdate(AbstractServerModelUpdate<R> update) throws UpdateFailedException {
         // FIXME implement RPC
         throw new UpdateFailedException("ServerManager to Server RPC is not implemented");
-    }
-
-    private void sendCommand(ServerManagerToServerProtocolCommand command) throws IOException {
-        sendCommand(command, null);
-    }
-
-    private void sendCommand(ServerManagerToServerProtocolCommand command, Object o) throws IOException {
-        byte[] cmd = ServerManagerProtocolUtils.createCommandBytes(command, o);
-        communicationHandler.sendMessage(cmd);
     }
 
     private String getJavaCommand() {

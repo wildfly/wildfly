@@ -134,6 +134,7 @@ while true; do
       # Execute the JVM in the foreground
       eval \"$JAVA\" $JAVA_OPTS \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/logs/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
@@ -144,6 +145,8 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" $JAVA_OPTS \
+         -Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/logs/boot.log \
+         -Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \

@@ -19,36 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.manager;
 
+package org.jboss.as.process;
 
 /**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class CommunicationVariables {
-    private final ServerManagerEnvironment env;
-    private final ServerManager manager;
+public final class ProcessInfo {
+    private final String processName;
+    private final byte[] authKey;
+    private final boolean running;
 
-    public CommunicationVariables(ServerManagerEnvironment env, ServerManager manager) {
-        this.env = env;
-        this.manager = manager;
+    ProcessInfo(final String processName, final byte[] authKey, final boolean running) {
+        this.processName = processName;
+        this.authKey = authKey;
+        this.running = running;
     }
 
-    public String getProcessManagerAddress() {
-        return env.getProcessManagerAddress().getHostAddress();
+    public String getProcessName() {
+        return processName;
     }
 
-    public String getProcessManagerPort() {
-        return env.getProcessManagerPort().toString();
+    public byte[] getAuthKey() {
+        return authKey;
     }
 
-    public String getServerManagerAddress() {
-        return manager.getDirectServerCommunicationListener().getSmAddress().getHostAddress();
-    }
-
-    public String getServerManagerPort() {
-        return String.valueOf(manager.getDirectServerCommunicationListener().getSmPort());
+    public boolean isRunning() {
+        return running;
     }
 }

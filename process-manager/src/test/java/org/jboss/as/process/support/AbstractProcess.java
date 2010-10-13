@@ -27,13 +27,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.communication.SocketConnection;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
 import org.jboss.as.process.support.TestFileUtils.TestFile;
 import org.jboss.as.process.support.TestProcessUtils.TestProcessSenderStream;
-import org.jboss.as.protocol.Status;
 import org.jboss.as.protocol.StreamUtils;
 
 /**

@@ -26,10 +26,8 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
-import org.jboss.as.server.DirectServerSideCommunicationHandler;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
 import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.TestServerSideMessageHandler;
 import org.jboss.test.as.protocol.support.server.manager.MockServerManagerProcess;

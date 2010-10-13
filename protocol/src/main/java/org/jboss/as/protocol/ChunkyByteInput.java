@@ -25,6 +25,7 @@ package org.jboss.as.protocol;
 import java.io.IOException;
 import java.io.InputStream;
 import org.jboss.marshalling.ByteInput;
+import org.jboss.marshalling.Marshalling;
 
 /**
  * Byte input implementation that reads bytes in chunks.  Each chunk is started with a {@code CHUNK_START} header followed
@@ -44,6 +45,15 @@ public class ChunkyByteInput extends InputStream implements ByteInput {
 
     public ChunkyByteInput(final ByteInput byteInput) {
         input = byteInput;
+    }
+
+    public ChunkyByteInput(final InputStream inputStream) {
+        input = Marshalling.createByteInput(inputStream);
+    }
+
+    public ChunkyByteInput(final InputStream inputStream, final int remaining) {
+        input = Marshalling.createByteInput(inputStream);
+        this.remaining = remaining;
     }
 
     /**

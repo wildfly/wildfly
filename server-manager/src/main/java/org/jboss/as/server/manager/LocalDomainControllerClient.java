@@ -35,7 +35,7 @@ import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
 
 /**
- * A client to integarte with a local domain controller instance.
+ * A client to integrate with a local domain controller instance.
  *
  * @author John Bailey
  */

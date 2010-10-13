@@ -30,11 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
-import org.jboss.as.server.ServerManagerProtocolUtils;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
-import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler;
-import org.jboss.as.server.manager.ProcessManagerSlave;
-import org.jboss.as.server.manager.ProcessManagerSlaveFactory;
 import org.jboss.as.server.manager.ServerManager;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.test.as.protocol.support.server.TestServerProcess;
@@ -57,7 +53,7 @@ public class MockServerManagerProcess extends ServerManager {
     private volatile ProcessManagerSlave pmSlave;
 
     private MockServerManagerProcess(Managed managed, ServerManagerEnvironment environment) {
-        super(environment);
+        super(environment, authCode);
         this.managed = managed;
     }
 

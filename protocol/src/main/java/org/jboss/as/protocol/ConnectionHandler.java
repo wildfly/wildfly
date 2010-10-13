@@ -19,19 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.communication;
+
+package org.jboss.as.protocol;
+
+import java.io.IOException;
 
 /**
- * Exception thrown when an initial connection is made
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * A handler for incoming protocol connections.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class InitialSocketRequestException extends Exception {
+public interface ConnectionHandler {
 
-    private static final long serialVersionUID = 1L;
-
-    public InitialSocketRequestException(String message) {
-        super(message);
-    }
-
+    /**
+     * Handle the new connection.
+     *
+     * @param connection the connection
+     * @return the message handler for this connection (must not be {@code null})
+     * @throws IOException if an I/O error occurs
+     */
+    MessageHandler handleConnected(Connection connection) throws IOException;
 }

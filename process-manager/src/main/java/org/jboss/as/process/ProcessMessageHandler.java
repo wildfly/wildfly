@@ -19,23 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.process.test;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+package org.jboss.as.process;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-    StartStopProcessesTestCase.class,
-    InterprocessCommunicationTestCase.class
-})
-public class ProcessManagerTests {
+public interface ProcessMessageHandler {
 
+    void handleProcessAdded(ProcessManagerClient client, String processName);
 
+    void handleProcessStarted(ProcessManagerClient client, String processName);
+
+    void handleProcessStopped(ProcessManagerClient client, String processName, long uptimeMillis);
+
+    void handleProcessRemoved(ProcessManagerClient client, String processName);
+
+    void handleProcessInventory(ProcessManagerClient client, Map<String, ProcessInfo> inventory);
+
+    void handleConnectionShutdown(ProcessManagerClient client);
+
+    void handleConnectionFailure(ProcessManagerClient client, IOException cause);
+
+    void handleConnectionFinished(ProcessManagerClient client);
 }

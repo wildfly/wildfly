@@ -27,10 +27,6 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import org.jboss.as.communication.InitialSocketRequestException;
-import org.jboss.as.communication.SocketConnection;
-import org.jboss.as.communication.SocketListener;
-import org.jboss.as.communication.SocketListener.SocketHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.SimpleByteDataInput;
@@ -106,7 +102,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
     }
 
     /**
-     * Get the executor serice injector.
+     * Get the executor service injector.
      *
      * @return The injector
      */

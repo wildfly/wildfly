@@ -19,23 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.process.test;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+package org.jboss.as.protocol;
 
 /**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-    StartStopProcessesTestCase.class,
-    InterprocessCommunicationTestCase.class
-})
-public class ProcessManagerTests {
+public final class ProtocolConstants {
+    public static final int CHUNK_START = 0x98;
+    public static final int CHUNK_END = 0x99;
 
-
+    private ProtocolConstants() {
+    }
 }
