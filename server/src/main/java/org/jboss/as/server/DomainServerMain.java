@@ -87,8 +87,6 @@ public final class DomainServerMain {
             unmarshaller.start(Marshalling.createByteInput(initialInput));
             final ServerTask task = unmarshaller.readObject(ServerTask.class);
             unmarshaller.finish();
-            unmarshaller.close();
-            initialInput.close();
             task.run(Collections.<ServiceActivator>emptyList());
         } catch (Exception e) {
             e.printStackTrace(initialError);
