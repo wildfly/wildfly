@@ -66,19 +66,19 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
         if (bindingsDirectory != null) {
-            streamWriter.writeStartElement(Element.BINDINGS_DIRECTORY.getLocalName());
+            streamWriter.writeEmptyElement(Element.BINDINGS_DIRECTORY.getLocalName());
             bindingsDirectory.writeContent(streamWriter);
         }
         if (largeMessagesDirectory != null) {
-            streamWriter.writeStartElement(Element.LARGE_MESSAGES_DIRECTORY.getLocalName());
+            streamWriter.writeEmptyElement(Element.LARGE_MESSAGES_DIRECTORY.getLocalName());
             largeMessagesDirectory.writeContent(streamWriter);
         }
         if (pagingDirectory != null) {
-            streamWriter.writeStartElement(Element.PAGING_DIRECTORY.getLocalName());
+            streamWriter.writeEmptyElement(Element.PAGING_DIRECTORY.getLocalName());
             pagingDirectory.writeContent(streamWriter);
         }
         if (journalDirectory != null) {
-            streamWriter.writeStartElement(Element.JOURNAL_DIRECTORY.getLocalName());
+            streamWriter.writeEmptyElement(Element.JOURNAL_DIRECTORY.getLocalName());
             journalDirectory.writeContent(streamWriter);
         }
 

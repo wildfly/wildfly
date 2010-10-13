@@ -62,7 +62,8 @@ public class DirectoryElement extends AbstractModelElement<DirectoryElement> {
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
         streamWriter.writeAttribute(Attribute.PATH.getLocalName(), path);
-        streamWriter.writeEndElement();
+        // writeEmptyElement
+        // streamWriter.writeEndElement();
     }
 
 }

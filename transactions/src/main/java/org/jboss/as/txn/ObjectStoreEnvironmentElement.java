@@ -50,7 +50,8 @@ public class ObjectStoreEnvironmentElement extends AbstractModelElement<ObjectSt
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.PATH.getLocalName(), directory);
         streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
-        streamWriter.writeEndElement();
+        // writeEmptyElement()
+        // streamWriter.writeEndElement();
     }
 
     /**

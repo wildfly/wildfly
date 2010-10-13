@@ -83,9 +83,8 @@ public class QueueElement extends AbstractModelElement<QueueElement> {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
         ElementUtils.writeSimpleElement(Element.ADDRESS, address, streamWriter);
         if(filter != null) {
-            streamWriter.writeStartElement(Element.FILTER.getLocalName());
+            streamWriter.writeEmptyElement(Element.FILTER.getLocalName());
             streamWriter.writeAttribute(Attribute.STRING.getLocalName(), filter);
-            streamWriter.writeEndElement();
         }
         ElementUtils.writeSimpleElement(Element.DURABLE, address, streamWriter);
         streamWriter.writeEndElement();
