@@ -109,7 +109,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="broadcast-groups">
               <xs:complexType>
                   <xs:sequence>
-                      <xs:element maxOccurs="unbounded" minOccurs="0" name="broadcast-group" type="broadcast-groupType" /
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="broadcast-group" type="broadcast-groupType" />
                   </xs:sequence>
               </xs:complexType>
           </xs:element>
@@ -322,7 +322,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="password" type="xs:string" />
           <xs:choice>
              <xs:element maxOccurs="1" minOccurs="1" name="connector-ref" type="connector-refType" />
-             <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref" />
+             <xs:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
                 <xs:complexType>
                    <xs:attribute name="discovery-group-name" type="xs:IDREF" use="required" />
                 </xs:complexType>
@@ -449,8 +449,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="durable" type="xs:boolean" />
         </xs:all>
         <xs:attribute name="name" type="xs:ID" use="required"/>
-       </xs:complexType>
-    </xs:element>
+    </xs:complexType>
     
     <xs:complexType name="backup-connectorType">
        <xs:attribute name="connector-name" type="xs:IDREF" use="required" />

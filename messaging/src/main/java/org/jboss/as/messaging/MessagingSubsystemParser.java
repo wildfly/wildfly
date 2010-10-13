@@ -51,7 +51,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<ExtensionContext.SubsystemConfiguration<MessagingSubsystemElement>> result) throws XMLStreamException {
 
         final List<AbstractSubsystemUpdate<MessagingSubsystemElement, ?>> updates = new ArrayList<AbstractSubsystemUpdate<MessagingSubsystemElement,?>>();
-
         final MessagingSubsystemAdd messagingSubsystemAdd = new MessagingSubsystemAdd();
 
         // Handle elements
