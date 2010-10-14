@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
+import org.jboss.as.domain.controller.ServerGroupMember;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
@@ -99,6 +101,9 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             case ManagementProtocol.IS_ACTIVE_REQUEST: {
                 return new IsActiveOperation();
             }
+            case ManagementProtocol.UPDATE_SERVER_MODEL_REQUEST: {
+                return new UpdateServerModelOperation();
+            }
             default: {
                 return null;
             }
@@ -110,10 +115,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             return ManagementProtocol.UPDATE_FULL_DOMAIN_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.UPDATE_FULL_DOMAIN_RESPONSE;
         }
 
+        @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
@@ -133,10 +140,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             return ManagementProtocol.UPDATE_DOMAIN_MODEL_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.UPDATE_DOMAIN_MODEL_RESPONSE;
         }
 
+        @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
@@ -153,6 +162,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
+        @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
             for(AbstractDomainModelUpdate<?> update : updates) {
@@ -170,10 +180,10 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
-        private <R> ModelUpdateResponse<R> processUpdate(final AbstractDomainModelUpdate<R> update) {
+        private ModelUpdateResponse<List<ServerGroupMember>> processUpdate(final AbstractDomainModelUpdate<?> update) {
             //try {
-                final R result = null; // TODO: Process update
-                return new ModelUpdateResponse<R>(result);
+                final List<ServerGroupMember> result = null; // TODO: Process update
+                return new ModelUpdateResponse<List<ServerGroupMember>>(result);
 //            } catch (UpdateFailedException e) {
 //                return new ModelUpdateResponse<R>(e);
 //            }
@@ -187,10 +197,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             return ManagementProtocol.UPDATE_HOST_MODEL_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.UPDATE_HOST_MODEL_RESPONSE;
         }
 
+        @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
@@ -207,6 +219,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
+        @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
             for(AbstractHostModelUpdate<?> update : updates) {
@@ -224,7 +237,65 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
-        private <R> ModelUpdateResponse<R> processUpdate(final AbstractHostModelUpdate<R> update) {
+        private  ModelUpdateResponse<List<ServerGroupMember>> processUpdate(final AbstractHostModelUpdate<?> update) {
+            //try {
+                final List<ServerGroupMember> result = null; // TODO: Process update
+                return new ModelUpdateResponse<List<ServerGroupMember>>(result);
+//            } catch (UpdateFailedException e) {
+//                return new ModelUpdateResponse<R>(e);
+//            }
+        }
+    }
+
+    private class UpdateServerModelOperation extends ManagementResponse {
+        private List<AbstractServerModelUpdate<?>> updates;
+
+        @Override
+        protected byte getResponseCode() {
+            return ManagementProtocol.UPDATE_SERVER_MODEL_RESPONSE;
+        }
+
+        @Override
+        public byte getRequestCode() {
+            return ManagementProtocol.UPDATE_SERVER_MODEL_REQUEST;
+        }
+
+        @Override
+        protected void readRequest(ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                int count = input.readInt();
+                updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
+                for(int i = 0; i < count; i++) {
+                    expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    final AbstractServerModelUpdate<?> update = unmarshal(input, AbstractServerModelUpdate.class);
+                    updates.add(update);
+                }
+                log.infof("Received server model updates %s", updates);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to read server model updates from request", e);
+            }
+        }
+
+        @Override
+        protected void sendResponse(ByteDataOutput output) throws ManagementException {
+            List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
+            for(AbstractServerModelUpdate<?> update : updates) {
+                responses.add(processUpdate(update));
+            }
+            try {
+                output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                output.writeInt(responses.size());
+                for(ModelUpdateResponse<?> response : responses) {
+                    output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshal(output, response);
+                }
+            } catch (Exception e) {
+                throw new ManagementException("Unable to send domain model update response.", e);
+            }
+        }
+
+        private <R> ModelUpdateResponse<R> processUpdate(final AbstractServerModelUpdate<R> update) {
             //try {
                 final R result = null; // TODO: Process update
                 return new ModelUpdateResponse<R>(result);
@@ -232,6 +303,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
 //                return new ModelUpdateResponse<R>(e);
 //            }
         }
+
     }
 
     private class IsActiveOperation extends ManagementResponse {
@@ -239,6 +311,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             return ManagementProtocol.IS_ACTIVE_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.IS_ACTIVE_RESPONSE;
         }
