@@ -114,10 +114,168 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
         result.setResult(new ExtensionContext.SubsystemConfiguration<ThreadsSubsystemElement>(new ThreadsSubsystemAdd(), updates));
     }
 
-    private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) {
+    private void parseUnboundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) throws XMLStreamException {
+        // Attributes
+        String name = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final int cnt = reader.getAttributeCount();
+        for (int i = 0; i < cnt; i ++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = reader.getAttributeValue(i);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
+        // Elements
+        ScaledCount maxThreads = null;
+        TimeSpec keepaliveTime = null;
+        String threadFactory = null;
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.MAX_THREADS);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case UNKNOWN: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            if (! encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case MAX_THREADS: {
+                    maxThreads = readScaledCountElement(reader);
+                    break;
+                }
+                case KEEPALIVE_TIME: {
+                    keepaliveTime = readTimeSpecElement(reader);
+                    break;
+                }
+                case THREAD_FACTORY: {
+                    threadFactory = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                    break;
+                }
+                case PROPERTIES: {
+                    while (reader.nextTag() != END_ELEMENT) {
+                        while (reader.nextTag() != END_ELEMENT) {}
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (! requiredElem.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        final UnboundedQueueThreadPoolAdd add = new UnboundedQueueThreadPoolAdd(name, maxThreads);
+        add.setKeepaliveTime(keepaliveTime);
+        add.setThreadFactory(threadFactory);
+        updates.add(add);
     }
 
-    private void parseQueuelessExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) {
+    private void parseQueuelessExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) throws XMLStreamException {
+        // Attributes
+        String name = null;
+        boolean blocking = false;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final int cnt = reader.getAttributeCount();
+        for (int i = 0; i < cnt; i ++) {
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = reader.getAttributeValue(i);
+                    break;
+                }
+                case BLOCKING: {
+                    blocking = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        if (! names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
+        // Elements
+        ScaledCount maxThreads = null;
+        TimeSpec keepaliveTime = null;
+        String threadFactory = null;
+        String handoffExecutor = null;
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.MAX_THREADS);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case UNKNOWN: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            if (! encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case MAX_THREADS: {
+                    maxThreads = readScaledCountElement(reader);
+                    break;
+                }
+                case KEEPALIVE_TIME: {
+                    keepaliveTime = readTimeSpecElement(reader);
+                    break;
+                }
+                case THREAD_FACTORY: {
+                    threadFactory = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                    break;
+                }
+                case HANDOFF_EXECUTOR: {
+                    handoffExecutor = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                    break;
+                }
+                case PROPERTIES: {
+                    while (reader.nextTag() != END_ELEMENT) {
+                        while (reader.nextTag() != END_ELEMENT) {}
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (! requiredElem.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        final QueuelessThreadPoolAdd add = new QueuelessThreadPoolAdd(name, maxThreads);
+        add.setKeepaliveTime(keepaliveTime);
+        add.setThreadFactory(threadFactory);
+        add.setBlocking(blocking);
+        add.setHandoffExecutor(handoffExecutor);
+        updates.add(add);
     }
 
     private void parseThreadFactoryElement(final XMLExtendedStreamReader reader, final List<? super ThreadFactoryAdd> updates, final Set<String> names) throws XMLStreamException {
@@ -233,13 +391,13 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
 
     private void parseBoundedQueueExecutorElement(final XMLExtendedStreamReader reader, final List<? super AbstractThreadsSubsystemUpdate<?>> updates, final Set<String> names) throws XMLStreamException {
         // Attributes
+        // Attributes
         String name = null;
         boolean allowCoreTimeout = false;
         boolean blocking = false;
-
-        final int count = reader.getAttributeCount();
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        for (int i = 0; i < count; i ++) {
+        final int cnt = reader.getAttributeCount();
+        for (int i = 0; i < cnt; i ++) {
             if (reader.getAttributeNamespace(i) != null) {
                 throw unexpectedAttribute(reader, i);
             }
@@ -266,12 +424,75 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
         if (! required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-
         if (! names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-
-
+        // Elements
+        ScaledCount coreThreads = null;
+        ScaledCount queueLength = null;
+        ScaledCount maxThreads = null;
+        TimeSpec keepaliveTime = null;
+        String threadFactory = null;
+        String handoffExecutor = null;
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.MAX_THREADS);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case UNKNOWN: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            final Element element = Element.forName(reader.getLocalName());
+            if (! encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case CORE_THREADS: {
+                    coreThreads = readScaledCountElement(reader);
+                    break;
+                }
+                case QUEUE_LENGTH: {
+                    queueLength = readScaledCountElement(reader);
+                    break;
+                }
+                case MAX_THREADS: {
+                    maxThreads = readScaledCountElement(reader);
+                    break;
+                }
+                case KEEPALIVE_TIME: {
+                    keepaliveTime = readTimeSpecElement(reader);
+                    break;
+                }
+                case THREAD_FACTORY: {
+                    threadFactory = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                    break;
+                }
+                case HANDOFF_EXECUTOR: {
+                    handoffExecutor = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
+                    break;
+                }
+                case PROPERTIES: {
+                    while (reader.nextTag() != END_ELEMENT) {
+                        while (reader.nextTag() != END_ELEMENT) {}
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (! requiredElem.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        final BoundedQueueThreadPoolAdd add = new BoundedQueueThreadPoolAdd(name, maxThreads, queueLength);
+        add.setBlocking(blocking);
+        add.setAllowCoreTimeout(allowCoreTimeout);
+        add.setCoreThreads(coreThreads);
+        add.setHandoffExecutor(handoffExecutor);
+        add.setKeepaliveTime(keepaliveTime);
+        add.setThreadFactory(threadFactory);
+        updates.add(add);
     }
 
     protected static TimeSpec readTimeSpecElement(final XMLExtendedStreamReader reader) throws XMLStreamException {

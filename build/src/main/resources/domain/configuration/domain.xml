@@ -43,6 +43,8 @@
                     <max-threads count="10" per-cpu="20"/>
                     <keepalive-time time="10" unit="seconds"/>
                 </scheduled-thread-pool>
+                <bounded-queue-thread-pool name="jca-short-running" blocking="true" />
+                <bounded-queue-thread-pool name="jca-long-running" blocking="true" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:transactions:1.0">
@@ -50,9 +52,9 @@
                 <core-environment socket-binding="txn-socket-process-id"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:connector:1.0">
-	            <archive-validation enabled="true" />
-	            <bean-validation enabled="true" />
-        	</subsystem>
+                <archive-validation enabled="true"/>
+                <bean-validation enabled="true"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
