@@ -55,22 +55,27 @@ final class DataSourcesSubsystemElement extends AbstractSubsystemElement<DataSou
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         // TODO
+        streamWriter.writeEndElement();
     }
 
+    @Override
     protected void getUpdates(final List<? super AbstractSubsystemUpdate<DataSourcesSubsystemElement, ?>> objects) {
         // empty
     }
 
+    @Override
     protected boolean isEmpty() {
         return true;
     }
 
+    @Override
     protected DataSourcesAdd getAdd() {
         final DataSourcesAdd add = new DataSourcesAdd();
         add.setDatasources(datasources);
         return add;
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         // requires restart

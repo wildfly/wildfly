@@ -56,22 +56,27 @@ final class ResourceAdaptersSubsystemElement extends AbstractSubsystemElement<Re
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         // TODO
+        streamWriter.writeEndElement();
     }
 
+    @Override
     protected void getUpdates(final List<? super AbstractSubsystemUpdate<ResourceAdaptersSubsystemElement, ?>> objects) {
         // empty
     }
 
+    @Override
     protected boolean isEmpty() {
         return true;
     }
 
+    @Override
     protected ResourceAdaptersAdd getAdd() {
         final ResourceAdaptersAdd add = new ResourceAdaptersAdd();
         add.setResourceAdapters(resourceAdapters);
         return add;
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         // requires restart

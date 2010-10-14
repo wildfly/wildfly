@@ -57,25 +57,28 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
-        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(beanValidation));
-
         streamWriter.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
         streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(archiveValidation));
         streamWriter.writeAttribute(Attribute.FAIL_ON_WARN.getLocalName(), Boolean.toString(archiveValidationFailOnWarn));
         streamWriter.writeAttribute(Attribute.FAIL_ON_ERROR.getLocalName(), Boolean.toString(archiveValidationFailOnError));
 
+        streamWriter.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
+        streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(beanValidation));
+
         streamWriter.writeEndElement();
     }
 
+    @Override
     protected void getUpdates(final List<? super AbstractSubsystemUpdate<ConnectorSubsystemElement, ?>> objects) {
         // empty
     }
 
+    @Override
     protected boolean isEmpty() {
         return true;
     }
 
+    @Override
     protected ConnectorSubsystemAdd getAdd() {
         final ConnectorSubsystemAdd add = new ConnectorSubsystemAdd();
         add.setArchiveValidation(archiveValidation);
@@ -85,6 +88,7 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
         return add;
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         // requires restart
