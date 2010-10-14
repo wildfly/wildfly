@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.mdr;
 
+import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
 import org.jboss.msc.service.Service;

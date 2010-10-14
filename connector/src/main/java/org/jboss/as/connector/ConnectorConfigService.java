@@ -52,7 +52,7 @@ final class ConnectorConfigService implements Service<ConnectorSubsystemConfigur
     @Override
     public void start(StartContext context) throws StartException {
         log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
-        log.infof("config=%s", value);
+        log.tracef("config=%s", value);
     }
 
     @Override
