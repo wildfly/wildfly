@@ -63,8 +63,10 @@
           <xs:element maxOccurs="1" minOccurs="0" name="management-address" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="management-notification-address" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="cluster-user" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xs:string" />    
+          <xs:element maxOccurs="1" minOccurs="0" name="cluster-password" type="xs:string" />
+          <!-- no logging configuration for AS needed     
           <xs:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xs:string" />
+           -->
           <xs:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="jmx-domain" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="message-counter-enabled" type="xs:boolean" />

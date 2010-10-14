@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
 
 import javax.xml.namespace.QName;
 import java.util.HashMap;
@@ -36,12 +36,12 @@ enum Namespace {
    // must be first
    UNKNOWN(null),
 
-   MESSAGING_1_0("urn:jboss:domain:messaging:1.0");
+   JMS_1_0("urn:jboss:domain:messaging:jms:1.0");
 
    /**
     * The current namespace version.
     */
-   public static final Namespace CURRENT = MESSAGING_1_0;
+   public static final Namespace CURRENT = JMS_1_0;
 
    private final String name;
 

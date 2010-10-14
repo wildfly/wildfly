@@ -18,7 +18,6 @@ import org.hornetq.core.server.JournalType;
 import org.jboss.as.messaging.AbstractTransportElement;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.messaging.MessagingSubsystemParser;
-import org.jboss.as.messaging.Namespace;
 import org.jboss.as.messaging.SecuritySettingsElement;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ModelXmlParsers;
@@ -33,6 +32,8 @@ import org.junit.Test;
  * @author scott.stark@jboss.org
  */
 public class ConfigParsingUnitTestCase {
+
+    private final String namespace = "urn:jboss:domain:messaging:1.0";
 
     /**
     * Test the stax parsing of the standalone-with-messaging.xml configuration
@@ -52,7 +53,7 @@ public class ConfigParsingUnitTestCase {
          for(final AbstractServerModelUpdate<?> update : updates) {
              model.update(update);
          }
-         MessagingSubsystemElement subsystem = (MessagingSubsystemElement) model.getProfile().getSubsystem(Namespace.MESSAGING_1_0.getUriString());
+         MessagingSubsystemElement subsystem = (MessagingSubsystemElement) model.getProfile().getSubsystem(namespace);
          Assert.assertNotNull(subsystem);
 
          Assert.assertFalse(subsystem.isPersistenceEnabled());
@@ -123,7 +124,7 @@ public class ConfigParsingUnitTestCase {
    protected XMLMapper createXMLMapper() throws Exception {
       XMLMapper mapper = XMLMapper.Factory.create();
       mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
-      mapper.registerRootElement(Namespace.MESSAGING_1_0.getQName(), MessagingSubsystemParser.getInstance());
+      mapper.registerRootElement(new QName(namespace), MessagingSubsystemParser.getInstance());
       return mapper;
    }
 }

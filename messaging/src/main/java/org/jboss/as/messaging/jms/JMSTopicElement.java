@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
+
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -28,69 +30,48 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A core queue configuration.
+ * The topic configuration element.
  *
  * @author Emanuel Muckenhuber
  */
-public class QueueElement extends AbstractModelElement<QueueElement> {
+public class JMSTopicElement extends AbstractModelElement<JMSTopicElement> {
 
-    private static final long serialVersionUID = 8380087798287223743L;
-
+    private static final long serialVersionUID = 7877459701976545141L;
     private final String name;
-    private String address;
-    private String filter;
-    private Boolean durable;
+    private Set<String> bindings;
 
-    public QueueElement(String name) {
+    public JMSTopicElement(final String name) {
         if(name == null) {
             throw new IllegalArgumentException("null name");
         }
         this.name = name;
     }
 
+    public Set<String> getBindings() {
+        return bindings;
+    }
+
+    public void setBindings(Set<String> bindings) {
+        this.bindings = bindings;
+    }
+
     public String getName() {
         return name;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getFilter() {
-        return filter;
-    }
-
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-
-    public Boolean isDurable() {
-        return durable;
-    }
-
-    public void setDurable(Boolean durable) {
-        this.durable = durable;
-    }
-
     /** {@inheritDoc} */
-    protected Class<QueueElement> getElementClass() {
-        return QueueElement.class;
+    protected Class<JMSTopicElement> getElementClass() {
+        return JMSTopicElement.class;
     }
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        ElementUtils.writeSimpleElement(Element.ADDRESS, address, streamWriter);
-        if(filter != null) {
-            streamWriter.writeEmptyElement(Element.FILTER.getLocalName());
-            streamWriter.writeAttribute(Attribute.STRING.getLocalName(), filter);
-        }
-        if(durable != null) {
-            ElementUtils.writeSimpleElement(Element.DURABLE, address, streamWriter);
+        if(bindings != null && bindings.size() > 0) {
+            for(final String binding : bindings) {
+                streamWriter.writeEmptyElement(Element.ENTRY.getLocalName());
+                streamWriter.writeAttribute(Attribute.NAME.getLocalName(), binding);
+            }
         }
         streamWriter.writeEndElement();
     }

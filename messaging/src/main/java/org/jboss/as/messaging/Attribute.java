@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  *
  */
-public enum Attribute {
+enum Attribute {
    UNKNOWN(null),
    /* Messaging 1.0 attributes, in alpha order */
    CONSUME_NAME("consume"),

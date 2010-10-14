@@ -22,31 +22,22 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.messaging.jms.JMSExtension;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 
 /**
- * The implementation of the Messaging extension.
- *
- * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public abstract class AbstractMessagingSubsystemUpdate<R> extends AbstractSubsystemUpdate<MessagingSubsystemElement, R> {
 
-    private final JMSExtension jmsExtension = new JMSExtension();
+    private static final long serialVersionUID = -6691538002099236503L;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
-
-        // initialize the jms extension
-        jmsExtension.initialize(context);
+    protected AbstractMessagingSubsystemUpdate() {
+        super(Namespace.CURRENT.getUriString());
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        jmsExtension.activate(context);
+    public Class<MessagingSubsystemElement> getModelElementType() {
+        return MessagingSubsystemElement.class;
     }
 
 }

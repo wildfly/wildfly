@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
+
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -28,47 +30,43 @@ import org.jboss.as.model.AbstractModelElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A core queue configuration.
+ * The queue configuration element.
  *
  * @author Emanuel Muckenhuber
  */
-public class QueueElement extends AbstractModelElement<QueueElement> {
+public class JMSQueueElement extends AbstractModelElement<JMSQueueElement> {
 
-    private static final long serialVersionUID = 8380087798287223743L;
+    private static final long serialVersionUID = 905901224008931245L;
 
     private final String name;
-    private String address;
-    private String filter;
+    private Set<String> bindings;
+    private String selector;
     private Boolean durable;
 
-    public QueueElement(String name) {
+    public JMSQueueElement(String name) {
         if(name == null) {
             throw new IllegalArgumentException("null name");
         }
         this.name = name;
     }
 
-    public String getName() {
-        return name;
+    public Set<String> getBindings() {
+        return bindings;
     }
 
-    public String getAddress() {
-        return address;
+    public void setBindings(Set<String> bindings) {
+        this.bindings = bindings;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public String getSelector() {
+        return selector;
     }
 
-    public String getFilter() {
-        return filter;
+    public void setSelector(String selector) {
+        this.selector = selector;
     }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-
-    public Boolean isDurable() {
+    public Boolean getDurable() {
         return durable;
     }
 
@@ -76,21 +74,32 @@ public class QueueElement extends AbstractModelElement<QueueElement> {
         this.durable = durable;
     }
 
+    public String getName() {
+        return name;
+    }
+
     /** {@inheritDoc} */
-    protected Class<QueueElement> getElementClass() {
-        return QueueElement.class;
+    protected Class<JMSQueueElement> getElementClass() {
+        return JMSQueueElement.class;
     }
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
-        ElementUtils.writeSimpleElement(Element.ADDRESS, address, streamWriter);
-        if(filter != null) {
-            streamWriter.writeEmptyElement(Element.FILTER.getLocalName());
-            streamWriter.writeAttribute(Attribute.STRING.getLocalName(), filter);
+        if(bindings != null && bindings.size() > 0) {
+            for(final String binding : bindings) {
+                streamWriter.writeEmptyElement(Element.ENTRY.getLocalName());
+                streamWriter.writeAttribute(Attribute.NAME.getLocalName(), binding);
+            }
+        }
+        if(selector != null) {
+            streamWriter.writeEmptyElement(Element.SELECTOR.getLocalName());
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), selector);
         }
         if(durable != null) {
-            ElementUtils.writeSimpleElement(Element.DURABLE, address, streamWriter);
+            streamWriter.writeStartElement(Element.DURABLE.getLocalName());
+            streamWriter.writeCharacters(durable.toString());
+            streamWriter.writeEndElement();
         }
         streamWriter.writeEndElement();
     }

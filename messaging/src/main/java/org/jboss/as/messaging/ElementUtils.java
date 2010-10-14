@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
-public class ElementUtils {
+class ElementUtils {
     static Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     enum StaxEvent {

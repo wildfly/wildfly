@@ -29,7 +29,7 @@ import java.util.Map;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author scott.stark@jboss.org
  */
-public enum Element {
+enum Element {
    // must be first
    UNKNOWN(null),
    // Messaging 1.0 elements in alpha order

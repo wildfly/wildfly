@@ -72,8 +72,17 @@ public class InVMAcceptorSpec extends AbstractTransportElement<InVMAcceptorSpec>
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if(getName() != null) streamWriter.writeAttribute(Attribute.NAME.getLocalName(), getName());
         streamWriter.writeAttribute(Attribute.SERVER_ID.getLocalName(), "" + serverId);
-        super.writeContent(streamWriter);
+        final Map<String, Object> params = getParams();
+        if (params != null && ! params.isEmpty()) {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                streamWriter.writeEmptyElement(Element.PARAM.getLocalName());
+                streamWriter.writeAttribute(Attribute.KEY.getLocalName(), entry.getKey());
+                streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().toString());
+            }
+        }
+        streamWriter.writeEndElement();
     }
 
 }

@@ -1162,11 +1162,6 @@
 
             <dependency>
               <groupId>org.hornetq</groupId>
-              <artifactId>hornetq-resources</artifactId>
-                <version>${version.org.hornetq.hornetq-jms}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.hornetq</groupId>
               <artifactId>hornetq-core</artifactId>
                 <version>${version.org.hornetq.hornetq-jms}</version>
             </dependency>

@@ -20,33 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.messaging.jms.JMSExtension;
-import org.jboss.msc.service.ServiceActivatorContext;
+import java.io.Serializable;
 
 /**
- * The implementation of the Messaging extension.
+ * A connection factory connector reference.
  *
- * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public class ConnectionFactoryConnectorRef implements Serializable {
 
-    private final JMSExtension jmsExtension = new JMSExtension();
+    private static final long serialVersionUID = -5801094490286456492L;
+    private String connectorName;
+    private String backupName;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
-
-        // initialize the jms extension
-        jmsExtension.initialize(context);
+    public String getConnectorName() {
+        return connectorName;
     }
 
-    /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        jmsExtension.activate(context);
+    public void setConnectorName(String connectorName) {
+        this.connectorName = connectorName;
+    }
+
+    public String getBackupName() {
+        return backupName;
+    }
+
+    public void setBackupName(String backupName) {
+        this.backupName = backupName;
     }
 
 }

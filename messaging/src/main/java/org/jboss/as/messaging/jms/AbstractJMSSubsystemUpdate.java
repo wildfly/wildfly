@@ -20,33 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
 
-import org.jboss.as.Extension;
-import org.jboss.as.ExtensionContext;
-import org.jboss.as.messaging.jms.JMSExtension;
-import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.as.model.AbstractSubsystemUpdate;
 
 /**
- * The implementation of the Messaging extension.
- *
- * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
+public abstract class AbstractJMSSubsystemUpdate<R> extends AbstractSubsystemUpdate<JMSSubsystemElement, R> {
 
-    private final JMSExtension jmsExtension = new JMSExtension();
+    private static final long serialVersionUID = 5323201132179293375L;
 
-    /** {@inheritDoc} */
-    public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
+    protected AbstractJMSSubsystemUpdate() {
+        super(Namespace.CURRENT.getUriString());
+    }
 
-        // initialize the jms extension
-        jmsExtension.initialize(context);
+    protected AbstractJMSSubsystemUpdate(boolean requiresRestart) {
+        super(Namespace.CURRENT.getUriString(), requiresRestart);
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        jmsExtension.activate(context);
+    public Class<JMSSubsystemElement> getModelElementType() {
+        return JMSSubsystemElement.class;
     }
 
 }

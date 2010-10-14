@@ -1,4 +1,4 @@
-package org.jboss.as.messaging.hornetq;
+package org.jboss.as.messaging;
 
 /*
  * JBoss, Home of Professional Open Source

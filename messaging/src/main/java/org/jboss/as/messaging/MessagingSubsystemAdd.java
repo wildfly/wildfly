@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MBeanServer;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -36,7 +38,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.jboss.as.messaging.hornetq.HornetQService;
+import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -147,7 +149,11 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         hqservice.setConfiguration(hqConfig);
 
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice);
+        final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
+                .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
+
+        // FIXME move the JMSService into the jms subsystem
+        JMSService.addService(batchBuilder);
 
         // Create path services
         createRelativePathService("bindings", bindingsDirectory, batchBuilder);

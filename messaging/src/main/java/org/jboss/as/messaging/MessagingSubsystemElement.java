@@ -30,6 +30,8 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
     /** The service name "jboss.messaging". */
     public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
+    /** The core queue name base. */
+    public static final ServiceName CORE_QUEUE_BASE = JBOSS_MESSAGING.append("queue");
 
     private DirectoryElement bindingsDirectory;
     private DirectoryElement journalDirectory;
@@ -328,6 +330,16 @@ public class MessagingSubsystemElement extends AbstractSubsystemElement<Messagin
 
     boolean removeSecuritySetting(final String match) {
         return securitySettings.remove(match) != null;
+    }
+
+    public QueueElement getQueue(final String name) {
+        return queues.get(name);
+    }
+
+    QueueElement addQueue(final String name) {
+        final QueueElement queue = new QueueElement(name);
+        if(addQueue(queue)) return queue;
+        return null;
     }
 
     boolean addQueue(final QueueElement queue) {

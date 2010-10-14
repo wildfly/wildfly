@@ -101,15 +101,12 @@
                 </modules>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
-                <persistence-enabled>false</persistence-enabled>
-                <journal-type>NIO</journal-type>
-                <bindings-directory relative-to="jboss.server.data.dir" path="hornetq/bindings" />
-                <large-messages-directory relative-to="jboss.server.data.dir" path="hornetq/largemessages" />
-                <paging-directory relative-to="jboss.server.data.dir" path="hornetq/paging" />
-                <journal-directory relative-to="jboss.server.data.dir" path="hornetq/journal" />
-                <journal-min-files>2</journal-min-files>
                 <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-                <journal-file-size>102400</journal-file-size>         
+                <journal-file-size>102400</journal-file-size>  
+                <journal-min-files>2</journal-min-files>
+                <journal-type>NIO</journal-type>
+                <!-- disable messaging persistence -->
+                <persistence-enabled>false</persistence-enabled>
     
                 <connectors>
                    <in-vm-connector name="in-vm" server-id="0" />
@@ -127,16 +124,16 @@
                       <param key="direct-deliver" value="false"/>
                    </netty-acceptor>
                 </acceptors>
-    
-                <security-settings>
-                   <security-setting match="#">
-                      <permission type="createNonDurableQueue" roles="guest"/>
-                      <permission type="deleteNonDurableQueue" roles="guest"/>
-                      <permission type="consume" roles="guest"/>
-                      <permission type="send" roles="guest"/>
+
+                <security-settings>   
+                   <security-setting match="#">   
+                       <permission type="createNonDurableQueue" roles="guest"/>   
+                       <permission type="deleteNonDurableQueue" roles="guest"/>
+                        <permission type="consume" roles="guest"/>   
+                        <permission type="send" roles="guest"/>   
                    </security-setting>
                 </security-settings>
-    
+
                 <address-settings>
                    <!--default for catch all-->
                    <address-setting match="#">
@@ -148,6 +145,19 @@
                       <address-full-policy>BLOCK</address-full-policy>
                    </address-setting>
                 </address-settings>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
+                <connection-factory name="testConnectionFactory">
+                   <entries>
+                      <entry name="ConnectionFactory" />
+                   </entries>
+                </connection-factory>
+                <queue name="testQueue">
+                   <entry name="queue/test" />
+                </queue>
+                <topic name="testTopic">
+                   <entry name="topic/test" />
+                </topic>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>

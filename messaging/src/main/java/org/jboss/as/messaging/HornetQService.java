@@ -1,8 +1,4 @@
-package org.jboss.as.messaging.hornetq;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+package org.jboss.as.messaging;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -18,19 +14,29 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.management.MBeanServer;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
  *
  * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public class HornetQService implements Service<HornetQServer> {
+class HornetQService implements Service<HornetQServer> {
     private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     /** */
     private static final String HOST = "host";
     private static final String PORT = "port";
+    private static final String LOGGING_FACTORY = "org.jboss.as.messaging.HornetQLoggerFactory";
+
     /**
      * The name of the SocketBinding reference to use for HOST/PORT
      * configuration
@@ -40,16 +46,21 @@ public class HornetQService implements Service<HornetQServer> {
     private Configuration configuration;
 
     private HornetQServer server;
-    private final Map<String, String> paths = new HashMap<String, String>();
-    private final Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
+    private Map<String, String> paths = new HashMap<String, String>();
+    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
+    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
 
-    public Injector<String> getPathInjector(String name) {
+    Injector<String> getPathInjector(String name) {
         return new PathInjector(name);
     }
 
-    public Injector<SocketBinding> getSocketBindingInjector(String name) {
+    Injector<SocketBinding> getSocketBindingInjector(String name) {
         SocketBindingInjector injector = new SocketBindingInjector(name);
         return injector;
+    }
+
+    InjectedValue<MBeanServer> getMBeanServer() {
+        return mbeanServer;
     }
 
     /**
@@ -68,11 +79,19 @@ public class HornetQService implements Service<HornetQServer> {
             }
         }
 
+        // Disable file deployment
+        configuration.setFileDeploymentEnabled(false);
+        // Setup Logging
+        configuration.setLogDelegateFactoryClassName(LOGGING_FACTORY);
         // Setup paths
         configuration.setBindingsDirectory(paths.get("bindings"));
         configuration.setLargeMessagesDirectory(paths.get("largemessages"));
         configuration.setJournalDirectory(paths.get("journal"));
         configuration.setPagingDirectory(paths.get("paging"));
+
+        // FIXME securityEnabled be true? (true is the default) and we
+        // should use the constructor that takes a SecurityManager
+        configuration.setSecurityEnabled(false);
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -111,17 +130,14 @@ public class HornetQService implements Service<HornetQServer> {
             }
 
             // Now start the server
-            // FIXME securityEnabled be true? (true is the default) and we
-            // should use the constructor that takes a SecurityManager
-            configuration.setSecurityEnabled(false);
+            server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), null);
 
-            server = new HornetQServerImpl(configuration);
+            // FIXME started by the JMSService
             // HornetQ expects the TCCL to be set to something that can find the
             // log factory class.
-            ClassLoader loader = getClass().getClassLoader();
-            SecurityActions.setContextClassLoader(loader);
-            log.info("Starting the HornetQServer...");
-            server.start();
+            // ClassLoader loader = getClass().getClassLoader();
+            // SecurityActions.setContextClassLoader(loader);
+            // server.start();
         } catch (Exception e) {
             throw new StartException("Failed to start service", e);
         } finally {
@@ -135,7 +151,8 @@ public class HornetQService implements Service<HornetQServer> {
     public synchronized void stop(final StopContext context) {
         try {
             if (server != null) {
-                server.stop();
+                // FIXME stopped by the JMSService
+                // server.stop();
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to shutdown HornetQ server", e);
@@ -146,8 +163,10 @@ public class HornetQService implements Service<HornetQServer> {
      * {@inheritDoc}
      */
     public synchronized HornetQServer getValue() throws IllegalStateException {
-        if (server == null)
+        final HornetQServer server = this.server;
+        if (server == null) {
             throw new IllegalStateException();
+        }
         return server;
     }
 

@@ -20,33 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.jms;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
-import org.jboss.as.messaging.jms.JMSExtension;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
- * The implementation of the Messaging extension.
+ * The JMS extension.
  *
- * @author scott.stark@jboss.org
+ * @author Emanuel Muckenhuber
  */
-public final class MessagingExtension implements Extension {
-
-    private final JMSExtension jmsExtension = new JMSExtension();
+public final class JMSExtension implements Extension {
 
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
-        context.registerSubsystem(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
-
-        // initialize the jms extension
-        jmsExtension.initialize(context);
+        context.registerSubsystem(Namespace.CURRENT.getUriString(), JMSSubsystemParser.getInstance());
     }
 
     /** {@inheritDoc} */
-    public void activate(final ServiceActivatorContext context) {
-        jmsExtension.activate(context);
+    public void activate(ServiceActivatorContext context) {
+        //
     }
 
 }
