@@ -33,7 +33,6 @@ import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.QueueExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -41,12 +40,12 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author John E. Bailey
  */
-public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
+public class BoundedQueueThreadPoolService implements Service<Executor> {
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
     private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<Executor>();
 
     private QueueExecutor executor;
-    private ExecutorService value;
+    private Executor value;
 
     private int coreThreads;
     private int maxThreads;
@@ -67,7 +66,7 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
     public synchronized void start(final StartContext context) throws StartException {
         executor = new QueueExecutor(coreThreads, maxThreads, keepAlive.getDuration(), keepAlive.getUnit(), queueLength, threadFactoryValue.getValue(), blocking, handoffExecutorValue.getOptionalValue());
         executor.setAllowCoreThreadTimeout(allowCoreTimeout);
-        value = JBossExecutors.protectedExecutorService(executor);
+        value = JBossExecutors.protectedBlockingExecutor(executor);
     }
 
     public synchronized void stop(final StopContext context) {
@@ -86,8 +85,8 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
         value = null;
     }
 
-    public synchronized ExecutorService getValue() throws IllegalStateException {
-        final ExecutorService value = this.value;
+    public synchronized Executor getValue() throws IllegalStateException {
+        final Executor value = this.value;
         if (value == null) {
             throw new IllegalStateException();
         }

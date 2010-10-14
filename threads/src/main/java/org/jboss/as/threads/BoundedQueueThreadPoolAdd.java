@@ -22,7 +22,7 @@
 
 package org.jboss.as.threads;
 
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.model.ChildElement;
 import org.jboss.as.model.UpdateContext;
@@ -64,7 +64,7 @@ public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
         final String name = getName();
         final ServiceName serviceName = ThreadsServices.executorName(name);
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(coreThreads, maxThreads, queueLength, blocking, getKeepaliveTime(), allowCoreTimeout);
-        final BatchServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
+        final BatchServiceBuilder<Executor> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
     }
 
