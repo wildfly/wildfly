@@ -24,6 +24,7 @@ package org.jboss.as.connector;
 
 import org.jboss.jca.core.naming.SimpleJndiStrategy;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -67,7 +68,7 @@ public final class ResourceAdapterDeploymentService implements Service<CommonDep
     public void stop(StopContext context) {
         if (value != null) {
             try {
-                mdr.getValue().unregisterResourceAdapter(value.getURL());
+                mdr.getValue().unregisterResourceAdapter(value.getURL().toExternalForm());
             } catch (Throwable t) {
                 log.warn("Exception during unregistering deployment", t);
             }
@@ -77,10 +78,14 @@ public final class ResourceAdapterDeploymentService implements Service<CommonDep
 
         if (mdr != null && mdr.getValue() != null && value.getCfs() != null && value.getJndiNames() != null) {
             for (int i = 0; i < value.getCfs().length; i++) {
-                String cf = value.getCfs()[i].getClass().getName();
-                String jndi = value.getJndiNames()[i];
+                try {
+                    String cf = value.getCfs()[i].getClass().getName();
+                    String jndi = value.getJndiNames()[i];
 
-                mdr.getValue().unregisterJndiMapping(value.getURL(), cf, jndi);
+                    mdr.getValue().unregisterJndiMapping(value.getURL().toExternalForm(), cf, jndi);
+                } catch (NotFoundException nfe) {
+                    log.warn("Exception during JNDI unbinding", nfe);
+                }
             }
         }
 

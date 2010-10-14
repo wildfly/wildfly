@@ -55,7 +55,7 @@ import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
 import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
 import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
-import org.jboss.jca.core.naming.SimpleJndiStrategy;
+import org.jboss.jca.core.naming.ExplicitJndiStrategy;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
@@ -73,6 +73,7 @@ import org.jboss.msc.value.Value;
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
@@ -99,9 +100,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = context
                 .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
-
-        if (connectorXmlDescriptor == null)
-            return;
 
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
@@ -179,27 +177,20 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd);
 
             return dep;
-
         }
 
         @Override
         public String[] bindConnectionFactory(URL url, String deployment, Object cf) throws Throwable {
-            JndiStrategy js = new SimpleJndiStrategy();
-
-            String[] result = js.bindConnectionFactories(deployment, new Object[] { cf });
-
-            mdr.getValue().registerJndiMapping(url, cf.getClass().getName(), result[0]);
-
-            return result;
+            throw new IllegalStateException("Non-explicit JNDI bindings not supported");
         }
 
         @Override
         public String[] bindConnectionFactory(URL url, String deployment, Object cf, String jndi) throws Throwable {
-            JndiStrategy js = new SimpleJndiStrategy();
+            JndiStrategy js = new ExplicitJndiStrategy();
 
             String[] result = js.bindConnectionFactories(deployment, new Object[] { cf }, new String[] { jndi });
 
-            mdr.getValue().registerJndiMapping(url, cf.getClass().getName(), jndi);
+            mdr.getValue().registerJndiMapping(url.toExternalForm(), cf.getClass().getName(), jndi);
 
             return result;
         }
@@ -231,13 +222,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
                 if (ijmd.getConnectionDefinitions() != null) {
                     for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
-                        String clz = def.getClassName();
-
-                        if (clz == null && raClasses.size() == 1)
-                            return true;
-
-                        if (clz != null)
-                            ijClasses.add(clz);
+                        ijClasses.add(def.getClassName());
                     }
                 }
 
@@ -298,11 +283,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         @Override
-        protected void registerResourceAdapterToMDR(URL url, File file, Connector connecor, IronJacamar ij)
+        protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, IronJacamar ij)
                 throws AlreadyExistsException {
-            mdr.getValue().registerResourceAdapter(url, file, connecor, ij);
-
+            mdr.getValue().registerResourceAdapter(url.toExternalForm(), file, connector, ij);
         }
-
     }
 }

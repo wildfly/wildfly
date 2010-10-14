@@ -41,6 +41,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
@@ -59,6 +60,7 @@ public class RaDeploymentActivator implements ServiceActivator {
 
     public static final long RAR_DEPLOYMENT_CHAIN_PRIORITY = 1000000L;
     public static final ServiceName RAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("rar");
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
 
     /**
      * Activate the services required for service deployments.

@@ -36,6 +36,7 @@ import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.logging.Logger;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -49,6 +50,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  */
 public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
 
     private final Value<MetadataRepository> mdr;
 
