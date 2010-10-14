@@ -22,15 +22,18 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -57,6 +60,7 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
     @BeforeClass
     public static void setupChain() {
         final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
@@ -66,8 +70,9 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
         DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
             new DeploymentChainProvider.Selector() {
-                public boolean supports(VirtualFile root) {
-                    return "serviceXmlDeployment.jar".equals(root.getName());
+                public boolean supports(DeploymentUnitContext deploymentUnitContext) {
+                    VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
+                    return "serviceXmlDeployment.jar".equals(virtualFile.getName());
                 }
             }
         );

@@ -20,29 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.deployers;
+package org.jboss.as.deployment.attachment;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import java.util.jar.Manifest;
+
+import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.vfs.VirtualFile;
 
 /**
- * A RarDeploymentChainSelector. Deployment chain selector which determines
- * whether the rar deployment chain should handle this deployment.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * Utility to help attach and retrieve a Manifest from a deployment context.
+ *
+ * @author Thomas.Diesler@jboss.com
+ * @since 20-Sep-2010
  */
-public class RaDeploymentChainSelector implements DeploymentChainProvider.Selector {
-    private static final String ARCHIVE_EXTENSION = ".rar";
+public class ManifestAttachment {
+    public static final AttachmentKey<Manifest> KEY = AttachmentKey.create(Manifest.class);
 
-    /**
-     * Determine where this deployment is supported by rar deployer chain.
-     * @param virtualFile The deployment file
-     * @return true if this is s service deployment, and false if not
-     */
-    @Override
-    public boolean supports(final DeploymentUnitContext deploymentUnitContext) {
-        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
-        return virtualFile.getName().toLowerCase().endsWith(ARCHIVE_EXTENSION);
+    public static void attachManifest(final DeploymentUnitContext context, final Manifest manifest) {
+        context.putAttachment(KEY, manifest);
+    }
+
+    public static Manifest getManifestAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

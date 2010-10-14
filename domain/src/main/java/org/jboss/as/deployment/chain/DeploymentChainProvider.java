@@ -22,6 +22,11 @@
 
 package org.jboss.as.deployment.chain;
 
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -30,11 +35,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
-import org.jboss.vfs.VirtualFile;
-
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides deployment chain for a virtual file root.
@@ -68,12 +68,12 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
     /**
      * Determine which deployment chain to use for this deployment virtual file root.
      *
-     * @param root The root to check
+     * @param deploymentUnitContext The deployment context to check
      * @return The DeploymentChain responsible for this deployment root
      */
-    public DeploymentChain determineDeploymentChain(final VirtualFile root) {
+    public DeploymentChain determineDeploymentChain(final DeploymentUnitContext deploymentUnitContext) {
         for(OrderedChainSelector chainSelector : selectors) {
-            if(chainSelector.deploymentChainSelector.supports(root)) {
+            if(chainSelector.deploymentChainSelector.supports(deploymentUnitContext)) {
                 return chainSelector.deploymentChain;
             }
         }
@@ -138,7 +138,7 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
     }
 
     public static interface Selector {
-        boolean supports(VirtualFile virtualFile);
+        boolean supports(DeploymentUnitContext deploymentUnitContext);
     }
 
     private static class OrderedChainSelector implements Comparable<OrderedChainSelector> {

@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
@@ -31,12 +32,14 @@ import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProce
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanDeploymentProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
@@ -63,6 +66,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
 
     @BeforeClass
     public static void setupChain() {
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
@@ -73,8 +77,9 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
 
         DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
             new DeploymentChainProvider.Selector() {
-                public boolean supports(VirtualFile root) {
-                    return "managedBeanDeployment.jar".equals(root.getName());
+                public boolean supports(DeploymentUnitContext deploymentUnitContext) {
+                    VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
+                    return "managedBeanDeployment.jar".equals(virtualFile.getName());
                 }
             }
         );

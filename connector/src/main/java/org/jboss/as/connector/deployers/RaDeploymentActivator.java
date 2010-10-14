@@ -34,6 +34,7 @@ import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.chain.DeploymentChainProviderInjector;
 import org.jboss.as.deployment.chain.DeploymentChainProviderService;
 import org.jboss.as.deployment.chain.DeploymentChainService;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
@@ -81,6 +82,7 @@ public class RaDeploymentActivator implements ServiceActivator {
                 new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new RaDeploymentChainSelector(),
                         RAR_DEPLOYMENT_CHAIN_PRIORITY));
 
+        addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);

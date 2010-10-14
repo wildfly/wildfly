@@ -22,7 +22,9 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -39,7 +41,8 @@ public class SarDeploymentChainSelector implements DeploymentChainProvider.Selec
      * @param virtualFile The deployment file
      * @return true if this is s service deployment, and false if not
      */
-    public boolean supports(final VirtualFile virtualFile) {
+    public boolean supports(final DeploymentUnitContext deploymentUnitContext) {
+        VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
         return virtualFile.getName().toLowerCase().endsWith(ARCHIVE_EXTENSION);
     }
 }

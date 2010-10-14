@@ -22,18 +22,14 @@
 
 package org.jboss.as.deployment.module;
 
+import java.util.jar.Manifest;
+
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
-
-import java.io.IOException;
-import java.util.jar.Manifest;
-
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * Deployment unit processor that will extract module dependencies from an archive.
@@ -50,13 +46,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        final Manifest manifest;
-        try {
-            manifest = VFSUtils.getManifest(deploymentRoot);
-        } catch(IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
-        }
+        final Manifest manifest = ManifestAttachment.getManifestAttachment(context);
         if(manifest == null)
             return;
 

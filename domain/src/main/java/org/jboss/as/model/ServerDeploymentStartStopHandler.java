@@ -183,7 +183,7 @@ class ServerDeploymentStartStopHandler {
 
             // Execute the deployment chain
             final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;
-            final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentRoot);
+            final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentUnitContext);
             log.debugf("Executing deployment '%s' with chain: %s", deploymentName, deploymentChain);
             if(deploymentChain == null)
                 throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);

@@ -25,6 +25,7 @@ package org.jboss.as.deployment.chain;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
@@ -66,6 +67,7 @@ public class JarDeploymentActivator implements ServiceActivator {
         batchBuilder.addService(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
             .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new JarDeploymentChainSelector(), JAR_DEPLOYMENT_CHAIN_PRIORITY));
 
+        addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
