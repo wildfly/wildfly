@@ -23,8 +23,11 @@
 package org.jboss.as.domain.controller;
 
 import java.util.List;
+
+import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 
 /**
@@ -69,5 +72,16 @@ public interface DomainControllerClient {
      * @param updates The updates to process
      * @return A list of response objects to reflect the result of each update executed.
      */
-    List<ModelUpdateResponse<?>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates);
+    List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates);
+
+    /**
+     * Update the given server with a server model update.
+     *
+     * @param update the update. Cannot be <code>null</code>
+     * @param serverName the name of the server to which the update should be applied.
+     *                   Cannot be <code>null</code>
+     *
+     * @return list of response objects reflecting the result of each update executed.
+     */
+    List<ModelUpdateResponse<?>> updateServerModel(final List<AbstractServerModelUpdate<?>> update, final String serverName);
 }

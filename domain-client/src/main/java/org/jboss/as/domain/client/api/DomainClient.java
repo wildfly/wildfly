@@ -25,9 +25,7 @@ package org.jboss.as.domain.client.api;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.concurrent.Future;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
+import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
 import org.jboss.as.domain.client.impl.DomainClientImpl;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -56,12 +54,16 @@ public interface DomainClient {
     List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates);
 
     /**
-     * Execute a deployment plan against the domain.
+     * Apply an update to the domain, using the given {@link DomainUpdateApplier}
+     * to control the update process.
      *
-     * @param deploymentPlan The deployment plan
-     * @return A future allowing access to the deployment result when complete
+     * @param <R> the type of result that is returned by this update type
+     * @param <P> the type of the parameter to pass to the handler instance
+     * @param update the update. Cannot be <code>null</code>
+     * @param updateApplier the update applier. Cannot be <code>null</code>
+     * @param param the parameter to pass to the handler
      */
-    Future<DeploymentPlanResult> execute(DeploymentPlan deploymentPlan);
+    <R, P> void applyUpdate(AbstractDomainModelUpdate<R> update, DomainUpdateApplier<R, P> updateApplier, P param);
 
     /**
      * Add the content for a deployment to the domain controller.
@@ -72,6 +74,14 @@ public interface DomainClient {
      * @return The unique hash for the deployment
      */
     byte[] addDeploymentContent(String name, String runtimeName, InputStream stream);
+
+    /**
+     * Gets a {@link DomainDeploymentManager} that provides a convenience API
+     * for manipulating domain deployments.
+     *
+     * @return the deployment manager. Will not be {@code null}
+     */
+    DomainDeploymentManager getDeploymentManager();
 
     /**
      * Factory used to create an {@link org.jboss.as.domain.client.api.DomainClient} instance for a remote address

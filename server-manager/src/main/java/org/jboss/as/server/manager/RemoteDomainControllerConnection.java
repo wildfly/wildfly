@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.ScheduledExecutorService;
+
+import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
@@ -115,10 +117,12 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             this.serverManagerId = connection.serverManagerId;
         }
 
+        @Override
         protected byte getHandlerId() {
             return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
         }
 
+        @Override
         protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
             super.sendRequest(protocolVersion, output);
             try {
@@ -140,14 +144,17 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             this.localManagementPort = localManagementPort;
         }
 
+        @Override
         public final byte getRequestCode() {
             return ManagementProtocol.REGISTER_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.REGISTER_RESPONSE;
         }
 
+        @Override
         protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
             super.sendRequest(protocolVersion, output);
             try {
@@ -162,6 +169,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             }
         }
 
+        @Override
         protected final DomainModel receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
@@ -178,14 +186,17 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             super(connection);
         }
 
+        @Override
         public final byte getRequestCode() {
             return ManagementProtocol.UNREGISTER_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.UNREGISTER_RESPONSE;
         }
 
+        @Override
         protected Void receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
             log.infof("Unregistered with remote domain controller");
             return null;
@@ -204,14 +215,17 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             this.localFileRepository = localFileRepository;
         }
 
+        @Override
         public final byte getRequestCode() {
             return ManagementProtocol.SYNC_FILE_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return ManagementProtocol.SYNC_FILE_RESPONSE;
         }
 
+        @Override
         protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
             super.sendRequest(protocolVersion, output);
             try {
@@ -224,6 +238,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             }
         }
 
+        @Override
         protected final File receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
             final File localPath;
             switch (rootId) {
@@ -236,7 +251,8 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                     break;
                 }
                 case 2: {
-                    localPath = localFileRepository.getDeploymentFile(filePath);
+                    byte[] hash = DeploymentUnitElement.hexStringToBytes(filePath);
+                    localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
                 }
                 default: {
@@ -308,16 +324,25 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
             this.localFileRepository = localFileRepository;
         }
 
+        @Override
         public final File getFile(String relativePath) {
             return getFile(relativePath, (byte)0);
         }
 
+        @Override
         public final File getConfigurationFile(String relativePath) {
             return getFile(relativePath, (byte)1);
         }
 
-        public final File getDeploymentFile(String relativePath) {
-            return getFile(relativePath, (byte)2);
+        @Override
+        public final File[] getDeploymentFiles(byte[] deploymentHash) {
+            String hex = DeploymentUnitElement.bytesToHexString(deploymentHash);
+            return getFile(hex, (byte)2).listFiles();
+        }
+
+        @Override
+        public File getDeploymentRoot(byte[] deploymentHash) {
+            return localFileRepository.getDeploymentRoot(deploymentHash);
         }
 
         private File getFile(final String relativePath, final byte repoId) {

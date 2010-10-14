@@ -25,8 +25,9 @@ package org.jboss.as.server.manager.management;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
-import org.jboss.as.domain.controller.ServerGroupMember;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -180,10 +181,10 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
-        private ModelUpdateResponse<List<ServerGroupMember>> processUpdate(final AbstractDomainModelUpdate<?> update) {
+        private ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractDomainModelUpdate<?> update) {
             //try {
-                final List<ServerGroupMember> result = null; // TODO: Process update
-                return new ModelUpdateResponse<List<ServerGroupMember>>(result);
+                final List<ServerIdentity> result = null; // TODO: Process update
+                return new ModelUpdateResponse<List<ServerIdentity>>(result);
 //            } catch (UpdateFailedException e) {
 //                return new ModelUpdateResponse<R>(e);
 //            }
@@ -237,10 +238,10 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
             }
         }
 
-        private  ModelUpdateResponse<List<ServerGroupMember>> processUpdate(final AbstractHostModelUpdate<?> update) {
+        private  ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractHostModelUpdate<?> update) {
             //try {
-                final List<ServerGroupMember> result = null; // TODO: Process update
-                return new ModelUpdateResponse<List<ServerGroupMember>>(result);
+                final List<ServerIdentity> result = null; // TODO: Process update
+                return new ModelUpdateResponse<List<ServerIdentity>>(result);
 //            } catch (UpdateFailedException e) {
 //                return new ModelUpdateResponse<R>(e);
 //            }
@@ -249,6 +250,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
 
     private class UpdateServerModelOperation extends ManagementResponse {
         private List<AbstractServerModelUpdate<?>> updates;
+        private String serverName;
 
         @Override
         protected byte getResponseCode() {
@@ -263,6 +265,8 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         @Override
         protected void readRequest(ByteDataInput input) throws ManagementException {
             try {
+                expectHeader(input, ManagementProtocol.PARAM_SERVER_NAME);
+                serverName = input.readUTF();
                 expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
                 int count = input.readInt();
                 updates = new ArrayList<AbstractServerModelUpdate<?>>(count);

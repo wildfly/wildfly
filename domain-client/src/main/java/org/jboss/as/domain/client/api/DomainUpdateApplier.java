@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.client.api;
 
 import java.util.Collection;
 import java.util.Map;
@@ -64,24 +64,6 @@ public interface DomainUpdateApplier<R, P> {
         <P> void apply(ServerIdentity server, UpdateResultHandler<R, P> resultHandler, P param);
 
         void cancel();
-    }
-
-    class ServerIdentity {
-        private final String hostName;
-        private final String serverName;
-
-        public ServerIdentity(final String hostName, final String serverName) {
-            this.hostName = hostName;
-            this.serverName = serverName;
-        }
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public String getServerName() {
-            return serverName;
-        }
     }
 
 }

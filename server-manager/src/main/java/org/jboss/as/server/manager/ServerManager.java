@@ -46,13 +46,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.stream.XMLInputFactory;
 
+import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
+import org.jboss.as.domain.controller.DomainConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
+import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
+import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
@@ -443,11 +448,18 @@ public class ServerManager implements ShutdownListener {
                 .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
 
+            // TODO consider having all these as components of DomainController
+            // and not independent services
+            DomainDeploymentRepository.addService(environment.getDomainDeploymentDir(), batchBuilder);
+            DomainDeploymentManagerImpl.addService(serviceContainer, batchBuilder);
+            DomainConfigurationPersister.addService(batchBuilder);
 
             final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
             batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
+                .addDependency(DomainDeploymentManager.SERVICE_NAME_LOCAL, DomainDeploymentManager.class, domainControllerOperationHandler.getDomainDeploymentManagerInjector())
+                .addDependency(DomainDeploymentRepository.SERVICE_NAME, DomainDeploymentRepository.class, domainControllerOperationHandler.getDomainDeploymentRepositoryInjector())
                 .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
 
@@ -460,6 +472,7 @@ public class ServerManager implements ShutdownListener {
                         setDomainControllerConnection(null);
                     }
                 });
+
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
         }
@@ -597,10 +610,13 @@ public class ServerManager implements ShutdownListener {
      */
     public void setDomain(final DomainModel domain) {
         this.domainConfig = domain;
+        synchronizeDeployments();
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
                 startServers();
             } else {
+                // FIXME -- this got dropped in the move to an update-based boot
+                // handle it properly
 //                reconnectServers();
             }
         }
@@ -625,6 +641,22 @@ public class ServerManager implements ShutdownListener {
 
     DirectServerCommunicationListener getDirectServerCommunicationListener() {
         return directServerCommunicationListener;
+    }
+
+    private void synchronizeDeployments() {
+        FileRepository remoteRepo = domainControllerConnection.getRemoteFileRepository();
+        Set<String> serverGroupNames = domainConfig.getServerGroupNames();
+        for (ServerElement server : hostConfig.getServers()) {
+            String serverGroupName = server.getServerGroup();
+            if (serverGroupNames.remove(serverGroupName)) {
+                for (ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
+                    File[] local = fileRepository.getDeploymentFiles(deployment.getSha1Hash());
+                    if (local == null || local.length == 0) {
+                        remoteRepo.getDeploymentFiles(deployment.getSha1Hash());
+                    }
+                }
+            }
+        }
     }
 
 

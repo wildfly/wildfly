@@ -29,7 +29,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,14 +39,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
+import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
 import org.jboss.as.domain.client.api.DomainClient;
+import org.jboss.as.domain.client.api.DomainUpdateApplier;
 import org.jboss.as.domain.client.api.DomainUpdateResult;
+import org.jboss.as.domain.client.api.ServerIdentity;
+
 import static org.jboss.as.domain.client.impl.ProtocolUtils.expectHeader;
 import static org.jboss.as.domain.client.impl.ProtocolUtils.marshal;
 import static org.jboss.as.domain.client.impl.ProtocolUtils.readResponseHeader;
 import static org.jboss.as.domain.client.impl.ProtocolUtils.unmarshal;
 import static org.jboss.as.domain.client.impl.ProtocolUtils.writeRequestHeader;
 import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
@@ -62,6 +69,7 @@ public class DomainClientImpl implements DomainClient {
     private static final long CONNECT_TIMEOUT = 1000L;
     private final InetAddress address;
     private final int port;
+    private volatile DomainDeploymentManager deploymentManager;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -70,21 +78,75 @@ public class DomainClientImpl implements DomainClient {
         this.port = port;
     }
 
+    @Override
     public DomainModel getDomainModel() {
         return new GetDomainOperation().executeForResult();
     }
 
+    @Override
     public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
         return new ApplyUpdatesOperation(updates).executeForResult();
     }
 
+    @Override
+    public <R, P> void applyUpdate(final AbstractDomainModelUpdate<R> update, final DomainUpdateApplier<R, P> updateApplier, final P param) {
+        try {
+            DomainUpdateApplierResponse response = new ApplyUpdateOperation(update).executeForResult();
+            if (response.getDomainFailure() != null) {
+                updateApplier.handleDomainFailed(response.getDomainFailure());
+            }
+            else {
+                if (response.getHostFailures().size() > 0) {
+                    updateApplier.handleHostFailed(response.getHostFailures());
+                }
+                if (response.getServers().size() > 0) {
+                    AbstractServerModelUpdate<R> serverUpdate = update.getServerModelUpdate();
+                    DomainUpdateApplier.Context<R> context = DomainUpdateApplierContextImpl.createDomainUpdateApplierContext(this, response.getServers(), serverUpdate);
+                    updateApplier.handleReady(context, param);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to determine if deployment name is unique", e);
+        }
+    }
+
+    @Override
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
         return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
     }
 
-    public Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
+    @Override
+    public DomainDeploymentManager getDeploymentManager() {
+        if (deploymentManager == null) {
+            synchronized (this) {
+                if (deploymentManager == null) {
+                    deploymentManager = new DomainDeploymentManagerImpl(this);
+                }
+            }
+        }
+        return deploymentManager;
+    }
+
+    boolean isDeploymentNameUnique(final String deploymentName) {
+        try {
+            return new CheckUnitDeploymentNameOperation(deploymentName).executeForResult();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to determine if deployment name is unique", e);
+        }
+    }
+
+    Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
         try {
             return new ExecuteDeploymentPlanOperation(deploymentPlan).execute();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get deployment result future", e);
+        }
+    }
+
+    <R> Future<UpdateResultHandlerResponse<R>> applyUpdateToServer(final AbstractServerModelUpdate<R> update,
+                                                           final ServerIdentity server) {
+        try {
+            return new ApplyUpdateToServerOperation<R>(update, server).execute();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get deployment result future", e);
         }
@@ -147,14 +209,17 @@ public class DomainClientImpl implements DomainClient {
     }
 
     private class GetDomainOperation extends Request<DomainModel> {
+        @Override
         public final byte getRequestCode() {
             return Protocol.GET_DOMAIN_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return Protocol.GET_DOMAIN_RESPONSE;
         }
 
+        @Override
         protected final DomainModel receiveResponse(final int protocolVersion, final ByteDataInput input) {
             try {
                 expectHeader(input, Protocol.PARAM_DOMAIN_MODEL);
@@ -172,14 +237,17 @@ public class DomainClientImpl implements DomainClient {
             this.updates = updates;
         }
 
+        @Override
         public final byte getRequestCode() {
             return Protocol.APPLY_UPDATES_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return Protocol.APPLY_UPDATES_RESPONSE;
         }
 
+        @Override
         protected void sendRequest(int protocolVersion, ByteDataOutput output) {
             try {
                 output.writeByte(Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
@@ -193,6 +261,7 @@ public class DomainClientImpl implements DomainClient {
             }
         }
 
+        @Override
         protected final List<DomainUpdateResult<?>> receiveResponse(final int protocolVersion, final ByteDataInput input) {
             try {
                 expectHeader(input, Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
@@ -201,17 +270,219 @@ public class DomainClientImpl implements DomainClient {
                 for (int i = 0; i < updateCount; i++) {
                     expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT);
                     byte resultCode = input.readByte();
-                    if (resultCode == (byte) Protocol.APPLY_UPDATE_RESULT_SUCCESS) {
-                        expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_RETURN);
-                        final Object result = unmarshal(input, Object.class);
-                        results.add(new DomainUpdateResult<Object>(result));
-                    } else {
-                        expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                    if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
                         final UpdateFailedException updateFailedException = unmarshal(input, UpdateFailedException.class);
                         results.add(new DomainUpdateResult<Object>(updateFailedException));
                     }
+                    else if (resultCode == (byte) Protocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
+                        Map<String, UpdateFailedException> hostFailures = null;
+                        Map<ServerIdentity, Object> serverResults = null;
+                        Map<ServerIdentity, Throwable> serverFailures = null;
+                        expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                        int hostFailureCount = input.readInt();
+                        if (hostFailureCount > 0) {
+                            hostFailures = new HashMap<String, UpdateFailedException>();
+                            for (int j = 0; j < hostFailureCount; j++) {
+                                expectHeader(input, Protocol.PARAM_HOST_NAME);
+                                final String hostName = input.readUTF();
+                                expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                                final UpdateFailedException updateFailedException = unmarshal(input, UpdateFailedException.class);
+                                hostFailures.put(hostName, updateFailedException);
+                            }
+                        }
+                        expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
+                        int serverFailureCount = input.readInt();
+                        if (serverFailureCount > 0) {
+                            serverFailures = new HashMap<ServerIdentity, Throwable>();
+                            for (int j = 0; j < hostFailureCount; j++) {
+                                expectHeader(input, Protocol.PARAM_HOST_NAME);
+                                final String hostName = input.readUTF();
+                                expectHeader(input, Protocol.PARAM_SERVER_GROUP_NAME);
+                                final String serverGroupName = input.readUTF();
+                                expectHeader(input, Protocol.PARAM_SERVER_NAME);
+                                final String serverName = input.readUTF();
+                                ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                                expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                                final Throwable serverException = unmarshal(input, Throwable.class);
+                                serverFailures.put(identity, serverException);
+                            }
+                        }
+                        expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
+                        int serverResultCount = input.readInt();
+                        if (serverResultCount > 0) {
+                            serverResults = new HashMap<ServerIdentity, Object>();
+                            for (int j = 0; j < hostFailureCount; j++) {
+                                expectHeader(input, Protocol.PARAM_HOST_NAME);
+                                final String hostName = input.readUTF();
+                                expectHeader(input, Protocol.PARAM_SERVER_GROUP_NAME);
+                                final String serverGroupName = input.readUTF();
+                                expectHeader(input, Protocol.PARAM_SERVER_NAME);
+                                final String serverName = input.readUTF();
+                                ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                                expectHeader(input, Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
+                                final Object serverResult = unmarshal(input, Object.class);
+                                serverResults.put(identity, serverResult);
+                            }
+                        }
+                        results.add(new DomainUpdateResult<Object>(hostFailures, serverResults, serverFailures));
+                    }
+                    else {
+                        throw new IOException("Invalid byte token.  Expecting '" +
+                                Protocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
+                                "' or '" + Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                                "' received '" + resultCode + "'");
+                    }
+
                 }
                 return results;
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read update responses", e);
+            }
+        }
+    }
+
+    private class ApplyUpdateOperation extends Request<DomainUpdateApplierResponse> {
+        final AbstractDomainModelUpdate<?> update;
+
+        private ApplyUpdateOperation(AbstractDomainModelUpdate<?> update) {
+            this.update = update;
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return Protocol.APPLY_UPDATE_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return Protocol.APPLY_UPDATE_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+            try {
+                output.writeByte(Protocol.PARAM_DOMAIN_MODEL_UPDATE);
+                marshal(output, update);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to write updates to domain controller", e);
+            }
+        }
+
+        @Override
+        protected final DomainUpdateApplierResponse receiveResponse(final int protocolVersion, final ByteDataInput input) {
+            try {
+                expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT);
+                byte resultCode = input.readByte();
+                if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                    final UpdateFailedException updateFailedException = unmarshal(input, UpdateFailedException.class);
+                    return new DomainUpdateApplierResponse(updateFailedException);
+                }
+                else if (resultCode == (byte) Protocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
+                    Map<String, UpdateFailedException> hostFailures = null;
+                    List<ServerIdentity> servers = null;
+                    expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                    int hostFailureCount = input.readInt();
+                    if (hostFailureCount > 0) {
+                        hostFailures = new HashMap<String, UpdateFailedException>();
+                        for (int j = 0; j < hostFailureCount; j++) {
+                            expectHeader(input, Protocol.PARAM_HOST_NAME);
+                            final String hostName = input.readUTF();
+                            expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                            final UpdateFailedException updateFailedException = unmarshal(input, UpdateFailedException.class);
+                            hostFailures.put(hostName, updateFailedException);
+                        }
+                    }
+                    expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
+                    int serverResultCount = input.readInt();
+                    if (serverResultCount > 0) {
+                        servers = new ArrayList<ServerIdentity>();
+                        for (int j = 0; j < hostFailureCount; j++) {
+                            expectHeader(input, Protocol.PARAM_HOST_NAME);
+                            final String hostName = input.readUTF();
+                            expectHeader(input, Protocol.PARAM_SERVER_GROUP_NAME);
+                            final String serverGroupName = input.readUTF();
+                            expectHeader(input, Protocol.PARAM_SERVER_NAME);
+                            final String serverName = input.readUTF();
+                            ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                            servers.add(identity);
+                        }
+                    }
+                    return new DomainUpdateApplierResponse(hostFailures, servers);
+                }
+                else {
+                    throw new IOException("Invalid byte token.  Expecting '" +
+                            Protocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
+                            "' or '" + Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                            "' received '" + resultCode + "'");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read update responses", e);
+            }
+        }
+    }
+
+    private class ApplyUpdateToServerOperation<R> extends Request<UpdateResultHandlerResponse<R>> {
+        private final AbstractServerModelUpdate<R> update;
+        private final ServerIdentity server;
+
+        private ApplyUpdateToServerOperation(final AbstractServerModelUpdate<R> update,
+                                             final ServerIdentity server) {
+            this.update = update;
+            this.server = server;
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return Protocol.APPLY_SERVER_MODEL_UPDATE_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return Protocol.APPLY_SERVER_MODEL_UPDATE_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+            try {
+                output.writeByte(Protocol.PARAM_HOST_NAME);
+                output.writeUTF(server.getHostName());
+                output.writeByte(Protocol.PARAM_SERVER_GROUP_NAME);
+                output.writeUTF(server.getServerGroupName());
+                output.writeByte(Protocol.PARAM_SERVER_NAME);
+                output.writeUTF(server.getServerName());
+
+                output.writeByte(Protocol.PARAM_SERVER_MODEL_UPDATE);
+                marshal(output, update);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to write updates to domain controller", e);
+            }
+        }
+
+        @Override
+        protected final UpdateResultHandlerResponse<R> receiveResponse(final int protocolVersion, final ByteDataInput input) {
+            try {
+                byte resultCode = input.readByte();
+                if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                    final Throwable exception = unmarshal(input, Throwable.class);
+                    return UpdateResultHandlerResponse.createFailureResponse(exception);
+                }
+                else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED) {
+                    return UpdateResultHandlerResponse.createCancellationResponse();
+                }
+                else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT) {
+                    return UpdateResultHandlerResponse.createTimeoutResponse();
+                }
+                else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN) {
+                    @SuppressWarnings("unchecked")
+                    final R result = (R) unmarshal(input, Object.class);
+                    return UpdateResultHandlerResponse.createSuccessResponse(result);
+                }
+                else {
+                    throw new IOException("Invalid byte token.  Expecting '" +
+                            Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN +
+                            "' or '" + Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                            "' received '" + resultCode + "'");
+                }
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read update responses", e);
             }
@@ -225,14 +496,17 @@ public class DomainClientImpl implements DomainClient {
             this.deploymentPlan = deploymentPlan;
         }
 
+        @Override
         public final byte getRequestCode() {
             return Protocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return Protocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
         }
 
+        @Override
         protected void sendRequest(int protocolVersion, ByteDataOutput output) {
             try {
                 output.writeByte(Protocol.PARAM_DEPLOYMENT_PLAN);
@@ -242,6 +516,7 @@ public class DomainClientImpl implements DomainClient {
             }
         }
 
+        @Override
         protected final DeploymentPlanResult receiveResponse(final int protocolVersion, final ByteDataInput input) {
             try {
                 expectHeader(input, Protocol.PARAM_DEPLOYMENT_PLAN_RESULT);
@@ -263,14 +538,17 @@ public class DomainClientImpl implements DomainClient {
             this.inputStream = inputStream;
         }
 
+        @Override
         public final byte getRequestCode() {
             return Protocol.ADD_DEPLOYMENT_CONTENT_REQUEST;
         }
 
+        @Override
         protected final byte getResponseCode() {
             return Protocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
         }
 
+        @Override
         protected void sendRequest(int protocolVersion, ByteDataOutput output) {
             try {
                 output.writeByte(Protocol.PARAM_DEPLOYMENT_NAME);
@@ -295,6 +573,7 @@ public class DomainClientImpl implements DomainClient {
             }
         }
 
+        @Override
         protected final byte[] receiveResponse(final int protocolVersion, final ByteDataInput input) {
             try {
                 expectHeader(input, Protocol.PARAM_DEPLOYMENT_HASH_LENGTH);
@@ -305,6 +584,45 @@ public class DomainClientImpl implements DomainClient {
                 return hash;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read deployment hash from response", e);
+            }
+        }
+    }
+
+    private class CheckUnitDeploymentNameOperation extends Request<Boolean> {
+        private final String deploymentName;
+
+
+        private CheckUnitDeploymentNameOperation(final String name) {
+            this.deploymentName = name;
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return Protocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return Protocol.CHECK_UNIQUE_DEPLOYMENT_NAME_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+            try {
+                output.writeByte(Protocol.PARAM_DEPLOYMENT_NAME);
+                output.writeUTF(deploymentName);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to write updates to domain controller", e);
+            }
+        }
+
+        @Override
+        protected final Boolean receiveResponse(final int protocolVersion, final ByteDataInput input) {
+            try {
+                expectHeader(input, Protocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
+                return input.readBoolean();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read domain model from response", e);
             }
         }
     }

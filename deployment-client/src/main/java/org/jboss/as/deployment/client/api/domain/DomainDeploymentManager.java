@@ -44,12 +44,9 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.util.concurrent.Future;
 
-import org.jboss.as.deployment.client.api.server.DeploymentPlan;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Primary deployment interface for a JBoss AS Domain Controller.
@@ -58,85 +55,8 @@ import org.jboss.as.deployment.client.api.server.DeploymentPlan;
  */
 public interface DomainDeploymentManager {
 
-    /**
-     * Indicates the content of the specified file should be added to the domain's deployment content
-     * repository. The name of the deployment will be the value returned by
-     * <code>{@link File#getName() file.getName()}</code>.
-     * <p>
-     * Note that this operation does not result in the content being deployed
-     * into the runtime; for that a {@link DeploymentPlan} needs to be
-     * {@link #newDeploymentPlan() created} and {@link #execute(DeploymentPlan) executed}.
-     * </p>
-     *
-     * @param file file containing the new content
-     *
-     * @return unique name that can be used to reference the added content, in this
-     *         case the value returned by {@link File#getName() file.getName()}
-     */
-    String addDeploymentContent(File file) throws IOException;
-
-    /**
-     * Indicates the content at the specified URL should be added to the domain's deployment content
-     * repository.  The name of the deployment will be the last segment of the value returned by
-     * <code>{@link URL#getPath() url.getPath()}</code>.
-     * <p>
-     * Note that this operation does not result in the content being deployed
-     * into the runtime; for that a {@link DeploymentPlan} needs to be
-     * {@link #newDeploymentPlan() created} and {@link #execute(DeploymentPlan) executed}.
-     * </p>
-     *
-     * @param url URL pointing to the new content
-     *
-     * @return unique name that can be used to reference the added content, in this
-     *         case the last segment of the value returned by {@link URL#getPath() url.getPath()}
-     */
-    String addDeploymentContent(URL url) throws IOException;
-
-    /**
-     * Indicates the content of the specified file should be added to the domain's deployment content
-     * repository.
-     * <p>
-     * Note that this operation does not result in the content being deployed
-     * into the runtime; for that a {@link DeploymentPlan} needs to be
-     * {@link #newDeploymentPlan() created} and {@link #execute(DeploymentPlan) executed}.
-     * </p>
-     *
-     * @param name unique name that should be given to the new content. Must be
-     *             different from the name of any other content currently
-     *             in the domain's deployment content repository
-     * @param file file containing the new content
-     */
-    void addDeploymentContent(String name, File file) throws IOException;
-
-    /**
-     * Indicates the content at the specified URL should be added to the default content
-     * repository.
-     * <p>
-     * Note that this operation does not result in the content being deployed
-     * into the runtime; for that a {@link DeploymentPlan} needs to be
-     * {@link #newDeploymentPlan() created} and {@link #execute(DeploymentPlan) executed}.
-     * </p>
-     *
-     * @param name unique name that should be given to the new content. Must be
-     *             different from the name of any other content currently
-     *             in the domain's deployment content repository
-     * @param url URL pointing to the new content
-     */
-    void addDeploymentContent(String name, URL url) throws IOException;
-
-    /**
-     * Indicates the content readable from the specified <code>InputStream</code>
-     * should be added to the default content repository.
-     * <p>
-     * Note that this operation does not result in the content being deployed
-     * into the runtime; for that a {@link DeploymentPlan} needs to be
-     * {@link #newDeploymentPlan() created} and {@link #execute(DeploymentPlan) executed}.
-     * </p>
-     *
-     * @param name name that should be given to the new content
-     * @param stream <code>InputStream</code> from which the new content should be read
-     */
-    void addDeploymentContent(String name, InputStream stream) throws IOException;
+    ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("deployment-manager").append("server");
+    ServiceName SERVICE_NAME_LOCAL = SERVICE_NAME_BASE.append("local");
 
     /**
      * Initiates the creation of a new {@link DeploymentPlan}.
@@ -151,6 +71,9 @@ public interface DomainDeploymentManager {
      * @param plan the deployment plan
      *
      * @return the results of the deployment plan
+     *
+     * @return {@link Future} from which the results of the deployment plan can
+     *         be obtained
      */
-    DeploymentPlanResult execute(DeploymentPlan plan);
+    Future<DeploymentPlanResult> execute(DeploymentPlan plan);
 }

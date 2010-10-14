@@ -49,10 +49,22 @@ public interface FileRepository {
     File getConfigurationFile(final String relativePath);
 
     /**
-     * Get a file relative to the deployment root.
+     * Get the files associated with a given deployment.
      *
-     * @param relativePath Relative path to the file
-     * @return The file at that path, or null if it is not found
+     * @param deploymentHash the hash of the deploymentUnit
+
+     * @return the files associated with the deployment, or <code>null</code> if it is not found
      */
-    File getDeploymentFile(final String relativePath);
+    File[] getDeploymentFiles(final byte[] deploymentHash);
+
+    /**
+     * Gets the directory under which files associated with a given deployment
+     * would be found.
+     *
+     * @param deploymentHash the hash of the deploymentUnit
+
+     * @return the directory. Will not be <code>null</code>, even if the
+     *         deployment is unknown
+     */
+    File getDeploymentRoot(byte[] deploymentHash);
 }

@@ -153,6 +153,12 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         }
     }
 
+    public Set<String> getServerGroupNames() {
+        synchronized (serverGroups) {
+            return new HashSet<String>(serverGroups.keySet());
+        }
+    }
+
     /**
      * Gets the server group configuration for the group with the given
      * <code>name</code>.

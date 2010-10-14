@@ -44,6 +44,7 @@ import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.process.RespawnPolicy;
 import org.jboss.as.server.ServerManagerCommunicationsActivator;
 import org.jboss.as.server.ServerManagerProtocolUtils;
@@ -56,7 +57,6 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
@@ -290,6 +290,11 @@ public final class Server {
 
     public void removeServerProcess() throws IOException {
         processManagerSlave.removeProcess(serverProcessName);
+    }
+
+    public <R> R applyUpdate(AbstractServerModelUpdate<R> update) throws UpdateFailedException {
+        // FIXME implement RPC
+        throw new UpdateFailedException("ServerManager to Server RPC is not implemented");
     }
 
     private void sendCommand(ServerManagerToServerProtocolCommand command) throws IOException {

@@ -23,6 +23,9 @@
 package org.jboss.as.domain.client.api;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
 import org.jboss.as.model.UpdateFailedException;
 
 /**
@@ -34,30 +37,44 @@ import org.jboss.as.model.UpdateFailedException;
  * @author John Bailey
  */
 public class DomainUpdateResult<R> implements Serializable {
-    private static final long serialVersionUID = 5496724566407738382L;
 
-    private final R result;
-    private final UpdateFailedException updateException;
+    private static final long serialVersionUID = 4320577243229764829L;
 
-    /**
-     * Create an instance with a result object
-     *
-     * @param result The result of the update
-     */
-    public DomainUpdateResult(final R result) {
-        this.result = result;
-        this.updateException = null;
+    private final UpdateFailedException domainFailure;
+    private final Map<String, UpdateFailedException> hostFailures;
+    private final Map<ServerIdentity, R> serversResults;
+    private final Map<ServerIdentity, Throwable> serverFailures;
+
+    public DomainUpdateResult(final UpdateFailedException domainFailure) {
+        this.domainFailure = domainFailure;
+        this.hostFailures = null;
+        this.serversResults = null;
+        this.serverFailures = null;
     }
 
-    /**
-     * Create an instance with an {@link org.jboss.as.model.UpdateFailedException} to allow the client to know
-     * the update failed.
-     *
-     * @param updateException The update exception
-     */
-    public DomainUpdateResult(UpdateFailedException updateException) {
-        this.updateException = updateException;
-        this.result = null;
+    public DomainUpdateResult(final Map<String, UpdateFailedException> hostFailures,
+                              final Map<ServerIdentity, R> serversResults,
+                              final Map<ServerIdentity, Throwable> serverFailures) {
+        this.domainFailure = null;
+        this.hostFailures = hostFailures;
+        this.serversResults = serversResults;
+        this.serverFailures = serverFailures;
+    }
+
+    public UpdateFailedException getDomainFailure() {
+        return domainFailure;
+    }
+
+    public Map<String, UpdateFailedException> getHostFailures() {
+        return hostFailures == null ? null : Collections.unmodifiableMap(hostFailures);
+    }
+
+    public Map<ServerIdentity, R> getServerResults() {
+        return serversResults == null ? null : Collections.unmodifiableMap(serversResults);
+    }
+
+    public Map<ServerIdentity, Throwable> getServerFailures() {
+        return serverFailures == null ? null : Collections.unmodifiableMap(serverFailures);
     }
 
     /**
@@ -66,24 +83,10 @@ public class DomainUpdateResult<R> implements Serializable {
      * @return true if the update was a success, false if not.
      */
     public boolean isSuccess() {
-        return updateException == null;
+        return domainFailure == null
+            && (hostFailures == null || hostFailures.size() == 0)
+            && (serverFailures == null || serverFailures.size() == 0);
     }
 
-    /**
-     * Get the result of the update execution.
-     *
-     * @return The result if update was successful, otherwise null.
-     */
-    public R getResult() {
-        return result;
-    }
 
-    /**
-     * Get the {@link org.jboss.as.model.UpdateFailedException} created by the update.
-     *
-     * @return The exception if the update failed, otherwise null.
-     */
-    public UpdateFailedException getUpdateException() {
-        return updateException;
-    }
 }

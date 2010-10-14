@@ -20,34 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.client.api;
 
-import java.io.Serializable;
-
-/**
- * Simple data class associating a server name with name of the server group
- * of which the server is a member.
- *
- * @author Brian Stansberry
- */
-public final class ServerGroupMember implements Serializable {
-
-    private static final long serialVersionUID = 819866199083400823L;
-
+public class ServerIdentity {
+    private final String hostName;
     private final String serverName;
     private final String serverGroupName;
 
-    public ServerGroupMember(final String serverName, final String serverGroupName) {
-        this.serverName = serverName;
+    public ServerIdentity(final String hostName, final String serverGroupName, final String serverName) {
+        this.hostName = hostName;
         this.serverGroupName = serverGroupName;
-    }
-
-    public String getServerName() {
-        return serverName;
+        this.serverName = serverName;
     }
 
     public String getServerGroupName() {
         return serverGroupName;
     }
 
+    public String getHostName() {
+        return hostName;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
 }

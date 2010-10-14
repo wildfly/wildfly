@@ -23,13 +23,23 @@
 package org.jboss.as.domain.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.domain.client.api.DomainUpdateResult;
+import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.UpdateFailedException;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jboss.logging.Logger;
@@ -139,11 +149,118 @@ public class DomainController implements Service<DomainController> {
         return xmlMapper;
     }
 
+    File getDomainConfigDir() {
+        return domainConfigDir.getValue();
+    }
+
     public Injector<File> getDomainConfigDirInjector() {
         return domainConfigDir;
     }
 
     public Injector<ScheduledExecutorService> getScheduledExecutorServiceInjector() {
         return scheduledExecutorService;
+    }
+
+    public <T> DomainUpdateResult<T> applyUpdate(AbstractDomainModelUpdate<T> update) {
+
+        // First apply to our DomainModel and push to all ServerManagers
+        DomainUpdateApplierResponse firstCut = applyUpdateToModel(update);
+
+        if (firstCut.getDomainFailure() != null) {
+            // A failure applying to the local DomainModel means nothing
+            // further was done
+            return new DomainUpdateResult<T>(firstCut.getDomainFailure());
+        }
+
+        // If the push to ServerManagers resulted in any Server's that need
+        // update, push the change to those servers
+        Map<ServerIdentity, T> serverResults = null;
+        Map<ServerIdentity, Throwable> serverFailures = null;
+
+        List<ServerIdentity> servers = firstCut.getServers();
+        if (servers != null && servers.size() > 0) {
+
+            List<AbstractServerModelUpdate<?>> serverUpdates =
+                Collections.<AbstractServerModelUpdate<?>>singletonList(update.getServerModelUpdate());
+
+            for (ServerIdentity server : servers) {
+                List<UpdateResultHandlerResponse<?>> rsps = applyUpdateToServer(serverUpdates, server);
+                UpdateResultHandlerResponse<?> rsp = rsps.get(0);
+                if (rsp.getFailureResult() != null) {
+                    if (serverFailures == null) {
+                        serverFailures = new HashMap<ServerIdentity, Throwable>();
+                    }
+                    serverFailures.put(server, rsp.getFailureResult());
+                }
+                else {
+                    if (serverResults == null) {
+                        serverResults = new HashMap<ServerIdentity, T>();
+                    }
+                    @SuppressWarnings("unchecked")
+                    T result = (T) rsp.getSuccessResult();
+                    serverResults.put(server, result);
+                }
+            }
+        }
+
+        return new DomainUpdateResult<T>(firstCut.getHostFailures(), serverResults, serverFailures);
+
+    }
+
+    public DomainUpdateApplierResponse applyUpdateToModel(AbstractDomainModelUpdate<?> update) {
+
+        try {
+            domainModel.update(update);
+        } catch (UpdateFailedException e) {
+            return new DomainUpdateApplierResponse(e);
+        }
+
+        Map<String, UpdateFailedException> hostFailures = null;
+        List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
+        List<AbstractDomainModelUpdate<?>> updateList = Collections.<AbstractDomainModelUpdate<?>>singletonList(update);
+
+        // TODO this could be parallelized
+        for (Map.Entry<String, DomainControllerClient> entry : clients.entrySet()) {
+            DomainControllerClient client = entry.getValue();
+            List<ModelUpdateResponse<List<ServerIdentity>>> hostResponseList = client.updateDomainModel(updateList);
+            ModelUpdateResponse<List<ServerIdentity>> hostResponse = hostResponseList.get(0);
+            if (hostResponse.isSuccess()) {
+                servers.addAll(hostResponse.getResult());
+            }
+            else {
+                if (hostFailures == null) {
+                    hostFailures = new HashMap<String, UpdateFailedException>();
+                }
+                hostFailures.put(entry.getKey(), hostResponse.getUpdateException());
+            }
+        }
+
+        return new DomainUpdateApplierResponse(hostFailures, servers);
+    }
+
+    public List<UpdateResultHandlerResponse<?>> applyUpdateToServer(final List<AbstractServerModelUpdate<?>> updates, final ServerIdentity server) {
+
+        DomainControllerClient client = clients.get(server.getHostName());
+        List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>();
+
+        if (client == null) {
+            // TODO better handle disappearance of host
+            UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
+            for (int i = 0; i < updates.size(); i++) {
+                responses.add(failure);
+            }
+        }
+        else {
+            List<ModelUpdateResponse<?>> rsps = client.updateServerModel(updates, server.getServerName());
+            for (ModelUpdateResponse<?> rsp : rsps) {
+                if (rsp.isSuccess()) {
+                    responses.add(UpdateResultHandlerResponse.createSuccessResponse(rsp.getResult()));
+                }
+                else {
+                    responses.add(UpdateResultHandlerResponse.createFailureResponse(rsp.getUpdateException()));
+                }
+            }
+        }
+        return responses;
     }
 }

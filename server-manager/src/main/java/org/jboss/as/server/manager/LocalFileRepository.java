@@ -24,6 +24,8 @@ package org.jboss.as.server.manager;
 
 import java.io.File;
 
+import org.jboss.as.model.DeploymentUnitElement;
+
 
 /**
  * A repository used to retrieve files in the domain directory structure.
@@ -42,17 +44,29 @@ public class LocalFileRepository implements FileRepository {
     }
 
     /** {@inheritDoc} */
+    @Override
     public File getFile(final String relativePath) {
         return new File(repositoryRoot, relativePath);
     }
 
     /** {@inheritDoc} */
+    @Override
     public File getConfigurationFile(String relativePath) {
         return new File(configurationRoot, relativePath);
     }
 
     /** {@inheritDoc} */
-    public File getDeploymentFile(String relativePath) {
-        return new File(deploymentRoot, relativePath);
+    @Override
+    public File[] getDeploymentFiles(byte[] hash) {
+        return getDeploymentRoot(hash).listFiles();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public File getDeploymentRoot(byte[] hash) {
+        String hex = DeploymentUnitElement.bytesToHexString(hash);
+        File first = new File(deploymentRoot, hex.substring(0,2));
+        return new File(first, hex.substring(2));
+
     }
 }

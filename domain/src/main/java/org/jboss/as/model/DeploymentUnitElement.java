@@ -38,6 +38,14 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
 
     private static final long serialVersionUID = 5335163070198512362L;
 
+    public static String bytesToHexString(byte[] bytes) {
+        return AbstractModelElement.bytesToHexString(bytes);
+    }
+
+    public static byte[] hexStringToBytes(String hex) {
+        return ParseUtils.hexStringToByteArray(hex);
+    }
+
     private final String uniqueName;
     private final String runtimeName;
     private final byte[] sha1Hash;

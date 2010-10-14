@@ -24,11 +24,15 @@ package org.jboss.as.server.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.controller.DomainControllerClient;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.UpdateFailedException;
 
 /**
  * A client to integarte with a local domain controller instance.
@@ -68,22 +72,48 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     /** {@inheritDoc} */
-    public List<ModelUpdateResponse<?>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates) {
-        final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
+    public List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates) {
+        final List<ModelUpdateResponse<List<ServerIdentity>>> responses = new ArrayList<ModelUpdateResponse<List<ServerIdentity>>>(updates.size());
         for(AbstractDomainModelUpdate<?> update : updates) {
             responses.add(executeUpdate(update));
         }
         return responses;
     }
 
-    private <R> ModelUpdateResponse<R> executeUpdate(AbstractDomainModelUpdate<R> domainUpdate) {
-        final R result = null;  // TODO execute update
-        return new ModelUpdateResponse<R>(result);
+    public List<ModelUpdateResponse<?>> updateServerModel(final List<AbstractServerModelUpdate<?>> updates, final String serverName) {
+        List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>();
+        for (AbstractServerModelUpdate<?> update : updates) {
+            responses.add(executeUpdate(update, serverName));
+        }
+        return responses;
+    }
+
+    private ModelUpdateResponse<List<ServerIdentity>> executeUpdate(AbstractDomainModelUpdate<?> domainUpdate) {
+        final List<ServerIdentity> result = null;  // TODO execute update
+        return new ModelUpdateResponse<List<ServerIdentity>>(result);
     }
 
     private <R> ModelUpdateResponse<R> executeUpdate(AbstractHostModelUpdate<R> hostUpdate) {
         final R result = null;  // TODO execute update
         return new ModelUpdateResponse<R>(result);
+    }
+
+    private <R> ModelUpdateResponse<R> executeUpdate(final AbstractServerModelUpdate<R> update, final String serverName) {
+        Server server = serverManager.getServer(serverName);
+        if (server == null) {
+            // TODO better handle removal of server while client is concurrently
+            // processing results
+            return new ModelUpdateResponse<R>(new UpdateFailedException("unknown server " + serverName));
+        }
+        else {
+            try {
+                R result = server.applyUpdate(update);
+                return new ModelUpdateResponse<R>(result);
+            } catch (UpdateFailedException e) {
+                return new ModelUpdateResponse<R>(e);
+            }
+        }
+
     }
 
     /** {@inheritDoc} */
