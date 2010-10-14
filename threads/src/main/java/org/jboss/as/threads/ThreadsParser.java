@@ -157,6 +157,7 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
             if (! encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            requiredElem.remove(element);
             switch (element) {
                 case MAX_THREADS: {
                     maxThreads = readScaledCountElement(reader);
@@ -239,6 +240,7 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
             if (! encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            requiredElem.remove(element);
             switch (element) {
                 case MAX_THREADS: {
                     maxThreads = readScaledCountElement(reader);
@@ -446,6 +448,7 @@ public final class ThreadsParser implements XMLElementReader<ParseResult<Extensi
             if (! encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            requiredElem.remove(element);
             switch (element) {
                 case CORE_THREADS: {
                     coreThreads = readScaledCountElement(reader);

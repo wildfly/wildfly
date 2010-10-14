@@ -44,6 +44,18 @@
                 <max-threads count="10" per-cpu="20"/>
                 <keepalive-time time="10" unit="SECONDS"/>
             </scheduled-thread-pool>
+            <bounded-queue-thread-pool name="jca-short-running" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="SECONDS"/>
+            </bounded-queue-thread-pool>
+            <bounded-queue-thread-pool name="jca-long-running" blocking="true">
+                <core-threads count="10" per-cpu="20"/>
+                <queue-length count="10" per-cpu="20"/>
+                <max-threads count="10" per-cpu="20"/>
+                <keepalive-time time="10" unit="SECONDS"/>
+            </bounded-queue-thread-pool>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
