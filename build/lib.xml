@@ -70,9 +70,10 @@
         ]]>
     </scriptdef>
     
-    <macrodef name="maven-resource">
+    <macrodef name="maven-resource" >
         <attribute name="group"/>
         <attribute name="artifact"/>
+        <attribute name="export-all" default="false"/>
         
         <sequential>
             <!-- Copy the jar to the module dir -->
@@ -86,11 +87,29 @@
             <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}}" update="true"/>
 
             <!-- Update the resource entry in module.xml -->
+            <define-resource-root path="${resourcename.@{group}.@{artifact}}" export-all="@{export-all}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
-                <replacefilter token="&lt;!-- Insert resources here --&gt;" value="&lt;resource-root path=&quot;${resourcename.@{group}.@{artifact}}&quot;/&gt;&#10;        &lt;!-- Insert resources here --&gt;"/>
+                <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
             </replace>
         </sequential>
         
     </macrodef>
+
+    <scriptdef name="define-resource-root" language="javascript">
+        <attribute name="path"/>
+        <attribute name="export-all"/>
+        <![CDATA[
+            path = attributes.get("path");
+            exportAll = attributes.get("export-all");
+            root = "";
+            if(exportAll == "true") {
+                root = "<resource-root path=\"" + path + "\">\n            <exports>\n                <include path=\"**\"/>\n            </exports>\n        </resource-root>";
+            } else {
+                root = "<resource-root path=\"" + path + "\"/>";
+            }
+
+                project.setProperty("current.resource.root", root);
+        ]]>
+    </scriptdef>
     
 </project>
