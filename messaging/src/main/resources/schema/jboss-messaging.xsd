@@ -22,7 +22,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="urn:jboss:domain:messaging:1.0"
            targetNamespace="urn:jboss:domain:messaging:1.0"
-           elementFormDefault="unqualified"
+           elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
 

@@ -22,10 +22,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:connector:1.0" xmlns="urn:jboss:domain:connector:1.0"
+           targetNamespace="urn:jboss:domain:connector:1.0" 
+           xmlns="urn:jboss:domain:connector:1.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-        >
+           version="1.0">
 
     <xs:element name="subsystem" type="subsystemType"/>
 
@@ -40,7 +41,7 @@
                 </xs:annotation>
             </xs:element>
 
-            <xs:element name="bean-validation" type="xs:boolean" minOccurs="0">
+            <xs:element name="bean-validation" type="bean-validationType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
                         Toggle bean validation (JSR-303) for the deployment units. If it's not present it's considered

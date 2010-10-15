@@ -35,6 +35,7 @@
                 <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
                 <xs:element name="system-properties" type="properties" minOccurs="0"/>
+                <xs:element name="management" type="managementType"/>
                 <xs:element name="domain-controller" type="domain-controllerType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
                 <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
@@ -74,6 +75,30 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    
+    <xs:complexType name="managementType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the host's management system.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="interface" type="xs:string" use="required">        
+            <xs:annotation>
+                <xs:documentation>
+                    Interface on which the host's socket for intra-domain
+                    management communication should be opened.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" type="xs:int" use="required">        
+            <xs:annotation>
+                <xs:documentation>
+                    Port on which the host's socket for intra-domain
+                    management communication should be opened.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="domain-controllerType">
         <xs:choice>

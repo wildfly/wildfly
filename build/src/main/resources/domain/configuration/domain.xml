@@ -30,7 +30,10 @@
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
                             urn:jboss:domain:jmx:1.0 jboss-jmx.xsd
                             urn:jboss:domain:sar:1.0 jboss-sar.xsd
-                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd">
+                            urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
+                            urn:jboss:domain:connector:1.0 jboss-connector.xsd
+                            urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
+                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd">
 
     <extensions>
         <extension module="org.jboss.as.threads"/>
@@ -55,13 +58,13 @@
                     <core-threads count="10" per-cpu="20"/>
                     <queue-length count="10" per-cpu="20"/>
                     <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="SECONDS"/>
+                    <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
                 <bounded-queue-thread-pool name="jca-long-running" blocking="true">
                     <core-threads count="10" per-cpu="20"/>
                     <queue-length count="10" per-cpu="20"/>
                     <max-threads count="10" per-cpu="20"/>
-                    <keepalive-time time="10" unit="SECONDS"/>
+                    <keepalive-time time="10" unit="seconds"/>
                 </bounded-queue-thread-pool>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
