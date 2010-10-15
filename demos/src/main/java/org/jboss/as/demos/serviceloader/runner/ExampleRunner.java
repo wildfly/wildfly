@@ -21,7 +21,7 @@
  */
 package org.jboss.as.demos.serviceloader.runner;
 
-import org.jboss.as.demos.sar.DeploymentUtils;
+import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.serviceloader.archive.TestService;
 
 /**
@@ -34,8 +34,6 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         DeploymentUtils deploymentUtils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
         deploymentUtils.deploy();
-        //Thread.sleep(30000);
-        //deploymentUtils.undeploy();
     }
 
 }

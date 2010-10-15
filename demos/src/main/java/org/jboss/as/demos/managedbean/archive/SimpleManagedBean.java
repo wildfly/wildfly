@@ -23,6 +23,8 @@ package org.jboss.as.demos.managedbean.archive;
 
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.annotation.Resources;
 
 import org.jboss.logging.Logger;
 
@@ -32,7 +34,11 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@ManagedBean("TestBean")
+
+@ManagedBean("SimpleManagedBean")
+@Resources({
+    @Resource(name="simpleManagedBean", type=SimpleManagedBean.class, mappedName="SimpleManagedBean")
+})
 public class SimpleManagedBean {
 
     Logger log = Logger.getLogger(SimpleManagedBean.class);

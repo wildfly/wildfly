@@ -19,23 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.sar.runner;
-
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.sar.archive.ConfigService;
-
-
+package org.jboss.as.demos.managedbean.mbean;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ExampleRunner {
+public interface TestMBean {
 
-    public static void main(String[] args) throws Exception {
-        DeploymentUtils deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
-        deploymentUtils.deploy();
-    }
-
+    void test();
+    void start();
 }

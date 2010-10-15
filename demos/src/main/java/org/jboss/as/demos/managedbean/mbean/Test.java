@@ -19,23 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.sar.runner;
+package org.jboss.as.demos.managedbean.mbean;
 
-import org.jboss.as.demos.DeploymentUtils;
-import org.jboss.as.demos.sar.archive.ConfigService;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-
+import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
+import org.jboss.logging.Logger;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ExampleRunner {
+public class Test implements TestMBean {
 
-    public static void main(String[] args) throws Exception {
-        DeploymentUtils deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
-        deploymentUtils.deploy();
+    Logger log = Logger.getLogger(Test.class.getName());
+
+    @Override
+    public void test() {
+        log.info("In test()");
+        try {
+            InitialContext ctx = new InitialContext();
+            Object o = ctx.lookup("global/managedbean-example_jar/SimpleManagedBean");
+            System.out.println("-----> Found " + o);
+            SimpleManagedBean bean = (SimpleManagedBean)o;
+            System.out.println("Cast to SimpleManagedBean");
+        } catch (NamingException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
+    public void start() {
+        log.info("Starting MBean " + this.getClass().getName());
+    }
 }

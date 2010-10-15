@@ -21,11 +21,32 @@
  */
 package org.jboss.as.demos.managedbean.runner;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+
+import org.jboss.as.demos.DeploymentUtils;
+import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
+import org.jboss.as.demos.managedbean.mbean.Test;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
 public class ExampleRunner {
+
+    public static void main(String[] args) throws Exception {
+        DeploymentUtils utils = new DeploymentUtils("managedbean-example.jar", SimpleManagedBean.class.getPackage());
+        utils.addDeployment("managedbean-mbean.sar", Test.class.getPackage());
+
+        utils.deploy();
+        ObjectName objectName = new ObjectName("jboss:name=test,type=managedbean");
+        utils.waitForDeploymentHack(objectName);
+
+        MBeanServerConnection mbeanServer = utils.getConnection();
+
+        Thread.sleep(1000);
+        mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+    }
 
 }
