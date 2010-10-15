@@ -27,8 +27,6 @@ import java.util.Map;
 import org.jboss.modules.ClassifyingModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.ModuleLoaderSelector;
-import org.jboss.modules.SimpleModuleLoaderSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
