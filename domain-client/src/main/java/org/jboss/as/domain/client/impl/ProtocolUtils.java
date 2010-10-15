@@ -20,10 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.domain.client.impl;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.marshalling.ByteInput;
@@ -36,31 +38,60 @@ import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 
 /**
- * Utility class providing methods for common management tasks.
- *
  * @author John Bailey
  */
-public class ManagementUtils {
+public class ProtocolUtils {
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
 
     static {
         try {
             MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-        } catch (ModuleLoadException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         CONFIG = new MarshallingConfiguration();
         CONFIG.setClassResolver(ModularClassResolver.getInstance());
     }
 
-    private ManagementUtils() {
+    private ProtocolUtils() {
     }
 
-    public static <T> T unmarshal(final ByteInput input, final Class<T> expectedType) throws Exception {
+    static void writeRequestHeader(final DataOutput output) throws Exception {
+        output.write(Protocol.SIGNATURE);
+        output.writeByte(Protocol.VERSION_FIELD);
+        output.writeInt(Protocol.VERSION);
+        output.writeInt(0);
+        output.writeByte(Protocol.DOMAIN_CONTROLLER_REQUEST);
+    }
+
+    static int readResponseHeader(final DataInput input) throws IOException {
+        validateSignature(input);
+        expectHeader(input, Protocol.VERSION_FIELD);
+        final int version = input.readInt();
+        final int responseId = input.readInt();
+        assert responseId == 0;
+        return version;
+    }
+
+    static void validateSignature(final DataInput input) throws IOException {
+        final byte[] signatureBytes = new byte[4];
+        input.readFully(signatureBytes);
+        if (!Arrays.equals(Protocol.SIGNATURE, signatureBytes)) {
+            throw new IOException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
+        }
+    }
+
+    static void expectHeader(final DataInput input, int expected) throws IOException {
+        byte header = input.readByte();
+        if (header != (byte) expected) {
+            throw new IOException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
+        }
+    }
+
+    static <T> T unmarshal(final ByteInput input, final Class<T> expectedType) throws Exception {
         final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
         final ChunkyByteInput chunked = new ChunkyByteInput(input);
         try {
@@ -73,7 +104,7 @@ public class ManagementUtils {
         }
     }
 
-    public static void marshal(final ByteOutput output, final Object object) throws Exception {
+    static void marshal(final ByteOutput output, final Object object) throws Exception {
         final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
         final ChunkyByteOutput chunked = new ChunkyByteOutput(output);
         try {
@@ -82,13 +113,6 @@ public class ManagementUtils {
             marshaller.finish();
         } finally {
             chunked.close();
-        }
-    }
-
-    public static void expectHeader(final DataInput input, int expected) throws IOException, ManagementException {
-        byte header = input.readByte();
-        if (header != (byte) expected) {
-            throw new ManagementException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
         }
     }
 }

@@ -186,6 +186,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
 
+        <module-def name="org.jboss.as.domain-client">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-domain-client"/>
+        </module-def>
+
         <module-def name="org.jboss.as.domain-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
@@ -322,6 +326,10 @@
 
         <module-def name="org.jboss.xnio">
             <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio.nio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-nio"/>
         </module-def>
 
         <module-def name="org.jboss.vfs">

@@ -20,19 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.client.api;
 
 import java.io.Serializable;
 import org.jboss.as.model.UpdateFailedException;
 
 /**
- * Response object used to relay information back the DC when an update is passed to a server manager to process.
- *
- * @param <R> the type of result that is returned by this update type
+ * Wrapper object containing the results of an update operation.  The result either contains a result of type {@code R}
+ * or a {@link org.jboss.as.model.UpdateFailedException}.  To determine which to look for the {@code isSuccess()} method
+ * can be called.  If the result is {@code true} the result object is present, if not the {@link org.jboss.as.model.UpdateFailedException}
+ * is.
  *
  * @author John Bailey
  */
-public class ModelUpdateResponse<R> implements Serializable {
+public class DomainUpdateResult<R> implements Serializable {
     private static final long serialVersionUID = 5496724566407738382L;
 
     private final R result;
@@ -43,7 +44,7 @@ public class ModelUpdateResponse<R> implements Serializable {
      *
      * @param result The result of the update
      */
-    public ModelUpdateResponse(final R result) {
+    public DomainUpdateResult(final R result) {
         this.result = result;
         this.updateException = null;
     }
@@ -54,7 +55,7 @@ public class ModelUpdateResponse<R> implements Serializable {
      *
      * @param updateException The update exception
      */
-    public ModelUpdateResponse(UpdateFailedException updateException) {
+    public DomainUpdateResult(UpdateFailedException updateException) {
         this.updateException = updateException;
         this.result = null;
     }

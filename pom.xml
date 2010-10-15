@@ -110,6 +110,7 @@
         <module>deployment-client</module>
         <module>protocol</module>
         <module>domain</module>
+        <module>domain-client</module>
         <module>connector</module>
         <module>server-manager</module>
         <module>server</module>
@@ -237,6 +238,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-connector</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-domain-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

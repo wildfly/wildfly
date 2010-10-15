@@ -33,12 +33,16 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.domain.controller.ModelUpdateResponse;
+import org.jboss.as.domain.controller.ServerGroupMember;
+import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
+import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -68,26 +72,34 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
     private FileRepository localFileRepository;
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final byte getIdentifier() {
         return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void start(StartContext context) throws StartException {
         domainController = domainControllerValue.getValue();
         executorService = executorServiceValue.getValue();
         localFileRepository = localFileRepositoryValue.getValue();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void stop(StopContext context) {
         domainController = null;
         executorService = null;
         localFileRepository = null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized DomainControllerOperationHandler getValue() throws IllegalStateException {
         return this;
     }
@@ -141,6 +153,10 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                 return new GetFileOperation();
             case ManagementProtocol.UNREGISTER_REQUEST:
                 return new UnregisterOperation();
+            case ManagementProtocol.GET_DOMAIN_REQUEST:
+                return new GetDomainOperation();
+            case ManagementProtocol.APPLY_UPDATES_REQUEST:
+                return new ApplyDomainModelUpdatesOperation();
             default: {
                 return null;
             }
@@ -149,7 +165,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
 
     private abstract class DomainControllerOperation extends ManagementResponse {
         protected void readRequest(final ByteDataInput input) throws ManagementException {
-            super.readRequest(input);    //To change body of overridden methods use File | Settings | File Templates.
+            super.readRequest(input);
             final String serverManagerId;
             try {
                 expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_ID);
@@ -285,8 +301,8 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         }
 
         private void getChildFiles(final File base, final List<File> childFiles) {
-            for(File child : base.listFiles()) {
-                if(child.isFile()) {
+            for (File child : base.listFiles()) {
+                if (child.isFile()) {
                     childFiles.add(child);
                 } else {
                     getChildFiles(child, childFiles);
@@ -313,13 +329,99 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                     output.write(buffer, 0, len);
                 }
             } finally {
-                if(inputStream != null) {
+                if (inputStream != null) {
                     try {
                         inputStream.close();
-                    } catch(IOException ignored){}
+                    } catch (IOException ignored) {
+                    }
                 }
             }
             output.writeByte(ManagementProtocol.FILE_END);
+        }
+    }
+
+    private class GetDomainOperation extends ManagementResponse {
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.GET_DOMAIN_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return ManagementProtocol.GET_DOMAIN_RESPONSE;
+        }
+
+        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
+            try {
+                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
+                marshal(output, domainController.getDomainModel());
+            } catch (Exception e) {
+                throw new ManagementException("Unable to write domain configuration to client", e);
+            }
+        }
+    }
+
+    private class ApplyDomainModelUpdatesOperation extends ManagementResponse {
+        private List<AbstractDomainModelUpdate<?>> updates;
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.APPLY_UPDATES_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ManagementProtocol.APPLY_UPDATES_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                int count = input.readInt();
+                updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
+                for(int i = 0; i < count; i++) {
+                    expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    final AbstractDomainModelUpdate<?> update = unmarshal(input, AbstractDomainModelUpdate.class);
+                    updates.add(update);
+                }
+                log.infof("Received domain model updates %s", updates);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to read domain model updates from request", e);
+            }
+        }
+
+        @Override
+        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+            List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
+            for(AbstractDomainModelUpdate<?> update : updates) {
+                responses.add(processUpdate(update));
+            }
+            try {
+                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                output.writeInt(responses.size());
+                for(ModelUpdateResponse<?> response : responses) {
+                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
+                    if(response.isSuccess()) {
+                        output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_SUCCESS);
+                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_RETURN);
+                        marshal(output, response.getResult());
+                    } else {
+                        output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_FAILURE);
+                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                        marshal(output, response.getUpdateException());
+                    }
+                }
+            } catch (Exception e) {
+                throw new ManagementException("Unable to send domain model update response.", e);
+            }
+        }
+
+        private <T> ModelUpdateResponse<T> processUpdate(final AbstractDomainModelUpdate<T> update) {
+            //try {
+                final T result = null; // TODO: Process update
+                return new ModelUpdateResponse<T>(result);
+//            } catch (UpdateFailedException e) {
+//                return new ModelUpdateResponse<R>(e);
+//            }
         }
     }
 }
