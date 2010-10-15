@@ -22,9 +22,12 @@
 
 package org.jboss.as.jmx;
 
+import javax.management.MBeanServer;
+
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.services.net.SocketBinding;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 
@@ -39,12 +42,26 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
         super(Namespace.CURRENT.getUriString());
     }
 
+    @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+
+        //MBeanServer service
         batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+        //JMXConnector service
+        JMXConnectorService jmxConnectorService = new JMXConnectorService();
+        batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
+            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
+            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-registry"), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
+            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-server"), SocketBinding.class, jmxConnectorService.getServerPortBinding())
+            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+
+
     }
 
+    @Override
     protected JmxSubsystemElement createSubsystemElement() {
         return new JmxSubsystemElement();
     }
