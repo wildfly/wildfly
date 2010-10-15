@@ -52,8 +52,7 @@ public class ClassifyingModuleLoaderService implements Service<ClassifyingModule
      * @param context The start context
      */
     public synchronized void start(StartContext context) throws StartException {
-        classifyingModuleLoader = new ClassifyingModuleLoader(delegates, Module.getCurrentLoader());
-        Module.setModuleLoaderSelector(new SimpleModuleLoaderSelector(classifyingModuleLoader));
+        classifyingModuleLoader = new ClassifyingModuleLoader("as-classifying", delegates, Module.getDefaultModuleLoader());
     }
 
     /**
@@ -62,7 +61,6 @@ public class ClassifyingModuleLoaderService implements Service<ClassifyingModule
      * @param context
      */
     public synchronized void stop(StopContext context) {
-        Module.setModuleLoaderSelector(ModuleLoaderSelector.DEFAULT);
         classifyingModuleLoader = null;
     }
 

@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -46,7 +47,7 @@ public class ServerStartupListener extends AbstractServiceListener<Object>{
     private volatile int startedServices;
     private volatile int startedOnDemandServices;
     private volatile int count = 0;
-    private final long start = System.currentTimeMillis();
+    private final long start = Module.getStartTime();
     private final Map<ServiceName, StartException> serviceFailures = new HashMap<ServiceName, StartException>();
     private final Callback finishCallback;
     private Runnable batchCallback;

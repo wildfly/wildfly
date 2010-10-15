@@ -124,7 +124,7 @@ public class VFSResourceLoader implements ResourceLoader {
         spec.setImplVersion(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VERSION, entryAttribute, mainAttribute));
         spec.setImplVendor(getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VENDOR, entryAttribute, mainAttribute));
         if (Boolean.parseBoolean(getDefinedAttribute(Attributes.Name.SEALED, entryAttribute, mainAttribute))) {
-            spec.setSealBase(moduleIdentifier.toURL(root.getName()));
+            spec.setSealBase(root.toURL());
         }
         return spec;
     }
@@ -156,7 +156,7 @@ public class VFSResourceLoader implements ResourceLoader {
             if (!file.exists()) {
                 return null;
             }
-            return new VFSEntryResource(file, moduleIdentifier.toURL(root.getName(), name));
+            return new VFSEntryResource(file, root.toURL());
         } catch (MalformedURLException e) {
             // must be invalid...?  (todo: check this out)
             return null;

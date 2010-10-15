@@ -29,8 +29,8 @@ import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
@@ -73,17 +73,15 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException("Failed to create VFSResourceLoader for root [" + resource.getRootName()+ "]", e);
             }
         }
+        final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(DeploymentModuleLoaderProcessor.ATTACHMENT_KEY);
         final ModuleConfig.Dependency[] dependencies = moduleConfig.getDependencies();
         for(ModuleConfig.Dependency dependency : dependencies) {
-            specBuilder.addModuleDependency(
-                    ModuleDependencySpec.build(dependency.getIdentifier())
-                    .setExportFilter(dependency.isExport() ? PathFilters.acceptAll() : PathFilters.rejectAll())
-                    .setOptional(dependency.isOptional())
-                    .create()
-            );
+            DependencySpec depSpec = DependencySpec.createModuleDependencySpec(dependency.getIdentifier(), dependency.isExport(), dependency.isOptional());
+            specBuilder.addDependency(depSpec);
         }
+        specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
         final ModuleSpec moduleSpec = specBuilder.create();
-        final DeploymentModuleLoader deploymentModuleLoader = context.getAttachment(DeploymentModuleLoaderProcessor.ATTACHMENT_KEY);
+
         deploymentModuleLoader.addModuleSpec(moduleSpec);
 
         try {

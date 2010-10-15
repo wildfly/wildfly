@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.util.Collections;
+
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.MarshallerFactory;
@@ -33,7 +34,8 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.LoggingOutputStream;
@@ -75,7 +77,7 @@ public final class DomainServerMain {
 
         final MarshallerFactory factory;
         try {
-            factory = Marshalling.getMarshallerFactory("river", ModuleClassLoader.forModuleName("org.jboss.marshalling.river"));
+            factory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
         } catch (ModuleLoadException e) {
             throw new IllegalStateException("Failed to start server", e);
         }

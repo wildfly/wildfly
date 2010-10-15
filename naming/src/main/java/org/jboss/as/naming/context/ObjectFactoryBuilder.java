@@ -108,7 +108,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
 
     private ObjectFactory factoryFromModularReference(ModularReference modularReference) throws NamingException {
         try {
-            final Module module = Module.getModule(modularReference.getModuleIdentifier());
+            final Module module = Module.getCurrentModuleLoader().loadModule(modularReference.getModuleIdentifier());
             final Class<?> factoryClass = module.getClassLoader().loadClass(modularReference.getFactoryClassName());
             return ObjectFactory.class.cast(factoryClass.newInstance());
         } catch (Throwable t) {

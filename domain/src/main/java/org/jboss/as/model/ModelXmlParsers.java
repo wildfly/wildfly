@@ -58,6 +58,7 @@ import org.jboss.as.model.socket.InterfaceParsingUtils;
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -408,7 +409,7 @@ public final class ModelXmlParsers {
 
             // Register element handlers for this extension
             try {
-                for (Extension extension : Module.loadService(moduleName, Extension.class)) {
+                for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
                     extension.initialize(extensionContext);
                 }
             } catch (ModuleLoadException e) {

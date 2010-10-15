@@ -50,13 +50,18 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
 
     @Override
     protected Module preloadModule(final ModuleIdentifier identifier) throws ModuleLoadException {
-        return super.preloadModule(identifier);
+        if (identifier.getName().startsWith("deployment.")) {
+            return super.preloadModule(identifier);
+        } else {
+            return Module.getModuleFromDefaultLoader(identifier);
+        }
     }
 
     @Override
     protected ModuleSpec findModule(ModuleIdentifier moduleIdentifier) throws ModuleLoadException {
         final ConcurrentMap<ModuleIdentifier, ModuleSpec> moduleSpecs = this.moduleSpecs;
-        return moduleSpecs.get(moduleIdentifier);
+        ModuleSpec moduleSpec = moduleSpecs.get(moduleIdentifier);
+        return moduleSpec;
     }
 
     @Override
@@ -65,5 +70,9 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
             unloadModuleLocal(module);
         }
         else throw new IllegalStateException("Unknown module " + module);
+    }
+
+    public String toString() {
+        return "as-deployment";
     }
 }

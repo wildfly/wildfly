@@ -24,6 +24,7 @@ package org.jboss.as.model;
 
 import org.jboss.as.Extension;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -54,7 +55,7 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
      * @param updateContext*/
     public void applyUpdateBootAction(final UpdateContext updateContext) {
         try {
-            for (Extension extension : Module.loadService(moduleName, Extension.class)) {
+            for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
                 extension.activate(null);
             }
         } catch (ModuleLoadException e) {
