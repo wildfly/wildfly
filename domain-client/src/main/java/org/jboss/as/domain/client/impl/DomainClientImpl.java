@@ -22,7 +22,9 @@
 
 package org.jboss.as.domain.client.impl;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -33,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.domain.client.api.DomainClient;
 import org.jboss.as.domain.client.api.DomainUpdateResult;
 import static org.jboss.as.domain.client.impl.ProtocolUtils.expectHeader;
@@ -45,6 +49,7 @@ import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 
@@ -69,8 +74,20 @@ public class DomainClientImpl implements DomainClient {
         return new GetDomainOperation().executeForResult();
     }
 
-    public List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates) {
+    public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
         return new ApplyUpdatesOperation(updates).executeForResult();
+    }
+
+    public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
+        return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+    }
+
+    public Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
+        try {
+            return new ExecuteDeploymentPlanOperation(deploymentPlan).execute();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get deployment result future", e);
+        }
     }
 
     private abstract class Request<T> {
@@ -167,7 +184,7 @@ public class DomainClientImpl implements DomainClient {
             try {
                 output.writeByte(Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 output.writeInt(updates.size());
-                for(AbstractDomainModelUpdate<?> update : updates) {
+                for (AbstractDomainModelUpdate<?> update : updates) {
                     output.writeByte(Protocol.PARAM_DOMAIN_MODEL_UPDATE);
                     marshal(output, update);
                 }
@@ -181,10 +198,10 @@ public class DomainClientImpl implements DomainClient {
                 expectHeader(input, Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 final int updateCount = input.readInt();
                 final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
-                for(int i = 0; i < updateCount; i++) {
+                for (int i = 0; i < updateCount; i++) {
                     expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT);
                     byte resultCode = input.readByte();
-                    if(resultCode == (byte)Protocol.APPLY_UPDATE_RESULT_SUCCESS) {
+                    if (resultCode == (byte) Protocol.APPLY_UPDATE_RESULT_SUCCESS) {
                         expectHeader(input, Protocol.PARAM_APPLY_UPDATE_RESULT_RETURN);
                         final Object result = unmarshal(input, Object.class);
                         results.add(new DomainUpdateResult<Object>(result));
@@ -197,6 +214,97 @@ public class DomainClientImpl implements DomainClient {
                 return results;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read update responses", e);
+            }
+        }
+    }
+
+    private class ExecuteDeploymentPlanOperation extends Request<DeploymentPlanResult> {
+        private final DeploymentPlan deploymentPlan;
+
+        private ExecuteDeploymentPlanOperation(DeploymentPlan deploymentPlan) {
+            this.deploymentPlan = deploymentPlan;
+        }
+
+        public final byte getRequestCode() {
+            return Protocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return Protocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
+        }
+
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+            try {
+                output.writeByte(Protocol.PARAM_DEPLOYMENT_PLAN);
+                marshal(output, deploymentPlan);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to send deployment plan", e);
+            }
+        }
+
+        protected final DeploymentPlanResult receiveResponse(final int protocolVersion, final ByteDataInput input) {
+            try {
+                expectHeader(input, Protocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+                return unmarshal(input, DeploymentPlanResult.class);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read deployment plan result from response", e);
+            }
+        }
+    }
+
+    private class AddDeploymentContentOperation extends Request<byte[]> {
+        private final String name;
+        private final String runtimeName;
+        private final InputStream inputStream;
+
+        private AddDeploymentContentOperation(final String name, final String runtimeName, final InputStream inputStream) {
+            this.name = name;
+            this.runtimeName = runtimeName;
+            this.inputStream = inputStream;
+        }
+
+        public final byte getRequestCode() {
+            return Protocol.ADD_DEPLOYMENT_CONTENT_REQUEST;
+        }
+
+        protected final byte getResponseCode() {
+            return Protocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
+        }
+
+        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+            try {
+                output.writeByte(Protocol.PARAM_DEPLOYMENT_NAME);
+                output.writeUTF(name);
+                output.writeByte(Protocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
+                output.writeUTF(runtimeName);
+                output.writeByte(Protocol.PARAM_DEPLOYMENT_CONTENT);
+                ChunkyByteOutput chunkyByteOutput = null;
+                try {
+                    chunkyByteOutput = new ChunkyByteOutput(output, 8192);
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while((read = inputStream.read(buffer)) != -1) {
+                        chunkyByteOutput.write(buffer, 0, read);
+                    }
+                } finally {
+                    safeClose(inputStream);
+                    safeClose(chunkyByteOutput);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to send deployment content", e);
+            }
+        }
+
+        protected final byte[] receiveResponse(final int protocolVersion, final ByteDataInput input) {
+            try {
+                expectHeader(input, Protocol.PARAM_DEPLOYMENT_HASH_LENGTH);
+                int length = input.readInt();
+                byte[] hash = new byte[length];
+                expectHeader(input, Protocol.PARAM_DEPLOYMENT_HASH);
+                input.readFully(hash);
+                return hash;
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read deployment hash from response", e);
             }
         }
     }
@@ -300,6 +408,12 @@ public class DomainClientImpl implements DomainClient {
                 safeClose(socket);
             }
         }
+    }
+
+    private void safeClose(final Closeable closeable) {
+        if(closeable != null) try {
+            closeable.close();
+        } catch (Throwable ignored){}
     }
 
     private void safeClose(final Socket socket) {

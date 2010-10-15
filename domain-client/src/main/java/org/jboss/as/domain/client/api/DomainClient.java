@@ -22,8 +22,12 @@
 
 package org.jboss.as.domain.client.api;
 
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.concurrent.Future;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.domain.client.impl.DomainClientImpl;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -50,6 +54,24 @@ public interface DomainClient {
      * @return The results of the update
      */
     List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates);
+
+    /**
+     * Execute a deployment plan against the domain.
+     *
+     * @param deploymentPlan The deployment plan
+     * @return A future allowing access to the deployment result when complete
+     */
+    Future<DeploymentPlanResult> execute(DeploymentPlan deploymentPlan);
+
+    /**
+     * Add the content for a deployment to the domain controller.
+     *
+     * @param name The deployment name
+     * @param runtimeName The runtime name
+     * @param stream The data stream for the deployment
+     * @return The unique hash for the deployment
+     */
+    byte[] addDeploymentContent(String name, String runtimeName, InputStream stream);
 
     /**
      * Factory used to create an {@link org.jboss.as.domain.client.api.DomainClient} instance for a remote address

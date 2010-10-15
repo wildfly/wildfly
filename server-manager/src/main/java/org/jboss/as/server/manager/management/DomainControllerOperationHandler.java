@@ -31,6 +31,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainControllerClient;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
@@ -38,6 +40,7 @@ import org.jboss.as.domain.controller.ServerGroupMember;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
@@ -157,6 +160,10 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                 return new GetDomainOperation();
             case ManagementProtocol.APPLY_UPDATES_REQUEST:
                 return new ApplyDomainModelUpdatesOperation();
+            case ManagementProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
+                return new ExecuteDeploymentPlanOperation();
+            case ManagementProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
+                return new AddDeploymentContentOperation();
             default: {
                 return null;
             }
@@ -422,6 +429,89 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
 //            } catch (UpdateFailedException e) {
 //                return new ModelUpdateResponse<R>(e);
 //            }
+        }
+    }
+
+    private class ExecuteDeploymentPlanOperation extends ManagementResponse {
+        private DeploymentPlan deploymentPlan;
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ManagementProtocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_PLAN);
+                deploymentPlan = unmarshal(input, DeploymentPlan.class);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to read deployment plan from request", e);
+            }
+        }
+
+        @Override
+        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+            final DeploymentPlanResult result = null; // TODO: Execute deployment plan
+            try {
+                output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+                marshal(output, result);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to send deployment plan result.", e);
+            }
+        }
+    }
+
+    private class AddDeploymentContentOperation extends ManagementResponse {
+        private byte[] deploymentHash;
+
+        public final byte getRequestCode() {
+            return ManagementProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ManagementProtocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_NAME);
+                final String deploymentName = input.readUTF();
+                expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
+                final String deploymentRuntimeName = input.readUTF();
+                expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_CONTENT);
+                final ChunkyByteInput contentInput = new ChunkyByteInput(input);
+                try {
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while((read = contentInput.read(buffer)) != -1) {
+                        // TODO:  Write the bytes somewhere
+                    }
+                } finally {
+                    contentInput.close();
+                }
+                deploymentHash = new byte[0]; // TODO: Get hash from content bytes
+            } catch (Exception e) {
+                throw new ManagementException("Unable to read deployment content from request", e);
+            }
+        }
+
+        @Override
+        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+            try {
+                output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_HASH_LENGTH);
+                output.writeInt(deploymentHash.length);
+                output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_HASH);
+                output.write(deploymentHash);
+            } catch (Exception e) {
+                throw new ManagementException("Unable to send deployment hash", e);
+            }
         }
     }
 }
