@@ -58,7 +58,7 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
     private String defaultHost;
 
     /** The web container config. */
-    // private WebContainerConfigElement config;
+    private WebContainerConfigElement config;
 
     /** The web connectors. */
     private final NavigableMap<String, WebConnectorElement> connectors = new TreeMap<String, WebConnectorElement>();
@@ -97,6 +97,7 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
     protected AbstractSubsystemAdd<WebSubsystemElement> getAdd() {
         final WebSubsystemAdd action = new WebSubsystemAdd();
         action.setDefaultHost(defaultHost);
+        action.setConfig(config);
         return action;
     }
 
@@ -118,6 +119,10 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         if(defaultHost != null) streamWriter.writeAttribute(Attribute.DEFAULT_HOST.getLocalName(), defaultHost);
+        if(config != null) {
+            streamWriter.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
+            config.writeContent(streamWriter);
+        }
         if(! connectors.isEmpty()) {
             for(final WebConnectorElement connector : connectors.values()) {
                 streamWriter.writeStartElement(Element.CONNECTOR.getLocalName());
@@ -131,6 +136,14 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
             }
         }
         streamWriter.writeEndElement();
+    }
+
+    public WebContainerConfigElement getConfig() {
+        return config;
+    }
+
+    public void setConfig(WebContainerConfigElement config) {
+        this.config = config;
     }
 
     WebConnectorElement addConnector(final String name) {

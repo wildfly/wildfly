@@ -61,7 +61,7 @@ enum Attribute {
 
     WEBDAV("webdav"),
 
-    X_POWERED_BY("x-powered-by"), ENABLE_LOOKUPS("enable-lookups"),
+    X_POWERED_BY("x-powered-by"), ENABLE_LOOKUPS("enable-lookups"), VALUE("value"),
     ;
 
     private final String name;

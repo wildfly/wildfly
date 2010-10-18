@@ -39,6 +39,7 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
     private static final long serialVersionUID = 1079329665126341623L;
     private static final String BASE_DIR = "jboss.home.dir";
     private String defaultHost;
+    private WebContainerConfigElement config;
 
     public WebSubsystemAdd() {
         super(Namespace.CURRENT.getUriString());
@@ -54,12 +55,14 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND);
 
-        WebDeploymentActivator.activate(defaultHost, context.getBatchBuilder());
+        WebDeploymentActivator.activate(defaultHost, new SharedWebMetaDataBuilder(config), context.getBatchBuilder());
     }
 
     /** {@inheritDoc} */
     protected WebSubsystemElement createSubsystemElement() {
-        return new WebSubsystemElement(defaultHost);
+        final WebSubsystemElement element = new WebSubsystemElement(defaultHost);
+        element.setConfig(config);
+        return element;
     }
 
     public String getDefaultHost() {
@@ -68,6 +71,14 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
 
     public void setDefaultHost(String defaultHost) {
         this.defaultHost = defaultHost;
+    }
+
+    public WebContainerConfigElement getConfig() {
+        return config;
+    }
+
+    public void setConfig(WebContainerConfigElement config) {
+        this.config = config;
     }
 
 }

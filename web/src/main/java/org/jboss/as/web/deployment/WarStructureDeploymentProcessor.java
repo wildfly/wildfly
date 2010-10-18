@@ -37,6 +37,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -57,6 +58,12 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
+    private final WebMetaData sharedWebMetaData;
+
+    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData) {
+        this.sharedWebMetaData = sharedWebMetaData;
+    }
+
     /** {@inheritDoc} */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
@@ -72,7 +79,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             throw new DeploymentUnitProcessingException(e);
         }
         // add the war metadata
-        context.putAttachment(WarMetaData.ATTACHMENT_KEY, new WarMetaData());
+        final WarMetaData warMetaData = new WarMetaData();
+        warMetaData.setSharedWebMetaData(sharedWebMetaData);
+        context.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
     }
 
     /**

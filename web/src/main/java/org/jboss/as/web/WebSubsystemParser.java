@@ -24,8 +24,10 @@ package org.jboss.as.web;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -71,7 +73,8 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
-
+                            WebContainerConfigElement config = parseContainerConfig(reader);
+                            subsystem.setConfig(config);
                             break;
                         }
                         case CONNECTOR: {
@@ -95,7 +98,165 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
         result.setResult(new ExtensionContext.SubsystemConfiguration<WebSubsystemElement>(subsystem, updates));
     }
 
-    void parseConnector(final XMLExtendedStreamReader reader, final List<AbstractSubsystemUpdate<WebSubsystemElement, ?>> list) throws XMLStreamException {
+    static WebContainerConfigElement parseContainerConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final WebContainerConfigElement config = new WebContainerConfigElement();
+        // no attributes
+        if (reader.getAttributeCount() > 0) {
+            throw ParseUtils.unexpectedAttribute(reader, 0);
+        }
+        // elements
+        Set<String> welcomeFiles = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+            case STATIC_RESOURCES: {
+                final WebStaticResourcesElement resourceServing = parseStaticResourceConfiguration(reader);
+                config.setStaticResources(resourceServing);
+                break;
+            }
+            case JSP_CONFIGURATION: {
+                final WebJspConfigurationElement jspConfiguration = parseJSPConfiguration(reader);
+                config.setJspConfiguration(jspConfiguration);
+                break;
+            }
+            case MIME_MAPPING: {
+                Map<String, String> mappings = parseProperties(reader, Element.MIME_MAPPING, false);
+                if(mappings != null && ! mappings.isEmpty()) {
+                    config.setMimeMappings(mappings);
+                }
+                break;
+            }
+            case WELCOME_FILE: {
+                final String welcomeFile = reader.getElementText().trim();
+                welcomeFiles.add(welcomeFile);
+                break;
+            }
+            default:
+                throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+        config.setWelcomeFiles(welcomeFiles);
+        return config;
+    }
+
+    static WebJspConfigurationElement parseJSPConfiguration(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final WebJspConfigurationElement config = new WebJspConfigurationElement();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case DEVELOPMENT:
+                    config.setDevelopment(Boolean.valueOf(value));
+                    break;
+                case DISABLED:
+                    config.setDisabled(Boolean.valueOf(value));
+                    break;
+                case KEEP_GENERATED:
+                    config.setKeepGenerated(Boolean.valueOf(value));
+                    break;
+                case TRIM_SPACES:
+                    config.setTrimSpaces(Boolean.valueOf(value));
+                    break;
+                case TAG_POOLING:
+                    config.setTagPooling(Boolean.valueOf(value));
+                    break;
+                case MAPPED_FILE:
+                    config.setMappedFile(Boolean.valueOf(value));
+                    break;
+                case CHECK_INTERVAL:
+                    config.setCheckInterval(Integer.valueOf(value));
+                    break;
+                case MODIFIFICATION_TEST_INTERVAL:
+                    config.setModificationTestInterval(Integer.valueOf(value));
+                    break;
+                case RECOMPILE_ON_FAIL:
+                    config.setRecompileOnFail(Boolean.valueOf(value));
+                case SMAP:
+                    config.setSmap(Boolean.valueOf(value));
+                    break;
+                case DUMP_SMAP:
+                    config.setDumpSmap(Boolean.valueOf(value));
+                    break;
+                case GENERATE_STRINGS_AS_CHAR_ARRAYS:
+                    config.setGenerateStringsAsCharArrays(Boolean.valueOf(value));
+                    break;
+                case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
+                    config.setErrorOnInvalidClassAttribute(Boolean.valueOf(value));
+                    break;
+                case SCRATCH_DIR:
+                    config.setScratchDir(value);
+                    break;
+                case SOURCE_VM:
+                    config.setScratchDir(value);
+                    break;
+                case TARGET_VM:
+                    config.setTargetVM(value);
+                    break;
+                case JAVA_ENCODING:
+                    config.setJavaEncoding(value);
+                    break;
+                case X_POWERED_BY:
+                    config.setXPoweredBy(Boolean.valueOf(value));
+                    break;
+                case DISPLAY_SOOURCE_FRAGMENT:
+                    config.setDisplaySourceFragment(Boolean.valueOf(value));
+                    break;
+                default:
+                    ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+        return config;
+    }
+
+    static WebStaticResourcesElement parseStaticResourceConfiguration(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final WebStaticResourcesElement config = new WebStaticResourcesElement();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                case LISTINGS:
+                    config.setListings(Boolean.valueOf(value));
+                    break;
+                case SENDFILE:
+                    config.setSendfileSize(Integer.valueOf(value));
+                    break;
+                case FILE_ENCONDING:
+                    config.setFileEncoding(value);
+                case READ_ONLY:
+                    config.setReadOnly(Boolean.valueOf(value));
+                    break;
+                case WEBDAV:
+                    config.setWebDav(Boolean.valueOf(value));
+                    break;
+                case SECRET:
+                    config.setSecret(value);
+                    break;
+                case MAX_DEPTH:
+                    config.setMaxDepth(Integer.valueOf(value));
+                    break;
+                case DISABLED:
+                    config.setDisabled(Boolean.valueOf(value));
+                    break;
+                default:
+                    ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+        return config;
+    }
+
+    static void parseConnector(final XMLExtendedStreamReader reader, final List<AbstractSubsystemUpdate<WebSubsystemElement, ?>> list) throws XMLStreamException {
         String name = null;
         String protocol = null;
         String bindingRef = null;
@@ -333,6 +494,69 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
         final String value = reader.getAttributeValue(0);
         ParseUtils.requireNoContent(reader);
         return value.trim();
+    }
+
+    static Map<String, String>  parseProperties(final XMLExtendedStreamReader reader, final Element propertyType, final boolean allowNullValue) throws XMLStreamException {
+        Map<String, String> properties = new HashMap<String, String>();
+        // Handle attributes
+        ParseUtils.requireNoAttributes(reader);
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case WEB_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    if (element == propertyType) {
+                        // Handle attributes
+                        String name = null;
+                        String value = null;
+                        int count = reader.getAttributeCount();
+                        for (int i = 0; i < count; i++) {
+                            final String attrValue = reader.getAttributeValue(i);
+                            if (reader.getAttributeNamespace(i) != null) {
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                            else {
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case NAME: {
+                                        name = attrValue;
+                                        if (properties.containsKey(name)) {
+                                            throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
+                                        }
+                                        break;
+                                    }
+                                    case VALUE: {
+                                        value = attrValue;
+                                        break;
+                                    }
+                                    default:
+                                        throw ParseUtils.unexpectedAttribute(reader, i);
+                                }
+                            }
+                        }
+                        if (name == null) {
+                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                        }
+                        if (value == null && !allowNullValue) {
+                            throw new XMLStreamException("Value for property " + name + " is null", reader.getLocation());
+                        }
+                        // add
+                        properties.put(name, value);
+                        // Handle elements
+                        ParseUtils.requireNoContent(reader);
+                    } else {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+        if (properties.size() == 0) {
+            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(propertyType));
+        }
+        return properties;
     }
 
 }
