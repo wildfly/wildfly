@@ -1,5 +1,9 @@
 package org.jboss.as.messaging.hornetq;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -15,10 +19,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Service configuring and starting the {@code HornetQService}.
@@ -40,8 +40,8 @@ public class HornetQService implements Service<HornetQServer> {
     private Configuration configuration;
 
     private HornetQServer server;
-    private Map<String, String> paths = new HashMap<String, String>();
-    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
+    private final Map<String, String> paths = new HashMap<String, String>();
+    private final Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
 
     public Injector<String> getPathInjector(String name) {
         return new PathInjector(name);
@@ -111,6 +111,10 @@ public class HornetQService implements Service<HornetQServer> {
             }
 
             // Now start the server
+            // FIXME securityEnabled be true? (true is the default) and we
+            // should use the constructor that takes a SecurityManager
+            configuration.setSecurityEnabled(false);
+
             server = new HornetQServerImpl(configuration);
             // HornetQ expects the TCCL to be set to something that can find the
             // log factory class.
@@ -160,7 +164,7 @@ public class HornetQService implements Service<HornetQServer> {
      * #socketBindings
      */
     class SocketBindingInjector implements Injector<SocketBinding>, Value<SocketBinding> {
-        private String name;
+        private final String name;
         private SocketBinding value;
 
         SocketBindingInjector(String name) {

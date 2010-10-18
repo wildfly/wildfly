@@ -39,6 +39,12 @@
   </build>
   
   <dependencies>
+
+    <dependency>
+        <groupId>org.hornetq</groupId>
+        <artifactId>hornetq-core</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.jboss.as</groupId>
       <artifactId>jboss-as-jmx</artifactId>
@@ -63,5 +69,11 @@
        <groupId>org.jboss.spec.javax.annotation</groupId>
        <artifactId>jboss-annotations-api_1.1_spec</artifactId>
     </dependency>
+
+    <dependency>
+        <groupId>org.jboss.spec.javax.jms</groupId>
+        <artifactId>jboss-jms-api_1.1_spec</artifactId>
+    </dependency>
+
   </dependencies>
 </project>
