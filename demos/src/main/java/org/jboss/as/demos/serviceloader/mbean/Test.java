@@ -43,6 +43,7 @@ public class Test implements TestMBean {
         ServiceLoader<TestService> loader = module.loadService(TestService.class);
         log.info("-----> In test()");
         for (TestService service : loader) {
+            log.info("-----> Found service " + service);
             log.info("-----> " + service.decorate("Hello"));
         }
     }

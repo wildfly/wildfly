@@ -21,9 +21,12 @@
  */
 package org.jboss.as.demos.serviceloader.runner;
 
-import java.util.ServiceLoader;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 
+import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.serviceloader.archive.TestService;
+import org.jboss.as.demos.serviceloader.mbean.Test;
 
 /**
  *
@@ -33,22 +36,22 @@ import org.jboss.as.demos.serviceloader.archive.TestService;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        ServiceLoader<TestService> loader = ServiceLoader.load(TestService.class);
-        for (TestService service : loader) {
-            System.out.println(service.decorate("Hello"));
-        }
+        DeploymentUtils utils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
+        try {
+            utils.addDeployment("serviceloader-mbean.sar", Test.class.getPackage(), true);
 
-//        DeploymentUtils utils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
-//        utils.addDeployment("serviceloader-mbean.sar", Test.class.getPackage(), true);
-//
-//        utils.deploy();
-//        ObjectName objectName = new ObjectName("jboss:name=test,type=serviceloader");
-//        utils.waitForDeploymentHack(objectName);
-//
-//        MBeanServerConnection mbeanServer = JMXClientConnectionFactory.getConnection("localhost", 1090);
-//
-//        Thread.sleep(1000);
-//        mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+            utils.deploy();
+            ObjectName objectName = new ObjectName("jboss:name=test,type=serviceloader");
+            utils.waitForDeploymentHack(objectName);
+
+            MBeanServerConnection mbeanServer = utils.getConnection();
+
+            Thread.sleep(1000);
+
+            mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+        } finally {
+            utils.undeploy();
+        }
     }
 
 }
