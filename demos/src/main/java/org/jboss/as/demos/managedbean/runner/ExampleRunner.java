@@ -37,16 +37,20 @@ public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = new DeploymentUtils("managedbean-example.jar", SimpleManagedBean.class.getPackage());
-        utils.addDeployment("managedbean-mbean.sar", Test.class.getPackage());
+        try {
+            utils.addDeployment("managedbean-mbean.sar", Test.class.getPackage());
 
-        utils.deploy();
-        ObjectName objectName = new ObjectName("jboss:name=test,type=managedbean");
-        utils.waitForDeploymentHack(objectName);
+            utils.deploy();
+            ObjectName objectName = new ObjectName("jboss:name=test,type=managedbean");
+            utils.waitForDeploymentHack(objectName);
 
-        MBeanServerConnection mbeanServer = utils.getConnection();
+            MBeanServerConnection mbeanServer = utils.getConnection();
 
-        Thread.sleep(1000);
-        mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+            Thread.sleep(1000);
+            mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+        } finally {
+            utils.undeploy();
+        }
     }
 
 }

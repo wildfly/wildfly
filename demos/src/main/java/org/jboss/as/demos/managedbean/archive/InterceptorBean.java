@@ -21,14 +21,24 @@
  */
 package org.jboss.as.demos.managedbean.archive;
 
-import javax.annotation.ManagedBean;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
+import org.jboss.logging.Logger;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@ManagedBean("SimpleManagedBean")
-public class SimpleManagedBean {
+public class InterceptorBean {
+
+    private final Logger log = Logger.getLogger(InterceptorBean.class);
+
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        log.info("-----> Intercepting call to " + context.getMethod().getDeclaringClass() + "." +  context.getMethod().getName() + "()");
+        return context.proceed();
+    }
+
 }

@@ -24,7 +24,7 @@ package org.jboss.as.demos.managedbean.mbean;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
+import org.jboss.as.demos.managedbean.archive.BeanWithSimpleInjected;
 import org.jboss.logging.Logger;
 
 /**
@@ -41,12 +41,12 @@ public class Test implements TestMBean {
         log.info("In test()");
         try {
             InitialContext ctx = new InitialContext();
-            Object o = ctx.lookup("global/managedbean-example_jar/SimpleManagedBean");
-            System.out.println("-----> Found " + o);
-            SimpleManagedBean bean = (SimpleManagedBean)o;
-            System.out.println("Cast to SimpleManagedBean");
+            log.info("-----> Looking up managed bean");
+            Object o = ctx.lookup("global/managedbean-example_jar/BeanWithSimpleInjected");
+            BeanWithSimpleInjected bean = (BeanWithSimpleInjected)o;
+            log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
         } catch (NamingException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

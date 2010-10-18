@@ -26,7 +26,10 @@ import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
+import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
+
 import java.io.Serializable;
 
 /**
@@ -42,6 +45,7 @@ public class TestManagedBeanWithInjection implements Serializable {
     private static final long serialVersionUID = -4560040427085159721L;
     @Resource private TestManagedBean other;
 
+    static boolean invoked;
     @PostConstruct
     private void printMessage() {
         System.out.println("Test manage bean started: " + other);
@@ -50,4 +54,12 @@ public class TestManagedBeanWithInjection implements Serializable {
     public TestManagedBean getOther() {
         return other;
     }
+    
+
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        invoked = true;
+        return context.proceed();
+    }
+    
 }

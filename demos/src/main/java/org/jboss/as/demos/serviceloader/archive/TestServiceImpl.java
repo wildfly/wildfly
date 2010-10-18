@@ -29,7 +29,7 @@ package org.jboss.as.demos.serviceloader.archive;
 public class TestServiceImpl implements TestService {
 
     public String decorate(String s) {
-        return "#" + s + "#";
+        return "#TestService#" + s;
     }
 
 }

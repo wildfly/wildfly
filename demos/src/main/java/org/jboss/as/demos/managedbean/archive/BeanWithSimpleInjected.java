@@ -22,13 +22,44 @@
 package org.jboss.as.demos.managedbean.archive;
 
 import javax.annotation.ManagedBean;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
 
+import org.jboss.logging.Logger;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@ManagedBean("SimpleManagedBean")
-public class SimpleManagedBean {
+@ManagedBean("BeanWithSimpleInjected")
+@Resources({
+    @Resource(name="simple", type=SimpleManagedBean.class, mappedName="SimpleManagedBean")
+})
+@Interceptors(InterceptorBean.class)
+public class BeanWithSimpleInjected {
+
+    private final Logger log = Logger.getLogger(BeanWithSimpleInjected.class);
+
+    @Resource
+    private SimpleManagedBean simple;
+
+    @PostConstruct
+    public void start() {
+        log.info("-----> Constructed BeanWithSimpleInjected, simple=" + simple);
+    }
+
+    public String echo(String msg) {
+        return msg;
+    }
+
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        log.info("-----> Intercepting call to " + context.getMethod());
+        return context.proceed();
+    }
 }

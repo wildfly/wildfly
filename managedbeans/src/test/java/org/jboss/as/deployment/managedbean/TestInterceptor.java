@@ -34,9 +34,12 @@ import javax.interceptor.InvocationContext;
 public class TestInterceptor {
     @Resource(name="baz")
     private TestManagedBean other;
+    
+    static boolean invoked;
 
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
+        invoked = true;
         return context.proceed();
     }
 }

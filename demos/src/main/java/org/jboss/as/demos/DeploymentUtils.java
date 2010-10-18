@@ -86,7 +86,7 @@ public class DeploymentUtils {
     }
 
     public synchronized void undeploy() {
-        for (int i = deployments.size() - 0 ; i >= 0 ; i--) {
+        for (int i = deployments.size() - 1 ; i >= 0 ; i--) {
             deployments.get(i).undeploy();
         }
     }
@@ -192,6 +192,11 @@ public class DeploymentUtils {
             }
             if (deployedArchive.exists()) {
                 deployedArchive.delete();
+            } else {
+                File file = new File(deployedArchive.getParentFile(), deployedArchive.getName() + ".deployed");
+                if (file.exists()) {
+                    file.delete();
+                }
             }
             deployedArchive = null;
         }

@@ -19,16 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.managedbean.archive;
+package org.jboss.as.demos.serviceloader.mbean;
 
-import javax.annotation.ManagedBean;
+import java.util.ServiceLoader;
 
+import org.jboss.as.demos.serviceloader.archive.TestService;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@ManagedBean("SimpleManagedBean")
-public class SimpleManagedBean {
+public class Test implements TestMBean {
+
+    Logger log = Logger.getLogger(Test.class.getName());
+
+    @Override
+    public void test() {
+        log.info("-----> In test()");
+        Module module = Module.forClass(TestService.class);
+        ServiceLoader<TestService> loader = module.loadService(TestService.class);
+        log.info("-----> In test()");
+        for (TestService service : loader) {
+            log.info("-----> " + service.decorate("Hello"));
+        }
+    }
+
+    public void start() {
+        log.info("Starting MBean " + this.getClass().getName());
+    }
 }

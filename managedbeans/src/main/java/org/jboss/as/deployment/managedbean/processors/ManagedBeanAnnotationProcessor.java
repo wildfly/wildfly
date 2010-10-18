@@ -170,6 +170,17 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final List<ResourceConfiguration> resourceConfigurations = processResources(interceptorClassAnnotations, interceptorType);
             interceptorConfigurations.add(new InterceptorConfiguration(interceptorType, aroundInvokeMethod, resourceConfigurations));
         }
+
+        //Look for any @AroundInvoke methods on bean class
+        final ClassInfo classInfo = index.getClassByName(DotName.createSimple(beanClass.getName()));
+        if (classInfo != null) {
+            final Method aroundInvokeMethod = getSingleAnnotatedMethod(beanClass, classInfo, AroundInvoke.class, true);
+            if (aroundInvokeMethod != null) {
+                final List<ResourceConfiguration> resources = processClassResources(beanClass);
+                interceptorConfigurations.add(new InterceptorConfiguration(beanClass, aroundInvokeMethod, resources));
+            }
+        }
+
         return interceptorConfigurations;
     }
 
@@ -264,7 +275,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             } else {
                 continue;
             }
-            resourceConfigurations.add(resourceConfiguration);
+            if (resourceConfiguration != null) {
+                resourceConfigurations.add(resourceConfiguration);
+            }
         }
         resourceConfigurations.addAll(processClassResources(owningClass));
         return resourceConfigurations;
@@ -280,9 +293,12 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException("Failed to get field '" + fieldName + "' from class '" + owningClass + "'", e);
         }
         final Resource resource = field.getAnnotation(Resource.class);
-        final String localContextName = resource.name().isEmpty() ? fieldName : resource.name();
-        final Class<?> injectionType = resource.type().equals(Object.class) ? field.getType() : resource.type();
-        return new ResourceConfiguration(fieldName, field, ResourceConfiguration.TargetType.FIELD, injectionType, localContextName, getTargetContextName(resource, fieldName, injectionType));
+        if (resource != null) {
+            final String localContextName = resource.name().isEmpty() ? fieldName : resource.name();
+            final Class<?> injectionType = resource.type().equals(Object.class) ? field.getType() : resource.type();
+            return new ResourceConfiguration(fieldName, field, ResourceConfiguration.TargetType.FIELD, injectionType, localContextName, getTargetContextName(resource, fieldName, injectionType));
+        }
+        return null;
     }
 
     private ResourceConfiguration processMethodResource(final MethodInfo methodInfo, final Class<?> owningClass) throws DeploymentUnitProcessingException {
@@ -298,10 +314,13 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + owningClass + "'", e);
         }
         final Resource resource = method.getAnnotation(Resource.class);
-        final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-        final Class<?> injectionType = resource.type().equals(Object.class) ? method.getReturnType() : resource.type();
-        final String localContextName = resource.name().isEmpty() ? contextNameSuffix : resource.name();
-        return new ResourceConfiguration(methodName, method, ResourceConfiguration.TargetType.METHOD, injectionType, localContextName, getTargetContextName(resource, contextNameSuffix, injectionType));
+        if (resource != null) {
+            final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+            final Class<?> injectionType = resource.type().equals(Object.class) ? method.getReturnType() : resource.type();
+            final String localContextName = resource.name().isEmpty() ? contextNameSuffix : resource.name();
+            return new ResourceConfiguration(methodName, method, ResourceConfiguration.TargetType.METHOD, injectionType, localContextName, getTargetContextName(resource, contextNameSuffix, injectionType));
+        }
+        return null;
     }
 
     private ResourceConfiguration processClassResource(final Class<?> owningClass, final Resource resource) throws DeploymentUnitProcessingException {

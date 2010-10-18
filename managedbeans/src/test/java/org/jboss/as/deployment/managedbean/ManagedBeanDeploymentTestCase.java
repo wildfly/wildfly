@@ -52,6 +52,7 @@ import javax.naming.LinkRef;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test case to do some basic Managed bean deployment functionality checking.
@@ -140,6 +141,30 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
         assertNotNull(testManagedBean.getOther());
         assertFalse(testManagedBean.equals(managedBeanContainer.createInstance()));
     }
+
+    @Test
+    public void testInterceptors() throws Exception {
+        final VirtualFile deploymentRoot = initializeDeployment("/test/managedBeanDeployment.jar");
+
+        final String expectedDeploymentName = getDeploymentName(deploymentRoot);
+        final LinkRef moduleLink = new LinkRef("java:global/" + expectedDeploymentName);
+        javaContext.rebind("module", moduleLink);
+
+        executeDeployment(deploymentRoot);
+
+        final ServiceController<?> testServiceController = serviceContainer.getService(ManagedBeanService.SERVICE_NAME.append(expectedDeploymentName, "TestBeanWithInjection"));
+        assertNotNull(testServiceController);
+        final ManagedBeanContainer<TestManagedBeanWithInjection> managedBeanContainer = (ManagedBeanContainer<TestManagedBeanWithInjection>) testServiceController.getValue();
+        final TestManagedBeanWithInjection testManagedBean = managedBeanContainer.createInstance();
+        assertNotNull(testManagedBean);
+        
+        TestInterceptor.invoked = false;
+        TestManagedBeanWithInjection.invoked = false;
+        assertNotNull(testManagedBean.getOther());
+        assertTrue(TestInterceptor.invoked);
+        assertTrue(TestManagedBeanWithInjection.invoked);
+    }
+
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
         final VirtualFile virtualFile = VFS.getChild(getResource(ManagedBeanDeploymentTestCase.class, path));
