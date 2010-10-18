@@ -1,0 +1,172 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.as.web.deployment;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.WebFragmentMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.vfs.VirtualFile;
+
+/**
+ * @author Remy Maucherat
+ */
+public class WarMetaData {
+
+    public static final AttachmentKey<WarMetaData> ATTACHMENT_KEY = new AttachmentKey<WarMetaData>(WarMetaData.class);
+
+    /**
+     * jboss-web.xml metadata.
+     */
+    private JBossWebMetaData jbossWebMetaData;
+
+    /**
+     * Main web.xml metadata.
+     */
+    private WebMetaData webMetaData;
+
+    /**
+     * Shared web.xml metadata.
+     */
+    private WebMetaData sharedWebMetaData;
+
+    /**
+     * Web fragments metadata.
+     */
+    private Map<String, WebFragmentMetaData> webFragmentsMetaData = Collections.emptyMap();
+
+    /**
+     * Annotations metadata.
+     */
+    private Map<String, WebMetaData> annotationsMetaData = Collections.emptyMap();
+
+    /**
+     * Order.
+     */
+    private List<String> order = Collections.emptyList();
+
+    /**
+     * No order flag.
+     */
+    private boolean noOrder = false;
+
+    /**
+     * Overlays.
+     */
+    private Set<VirtualFile> overlays = Collections.emptySet();
+
+    /**
+     * SCIs.
+     */
+    private Map<String, VirtualFile> scis = Collections.emptyMap();
+
+    /**
+     * Final merged metadata.
+     */
+    private JBossWebMetaData mergedJBossWebMetaData;
+
+    public JBossWebMetaData getJbossWebMetaData() {
+        return jbossWebMetaData;
+    }
+
+    public void setJbossWebMetaData(JBossWebMetaData jbossWebMetaData) {
+        this.jbossWebMetaData = jbossWebMetaData;
+    }
+
+    public WebMetaData getWebMetaData() {
+        return webMetaData;
+    }
+
+    public void setWebMetaData(WebMetaData webMetaData) {
+        this.webMetaData = webMetaData;
+    }
+
+    public WebMetaData getSharedWebMetaData() {
+        return sharedWebMetaData;
+    }
+
+    public void setSharedWebMetaData(WebMetaData sharedWebMetaData) {
+        this.sharedWebMetaData = sharedWebMetaData;
+    }
+
+    public Map<String, WebFragmentMetaData> getWebFragmentsMetaData() {
+        return webFragmentsMetaData;
+    }
+
+    public void setWebFragmentsMetaData(Map<String, WebFragmentMetaData> webFragmentsMetaData) {
+        this.webFragmentsMetaData = webFragmentsMetaData;
+    }
+
+    public Map<String, WebMetaData> getAnnotationsMetaData() {
+        return annotationsMetaData;
+    }
+
+    public void setAnnotationsMetaData(Map<String, WebMetaData> annotationsMetaData) {
+        this.annotationsMetaData = annotationsMetaData;
+    }
+
+    public List<String> getOrder() {
+        return order;
+    }
+
+    public void setOrder(List<String> order) {
+        this.order = order;
+    }
+
+    public boolean isNoOrder() {
+        return noOrder;
+    }
+
+    public void setNoOrder(boolean noOrder) {
+        this.noOrder = noOrder;
+    }
+
+    public Set<VirtualFile> getOverlays() {
+        return overlays;
+    }
+
+    public void setOverlays(Set<VirtualFile> overlays) {
+        this.overlays = overlays;
+    }
+
+    public Map<String, VirtualFile> getScis() {
+        return scis;
+    }
+
+    public void setScis(Map<String, VirtualFile> scis) {
+        this.scis = scis;
+    }
+
+    public JBossWebMetaData getMergedJBossWebMetaData() {
+        return mergedJBossWebMetaData;
+    }
+
+    public void setMergedJBossWebMetaData(JBossWebMetaData mergedJBossWebMetaData) {
+        this.mergedJBossWebMetaData = mergedJBossWebMetaData;
+    }
+
+}

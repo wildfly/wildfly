@@ -249,6 +249,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-web</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-jca-spi</artifactId>
         </dependency>
