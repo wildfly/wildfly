@@ -82,7 +82,7 @@ public class MockServerManagerProcess extends ServerManager {
         MockServerManagerProcess sm = new MockServerManagerProcess(managed, environment);
         sm.serverListener = TestDirectServerManagerCommunicationListener.create(sm, InetAddress.getLocalHost(), 0, 20, sm.messageHandler);
         if (pmPort > 0) {
-            sm.pmSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, sm.parseHost(), sm.messageHandler);
+            sm.pmSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, sm.getHostModel(), sm.messageHandler);
             new Thread(sm.pmSlave.getController(), "Test ServerManager PM Slave").start();
         }
         return sm;

@@ -32,6 +32,7 @@ import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.server.manager.ServerManager;
@@ -182,12 +183,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         }
 
         private ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractDomainModelUpdate<?> update) {
-            //try {
-                final List<ServerIdentity> result = null; // TODO: Process update
+            try {
+                final List<ServerIdentity> result = serverManager.getModelManager().applyDomainModelUpdate(update);
                 return new ModelUpdateResponse<List<ServerIdentity>>(result);
-//            } catch (UpdateFailedException e) {
-//                return new ModelUpdateResponse<R>(e);
-//            }
+            } catch (UpdateFailedException e) {
+                return new ModelUpdateResponse<List<ServerIdentity>>(e);
+            }
         }
     }
 

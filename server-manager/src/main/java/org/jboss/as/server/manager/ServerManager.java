@@ -25,17 +25,13 @@
  */
 package org.jboss.as.server.manager;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -44,14 +40,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.stream.XMLInputFactory;
-
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
 import org.jboss.as.domain.controller.DomainConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
-import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ManagementElement;
@@ -107,14 +100,12 @@ public class ServerManager implements ShutdownListener {
 
     private final ServerManagerEnvironment environment;
     private final StandardElementReaderRegistrar extensionRegistrar;
-    private final File hostXML;
     private final ProcessManagerCommandHandler processManagerCommmandHandler;
     private final FileRepository fileRepository;
     private volatile ProcessManagerSlave processManagerSlave;
     private final ServerToServerManagerCommandHandler serverCommandHandler = new ServerCommandHandler();
     private volatile DirectServerCommunicationListener directServerCommunicationListener;
-    private HostModel hostConfig;
-    private DomainModel domainConfig;
+    private final ModelManager modelManager;
     private DomainControllerConnection domainControllerConnection;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
@@ -130,14 +121,14 @@ public class ServerManager implements ShutdownListener {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
         this.environment = environment;
-        this.hostXML = new File(environment.getDomainConfigurationDir(), "host.xml");
         this.extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
+        this.modelManager = new ModelManager(environment, extensionRegistrar);
         this.processManagerCommmandHandler = new ProcessManagerCommandHandler();
         this.fileRepository = new LocalFileRepository(environment);
     }
 
     public String getName() {
-        return hostConfig.getName();
+        return getHostModel().getName();
     }
 
     /**
@@ -149,7 +140,7 @@ public class ServerManager implements ShutdownListener {
      */
     public void start() {
 
-        this.hostConfig = parseHost();
+        modelManager.start();
 
         // TODO set up logging for this process based on config in Host
 
@@ -173,7 +164,7 @@ public class ServerManager implements ShutdownListener {
         // Always activate the management port
         activateManagementCommunication(serviceActivatorContext);
 
-        if (hostConfig.getLocalDomainControllerElement() != null) {
+        if (getHostModel().getLocalDomainControllerElement() != null) {
             activateLocalDomainController(serviceActivatorContext);
         } else {
             activateRemoteDomainControllerConnection(serviceActivatorContext);
@@ -420,7 +411,7 @@ public class ServerManager implements ShutdownListener {
     }
 
     private void launchProcessManagerSlave() {
-        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, hostConfig, processManagerCommmandHandler);
+        this.processManagerSlave = ProcessManagerSlaveFactory.getInstance().getProcessManagerSlave(environment, getHostModel(), processManagerCommmandHandler);
         Thread t = new Thread(this.processManagerSlave.getController(), "Server Manager Process");
         t.start();
     }
@@ -491,6 +482,7 @@ public class ServerManager implements ShutdownListener {
             })
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
 
+        HostModel hostConfig = getHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
         final InetAddress hostAddress;
         try {
@@ -510,6 +502,7 @@ public class ServerManager implements ShutdownListener {
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
+        HostModel hostConfig = getHostModel();
         final ManagementElement managementElement = hostConfig.getManagementElement();
         if(managementElement == null) {
             throw new IllegalStateException("null management configuration");
@@ -572,34 +565,16 @@ public class ServerManager implements ShutdownListener {
         setDomain(domainModel);
     }
 
-    HostModel getHostConfig() {
-        return hostConfig;
+    public ModelManager getModelManager() {
+        return modelManager;
     }
 
-    protected HostModel parseHost() {
+    protected DomainModel getDomainModel() {
+        return modelManager.getDomainModel();
+    }
 
-        if (!hostXML.exists()) {
-            throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " does not exist.");
-        }
-        else if (! hostXML.canWrite()) {
-            throw new IllegalStateException("File " + hostXML.getAbsolutePath() + " is not writeable.");
-        }
-
-        try {
-            final List<AbstractHostModelUpdate<?>> hostUpdates = new ArrayList<AbstractHostModelUpdate<?>>();
-            final XMLMapper mapper = XMLMapper.Factory.create();
-            extensionRegistrar.registerStandardHostReaders(mapper);
-            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXML))));
-            final HostModel hostModel = new HostModel();
-            for(final AbstractHostModelUpdate<?> update : hostUpdates) {
-                hostModel.update(update);
-            }
-            return hostModel;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Caught exception during processing of host.xml", e);
-        }
+    protected HostModel getHostModel() {
+        return modelManager.getHostModel();
     }
 
     /**
@@ -609,7 +584,7 @@ public class ServerManager implements ShutdownListener {
      * @param domain The domain configuration
      */
     public void setDomain(final DomainModel domain) {
-        this.domainConfig = domain;
+        modelManager.setDomainModel(domain);
         synchronizeDeployments();
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
@@ -645,8 +620,9 @@ public class ServerManager implements ShutdownListener {
 
     private void synchronizeDeployments() {
         FileRepository remoteRepo = domainControllerConnection.getRemoteFileRepository();
+        DomainModel domainConfig = getDomainModel();
         Set<String> serverGroupNames = domainConfig.getServerGroupNames();
-        for (ServerElement server : hostConfig.getServers()) {
+        for (ServerElement server : getHostModel().getServers()) {
             String serverGroupName = server.getServerGroup();
             if (serverGroupNames.remove(serverGroupName)) {
                 for (ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
@@ -662,6 +638,8 @@ public class ServerManager implements ShutdownListener {
 
     private void startServers() {
         InetSocketAddress managementSocket = new InetSocketAddress(directServerCommunicationListener.getSmAddress(), directServerCommunicationListener.getSmPort());
+        HostModel hostConfig = getHostModel();
+        DomainModel domainConfig = getDomainModel();
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
