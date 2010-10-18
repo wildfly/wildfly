@@ -130,6 +130,7 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
                 host.writeContent(streamWriter);
             }
         }
+        streamWriter.writeEndElement();
     }
 
     WebConnectorElement addConnector(final String name) {
