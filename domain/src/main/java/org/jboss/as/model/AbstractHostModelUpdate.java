@@ -52,4 +52,8 @@ public abstract class AbstractHostModelUpdate<R> extends AbstractModelUpdate<Hos
     /** {@inheritDoc} */
     @Override
     public abstract AbstractHostModelUpdate<?> getCompensatingUpdate(final HostModel original);
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract AbstractServerModelUpdate<R> getServerModelUpdate();
 }

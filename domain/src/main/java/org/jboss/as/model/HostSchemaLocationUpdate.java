@@ -44,17 +44,20 @@ public final class HostSchemaLocationUpdate extends AbstractHostModelUpdate<Void
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final HostModel element) throws UpdateFailedException {
         element.setSchemaLocations(locations);
     }
 
     /** {@inheritDoc} */
+    @Override
     public HostSchemaLocationUpdate getCompensatingUpdate(final HostModel original) {
         return new HostSchemaLocationUpdate(original.getSchemaLocations());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

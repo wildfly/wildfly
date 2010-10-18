@@ -38,6 +38,7 @@ public class DomainPathAdd extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         final PathElement path = element.addPath(update.getName());
         if(path == null) {
@@ -47,12 +48,14 @@ public class DomainPathAdd extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         return new DomainPathRemove(update.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathAdd(update);
     }
 

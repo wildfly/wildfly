@@ -41,17 +41,20 @@ public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
         propertyUpdate.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
+    @Override
     public DomainSystemPropertyUpdate getCompensatingUpdate(final DomainModel original) {
         return new DomainSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
+    @Override
+    public ServerSystemPropertyUpdate getServerModelUpdate() {
         return new ServerSystemPropertyUpdate(propertyUpdate);
     }
 }

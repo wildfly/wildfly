@@ -44,17 +44,20 @@ public final class DomainSchemaLocationUpdate extends AbstractDomainModelUpdate<
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
         element.setSchemaLocations(locations);
     }
 
     /** {@inheritDoc} */
+    @Override
     public DomainSchemaLocationUpdate getCompensatingUpdate(final DomainModel original) {
         return new DomainSchemaLocationUpdate(original.getSchemaLocations());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

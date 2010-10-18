@@ -1041,7 +1041,7 @@ public final class ModelXmlParsers {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PROFILE));
             }
 
-            list.add(new ServerGroupAdd(name, profile));
+            list.add(new DomainServerGroupAdd(name, profile));
 
             // Handle elements
 

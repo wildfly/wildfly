@@ -62,7 +62,7 @@ public final class HostServerAdd extends AbstractHostModelUpdate<Void> {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

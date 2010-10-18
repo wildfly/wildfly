@@ -53,7 +53,7 @@ public final class DomainExtensionAdd extends AbstractDomainModelUpdate<Void> {
 
     /** {@inheritDoc} */
     @Override
-    protected ServerExtensionAdd getServerModelUpdate() {
+    public ServerExtensionAdd getServerModelUpdate() {
         return new ServerExtensionAdd(moduleName);
     }
 }

@@ -78,7 +78,7 @@ public final class DomainProfileIncludeAdd extends AbstractDomainModelUpdate<Voi
     }
 
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

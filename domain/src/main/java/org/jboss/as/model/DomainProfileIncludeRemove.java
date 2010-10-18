@@ -78,7 +78,7 @@ public final class DomainProfileIncludeRemove extends AbstractDomainModelUpdate<
     }
 
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

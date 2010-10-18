@@ -38,6 +38,7 @@ public class DomainSocketBindingGroupAdd extends AbstractDomainModelUpdate<Void>
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         final SocketBindingGroupElement bindingGroup = element.addSocketBindingGroup(update.getName());
         if(bindingGroup == null) {
@@ -47,12 +48,14 @@ public class DomainSocketBindingGroupAdd extends AbstractDomainModelUpdate<Void>
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel domain) {
         return new DomainSocketBindingGroupRemove(update.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         // TODO Auto-generated method stub
         return null;
     }

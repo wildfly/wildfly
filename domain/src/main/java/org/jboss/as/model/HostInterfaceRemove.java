@@ -40,6 +40,7 @@ public class HostInterfaceRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
         if(element.removeInterface(interfaceName)) {
             throw new UpdateFailedException(String.format("network interface (%s) not found", interfaceName));
@@ -47,6 +48,7 @@ public class HostInterfaceRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
         final InterfaceElement element = original.getInterface(interfaceName);
         if(element == null) {
@@ -56,7 +58,8 @@ public class HostInterfaceRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceRemove(interfaceName);
     }
 

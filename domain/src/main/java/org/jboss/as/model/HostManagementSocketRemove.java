@@ -55,7 +55,7 @@ public final class HostManagementSocketRemove extends AbstractHostModelUpdate<Vo
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

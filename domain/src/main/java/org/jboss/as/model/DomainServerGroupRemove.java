@@ -27,12 +27,12 @@ package org.jboss.as.model;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupRemove extends AbstractDomainModelUpdate<Void> {
+public class DomainServerGroupRemove extends AbstractDomainModelUpdate<Void> {
 
     private static final long serialVersionUID = -7482118547411879295L;
     private final String serverGroupName;
 
-    public ServerGroupRemove(String serverGroupName) {
+    public DomainServerGroupRemove(String serverGroupName) {
         this.serverGroupName = serverGroupName;
     }
 
@@ -48,12 +48,12 @@ public class ServerGroupRemove extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         final ServerGroupElement group = original.getServerGroup(serverGroupName);
-        return new ServerGroupAdd(group.getName(), group.getProfileName());
+        return new DomainServerGroupAdd(group.getName(), group.getProfileName());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         // FIXME -- figure out impact of removing server group on ServerModel
         // Basically should be none, but their should be validation that
         // group isn't used on a server before this update is applied

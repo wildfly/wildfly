@@ -63,6 +63,7 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
         return subsystemAdd.getNamespaceUri();
     }
 
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
         final String namespaceUri = subsystemAdd.getNamespaceUri();
         if (! element.getProfile(profileName).addSubsystem(namespaceUri, subsystemAdd.createSubsystemElement())) {
@@ -70,11 +71,13 @@ public final class DomainSubsystemAdd extends AbstractDomainModelUpdate<Void> {
         }
     }
 
+    @Override
     public DomainSubsystemRemove getCompensatingUpdate(final DomainModel original) {
         return new DomainSubsystemRemove(profileName, subsystemAdd.getCompensatingUpdate(original.getProfile(profileName)));
     }
 
-    protected ServerSubsystemAdd getServerModelUpdate() {
+    @Override
+    public ServerSubsystemAdd getServerModelUpdate() {
         return new ServerSubsystemAdd(subsystemAdd);
     }
 }

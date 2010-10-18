@@ -38,6 +38,7 @@ public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Vo
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         if(! element.removeBindingGroup(bindingGroupName)) {
             throw new UpdateFailedException(String.format("binding-group (%s) does not exist", bindingGroupName));
@@ -45,6 +46,7 @@ public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Vo
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel domain) {
         final SocketBindingGroupElement original = domain.getSocketBindingGroup(bindingGroupName);
         final SocketBindingGroupUpdate update = new SocketBindingGroupUpdate(
@@ -55,7 +57,8 @@ public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Vo
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 

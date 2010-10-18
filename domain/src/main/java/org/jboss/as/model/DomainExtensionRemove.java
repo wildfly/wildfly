@@ -50,7 +50,7 @@ public final class DomainExtensionRemove extends AbstractDomainModelUpdate<Void>
     }
 
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

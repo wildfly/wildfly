@@ -35,6 +35,7 @@ public class HostPathRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
         if(! element.removePath(name)) {
             throw new UpdateFailedException(String.format("path (%s) does not exist", name));
@@ -42,6 +43,7 @@ public class HostPathRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
         final PathElement path = original.getPath(name);
         if(path == null) {
@@ -51,7 +53,8 @@ public class HostPathRemove extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathRemove(name);
     }
 

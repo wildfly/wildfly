@@ -44,17 +44,20 @@ public final class DomainNamespaceUpdate extends AbstractDomainModelUpdate<Void>
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
         element.setPrefixes(prefixes);
     }
 
     /** {@inheritDoc} */
+    @Override
     public DomainNamespaceUpdate getCompensatingUpdate(final DomainModel original) {
         return new DomainNamespaceUpdate(original.getPrefixes());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

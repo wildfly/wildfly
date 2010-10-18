@@ -77,7 +77,7 @@ public final class DomainServerGroupUpdate<R> extends AbstractDomainModelUpdate<
     }
 
     @Override
-    protected AbstractServerModelUpdate<R> getServerModelUpdate() {
+    public AbstractServerModelUpdate<R> getServerModelUpdate() {
         // FIXME hmmm
         return serverGroupUpdate.getServerModelUpdate();
     }

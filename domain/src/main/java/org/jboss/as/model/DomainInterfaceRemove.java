@@ -40,6 +40,7 @@ public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         if(!element.removeInterface(name)) {
             throw new UpdateFailedException("failed to remove network interface " + name);
@@ -47,6 +48,7 @@ public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         final InterfaceElement element = original.getInterface(name);
         if(element == null) {
@@ -56,7 +58,8 @@ public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceRemove(name);
     }
 

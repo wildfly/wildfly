@@ -52,4 +52,8 @@ public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<D
     /** {@inheritDoc} */
     @Override
     public abstract AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original);
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract AbstractServerModelUpdate<R> getServerModelUpdate();
 }

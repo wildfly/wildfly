@@ -41,6 +41,7 @@ public class DomainInterfaceAdd extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         final InterfaceElement networkInterface = element.addInterface(delegate.getName());
         if(networkInterface == null) {
@@ -50,12 +51,14 @@ public class DomainInterfaceAdd extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         return new DomainInterfaceRemove(delegate.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceAdd(delegate);
     }
 

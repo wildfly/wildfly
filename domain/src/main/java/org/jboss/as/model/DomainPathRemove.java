@@ -35,6 +35,7 @@ public class DomainPathRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
         if(! element.removePath(name)) {
             throw new UpdateFailedException(String.format("path (%s) does not exist", name));
@@ -42,6 +43,7 @@ public class DomainPathRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
         final PathElement path = original.getPath(name);
         if(path == null) {
@@ -51,7 +53,8 @@ public class DomainPathRemove extends AbstractDomainModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathRemove(name);
     }
 

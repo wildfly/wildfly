@@ -59,7 +59,7 @@ public final class HostJvmAdd extends AbstractHostModelUpdate<Void> {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

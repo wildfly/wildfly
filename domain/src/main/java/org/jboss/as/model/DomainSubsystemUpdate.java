@@ -65,6 +65,7 @@ public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, 
         return update;
     }
 
+    @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
         final ProfileElement profileElement = element.getProfile(profileName);
         final String namespaceUri = update.getSubsystemNamespaceUri();
@@ -75,6 +76,7 @@ public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, 
         update.applyUpdate(subsystemElement);
     }
 
+    @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(final DomainModel original) {
         final String namespaceUri = update.getSubsystemNamespaceUri();
         final E element = update.getModelElementType().cast(original.getProfile(profileName).getSubsystem(namespaceUri));
@@ -89,7 +91,8 @@ public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, 
         return new DomainSubsystemUpdate<E,R>(profileName, update);
     }
 
-    protected AbstractServerModelUpdate<R> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<R> getServerModelUpdate() {
         return new ServerSubsystemUpdate<E, R>(update);
     }
 }

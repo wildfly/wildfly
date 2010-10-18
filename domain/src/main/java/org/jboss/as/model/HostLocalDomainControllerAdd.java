@@ -55,7 +55,7 @@ public final class HostLocalDomainControllerAdd extends AbstractHostModelUpdate<
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

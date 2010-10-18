@@ -64,7 +64,7 @@ public class HostServerUpdate<R> extends AbstractHostModelUpdate<R> {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<R> getServerModelUpdate() {
+    public AbstractServerModelUpdate<R> getServerModelUpdate() {
         // TODO Auto-generated method stub
         return null;
     }

@@ -41,6 +41,7 @@ public class HostPathAdd extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
         final PathElement path = element.addPath(update.getName());
         if(path == null) {
@@ -50,12 +51,14 @@ public class HostPathAdd extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
         return new HostPathRemove(update.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathAdd(update);
     }
 

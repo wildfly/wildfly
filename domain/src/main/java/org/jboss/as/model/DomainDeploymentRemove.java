@@ -81,7 +81,7 @@ public final class DomainDeploymentRemove extends AbstractDomainModelUpdate<Void
     }
 
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

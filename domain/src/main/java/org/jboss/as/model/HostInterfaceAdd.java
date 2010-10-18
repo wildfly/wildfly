@@ -40,6 +40,7 @@ public class HostInterfaceAdd extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(HostModel element) throws UpdateFailedException {
         final InterfaceElement networkInterface = element.addInterface(delegate.getName());
         if(networkInterface == null) {
@@ -49,12 +50,14 @@ public class HostInterfaceAdd extends AbstractHostModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractHostModelUpdate<?> getCompensatingUpdate(HostModel original) {
         return new HostInterfaceRemove(delegate.getName());
     }
 
     /** {@inheritDoc} */
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    @Override
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceAdd(delegate);
     }
 

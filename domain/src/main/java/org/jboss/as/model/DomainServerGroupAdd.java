@@ -26,13 +26,13 @@ package org.jboss.as.model;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry
  */
-public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
+public final class DomainServerGroupAdd extends AbstractDomainModelUpdate<Void> {
     private static final long serialVersionUID = 8526537198264820276L;
 
     private final String name;
     private final String profile;
 
-    public ServerGroupAdd(final String name, final String profile) {
+    public DomainServerGroupAdd(final String name, final String profile) {
         this.name = name;
         this.profile = profile;
     }
@@ -48,12 +48,12 @@ public final class ServerGroupAdd extends AbstractDomainModelUpdate<Void> {
     /** {@inheritDoc} */
     @Override
     public AbstractDomainModelUpdate<?> getCompensatingUpdate(DomainModel original) {
-        return new ServerGroupRemove(name);
+        return new DomainServerGroupRemove(name);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

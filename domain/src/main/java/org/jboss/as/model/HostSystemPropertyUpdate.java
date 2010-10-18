@@ -42,17 +42,20 @@ public final class HostSystemPropertyUpdate extends AbstractHostModelUpdate<Void
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(final HostModel element) throws UpdateFailedException {
         propertyUpdate.applyUpdate(element.getSystemProperties());
     }
 
     /** {@inheritDoc} */
+    @Override
     public HostSystemPropertyUpdate getCompensatingUpdate(final HostModel original) {
         return new HostSystemPropertyUpdate(propertyUpdate.getCompensatingUpdate(original.getSystemProperties()));
     }
 
     /** {@inheritDoc} */
-    protected ServerSystemPropertyUpdate getServerModelUpdate() {
+    @Override
+    public ServerSystemPropertyUpdate getServerModelUpdate() {
         return new ServerSystemPropertyUpdate(propertyUpdate);
     }
 }

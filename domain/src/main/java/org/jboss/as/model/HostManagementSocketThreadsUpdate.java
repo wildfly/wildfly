@@ -61,7 +61,7 @@ public final class HostManagementSocketThreadsUpdate extends AbstractHostModelUp
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }

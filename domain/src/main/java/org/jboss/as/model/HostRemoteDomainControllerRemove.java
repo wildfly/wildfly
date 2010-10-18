@@ -55,7 +55,7 @@ public final class HostRemoteDomainControllerRemove extends AbstractHostModelUpd
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+    public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
     }
 }
