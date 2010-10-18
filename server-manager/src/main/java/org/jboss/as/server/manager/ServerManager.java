@@ -45,12 +45,14 @@ import org.jboss.as.domain.controller.DomainConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.RemoteDomainControllerElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommand;
 import org.jboss.as.process.ProcessManagerProtocol.OutgoingPmCommandHandler;
@@ -208,6 +210,13 @@ public class ServerManager implements ShutdownListener {
         }
     }
 
+    public <R> R applyUpdate(final String serverName, final AbstractServerModelUpdate<R> update) throws UpdateFailedException {
+        final Server server = servers.get(serverName);
+        if(server == null) {
+            throw new UpdateFailedException("No server available with name " + serverName);
+        }
+        return server.applyUpdate(update);
+    }
 
     /**
      * Callback for when we receive the SERVER_AVAILABLE message from a Server

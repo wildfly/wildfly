@@ -301,14 +301,13 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         }
 
         private <R> ModelUpdateResponse<R> processUpdate(final AbstractServerModelUpdate<R> update) {
-            //try {
-                final R result = null; // TODO: Process update
+            try {
+                final R result = serverManager.applyUpdate(serverName, update);
                 return new ModelUpdateResponse<R>(result);
-//            } catch (UpdateFailedException e) {
-//                return new ModelUpdateResponse<R>(e);
-//            }
+            } catch (UpdateFailedException e) {
+                return new ModelUpdateResponse<R>(e);
+            }
         }
-
     }
 
     private class IsActiveOperation extends ManagementResponse {
