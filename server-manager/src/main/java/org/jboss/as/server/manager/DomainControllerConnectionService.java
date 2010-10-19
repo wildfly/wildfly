@@ -25,6 +25,7 @@ package org.jboss.as.server.manager;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -54,18 +55,16 @@ public class DomainControllerConnectionService implements Service<Void> {
 
     private final InjectedValue<ScheduledExecutorService> executorService = new InjectedValue<ScheduledExecutorService>();
 
+    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
+
     private final ServerManager serverManager;
     private final FileRepository localRepository;
 
-    private final int connectionRetryLimit;
-    private final long connectionRetryInterval;
     private final long connectTimeout;
 
-    public DomainControllerConnectionService(final ServerManager serverManager, final FileRepository localRepository, final int connectionRetryLimit, final long connectionRetryInterval, final long connectTimeout) {
+    public DomainControllerConnectionService(final ServerManager serverManager, final FileRepository localRepository, final long connectTimeout) {
         this.serverManager = serverManager;
         this.localRepository = localRepository;
-        this.connectionRetryLimit = connectionRetryLimit;
-        this.connectionRetryInterval = connectionRetryInterval;
         this.connectTimeout = connectTimeout;
     }
 
@@ -85,7 +84,7 @@ public class DomainControllerConnectionService implements Service<Void> {
             }
         }
         final NetworkInterfaceBinding managementInterface = localManagementInterface.getValue();
-        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), managementInterface.getAddress(), localManagementPort.getValue(), localRepository, connectionRetryLimit, connectionRetryInterval, connectTimeout, executorService.getValue()));
+        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), managementInterface.getAddress(), localManagementPort.getValue(), localRepository, connectTimeout, executorService.getValue(), threadFactoryValue.getValue()));
     }
 
     /**
@@ -124,5 +123,9 @@ public class DomainControllerConnectionService implements Service<Void> {
 
     public Injector<ScheduledExecutorService> getExecutorServiceInjector() {
         return executorService;
+    }
+
+    public Injector<ThreadFactory> getThreadFactoryInjector() {
+        return threadFactoryValue;
     }
 }

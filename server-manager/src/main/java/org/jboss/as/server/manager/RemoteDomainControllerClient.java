@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.controller.DomainControllerClient;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
@@ -53,12 +54,14 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
     private final InetAddress address;
     private final int port;
     private final ScheduledExecutorService executorService;
+    private final ThreadFactory threadFactory;
 
-    public RemoteDomainControllerClient(final String id, final InetAddress address, final int port, final ScheduledExecutorService executorService) {
+    public RemoteDomainControllerClient(final String id, final InetAddress address, final int port, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
         this.id = id;
         this.address = address;
         this.port = port;
         this.executorService = executorService;
+        this.threadFactory = threadFactory;
     }
 
     public String getId() {
@@ -123,7 +126,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         private ServerManagerRequest(int connectionRetryLimit, long connectionRetryInterval, long connectTimeout) {
-            super(address, port, connectionRetryLimit, connectionRetryInterval, connectTimeout, executorService);
+            super(address, port, connectTimeout, executorService, threadFactory);
         }
 
         @Override
@@ -178,7 +181,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected Boolean receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+        protected Boolean receiveResponse(final ByteDataInput input) throws ManagementException {
             return true;  // If we made it here, we correctly established a connection
         }
     }
@@ -217,7 +220,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = input.readInt();
@@ -271,7 +274,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = input.readInt();
@@ -328,7 +331,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = input.readInt();

@@ -426,6 +426,7 @@ public class ServerManager {
             batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
+                .addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerOperationHandler.getThreadFactoryInjector())
                 .addDependency(DomainDeploymentManager.SERVICE_NAME_LOCAL, DomainDeploymentManager.class, domainControllerOperationHandler.getDomainDeploymentManagerInjector())
                 .addDependency(DomainDeploymentRepository.SERVICE_NAME, DomainDeploymentRepository.class, domainControllerOperationHandler.getDomainDeploymentRepositoryInjector())
                 .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
@@ -449,7 +450,7 @@ public class ServerManager {
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
-        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 20, 15L, 10L);
+        final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
         final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<Void>() {
                 @Override
@@ -474,6 +475,7 @@ public class ServerManager {
         serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, domainControllerClientService.getLocalManagementInterfaceInjector());
         serviceBuilder.addInjection(domainControllerClientService.getLocalManagementPortInjector(), managementElement.getPort());
         serviceBuilder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerClientService.getExecutorServiceInjector());
+        serviceBuilder.addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerClientService.getThreadFactoryInjector());
     }
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
@@ -524,6 +526,7 @@ public class ServerManager {
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
             .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
+            .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
             .setInitialMode(ServiceController.Mode.IMMEDIATE);
 
         //  Add the server manager operation handler

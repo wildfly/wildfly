@@ -23,17 +23,25 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import javax.net.SocketFactory;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.MessageHandler;
+import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote server manager
@@ -41,31 +49,31 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
  *
  * @author John Bailey
  */
-public abstract class ManagementRequest<T> {
+public abstract class ManagementRequest<T> implements MessageHandler {
     private final InetAddress address;
     private final int port;
-    private final int connectionRetryLimit;
-    private final long connectionRetryInterval;
     private final long connectTimeout;
     private final ScheduledExecutorService executorService;
+    private final ThreadFactory threadFactory;
+    private Connection connection;
+    private int requestId = 0;
+    private final ResponseFuture<T> future = new ResponseFuture<T>();
 
     /**
      * Construct a new request object with the required connection parameters.
      *
-     * @param address The remote address to connect to
-     * @param port The remote port to connect to
-     * @param connectionRetryLimit The connection retry limit
-     * @param connectionRetryInterval The interval between connection attempts
-     * @param connectTimeout The timeout for connecting
-     * @param executorService The executor server to schedule tasks with
+     * @param address                 The remote address to connect to
+     * @param port                    The remote port to connect to
+     * @param connectTimeout          The timeout for connecting
+     * @param executorService         The executor server to schedule tasks with
+     * @param threadFactory           The connection thread factory
      */
-    public ManagementRequest(InetAddress address, int port, int connectionRetryLimit, long connectionRetryInterval, long connectTimeout, ScheduledExecutorService executorService) {
+    public ManagementRequest(InetAddress address, int port, long connectTimeout, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
         this.address = address;
         this.port = port;
-        this.connectionRetryLimit = connectionRetryLimit;
-        this.connectionRetryInterval = connectionRetryInterval;
         this.connectTimeout = connectTimeout;
         this.executorService = executorService;
+        this.threadFactory = threadFactory;
     }
 
     /**
@@ -83,9 +91,32 @@ public abstract class ManagementRequest<T> {
      * @throws ManagementException If any problems occur with the request
      */
     public final Future<T> execute() throws ManagementException {
-        final InitiatingFuture<T> initiatingFuture = new InitiatingFuture<T>();
-        executorService.execute(new InitiateRequestTask<T>(this, initiatingFuture));
-        return initiatingFuture.get();
+        final int timeout = (int) TimeUnit.SECONDS.toMillis(connectTimeout);
+
+        final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
+        config.setMessageHandler(new InitiatingMessageHandler());
+        config.setConnectTimeout(timeout);
+        config.setReadExecutor(executorService);
+        config.setSocketFactory(SocketFactory.getDefault());
+        config.setServerAddress(new InetSocketAddress(address, port));
+        config.setThreadFactory(threadFactory);
+
+        final ProtocolClient protocolClient = new ProtocolClient(config);
+        OutputStream dataOutput = null;
+        try {
+            connection = protocolClient.connect();
+            dataOutput = connection.writeMessage();
+            final ByteDataOutput output = new SimpleByteDataOutput(dataOutput);
+
+            // Start by writing the header
+            final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
+            managementRequestHeader.write(output);
+        } catch (IOException e) {
+            throw new ManagementException("Failed to connect using protocol client", e);
+        } finally {
+            safeClose(dataOutput);
+        }
+        return future;
     }
 
     /**
@@ -95,84 +126,100 @@ public abstract class ManagementRequest<T> {
      * @throws ManagementException If any problems occur
      */
     public T executeForResult() throws ManagementException {
+        try {
+            return execute().get();
+        } catch (ManagementException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ManagementException("Failed to execute remote request", e);
+        }
+    }
+
+    public void handleShutdown(Connection connection) throws IOException {
+        safeClose(connection);
+    }
+
+    public void handleFailure(Connection connection, IOException e) throws IOException {
+
+    }
+
+    public void handleFinished(Connection connection) throws IOException {
+        // NOOP
+    }
+
+    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+        try {
+            future.set(receiveResponse(connection, dataStream));
+        } catch (ManagementException e) {
+            future.setException(e);
+        } catch (Throwable t) {
+            future.setException(new ManagementException("Failed to handle management message", t));
+        } finally {
+            safeClose(dataStream);
+        }
+    }
+
+    private class InitiatingMessageHandler implements MessageHandler {
+        public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+            // First read the response header
+            final ByteDataInput input = new SimpleByteDataInput(dataStream);
+            final ManagementResponseHeader responseHeader;
             try {
-                return execute().get();
+                responseHeader = new ManagementResponseHeader(input);
+
+                if (requestId != responseHeader.getResponseId()) {
+                    throw new IOException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
+                }
+
+                connection.setMessageHandler(ManagementRequest.this);
+                sendRequest(responseHeader.getVersion(), connection);
+
             } catch (ManagementException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ManagementException("Failed to execute remote request", e);
+                throw new IOException("Failed to read response header", e);
             }
         }
+
+        public void handleShutdown(Connection connection) throws IOException {
+            ManagementRequest.this.handleShutdown(connection);
+        }
+
+        public void handleFailure(Connection connection, IOException e) throws IOException {
+            ManagementRequest.this.handleFailure(connection, e);
+        }
+
+        public void handleFinished(Connection connection) throws IOException {
+            ManagementRequest.this.handleFinished(connection);
+        }
+    }
 
     /**
      * Execute the request body.  This is run after the connection is established and the headers are exchanged.
      *
      * @param protocolVersion The active protocol version for the request
-     * @param output The output to write to
-     * @param input The input to read from
-     * @return The result of the request
+     * @param connection      The connection
      * @throws ManagementException If any errors occur
      */
-    protected abstract T execute(final int protocolVersion, final ByteDataOutput output, final ByteDataInput input) throws ManagementException;
+    protected abstract void sendRequest(final int protocolVersion, final Connection connection) throws ManagementException;
 
-    private class InitiateRequestTask<T> implements Runnable {
-        private final ManagementRequest<T> request;
-        private final InitiatingFuture<T> initiatingFuture;
-        private int requestId;
+    /**
+     * Receive the response from the request.
+     *
+     * @param connection The connection
+     * @param dataStream The dataStream to read from
+     * @return The result of the operation
+     * @throws ManagementException If any errors occur
+     */
+    protected abstract T receiveResponse(final Connection connection, final InputStream dataStream) throws ManagementException;
 
-        private InitiateRequestTask(final ManagementRequest<T> request, final InitiatingFuture<T> initiatingFuture) {
-            this.request = request;
-            this.initiatingFuture = initiatingFuture;
-        }
-
-        public final void run() {
-            final int requestId = this.requestId++;
-            Socket socket = null;
-            try {
-                socket = new Socket();
-                final int timeout = (int) TimeUnit.SECONDS.toMillis(connectTimeout);
-                socket.connect(new InetSocketAddress(address, port), timeout);
-                socket.setSoTimeout(timeout);
-
-                final ByteDataInput input = new SimpleByteDataInput(socket.getInputStream());
-                final ByteDataOutput output = new SimpleByteDataOutput(socket.getOutputStream());
-
-                // Start by writing the header
-                final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
-                managementRequestHeader.write(output);
-                output.flush();
-
-                // Now read the response header
-                final ManagementResponseHeader responseHeader = new ManagementResponseHeader(input);
-
-                if (requestId != responseHeader.getResponseId()) {
-                    // TODO: Exception???
-                    safeClose(socket);
-                    return;
-                }
-                // Schedule execution the operation
-                Future<T> resultFuture = executorService.submit(new ExecuteTask<T>(request, responseHeader.getVersion(), socket, input, output));
-                initiatingFuture.set(resultFuture);
-            } catch (Throwable e) {
-                safeClose(socket);
-                if(requestId < connectionRetryLimit) {
-                    executorService.schedule(this, connectionRetryInterval, TimeUnit.SECONDS);
-                } else {
-                    initiatingFuture.setException(new ManagementException("Failed to initiate request to remote domain controller", e));
-                }
-            }
-        }
-    }
-
-    private final class InitiatingFuture<T> {
-        private volatile Future<T> requestFuture;
+    private final class ResponseFuture<T> implements Future<T>{
+        private volatile T result;
         private volatile Exception exception;
 
-        Future<T> get() throws ManagementException {
+        public T get() throws InterruptedException, ExecutionException {
             boolean intr = false;
             try {
                 synchronized (this) {
-                    while (this.requestFuture == null && exception == null) {
+                    while (this.result == null && exception == null) {
                         try {
                             wait();
                         } catch (InterruptedException e) {
@@ -181,20 +228,18 @@ public abstract class ManagementRequest<T> {
                     }
                 }
                 if (exception != null) {
-                    if(exception instanceof ManagementException) {
-                        throw ManagementException.class.cast(exception);
-                    }
-                    throw new ManagementException(exception);
+                    throw new ExecutionException(exception);
                 }
-                return requestFuture;
+                return result;
             } finally {
                 if (intr) Thread.currentThread().interrupt();
             }
         }
 
-        void set(final Future<T> operationFuture) {
+
+        void set(final T result) {
             synchronized (this) {
-                this.requestFuture = operationFuture;
+                this.result = result;
                 notifyAll();
             }
         }
@@ -205,46 +250,21 @@ public abstract class ManagementRequest<T> {
                 notifyAll();
             }
         }
-    }
 
-    private class ExecuteTask<T> implements Callable<T> {
-        private final ManagementRequest<T> request;
-        private final int protocolVersion;
-        private final Socket socket;
-        private final ByteDataInput input;
-        private final ByteDataOutput output;
-
-        private ExecuteTask(final ManagementRequest<T> request, final int protocolVersion, final Socket socket, final ByteDataInput input, final ByteDataOutput output) {
-            this.request = request;
-            this.protocolVersion = protocolVersion;
-            this.socket = socket;
-            this.input = input;
-            this.output = output;
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
         }
 
-        public T call() throws Exception {
-            try {
-                return request.execute(protocolVersion, output, input);
-            } finally {
-                safeClose(socket);
-            }
+        public boolean isCancelled() {
+            return false;
         }
-    }
 
-    private void safeClose(final Socket socket) {
-        if (socket == null)
-            return;
-        try {
-            socket.shutdownOutput();
-        } catch (IOException ignored) {
+        public synchronized boolean isDone() {
+            return result != null || exception != null;
         }
-        try {
-            socket.shutdownInput();
-        } catch (IOException ignored) {
-        }
-        try {
-            socket.close();
-        } catch (IOException ignored) {
+
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return null;
         }
     }
 }

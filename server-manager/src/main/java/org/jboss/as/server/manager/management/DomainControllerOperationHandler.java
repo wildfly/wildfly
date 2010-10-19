@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
@@ -51,6 +53,10 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteInput;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 
@@ -79,26 +85,24 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
 
     private final InjectedValue<DomainController> domainControllerValue = new InjectedValue<DomainController>();
     private final InjectedValue<ScheduledExecutorService> executorServiceValue = new InjectedValue<ScheduledExecutorService>();
+    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
     private final InjectedValue<FileRepository> localFileRepositoryValue = new InjectedValue<FileRepository>();
     private final InjectedValue<DomainDeploymentManager> domainDeploymentManagerValue = new InjectedValue<DomainDeploymentManager>();
     private final InjectedValue<DomainDeploymentRepository> domainDeploymentRepositoryValue = new InjectedValue<DomainDeploymentRepository>();
 
     private DomainController domainController;
     private ScheduledExecutorService executorService;
+    private ThreadFactory threadFactory;
     private FileRepository localFileRepository;
     private DomainDeploymentManager deploymentManager;
     private DomainDeploymentRepository deploymentRepository;
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public final byte getIdentifier() {
         return ManagementProtocol.DOMAIN_CONTROLLER_REQUEST;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
         try {
             domainController = domainControllerValue.getValue();
@@ -106,23 +110,20 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             localFileRepository = localFileRepositoryValue.getValue();
             deploymentManager = domainDeploymentManagerValue.getValue();
             deploymentRepository = domainDeploymentRepositoryValue.getValue();
+            this.threadFactory = threadFactoryValue.getValue();
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
         domainController = null;
         executorService = null;
         localFileRepository = null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public synchronized DomainControllerOperationHandler getValue() throws IllegalStateException {
         return this;
     }
@@ -147,33 +148,66 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         return localFileRepositoryValue;
     }
 
+    public Injector<ThreadFactory> getThreadFactoryInjector() {
+        return threadFactoryValue;
+    }
+
     /**
-     * Handles the request.  Starts by reading the server manager id and proceeds to read the requested command byte.
-     * Once the command is available it will get the appropriate operation and execute it.
+     * Handles the request.  Reads the requested command byte. Once the command is available it will get the
+     * appropriate operation and execute it.
      *
-     * @param input  The operation input
-     * @param output The operation output
-     * @throws ManagementException If any problems occur performing the operation
+     * @param connection  The connection
+     * @param dataStream The connection input
+     * @throws IOException If any problems occur performing the operation
      */
-    public final void handleRequest(final int protocolVersion, final ByteDataInput input, final ByteDataOutput output) throws ManagementException {
+    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
         final byte commandCode;
+        final ByteDataInput input = new SimpleByteDataInput(dataStream);
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             commandCode = input.readByte();
-        } catch (IOException e) {
-            throw new ManagementException("ServerManager Request failed to read command code", e);
-        }
 
-        final ManagementOperation operation = operationFor(commandCode);
-        if (operation == null) {
-            throw new ManagementException("Invalid command code " + commandCode + " received from server manager");
-        }
-        try {
+            final ManagementOperation operation = operationFor(commandCode);
+            if (operation == null) {
+                throw new ManagementException("Invalid command code " + commandCode + " received from server manager");
+            }
             log.debugf("Received DomainController operation [%s]", operation);
-            operation.handle(input, output);
-        } catch (Exception e) {
-            throw new ManagementException("Failed to execute domain controller operation", e);
+
+            OutputStream outputStream = null;
+            ByteDataOutput output = null;
+            try {
+                outputStream = connection.writeMessage();
+                output = new SimpleByteDataOutput(outputStream);
+                operation.handle(input, output);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to execute domain controller operation", e);
+            } finally {
+                safeClose(output);
+                safeClose(outputStream);
+            }
+        } catch (IOException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new IOException("ServerManager Request failed to read command code", t);
+        } finally {
+            safeClose(input);
+            safeClose(dataStream);
         }
+    }
+
+    /** {@inheritDoc} */
+    public void handleShutdown(final Connection connection) throws IOException {
+        connection.shutdownWrites();
+    }
+
+    /** {@inheritDoc} */
+    public void handleFailure(final Connection connection, final IOException e) throws IOException {
+        connection.close();
+    }
+
+    /** {@inheritDoc} */
+    public void handleFinished(final Connection connection) throws IOException {
+        // nothing
     }
 
     private ManagementOperation operationFor(final byte commandByte) {
@@ -240,7 +274,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                 expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_PORT);
                 final int port = input.readInt();
                 final InetAddress address = InetAddress.getByAddress(addressBytes);
-                final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService);
+                final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService, threadFactory);
                 domainController.addClient(client);
                 log.infof("Server manager registered [%s]", client);
             } catch (Exception e) {
@@ -429,7 +463,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                 expectHeader(input, ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 int count = input.readInt();
                 updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
-                for(int i = 0; i < count; i++) {
+                for (int i = 0; i < count; i++) {
                     expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
                     final AbstractDomainModelUpdate<?> update = unmarshal(input, AbstractDomainModelUpdate.class);
                     updates.add(update);
@@ -443,26 +477,24 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             List<DomainUpdateResult<?>> responses = new ArrayList<DomainUpdateResult<?>>(updates.size());
-            for(AbstractDomainModelUpdate<?> update : updates) {
+            for (AbstractDomainModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
                 output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 output.writeInt(responses.size());
-                for(DomainUpdateResult<?> response : responses) {
+                for (DomainUpdateResult<?> response : responses) {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
-                    if(response.getDomainFailure() != null) {
+                    if (response.getDomainFailure() != null) {
                         output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
                         marshal(output, response.getDomainFailure());
-                    }
-                    else {
+                    } else {
                         output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
                         output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
                         Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
                         if (hostFailures == null || hostFailures.size() == 0) {
                             output.writeInt(0);
-                        }
-                        else {
+                        } else {
                             output.writeInt(hostFailures.size());
                             for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
                                 output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
@@ -475,8 +507,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                         Map<ServerIdentity, Throwable> serverFailures = response.getServerFailures();
                         if (serverFailures == null || serverFailures.size() == 0) {
                             output.writeInt(0);
-                        }
-                        else {
+                        } else {
                             output.writeInt(serverFailures.size());
                             for (Map.Entry<ServerIdentity, Throwable> entry : serverFailures.entrySet()) {
                                 ServerIdentity identity = entry.getKey();
@@ -494,8 +525,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                         Map<ServerIdentity, ?> serverResults = response.getServerResults();
                         if (serverResults == null || serverResults.size() == 0) {
                             output.writeInt(0);
-                        }
-                        else {
+                        } else {
                             output.writeInt(serverResults.size());
                             for (Map.Entry<ServerIdentity, ?> entry : serverFailures.entrySet()) {
                                 ServerIdentity identity = entry.getKey();
@@ -549,18 +579,16 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             DomainUpdateApplierResponse response = processUpdate();
             try {
                 output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
-                if(response.getDomainFailure() != null) {
+                if (response.getDomainFailure() != null) {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
                     marshal(output, response.getDomainFailure());
-                }
-                else {
+                } else {
                     output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
                     output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
                     Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
                     if (hostFailures == null || hostFailures.size() == 0) {
                         output.writeInt(0);
-                    }
-                    else {
+                    } else {
                         output.writeInt(hostFailures.size());
                         for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
                             output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
@@ -573,8 +601,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
                     List<ServerIdentity> servers = response.getServers();
                     if (servers == null || servers.size() == 0) {
                         output.writeInt(0);
-                    }
-                    else {
+                    } else {
                         output.writeInt(servers.size());
                         for (ServerIdentity server : servers) {
                             output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
@@ -632,17 +659,14 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             UpdateResultHandlerResponse<?> response = processUpdate();
             try {
                 output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
-                if(response.getFailureResult() != null) {
+                if (response.getFailureResult() != null) {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
                     marshal(output, response.getFailureResult());
-                }
-                else if (response.isCancelled()) {
+                } else if (response.isCancelled()) {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED);
-                }
-                else if (response.isTimedOut()) {
+                } else if (response.isTimedOut()) {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT);
-                }
-                else {
+                } else {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
                     marshal(output, response.getSuccessResult());
                 }
@@ -653,7 +677,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
 
         private UpdateResultHandlerResponse<?> processUpdate() {
             List<UpdateResultHandlerResponse<?>> list =
-                domainController.applyUpdateToServer(Collections.<AbstractServerModelUpdate<?>>singletonList(update), server);
+                    domainController.applyUpdateToServer(Collections.<AbstractServerModelUpdate<?>>singletonList(update), server);
             return list.get(0);
         }
     }

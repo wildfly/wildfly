@@ -23,11 +23,18 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
 /**
@@ -37,31 +44,29 @@ import static org.jboss.as.server.manager.management.ManagementUtils.expectHeade
  */
 public abstract class AbstractManagementRequest<T> extends ManagementRequest<T> {
 
-    protected AbstractManagementRequest(InetAddress address, int port, int connectionRetryLimit, long connectionRetryInterval, long connectTimeout, ScheduledExecutorService executorService) {
-        super(address, port, connectionRetryLimit, connectionRetryInterval, connectTimeout, executorService);
+    protected AbstractManagementRequest(final InetAddress address, final int port, final long connectTimeout, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
+        super(address, port, connectTimeout, executorService, threadFactory);
     }
 
-    public final T execute(final int protocolVersion, final ByteDataOutput output, final ByteDataInput input) throws ManagementException {
+    protected void sendRequest(final int protocolVersion, final Connection connection) throws ManagementException {
+        OutputStream outputStream = null;
+        ByteDataOutput output = null;
         try {
+            outputStream = connection.writeMessage();
+            output = new SimpleByteDataOutput(outputStream);
             // First send request
             output.writeByte(ManagementProtocol.REQUEST_OPERATION);
             output.writeByte(getRequestCode());
             output.writeByte(ManagementProtocol.REQUEST_START);
             sendRequest(protocolVersion, output);
             output.writeByte(ManagementProtocol.REQUEST_END);
-            output.flush();
-
-            // Now process the response
-            expectHeader(input, ManagementProtocol.RESPONSE_START);
-            byte responseCode = input.readByte();
-            if (responseCode != getResponseCode()) {
-                throw new ManagementException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
-            }
-            final T result = receiveResponse(protocolVersion, input);
-            expectHeader(input, ManagementProtocol.RESPONSE_END);
-            return result;
-        } catch (IOException e) {
-            throw new ManagementException("Failed to execute remote domain controller operation", e);
+        } catch (ManagementException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new ManagementException("Failed to send management request", t);
+        } finally {
+            safeClose(output);
+            safeClose(outputStream);
         }
     }
 
@@ -72,7 +77,26 @@ public abstract class AbstractManagementRequest<T> extends ManagementRequest<T> 
     protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
     }
 
-    protected T receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
+    protected T receiveResponse(Connection connection, InputStream dataStream) throws ManagementException {
+        final ByteDataInput input = new SimpleByteDataInput(dataStream);
+        try {
+            // Now process the response
+            expectHeader(input, ManagementProtocol.RESPONSE_START);
+            byte responseCode = input.readByte();
+            if (responseCode != getResponseCode()) {
+                throw new ManagementException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
+            }
+            final T result = receiveResponse(input);
+            expectHeader(input, ManagementProtocol.RESPONSE_END);
+            return result;
+        } catch(ManagementException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new ManagementException("Failed to receive management response", t);
+        }
+    }
+
+    protected T receiveResponse(final ByteDataInput input) throws ManagementException {
         return null;
     }
 }

@@ -23,6 +23,8 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +37,10 @@ import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.ServerManager;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
@@ -62,29 +68,65 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         this.serverManager = serverManager;
     }
 
-    public final void handleRequest(final int protocolVersion, final ByteDataInput input, final ByteDataOutput output) throws ManagementException {
+    /**
+     * Handles the request.  Reads the requested command byte. Once the command is available it will get the
+     * appropriate operation and execute it.
+     *
+     * @param connection  The connection
+     * @param dataStream The connection input
+     * @throws IOException If any problems occur performing the operation
+     */
+    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
         final byte commandCode;
+        final ByteDataInput input = new SimpleByteDataInput(dataStream);
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             commandCode = input.readByte();
-        } catch (IOException e) {
-            throw new ManagementException("Request failed to read command code", e);
-        }
 
-        final ManagementOperation operation = operationFor(commandCode);
-        if (operation == null) {
-            throw new ManagementException("Invalid command code " + commandCode + " received.");
-        }
-        try {
-            operation.handle(input, output);
-        } catch (Exception e) {
-            throw new ManagementException("Failed to execute server manager operation", e);
+            final ManagementOperation operation = operationFor(commandCode);
+            if (operation == null) {
+                throw new ManagementException("Invalid command code " + commandCode + " received from server manager");
+            }
+            log.debugf("Received DomainController operation [%s]", operation);
+
+            OutputStream outputStream = null;
+            ByteDataOutput output = null;
+            try {
+                outputStream = connection.writeMessage();
+                output = new SimpleByteDataOutput(outputStream);
+                operation.handle(input, output);
+            } catch (Exception e) {
+                throw new ManagementException("Failed to execute domain controller operation", e);
+            } finally {
+                safeClose(output);
+                safeClose(outputStream);
+            }
+        } catch (IOException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new IOException("ServerManager Request failed to read command code", t);
+        } finally {
+            safeClose(input);
+            safeClose(dataStream);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
+    public void handleShutdown(final Connection connection) throws IOException {
+        connection.shutdownWrites();
+    }
+
+    /** {@inheritDoc} */
+    public void handleFailure(final Connection connection, final IOException e) throws IOException {
+        connection.close();
+    }
+
+    /** {@inheritDoc} */
+    public void handleFinished(final Connection connection) throws IOException {
+        // nothing
+    }
+
+    /** {@inheritDoc} */
     public final byte getIdentifier() {
         return ManagementProtocol.SERVER_MANAGER_REQUEST;
     }

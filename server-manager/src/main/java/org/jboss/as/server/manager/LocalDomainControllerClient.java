@@ -99,7 +99,7 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     private <R> ModelUpdateResponse<R> executeUpdate(final AbstractServerModelUpdate<R> update, final String serverName) {
-        Server server = serverManager.getServer(serverName);
+        ManagedServer server = serverManager.getServer(serverName);
         if (server == null) {
             // TODO better handle removal of server while client is concurrently
             // processing results

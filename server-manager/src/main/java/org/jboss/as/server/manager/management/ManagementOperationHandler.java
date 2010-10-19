@@ -24,6 +24,7 @@ package org.jboss.as.server.manager.management;
 
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.MessageHandler;
 
 /**
  * Interface for handling management operations coming into a server manager process.  Each handler
@@ -31,7 +32,7 @@ import org.jboss.as.protocol.ByteDataOutput;
  *
  * @author John Bailey
  */
-public interface ManagementOperationHandler {
+public interface ManagementOperationHandler extends MessageHandler {
 
     /**
      * The identifier for this handler.
@@ -40,13 +41,4 @@ public interface ManagementOperationHandler {
      */
     byte getIdentifier();
 
-    /**
-     * Handle the incoming management operation.
-     *
-     * @param protocolVersion The working protocol version
-     * @param input  The request input
-     * @param output The request output
-     * @throws ManagementException If any problems occur performing the operation
-     */
-    void handleRequest(final int protocolVersion, final ByteDataInput input, final ByteDataOutput output) throws ManagementException;
 }

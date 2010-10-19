@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.ScheduledExecutorService;
 
+import java.util.concurrent.ThreadFactory;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.protocol.ByteDataInput;
@@ -51,13 +52,12 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
     private final String serverManagerId;
     private final InetAddress dcAddress;
     private final int dcPort;
-    private final int connectionRetryLimit;
-    private final long connectionRetryInterval;
     private final long connectTimeout;
     private final InetAddress localManagementAddress;
     private final int localManagementPort;
     private final RemoteFileRepository remoteFileRepository;
     private final ScheduledExecutorService executorService;
+    private final ThreadFactory threadFactory;
 
     /**
      * Create an instance.
@@ -68,22 +68,20 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
      * @param localManagementAddress The local management address
      * @param localManagementPort The local management port
      * @param localFileRepository  The local file repository
-     * @param connectionRetryLimit  The number of times to retry operations
-     * @param connectionRetryInterval  The interval between connection retries
      * @param connectTimeout  The timeout for connecting to the remote DC (in seconds)
      * @param executorService The executor service
+     * @param threadFactory The thread factory
      */
-    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort, final InetAddress localManagementAddress, final int localManagementPort, final FileRepository localFileRepository, final int connectionRetryLimit, final long connectionRetryInterval, final long connectTimeout, final ScheduledExecutorService executorService) {
+    public RemoteDomainControllerConnection(final String serverManagerId, final InetAddress dcAddress, final int dcPort, final InetAddress localManagementAddress, final int localManagementPort, final FileRepository localFileRepository, final long connectTimeout, final ScheduledExecutorService executorService, final ThreadFactory threadFactory) {
         this.serverManagerId = serverManagerId;
         this.dcAddress = dcAddress;
         this.dcPort = dcPort;
         this.localManagementAddress = localManagementAddress;
         this.localManagementPort = localManagementPort;
         this.remoteFileRepository = new RemoteFileRepository(this, localFileRepository);
-        this.connectionRetryLimit = connectionRetryLimit;
-        this.connectionRetryInterval = connectionRetryInterval;
         this.connectTimeout = connectTimeout;
         this.executorService = executorService;
+        this.threadFactory = threadFactory;
     }
 
     /** {@inheritDoc} */
@@ -113,7 +111,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         protected final String serverManagerId;
 
         private DomainControllerRequest(final RemoteDomainControllerConnection connection) {
-            super(connection.dcAddress, connection.dcPort, connection.connectionRetryLimit, connection.connectionRetryInterval, connection.connectTimeout, connection.executorService);
+            super(connection.dcAddress, connection.dcPort, connection.connectTimeout, connection.executorService, connection.threadFactory);
             this.serverManagerId = connection.serverManagerId;
         }
 
@@ -170,7 +168,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected final DomainModel receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
+        protected final DomainModel receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
                 log.infof("Registered with remote domain controller");
@@ -197,7 +195,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected Void receiveResponse(int protocolVersion, ByteDataInput input) throws ManagementException {
+        protected Void receiveResponse(ByteDataInput input) throws ManagementException {
             log.infof("Unregistered with remote domain controller");
             return null;
         }
@@ -239,7 +237,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected final File receiveResponse(final int protocolVersion, final ByteDataInput input) throws ManagementException {
+        protected final File receiveResponse(final ByteDataInput input) throws ManagementException {
             final File localPath;
             switch (rootId) {
                 case 0: {

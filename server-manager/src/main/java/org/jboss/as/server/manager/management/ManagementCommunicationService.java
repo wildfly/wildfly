@@ -23,14 +23,23 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
-import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
+import javax.net.ServerSocketFactory;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ConnectionHandler;
+import org.jboss.as.protocol.MessageHandler;
+import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -48,15 +57,15 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John E. Bailey
  */
-public class ManagementCommunicationService implements Service<ManagementCommunicationService> {
+public class ManagementCommunicationService implements Service<ManagementCommunicationService>, ConnectionHandler {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "management", "communication");
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
     private final ConcurrentMap<Byte, ManagementOperationHandler> handlers = new ConcurrentHashMap<Byte, ManagementOperationHandler>();
-    private SocketListener socketListener;
-
+    private ProtocolServer server;
 
     /**
      * Starts the service.  Will start a socket listener to listen for management operation requests.
@@ -66,11 +75,20 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
      */
     public synchronized void start(StartContext context) throws StartException {
         final ExecutorService executorService = executorServiceValue.getValue();
+        final ThreadFactory threadFactory = threadFactoryValue.getValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getValue();
         final Integer port = portValue.getValue();
         try {
-            socketListener = SocketListener.createSocketListener("SM-Management", new DomainControllerSocketHandler(executorService), interfaceBinding.getAddress(), port, 20);
-            socketListener.start();
+            final ProtocolServer.Configuration config = new ProtocolServer.Configuration();
+            config.setBindAddress(new InetSocketAddress(interfaceBinding.getAddress(), port));
+            config.setThreadFactory(threadFactory);
+            config.setReadExecutor(executorService);
+            config.setSocketFactory(ServerSocketFactory.getDefault());
+            config.setBacklog(50);
+            config.setConnectionHandler(this);
+
+            server = new ProtocolServer(config);
+            server.start();
         } catch (Exception e) {
             throw new StartException("Failed to start server socket", e);
         }
@@ -79,11 +97,11 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
     /**
      * Stops the service.  Will shutdown the socket listener and will no longer accept requests.
      *
-     * @param context
+     * @param context The stop context
      */
     public synchronized void stop(StopContext context) {
-        if (socketListener != null) {
-            socketListener.shutdown();
+        if (server != null) {
+            server.stop();
         }
     }
 
@@ -119,6 +137,10 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
         return portValue;
     }
 
+    public Injector<ThreadFactory> getThreadFactoryInjector() {
+        return threadFactoryValue;
+    }
+
     void addHandler(ManagementOperationHandler handler) {
         if (handlers.putIfAbsent(handler.getIdentifier(), handler) != null) {
             // TODO: Handle
@@ -131,56 +153,72 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
         }
     }
 
-    private class DomainControllerSocketHandler implements SocketHandler {
-        private final ExecutorService executorService;
-
-        private DomainControllerSocketHandler(final ExecutorService executorService) {
-            this.executorService = executorService;
-        }
-
-        @Override
-        public void initializeConnection(final Socket socket) throws IOException, InitialSocketRequestException {
-            executorService.execute(new RequestTask(SocketConnection.accepted(socket)));
-        }
+    public MessageHandler handleConnected(Connection connection) throws IOException {
+        return new HeaderMessageHandler();
     }
 
-    private class RequestTask implements Runnable {
-        private final SocketConnection socketConnection;
-
-        private RequestTask(final SocketConnection socketConnection) {
-            this.socketConnection = socketConnection;
-        }
-
-        public void run() {
+    private class HeaderMessageHandler implements MessageHandler {
+        public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+            final int workingVersion;
+            final ManagementRequestHeader requestHeader;
+            final ManagementOperationHandler handler;
+            ByteDataInput input = null;
             try {
-                final ByteDataInput input = new SimpleByteDataInput(socketConnection.getInputStream());
-                final ByteDataOutput output =  new SimpleByteDataOutput(socketConnection.getOutputStream());
+                input = new SimpleByteDataInput(dataStream);
 
                 // Start by reading the request header
-                final ManagementRequestHeader requestHeader = new ManagementRequestHeader(input);
+                requestHeader = new ManagementRequestHeader(input);
 
                 // Work with the lowest protocol version
-                int workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
+                workingVersion = Math.min(ManagementProtocol.VERSION, requestHeader.getVersion());
+
+                byte handlerId = requestHeader.getOperationHandlerId();
+                if (handlerId == -1) {
+                    throw new IOException("Management request failed.  Invalid handler id");
+                }
+                handler = handlers.get(handlerId);
+                if (handler == null) {
+                    throw new IOException("Management request failed.  NO handler found for id" + handlerId);
+                }
+                connection.setMessageHandler(handler);
+            } catch (IOException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new IOException("Failed to read request header", t);
+            } finally {
+                safeClose(input);
+                safeClose(dataStream);
+            }
+
+            OutputStream dataOutput = null;
+            ByteDataOutput output = null;
+            try {
+                dataOutput = connection.writeMessage();
+                output = new SimpleByteDataOutput(dataOutput);
 
                 // Now write the response header
                 final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
                 responseHeader.write(output);
-                output.flush();
-
-                byte handlerId = requestHeader.getOperationHandlerId();
-                if (handlerId == -1) {
-                    throw new ManagementException("Management request failed.  Invalid handler id");
-                }
-                final ManagementOperationHandler handler = handlers.get(handlerId);
-                if (handler == null) {
-                    throw new ManagementException("Management request failed.  NO handler found for id" + handlerId);
-                }
-                handler.handleRequest(workingVersion, input, output);
-            } catch (Exception e) {
-                log.error("Failed to process management request", e);
+            } catch (IOException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new IOException("Failed to write management response headers", t);
             } finally {
-                socketConnection.close();
+                safeClose(output);
+                safeClose(dataOutput);
             }
+        }
+
+        public void handleShutdown(final Connection connection) throws IOException {
+            connection.shutdownWrites();
+        }
+
+        public void handleFailure(final Connection connection, final IOException e) throws IOException {
+            connection.close();
+        }
+
+        public void handleFinished(final Connection connection) throws IOException {
+            // nothing
         }
     }
 }

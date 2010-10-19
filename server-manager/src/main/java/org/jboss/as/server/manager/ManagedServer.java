@@ -262,7 +262,7 @@ public final class ManagedServer {
         processManagerClient.startProcess(serverProcessName);
         ServiceActivator serverManagerCommActivator = new ServiceActivator() {
             public void activate(final ServiceActivatorContext serviceActivatorContext) {
-                
+
             }
         };
         ServerStartTask startTask = new ServerStartTask(serverName, portOffset, Collections.<ServiceActivator>singletonList(serverManagerCommActivator), updateList);
