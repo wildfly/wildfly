@@ -50,6 +50,7 @@ import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.OSGiSubsystemState;
@@ -212,6 +213,7 @@ public class OSGiSubsystemSupport {
     }
 
     public void setupFrameworkServices(final BatchBuilder batchBuilder) {
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
         TestBundleManagerService.addService(batchBuilder);
         FrameworkService.addService(batchBuilder);
         PackageAdminService.addService(batchBuilder);

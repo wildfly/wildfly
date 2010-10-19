@@ -25,6 +25,9 @@ package org.jboss.as.osgi.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.MBeanServer;
+
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -64,6 +67,7 @@ public class FrameworkService implements Service<BundleContext> {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
+    private InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
     private Framework framework;
 
@@ -71,6 +75,7 @@ public class FrameworkService implements Service<BundleContext> {
         FrameworkService service = new FrameworkService();
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(FrameworkService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
+        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
     }
@@ -93,8 +98,12 @@ public class FrameworkService implements Service<BundleContext> {
             framework = bundleManager.getFrameworkState();
             framework.start();
 
-            // Register a {@link SynchronousBundleListener} that removes the {@link DeploymentService}
+            // Register the {@link MBeanServer} as OSGi service
             BundleContext sysContext = framework.getBundleContext();
+            MBeanServer mbeanServer = injectedMBeanServer.getValue();
+            sysContext.registerService(MBeanServer.class.getName(), mbeanServer, null);
+
+            // Register a {@link SynchronousBundleListener} that removes the {@link DeploymentService}
             BundleListener uninstallListener = new SynchronousBundleListener() {
 
                 @Override
