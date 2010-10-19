@@ -260,11 +260,7 @@ public final class ManagedServer {
         setState(ServerState.BOOTING);
 
         processManagerClient.startProcess(serverProcessName);
-        ServiceActivator serverManagerCommActivator = new ServiceActivator() {
-            public void activate(final ServiceActivatorContext serviceActivatorContext) {
-
-            }
-        };
+        ServiceActivator serverManagerCommActivator = new ServerManagerCommServiceActivator();
         ServerStartTask startTask = new ServerStartTask(serverName, portOffset, Collections.<ServiceActivator>singletonList(serverManagerCommActivator), updateList);
         final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
         final OutputStream os = processManagerClient.sendStdin(serverProcessName);
@@ -329,15 +325,10 @@ public final class ManagedServer {
         }
     }
 
-    private static class FakeLogConfigurator implements Runnable, Serializable {
+    private static class ServerManagerCommServiceActivator implements ServiceActivator, Serializable {
 
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public void run() {
-            Logger.getLogger("FakeLogConfigurator").info("Sure would be cool to be a real log configurator");
+        public void activate(final ServiceActivatorContext serviceActivatorContext) {
 
         }
-
     }
 }

@@ -86,6 +86,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
 
+import javax.net.SocketFactory;
+
 /**
  * A ServerManager.
  *
@@ -372,7 +374,12 @@ public class ServerManager {
     }
 
     private void launchProcessManagerSlave() throws IOException {
-        processManagerClient = ProcessManagerClient.connect(new ProtocolClient.Configuration(), authCode, new ProcessMessageHandler() {
+        final ProtocolClient.Configuration configuration = new ProtocolClient.Configuration();
+        configuration.setReadExecutor(Executors.newCachedThreadPool());
+        configuration.setServerAddress(new InetSocketAddress(environment.getProcessManagerAddress(), environment.getProcessManagerPort().intValue()));
+        configuration.setThreadFactory(Executors.defaultThreadFactory());
+        configuration.setSocketFactory(SocketFactory.getDefault());
+        processManagerClient = ProcessManagerClient.connect(configuration, authCode, new ProcessMessageHandler() {
             public void handleProcessAdded(final ProcessManagerClient client, final String processName) {
             }
 

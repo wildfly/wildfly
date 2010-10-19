@@ -40,8 +40,6 @@ import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 
-import java.util.logging.Handler;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -57,7 +55,7 @@ public final class ProcessManager {
 
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
     private final Map<Key, ManagedProcess> processesByKey = new HashMap<Key, ManagedProcess>();
-    private final Handler consoleHandler;
+
     private final ProtocolServer server;
 
     private final Random rng;
@@ -69,8 +67,7 @@ public final class ProcessManager {
     private final PrintStream stdout;
     private final PrintStream stderr;
 
-    public ProcessManager(final Handler consoleHandler, final ProtocolServer.Configuration configuration, final PrintStream stdout, final PrintStream stderr) throws IOException {
-        this.consoleHandler = consoleHandler;
+    public ProcessManager(final ProtocolServer.Configuration configuration, final PrintStream stdout, final PrintStream stderr) throws IOException {
         this.stdout = stdout;
         this.stderr = stderr;
         rng = new Random(new SecureRandom().nextLong());
@@ -95,6 +92,11 @@ public final class ProcessManager {
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isInitial) {
         synchronized (lock) {
+            for (String s : command) {
+                if (s == null) {
+                    throw new IllegalArgumentException("command contains a null component");
+                }
+            }
             if (shutdown) {
                 return;
             }
@@ -205,11 +207,8 @@ public final class ProcessManager {
                     // ignore
                 }
             }
+            log.info("All processes finished; exiting");
         }
-    }
-
-    public Handler getConsoleHandler() {
-        return consoleHandler;
     }
 
     public ManagedProcess getServerByAuthCode(final byte[] code) {

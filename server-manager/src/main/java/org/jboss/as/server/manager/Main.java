@@ -77,13 +77,19 @@ public final class Main {
     public static void main(String[] args) throws IOException {
         MDC.put("process", "server manager");
 
-        final byte[] authCode = new byte[16];
-        StreamUtils.readFully(System.in, authCode);
-
         // Grab copies of our streams.
         final InputStream in = System.in;
         final PrintStream out = System.out;
         final PrintStream err = System.err;
+
+        final byte[] authKey = new byte[16];
+        try {
+            StreamUtils.readFully(System.in, authKey);
+        } catch (IOException e) {
+            System.err.printf("Failed to read authentication key: %s", e);
+            System.exit(1);
+            return;
+        }
 
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();
@@ -94,7 +100,10 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        create(args, in, out, err, authCode);
+        create(args, in, out, err, authKey);
+
+        while (in.read() != -1) {}
+        System.exit(0);
     }
 
     Properties props = new Properties(System.getProperties());
@@ -128,6 +137,7 @@ public final class Main {
 
     private void abort(Throwable t) {
         try {
+            t.printStackTrace();
             // Inform the process manager that we are shutting down on purpose
             // so it doesn't try to respawn us
 
@@ -146,18 +156,16 @@ public final class Main {
     public static ServerManagerEnvironment determineEnvironment(String[] args, Properties systemProperties, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
-        Integer smPort = null;
+        Integer smPort = Integer.valueOf(0);
         InetAddress smAddress = null;
-        String procName = null;
+        try {
+            smAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        String procName = "Server Manager";
         String defaultJVM = null;
         boolean isRestart = false;
-        final byte[] authKey = new byte[16];
-        try {
-            StreamUtils.readFully(stdin, authKey);
-        } catch (IOException e) {
-            System.err.printf("Failed to read authentication key: %s", e);
-            return null;
-        }
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {

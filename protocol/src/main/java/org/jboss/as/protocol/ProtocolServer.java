@@ -48,6 +48,7 @@ public final class ProtocolServer {
     private final Executor readExecutor;
     private volatile boolean stop;
     private volatile Thread thread;
+    private volatile InetSocketAddress boundAddress;
 
     public ProtocolServer(final Configuration configuration) {
         threadFactory = configuration.getThreadFactory();
@@ -105,12 +106,14 @@ public final class ProtocolServer {
             throw new IOException("Failed to create server thread");
         }
         serverSocket.bind(bindAddress, backlog);
+        boundAddress = (InetSocketAddress) serverSocket.getLocalSocketAddress();
         thread.start();
     }
 
     public void stop() {
         stop = true;
         final Thread thread = this.thread;
+        boundAddress = null;
         if (thread != null) {
             thread.interrupt();
         }
@@ -140,8 +143,8 @@ public final class ProtocolServer {
         }
     }
 
-    public InetSocketAddress getBindAddress() {
-        return bindAddress;
+    public InetSocketAddress getBoundAddress() {
+        return boundAddress;
     }
 
     public static final class Configuration {

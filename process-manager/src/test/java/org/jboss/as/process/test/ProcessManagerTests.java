@@ -32,8 +32,6 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    StartStopProcessesTestCase.class,
-    InterprocessCommunicationTestCase.class
 })
 public class ProcessManagerTests {
 

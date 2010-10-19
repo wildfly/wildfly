@@ -23,6 +23,7 @@
 package org.jboss.as.process;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,8 @@ import java.util.concurrent.Executors;
 import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.handlers.ConsoleHandler;
-import org.jboss.logmanager.handlers.NullHandler;
+
+import javax.net.ServerSocketFactory;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -47,14 +49,15 @@ public final class Main {
     }
 
     public static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
-    public static final String SERVER_MANAGER_MODULE = "org.jboss.server.manager";
+    public static final String SERVER_MANAGER_MODULE = "org.jboss.as.server-manager";
 
     public static void main(String[] args) throws IOException {
         MDC.put("process", "process manager");
 
-        String jvmName = System.getProperty("java.home") + "/bin/java";
-        String jbossHome = System.getProperty("jboss.home.dir");
-        String modulePath = System.getProperty("jboss.module.path");
+        String javaHome = System.getProperty("java.home", ".");
+        String jvmName = javaHome + "/bin/java";
+        String jbossHome = System.getProperty("jboss.home.dir", ".");
+        String modulePath = System.getProperty("jboss.module.path", "modules");
         String bootJar = "jboss-modules.jar";
         String logModule = "org.jboss.logmanager";
         String bootModule = SERVER_MANAGER_MODULE;
@@ -88,8 +91,10 @@ public final class Main {
                 bindPort = Integer.parseInt(args[++i]);
             } else if ("--".equals(arg)) {
                 for (i++; i < args.length; i++) {
+                    arg = args[i];
                     if ("--".equals(arg)) {
                         for (i++; i < args.length; i++) {
+                            arg = args[i];
                             smOptions.add(arg);
                         }
                         break OUT;
@@ -102,19 +107,6 @@ public final class Main {
                 throw new IllegalArgumentException("Bad option: " + arg);
             }
         }
-
-        final List<String> initialCommand = new ArrayList<String>();
-        initialCommand.add(jvmName);
-        initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
-        initialCommand.addAll(javaOptions);
-        initialCommand.add("-jar");
-        initialCommand.add(bootJar);
-        initialCommand.add("-mp");
-        initialCommand.add(modulePath);
-        initialCommand.add("-logmodule");
-        initialCommand.add(logModule);
-        initialCommand.add(bootModule);
-        initialCommand.addAll(smOptions);
 
         Handler consoleHandler = null;
 
@@ -130,9 +122,6 @@ public final class Main {
                 }
             }
         }
-        if (consoleHandler == null) {
-            consoleHandler = new NullHandler();
-        }
 
         final ProtocolServer.Configuration configuration = new ProtocolServer.Configuration();
         if (bindAddress != null) {
@@ -141,15 +130,40 @@ public final class Main {
             configuration.setBindAddress(new InetSocketAddress(bindPort));
         }
         // todo better config
+        configuration.setBindAddress(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+        configuration.setSocketFactory(ServerSocketFactory.getDefault());
+        configuration.setThreadFactory(Executors.defaultThreadFactory());
         configuration.setReadExecutor(Executors.newCachedThreadPool());
-        final ProcessManager processManager = new ProcessManager(consoleHandler, configuration, System.out, System.err);
+
+        final ProcessManager processManager = new ProcessManager(configuration, System.out, System.err);
+        final InetSocketAddress boundAddress = processManager.getServer().getBoundAddress();
+
+        final List<String> initialCommand = new ArrayList<String>();
+        initialCommand.add(jvmName);
+        initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
+        initialCommand.addAll(javaOptions);
+        initialCommand.add("-jar");
+        initialCommand.add(bootJar);
+        initialCommand.add("-mp");
+        initialCommand.add(modulePath);
+        initialCommand.add("-logmodule");
+        initialCommand.add(logModule);
+        initialCommand.add(bootModule);
+        initialCommand.add(CommandLineConstants.INTERPROCESS_PM_ADDRESS);
+        initialCommand.add(boundAddress.getHostName());
+        initialCommand.add(CommandLineConstants.INTERPROCESS_PM_PORT);
+        initialCommand.add(Integer.toString(boundAddress.getPort()));
+        initialCommand.addAll(smOptions);
+
         processManager.addProcess("Server Manager", initialCommand, Collections.<String, String>emptyMap(), jbossHome, true);
         processManager.startProcess("Server Manager");
 
-        new Thread(new Runnable() {
+        final Thread shutdownThread = new Thread(new Runnable() {
             public void run() {
                 processManager.shutdown();
             }
         }, "Shutdown thread");
+        shutdownThread.setDaemon(false);
+        Runtime.getRuntime().addShutdownHook(shutdownThread);
     }
 }

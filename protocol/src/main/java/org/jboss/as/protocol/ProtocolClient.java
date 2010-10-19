@@ -74,7 +74,6 @@ public final class ProtocolClient {
     public Connection connect() throws IOException {
         final Socket socket = socketFactory.createSocket();
         final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor);
-        connection.attach(this);
         final Thread thread = threadFactory.newThread(connection.getReadTask());
         if (thread == null) {
             throw new IllegalStateException("Thread creation was refused");

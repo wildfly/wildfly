@@ -139,14 +139,13 @@ while true; do
          -mp \"$JBOSS_HOME/modules\" \
          -logmodule "org.jboss.logmanager" \
          org.jboss.as.process-manager \
-         "$JBOSS_HOME" \
-         \"$JAVA\" $JAVA_OPTS \
+         -jboss-home "$JBOSS_HOME" \
+         -jvm \"$JAVA\" \
+         -- \
          -Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/logs/server-manager/boot.log \
          -Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"$JBOSS_HOME/modules\" \
-         -logmodule "org.jboss.logmanager" \
-         org.jboss.as.server-manager \
+         $JAVA_OPTS \
+         -- \
          -default-jvm \"$JAVA\" \
          "$@"
       JBOSS_STATUS=$?

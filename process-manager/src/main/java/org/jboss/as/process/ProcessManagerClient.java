@@ -130,7 +130,9 @@ public final class ProcessManagerClient implements Closeable {
                 os.write(authCode);
                 os.close();
                 ok = true;
-                return new ProcessManagerClient(connection);
+                final ProcessManagerClient processManagerClient = new ProcessManagerClient(connection);
+                connection.attach(processManagerClient);
+                return processManagerClient;
             } finally {
                 safeClose(os);
             }
@@ -189,8 +191,11 @@ public final class ProcessManagerClient implements Closeable {
             }
             writeInt(os, env.size());
             for (String key : env.keySet()) {
-                writeUTFZBytes(os, key);
-                writeUTFZBytes(os, env.get(key));
+                final String value = env.get(key);
+                if (value != null) {
+                    writeUTFZBytes(os, key);
+                    writeUTFZBytes(os, value);
+                }
             }
             writeUTFZBytes(os, workingDir);
             os.close();

@@ -49,8 +49,6 @@ final class ManagedProcess {
     private final Map<String, String> env;
     private final String workingDirectory;
     private final Logger log;
-    private final Logger stdoutLog;
-    private final Logger stderrLog;
     private final Object lock;
 
     private final ProcessManager processManager;
@@ -83,6 +81,30 @@ final class ManagedProcess {
     }
 
     ManagedProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final Object lock, final ProcessManager manager, final byte[] authKey, final boolean initial) {
+        if (processName == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        if (command == null) {
+            throw new IllegalArgumentException("command is null");
+        }
+        if (env == null) {
+            throw new IllegalArgumentException("env is null");
+        }
+        if (workingDirectory == null) {
+            throw new IllegalArgumentException("workingDirectory is null");
+        }
+        if (lock == null) {
+            throw new IllegalArgumentException("lock is null");
+        }
+        if (manager == null) {
+            throw new IllegalArgumentException("manager is null");
+        }
+        if (authKey == null) {
+            throw new IllegalArgumentException("authKey is null");
+        }
+        if (authKey.length != 16) {
+            throw new IllegalArgumentException("authKey length is invalid");
+        }
         this.processName = processName;
         this.command = command;
         this.env = env;
@@ -92,8 +114,6 @@ final class ManagedProcess {
         this.authKey = authKey;
         isInitial = initial;
         log = Logger.getLogger("org.jboss.as.process." + processName + ".status");
-        stdoutLog = Logger.getLogger("org.jboss.as.process." + processName + ".stdout");
-        stderrLog = Logger.getLogger("org.jboss.as.process." + processName + ".stderr");
     }
 
     public String getProcessName() {
@@ -113,6 +133,7 @@ final class ManagedProcess {
     public void sendStdin(final InputStream msg) {
         try {
             StreamUtils.copyStream(msg, stdin);
+            stdin.flush();
         } catch (IOException e) {
             log.errorf(e, "Failed to send data bytes to process '%s' input stream", processName);
         }
@@ -121,6 +142,7 @@ final class ManagedProcess {
     private void doStart() {
         // Call under lock
         log.infof("Starting process '%s'", processName);
+        log.debugf("Process name='%s' command='%s' workingDirectory='%s'", processName, command, workingDirectory);
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.environment().putAll(env);
         builder.directory(new File(workingDirectory));
@@ -146,7 +168,8 @@ final class ManagedProcess {
         joinThread.start();
         try {
             stdin.write(authKey);
-        } catch (IOException e) {
+            stdin.flush();
+        } catch (Exception e) {
             log.warnf("Failed to send authentication key to process '%s': %s", processName, e);
         }
         state = State.STARTED;
@@ -187,7 +210,10 @@ final class ManagedProcess {
         }
 
         public void run() {
-            final Process process = ManagedProcess.this.process;
+            final Process process;
+            synchronized (lock) {
+                process = ManagedProcess.this.process;
+            }
             for (;;) try {
                 final int value = process.waitFor();
                 log.infof("Process '%s' finished with an exit status of %d", processName, Integer.valueOf(value));
@@ -230,6 +256,8 @@ final class ManagedProcess {
                 while ((s = reader.readLine()) != null) {
                     synchronized (target) {
                         writer.write(s);
+                        writer.write('\n');
+                        writer.flush();
                     }
                 }
                 source.close();
