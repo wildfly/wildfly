@@ -70,7 +70,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         assert structure != null;
         assert structure.getEntries() != null;
         for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {
-            if (resourceRoot.getRoot().isFile()) {
+            if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(META_INF);
                 if (webFragment.exists() && webFragment.isDirectory()) {
                     processTlds(deploymentRoot, webFragment.getChildren(), tlds);

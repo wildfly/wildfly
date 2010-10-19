@@ -38,9 +38,6 @@ import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
-import org.jboss.vfs.VirtualFileFilter;
-import org.jboss.vfs.VisitorAttributes;
-import org.jboss.vfs.util.SuffixMatchFilter;
 
 /**
  * @author Remy Maucherat
@@ -50,8 +47,6 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(310L);
 
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
-
-    public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -65,7 +60,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
         assert structure != null;
         assert structure.getEntries() != null;
         for (DeploymentStructure.ClassPathEntry resourceRoot : structure.getEntries()) {
-            if (resourceRoot.getRoot().isFile()) {
+            if (resourceRoot.getRoot().getLowerCaseName().endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);
                 if (webFragment.exists() && webFragment.isFile()) {
                     InputStream is = null;

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,17 +56,17 @@ public class WarMetaData {
     /**
      * Web fragments metadata.
      */
-    private Map<String, WebFragmentMetaData> webFragmentsMetaData = Collections.emptyMap();
+    private Map<String, WebFragmentMetaData> webFragmentsMetaData;
 
     /**
      * Annotations metadata.
      */
-    private Map<String, WebMetaData> annotationsMetaData = Collections.emptyMap();
+    private Map<String, WebMetaData> annotationsMetaData;
 
     /**
      * Order.
      */
-    private List<String> order = Collections.emptyList();
+    private List<String> order;
 
     /**
      * No order flag.
@@ -77,12 +76,12 @@ public class WarMetaData {
     /**
      * Overlays.
      */
-    private Set<VirtualFile> overlays = Collections.emptySet();
+    private Set<VirtualFile> overlays;
 
     /**
      * SCIs.
      */
-    private Map<String, VirtualFile> scis = Collections.emptyMap();
+    private Map<String, VirtualFile> scis;
 
     /**
      * Final merged metadata.

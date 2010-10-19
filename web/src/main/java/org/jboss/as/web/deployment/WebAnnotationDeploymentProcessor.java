@@ -21,7 +21,9 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebListener;
@@ -35,6 +37,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
+import org.jboss.metadata.web.spec.WebMetaData;
 
 /**
  * Web annotation deployment processor.
@@ -57,6 +60,13 @@ public class WebAnnotationDeploymentProcessor implements DeploymentUnitProcessor
      * {@inheritDoc}
      */
     public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        assert warMetaData != null;
+        Map<String, WebMetaData> annotationsMetaData = warMetaData.getAnnotationsMetaData();
+        if (annotationsMetaData == null) {
+            annotationsMetaData = new HashMap<String, WebMetaData>();
+            warMetaData.setAnnotationsMetaData(annotationsMetaData);
+        }
         final WarAnnotationIndex index = context.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index
