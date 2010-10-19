@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.filesystem;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,6 +70,9 @@ import org.jboss.msc.value.InjectedValue;
 public class FileSystemDeploymentService implements Service<FileSystemDeploymentService> {
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "deployment", "filesystem");
+
+    //TODO Extenalize config
+    FileFilter filter = new ExtensibleFilter();
 
     public static ServiceName getServiceName(String path) {
         return BASE_SERVICE_NAME.append(path);
@@ -302,7 +306,8 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
      */
     private DeploymentPlanBuilder scanDirectory(File directory, DeploymentPlanBuilder builder, Map<String, File> foundDeployed, Set<String> newlyAdded) {
 
-        for (File child : directory.listFiles()) {
+        //TODO externalize config of filter?
+        for (File child : directory.listFiles(filter)) {
 
             String fileName = child.getName();
 
