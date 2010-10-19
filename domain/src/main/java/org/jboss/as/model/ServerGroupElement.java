@@ -22,12 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -43,7 +41,7 @@ public final class ServerGroupElement extends AbstractModelElement<ServerGroupEl
 
     private final String name;
     private final String profile;
-    private final NavigableMap<String, ServerGroupDeploymentElement> deploymentMappings = new TreeMap<String, ServerGroupDeploymentElement>();
+    private final Map<String, ServerGroupDeploymentElement> deploymentMappings = new LinkedHashMap<String, ServerGroupDeploymentElement>();
     private String bindingGroup;
     private int portOffset = 0;
     private JvmElement jvm;

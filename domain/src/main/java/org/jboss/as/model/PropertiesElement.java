@@ -25,11 +25,9 @@ package org.jboss.as.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -44,7 +42,7 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
 
     private static final long serialVersionUID = 1614693052895734582L;
 
-    private final NavigableMap<String, String> properties = new TreeMap<String, String>();
+    private final Map<String, String> properties = new LinkedHashMap<String, String>();
     private final Element propertyType;
     private final boolean allowNullValue;
 
@@ -162,11 +160,13 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Class<PropertiesElement> getElementClass() {
         return PropertiesElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         synchronized (properties) {
             for (Map.Entry<String, String> entry : properties.entrySet()) {

@@ -25,12 +25,10 @@ package org.jboss.as.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -48,13 +46,13 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     private static final long serialVersionUID = 5516070442013067881L;
 
     // model fields
-    private final Set<String> extensions = new HashSet<String>();
-    private final NavigableMap<String, ServerGroupElement> serverGroups = new TreeMap<String, ServerGroupElement>();
-    private final NavigableMap<String, DeploymentUnitElement> deployments = new TreeMap<String, DeploymentUnitElement>();
-    private final NavigableMap<String, ProfileElement> profiles = new TreeMap<String, ProfileElement>();
-    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
-    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-    private final NavigableMap<String, SocketBindingGroupElement> bindingGroups = new TreeMap<String, SocketBindingGroupElement>();
+    private final Set<String> extensions = new LinkedHashSet<String>();
+    private final Map<String, ServerGroupElement> serverGroups = new LinkedHashMap<String, ServerGroupElement>();
+    private final Map<String, DeploymentUnitElement> deployments = new LinkedHashMap<String, DeploymentUnitElement>();
+    private final Map<String, ProfileElement> profiles = new LinkedHashMap<String, ProfileElement>();
+    private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
+    private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
+    private final Map<String, SocketBindingGroupElement> bindingGroups = new LinkedHashMap<String, SocketBindingGroupElement>();
     private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.DOMAIN.getLocalName());

@@ -25,8 +25,9 @@ package org.jboss.as.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -65,11 +66,11 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
 
     private String serverName;
-    private final Set<String> extensions = new HashSet<String>();
-    private final NavigableMap<String, DeploymentRepositoryElement> repositories = new TreeMap<String, DeploymentRepositoryElement>();
-    private final NavigableMap<String, ServerGroupDeploymentElement> deployments = new TreeMap<String, ServerGroupDeploymentElement>();
-    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
+    private final Set<String> extensions = new LinkedHashSet<String>();
+    private final Map<String, DeploymentRepositoryElement> repositories = new LinkedHashMap<String, DeploymentRepositoryElement>();
+    private final Map<String, ServerGroupDeploymentElement> deployments = new LinkedHashMap<String, ServerGroupDeploymentElement>();
+    private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
+    private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
     private ProfileElement profile;
     private SocketBindingGroupElement socketBindings;
     private int portOffset;

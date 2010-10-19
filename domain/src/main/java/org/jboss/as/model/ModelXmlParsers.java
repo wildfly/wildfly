@@ -400,7 +400,7 @@ public final class ModelXmlParsers {
 
         final ExtensionContext extensionContext = new ExtensionContextImpl(reader);
 
-        final Set<String> found = new HashSet<String>();
+        final Set<String> found = new LinkedHashSet<String>();
 
         while (reader.nextTag() != END_ELEMENT) {
             // Attribute && require no content
@@ -2013,7 +2013,7 @@ public final class ModelXmlParsers {
     }
 
     static Collection<PathElementUpdate> parsePaths(final XMLExtendedStreamReader reader, final boolean requirePath) throws XMLStreamException {
-        final Set<String> pathNames = new HashSet<String>();
+        final Set<String> pathNames = new LinkedHashSet<String>();
         final List<PathElementUpdate> updates = new ArrayList<PathElementUpdate>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {

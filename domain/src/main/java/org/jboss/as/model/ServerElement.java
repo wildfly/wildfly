@@ -25,12 +25,10 @@ package org.jboss.as.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.InterfaceElement;
@@ -47,8 +45,8 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
 
     private final String name;
     private final String serverGroup;
-    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
+    private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
+    private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
     private boolean start;
     private String bindingGroup;
     private int portOffset = 0;

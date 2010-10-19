@@ -28,12 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -57,10 +55,10 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     private final Set<String> extensions = new HashSet<String>();
-    private final NavigableMap<String, InterfaceElement> interfaces = new TreeMap<String, InterfaceElement>();
-    private final NavigableMap<String, ServerElement> servers = new TreeMap<String, ServerElement>();
-    private final NavigableMap<String, JvmElement> jvms = new TreeMap<String, JvmElement>();
-    private final NavigableMap<String, PathElement> paths = new TreeMap<String, PathElement>();
+    private final Map<String, InterfaceElement> interfaces = new LinkedHashMap<String, InterfaceElement>();
+    private final Map<String, ServerElement> servers = new LinkedHashMap<String, ServerElement>();
+    private final Map<String, JvmElement> jvms = new LinkedHashMap<String, JvmElement>();
+    private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
     private String name;
     private LocalDomainControllerElement localDomainController;
     private RemoteDomainControllerElement remoteDomainController;

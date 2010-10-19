@@ -10,9 +10,9 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.util.HashSet;
-import java.util.NavigableMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * An element representing the set of subsystems that make up a server profile.
@@ -24,8 +24,8 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
 
     private final String name;
     private final Set<String> includedProfiles = new HashSet<String>();
-    private final NavigableMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
-        new TreeMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
+    private final Map<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems =
+        new LinkedHashMap<String, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
 
     /**
      * Construct a new instance.
