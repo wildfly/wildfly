@@ -21,6 +21,10 @@
  */
 package org.jboss.as.demos.sar.runner;
 
+import javax.management.Attribute;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.sar.archive.ConfigService;
 
@@ -34,8 +38,29 @@ import org.jboss.as.demos.sar.archive.ConfigService;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
-        deploymentUtils.deploy();
-    }
 
+        DeploymentUtils deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
+        try {
+
+            deploymentUtils.deploy();
+            ObjectName objectName = new ObjectName("jboss:name=test,type=config");
+            deploymentUtils.waitForDeploymentHack(objectName);
+
+            MBeanServerConnection mbeanServer = deploymentUtils.getConnection();
+
+            //A little sleep to give the logging done by the bean time to kick in
+            Thread.sleep(1500);
+
+            System.out.println("Checking the IntervalSeconds property");
+            Object o = mbeanServer.getAttribute(objectName, "IntervalSeconds");
+            System.out.println("IntervalSeconds was " + o + ", setting it to 2");
+            mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
+            System.out.println("IntervalSeconds set");
+
+            //A little sleep to give the logging resulting from the new interval time to show up in the logs
+            Thread.sleep(3000);
+        } finally {
+            deploymentUtils.undeploy();
+        }
+    }
 }

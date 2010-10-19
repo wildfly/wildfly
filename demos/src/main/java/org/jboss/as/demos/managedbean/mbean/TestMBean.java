@@ -28,6 +28,5 @@ package org.jboss.as.demos.managedbean.mbean;
  */
 public interface TestMBean {
 
-    void test();
-    void start();
+    String echo(String s);
 }

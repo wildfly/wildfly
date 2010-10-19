@@ -28,7 +28,7 @@
             <configuration>
               <tasks>
                 <ant antfile="build.xml"  inheritRefs="true">
-                  <target name="all"/>
+                  <target name="example"/>
                 </ant>
               </tasks>
             </configuration>

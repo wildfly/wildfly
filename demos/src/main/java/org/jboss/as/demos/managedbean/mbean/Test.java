@@ -37,20 +37,19 @@ public class Test implements TestMBean {
     Logger log = Logger.getLogger(Test.class.getName());
 
     @Override
-    public void test() {
-        log.info("In test()");
+    public String echo(String s) {
+        log.info("-----> In test()");
         try {
             InitialContext ctx = new InitialContext();
             log.info("-----> Looking up managed bean");
             Object o = ctx.lookup("global/managedbean-example_jar/BeanWithSimpleInjected");
             BeanWithSimpleInjected bean = (BeanWithSimpleInjected)o;
             log.info("-----> Found BeanWithSimpleInjected, calling echo(\"Test\")");
+            s = bean.echo(s);
+            log.info("-----> echo returned " + s);
+            return s;
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void start() {
-        log.info("Starting MBean " + this.getClass().getName());
     }
 }

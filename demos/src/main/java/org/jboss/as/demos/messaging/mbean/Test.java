@@ -54,6 +54,7 @@ public class Test implements TestMBean {
     private ClientSessionFactory sf;
     private ClientSession session;
     private ClientConsumer consumer;
+
     private final AtomicBoolean shutdown = new AtomicBoolean();
 
     private final List<String> receivedMessages = new ArrayList<String>();

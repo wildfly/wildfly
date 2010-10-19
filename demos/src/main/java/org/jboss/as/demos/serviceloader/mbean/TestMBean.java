@@ -28,6 +28,5 @@ package org.jboss.as.demos.serviceloader.mbean;
  */
 public interface TestMBean {
 
-    void test();
-    void start();
+    String decorateWithServiceLoader(String s);
 }

@@ -38,7 +38,7 @@ public class ExampleRunner {
     public static void main(String[] args) throws Exception {
         DeploymentUtils utils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
         try {
-            utils.addDeployment("serviceloader-mbean.sar", Test.class.getPackage(), true);
+            utils.addDeployment("serviceloader-mbean.sar", Test.class.getPackage());
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=serviceloader");
@@ -46,9 +46,9 @@ public class ExampleRunner {
 
             MBeanServerConnection mbeanServer = utils.getConnection();
 
-            Thread.sleep(1000);
-
-            mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+            System.out.println("Calling TestMBean.decorateWithServiceLoader(\"Hello\") on server");
+            String s = (String)mbeanServer.invoke(objectName, "decorateWithServiceLoader", new Object[] {"Hello"}, new String[] {"java.lang.String"});
+            System.out.println("Received reply: " + s);
         } finally {
             utils.undeploy();
         }

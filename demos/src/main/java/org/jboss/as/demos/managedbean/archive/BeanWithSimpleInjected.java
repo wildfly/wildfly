@@ -60,6 +60,6 @@ public class BeanWithSimpleInjected {
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         log.info("-----> Intercepting call to " + context.getMethod());
-        return context.proceed();
+        return "#BeanWithSimpleInjected#" + context.proceed();
     }
 }

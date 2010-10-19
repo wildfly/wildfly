@@ -99,9 +99,9 @@ public class DeploymentUtils {
 
         for (int i = 0 ; i < 10 ; i++) {
             try {
-                System.out.println("Checking for " + objectName + "...");
+                System.out.println("Checking remote server for " + objectName + "...");
                 mbeanServer.getMBeanInfo(objectName);
-                System.out.println("Found!");
+                System.out.println(objectName + " was found!");
                 return;
             } catch (InstanceNotFoundException e) {
                 Thread.sleep(1000);
@@ -167,6 +167,7 @@ public class DeploymentUtils {
                 deployedArchive.delete();
             }
 
+            System.out.println("Deploying " + realArchive + " to " + deployedArchive);
             InputStream in = null;
             OutputStream out = null;
 
@@ -191,10 +192,12 @@ public class DeploymentUtils {
                 throw new IllegalStateException(archiveName + " is not deployed");
             }
             if (deployedArchive.exists()) {
+                System.out.println("Undeploying " + deployedArchive);
                 deployedArchive.delete();
             } else {
                 File file = new File(deployedArchive.getParentFile(), deployedArchive.getName() + ".deployed");
                 if (file.exists()) {
+                    System.out.println("Undeploying " + file);
                     file.delete();
                 }
             }

@@ -46,8 +46,10 @@ public class ExampleRunner {
 
             MBeanServerConnection mbeanServer = utils.getConnection();
 
-            Thread.sleep(1000);
-            mbeanServer.invoke(objectName, "test", new Object[0], new String[0]);
+            //Thread.sleep(2000);
+            System.out.println("Calling echo(\"Hello\")");
+            Object o = mbeanServer.invoke(objectName, "echo", new Object[] {"Hello"}, new String[] {"java.lang.String"});
+            System.out.println("echo returned " + o);
         } finally {
             utils.undeploy();
         }

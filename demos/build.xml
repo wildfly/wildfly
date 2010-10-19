@@ -19,21 +19,30 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<server xmlns="urn:jboss:service:7.0"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
-    <mbean name="jboss:name=test,type=config" code="org.jboss.as.demos.sar.archive.ConfigService">
-        <constructor>
-            <arg value="SarExample" type="java.lang.String"/>
-        </constructor>
-        <attribute name="intervalSeconds">1</attribute>
-    </mbean>
+<project name="as-examples" basedir="." default="example">
 
-    <mbean name="jboss:name=test,type=service" code="org.jboss.as.demos.sar.archive.ProcessMonitorService">
-        <attribute name="config">
-            <inject bean="jboss:name=test,type=config"/>
-        </attribute>
-    </mbean>
-    
-</server>
+    <target name="usage" unless="example">
+        <echo>To run an example pass in -Dexample=&lt;example.name&gt;</echo>
+        <echo>Valid example names are</echo>
+        <echo>  sar           - deploys mbeans packaged in a sar</echo>
+        <echo>  managedbean   - deploys a managed bean</echo>
+        <echo>  serviceloader - deploys a serviceloader style service</echo>
+        <echo>  messaging     - deploys HornetQ sender and receiver</echo>
+    </target>
+        
+    <target name="run" if="example">
+    	<echo>-Dexample=${example} was passed in. Running org.jboss.as.demos.${example}.runner.ExampleRunner</echo>
+        <java classname="org.jboss.as.demos.${example}.runner.ExampleRunner">
+        	<classpath>
+                <path refid="maven.test.classpath"/>
+        	</classpath>
+    	</java>
+    </target>
+                
+	
+    <target name="example" depends="usage,run">
+    </target>
+	
+	
+</project>

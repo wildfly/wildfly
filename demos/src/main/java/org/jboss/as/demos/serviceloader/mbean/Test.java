@@ -37,18 +37,15 @@ public class Test implements TestMBean {
     Logger log = Logger.getLogger(Test.class.getName());
 
     @Override
-    public void test() {
-        log.info("-----> In test()");
+    public String decorateWithServiceLoader(String s) {
+        log.info("-----> In decorateWithServiceLoader() - " + s);
         Module module = Module.forClass(TestService.class);
         ServiceLoader<TestService> loader = module.loadService(TestService.class);
-        log.info("-----> In test()");
         for (TestService service : loader) {
             log.info("-----> Found service " + service);
-            log.info("-----> " + service.decorate("Hello"));
+            s = service.decorate(s);
+            log.info("-----> " + s);
         }
-    }
-
-    public void start() {
-        log.info("Starting MBean " + this.getClass().getName());
+        return s;
     }
 }

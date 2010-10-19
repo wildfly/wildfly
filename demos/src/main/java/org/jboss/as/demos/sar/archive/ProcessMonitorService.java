@@ -43,6 +43,8 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
     }
 
     public void start() {
+        log.info("Starting " + config.getExampleName());
+
         Thread t = new Thread(new Runnable() {
 
             @Override
@@ -67,6 +69,7 @@ public class ProcessMonitorService implements ProcessMonitorServiceMBean {
 
     public void stop() {
         stop.set(true);
+        log.info("Stopping " + config.getExampleName());
     }
 
     static double bytesToMb(double d) {
