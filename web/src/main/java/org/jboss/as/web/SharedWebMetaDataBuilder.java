@@ -23,8 +23,11 @@ package org.jboss.as.web;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.MimeMappingMetaData;
@@ -58,6 +61,22 @@ class SharedWebMetaDataBuilder {
             this.containerConfig = new WebContainerConfigElement();
         } else {
             this.containerConfig = containerConfig;
+        }
+        init();
+    }
+
+    private void init() {
+        final Map<String, String> mappings = containerConfig.getMimeMappings();
+        if(mappings != null && ! mappings.isEmpty()) {
+            for(final Entry<String, String> entry : mappings.entrySet()) {
+                mimeMappings.add(createMimeMapping(entry.getKey(), entry.getValue()));
+            }
+        }
+        final Collection<String> welcome = containerConfig.getWelcomeFiles();
+        if(welcome != null && ! welcome.isEmpty()) {
+            for(final String file : welcome) {
+                welcomeFiles.add(file);
+            }
         }
     }
 
