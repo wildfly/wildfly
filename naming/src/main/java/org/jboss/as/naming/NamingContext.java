@@ -374,7 +374,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void close() throws NamingException {
-        namingStore.close();
+        // NO-OP
     }
 
     /** {@inheritDoc} */
