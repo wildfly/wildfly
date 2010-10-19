@@ -24,12 +24,11 @@ package org.jboss.as.protocol;
 
 import java.io.BufferedOutputStream;
 import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
@@ -49,7 +48,7 @@ final class ConnectionImpl implements Connection {
     private final Object lock = new Object();
 
     // protected by {@link #lock}
-    private MessageOutputStream sender;
+    private OutputStream sender;
     // protected by {@link #lock}
     private boolean readDone;
     // protected by {@link #lock}
@@ -68,7 +67,7 @@ final class ConnectionImpl implements Connection {
     }
 
     public OutputStream writeMessage() throws IOException {
-        final MessageOutputStream os;
+        final OutputStream os;
         synchronized (lock) {
             if (writeDone) {
                 throw new IOException("Writes are already shut down");
@@ -83,7 +82,8 @@ final class ConnectionImpl implements Connection {
             }
             boolean ok = false;
             try {
-                sender = os = new MessageOutputStream();
+                sender = new MessageOutputStream();
+                os = new BufferedOutputStream(sender);
                 ok = true;
             } finally {
                 if (! ok) {
@@ -118,6 +118,8 @@ final class ConnectionImpl implements Connection {
 
     public void close() throws IOException {
         synchronized (lock) {
+            lock.notifyAll();
+            sender = null;
             readDone = true;
             writeDone = true;
             socket.close();
@@ -155,61 +157,72 @@ final class ConnectionImpl implements Connection {
         return new Runnable() {
             public void run() {
                 try {
+                    Pipe pipe = null;
                     final InputStream is = socket.getInputStream();
-                    PipedOutputStream mos = null;
-                    final byte[] buffer = new byte[8192];
-                    int cmd = is.read();
-                    switch (cmd) {
-                        case -1: {
-                            // end of stream
-                            safeHandleShutdown();
-                            boolean done;
-                            if (mos != null) {
-                                mos.close();
-                            }
-                            synchronized (lock) {
-                                readDone = true;
-                                done = writeDone;
-                            }
-                            if (done) {
-                                safeHandleFinished();
-                            }
-                            return;
-                        }
-                        case CHUNK_START: {
-                            if (mos == null) {
-                                // new message!
-                                final PipedInputStream pis = new PipedInputStream();
-                                mos = new PipedOutputStream(pis);
+                    OutputStream mos = null;
+                    final int bufferSize = 8192;
+                    final byte[] buffer = new byte[bufferSize];
+                    for (;;) {
 
-                                readExecutor.execute(new Runnable() {
-                                    public void run() {
-                                        safeHandleMessage(new MessageInputStream(pis));
-                                    }
-                                });
+                        int cmd = is.read();
+                        switch (cmd) {
+                            case -1: {
+                                log.trace("Received end of stream");
+                                // end of stream
+                                safeHandleShutdown();
+                                boolean done;
+                                if (mos != null) {
+                                    mos.close();
+                                    pipe.await();
+                                }
+                                synchronized (lock) {
+                                    readDone = true;
+                                    done = writeDone;
+                                }
+                                if (done) {
+                                    StreamUtils.safeClose(socket);
+                                    safeHandleFinished();
+                                }
+                                return;
                             }
-                            int cnt = StreamUtils.readInt(is);
-                            while (cnt > 0) {
-                                int sc = is.read(buffer);
-                                mos.write(buffer, 0, sc);
-                                cnt -= sc;
-                            }
-                            break;
-                        }
-                        case CHUNK_END: {
-                            if (mos != null) {
-                                // end message
-                                mos.close();
-                                mos = null;
-                            }
-                            break;
-                        }
-                        default: {
+                            case CHUNK_START: {
+                                if (mos == null) {
+                                    pipe = new Pipe(8192);
+                                    // new message!
+                                    final InputStream pis = pipe.getIn();
+                                    mos = pipe.getOut();
 
+                                    readExecutor.execute(new Runnable() {
+                                        public void run() {
+                                            safeHandleMessage(new MessageInputStream(pis));
+                                        }
+                                    });
+                                }
+                                int cnt = StreamUtils.readInt(is);
+                                log.tracef("Received data chunk of size %d", Integer.valueOf(cnt));
+                                while (cnt > 0) {
+                                    int sc = is.read(buffer, 0, Math.min(cnt, bufferSize));
+                                    mos.write(buffer, 0, sc);
+                                    cnt -= sc;
+                                }
+                                break;
+                            }
+                            case CHUNK_END: {
+                                log.trace("Received end data marker");
+                                if (mos != null) {
+                                    // end message
+                                    mos.close();
+                                    pipe.await();
+                                    mos = null;
+                                    pipe = null;
+                                }
+                                break;
+                            }
+                            default: {
+                                throw new IOException("Invalid command byte read: " + cmd);
+                            }
                         }
                     }
-
-
                 } catch (IOException e) {
                     safeHandlerFailure(e);
                 }
@@ -222,6 +235,8 @@ final class ConnectionImpl implements Connection {
             messageHandler.handleMessage(this, pis);
         } catch (IOException e) {
             log.errorf(e, "Failed to read a message");
+        } finally {
+            StreamUtils.safeClose(pis);
         }
     }
 
@@ -264,12 +279,16 @@ final class ConnectionImpl implements Connection {
         }
     }
 
-    final class MessageOutputStream extends BufferedOutputStream {
+    final class MessageOutputStream extends FilterOutputStream {
 
         private final byte[] hdr = new byte[5];
 
         MessageOutputStream() throws IOException {
             super(socket.getOutputStream());
+        }
+
+        public void write(final int b) throws IOException {
+            throw new IllegalStateException();
         }
 
         public void write(final byte[] b, final int off, final int len) throws IOException {
@@ -285,17 +304,23 @@ final class ConnectionImpl implements Connection {
             synchronized (lock) {
                 if (sender != this || writeDone) {
                     if (sender == this) sender = null;
+                    lock.notifyAll();
                     throw new IOException("Write channel closed");
                 }
+                log.tracef("Sending data chunk of size %d", Integer.valueOf(len));
                 out.write(hdr);
-                super.write(b, off, len);
+                out.write(b, off, len);
             }
         }
 
         public void close() throws IOException {
             synchronized (lock) {
-                if (sender != this) return;
+                if (sender != this) {
+                    return;
+                }
                 sender = null;
+                // wake up waiters
+                lock.notify();
                 if (writeDone) throw new IOException("Write channel closed");
                 if (readDone) {
                     readExecutor.execute(new Runnable() {
@@ -304,7 +329,18 @@ final class ConnectionImpl implements Connection {
                         }
                     });
                 }
+                log.tracef("Sending end of message");
                 out.write(CHUNK_END);
+            }
+        }
+
+        protected void finalize() throws Throwable {
+            super.finalize();
+            synchronized (lock) {
+                if (sender == this) {
+                    log.warnf("Leaked a message output stream; cleaning");
+                    close();
+                }
             }
         }
     }

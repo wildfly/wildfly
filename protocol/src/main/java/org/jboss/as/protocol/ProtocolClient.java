@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
+import org.jboss.logging.Logger;
 
 import javax.net.SocketFactory;
 
@@ -36,6 +37,8 @@ import javax.net.SocketFactory;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProtocolClient {
+    private static final Logger log = Logger.getLogger("org.jboss.as.protocol.client");
+
     private final ThreadFactory threadFactory;
     private final SocketFactory socketFactory;
     private final InetSocketAddress serverAddress;
@@ -72,6 +75,7 @@ public final class ProtocolClient {
     }
 
     public Connection connect() throws IOException {
+        log.tracef("Creating connection to %s", serverAddress);
         final Socket socket = socketFactory.createSocket();
         final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor);
         final Thread thread = threadFactory.newThread(connection.getReadTask());
@@ -81,7 +85,9 @@ public final class ProtocolClient {
         if (bindAddress != null) socket.bind(bindAddress);
         if (readTimeout != 0) socket.setSoTimeout(readTimeout);
         socket.connect(serverAddress, connectTimeout);
+        thread.setName("Read thread for " + serverAddress);
         thread.start();
+        log.tracef("Connected to %s", serverAddress);
         return connection;
     }
 

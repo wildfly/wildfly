@@ -223,6 +223,8 @@ public final class ManagedServer {
         }
 
         command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/logs/boot.log");
+        // TODO: make this better
+        command.add("-Dlogging.configuration=file:" + new File("").getAbsolutePath() + "/domain/configuration/logging.properties");
         command.add("-jar");
         command.add("jboss-modules.jar");
         command.add("-mp");
@@ -268,6 +270,7 @@ public final class ManagedServer {
         marshaller.writeObject(startTask);
         marshaller.finish();
         marshaller.close();
+        os.close();
 
         setState(ServerState.STARTING);
     }

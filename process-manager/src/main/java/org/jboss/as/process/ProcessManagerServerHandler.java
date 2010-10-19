@@ -24,7 +24,6 @@ package org.jboss.as.process;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +49,7 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
     }
 
     public MessageHandler handleConnected(final Connection connection) throws IOException {
+        log.tracef("Received connection from %s", connection.getPeerAddress());
         return new InitMessageHandler(processManager);
     }
 
@@ -62,39 +62,43 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
         }
 
         public void handleMessage(final Connection connection, final InputStream dataStream) throws IOException {
-            if (readUnsignedByte(dataStream) != Protocol.AUTH) {
+            final int cmd = readUnsignedByte(dataStream);
+            if (cmd != Protocol.AUTH) {
+                log.warnf("Received unrecognized greeting code 0x%02x from %s", Integer.valueOf(cmd), connection.getPeerAddress());
                 connection.close();
                 return;
             }
             final int version = StreamUtils.readUnsignedByte(dataStream);
             if (version < 1) {
+                log.warnf("Received connection with invalid version from %s", connection.getPeerAddress());
                 connection.close();
                 return;
             }
             final byte[] authCode = new byte[16];
             StreamUtils.readFully(dataStream, authCode);
-            dataStream.close();
-            final OutputStream os = connection.writeMessage();
-            os.write(1); // our version
-            os.close();
             final ManagedProcess process = processManager.getServerByAuthCode(authCode);
             if (process == null) {
                 log.warnf("Received connection with unknown credentials from %s", connection.getPeerAddress());
                 StreamUtils.safeClose(connection);
                 return;
             }
+            log.tracef("Received authentic connection from %s", connection.getPeerAddress());
             connection.setMessageHandler(new ConnectedMessageHandler(processManager, process.isInitial()));
+            dataStream.close();
         }
 
         public void handleShutdown(final Connection connection) throws IOException {
+            log.tracef("Received end-of-stream for connection");
             connection.shutdownWrites();
         }
 
         public void handleFailure(final Connection connection, final IOException e) throws IOException {
+            log.tracef(e, "Received failure of connection");
             connection.close();
         }
 
         public void handleFinished(final Connection connection) throws IOException {
+            log.tracef("Connection finished");
             // nothing
         }
 
@@ -118,7 +122,10 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                             // SM only
                             if (isServerManager) {
                                 final String processName = readUTFZBytes(dataStream);
+                                log.tracef("Received send_stdin for process %s", processName);
                                 processManager.sendStdin(processName, dataStream);
+                            } else {
+                                log.tracef("Ignoring send_stdin message from untrusted source");
                             }
                             dataStream.close();
                             break;
@@ -139,7 +146,10 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                                     env.put(readUTFZBytes(dataStream), readUTFZBytes(dataStream));
                                 }
                                 final String workingDirectory = readUTFZBytes(dataStream);
+                                log.tracef("Received add_process for process %s", processName);
                                 processManager.addProcess(processName, Arrays.asList(command), env, workingDirectory, false);
+                            } else {
+                                log.tracef("Ignoring add_process message from untrusted source");
                             }
                             dataStream.close();
                             break;
@@ -148,6 +158,9 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                             if (isServerManager) {
                                 final String processName = readUTFZBytes(dataStream);
                                 processManager.startProcess(processName);
+                                log.tracef("Received start_process for process %s", processName);
+                            } else {
+                                log.tracef("Ignoring start_process message from untrusted source");
                             }
                             dataStream.close();
                             break;
@@ -157,6 +170,8 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                                 final String processName = readUTFZBytes(dataStream);
                                 // SM only
                                 processManager.stopProcess(processName);
+                            } else {
+                                log.tracef("Ignoring stop_process message from untrusted source");
                             }
                             dataStream.close();
                             break;
@@ -165,6 +180,8 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                             if (isServerManager) {
                                 final String processName = readUTFZBytes(dataStream);
                                 processManager.removeProcess(processName);
+                            } else {
+                                log.tracef("Ignoring remove_process message from untrusted source");
                             }
                             dataStream.close();
                             break;
@@ -172,11 +189,14 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
                         case Protocol.REQUEST_PROCESS_INVENTORY: {
                             if (isServerManager) {
                                 processManager.sendInventory();
+                            } else {
+                                log.tracef("Ignoring request_process_inventory message from untrusted source");
                             }
                             dataStream.close();
                             break;
                         }
                         default: {
+                            log.warnf("Received unknown message with code 0x%02x", Integer.valueOf(cmd));
                             // unknown
                             dataStream.close();
                         }
@@ -187,14 +207,17 @@ public final class ProcessManagerServerHandler implements ConnectionHandler {
             }
 
             public void handleShutdown(final Connection connection) throws IOException {
+                log.tracef("Received end-of-stream for connection");
                 connection.shutdownWrites();
             }
 
             public void handleFailure(final Connection connection, final IOException e) throws IOException {
+                log.tracef(e, "Received failure of connection");
                 connection.close();
             }
 
             public void handleFinished(final Connection connection) throws IOException {
+                log.tracef("Connection finished");
                 // nothing
             }
         }

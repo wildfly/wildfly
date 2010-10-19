@@ -32,6 +32,7 @@ import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.logging.Logger;
 
 import static org.jboss.as.protocol.StreamUtils.*;
 
@@ -39,86 +40,97 @@ import static org.jboss.as.protocol.StreamUtils.*;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessManagerClient implements Closeable {
+    private static final Logger log = Logger.getLogger("org.jboss.as.process-manager.client");
+
     private final Connection connection;
 
     ProcessManagerClient(final Connection connection) {
         this.connection = connection;
     }
 
-    public static ProcessManagerClient connect(final ProtocolClient.Configuration configuration, final byte[] authCode) throws IOException {
-        return connect(configuration, authCode, null);
-    }
-
     public static ProcessManagerClient connect(final ProtocolClient.Configuration configuration, final byte[] authCode, final ProcessMessageHandler messageHandler) throws IOException {
-        if (messageHandler != null) {
-            configuration.setMessageHandler(new MessageHandler() {
-                public void handleMessage(final Connection connection, final InputStream dataStream) throws IOException {
-                    final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
-                    final int cmd = readUnsignedByte(dataStream);
-                    switch (cmd) {
-                        case Protocol.PROCESS_ADDED: {
+        if (configuration == null) {
+            throw new IllegalArgumentException("configuration is null");
+        }
+        if (authCode == null) {
+            throw new IllegalArgumentException("authCode is null");
+        }
+        if (messageHandler == null) {
+            throw new IllegalArgumentException("messageHandler is null");
+        }
+        configuration.setMessageHandler(new MessageHandler() {
+            public void handleMessage(final Connection connection, final InputStream dataStream) throws IOException {
+                final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
+                final int cmd = readUnsignedByte(dataStream);
+                switch (cmd) {
+                    case Protocol.PROCESS_ADDED: {
+                        final String processName = readUTFZBytes(dataStream);
+                        dataStream.close();
+                        log.tracef("Received process_added for process %s", processName);
+                        messageHandler.handleProcessAdded(client, processName);
+                        break;
+                    }
+                    case Protocol.PROCESS_STARTED: {
+                        final String processName = readUTFZBytes(dataStream);
+                        dataStream.close();
+                        log.tracef("Received process_started for process %s", processName);
+                        messageHandler.handleProcessStarted(client, processName);
+                        break;
+                    }
+                    case Protocol.PROCESS_STOPPED: {
+                        final String processName = readUTFZBytes(dataStream);
+                        final long uptimeMillis = readLong(dataStream);
+                        dataStream.close();
+                        log.tracef("Received process_stopped for process %s", processName);
+                        messageHandler.handleProcessStopped(client, processName, uptimeMillis);
+                        break;
+                    }
+                    case Protocol.PROCESS_REMOVED: {
+                        final String processName = readUTFZBytes(dataStream);
+                        dataStream.close();
+                        log.tracef("Received process_removed for process %s", processName);
+                        messageHandler.handleProcessRemoved(client, processName);
+                        break;
+                    }
+                    case Protocol.PROCESS_INVENTORY: {
+                        final int cnt = readInt(dataStream);
+                        final Map<String, ProcessInfo> inventory = new HashMap<String, ProcessInfo>();
+                        for (int i = 0; i < cnt; i++) {
                             final String processName = readUTFZBytes(dataStream);
-                            dataStream.close();
-                            messageHandler.handleProcessAdded(client, processName);
-                            break;
+                            final byte[] processAuthCode = new byte[16];
+                            final boolean processRunning = StreamUtils.readBoolean(dataStream);
+                            readFully(dataStream, processAuthCode);
+                            inventory.put(processName, new ProcessInfo(processName, authCode, processRunning));
                         }
-                        case Protocol.PROCESS_STARTED: {
-                            final String processName = readUTFZBytes(dataStream);
-                            dataStream.close();
-                            messageHandler.handleProcessStarted(client, processName);
-                            break;
-                        }
-                        case Protocol.PROCESS_STOPPED: {
-                            final String processName = readUTFZBytes(dataStream);
-                            final long uptimeMillis = readLong(dataStream);
-                            dataStream.close();
-                            messageHandler.handleProcessStopped(client, processName, uptimeMillis);
-                            break;
-                        }
-                        case Protocol.PROCESS_REMOVED: {
-                            final String processName = readUTFZBytes(dataStream);
-                            dataStream.close();
-                            messageHandler.handleProcessRemoved(client, processName);
-                            break;
-                        }
-                        case Protocol.PROCESS_INVENTORY: {
-                            final int cnt = readInt(dataStream);
-                            final Map<String, ProcessInfo> inventory = new HashMap<String, ProcessInfo>();
-                            for (int i = 0; i < cnt; i++) {
-                                final String processName = readUTFZBytes(dataStream);
-                                final byte[] processAuthCode = new byte[16];
-                                final boolean processRunning = StreamUtils.readBoolean(dataStream);
-                                readFully(dataStream, processAuthCode);
-                                inventory.put(processName, new ProcessInfo(processName, authCode, processRunning));
-                            }
-                            dataStream.close();
-                            messageHandler.handleProcessInventory(client, inventory);
-                            break;
-                        }
-                        default: {
-                            // ignore
-                            dataStream.close();
-                            break;
-                        }
+                        dataStream.close();
+                        log.tracef("Received process_inventory");
+                        messageHandler.handleProcessInventory(client, inventory);
+                        break;
+                    }
+                    default: {
+                        log.warnf("Received unknown message with code 0x%02x", Integer.valueOf(cmd));
+                        // ignore
+                        dataStream.close();
+                        break;
                     }
                 }
+            }
 
-                public void handleShutdown(final Connection connection) throws IOException {
-                    final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
-                    messageHandler.handleConnectionShutdown(client);
-                }
+            public void handleShutdown(final Connection connection) throws IOException {
+                final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
+                messageHandler.handleConnectionShutdown(client);
+            }
 
-                public void handleFailure(final Connection connection, final IOException cause) throws IOException {
-                    final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
-                    messageHandler.handleConnectionFailure(client, cause);
-                }
+            public void handleFailure(final Connection connection, final IOException cause) throws IOException {
+                final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
+                messageHandler.handleConnectionFailure(client, cause);
+            }
 
-                public void handleFinished(final Connection connection) throws IOException {
-                    final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
-                    messageHandler.handleConnectionFinished(client);
-                }
-            });
-        }
+            public void handleFinished(final Connection connection) throws IOException {
+                final ProcessManagerClient client = (ProcessManagerClient) connection.getAttachment();
+                messageHandler.handleConnectionFinished(client);
+            }
+        });
         final ProtocolClient client = new ProtocolClient(configuration);
         final Connection connection = client.connect();
         boolean ok = false;
@@ -128,10 +140,11 @@ public final class ProcessManagerClient implements Closeable {
                 os.write(Protocol.AUTH);
                 os.write(1);
                 os.write(authCode);
-                os.close();
-                ok = true;
                 final ProcessManagerClient processManagerClient = new ProcessManagerClient(connection);
                 connection.attach(processManagerClient);
+                log.trace("Sent initial greeting message");
+                os.close();
+                ok = true;
                 return processManagerClient;
             } finally {
                 safeClose(os);
@@ -192,9 +205,11 @@ public final class ProcessManagerClient implements Closeable {
             writeInt(os, env.size());
             for (String key : env.keySet()) {
                 final String value = env.get(key);
+                writeUTFZBytes(os, key);
                 if (value != null) {
-                    writeUTFZBytes(os, key);
                     writeUTFZBytes(os, value);
+                } else {
+                    writeUTFZBytes(os, "");
                 }
             }
             writeUTFZBytes(os, workingDir);

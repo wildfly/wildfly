@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
+import java.net.Socket;
 import org.jboss.logging.Logger;
 
 /**
@@ -287,6 +288,14 @@ public final class StreamUtils {
             closeable.close();
         } catch (Throwable t) {
             log.errorf(t, "Failed to close resource %s", closeable);
+        }
+    }
+
+    public static void safeClose(final Socket socket) {
+        try {
+            socket.close();
+        } catch (Throwable t) {
+            log.errorf(t, "Failed to close resource %s", socket);
         }
     }
 }

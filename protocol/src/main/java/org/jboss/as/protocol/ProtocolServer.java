@@ -105,6 +105,7 @@ public final class ProtocolServer {
         if (thread == null) {
             throw new IOException("Failed to create server thread");
         }
+        thread.setName("Accept thread");
         serverSocket.bind(bindAddress, backlog);
         boundAddress = (InetSocketAddress) serverSocket.getLocalSocketAddress();
         thread.start();
@@ -128,6 +129,7 @@ public final class ProtocolServer {
             if (thread == null) {
                 throw new IllegalStateException("Thread creation was refused");
             }
+            thread.setName("Read thread for " + socket.getRemoteSocketAddress());
             thread.start();
             ok = true;
         } catch (IOException e) {
