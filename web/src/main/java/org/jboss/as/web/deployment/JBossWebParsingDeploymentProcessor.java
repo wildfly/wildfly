@@ -41,7 +41,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(320L);
 
     private static final String JBOSS_WEB_XML = "WEB-INF/jboss-web.xml";
 

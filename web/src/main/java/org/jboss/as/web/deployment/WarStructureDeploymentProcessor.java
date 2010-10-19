@@ -37,6 +37,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
+import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
@@ -59,9 +60,11 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
     private final WebMetaData sharedWebMetaData;
+    private final List<TldMetaData> sharedTldsMetaData;
 
-    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData) {
+    public WarStructureDeploymentProcessor(final WebMetaData sharedWebMetaData, final List<TldMetaData> sharedTldsMetaData) {
         this.sharedWebMetaData = sharedWebMetaData;
+        this.sharedTldsMetaData = sharedTldsMetaData;
     }
 
     /** {@inheritDoc} */
@@ -78,10 +81,14 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         } catch(IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }
-        // add the war metadata
+        // Add the war metadata
         final WarMetaData warMetaData = new WarMetaData();
         warMetaData.setSharedWebMetaData(sharedWebMetaData);
         context.putAttachment(WarMetaData.ATTACHMENT_KEY, warMetaData);
+        // Add the shared TLDs metadata
+        final TldsMetaData tldsMetaData = new TldsMetaData();
+        tldsMetaData.setSharedTlds(sharedTldsMetaData);
+        context.putAttachment(TldsMetaData.ATTACHMENT_KEY, tldsMetaData);
     }
 
     /**

@@ -47,7 +47,7 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  */
 public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(310L);
 
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
 

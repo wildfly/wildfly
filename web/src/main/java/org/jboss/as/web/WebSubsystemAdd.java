@@ -55,7 +55,7 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND);
 
-        WebDeploymentActivator.activate(defaultHost, new SharedWebMetaDataBuilder(config), context.getBatchBuilder());
+        WebDeploymentActivator.activate(defaultHost, new SharedWebMetaDataBuilder(config), new SharedTldsMetaDataBuilder(config), context.getBatchBuilder());
     }
 
     /** {@inheritDoc} */

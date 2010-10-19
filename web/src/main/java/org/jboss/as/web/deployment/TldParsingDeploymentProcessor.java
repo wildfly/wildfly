@@ -46,7 +46,7 @@ import org.jboss.vfs.VirtualFile;
  */
 public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(330L);
 
     private static final String TLD = ".tld";
     private static final String META_INF = "META-INF";

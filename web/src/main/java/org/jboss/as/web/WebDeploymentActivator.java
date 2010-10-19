@@ -76,7 +76,7 @@ class WebDeploymentActivator {
         }
     }
 
-    static void activate(final String defaultHost, final SharedWebMetaDataBuilder sharedBuilder, final BatchBuilder batchBuilder) {
+    static void activate(final String defaultHost, final SharedWebMetaDataBuilder sharedWebBuilder, final SharedTldsMetaDataBuilder sharedTldsBuilder, final BatchBuilder batchBuilder) {
         batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
 
         final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain) new DeploymentChainImpl(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()));
@@ -93,7 +93,7 @@ class WebDeploymentActivator {
 
         // Web specific deployment processors ....
         // FIXME: redo annotations
-        addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedBuilder.create()), WarStructureDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), WarStructureDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarAnnotationIndexProcessor(), WarAnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarModuleConfigProcessor(), WarModuleConfigProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), WebParsingDeploymentProcessor.PRIORITY);
