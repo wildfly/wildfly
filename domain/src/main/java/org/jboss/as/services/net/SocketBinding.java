@@ -52,9 +52,8 @@ public class SocketBinding {
     private final NetworkInterfaceBinding networkInterface;
     private final SocketBindingManager socketBindings;
 
-    SocketBinding(final String name, int port, boolean isFixedPort,
-                  InetAddress multicastAddress, int multicastPort,
-                  final NetworkInterfaceBinding networkInterface, SocketBindingManager socketBindings) {
+    SocketBinding(final String name, int port, boolean isFixedPort, InetAddress multicastAddress, int multicastPort,
+            final NetworkInterfaceBinding networkInterface, SocketBindingManager socketBindings) {
         this.name = name;
         this.port = port;
         this.isFixedPort = isFixedPort;
@@ -64,14 +63,23 @@ public class SocketBinding {
         this.networkInterface = networkInterface;
     }
 
-   /**
-    * Return the name of the SocketBinding used in the configuration
-    *
-    * @return the SocketBinding configuration name
-    */
-   public String getName() {
-      return name;
-   }
+    /**
+     * Return the name of the SocketBinding used in the configuration
+     *
+     * @return the SocketBinding configuration name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Return the resolved {@link InetAddress} for this binding.
+     *
+     * @return the resolve address
+     */
+    public InetAddress getAddress() {
+        return networkInterface.getAddress();
+    }
 
     /**
      * Get the socket binding manager.
@@ -89,7 +97,7 @@ public class SocketBinding {
      */
     public InetSocketAddress getSocketAddress() {
         int port = this.port;
-        if(port > 0 && isFixedPort == false) {
+        if (port > 0 && isFixedPort == false) {
             port += socketBindings.getPortOffset();
         }
         return new InetSocketAddress(networkInterface.getAddress(), port);
@@ -101,7 +109,7 @@ public class SocketBinding {
      * @return the multicast address
      */
     public InetSocketAddress getMulticastSocketAddress() {
-        if(multicastAddress == null) {
+        if (multicastAddress == null) {
             throw new IllegalStateException("no multicast binding: " + name);
         }
         return new InetSocketAddress(multicastAddress, multicastPort);

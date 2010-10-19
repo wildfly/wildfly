@@ -22,6 +22,7 @@
 package org.jboss.as.services.net;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -50,6 +51,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     public static final ServiceName JBOSS_NETWORK_INTERFACE = ServiceName.JBOSS.append("network");
 
     private static final boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
+    private static final boolean preferIPv6Stack = Boolean.getBoolean("java.net.preferIPv6Addresses");
 
     private static final String IPV4_ANYLOCAL = "0.0.0.0";
     private static final String IPV6_ANYLOCAL = "::";
@@ -113,26 +115,14 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
             while (interfaceAddresses.hasMoreElements()) {
                 final InetAddress address = interfaceAddresses.nextElement();
-                if (criteria.isAcceptable(networkInterface, address)) {
-                    final InetAddress resolved = getInterfaceAddress(networkInterface);
-                    if (resolved != null) {
-                        return new NetworkInterfaceBinding(Collections.singleton(networkInterface), resolved);
-                    }
+                if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
+                    continue;
+                } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
+                    continue;
                 }
-            }
-        }
-        return null;
-    }
-
-    static InetAddress getInterfaceAddress(final NetworkInterface networkInterface) {
-        final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
-        while(interfaceAddresses.hasMoreElements()) {
-            final InetAddress address = interfaceAddresses.nextElement();
-            // prefer IPv4 stack
-            if(preferIPv4Stack && address instanceof Inet4Address) {
-                return address;
-            } else if (! preferIPv4Stack) {
-                return address;
+                if (criteria.isAcceptable(networkInterface, address)) {
+                    return new NetworkInterfaceBinding(Collections.singleton(networkInterface), address);
+                }
             }
         }
         return null;
