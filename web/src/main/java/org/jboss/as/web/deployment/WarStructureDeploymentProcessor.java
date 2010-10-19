@@ -92,7 +92,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @return the resource roots
      * @throws IOException for any error
      */
-    ClassPathEntry[] createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException {
+    ClassPathEntry[] createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException, DeploymentUnitProcessingException {
         final List<ClassPathEntry> entries = new ArrayList<ClassPathEntry>();
         // deployment root
         entries.add(new ClassPathEntry("", deploymentRoot, mountHandle));
@@ -110,13 +110,17 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * @param resourcesRoots the resource root map
      * @throws IOException for any error
      */
-    void createWebInfLibResources(final VirtualFile deploymentRoot, List<ClassPathEntry> entries) throws IOException {
+    void createWebInfLibResources(final VirtualFile deploymentRoot, List<ClassPathEntry> entries) throws IOException, DeploymentUnitProcessingException {
         final VirtualFile webinfLib = deploymentRoot.getChild(WEB_INF_LIB);
         if(webinfLib.exists()) {
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
             for(final VirtualFile archive : archives) {
-                final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
-                entries.add(new ClassPathEntry(archive, new MountHandle(closable)));
+                try {
+                    final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                    entries.add(new ClassPathEntry(archive, new MountHandle(closable)));
+                } catch (IOException e) {
+                    throw new DeploymentUnitProcessingException("failed to process " + archive, e);
+                }
             }
         }
     }
