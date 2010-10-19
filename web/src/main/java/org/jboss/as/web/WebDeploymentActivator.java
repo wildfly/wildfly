@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
@@ -35,6 +36,7 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
@@ -68,7 +70,8 @@ class WebDeploymentActivator {
         static final String WAR_EXTENSION = ".war";
 
         /** {@inheritDoc} */
-        public boolean supports(VirtualFile virtualFile) {
+        public boolean supports(DeploymentUnitContext deploymentUnitContext) {
+            VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
             return virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION);
         }
     }
