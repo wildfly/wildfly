@@ -139,7 +139,12 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
         File base = new File(repoRoot, partA);
         File hashDir = new File(base, partB);
         File content = new File(hashDir, CONTENT);
-        return VFS.mountZip(content, mountPoint, TempFileProviderService.provider());
+        // FIXME
+        if(name.endsWith("war")) {
+            return VFS.mountZipExpanded(content, mountPoint, TempFileProviderService.provider());
+        } else {
+            return VFS.mountZip(content, mountPoint, TempFileProviderService.provider());
+        }
     }
 
 
