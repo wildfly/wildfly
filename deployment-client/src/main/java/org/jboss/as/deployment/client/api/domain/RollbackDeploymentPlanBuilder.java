@@ -22,10 +22,35 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-public interface RollbackDeploymentPlanBuilder {
+/**
+ * Variant of a {@link DeploymentPlanBuilder} that exposes
+ * directives that are only applicable when controlling how to limit
+ * {@link ServerGroupDeploymentPlanBuilder#withRollback() rollbacks} when a
+ * {@link DeploymentSetPlan} is applied to a server groups.
+ *
+ * @author Brian Stansberry
+ */
+public interface RollbackDeploymentPlanBuilder extends ServerGroupDeploymentPlanBuilder {
 
-    ServerGroupDeploymentPlanBuilder allowFailures(int failures);
+    /**
+     * Allows the application of the deployment set to fail on the given
+     * number of servers before triggering rollback of the plan.
+     *
+     * @param serverFailures the number of servers. Must be greater than <code>0</code>
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    ServerGroupDeploymentPlanBuilder allowFailures(int serverFailures);
 
-    ServerGroupDeploymentPlanBuilder allowPercentageFailures(float failures);
+    /**
+     * Allows the application of the deployment set to fail on the given
+     * percentage of servers in the server group before triggering rollback of the plan.
+     *
+     * @param serverFailurePercentage the percentage of servers. Must be between
+     *              <code>1</code> and <code>99</code>
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    ServerGroupDeploymentPlanBuilder allowPercentageFailures(int serverFailurePercentage);
 
 }

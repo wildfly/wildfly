@@ -571,8 +571,7 @@ public class ServerManager {
      * @param domain The domain configuration
      */
     public void setDomain(final DomainModel domain) {
-        boolean localDC = getHostModel().getLocalDomainControllerElement() != null;
-        modelManager.setDomainModel(domain, localDC);
+        modelManager.setDomainModel(domain);
         synchronizeDeployments();
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {

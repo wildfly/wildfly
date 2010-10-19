@@ -24,6 +24,7 @@ package org.jboss.as.deployment.client.impl.domain;
 
 import org.jboss.as.deployment.client.api.DeploymentAction;
 import org.jboss.as.deployment.client.api.DeploymentAction.Type;
+import org.jboss.as.deployment.client.api.domain.DeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.UndeployDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
@@ -39,8 +40,9 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
 
     private final DeploymentAction undeployModification;
 
-    UndeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
+    UndeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
+        DeploymentAction modification = setPlan.getLastAction();
         if (modification.getType() != Type.UNDEPLOY) {
             throw new IllegalStateException("Invalid action type " + modification.getType());
         }
@@ -49,13 +51,12 @@ class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implem
 
     @Override
     public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        return super.toServerGroup(serverGroupName);
     }
 
     @Override
-    public ServerGroupDeploymentPlanBuilder andRemoveUndeployed() {
+    public DeploymentPlanBuilder andRemoveUndeployed() {
         DeploymentActionImpl removeMod = DeploymentActionImpl.getRemoveAction(undeployModification.getDeploymentUnitUniqueName());
-        return new ServerGroupDeploymentPlanBuilderImpl(this, removeMod);
+        return getNewBuilder(removeMod);
     }
 }

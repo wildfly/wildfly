@@ -23,45 +23,42 @@
 package org.jboss.as.deployment.client.impl.domain;
 
 import org.jboss.as.deployment.client.api.domain.RollbackDeploymentPlanBuilder;
+import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 
 /**
- * TODO add class javadoc for RollbackDeploymentPlanBuilder.
+ * Implementation of {@link RollbackDeploymentPlanBuilder}.
  *
  * @author Brian Stansberry
  */
 class RollbackDeploymentPlanBuilderImpl extends ServerGroupDeploymentPlanBuilderImpl implements RollbackDeploymentPlanBuilder {
 
-    /**
-     * @param existing
-     */
-    RollbackDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
-        super(existing);
+    RollbackDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
     }
 
-    /**
-     * @param existing
-     * @param modification
-     */
-    RollbackDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
+    @Override
+    public ServerGroupDeploymentPlanBuilder allowFailures(int serverFailures) {
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
+        if (groupPlan == null) {
+            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+        }
+        groupPlan = groupPlan.createAllowFailures(serverFailures);
+        setPlan = setPlan.storeServerGroup(groupPlan);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.RollbackDeploymentPlanBuilder#allowFailures(int)
-     */
-    public ServerGroupDeploymentPlanBuilder allowFailures(int failures) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.RollbackDeploymentPlanBuilder#allowPercentageFailures(float)
-     */
-    public ServerGroupDeploymentPlanBuilder allowPercentageFailures(float failures) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+    @Override
+    public ServerGroupDeploymentPlanBuilder allowPercentageFailures(int serverFailurePercentage) {
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
+        if (groupPlan == null) {
+            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+        }
+        groupPlan = groupPlan.createAllowFailurePercentage(serverFailurePercentage);
+        setPlan = setPlan.storeServerGroup(groupPlan);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 
 }

@@ -31,11 +31,12 @@ import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
 import org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder;
+import org.jboss.as.deployment.client.api.domain.InvalidDeploymentPlanException;
 import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
 import org.jboss.as.deployment.client.impl.domain.InitialDeploymentPlanBuilderFactory;
 
 /**
- * TODO add class javadoc for DomainDeploymentManagerImpl.
+ * Client-side {@link DomainDeploymentManager}.
  *
  * @author Brian Stansberry
  */
@@ -67,7 +68,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
     }
 
     @Override
-    public Future<DeploymentPlanResult> execute(DeploymentPlan plan) {
+    public Future<DeploymentPlanResult> execute(DeploymentPlan plan) throws InvalidDeploymentPlanException {
         return this.client.execute(plan);
     }
 

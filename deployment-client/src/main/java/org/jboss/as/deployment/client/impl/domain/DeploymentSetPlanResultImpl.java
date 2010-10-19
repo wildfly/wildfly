@@ -22,13 +22,13 @@
 
 package org.jboss.as.deployment.client.impl.domain;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.jboss.as.deployment.client.api.domain.DeploymentActionResult;
 import org.jboss.as.deployment.client.api.domain.DeploymentSetPlanResult;
-import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentResult;
+import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanResult;
 
 /**
  * TODO add class javadoc for DeploymentSetPlanResultImpl.
@@ -55,7 +55,7 @@ public class DeploymentSetPlanResultImpl implements DeploymentSetPlanResult {
     }
 
     @Override
-    public Set<ServerGroupDeploymentResult> getServerGroupsResults() {
+    public Map<String, ServerGroupDeploymentPlanResult> getServerGroupsResults() {
         // TODO Auto-generated method stub
         return null;
     }

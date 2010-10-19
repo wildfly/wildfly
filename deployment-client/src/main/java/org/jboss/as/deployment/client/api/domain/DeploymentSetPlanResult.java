@@ -22,7 +22,7 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
@@ -35,8 +35,6 @@ import org.jboss.as.deployment.client.api.DeploymentAction;
  */
 public interface DeploymentSetPlanResult {
 
-    // FIXME Figure this out
-
     /**
      * Gets the unique id of the deployment set plan.
      *
@@ -44,12 +42,15 @@ public interface DeploymentSetPlanResult {
      */
     UUID getDeploymentSetId();
 
-    Set<ServerGroupDeploymentResult> getServerGroupsResults();
+    /**
+     * Gets the results for each server group.
+     *
+     * @return map of server group results, keyed by server group name
+     */
+    Map<String, ServerGroupDeploymentPlanResult> getServerGroupsResults();
 
     /**
-     * Gets the result of a {@link DeploymentAction.Type#DEPLOY deploy},
-     * {@link DeploymentAction.Type#REPLACE replace} and
-     * {@link DeploymentAction.Type#UNDEPLOY undeploy} action associated with
+     * Gets the result of a {@link DeploymentAction} associated with
      * the deployment set plan.
      *
      * @param deploymentAction the id of the action

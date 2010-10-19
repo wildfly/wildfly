@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.jboss.as.deployment.client.api.DeploymentAction;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 
 /**
  * Builder capable of creating a {@link DeploymentPlanImpl}.
@@ -36,34 +35,41 @@ import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
  */
 class AbstractDeploymentPlanBuilder  {
 
-    boolean restart;
-    long gracefulShutdownPeriod = -1;
-    boolean globalRollback;
+    final boolean globalRollback;
 
-    private final List<DeploymentActionImpl> modifications = new ArrayList<DeploymentActionImpl>();
+    private final List<DeploymentSetPlanImpl> setPlans = new ArrayList<DeploymentSetPlanImpl>();
 
 
     AbstractDeploymentPlanBuilder() {
+        this.setPlans.add(new DeploymentSetPlanImpl());
+        this.globalRollback = false;
+    }
+    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, boolean globalRollback) {
+        this.setPlans.addAll(existing.setPlans);
+        this.globalRollback = globalRollback;
     }
 
     AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing) {
-        this.modifications.addAll(existing.modifications);
-        this.restart = existing.restart;
+        this.setPlans.addAll(existing.setPlans);
         this.globalRollback = existing.globalRollback;
-        this.gracefulShutdownPeriod = existing.gracefulShutdownPeriod;
     }
 
-    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, DeploymentActionImpl modification) {
+    AbstractDeploymentPlanBuilder(AbstractDeploymentPlanBuilder existing, DeploymentSetPlanImpl setPlan, boolean replace) {
         this(existing);
-        this.modifications.add(modification);
+        if (replace) {
+            this.setPlans.set(this.setPlans.size() - 1, setPlan);
+        }
+        else {
+            this.setPlans.add(setPlan);
+        }
     }
 
     public DeploymentAction getLastAction() {
-        return modifications.size() == 0 ? null : modifications.get(modifications.size() - 1);
+        return getCurrentDeploymentSetPlan().getLastAction();
     }
 
-    public List<DeploymentAction> getDeploymentActions() {
-        return new ArrayList<DeploymentAction>(modifications);
+    DeploymentSetPlanImpl getCurrentDeploymentSetPlan() {
+        return setPlans.get(setPlans.size() - 1);
     }
 
     /**
@@ -72,7 +78,6 @@ class AbstractDeploymentPlanBuilder  {
      * @return the deployment plan
      */
     public DeploymentPlan build() {
-        // FIXME implement build
-        throw new UnsupportedOperationException("implement me");
+        return new DeploymentPlanImpl(setPlans, globalRollback);
     }
 }

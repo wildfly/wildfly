@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
+import org.jboss.as.deployment.client.api.domain.InvalidDeploymentPlanException;
 import org.jboss.as.domain.client.api.DomainClient;
 import org.jboss.as.domain.client.api.DomainUpdateApplier;
 import org.jboss.as.domain.client.api.DomainUpdateResult;
@@ -136,10 +137,13 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
+    Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) throws InvalidDeploymentPlanException {
         try {
             return new ExecuteDeploymentPlanOperation(deploymentPlan).execute();
-        } catch (Exception e) {
+        } catch (InvalidDeploymentPlanException e) {
+            throw e;
+        }
+        catch (Exception e) {
             throw new RuntimeException("Failed to get deployment result future", e);
         }
     }

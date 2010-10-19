@@ -22,28 +22,14 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-import java.util.UUID;
+import java.util.Map;
 
-/**
- * Encapsulates the results of executing a {@link DeploymentPlan}.
- *
- * @author Brian Stansberry
- */
-public interface DeploymentPlanResult {
+import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 
-    /**
-     * Gets the unique id of the deployment plan.
-     *
-     * @return the id. Will not be <code>null</code>
-     */
-    UUID getId();
+public interface ServerGroupDeploymentActionResult {
 
-    /**
-     * Gets the result of a {@link DeploymentSetPlan}.
-     *
-     * @param deploymentAction the id of the deployment set plan
-     *
-     * @return the result
-     */
-    DeploymentSetPlanResult getDeploymentSetResult(UUID deploymentSet);
+    String getServerGroupName();
+
+    Map<String, ServerDeploymentActionResult> getResultByServer();
 }
+

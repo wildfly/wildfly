@@ -25,7 +25,6 @@ package org.jboss.as.deployment.client.impl.domain;
 import org.jboss.as.deployment.client.api.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.ReplaceDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 
 /**
@@ -38,25 +37,22 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
 
     private final String newContentKey;
 
-    AddDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
-        this.newContentKey = modification.getDeploymentUnitUniqueName();
+    AddDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
+        this.newContentKey = setPlan.getLastAction().getDeploymentUnitUniqueName();
     }
 
-    public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
-    }
-
+    @Override
     public DeployDeploymentPlanBuilder andDeploy() {
-        DeploymentActionImpl deployMod = DeploymentActionImpl.getDeployAction(newContentKey);
-        return new DeployDeploymentPlanBuilderImpl(this, deployMod);
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new DeployDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
-    public ReplaceDeploymentPlanBuilder andReplaceSame() {
-        return replace(newContentKey, newContentKey);
-    }
-
+    @Override
     public ReplaceDeploymentPlanBuilder andReplace(String toReplace) {
         return replace(newContentKey, toReplace);
     }

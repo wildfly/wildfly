@@ -29,7 +29,7 @@ package org.jboss.as.deployment.client.api.domain;
  *
  * @author Brian Stansberry
  */
-public interface UndeployDeploymentPlanBuilder {
+public interface UndeployDeploymentPlanBuilder extends DeploymentPlanBuilder {
 
     /**
      * Indicates that the current set of {@link DeploymentAction.Type#DEPLOYMENT_START_STOP deploy},
@@ -56,6 +56,6 @@ public interface UndeployDeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      */
-    ServerGroupDeploymentPlanBuilder andRemoveUndeployed();
+    DeploymentPlanBuilder andRemoveUndeployed();
 
 }

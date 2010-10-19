@@ -25,13 +25,12 @@ package org.jboss.as.deployment.client.impl.domain;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.deployment.client.api.domain.InitialDeploymentSetBuilder;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that is meant
  * to be used at the initial stages of the building process, when directives that
- * pertain to the entire plan can be applied.
+ * pertain to the entire {@link DeploymentSetPlan} can be applied.
  *
  * @author Brian Stansberry
  */
@@ -44,40 +43,38 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
         super(deploymentDistributor);
     }
 
-    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing) {
-        super(existing);
+    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
+        super(existing, globalRollback);
     }
 
-    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
+    InitialDeploymentSetBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder#withGracefulShutdown(long, java.util.concurrent.TimeUnit)
-     */
+    @Override
     public InitialDeploymentSetBuilder withGracefulShutdown(long timeout, TimeUnit timeUnit) {
 
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         long period = timeUnit.toMillis(timeout);
-        if (restart && period != gracefulShutdownPeriod) {
-            throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + gracefulShutdownPeriod + " ms");
+        if (currentSet.isShutdown() && period != currentSet.getGracefulShutdownTimeout()) {
+            throw new IllegalStateException("Graceful shutdown already configured with a timeout of " + currentSet.getGracefulShutdownTimeout() + " ms");
         }
-        this.restart = true;
-        this.gracefulShutdownPeriod = period;
-        return new InitialDeploymentSetBuilderImpl(this);
+        DeploymentSetPlanImpl newSet = currentSet.setGracefulTimeout(period);
+        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder#withShutdown()
-     */
+    @Override
     public InitialDeploymentSetBuilder withShutdown() {
 
-        this.restart = true;
-        return new InitialDeploymentSetBuilderImpl(this);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        DeploymentSetPlanImpl newSet = currentSet.setShutdown();
+        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
     }
 
     @Override
     public InitialDeploymentSetBuilder withDeploymentSetRollback() {
-        // FIXME implement this
-        throw new UnsupportedOperationException("implement me");
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        DeploymentSetPlanImpl newSet = currentSet.setRollback();
+        return new InitialDeploymentSetBuilderImpl(this, newSet, true);
     }
 }

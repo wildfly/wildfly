@@ -226,7 +226,7 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
 
         private ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractDomainModelUpdate<?> update) {
             try {
-                final List<ServerIdentity> result = serverManager.getModelManager().applyDomainModelUpdate(update);
+                final List<ServerIdentity> result = serverManager.getModelManager().applyDomainModelUpdate(update, true);
                 return new ModelUpdateResponse<List<ServerIdentity>>(result);
             } catch (UpdateFailedException e) {
                 return new ModelUpdateResponse<List<ServerIdentity>>(e);
@@ -282,12 +282,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         }
 
         private  ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractHostModelUpdate<?> update) {
-            //try {
-                final List<ServerIdentity> result = null; // TODO: Process update
+            try {
+                final List<ServerIdentity> result = serverManager.getModelManager().applyHostModelUpdate(update);
                 return new ModelUpdateResponse<List<ServerIdentity>>(result);
-//            } catch (UpdateFailedException e) {
-//                return new ModelUpdateResponse<R>(e);
-//            }
+            } catch (UpdateFailedException e) {
+                return new ModelUpdateResponse<List<ServerIdentity>>(e);
+            }
         }
     }
 

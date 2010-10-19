@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.jboss.as.deployment.client.api.DeploymentAction;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentSetPlan;
 
@@ -39,21 +38,12 @@ import org.jboss.as.deployment.client.api.domain.DeploymentSetPlan;
 public class DeploymentPlanImpl implements DeploymentPlan {
 
     private final UUID uuid = UUID.randomUUID();
-    private final List<DeploymentAction> addedContent = new ArrayList<DeploymentAction>();
-    private final List<DeploymentAction> removedContent = new ArrayList<DeploymentAction>();
     private final List<DeploymentSetPlan> deploymentSets = new ArrayList<DeploymentSetPlan>();
     private final boolean globalRollback;
 
-    DeploymentPlanImpl(List<DeploymentAction> addedContent, List<DeploymentAction> removedContent,
-            List<DeploymentSetPlanImpl> deploymentSets, boolean globalRollback) {
-        if (addedContent == null)
-            throw new IllegalArgumentException("addedContent is null");
-        if (removedContent == null)
-            throw new IllegalArgumentException("removedContent is null");
+    DeploymentPlanImpl(List<DeploymentSetPlanImpl> deploymentSets, boolean globalRollback) {
         if (deploymentSets == null)
             throw new IllegalArgumentException("deploymentSets is null");
-        this.addedContent.addAll(addedContent);
-        this.removedContent.addAll(removedContent);
         this.deploymentSets.addAll(deploymentSets);
         this.globalRollback = globalRollback;
     }
@@ -64,27 +54,10 @@ public class DeploymentPlanImpl implements DeploymentPlan {
         return uuid;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.DeploymentPlan#getAddedContent()
-     */
-    public List<DeploymentAction> getAddedContent() {
-        return new ArrayList<DeploymentAction>(addedContent);
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.DeploymentPlan#getRemovedContent()
-     */
-    public List<DeploymentAction> getRemovedContent() {
-        return new ArrayList<DeploymentAction>(removedContent);
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.DeploymentPlan#isGlobalRollback()
-     */
+    @Override
     public boolean isGlobalRollback() {
         return globalRollback;
     }
-
 
     @Override
     public List<DeploymentSetPlan> getDeploymentSetPlans() {

@@ -39,36 +39,6 @@ public interface AddDeploymentPlanBuilder extends DeploymentPlanBuilder {
 
     /**
      * Indicates content that was added via an immediately preceding
-     * <code>add</code> operation should be deployed, replacing in the runtime
-     * the existing content of the same name.
-     * <p>
-     * The process of finding an existing deployment is as follows:
-     * <ol>
-     *   <li>All existing deployments with the same name are found</li>
-     *   <li>If more than one such deployment is found, and some such deployments
-     *   are started while others are not, all non-started deployments are eliminated
-     *   from consideration</li>
-     *   <li>If more than one such deployment remains, and some are associated
-     *   with the default content repository, all deployments not associated with
-     *   the default content repository are eliminated</li>
-     *   <li>If at this point a single deployment remains, its key is returned,
-     *   otherwise an IllegalStateException is thrown.</li>
-     * </ol>
-     * </p>
-     * <p>
-     * Note that this operation does not indicate the existing content should
-     * be removed from the repository. See {@link #andRemoveUndeployed()}.
-     * </p>
-     *
-     * @return a builder that can continue building the overall deployment plan
-     *
-     * @throws IllegalStateException if either zero or more than one matching existing
-     *    deployments is found
-     */
-    ReplaceDeploymentPlanBuilder andReplaceSame();
-
-    /**
-     * Indicates content that was added via an immediately preceding
      * <code>add</code> operation should be deployed, replacing the specified
      * existing content in the runtime.
      *

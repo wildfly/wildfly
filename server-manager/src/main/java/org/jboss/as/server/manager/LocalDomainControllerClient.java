@@ -53,16 +53,25 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getId() {
         return ID;
     }
 
     /** {@inheritDoc} */
+    @Override
+    public boolean isActive() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void updateDomainModel(final DomainModel domain) {
         serverManager.setDomain(domain);
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<ModelUpdateResponse<?>> updateHostModel(List<AbstractHostModelUpdate<?>> updates) {
         final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
         for(AbstractHostModelUpdate<?> update : updates) {
@@ -72,6 +81,7 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates) {
         final List<ModelUpdateResponse<List<ServerIdentity>>> responses = new ArrayList<ModelUpdateResponse<List<ServerIdentity>>>(updates.size());
         for(AbstractDomainModelUpdate<?> update : updates) {
@@ -80,6 +90,7 @@ public class LocalDomainControllerClient implements DomainControllerClient {
         return responses;
     }
 
+    @Override
     public List<ModelUpdateResponse<?>> updateServerModel(final List<AbstractServerModelUpdate<?>> updates, final String serverName) {
         List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>();
         for (AbstractServerModelUpdate<?> update : updates) {
@@ -89,13 +100,21 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     }
 
     private ModelUpdateResponse<List<ServerIdentity>> executeUpdate(AbstractDomainModelUpdate<?> domainUpdate) {
-        final List<ServerIdentity> result = null;  // TODO execute update
-        return new ModelUpdateResponse<List<ServerIdentity>>(result);
+        try {
+            final List<ServerIdentity> result = serverManager.getModelManager().applyDomainModelUpdate(domainUpdate, false);
+            return new ModelUpdateResponse<List<ServerIdentity>>(result);
+        } catch (UpdateFailedException e) {
+            return new ModelUpdateResponse<List<ServerIdentity>>(e);
+        }
     }
 
-    private <R> ModelUpdateResponse<R> executeUpdate(AbstractHostModelUpdate<R> hostUpdate) {
-        final R result = null;  // TODO execute update
-        return new ModelUpdateResponse<R>(result);
+    private ModelUpdateResponse<List<ServerIdentity>> executeUpdate(AbstractHostModelUpdate<?> hostUpdate) {
+        try {
+            final List<ServerIdentity> result = serverManager.getModelManager().applyHostModelUpdate(hostUpdate);
+            return new ModelUpdateResponse<List<ServerIdentity>>(result);
+        } catch (UpdateFailedException e) {
+            return new ModelUpdateResponse<List<ServerIdentity>>(e);
+        }
     }
 
     private <R> ModelUpdateResponse<R> executeUpdate(final AbstractServerModelUpdate<R> update, final String serverName) {
@@ -114,10 +133,5 @@ public class LocalDomainControllerClient implements DomainControllerClient {
             }
         }
 
-    }
-
-    /** {@inheritDoc} */
-    public boolean isActive() {
-        return true;
     }
 }

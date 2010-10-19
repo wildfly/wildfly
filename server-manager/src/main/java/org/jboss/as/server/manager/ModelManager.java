@@ -49,7 +49,6 @@ public class ModelManager {
 
     private final File hostXml;
     private DomainModel domainModel;
-    private boolean localDomainController;
     private volatile HostModel hostModel;
 
     private final StandardElementReaderRegistrar extensionRegistrar;
@@ -81,17 +80,14 @@ public class ModelManager {
         return domainModel;
     }
 
-    void setDomainModel(final DomainModel model, final boolean localDomainController) {
+    void setDomainModel(final DomainModel model) {
         assert model != null : "model is null";
         this.domainModel = model;
-        this.localDomainController = localDomainController;
     }
 
-    public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update) throws UpdateFailedException {
+    public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update, boolean applyToDomain) throws UpdateFailedException {
 
-        // Only apply the update to the domainModel if we don't have a local
-        // DC that's already done it
-        if (!localDomainController) {
+        if (applyToDomain) {
             domainModel.update(update);
         }
 

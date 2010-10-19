@@ -38,19 +38,22 @@ class ReplaceDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl impleme
 
     private final DeploymentAction replacementModification;
 
-    ReplaceDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
-        this.replacementModification = modification;
+    ReplaceDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
+        this.replacementModification = setPlan.getLastAction();
     }
 
     @Override
     public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        return super.toServerGroup(serverGroupName);
     }
 
     public DeploymentPlanBuilder andRemoveUndeployed() {
-        DeploymentActionImpl removeMod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
-        return new DeploymentPlanBuilderImpl(this, removeMod);
+        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new DeploymentPlanBuilderImpl(this, newSet, !add);
     }
 }

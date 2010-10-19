@@ -57,9 +57,6 @@ public class DomainServerGroupRemove extends AbstractDomainModelUpdate<Void> {
     /** {@inheritDoc} */
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // FIXME -- figure out impact of removing server group on ServerModel
-        // Basically should be none, but their should be validation that
-        // group isn't used on a server before this update is applied
         return null;
     }
 

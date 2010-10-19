@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.jboss.as.deployment.client.api.DeploymentAction;
@@ -35,5 +36,5 @@ public interface DeploymentActionResult {
 
     UUID getDeploymentActionId();
 
-    // FIXME todo add some stuff. The domain version needs to cover the multi-server aspect
+    Map<String, ServerGroupDeploymentActionResult> getResultsByServerGroup();
 }

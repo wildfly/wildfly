@@ -23,53 +23,59 @@
 package org.jboss.as.deployment.client.impl.domain;
 
 import org.jboss.as.deployment.client.api.domain.RollbackDeploymentPlanBuilder;
+import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 
 /**
- * TODO add class javadoc for ServerGroupDeploymentPlanBuilder.
+ * Variant of a {@link DeploymentPlanBuilderImpl} that exposes
+ * directives that are only applicable when controlling how a {@link DeploymentSetPlan}
+ * should be applied to one or more server groups.
  *
  * @author Brian Stansberry
  */
-class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentPlanBuilderImpl implements ServerGroupDeploymentPlanBuilder {
+class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderImpl implements ServerGroupDeploymentPlanBuilder {
 
-    ServerGroupDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
-        super(existing);
+    ServerGroupDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
     }
 
-    ServerGroupDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder#withRollback()
-     */
+    @Override
     public RollbackDeploymentPlanBuilder withRollback() {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
+        if (groupPlan == null) {
+            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+        }
+        groupPlan = groupPlan.createRollback();
+        setPlan = setPlan.storeServerGroup(groupPlan);
+        return new RollbackDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder#rollingToServers()
-     */
+    @Override
     public ServerGroupDeploymentPlanBuilder rollingToServers() {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
+        if (groupPlan == null) {
+            throw new IllegalStateException(String.format("No %s is configured", ServerGroupDeploymentPlan.class.getSimpleName()));
+        }
+        groupPlan = groupPlan.createRollingToServers();
+        setPlan = setPlan.storeServerGroup(groupPlan);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder#rollingToServerGroup(java.lang.String)
-     */
+    @Override
     public ServerGroupDeploymentPlanBuilder rollingToServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = new ServerGroupDeploymentPlan(serverGroupName);
+        setPlan = setPlan.storeRollToServerGroup(groupPlan);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder#toServerGroup(java.lang.String)
-     */
+    @Override
     public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
+        ServerGroupDeploymentPlan groupPlan = new ServerGroupDeploymentPlan(serverGroupName);
+        setPlan = setPlan.storeServerGroup(groupPlan);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, setPlan, true);
     }
 }

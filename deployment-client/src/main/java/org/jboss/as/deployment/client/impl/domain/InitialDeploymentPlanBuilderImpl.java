@@ -24,7 +24,6 @@ package org.jboss.as.deployment.client.impl.domain;
 
 import org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.InitialDeploymentSetBuilder;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
 
 /**
@@ -43,19 +42,11 @@ class InitialDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderImpl i
         super(deploymentDistributor);
     }
 
-    InitialDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
-        super(existing);
+    private InitialDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
+        super(existing, globalRollback);
     }
 
-    InitialDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder#withGlobalRollback()
-     */
     public InitialDeploymentSetBuilder withGlobalRollback() {
-        this.globalRollback = true;
-        return this;
+        return new InitialDeploymentPlanBuilderImpl(this, true);
     }
 }

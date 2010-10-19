@@ -22,16 +22,30 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-import java.util.Set;
-
+import java.util.Map;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 
 /**
- * TODO add class javadoc for ServerGroupDeploymentResult.
+ * Encapsulates the results of executing a {@link DeploymentSetPlan} against
+ * a particular server group.
+ *
+ * @see ServerGroupDeploymentPlan
  *
  * @author Brian Stansberry
  */
-public interface ServerGroupDeploymentResult {
+public interface ServerGroupDeploymentPlanResult {
 
-    Set<ServerDeploymentPlanResult> getServerResults();
+    /**
+     * Gets the name of the server group.
+     *
+     * @return the name. Will not be <code>null</code>
+     */
+    String getServerGroupName();
+
+    /**
+     * Gets the results for each server within the server group.
+     *
+     * @return map of server results, keyed by server name. Will not be <code>null</code>
+     */
+    Map<String, ServerDeploymentPlanResult> getServerResults();
 }

@@ -75,5 +75,5 @@ public interface DomainDeploymentManager {
      * @return {@link Future} from which the results of the deployment plan can
      *         be obtained
      */
-    Future<DeploymentPlanResult> execute(DeploymentPlan plan);
+    Future<DeploymentPlanResult> execute(DeploymentPlan plan) throws InvalidDeploymentPlanException;
 }

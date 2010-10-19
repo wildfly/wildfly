@@ -24,7 +24,6 @@ package org.jboss.as.deployment.client.impl.domain;
 
 import org.jboss.as.deployment.client.api.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that exposes
@@ -35,12 +34,12 @@ import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
  */
 class DeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements DeployDeploymentPlanBuilder {
 
-    DeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
+    DeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
     }
 
+    @Override
     public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
-        // FIXME implement
-        throw new UnsupportedOperationException("implement me");
+        return super.toServerGroup(serverGroupName);
     }
 }

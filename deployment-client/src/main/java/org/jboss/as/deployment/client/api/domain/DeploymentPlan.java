@@ -49,22 +49,6 @@ public interface DeploymentPlan {
     UUID getId();
 
     /**
-     * Gets the list of deployment repository content additions that are
-     * part of the deployment plan.
-     *
-     * @return the actions. Will not be <code>null</code>
-     */
-    List<DeploymentAction> getAddedContent();
-
-    /**
-     * Gets the list of deployment repository content removals that are
-     * part of the deployment plan.
-     *
-     * @return the actions. Will not be <code>null</code>
-     */
-    List<DeploymentAction> getRemovedContent();
-
-    /**
      * Get the deployment set plans that comprise the plan.
      *
      * @return  the deployment set plans. Will not be <code>null</code>

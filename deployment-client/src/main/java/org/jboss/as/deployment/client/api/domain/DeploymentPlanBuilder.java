@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
-
 import org.jboss.as.deployment.client.api.DeploymentAction;
 import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
 
@@ -48,14 +46,6 @@ public interface DeploymentPlanBuilder {
      * @return the last action or <code>null</code> if there have been no actions.
      */
     DeploymentAction getLastAction();
-
-    /**
-     * Gets the list of {@link DeploymentAction}s created as a recent of
-     * builder operations, in order of when they were created.
-     *
-     * @return the actions. Will not be <code>null</code>
-     */
-    List<DeploymentAction> getDeploymentActions();
 
     /**
      * Indicates the content of the specified file should be added to the default content
@@ -249,7 +239,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(File file) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -269,7 +259,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(URL url) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(URL url) throws IOException;
 
     /**
      * Indicates the content of the specified file should be added to the content
@@ -288,7 +278,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(String name, File file) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(String name, File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -307,7 +297,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(String name, URL url) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(String name, URL url) throws IOException;
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -330,7 +320,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(String name, InputStream stream) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(String name, InputStream stream) throws IOException;
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -365,7 +355,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException;
+    ServerGroupDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException;
 
     /**
      * Indicates the specified deployment content should be removed from the

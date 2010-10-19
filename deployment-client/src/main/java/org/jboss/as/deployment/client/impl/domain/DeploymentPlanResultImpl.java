@@ -23,9 +23,6 @@
 package org.jboss.as.deployment.client.impl.domain;
 
 import java.util.UUID;
-import java.util.concurrent.Future;
-
-import org.jboss.as.deployment.client.api.domain.DeploymentActionResult;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.deployment.client.api.domain.DeploymentSetPlanResult;
 
@@ -42,18 +39,6 @@ public class DeploymentPlanResultImpl implements DeploymentPlanResult {
         if (planId == null)
             throw new IllegalArgumentException("planId is null");
         this.planId = planId;
-    }
-
-    @Override
-    public Future<DeploymentActionResult> getDeploymentAddResult(UUID deploymentAction) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Future<DeploymentActionResult> getDeploymentRemoveResult(UUID deploymentAction) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

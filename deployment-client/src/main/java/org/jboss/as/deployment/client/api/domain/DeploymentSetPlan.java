@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.client.api.domain;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.jboss.as.deployment.client.api.DeploymentAction;
@@ -88,5 +89,35 @@ public interface DeploymentSetPlan {
      *         would return <code>false</code>
      */
     long getGracefulShutdownTimeout();
+
+    /**
+     * Gets the configuration of how the {@link #getDeploymentActions() deployment
+     * actions} are to be applied to the server groups in the domain. Each
+     * {@link ServerGroupDeploymentPlan} in the returned data structure specifies
+     * how the actions are to be applied to the servers within a particular server group. The data
+     * structure itself is a list of sets of ServerGroupDeploymentPlans. Each
+     * set indicates a collection of server groups to which actions can be
+     * applied concurrently. Each element in the overall list delineates actions
+     * should be applied in series.
+     * <p>So, for example, assume we the overall deployment
+     * set plan is intended to apply deployments to 3 server groups: <code>A</code>,
+     * <code>B</code> and <code>C</code>. Assume elements within curly braces
+     * represent and set and elements within brackets represent an item in a list:
+     * <ul>
+     * <li> <code>[{A,B}],[{C}]</code> would describe a plan to concurrently
+     * execute the deployment actions on server groups A and B and then when A
+     * and B are complete, continue on to server group C.</li>
+     * <li> <code>[{A}],[{B}],[{C}]</code> would describe a plan to
+     * execute the deployment actions on server group A, and then when A
+     * is complete, continue on to server group B and then to C.</li>
+     * <li> <code>[{A,B,C}]</code> would describe a plan to concurrently
+     * execute the deployment actions on server groups A and B and C.</li>
+     * </ul>
+     * </p>
+     *
+     * @return data structure representing how the {@link #getDeploymentActions() deployment
+     * actions} are to be applied to the server groups in the domain.
+     */
+    List<Set<ServerGroupDeploymentPlan>> getServerGroupDeploymentPlans();
 
 }

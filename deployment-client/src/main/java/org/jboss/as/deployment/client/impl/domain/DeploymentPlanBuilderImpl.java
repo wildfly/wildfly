@@ -34,6 +34,8 @@ import org.jboss.as.deployment.client.api.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.ReplaceDeploymentPlanBuilder;
+import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlan;
+import org.jboss.as.deployment.client.api.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.domain.UndeployDeploymentPlanBuilder;
 import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
@@ -54,13 +56,13 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
         this.deploymentDistributor = deploymentDistributor;
     }
 
-    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing) {
-        super(existing);
+    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, boolean globalRollback) {
+        super(existing, globalRollback);
         this.deploymentDistributor = existing.deploymentDistributor;
     }
 
-    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentActionImpl modification) {
-        super(existing, modification);
+    DeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+        super(existing, setPlan, replace);
         this.deploymentDistributor = existing.deploymentDistributor;
     }
 
@@ -97,71 +99,97 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
             InputStream stream) throws IOException, DuplicateDeploymentNameException {
         byte[] hash = deploymentDistributor.distributeDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, hash);
-        return new AddDeploymentPlanBuilderImpl(this, mod);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new AddDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     @Override
     public DeployDeploymentPlanBuilder deploy(String key) {
-        DeploymentActionImpl deployMod = DeploymentActionImpl.getDeployAction(key);
-        return new DeployDeploymentPlanBuilderImpl(this, deployMod);
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new DeployDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     @Override
     public UndeployDeploymentPlanBuilder undeploy(String key) {
         DeploymentActionImpl mod = DeploymentActionImpl.getUndeployAction(key);
-        return new UndeployDeploymentPlanBuilderImpl(this, mod);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new UndeployDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     @Override
     public DeploymentPlanBuilder redeploy(String deploymentName) {
         DeploymentActionImpl mod = DeploymentActionImpl.getRedeployAction(deploymentName);
-        return new DeploymentPlanBuilderImpl(this, mod);
+        return getNewBuilder(mod);
     }
 
     @Override
     public ReplaceDeploymentPlanBuilder replace(String replacement, String toReplace) {
         DeploymentActionImpl mod = DeploymentActionImpl.getReplaceAction(replacement, toReplace);
-        return new ReplaceDeploymentPlanBuilderImpl(this, mod);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new ReplaceDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     @Override
-    public DeploymentPlanBuilder replace(File file) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(File file) throws IOException {
         String name = file.getName();
         return replace(name, name, file.toURI().toURL());
     }
 
     @Override
-    public DeploymentPlanBuilder replace(URL url) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(URL url) throws IOException {
         String name = getName(url);
         return replace(name, name, url);
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, File file) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(String name, File file) throws IOException {
         return replace(name, name, file.toURI().toURL());
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, URL url) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(String name, URL url) throws IOException {
         return replace(name, name, url);
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, InputStream stream) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(String name, InputStream stream) throws IOException {
         return replace(name, name, stream);
     }
 
     @Override
-    public DeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
+    public ServerGroupDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
         byte[] hash = deploymentDistributor.distributeReplacementDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, hash);
-        return new DeploymentPlanBuilderImpl(this, mod);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new ServerGroupDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     @Override
     public DeploymentPlanBuilder remove(String key) {
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(key);
-        return new DeploymentPlanBuilderImpl(this, mod);
+        return getNewBuilder(mod);
+    }
+
+    ServerGroupDeploymentPlanBuilder toServerGroup(final String serverGroupName) {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        DeploymentSetPlanImpl newSet = currentSet.storeServerGroup(new ServerGroupDeploymentPlan(serverGroupName));
+        return new ServerGroupDeploymentPlanBuilderImpl(this, newSet, true);
     }
 
     private AddDeploymentPlanBuilder add(String name, String commonName, URL url) throws IOException, DuplicateDeploymentNameException {
@@ -176,7 +204,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
         }
     }
 
-    private DeploymentPlanBuilder replace(String name, String commonName, URL url) throws IOException {
+    private ServerGroupDeploymentPlanBuilder replace(String name, String commonName, URL url) throws IOException {
         URLConnection conn = url.openConnection();
         conn.connect();
         InputStream stream = conn.getInputStream();
@@ -186,6 +214,14 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
         finally {
             try { stream.close(); } catch (Exception ignored) {}
         }
+    }
+
+    DeploymentPlanBuilderImpl getNewBuilder(DeploymentActionImpl mod) {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new DeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     private static String getName(URL url) {

@@ -202,12 +202,6 @@ class DeploymentPlanBuilderImpl
         return new DeploymentPlanBuilderImpl(this, deployMod);
     }
 
-    @Override
-    public ReplaceDeploymentPlanBuilder andReplaceSame() {
-        String newContentKey = getAddedContentKey();
-        return replace(newContentKey, newContentKey);
-    }
-
     /* (non-Javadoc)
      * @see org.jboss.as.deployment.client.api.server.AddDeploymentPlanBuilder#andReplace(java.lang.String)
      */

@@ -22,28 +22,23 @@
 
 package org.jboss.as.deployment.client.api.domain;
 
-import java.util.UUID;
-
 /**
- * Encapsulates the results of executing a {@link DeploymentPlan}.
+ * Exception indicating a given {@link DeploymentPlan} is invalid since it
+ * could leave the domain in an invalid state.
  *
  * @author Brian Stansberry
  */
-public interface DeploymentPlanResult {
+public class InvalidDeploymentPlanException extends Exception {
+
+    private static final long serialVersionUID = 6442943555765667251L;
 
     /**
-     * Gets the unique id of the deployment plan.
+     * Constructs a new InvalidDeploymentPlanException with the given message.
      *
-     * @return the id. Will not be <code>null</code>
+     * @param message the message
      */
-    UUID getId();
+    public InvalidDeploymentPlanException(String message) {
+        super(message);
+    }
 
-    /**
-     * Gets the result of a {@link DeploymentSetPlan}.
-     *
-     * @param deploymentAction the id of the deployment set plan
-     *
-     * @return the result
-     */
-    DeploymentSetPlanResult getDeploymentSetResult(UUID deploymentSet);
 }
