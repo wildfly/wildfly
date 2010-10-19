@@ -24,9 +24,12 @@ package org.jboss.as.model;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -126,6 +129,19 @@ public final class HostModel extends AbstractModel<HostModel> {
         synchronized (servers) {
             return new HashSet<ServerElement>(servers.values());
         }
+    }
+
+    public List<String> getActiveServerNames() {
+        List<String> result = new ArrayList<String>();
+
+        synchronized (servers) {
+            for (Map.Entry<String, ServerElement> entry : servers.entrySet()) {
+                if (entry.getValue().isStart()) {
+                    result.add(entry.getKey());
+                }
+            }
+        }
+        return result;
     }
 
     /**

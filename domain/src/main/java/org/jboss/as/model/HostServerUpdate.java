@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Update a {@link ServerElement} within a {@link HostModel}
  *
@@ -31,14 +34,14 @@ public class HostServerUpdate<R> extends AbstractHostModelUpdate<R> {
 
     private static final long serialVersionUID = 1656392748485415899L;
     private final String serverName;
-    private final AbstractModelElementUpdate<ServerElement> serverUpdate;
+    private final AbstractModelUpdate<ServerElement, R> serverUpdate;
 
-    public HostServerUpdate(String serverName, AbstractModelElementUpdate<ServerElement> serverUpdate) {
+    public HostServerUpdate(String serverName, AbstractModelUpdate<ServerElement, R> serverUpdate) {
         this.serverName = serverName;
         this.serverUpdate = serverUpdate;
     }
 
-    public static <T> HostServerUpdate<T> create(final String serverName, final AbstractModelElementUpdate<ServerElement> serverUpdate) {
+    public static <T> HostServerUpdate<T> create(final String serverName, final AbstractModelUpdate<ServerElement, T> serverUpdate) {
         return new HostServerUpdate<T>(serverName, serverUpdate);
     }
 
@@ -65,8 +68,17 @@ public class HostServerUpdate<R> extends AbstractHostModelUpdate<R> {
     /** {@inheritDoc} */
     @Override
     public AbstractServerModelUpdate<R> getServerModelUpdate() {
-        // TODO Auto-generated method stub
-        return null;
+        return serverUpdate.getServerModelUpdate();
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        if (getServerModelUpdate() == null) {
+            return Collections.emptyList();
+        }
+        else {
+            return Collections.singletonList(serverName);
+        }
     }
 
 }

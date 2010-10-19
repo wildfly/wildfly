@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 
@@ -40,6 +42,26 @@ public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Vo
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
+        StringBuilder illegal = null;
+        for (String groupName : element.getServerGroupNames()) {
+            ServerGroupElement sge = element.getServerGroup(groupName);
+            if (bindingGroupName.equals(sge.getSocketBindingGroupName())) {
+                if (illegal == null) {
+                    illegal = new StringBuilder(groupName);
+                }
+                else {
+                    illegal.append(", ");
+                    illegal.append(groupName);
+                }
+            }
+        }
+
+        if (illegal != null) {
+            throw new UpdateFailedException(String.format("Socket binding group %s cannot " +
+                    "be removed as it is referenced by server groups %s",
+                    this.bindingGroupName, illegal.toString()));
+        }
+
         if(! element.removeBindingGroup(bindingGroupName)) {
             throw new UpdateFailedException(String.format("binding-group (%s) does not exist", bindingGroupName));
         }
@@ -62,4 +84,29 @@ public class DomainSocketBindingGroupRemove extends AbstractDomainModelUpdate<Vo
         return null;
     }
 
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+
+        // Validate no servers are directly using this group
+        StringBuilder illegal = null;
+        for (ServerElement server : hostModel.getServers()) {
+            if (bindingGroupName.equals(server.getSocketBindingGroupName())) {
+                if (illegal == null) {
+                    illegal = new StringBuilder(server.getName());
+                }
+                else {
+                    illegal.append(", ");
+                    illegal.append(server.getName());
+                }
+            }
+        }
+
+        if (illegal != null) {
+            throw new UpdateFailedException(String.format("Socket binding group %s cannot " +
+                    "be removed as it is referenced by servers %s",
+                    this.bindingGroupName, illegal.toString()));
+        }
+
+        return Collections.emptyList();
+    }
 }

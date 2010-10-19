@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  *
@@ -94,5 +98,23 @@ public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, 
     @Override
     public AbstractServerModelUpdate<R> getServerModelUpdate() {
         return new ServerSubsystemUpdate<E, R>(update);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        if (getServerModelUpdate() == null) {
+            return Collections.emptyList();
+        }
+        else {
+            List<String> result = new ArrayList<String>();
+            for (String server : hostModel.getActiveServerNames()) {
+                String serverGroupName =  hostModel.getServer(server).getServerGroup();
+
+                if (profileName.equals(domainModel.getServerGroup(serverGroupName).getProfileName())) {
+                    result.add(server);
+                }
+            }
+            return result;
+        }
     }
 }

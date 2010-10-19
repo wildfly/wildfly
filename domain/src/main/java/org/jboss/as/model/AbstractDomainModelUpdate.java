@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.util.List;
+
 /**
  * An update to the domain model.
  *
@@ -56,4 +58,19 @@ public abstract class AbstractDomainModelUpdate<R> extends AbstractModelUpdate<D
     /** {@inheritDoc} */
     @Override
     public abstract AbstractServerModelUpdate<R> getServerModelUpdate();
+
+    /**
+     * Returns the {@link ServerElement#getName() server names} of the servers
+     * associated with the given host model that would be affected by this
+     * update.
+     *
+     * @param domainModel the domain model as it exists following
+     *       {@link #applyUpdate(AbstractModelElement application of this update)     *
+     * @param hostModel the host model
+     * @return the list of affected server names, or an empty set if no
+     *         servers are affected
+     * @throws UpdateFailedException if the state of the host model is such
+     *              that this update is incompatible
+     */
+    public abstract List<String> getAffectedServers(final DomainModel domainModel, final HostModel hostModel) throws UpdateFailedException;
 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * An update which modifies the host's system properties.
  *
@@ -57,5 +60,20 @@ public final class HostSystemPropertyUpdate extends AbstractHostModelUpdate<Void
     @Override
     public ServerSystemPropertyUpdate getServerModelUpdate() {
         return new ServerSystemPropertyUpdate(propertyUpdate);
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        String propertyName = propertyUpdate.getPropertyName();
+
+        List<String> activeServers = hostModel.getActiveServerNames();
+        // Remove any server that directly overrides the property
+        for (Iterator<String> it = activeServers.iterator(); it.hasNext();) {
+            ServerElement server = hostModel.getServer(it.next());
+            if (server.getSystemProperties().getPropertyNames().contains(propertyName)) {
+                it.remove();
+            }
+        }
+        return activeServers;
     }
 }

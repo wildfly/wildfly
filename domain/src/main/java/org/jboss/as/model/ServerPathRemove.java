@@ -36,10 +36,12 @@ public class ServerPathRemove extends AbstractServerModelUpdate<Void> {
     private final String name;
 
     public ServerPathRemove(String name) {
+        super(true, false);
         this.name = name;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(ServerModel element) throws UpdateFailedException {
         if(! element.removePath(name)) {
             throw new UpdateFailedException(String.format("path (%s) does not exist.", name));
@@ -47,6 +49,7 @@ public class ServerPathRemove extends AbstractServerModelUpdate<Void> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
         final PathElement element = original.getPath(name);
         if(element == null) {
@@ -56,6 +59,7 @@ public class ServerPathRemove extends AbstractServerModelUpdate<Void> {
         return new ServerPathAdd(update);
     }
 
+    @Override
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final ServiceController<?> controller = context.getServiceContainer().getService(AbstractPathService.pathNameOf(name));
         if(controller == null) {

@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 
 /**
@@ -62,6 +65,19 @@ public class DomainSocketBindingUpdate extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerSocketBindingUpdate(update);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        List<String> result = new ArrayList<String>();
+        for (String serverName : hostModel.getActiveServerNames()) {
+            ServerElement server = hostModel.getServer(serverName);
+            if (socketGroupName.equals(server.getSocketBindingGroupName()) ||
+                    socketGroupName.equals(domainModel.getServerGroup(server.getServerGroup()).getSocketBindingGroupName())) {
+                result.add(serverName);
+            }
+        }
+        return result;
     }
 
 }

@@ -211,6 +211,7 @@ public class DomainController implements Service<DomainController> {
 
         try {
             domainModel.update(update);
+            // FIXME persist!
         } catch (UpdateFailedException e) {
             return new DomainUpdateApplierResponse(e);
         }

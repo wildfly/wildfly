@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,5 +60,10 @@ public final class DomainSchemaLocationUpdate extends AbstractDomainModelUpdate<
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

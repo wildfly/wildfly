@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -56,6 +59,12 @@ public class DomainPathRemove extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathRemove(name);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        // requires a restart
+        return Collections.emptyList();
     }
 
 }

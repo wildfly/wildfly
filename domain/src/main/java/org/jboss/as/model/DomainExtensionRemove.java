@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -52,5 +55,10 @@ public final class DomainExtensionRemove extends AbstractDomainModelUpdate<Void>
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

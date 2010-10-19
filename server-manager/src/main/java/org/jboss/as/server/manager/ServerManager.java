@@ -593,7 +593,8 @@ public class ServerManager implements ShutdownListener {
      * @param domain The domain configuration
      */
     public void setDomain(final DomainModel domain) {
-        modelManager.setDomainModel(domain);
+        boolean localDC = getHostModel().getLocalDomainControllerElement() != null;
+        modelManager.setDomainModel(domain, localDC);
         synchronizeDeployments();
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {

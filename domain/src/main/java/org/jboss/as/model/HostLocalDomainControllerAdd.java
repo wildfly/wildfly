@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * An update which adds a {@link LocalDomainControllerElement} to a host element.
  *
@@ -57,5 +60,10 @@ public final class HostLocalDomainControllerAdd extends AbstractHostModelUpdate<
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        return Collections.emptyList();
     }
 }

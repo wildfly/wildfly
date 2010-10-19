@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Remove a subsystem from a domain profile.
  *
@@ -74,5 +78,23 @@ public final class DomainSubsystemRemove extends AbstractDomainModelUpdate<Void>
     @Override
     public ServerSubsystemRemove getServerModelUpdate() {
         return new ServerSubsystemRemove(subsystemRemove);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        if (getServerModelUpdate() == null) {
+            return Collections.emptyList();
+        }
+        else {
+            List<String> result = new ArrayList<String>();
+            for (String server : hostModel.getActiveServerNames()) {
+                String serverGroupName =  hostModel.getServer(server).getServerGroup();
+
+                if (profileName.equals(domainModel.getServerGroup(serverGroupName).getProfileName())) {
+                    result.add(server);
+                }
+            }
+            return result;
+        }
     }
 }

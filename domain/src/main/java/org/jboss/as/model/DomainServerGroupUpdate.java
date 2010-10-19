@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Update a {@link ServerGroupElement} within a {@link DomainModel}.
  *
@@ -80,5 +84,21 @@ public final class DomainServerGroupUpdate<R> extends AbstractDomainModelUpdate<
     public AbstractServerModelUpdate<R> getServerModelUpdate() {
         // FIXME hmmm
         return serverGroupUpdate.getServerModelUpdate();
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        if (getServerModelUpdate() == null) {
+            return Collections.emptyList();
+        }
+        else {
+            List<String> result = new ArrayList<String>();
+            for (String server : hostModel.getActiveServerNames()) {
+                if (serverGroupName.equals(hostModel.getServer(server).getServerGroup())) {
+                    result.add(server);
+                }
+            }
+            return result;
+        }
     }
 }

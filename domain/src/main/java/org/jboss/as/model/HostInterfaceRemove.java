@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.util.List;
+
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
 
@@ -61,6 +63,11 @@ public class HostInterfaceRemove extends AbstractHostModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceRemove(interfaceName);
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        return hostModel.getActiveServerNames();
     }
 
 }

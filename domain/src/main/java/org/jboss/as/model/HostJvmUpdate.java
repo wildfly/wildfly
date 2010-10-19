@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * An update which changes the name property on a host element.
  *
@@ -79,5 +82,10 @@ public final class HostJvmUpdate<R> extends AbstractHostModelUpdate<Void> {
         // JvmElement changes do not affect running servers; they are picked up by
         // ServerManager when it launches servers
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        return Collections.emptyList();
     }
 }

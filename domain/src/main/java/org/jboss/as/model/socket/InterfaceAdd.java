@@ -40,7 +40,6 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * A {@code InterfaceElement} update.
@@ -76,7 +75,12 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
         return name;
     }
 
+    public boolean isFullySpecified() {
+        return anyLocal || anyLocalV4 || anyLocalV6 || (interfaceCriteria != null && interfaceCriteria.size() > 0);
+    }
+
     /** {@inheritDoc} */
+    @Override
     public void applyUpdate(InterfaceElement element) throws UpdateFailedException {
         if(interfaceCriteria != null && interfaceCriteria.size() > 0) {
             for(AbstractInterfaceCriteriaElement<?> criteria : interfaceCriteria) {
@@ -89,6 +93,7 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractModelElementUpdate<InterfaceElement> getCompensatingUpdate(InterfaceElement original) {
         return null;
     }

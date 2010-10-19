@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Remove server group update.
  *
@@ -58,6 +61,27 @@ public class DomainServerGroupRemove extends AbstractDomainModelUpdate<Void> {
         // Basically should be none, but their should be validation that
         // group isn't used on a server before this update is applied
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        StringBuilder illegalServers = null;
+        for (ServerElement server : hostModel.getServers()) {
+            if (serverGroupName.equals(server.getServerGroup())) {
+                if (illegalServers == null) {
+                    illegalServers = new StringBuilder(server.getName());
+                }
+                else {
+                    illegalServers.append(", ");
+                    illegalServers.append(server.getName());
+                }
+            }
+        }
+
+        if (illegalServers != null) {
+            throw new UpdateFailedException(String.format("Cannot remove server group %s as it still has member servers %s", serverGroupName, illegalServers.toString()));
+        }
+        return Collections.emptyList();
     }
 
 }

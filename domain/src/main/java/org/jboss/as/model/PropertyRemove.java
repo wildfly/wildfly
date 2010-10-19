@@ -34,50 +34,36 @@ public final class PropertyRemove extends AbstractPropertyUpdate {
 
     private static final long serialVersionUID = 5040034824081445679L;
 
-    private final String name;
-
     /**
      * Construct a new instance.
      *
      * @param name the property name to remove
      */
     public PropertyRemove(final String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
-        this.name = name;
+        super(name);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
-        return new PropertyAdd(name, original.getProperty(name));
+        return new PropertyAdd(getPropertyName(), original.getProperty(getPropertyName()));
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final PropertiesElement element) throws UpdateFailedException {
-        element.removeProperty(name);
+        element.removeProperty(getPropertyName());
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final Properties properties) throws UpdateFailedException {
-        properties.remove(name);
+        properties.remove(getPropertyName());
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final Map<? super String, ? super String> map) {
-        map.remove(name);
-    }
-
-    /**
-     * Get the name of the property to remove.
-     *
-     * @return the property name
-     */
-    public String getName() {
-        return name;
+        map.remove(getPropertyName());
     }
 }

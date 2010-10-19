@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Remove a profile from the domain.
  *
@@ -53,10 +56,29 @@ public final class DomainProfileRemove extends AbstractDomainModelUpdate<Void> {
 
     @Override
     protected void applyUpdate(final DomainModel element) throws UpdateFailedException {
+        // Validate empty
         ProfileElement pe = element.getProfile(profileName);
         if (pe != null && (pe.getIncludedProfiles().size() > 0 || pe.getSubsystems().size() > 0)) {
             throw new UpdateFailedException("Profile '" + profileName + "' is not empty and cannot be removed");
         }
+        // Validate unused
+        StringBuilder illegal = null;
+        for (String serverGroupName : element.getServerGroupNames()) {
+            ServerGroupElement sge = element.getServerGroup(serverGroupName);
+            if (profileName.equals(sge.getName())) {
+                if (illegal == null) {
+                    illegal = new StringBuilder(sge.getName());
+                }
+                else {
+                    illegal.append(", ");
+                    illegal.append(sge.getName());
+                }
+            }
+        }
+        if (illegal != null) {
+            throw new UpdateFailedException(String.format("Profile %s cannot be removed as it is still used by server groups %s", profileName, illegal.toString()));
+        }
+
         element.removeProfile(profileName);
     }
 
@@ -68,5 +90,10 @@ public final class DomainProfileRemove extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

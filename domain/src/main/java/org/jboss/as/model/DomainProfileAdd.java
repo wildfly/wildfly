@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Add a profile to the domain.
  *
@@ -66,5 +69,10 @@ public final class DomainProfileAdd extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

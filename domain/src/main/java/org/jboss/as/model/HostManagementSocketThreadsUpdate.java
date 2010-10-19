@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * An update which changes a {@link ManagementElement}'s max-threads setting.
  *
@@ -63,5 +66,10 @@ public final class HostManagementSocketThreadsUpdate extends AbstractHostModelUp
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        return Collections.emptyList();
     }
 }

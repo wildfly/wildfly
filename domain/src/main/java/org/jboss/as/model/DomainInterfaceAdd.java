@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
 
@@ -60,6 +63,21 @@ public class DomainInterfaceAdd extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceAdd(delegate);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        if (!delegate.isFullySpecified()) {
+            // A host model update is required for pushing this to the server
+            return Collections.emptyList();
+        }
+        else if (hostModel.getInterface(delegate.getName()) != null) {
+            // Host already declared this interface and it takes precedence
+            return Collections.emptyList();
+        }
+        else {
+            return hostModel.getActiveServerNames();
+        }
     }
 
 }

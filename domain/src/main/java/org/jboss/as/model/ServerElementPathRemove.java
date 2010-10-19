@@ -25,7 +25,7 @@ package org.jboss.as.model;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerElementPathRemove extends AbstractModelElementUpdate<ServerElement> {
+public class ServerElementPathRemove extends AbstractModelUpdate<ServerElement, Void> {
 
     private static final long serialVersionUID = 5430076882310590299L;
     private final String name;
@@ -35,11 +35,13 @@ public class ServerElementPathRemove extends AbstractModelElementUpdate<ServerEl
     }
 
     /** {@inheritDoc} */
+    @Override
     public Class<ServerElement> getModelElementType() {
         return ServerElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(ServerElement element) throws UpdateFailedException {
         if(! element.removeInterface(name)) {
             throw new UpdateFailedException(String.format("path (%s) does not exist", name));
@@ -47,12 +49,18 @@ public class ServerElementPathRemove extends AbstractModelElementUpdate<ServerEl
     }
 
     /** {@inheritDoc} */
-    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(ServerElement original) {
+    @Override
+    public ServerElementPathAdd getCompensatingUpdate(ServerElement original) {
         final PathElement path = original.getPath(name);
         if(path == null) {
             return null;
         }
         return new ServerElementPathAdd(new PathElementUpdate(name, path.getPath(), path.getRelativeTo()));
+    }
+
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return new ServerPathRemove(name);
     }
 
 }

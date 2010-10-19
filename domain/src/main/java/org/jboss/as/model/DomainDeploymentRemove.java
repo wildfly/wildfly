@@ -22,7 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -83,5 +85,10 @@ public final class DomainDeploymentRemove extends AbstractDomainModelUpdate<Void
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

@@ -22,8 +22,13 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.model.socket.InterfaceAdd;
 import org.jboss.as.model.socket.InterfaceElement;
+import org.jboss.as.model.socket.SocketBindingElement;
+import org.jboss.as.model.socket.SocketBindingGroupElement;
 
 /**
  * Update removing a {@link InterfaceElement} from the {@link DomainModel}.
@@ -42,6 +47,38 @@ public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(DomainModel element) throws UpdateFailedException {
+        StringBuilder illegal = null;
+        for (String groupName : element.getSocketBindingGroupNames()) {
+            SocketBindingGroupElement sbge = element.getSocketBindingGroup(groupName);
+            boolean bad = false;
+            if (name.equals(sbge.getDefaultInterface())) {
+                bad = true;
+            }
+            else {
+                for (SocketBindingElement sbe : sbge.getSocketBindings()) {
+                    if (name.equals(sbe.getInterfaceName())) {
+                        bad = true;
+                        break;
+                    }
+                }
+            }
+
+            if (bad) {
+                if (illegal == null) {
+                    illegal = new StringBuilder(groupName);
+                }
+                else {
+                    illegal.append(", ");
+                    illegal.append(groupName);
+                }
+            }
+        }
+
+        if (illegal != null) {
+            throw new UpdateFailedException(String.format("Interface %s cannot " +
+                    "be removed as it is referenced by socket binding groups %s",
+                    this.name, illegal.toString()));
+        }
         if(!element.removeInterface(name)) {
             throw new UpdateFailedException("failed to remove network interface " + name);
         }
@@ -61,6 +98,12 @@ public class DomainInterfaceRemove extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerModelInterfaceRemove(name);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        // requires a restart
+        return Collections.emptyList();
     }
 
 }

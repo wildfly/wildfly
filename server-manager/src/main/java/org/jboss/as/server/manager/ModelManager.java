@@ -26,8 +26,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
@@ -35,11 +35,13 @@ import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
+import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * TODO add class javadoc for ModelManager.
+ * {@link ServerManager} component that is responsible for managing the ServerManager's
+ * {@link HostModel} and its copy of the {@link DomainModel}.
  *
  * @author Brian Stansberry
  */
@@ -47,6 +49,7 @@ public class ModelManager {
 
     private final File hostXml;
     private DomainModel domainModel;
+    private boolean localDomainController;
     private volatile HostModel hostModel;
 
     private final StandardElementReaderRegistrar extensionRegistrar;
@@ -78,19 +81,50 @@ public class ModelManager {
         return domainModel;
     }
 
-    void setDomainModel(final DomainModel model) {
+    void setDomainModel(final DomainModel model, final boolean localDomainController) {
         assert model != null : "model is null";
         this.domainModel = model;
+        this.localDomainController = localDomainController;
     }
 
     public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update) throws UpdateFailedException {
-        // FIXME applyDomainModelUpdate
-        throw new UpdateFailedException("applyDomainModelUpdate needs to be implemented");
+
+        // Only apply the update to the domainModel if we don't have a local
+        // DC that's already done it
+        if (!localDomainController) {
+            domainModel.update(update);
+        }
+
+        List<String> serverNames = update.getAffectedServers(domainModel, getHostModel());
+        if (serverNames.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<ServerIdentity> ids = new ArrayList<ServerIdentity>(serverNames.size());
+        String hostName = hostModel.getName();
+        for (String server : serverNames) {
+            ServerElement se = hostModel.getServer(server);
+            ids.add(new ServerIdentity(hostName, se.getServerGroup(), server));
+        }
+        return ids;
     }
 
     public List<ServerIdentity> applyHostModelUpdate(AbstractHostModelUpdate<?> update) throws UpdateFailedException {
-        // FIXME applyHostModelUpdate
-        throw new UpdateFailedException("applyHostModelUpdate needs to be implemented");
+
+        getHostModel().update(update);
+
+        // FIXME persist host.xml
+
+        List<String> serverNames = update.getAffectedServers(hostModel);
+        if (serverNames.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<ServerIdentity> ids = new ArrayList<ServerIdentity>(serverNames.size());
+        String hostName = hostModel.getName();
+        for (String server : serverNames) {
+            ServerElement se = hostModel.getServer(server);
+            ids.add(new ServerIdentity(hostName, se.getServerGroup(), server));
+        }
+        return ids;
     }
 
     private HostModel parseHostXml() {

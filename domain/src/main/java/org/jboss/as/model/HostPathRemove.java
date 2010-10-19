@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -56,6 +59,12 @@ public class HostPathRemove extends AbstractHostModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathRemove(name);
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        // requires a restart
+        return Collections.emptyList();
     }
 
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupUpdate;
 
@@ -56,8 +58,12 @@ public class DomainSocketBindingGroupAdd extends AbstractDomainModelUpdate<Void>
     /** {@inheritDoc} */
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
-        // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 
 }

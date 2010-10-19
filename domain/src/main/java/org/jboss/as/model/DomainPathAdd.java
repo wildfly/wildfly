@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -57,6 +61,26 @@ public class DomainPathAdd extends AbstractDomainModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathAdd(update);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        String pathName = update.getName();
+        if (hostModel.getPath(pathName) != null) {
+            // This path is overridden on host and thus on all servers,
+            // so no servers are affected by this change
+            return Collections.emptyList();
+        }
+
+        List<String> activeServers = hostModel.getActiveServerNames();
+        // Remove any server that directly overrides the path
+        for (Iterator<String> it = activeServers.iterator(); it.hasNext();) {
+            ServerElement server = hostModel.getServer(it.next());
+            if (server.getPath(pathName) != null) {
+                it.remove();
+            }
+        }
+        return activeServers;
     }
 
 }

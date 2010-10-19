@@ -25,7 +25,7 @@ package org.jboss.as.model;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerElementPathAdd extends AbstractModelElementUpdate<ServerElement> {
+public class ServerElementPathAdd extends AbstractModelUpdate<ServerElement, Void> {
 
     private static final long serialVersionUID = -24395835360343152L;
     private final PathElementUpdate update;
@@ -41,11 +41,13 @@ public class ServerElementPathAdd extends AbstractModelElementUpdate<ServerEleme
     }
 
     /** {@inheritDoc} */
+    @Override
     public Class<ServerElement> getModelElementType() {
         return ServerElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void applyUpdate(ServerElement element) throws UpdateFailedException {
         final PathElement path = element.addPath(update.getName());
         if(path == null) {
@@ -55,8 +57,14 @@ public class ServerElementPathAdd extends AbstractModelElementUpdate<ServerEleme
     }
 
     /** {@inheritDoc} */
-    public AbstractModelElementUpdate<ServerElement> getCompensatingUpdate(ServerElement original) {
+    @Override
+    public ServerElementPathRemove getCompensatingUpdate(ServerElement original) {
         return new ServerElementPathRemove(update.getName());
+    }
+
+    @Override
+    protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
+        return new ServerPathAdd(update);
     }
 
 }

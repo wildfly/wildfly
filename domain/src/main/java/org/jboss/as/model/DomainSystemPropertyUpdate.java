@@ -22,6 +22,10 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * An update which modifies the domain's system properties.
  *
@@ -56,5 +60,32 @@ public final class DomainSystemPropertyUpdate extends AbstractDomainModelUpdate<
     @Override
     public ServerSystemPropertyUpdate getServerModelUpdate() {
         return new ServerSystemPropertyUpdate(propertyUpdate);
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        String propertyName = propertyUpdate.getPropertyName();
+        if (hostModel.getSystemProperties().getPropertyNames().contains(propertyName)) {
+            // This property is overridden on host and thus on all servers,
+            // so no servers are affected by this change
+            return Collections.emptyList();
+        }
+
+        List<String> activeServers = hostModel.getActiveServerNames();
+        // Remove any server that directly overrides the property or whose
+        // server group overrides the property
+        for (Iterator<String> it = activeServers.iterator(); it.hasNext();) {
+            ServerElement server = hostModel.getServer(it.next());
+            if (server.getSystemProperties().getPropertyNames().contains(propertyName)) {
+                it.remove();
+            }
+            else {
+                ServerGroupElement sge = domainModel.getServerGroup(server.getServerGroup());
+                if (sge.getSystemProperties().getPropertyNames().contains(propertyName)) {
+                    it.remove();
+                }
+            }
+        }
+        return activeServers;
     }
 }

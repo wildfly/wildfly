@@ -34,7 +34,6 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
 
     private static final long serialVersionUID = 5040034824081445679L;
 
-    private final String name;
     private final String value;
 
     /**
@@ -44,45 +43,32 @@ public final class PropertyAdd extends AbstractPropertyUpdate {
      * @param value the property value
      */
     public PropertyAdd(final String name, final String value) {
-
-        if (name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
-        this.name = name;
+        super(name);
         this.value = value;
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final PropertiesElement element) {
-        element.addProperty(name, value);
+        element.addProperty(getPropertyName(), value);
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final Properties properties) throws UpdateFailedException {
-        properties.setProperty(name, value);
+        properties.setProperty(getPropertyName(), value);
     }
 
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(final Map<? super String, ? super String> map) {
-        map.put(name, value);
+        map.put(getPropertyName(), value);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractPropertyUpdate getCompensatingUpdate(final PropertiesElement original) {
-        return new PropertyRemove(name);
-    }
-
-    /**
-     * Get the property name to be added.
-     *
-     * @return the property name
-     */
-    public String getName() {
-        return name;
+        return new PropertyRemove(getPropertyName());
     }
 
     /**

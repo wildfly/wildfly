@@ -33,19 +33,31 @@ import java.util.Properties;
 public abstract class AbstractPropertyUpdate extends AbstractModelElementUpdate<PropertiesElement> {
 
     private static final long serialVersionUID = -988127260524571932L;
+    private final String name;
 
     /**
      * Construct a new instance.
      */
-    protected AbstractPropertyUpdate() {
+    protected AbstractPropertyUpdate(String name) {
+
+        if (name == null) {
+            throw new IllegalArgumentException("name is null");
+        }
+        this.name = name;
+    }
+
+    public String getPropertyName() {
+        return name;
     }
 
     /** {@inheritDoc} */
+    @Override
     public final Class<PropertiesElement> getModelElementType() {
         return PropertiesElement.class;
     }
 
     /** {@inheritDoc} */
+    @Override
     protected abstract void applyUpdate(PropertiesElement element) throws UpdateFailedException;
 
     /**
@@ -64,5 +76,6 @@ public abstract class AbstractPropertyUpdate extends AbstractModelElementUpdate<
     protected abstract void applyUpdate(Map<? super String, ? super String> map);
 
     /** {@inheritDoc} */
+    @Override
     public abstract AbstractPropertyUpdate getCompensatingUpdate(PropertiesElement original);
 }

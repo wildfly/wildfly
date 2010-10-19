@@ -139,6 +139,12 @@ public final class DomainModel extends AbstractModel<DomainModel> {
         return paths.get(name);
     }
 
+    public Set<String> getSocketBindingGroupNames() {
+        synchronized (bindingGroups) {
+            return new HashSet<String>(bindingGroups.keySet());
+        }
+    }
+
     /**
      * Gets the socket binding group configuration for the group with the given
      * <code>name</code>.

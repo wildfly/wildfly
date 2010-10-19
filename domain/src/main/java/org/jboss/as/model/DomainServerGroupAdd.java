@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry
@@ -55,5 +58,10 @@ public final class DomainServerGroupAdd extends AbstractDomainModelUpdate<Void> 
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return null;
+    }
+
+    @Override
+    public List<String> getAffectedServers(DomainModel domainModel, HostModel hostModel) throws UpdateFailedException {
+        return Collections.emptyList();
     }
 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.model;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -60,6 +63,20 @@ public class HostPathAdd extends AbstractHostModelUpdate<Void> {
     @Override
     public AbstractServerModelUpdate<Void> getServerModelUpdate() {
         return new ServerPathAdd(update);
+    }
+
+    @Override
+    public List<String> getAffectedServers(HostModel hostModel) {
+        String pathName = update.getName();
+        List<String> activeServers = hostModel.getActiveServerNames();
+        // Remove any server that directly overrides the path
+        for (Iterator<String> it = activeServers.iterator(); it.hasNext();) {
+            ServerElement server = hostModel.getServer(it.next());
+            if (server.getPath(pathName) != null) {
+                it.remove();
+            }
+        }
+        return activeServers;
     }
 
 }
