@@ -169,7 +169,11 @@ public class JBossContextConfig extends ContextConfig {
     }
 
     protected void defaultWebConfig() {
-        // FIXME: Default web config
+        JBossWebMetaData sharedJBossWebMetaData = new JBossWebMetaData();
+        final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        // FIXME: Default jboss-web.xml config
+        sharedJBossWebMetaData.merge(null, warMetaData.getSharedWebMetaData());
+        processWebMetaData(sharedJBossWebMetaData);
     }
 
     protected void processWebMetaData(JBossWebMetaData metaData) {

@@ -57,7 +57,7 @@ class WebDeploymentService implements Service<Context> {
         } catch (LifecycleException e) {
             throw new StartException("failed to start context", e);
         }
-        Logger.getLogger("org.jboss.web").info("starting context " + (System.currentTimeMillis() - time));
+        Logger.getLogger("org.jboss.web").info("starting context " + context.getName() + ": " + (System.currentTimeMillis() - time));
         /*
          * Add security association valve after the authorization valves so that the authenticated user may be associated
          * with the request thread/session.
