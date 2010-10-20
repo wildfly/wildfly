@@ -307,7 +307,12 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
     private DeploymentPlanBuilder scanDirectory(File directory, DeploymentPlanBuilder builder, Map<String, File> foundDeployed, Set<String> newlyAdded) {
 
         //TODO externalize config of filter?
-        for (File child : directory.listFiles(filter)) {
+        File[] children = directory.listFiles(filter);
+        if (children == null) {
+            return builder;
+        }
+
+        for (File child : children) {
 
             String fileName = child.getName();
 
