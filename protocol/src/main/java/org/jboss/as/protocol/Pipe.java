@@ -77,6 +77,7 @@ final class Pipe {
                             return -1;
                         }
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new InterruptedIOException();
                     }
                 }
@@ -104,10 +105,11 @@ final class Pipe {
                 while ((size = Pipe.this.size) == 0) {
                     try {
                         lock.wait();
-                        if (writeClosed && size == 0) {
+                        if (writeClosed && (size = Pipe.this.size) == 0) {
                             return -1;
                         }
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new InterruptedIOException();
                     }
                 }
@@ -135,7 +137,7 @@ final class Pipe {
                 }
                 tail += cnt;
                 size -= cnt;
-                Pipe.this.tail = tail > bufLen ? tail - bufLen : tail;
+                Pipe.this.tail = tail >= bufLen ? tail - bufLen : tail;
                 Pipe.this.size = size;
                 lock.notifyAll();
                 return cnt;
@@ -170,12 +172,13 @@ final class Pipe {
                             throw new IOException("Stream closed");
                         }
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new InterruptedIOException();
                     }
                 }
                 final int tail = Pipe.this.tail;
                 buffer[tail] = (byte) b;
-                Pipe.this.tail = tail == bufLen - 1 ? 0 : tail + 1;
+                size ++;
                 lock.notifyAll();
             }
         }
@@ -200,6 +203,7 @@ final class Pipe {
                                 throw new IOException("Stream closed");
                             }
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                             final InterruptedIOException iioe = new InterruptedIOException();
                             iioe.bytesTransferred = len - remaining;
                             throw iioe;
@@ -207,7 +211,7 @@ final class Pipe {
                     }
                     tail = Pipe.this.tail;
                     int startPos = tail + size;
-                    if (startPos > bufLen) {
+                    if (startPos >= bufLen) {
                         // read wraps, write doesn't
                         startPos -= bufLen;
                         cnt = Math.min(remaining, bufLen - size);
