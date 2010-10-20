@@ -81,9 +81,11 @@ final class Pipe {
                     }
                 }
                 lock.notifyAll();
+                int tail= Pipe.this.tail;
                 try {
                     return buffer[tail++] & 0xff;
                 } finally {
+                    Pipe.this.tail = tail == buffer.length ? 0 : tail;
                     size--;
                 }
             }
