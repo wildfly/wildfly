@@ -249,12 +249,16 @@ final class ManagedProcess {
 
         public void run() {
             final InputStream source = this.source;
+            final String processName = ManagedProcess.this.processName;
             try {
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(source)));
                 final OutputStreamWriter writer = new OutputStreamWriter(target);
                 String s;
                 while ((s = reader.readLine()) != null) {
                     synchronized (target) {
+                        writer.write('[');
+                        writer.write(processName);
+                        writer.write("] ");
                         writer.write(s);
                         writer.write('\n');
                         writer.flush();
