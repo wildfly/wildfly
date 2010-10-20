@@ -226,10 +226,9 @@ public final class ServerElement extends AbstractModelElement<ServerElement> {
             }
         }
 
-        if (systemProperties != null) {
+        if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
-            streamWriter.writeEndElement();
         }
 
         if (jvm != null) {

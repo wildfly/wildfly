@@ -111,7 +111,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
             }
             streamWriter.writeEndElement();
         }
-        if (properties != null) {
+        if (properties != null && properties.size() > 0) {
             streamWriter.writeStartElement("properties");
             properties.writeContent(streamWriter);
         }

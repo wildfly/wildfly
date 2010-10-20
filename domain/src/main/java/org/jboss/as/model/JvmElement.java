@@ -414,45 +414,39 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         }
 
         if (heapSize != null || maxHeap != null) {
-            streamWriter.writeStartElement(Element.HEAP.getLocalName());
+            streamWriter.writeEmptyElement(Element.HEAP.getLocalName());
             if (heapSize != null)
                 streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), heapSize);
             if (maxHeap != null)
                 streamWriter.writeAttribute(Attribute.MAX_SIZE.getLocalName(), maxHeap);
-            streamWriter.writeEndElement();
         }
 
         if (permgenSize != null || maxPermgen != null) {
-            streamWriter.writeStartElement(Element.PERMGEN.getLocalName());
+            streamWriter.writeEmptyElement(Element.PERMGEN.getLocalName());
             if (permgenSize != null)
                 streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), permgenSize);
             if (maxPermgen != null)
                 streamWriter.writeAttribute(Attribute.MAX_SIZE.getLocalName(), permgenSize);
-            streamWriter.writeEndElement();
         }
 
         if (stack != null) {
-            streamWriter.writeStartElement(Element.STACK.getLocalName());
+            streamWriter.writeEmptyElement(Element.STACK.getLocalName());
             streamWriter.writeAttribute(Attribute.SIZE.getLocalName(), stack);
-            streamWriter.writeEndElement();
         }
 
         if (agentLib != null) {
-            streamWriter.writeStartElement(Element.AGENT_LIB.getLocalName());
+            streamWriter.writeEmptyElement(Element.AGENT_LIB.getLocalName());
             streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), agentLib);
-            streamWriter.writeEndElement();
         }
 
         if (agentPath != null) {
-            streamWriter.writeStartElement(Element.AGENT_PATH.getLocalName());
+            streamWriter.writeEmptyElement(Element.AGENT_PATH.getLocalName());
             streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), agentPath);
-            streamWriter.writeEndElement();
         }
 
         if (javaagent != null) {
-            streamWriter.writeStartElement(Element.JAVA_AGENT.getLocalName());
+            streamWriter.writeEmptyElement(Element.JAVA_AGENT.getLocalName());
             streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), javaagent);
-            streamWriter.writeEndElement();
         }
 
         if (environmentVariables != null && environmentVariables.size() > 0) {
@@ -464,6 +458,8 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
         }
+
+        streamWriter.writeEndElement();
     }
 
     private void parseMinMax(XMLExtendedStreamReader reader, MinMaxSetter setter) throws XMLStreamException {

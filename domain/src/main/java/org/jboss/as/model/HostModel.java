@@ -237,10 +237,9 @@ public final class HostModel extends AbstractModel<HostModel> {
             }
         }
 
-        if (systemProperties != null) {
+        if (systemProperties != null && systemProperties.size() > 0) {
             streamWriter.writeStartElement(Element.SYSTEM_PROPERTIES.getLocalName());
             systemProperties.writeContent(streamWriter);
-            streamWriter.writeEndElement();
         }
 
         streamWriter.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
@@ -277,7 +276,6 @@ public final class HostModel extends AbstractModel<HostModel> {
             for (ServerElement server : servers.values()) {
                 streamWriter.writeStartElement(Element.SERVER.getLocalName());
                 server.writeContent(streamWriter);
-                streamWriter.writeEndElement();
             }
             streamWriter.writeEndElement();
         }

@@ -172,7 +172,9 @@ public final class PropertiesElement extends AbstractModelElement<PropertiesElem
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 streamWriter.writeEmptyElement(propertyType.getLocalName());
                 streamWriter.writeAttribute(Attribute.NAME.getLocalName(), entry.getKey());
-                streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue());
+                if (!allowNullValue || entry.getValue() != null) {
+                    streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue());
+                }
             }
         }
         streamWriter.writeEndElement();
