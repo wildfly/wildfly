@@ -98,6 +98,8 @@
                 <modules>
                     <module identifier="org.osgi.compendium"/>
                     <module identifier="org.jboss.osgi.common" start="true"/>
+                    <module identifier="org.apache.aries.util"/>
+                    <module identifier="org.apache.aries.jmx" start="true"/>
                 </modules>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:1.0">
@@ -230,6 +232,7 @@
             <socket-binding name="jndi" port="1099"/>
             <socket-binding name="http" port="8080"/>
             <socket-binding name="https" port="8447"/>
+            <socket-binding name="osgi-http" port="8090"/>
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>

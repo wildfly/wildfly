@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
+import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
@@ -62,6 +63,7 @@ import org.jboss.osgi.framework.plugin.ModuleManagerPlugin.ModuleSpecCreationHoo
  * Service responsible for creating and managing the life-cycle of the OSGi {@link BundleManager}.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="david@redhat.com">David Bosschaert</a>
  * @since 11-Sep-2010
  */
 public class BundleManagerService implements Service<BundleManager> {
@@ -70,6 +72,7 @@ public class BundleManagerService implements Service<BundleManager> {
 
     private InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();
     private InjectedValue<ClassifyingModuleLoaderService> injectedModuleLoader = new InjectedValue<ClassifyingModuleLoaderService>();
+    private InjectedValue<SocketBinding> osgiHttpServerPortBinding = new InjectedValue<SocketBinding>();
     private Injector<ClassifyingModuleLoaderService> osgiModuleLoaderInjector;
     private BundleManager bundleManager;
 
@@ -78,6 +81,7 @@ public class BundleManagerService implements Service<BundleManager> {
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
         serviceBuilder.setInitialMode(initialMode);
     }
 
@@ -97,6 +101,9 @@ public class BundleManagerService implements Service<BundleManager> {
             props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
             props.put(ModuleLoader.class.getName(), classifyingModuleLoader);
             props.put(ServiceContainer.class.getName(), container);
+            // david: This is a temporary workaround to configure the HTTP subsystem in OSGi
+            // this will go away once the HTTP subsystem from AS implements the OSGi HTTP Service.
+            props.put("org.osgi.service.http.port", "" + osgiHttpServerPortBinding.getValue().getSocketAddress().getPort());
 
             // Get {@link ModuleLoader} for the OSGi layer
             bundleManager = new BundleManager(props);

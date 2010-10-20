@@ -158,6 +158,14 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="org.apache.aries.jmx">
+            <maven-resource group="org.apache.aries.jmx" artifact="org.apache.aries.jmx"/>
+        </module-def>
+
+        <module-def name="org.apache.aries.util">
+            <maven-resource group="org.apache.aries" artifact="org.apache.aries.util"/>
+        </module-def>
+
     	<module-def name="org.apache.commons.logging"/>
     	
     	<module-def name="org.apache.log4j">

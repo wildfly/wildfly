@@ -236,6 +236,12 @@
             </dependency>
             
             <dependency>
+                <groupId>org.apache.aries</groupId>
+                <artifactId>org.apache.aries.util</artifactId>
+                <version>${version.org.apache.aries.jmx}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.log</artifactId>
                 <version>${version.org.apache.felix.log}</version>
