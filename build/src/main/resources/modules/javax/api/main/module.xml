@@ -27,7 +27,6 @@
     <dependencies>
         <module name="system" export="true">
             <exports>
-                <include path="javax/**"/>
                 <exclude path="javax/activation/**"/>
                 <exclude path="javax/annotation/**"/>
                 <exclude path="javax/jws/**"/>
@@ -35,6 +34,7 @@
                 <exclude path="javax/xml/bind/**"/>
                 <exclude path="javax/xml/soap/**"/>
                 <exclude path="javax/xml/ws/**"/>
+                <include path="javax/**"/>
             </exports>
         </module>
     </dependencies>
