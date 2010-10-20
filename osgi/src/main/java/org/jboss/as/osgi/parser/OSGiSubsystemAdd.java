@@ -73,7 +73,7 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         Configuration config = Configuration.addService(batchBuilder, subsystemState);
         BundleManagerService.addService(batchBuilder, config);
-        FrameworkService.addService(batchBuilder);
+        FrameworkService.addService(batchBuilder, config);
         PackageAdminService.addService(batchBuilder);
         new OSGiDeploymentActivator().activate(batchBuilder);
     }

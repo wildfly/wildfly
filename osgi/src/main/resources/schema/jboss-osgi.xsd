@@ -39,11 +39,23 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
+            <xs:element name="activation" type="activationType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
             <xs:element name="modules" type="modulesType" minOccurs="0"/>
         </xs:all>
     </xs:complexType>
 
+    <xs:complexType name="activationType">
+        <xs:attribute name="policy" type="activationPolicyType" use="required"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="activationPolicyType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="eager"/>
+            <xs:enumeration value="lazy"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
     <xs:complexType name="modulesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="module" type="moduleType"/>

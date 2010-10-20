@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.osgi.parser.OSGiSubsystemState;
+import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -81,6 +82,10 @@ public class Configuration implements Service<Configuration> {
 
     private Configuration(final OSGiSubsystemState state) {
         this.subsystemState = state;
+    }
+
+    public Activation getActivationPolicy() {
+        return subsystemState.getActivationPolicy();
     }
 
     public Map<String, Object> getProperties() {

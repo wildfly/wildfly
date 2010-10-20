@@ -45,6 +45,11 @@ public final class OSGiSubsystemState implements Serializable {
 
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
     private final List<OSGiModule> modules = new ArrayList<OSGiModule>();
+    private Activation activationPolicy = Activation.LAZY;
+
+    public enum Activation {
+        EAGER, LAZY
+    }
 
     public Map<String, Object> getProperties() {
         return Collections.unmodifiableMap(properties);
@@ -60,6 +65,14 @@ public final class OSGiSubsystemState implements Serializable {
 
     void addModule(OSGiModule module) {
         modules.add(module);
+    }
+
+    public Activation getActivationPolicy() {
+        return activationPolicy;
+    }
+
+    void setActivation(Activation activation) {
+        this.activationPolicy = activation;
     }
 
     boolean isEmpty() {

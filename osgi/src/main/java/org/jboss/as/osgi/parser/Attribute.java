@@ -35,6 +35,7 @@ public enum Attribute {
     UNKNOWN(null),
     IDENTIFIER("identifier"),
     NAME("name"),
+    POLICY("policy"),
     START("start"),
     VALUE("value"),
     ;

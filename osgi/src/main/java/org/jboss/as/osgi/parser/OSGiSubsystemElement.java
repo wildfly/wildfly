@@ -32,6 +32,7 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.spi.NotImplementedException;
@@ -89,6 +90,11 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         synchronized (this) {
+            Activation policy = subsystemState.getActivationPolicy();
+            streamWriter.writeStartElement(Element.ACTIVATION.getLocalName());
+            streamWriter.writeAttribute(Attribute.POLICY.getLocalName(), policy.name().toLowerCase());
+            streamWriter.writeEndElement();
+
             Map<String, Object> properties = subsystemState.getProperties();
             if (properties.isEmpty() == false) {
                 streamWriter.writeStartElement(Element.PROPERTIES.getLocalName());
@@ -100,6 +106,7 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
                 }
                 streamWriter.writeEndElement();
             }
+
             List<OSGiModule> modules = subsystemState.getModules();
             if (modules.isEmpty() == false) {
                 streamWriter.writeStartElement(Element.MODULES.getLocalName());

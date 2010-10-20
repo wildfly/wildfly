@@ -35,6 +35,7 @@ import org.jboss.as.ExtensionContext.SubsystemConfiguration;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.ParseResult;
 import org.jboss.as.model.ParseUtils;
+import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.staxmapper.XMLElementReader;
@@ -65,12 +66,16 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
                 case OSGI_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
+                        case ACTIVATION: {
+                            parseActivationElement(reader, subsystemState);
+                            break;
+                        }
                         case PROPERTIES: {
-                            parseOSGiPropertiesElement(reader, subsystemState);
+                            parsePropertiesElement(reader, subsystemState);
                             break;
                         }
                         case MODULES: {
-                            parseOSGiModulesElement(reader, subsystemState);
+                            parseModulesElement(reader, subsystemState);
                             break;
                         }
                         default:
@@ -89,7 +94,42 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
         result.setResult(new SubsystemConfiguration<OSGiSubsystemElement>(add, updates));
     }
 
-    void parseOSGiPropertiesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState) throws XMLStreamException {
+    private void parseActivationElement(XMLExtendedStreamReader reader, OSGiSubsystemState subsystemState) throws XMLStreamException {
+
+        switch (Namespace.forUri(reader.getNamespaceURI())) {
+            case OSGI_1_0: {
+                    // Handle attributes
+                    Activation value = null;
+                    int count = reader.getAttributeCount();
+                    for (int i = 0; i < count; i++) {
+                        final String attrValue = reader.getAttributeValue(i);
+                        if (reader.getAttributeNamespace(i) != null) {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
+                        } else {
+                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                            switch (attribute) {
+                                case POLICY: {
+                                    value = Activation.valueOf(attrValue.toUpperCase());
+                                    break;
+                                }
+                                default:
+                                    throw ParseUtils.unexpectedAttribute(reader, i);
+                            }
+                        }
+                    }
+                    if (value == null)
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.POLICY));
+
+                    subsystemState.setActivation(value);
+                    ParseUtils.requireNoContent(reader);
+                    break;
+            }
+            default:
+                throw ParseUtils.unexpectedElement(reader);
+        }
+    }
+
+    void parsePropertiesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState) throws XMLStreamException {
 
         // Handle attributes
         ParseUtils.requireNoAttributes(reader);
@@ -146,7 +186,7 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
         }
     }
 
-    void parseOSGiModulesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState) throws XMLStreamException {
+    void parseModulesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState) throws XMLStreamException {
 
         // Handle attributes
         ParseUtils.requireNoAttributes(reader);
