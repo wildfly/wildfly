@@ -39,6 +39,12 @@ import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -78,6 +84,12 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             final ClassPathEntry[] entries = createResourceRoots(deploymentRoot, mountHandle);
             final DeploymentStructure structure = new DeploymentStructure(entries);
             context.putAttachment(DeploymentStructure.ATTACHMENT_KEY, structure);
+
+            final BatchBuilder builder = context.getBatchBuilder();
+            final ServiceName sName = ServiceName.JBOSS.append("deployment", context.getName(), "structure");
+            builder.addService(sName, new DeploymentStructureService(structure));
+            builder.addDependency(sName);
+
         } catch(IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -124,12 +136,42 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             for(final VirtualFile archive : archives) {
                 try {
                     final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
-                    entries.add(new ClassPathEntry(archive, new MountHandle(closable)));
+                    entries.add(new ClassPathEntry(archive, closable));
                 } catch (IOException e) {
                     throw new DeploymentUnitProcessingException("failed to process " + archive, e);
                 }
             }
         }
+    }
+
+
+    static class DeploymentStructureService implements Service<Void> {
+        final DeploymentStructure structure;
+        public DeploymentStructureService(DeploymentStructure structure) {
+            this.structure = structure;
+        }
+
+        /** {@inheritDoc} */
+        public Void getValue() throws IllegalStateException {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        public void start(StartContext context) throws StartException {
+            //
+        }
+
+        /** {@inheritDoc} */
+        public void stop(StopContext context) {
+            for(final ClassPathEntry entry : structure.getEntries()) {
+                try {
+                    entry.close();
+                } catch(IOException ignore) {
+                    //
+                }
+            }
+        }
+
     }
 
 }

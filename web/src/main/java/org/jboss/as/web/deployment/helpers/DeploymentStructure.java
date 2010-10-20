@@ -22,6 +22,9 @@
 
 package org.jboss.as.web.deployment.helpers;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.vfs.VirtualFile;
@@ -44,19 +47,28 @@ public class DeploymentStructure {
         return entries;
     }
 
-    public static class ClassPathEntry {
+    public static class ClassPathEntry implements Closeable {
         private final String name;
         private final VirtualFile root;
+        private final Closeable closeable;
         private final MountHandle mountHandle;
 
-        public ClassPathEntry(final VirtualFile root, final MountHandle mountHandle) {
-            this(root.getName(), root, mountHandle);
+        public ClassPathEntry(final VirtualFile root, final Closeable closeable) {
+            this(root.getName(), root, closeable);
         }
 
-        public ClassPathEntry(final String name, final VirtualFile root, final MountHandle mountHandle) {
+        public ClassPathEntry(final String name, final VirtualFile root, final Closeable closeable) {
             this.name = name;
             this.root = root;
-            this.mountHandle = mountHandle;
+            this.closeable = closeable;
+            this.mountHandle = new MountHandle(closeable);
+        }
+
+        public ClassPathEntry(final String name, final VirtualFile root, final MountHandle handle) {
+            this.name = name;
+            this.root = root;
+            this.closeable = null;
+            this.mountHandle = new MountHandle(null);
         }
 
         public String getName() {
@@ -69,6 +81,13 @@ public class DeploymentStructure {
 
         public MountHandle getMountHandle() {
             return mountHandle;
+        }
+
+        /** {@inheritDoc} */
+        public void close() throws IOException {
+            if(closeable != null) {
+                closeable.close();
+            }
         }
     }
 
