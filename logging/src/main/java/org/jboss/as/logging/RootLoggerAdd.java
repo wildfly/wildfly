@@ -49,7 +49,7 @@ public class RootLoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
         final RootLoggerService service = new RootLoggerService();
         service.setLevel(level);
         final BatchServiceBuilder<Logger> builder = updateContext.getBatchBuilder().addService(LogServices.ROOT_LOGGER, service);
-        builder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        builder.setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     /** {@inheritDoc} */

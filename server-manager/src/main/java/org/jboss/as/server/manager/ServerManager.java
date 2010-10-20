@@ -465,7 +465,7 @@ public class ServerManager {
                     log.error("Failed to register with domain controller.", reason);
                 }
             })
-            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+            .setInitialMode(ServiceController.Mode.ACTIVE);
 
         HostModel hostConfig = getHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
@@ -534,7 +534,7 @@ public class ServerManager {
             .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
-            .setInitialMode(ServiceController.Mode.IMMEDIATE);
+            .setInitialMode(ServiceController.Mode.ACTIVE);
 
         //  Add the server manager operation handler
         final ManagementOperationHandlerService<ServerManagerOperationHandler> operationHandlerService

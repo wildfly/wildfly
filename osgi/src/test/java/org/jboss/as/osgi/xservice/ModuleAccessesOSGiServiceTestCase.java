@@ -206,7 +206,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
                 Object service = loadClass(moduleId, EchoInvokerService.class.getName()).newInstance();
                 BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoInvokerService.SERVICE_NAME, (Service<?>) service);
                 serviceBuilder.addDependency(FrameworkService.SERVICE_NAME);
-                serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+                serviceBuilder.setInitialMode(Mode.ACTIVE);
             }
         };
         runWithLatchedBatch(work);

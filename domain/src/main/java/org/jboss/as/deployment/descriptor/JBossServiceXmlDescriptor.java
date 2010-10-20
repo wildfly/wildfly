@@ -40,7 +40,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
     public static final AttachmentKey<JBossServiceXmlDescriptor> ATTACHMENT_KEY = AttachmentKey.create(JBossServiceXmlDescriptor.class);
 
-    private ControllerMode controllerMode = ControllerMode.AUTOMATIC;
+    private ControllerMode controllerMode = ControllerMode.PASSIVE;
     private List<JBossServiceConfig> serviceConfigs;
 
     public List<JBossServiceConfig> getServiceConfigs() {
@@ -60,7 +60,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
     }
 
     public static enum ControllerMode {
-         IMMEDIATE("immediate"), AUTOMATIC("automatic"), ON_DEMAND("on demand"), NEVER("never");
+         ACTIVE("active"), PASSIVE("passive"), ON_DEMAND("on demand"), NEVER("never");
 
         private static final Map<String, ControllerMode> MAP = new HashMap<String, ControllerMode>();
 
@@ -78,7 +78,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
         static ControllerMode of(String value) {
             final ControllerMode controllerMode = MAP.get(value);
-            return controllerMode == null ? AUTOMATIC : controllerMode;
+            return controllerMode == null ? PASSIVE : controllerMode;
         }
     }
 }

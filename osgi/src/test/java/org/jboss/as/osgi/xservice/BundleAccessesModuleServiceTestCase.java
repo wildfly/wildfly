@@ -189,7 +189,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
                 BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoTargetService.SERVICE_NAME, (Service<?>) service);
                 // Add the alias that the OSGi layer can use to lookup the service
                 serviceBuilder.addAliases(ServiceName.of(Constants.JBOSGI_PREFIX, Echo.class.getName()));
-                serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+                serviceBuilder.setInitialMode(Mode.ACTIVE);
             }
         };
         runWithLatchedBatch(work);

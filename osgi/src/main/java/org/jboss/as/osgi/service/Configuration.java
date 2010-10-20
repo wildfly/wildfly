@@ -67,7 +67,7 @@ public class Configuration implements Service<Configuration> {
         Configuration config = new Configuration(state);
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, config);
         serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, config.injectedEnvironment);
-        serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
     }
 
     public static Configuration getServiceValue(ServiceContainer container) {

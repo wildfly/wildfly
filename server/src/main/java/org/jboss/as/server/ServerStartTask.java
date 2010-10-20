@@ -113,7 +113,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Root service
         final BatchServiceBuilder<Void> builder = batchBuilder.addService(ServiceName.JBOSS.append("as", "server"), Service.NULL);
-        builder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        builder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         // Services specified by the creator of this object
         for (ServiceActivator service : this.startServices) {

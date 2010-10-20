@@ -60,7 +60,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
 
         final BatchServiceBuilder<ConnectorSubsystemConfiguration> serviceBuilder = builder.addService(
                 ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
-        serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
 
     }
 

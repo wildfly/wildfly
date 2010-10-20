@@ -192,7 +192,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
                 serviceBuilder.addDependency(socketName, SocketBinding.class, hqservice.getSocketBindingInjector(socketRef));
             }
         }
-        serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     @Override

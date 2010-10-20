@@ -57,7 +57,7 @@ public final class RemotingSubsystemAdd extends AbstractSubsystemAdd<RemotingSub
         final BatchServiceBuilder<Endpoint> endpointBuilder = updateContext.getBatchBuilder().addService(RemotingServices.ENDPOINT, endpointService);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
         endpointBuilder.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class));
-        endpointBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        endpointBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     protected RemotingSubsystemElement createSubsystemElement() {

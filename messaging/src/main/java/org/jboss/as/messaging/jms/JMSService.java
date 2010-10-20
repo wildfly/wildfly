@@ -52,7 +52,7 @@ public class JMSService implements Service<JMSServerManager> {
         final JMSService service = new JMSService();
         builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
             .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-            .setInitialMode(Mode.IMMEDIATE);
+            .setInitialMode(Mode.ACTIVE);
     }
 
     protected JMSService() {

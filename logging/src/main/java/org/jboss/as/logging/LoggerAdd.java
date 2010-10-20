@@ -62,7 +62,7 @@ public class LoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
         service.setLevel(level);
         service.setUseParentHandlers(useParentHandlers);
         final BatchServiceBuilder<Logger> builder = updateContext.getBatchBuilder().addService(LogServices.getLoggerName(name), service);
-        builder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        builder.setInitialMode(ServiceController.Mode.ACTIVE);
     }
 
     /** {@inheritDoc} */

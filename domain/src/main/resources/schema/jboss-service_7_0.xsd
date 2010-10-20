@@ -33,7 +33,7 @@
         <xs:sequence>
             <xs:element name="mbean" type="mbean" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
-        <xs:attribute name="mode" type="mode" default="automatic" use="optional"/>
+        <xs:attribute name="mode" type="mode" default="active" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="mbean">
@@ -62,8 +62,8 @@
 
     <xs:simpleType name="mode">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="immediate"/>
-            <xs:enumeration value="automatic"/>
+            <xs:enumeration value="active"/>
+            <xs:enumeration value="passive"/>
             <xs:enumeration value="on demand"/>
             <xs:enumeration value="never"/>
         </xs:restriction>

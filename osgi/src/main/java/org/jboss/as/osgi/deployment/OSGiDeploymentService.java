@@ -86,7 +86,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, BundleContext.class, service.injectedContext);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
         serviceBuilder.addDependency(deploymentServiceName);
-        serviceBuilder.setInitialMode(Mode.IMMEDIATE);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
         if (enableListener)
             serviceBuilder.addListener(listener);
     }
@@ -104,7 +104,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
 
         // Make sure the Framework does not shut down when the last bundle gets removed
         ServiceController<?> frameworkController = serviceContainer.getService(FrameworkService.SERVICE_NAME);
-        frameworkController.setMode(Mode.IMMEDIATE);
+        frameworkController.setMode(Mode.ACTIVE);
 
         log.infof("Installing deployment: %s", deployment);
         try {

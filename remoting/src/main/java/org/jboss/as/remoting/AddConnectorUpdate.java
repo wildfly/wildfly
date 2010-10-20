@@ -84,7 +84,7 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
         serviceBuilder.addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector());
         serviceBuilder.addDependency(RemotingSubsystemElement.JBOSS_REMOTING_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector());
         serviceBuilder.addListener(listener);
-        serviceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         // TODO create XNIO connector service from socket-binding, with dependency on connectorName
         try {

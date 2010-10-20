@@ -73,7 +73,7 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         System.setProperty("jboss.protocol.handler.modules", value);
 
         Activation policy = subsystemState.getActivationPolicy();
-        Mode initialMode = (policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.AUTOMATIC);
+        Mode initialMode = (policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.PASSIVE);
         BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         Configuration.addService(batchBuilder, subsystemState);
         BundleManagerService.addService(batchBuilder, initialMode);

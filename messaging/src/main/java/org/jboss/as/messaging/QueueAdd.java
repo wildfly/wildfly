@@ -67,7 +67,7 @@ public class QueueAdd extends AbstractMessagingSubsystemUpdate<Void> {
         context.getBatchBuilder().addService(MessagingSubsystemElement.CORE_QUEUE_BASE.append(name), service)
             .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-            .setInitialMode(Mode.IMMEDIATE);
+            .setInitialMode(Mode.ACTIVE);
     }
 
     /** {@inheritDoc} */

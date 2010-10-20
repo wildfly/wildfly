@@ -64,7 +64,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         final BatchBuilder builder = updateContext.getBatchBuilder();
         // XATerminator has no deps, so just add it in there
         final XATerminatorService xaTerminatorService = new XATerminatorService();
-        builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.IMMEDIATE);
+        builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.ACTIVE);
 
         final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
         final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
@@ -74,7 +74,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
         transactionManagerServiceBuilder.addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector());
-        transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.IMMEDIATE);
+        transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, builder);
     }
