@@ -168,6 +168,7 @@ public class JMSSubsystemElement extends AbstractSubsystemElement<JMSSubsystemEl
                 topic.writeContent(streamWriter);
             }
         }
+        streamWriter.writeEndElement();
     }
 
 }

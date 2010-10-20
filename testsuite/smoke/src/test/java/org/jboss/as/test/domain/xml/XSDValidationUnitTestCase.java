@@ -77,6 +77,10 @@ public class XSDValidationUnitTestCase extends TestCase {
         validateXsd("jboss-messaging.xsd");
     }
 
+    public void testJBossJMS() throws Exception {
+        validateXsd("jboss-jms.xsd");
+    }
+
     public void testJBossNaming() throws Exception {
         validateXsd("jboss-naming.xsd");
     }

@@ -19,17 +19,109 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:messaging:jms:1.0"
-           xmlns="urn:jboss:domain:messaging:jms:1.0"
-           xmlns:jms="urn:hornetq"
-           elementFormDefault="unqualified"
-           attributeFormDefault="unqualified"
-           version="1.0">
+<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:domain:messaging:jms:1.0"
+            xmlns="urn:jboss:domain:messaging:jms:1.0"
+            elementFormDefault="unqualified" 
+            attributeFormDefault="unqualified"
+            version="1.0">
 
-    <xs:import namespace="urn:hornetq" schemaLocation="schema/hornetq-jms.xsd"/>
+   <xs:element name="subsystem" type="subsystemType" />
 
-    <!-- The jms subsystem root element -->
-    <xs:element name="subsystem" type="jms:configuration"/>
+   <xs:complexType name="subsystemType">
+      <xs:sequence>
+         <xs:element name="connection-factory" maxOccurs="unbounded" minOccurs="0" type="connection-factoryType" />
+         <xs:choice maxOccurs="unbounded" minOccurs="0">
+            <xs:element name="queue" maxOccurs="1" minOccurs="1" type="queueType" />
+            <xs:element name="topic" maxOccurs="1" minOccurs="1" type="topicType" />
+         </xs:choice>
+      </xs:sequence>
+   </xs:complexType>
 
+   <xs:complexType name="connection-factoryType">
+      <xs:all>
+         <xs:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0" />
+         <xs:element name="discovery-initial-wait-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+
+         <xs:element name="connectors" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="connector-ref" type="connector-refType" maxOccurs="unbounded" minOccurs="1"></xs:element>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="entries" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1">
+                  </xs:element>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="producer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="producer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="cache-large-message-client" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="min-large-message-size" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="client-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="dups-ok-batch-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="transaction-batch-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-acknowledge" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-non-durable-send" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="block-on-durable-send" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="auto-group" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="pre-acknowledge" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="retry-interval-multiplier" type="xs:float" maxOccurs="1" minOccurs="0" />
+         <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
+         <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="group-id" type="xs:string" maxOccurs="1" minOccurs="0" />
+      </xs:all>
+      <xs:attribute name="name" type="xs:string" />
+   </xs:complexType>
+
+   <xs:complexType name="connector-refType">
+      <xs:attribute name="connector-name" type="xs:string" use="required" />
+      <xs:attribute name="backup-connector-name" type="xs:string" use="optional" />
+   </xs:complexType>
+
+   <xs:complexType name="entryType">
+      <xs:attribute name="name" type="xs:string" use="required" />
+   </xs:complexType>
+
+   <xs:complexType name="discovery-group-refType">
+      <xs:attribute name="discovery-group-name" type="xs:string" use="required" />
+   </xs:complexType>
+
+   <xs:complexType name="queueType">
+      <xs:sequence>
+         <xs:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1" />
+         <xs:element name="selector" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:attribute name="string" type="xs:string" use="required" />
+            </xs:complexType>
+         </xs:element>
+         <xs:element name="durable" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required" />
+   </xs:complexType>
+
+   <xs:complexType name="topicType">
+      <xs:sequence>
+         <xs:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1" />
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required" />
+   </xs:complexType>
+   
 </xs:schema>
