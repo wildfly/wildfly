@@ -66,7 +66,9 @@ public final class OSGiSubsystemState implements Serializable {
         return properties.isEmpty() && modules.isEmpty();
     }
 
-    public static class OSGiModule {
+    public static class OSGiModule implements Serializable {
+        private static final long serialVersionUID = -2280880859263752474L;
+
         private final ModuleIdentifier identifier;
         private final boolean start;
 
