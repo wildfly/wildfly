@@ -33,6 +33,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.jbossweb.JBossWebMetaDataParser;
+import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 
@@ -56,6 +57,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             try {
                 is = jbossWebXml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                inputFactory.setXMLResolver(NoopXmlResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 warMetaData.setJbossWebMetaData(JBossWebMetaDataParser.parse(xmlReader));
             } catch (Exception e) {
