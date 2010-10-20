@@ -73,7 +73,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                     } catch (Exception e) {
                         throw new DeploymentUnitProcessingException("Failed to parse " + webFragment, e);
                     } finally {
-                        Logger.getLogger("org.jboss.web").info("parse " + (System.currentTimeMillis() - time));
+                        Logger.getLogger("org.jboss.web.WebFragmentParsingDeploymentProcessor").info("parse " + resourceRoot.getName() + ": " + (System.currentTimeMillis() - time) + "ms");
                         try {
                             if (is != null) {
                                 is.close();

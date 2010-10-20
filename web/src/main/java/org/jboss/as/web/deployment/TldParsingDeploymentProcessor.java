@@ -116,7 +116,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse " + tld, e);
         } finally {
-            Logger.getLogger("org.jboss.web").info("parse " + (System.currentTimeMillis() - time));
+            Logger.getLogger("org.jboss.web.TldParsingDeploymentProcessor").info("parse " + tld.getName() + ": " + (System.currentTimeMillis() - time) + "ms");
             try {
                 if (is != null) {
                     is.close();

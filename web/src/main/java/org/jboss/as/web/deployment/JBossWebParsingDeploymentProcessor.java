@@ -61,7 +61,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + jbossWebXml, e);
             } finally {
-                Logger.getLogger("org.jboss.web").info("parse " + (System.currentTimeMillis() - time));
+                Logger.getLogger("org.jboss.web.JBossWebParsingDeploymentProcessor").info("parse: " + (System.currentTimeMillis() - time) + "ms");
                 try {
                     if (is != null) {
                         is.close();

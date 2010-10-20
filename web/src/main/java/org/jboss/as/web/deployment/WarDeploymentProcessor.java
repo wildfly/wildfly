@@ -28,6 +28,7 @@ import java.util.Collections;
 
 import org.apache.catalina.Host;
 import org.apache.catalina.Loader;
+import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
@@ -38,6 +39,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.web.WebSubsystemElement;
+import org.jboss.as.web.deployment.mock.MemoryRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
@@ -107,6 +109,10 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
+
+        // Add a dummy realm for now
+        Realm realm = new MemoryRealm();
+        webContext.setRealm(realm);
 
         //
         final Loader loader = new WebCtxLoader(classLoader);
