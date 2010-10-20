@@ -30,6 +30,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
@@ -92,6 +96,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         log.infof("Starting server \"%s\"", serverName);
         final ServiceContainer container = ServiceContainer.Factory.create();
+        final int threads = Runtime.getRuntime().availableProcessors();
+        container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
 
         final ServerStartupListener serverStartupListener = new ServerStartupListener(createListenerCallback());
         final ServerStartBatchBuilder batchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
