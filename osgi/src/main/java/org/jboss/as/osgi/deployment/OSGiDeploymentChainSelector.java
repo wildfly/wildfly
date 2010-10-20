@@ -29,7 +29,6 @@ import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.vfs.VirtualFile;
 
@@ -39,8 +38,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Thomas.Diesler@jboss.com
  */
 public class OSGiDeploymentChainSelector implements DeploymentChainProvider.Selector {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     private static final String ARCHIVE_EXTENSION = ".jar";
 
@@ -58,9 +55,8 @@ public class OSGiDeploymentChainSelector implements DeploymentChainProvider.Sele
         if (!jarMatch || !pathMatch)
             return false;
 
-        Manifest manifest = ManifestAttachment.getManifestAttachment(context);
-
         // Check whether this is a valid OSGi deployment
+        Manifest manifest = ManifestAttachment.getManifestAttachment(context);
         return BundleInfo.isValidateBundleManifest(manifest);
     }
 }

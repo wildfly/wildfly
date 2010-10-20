@@ -35,7 +35,6 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
-    ACTIVATION("activation"),
     MODULES("modules"),
     MODULE("module"),
     PROPERTIES("properties"),

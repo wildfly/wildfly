@@ -91,9 +91,7 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         synchronized (this) {
             Activation policy = subsystemState.getActivationPolicy();
-            streamWriter.writeStartElement(Element.ACTIVATION.getLocalName());
-            streamWriter.writeAttribute(Attribute.POLICY.getLocalName(), policy.name().toLowerCase());
-            streamWriter.writeEndElement();
+            streamWriter.writeAttribute(Attribute.ACTIVATION.getLocalName(), policy.name().toLowerCase());
 
             Map<String, Object> properties = subsystemState.getProperties();
             if (properties.isEmpty() == false) {

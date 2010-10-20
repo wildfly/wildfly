@@ -106,7 +106,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         ServiceController<?> frameworkController = serviceContainer.getService(FrameworkService.SERVICE_NAME);
         frameworkController.setMode(Mode.IMMEDIATE);
 
-        log.debugf("Installing deployment: %s", deployment);
+        log.infof("Installing deployment: %s", deployment);
         try {
             boolean autoStart = deployment.isAutoStart();
             deployment.setAutoStart(false);
@@ -124,7 +124,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
-        log.debugf("Uninstalling deployment: %s", deployment);
+        log.infof("Uninstalling deployment: %s", deployment);
         try {
             getDeployerService().undeploy(deployment);
         } catch (Throwable t) {

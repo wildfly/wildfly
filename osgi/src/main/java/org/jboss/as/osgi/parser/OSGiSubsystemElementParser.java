@@ -58,7 +58,7 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
         OSGiSubsystemState subsystemState = add.getSubsystemState();
 
         // Handle attributes
-        ParseUtils.requireNoAttributes(reader);
+        parseActivationAttribute(reader, subsystemState);
 
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -66,10 +66,6 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
                 case OSGI_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case ACTIVATION: {
-                            parseActivationElement(reader, subsystemState);
-                            break;
-                        }
                         case PROPERTIES: {
                             parsePropertiesElement(reader, subsystemState);
                             break;
@@ -94,42 +90,40 @@ public final class OSGiSubsystemElementParser implements XMLStreamConstants,
         result.setResult(new SubsystemConfiguration<OSGiSubsystemElement>(add, updates));
     }
 
-    private void parseActivationElement(XMLExtendedStreamReader reader, OSGiSubsystemState subsystemState) throws XMLStreamException {
+    private void parseActivationAttribute(XMLExtendedStreamReader reader, OSGiSubsystemState subsystemState)
+            throws XMLStreamException {
 
         switch (Namespace.forUri(reader.getNamespaceURI())) {
             case OSGI_1_0: {
-                    // Handle attributes
-                    Activation value = null;
-                    int count = reader.getAttributeCount();
-                    for (int i = 0; i < count; i++) {
-                        final String attrValue = reader.getAttributeValue(i);
-                        if (reader.getAttributeNamespace(i) != null) {
-                            throw ParseUtils.unexpectedAttribute(reader, i);
-                        } else {
-                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                            switch (attribute) {
-                                case POLICY: {
-                                    value = Activation.valueOf(attrValue.toUpperCase());
-                                    break;
-                                }
-                                default:
-                                    throw ParseUtils.unexpectedAttribute(reader, i);
+                // Handle attributes
+                Activation value = null;
+                int count = reader.getAttributeCount();
+                for (int i = 0; i < count; i++) {
+                    final String attrValue = reader.getAttributeValue(i);
+                    if (reader.getAttributeNamespace(i) != null) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    } else {
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case ACTIVATION: {
+                                value = Activation.valueOf(attrValue.toUpperCase());
+                                subsystemState.setActivation(value);
+                                break;
                             }
+                            default:
+                                throw ParseUtils.unexpectedAttribute(reader, i);
                         }
                     }
-                    if (value == null)
-                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.POLICY));
-
-                    subsystemState.setActivation(value);
-                    ParseUtils.requireNoContent(reader);
-                    break;
+                }
+                break;
             }
             default:
                 throw ParseUtils.unexpectedElement(reader);
         }
     }
 
-    void parsePropertiesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState) throws XMLStreamException {
+    void parsePropertiesElement(XMLExtendedStreamReader reader, final OSGiSubsystemState subsystemState)
+            throws XMLStreamException {
 
         // Handle attributes
         ParseUtils.requireNoAttributes(reader);

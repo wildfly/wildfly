@@ -27,9 +27,12 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVir
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.jar.Manifest;
+
 import org.jboss.as.deployment.DeploymentFailureListener;
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
@@ -180,6 +183,15 @@ class ServerDeploymentStartStopHandler {
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, new MountHandle(handle));
+
+            // Get the optional Manifest for this deployment
+            try {
+                Manifest manifest = VFSUtils.getManifest(deploymentRoot);
+                if (manifest != null)
+                    ManifestAttachment.attachManifest(deploymentUnitContext, manifest);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to get manifest for deployment " + deploymentRoot, e);
+            }
 
             // Execute the deployment chain
             final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;

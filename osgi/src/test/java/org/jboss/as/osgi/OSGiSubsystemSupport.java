@@ -215,7 +215,7 @@ public class OSGiSubsystemSupport {
     public void setupFrameworkServices(final BatchBuilder batchBuilder) {
         batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
         TestBundleManagerService.addService(batchBuilder);
-        FrameworkService.addService(batchBuilder, null);
+        FrameworkService.addService(batchBuilder, Mode.IMMEDIATE);
         PackageAdminService.addService(batchBuilder);
     }
 

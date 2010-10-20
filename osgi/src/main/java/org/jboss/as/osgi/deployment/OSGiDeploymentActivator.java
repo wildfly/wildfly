@@ -56,9 +56,9 @@ public class OSGiDeploymentActivator {
 
         final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain)new DeploymentChainImpl(OSGI_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()))   ;
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
-        batchBuilder.addService(OSGI_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new OSGiDeploymentChainSelector(), OSGI_DEPLOYMENT_CHAIN_PRIORITY));
-
+        BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(OSGI_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService);
+        DeploymentChainProviderInjector<DeploymentChain> injector = new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new OSGiDeploymentChainSelector(), OSGI_DEPLOYMENT_CHAIN_PRIORITY);
+        serviceBuilder.addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, injector);
         addDeploymentProcessor(batchBuilder, new OSGiManifestDeploymentProcessor(), OSGiManifestDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new OSGiAttachmentsDeploymentProcessor(), OSGiAttachmentsDeploymentProcessor.PRIORITY);
     }

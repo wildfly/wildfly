@@ -22,15 +22,12 @@
 
 package org.jboss.as.deployment.chain;
 
+import java.util.jar.Manifest;
+
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import java.io.IOException;
-import java.util.jar.Manifest;
-
-import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -40,8 +37,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Thomas.Diesler@jboss.com
  */
 public class JarDeploymentChainSelector implements DeploymentChainProvider.Selector {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
     private static final String ARCHIVE_EXTENSION = ".jar";
     private static final String DESCRIPTOR_PATH = "META-INF";
@@ -59,6 +54,7 @@ public class JarDeploymentChainSelector implements DeploymentChainProvider.Selec
                 return false;
 
         // OSGi deployments are not handled by the jar deployer chain
-        return !BundleInfo.isValidateBundleManifest(ManifestAttachment.getManifestAttachment(deploymentUnitContext));
+        Manifest manifest = ManifestAttachment.getManifestAttachment(deploymentUnitContext);
+        return !BundleInfo.isValidateBundleManifest(manifest);
     }
 }

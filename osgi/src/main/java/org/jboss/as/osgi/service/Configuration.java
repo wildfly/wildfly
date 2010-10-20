@@ -63,12 +63,11 @@ public class Configuration implements Service<Configuration> {
     private InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final OSGiSubsystemState subsystemState;
 
-    public static Configuration addService(final BatchBuilder batchBuilder, final OSGiSubsystemState state) {
+    public static void addService(final BatchBuilder batchBuilder, final OSGiSubsystemState state) {
         Configuration config = new Configuration(state);
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, config);
         serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, config.injectedEnvironment);
         serviceBuilder.setInitialMode(Mode.IMMEDIATE);
-        return config;
     }
 
     public static Configuration getServiceValue(ServiceContainer container) {

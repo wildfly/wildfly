@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
-import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
@@ -74,13 +73,12 @@ public class BundleManagerService implements Service<BundleManager> {
     private Injector<ClassifyingModuleLoaderService> osgiModuleLoaderInjector;
     private BundleManager bundleManager;
 
-    public static void addService(final BatchBuilder batchBuilder, final Configuration config) {
+    public static void addService(final BatchBuilder batchBuilder, Mode initialMode) {
         BundleManagerService service = new BundleManagerService();
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
         serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
-        if (config != null && config.getActivationPolicy() == Activation.LAZY)
-            serviceBuilder.setInitialMode(Mode.ON_DEMAND);
+        serviceBuilder.setInitialMode(initialMode);
     }
 
     public synchronized void start(StartContext context) throws StartException {
