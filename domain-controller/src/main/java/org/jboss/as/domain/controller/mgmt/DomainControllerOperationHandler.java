@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerClient;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.controller.ServerManagerClient;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -196,7 +196,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 expectHeader(input, DomainControllerProtocol.PARAM_SERVER_MANAGER_PORT);
                 final int port = input.readInt();
                 final InetAddress address = InetAddress.getByAddress(addressBytes);
-                final DomainControllerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService, threadFactory);
+                final ServerManagerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService, threadFactory);
                 domainController.addClient(client);
                 log.infof("Server manager registered [%s]", client);
             } finally {

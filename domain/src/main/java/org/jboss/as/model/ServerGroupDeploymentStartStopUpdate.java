@@ -31,7 +31,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<ServerGroupDeploymentElement, ServerDeploymentActionResult> {
+public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<ServerGroupElement, ServerDeploymentActionResult> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String deploymentUnitName;
@@ -53,8 +53,7 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
     }
 
     @Override
-    public ServerGroupDeploymentStartStopUpdate getCompensatingUpdate(
-            ServerGroupDeploymentElement original) {
+    public ServerGroupDeploymentStartStopUpdate getCompensatingUpdate(ServerGroupElement original) {
         return new ServerGroupDeploymentStartStopUpdate(deploymentUnitName, !isStart);
     }
 
@@ -64,12 +63,16 @@ public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<Se
     }
 
     @Override
-    protected void applyUpdate(ServerGroupDeploymentElement deploymentElement) throws UpdateFailedException {
+    protected void applyUpdate(ServerGroupElement serverGroupElement) throws UpdateFailedException {
+        ServerGroupDeploymentElement deploymentElement = serverGroupElement.getDeployment(deploymentUnitName);
+        if (deploymentElement == null) {
+            throw new UpdateFailedException(String.format("Deployment %s does not exist in server group %s", deploymentElement, serverGroupElement.getName()));
+        }
         deploymentElement.setStart(isStart);
     }
 
     @Override
-    public Class<ServerGroupDeploymentElement> getModelElementType() {
-        return ServerGroupDeploymentElement.class;
+    public Class<ServerGroupElement> getModelElementType() {
+        return ServerGroupElement.class;
     }
 }

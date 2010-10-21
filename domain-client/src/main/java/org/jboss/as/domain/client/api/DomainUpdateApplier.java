@@ -33,6 +33,21 @@ import org.jboss.as.model.UpdateResultHandler;
 public interface DomainUpdateApplier<R, P> {
 
     /**
+     * Handle the event of the execution of the update being cancelled.
+     * This would occur as a result of a previously executed update in the same set of updates
+     * failing to apply successfully to the domain or to a server manager.
+     */
+    void handleCancelled();
+
+    /**
+     * Handle the event of the execution of the update being rolled back
+     * after it was successfully applied to the domain and to the server managers.
+     * This would occur as a result of another subsequent update in the same set of updates
+     * failing to apply successfully to the domain or to a server manager.
+     */
+    void handleRolledBack();
+
+    /**
      * Handle the event of the update failing to apply to the domain.
      *
      * @param reason the reason for the failure
@@ -57,6 +72,7 @@ public interface DomainUpdateApplier<R, P> {
      * @param param
      */
     void handleReady(Context<R> context, P param);
+
 
     interface Context<R> {
         Collection<ServerIdentity> getAffectedServers();

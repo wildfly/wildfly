@@ -88,7 +88,14 @@ public class ModelManager {
     public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update, boolean applyToDomain) throws UpdateFailedException {
 
         if (applyToDomain) {
-            domainModel.update(update);
+            try {
+                domainModel.update(update);
+            }
+            catch (UpdateFailedException e) {
+                // FIXME mark ourself in a state where we require
+                // correction by the DC.
+                throw e;
+            }
         }
 
         List<String> serverNames = update.getAffectedServers(domainModel, getHostModel());

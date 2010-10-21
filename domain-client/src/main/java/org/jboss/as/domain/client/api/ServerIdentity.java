@@ -22,6 +22,13 @@
 
 package org.jboss.as.domain.client.api;
 
+/**
+ * Identifying information for a server in a domain. A bit of a misnomer, as
+ * the server's name is sufficient identification since all servers in a
+ * domain must have unique names.
+ *
+ * @author Brian Stansberry
+ */
 public class ServerIdentity {
     private final String hostName;
     private final String serverName;
@@ -43,5 +50,32 @@ public class ServerIdentity {
 
     public String getServerName() {
         return serverName;
+    }
+
+    /**
+     * Only uses the {@link #getServerName() serverName} value in the equality
+     * comparison, since within a domain all servers should have a unique name.
+     */
+    @Override
+    public boolean equals(Object other) {
+        return (other instanceof ServerIdentity && serverName.equals(((ServerIdentity) other).serverName));
+    }
+
+    @Override
+    public int hashCode() {
+        return serverName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName())
+            .append("{name=")
+            .append(serverName)
+            .append(", host=")
+            .append(hostName)
+            .append(", server-group=")
+            .append(serverGroupName)
+            .append("}")
+            .toString();
     }
 }

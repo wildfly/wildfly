@@ -32,12 +32,14 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import java.util.concurrent.ThreadFactory;
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
+import org.jboss.as.domain.controller.ServerManagerClient;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementException;
@@ -53,7 +55,7 @@ import org.jboss.marshalling.Unmarshaller;
  *
  * @author John Bailey
  */
-public class RemoteDomainControllerClient implements DomainControllerClient {
+public class RemoteDomainControllerClient implements ServerManagerClient {
     private final String id;
     private final InetAddress address;
     private final int port;
@@ -99,9 +101,9 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
     }
 
-    public List<ModelUpdateResponse<?>> updateServerModel(final List<AbstractServerModelUpdate<?>> updates, final String serverName) {
+    public List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
         try {
-            return new UpdateServerModelRequest(updates, serverName).executeForResult();
+            return new UpdateServerModelRequest(updates, serverName, allowOverallRollback).executeForResult();
         } catch (Exception e) {
             throw new ManagementException("Failed to update domain model", e);
         }
@@ -112,6 +114,39 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
             return new IsActiveRequest().executeForResult();
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @Override
+    public ModelUpdateResponse<Void> restartServer(String serverName, long gracefulTimeout) {
+        try {
+            // FIXME implement restartServer
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Restart of server " + serverName + " failed", e));
+        }
+    }
+
+    @Override
+    public ModelUpdateResponse<Void> startServer(String serverName) {
+        try {
+            // FIXME implement startServer
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Start of server " + serverName + " failed", e));
+        }
+    }
+
+    @Override
+    public ModelUpdateResponse<Void> stopServer(String serverName, long gracefulTimeout) {
+        try {
+            // FIXME implement stopServer
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Stop of server " + serverName + " failed", e));
         }
     }
 
@@ -285,13 +320,16 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
     }
 
-    private class UpdateServerModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<?>>> {
+    private class UpdateServerModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>> {
         private final List<AbstractServerModelUpdate<?>> updates;
         private final String serverName;
+        private final boolean allowOverallRollback;
 
-        private UpdateServerModelRequest(final List<AbstractServerModelUpdate<?>> updates, final String serverName) {
+        private UpdateServerModelRequest(final List<AbstractServerModelUpdate<?>> updates, final String serverName,
+                                         final boolean allowOverallRollback) {
             this.updates = updates;
             this.serverName = serverName;
+            this.allowOverallRollback = allowOverallRollback;
         }
 
         @Override
@@ -310,6 +348,8 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
             marshaller.writeChars(serverName);
+            marshaller.writeByte(ServerManagerProtocol.PARAM_ALLOW_ROLLBACK);
+            marshaller.writeBoolean(allowOverallRollback);
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for(AbstractServerModelUpdate<?> update : updates) {
@@ -320,7 +360,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(final InputStream input) throws IOException {
+        protected List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
             ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
@@ -328,10 +368,11 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid host model update response.  Response count not equal to update count.");
             }
-            final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
+            final List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> responses = new ArrayList<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
                 ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                final ModelUpdateResponse<?> response = unmarshal(unmarshaller, ModelUpdateResponse.class);
+                @SuppressWarnings("unchecked")
+                final ModelUpdateResponse<UpdateResultHandlerResponse<?>> response = unmarshal(unmarshaller, ModelUpdateResponse.class);
                 responses.add(response);
             }
             unmarshaller.finish();

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
@@ -81,7 +82,8 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
      * @param input The connection input
      * @throws IOException If any problems occur performing the operation
      */
-     public void handle(final Connection connection, final InputStream input) throws IOException {
+     @Override
+    public void handle(final Connection connection, final InputStream input) throws IOException {
         final byte commandCode;
         expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
         commandCode = StreamUtils.readByte(input);
@@ -247,6 +249,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
     private class UpdateServerModelOperation extends ManagementResponse {
         private List<AbstractServerModelUpdate<?>> updates;
         private String serverName;
+        private boolean allowOverallRollback;
 
         @Override
         protected byte getResponseCode() {
@@ -259,6 +262,8 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
             unmarshaller.start(createByteInput(input));
             expectHeader(unmarshaller, ServerManagerProtocol.PARAM_SERVER_NAME);
             serverName = unmarshaller.readUTF();
+            expectHeader(unmarshaller, ServerManagerProtocol.PARAM_ALLOW_ROLLBACK);
+            allowOverallRollback = unmarshaller.readBoolean();
             expectHeader(unmarshaller, ServerManagerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
             int count = unmarshaller.readInt();
             updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
@@ -273,10 +278,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
-            List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
-            for(AbstractServerModelUpdate<?> update : updates) {
-                responses.add(processUpdate(update));
-            }
+            List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> responses = processUpdates();
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
@@ -288,13 +290,13 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
             marshaller.finish();
         }
 
-        private <R> ModelUpdateResponse<R> processUpdate(final AbstractServerModelUpdate<R> update) {
-            try {
-                final R result = serverManager.applyUpdate(serverName, update);
-                return new ModelUpdateResponse<R>(result);
-            } catch (UpdateFailedException e) {
-                return new ModelUpdateResponse<R>(e);
+        private List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> processUpdates() {
+            List<UpdateResultHandlerResponse<?>> result = serverManager.applyUpdates(serverName, updates, allowOverallRollback);
+            List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> wrapped = new ArrayList<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>(result.size());
+            for (UpdateResultHandlerResponse<?> urhr : result) {
+                wrapped.add(new ModelUpdateResponse<UpdateResultHandlerResponse<?>>(urhr));
             }
+            return wrapped;
         }
     }
 

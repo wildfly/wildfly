@@ -25,7 +25,6 @@ package org.jboss.as.protocol.mgmt;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import static org.jboss.as.protocol.StreamUtils.safeClose;

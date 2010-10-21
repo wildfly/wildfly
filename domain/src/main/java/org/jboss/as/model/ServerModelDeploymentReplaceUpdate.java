@@ -33,11 +33,28 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String newDeployment;
+    private final String newDeploymentRuntimeName;
+    private final byte[] newDeploymentHash;
     private final String toReplace;
-    private final ServerGroupDeploymentStartStopUpdate undeploymentModelUpdate;
-    private final ServerGroupDeploymentStartStopUpdate deploymentModelUpdate;
     private final ServerDeploymentStartStopHandler startStopHandler;
     private ServerGroupDeploymentElement deploymentElement;
+
+    public ServerModelDeploymentReplaceUpdate(final String newDeployment, final String newDeploymentRuntimeName, final byte[] newDeploymentHash, final String toReplace) {
+        super(false, true);
+        if (newDeployment == null)
+            throw new IllegalArgumentException("newDeployment is null");
+        if (newDeploymentRuntimeName == null)
+            throw new IllegalArgumentException("newDeploymentRuntimeName is null");
+        if (newDeploymentHash == null)
+            throw new IllegalArgumentException("newDeploymentHash is null");
+        if (toReplace == null)
+            throw new IllegalArgumentException("toReplace is null");
+        this.newDeployment = newDeployment;
+        this.toReplace = toReplace;
+        startStopHandler = new ServerDeploymentStartStopHandler();
+        this.newDeploymentRuntimeName = newDeploymentRuntimeName;
+        this.newDeploymentHash = newDeploymentHash;
+    }
 
     public ServerModelDeploymentReplaceUpdate(final String newDeployment, final String toReplace) {
         super(false, true);
@@ -47,9 +64,9 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             throw new IllegalArgumentException("toReplace is null");
         this.newDeployment = newDeployment;
         this.toReplace = toReplace;
-        undeploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(toReplace, false);
-        deploymentModelUpdate = new ServerGroupDeploymentStartStopUpdate(newDeployment, true);
         startStopHandler = new ServerDeploymentStartStopHandler();
+        this.newDeploymentRuntimeName = null;
+        this.newDeploymentHash = null;
     }
 
     @Override
@@ -61,14 +78,17 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
             throw new UpdateFailedException("Unknown deployment " + newDeployment);
         }
 
+        if (newDeploymentRuntimeName != null) {
+            standalone.addDeployment(new ServerGroupDeploymentElement(newDeployment, newDeploymentRuntimeName, newDeploymentHash, false));
+        }
         deploymentElement = standalone.getDeployment(newDeployment);
 
         if (deploymentElement == null) {
             throw new UpdateFailedException("Unknown deployment " + newDeployment);
         }
 
-        undeploymentModelUpdate.applyUpdate(undeploymentElement);
-        deploymentModelUpdate.applyUpdate(deploymentElement);
+        undeploymentElement.setStart(false);
+        deploymentElement.setStart(true);
     }
 
     @Override

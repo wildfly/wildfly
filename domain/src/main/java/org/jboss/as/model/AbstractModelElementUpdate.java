@@ -49,10 +49,13 @@ public abstract class AbstractModelElementUpdate<E extends AbstractModelElement<
     public abstract Class<E> getModelElementType();
 
     /**
-     * Apply this update to the given model element.
+     * Apply this update to the given model element. This method should either
+     * successfully change the model element, or leave the element unchanged
+     * and throw an UpdateFailedException.
      *
      * @param element the element to which the update should be applied
-     * @throws UpdateFailedException if the update failed
+     * @throws UpdateFailedException if the update failed. If this exception is
+     *            thrown, no change should have been made to <code>element</code>
      */
     protected abstract void applyUpdate(E element) throws UpdateFailedException;
 

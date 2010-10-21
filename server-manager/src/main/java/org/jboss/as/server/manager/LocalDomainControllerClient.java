@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.controller.DomainControllerClient;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.domain.controller.ServerManagerClient;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
@@ -39,7 +40,7 @@ import org.jboss.as.model.UpdateFailedException;
  *
  * @author John Bailey
  */
-public class LocalDomainControllerClient implements DomainControllerClient {
+public class LocalDomainControllerClient implements ServerManagerClient {
     private static final String ID = "LOCAL";
     private final ServerManager serverManager;
 
@@ -85,18 +86,17 @@ public class LocalDomainControllerClient implements DomainControllerClient {
     public List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates) {
         final List<ModelUpdateResponse<List<ServerIdentity>>> responses = new ArrayList<ModelUpdateResponse<List<ServerIdentity>>>(updates.size());
         for(AbstractDomainModelUpdate<?> update : updates) {
-            responses.add(executeUpdate(update));
+            ModelUpdateResponse<List<ServerIdentity>> response = executeUpdate(update);
+            responses.add(response);
+            if (!response.isSuccess())
+                break;
         }
         return responses;
     }
 
     @Override
-    public List<ModelUpdateResponse<?>> updateServerModel(final List<AbstractServerModelUpdate<?>> updates, final String serverName) {
-        List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>();
-        for (AbstractServerModelUpdate<?> update : updates) {
-            responses.add(executeUpdate(update, serverName));
-        }
-        return responses;
+    public List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
+        return executeUpdates(serverName, updates, allowOverallRollback);
     }
 
     private ModelUpdateResponse<List<ServerIdentity>> executeUpdate(AbstractDomainModelUpdate<?> domainUpdate) {
@@ -117,21 +117,45 @@ public class LocalDomainControllerClient implements DomainControllerClient {
         }
     }
 
-    private <R> ModelUpdateResponse<R> executeUpdate(final AbstractServerModelUpdate<R> update, final String serverName) {
-        ManagedServer server = serverManager.getServer(serverName);
-        if (server == null) {
-            // TODO better handle removal of server while client is concurrently
-            // processing results
-            return new ModelUpdateResponse<R>(new UpdateFailedException("unknown server " + serverName));
+    private List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> executeUpdates(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
+        List<UpdateResultHandlerResponse<?>> result = serverManager.applyUpdates(serverName, updates, allowOverallRollback);
+        List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> wrapped = new ArrayList<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>(result.size());
+        for (UpdateResultHandlerResponse<?> urhr : result) {
+            wrapped.add(new ModelUpdateResponse<UpdateResultHandlerResponse<?>>(urhr));
         }
-        else {
-            try {
-                R result = server.applyUpdate(update);
-                return new ModelUpdateResponse<R>(result);
-            } catch (UpdateFailedException e) {
-                return new ModelUpdateResponse<R>(e);
-            }
-        }
+        return wrapped;
+    }
 
+    @Override
+    public ModelUpdateResponse<Void> restartServer(String serverName, long gracefulTimeout) {
+        try {
+            serverManager.restartServer(serverName, gracefulTimeout);
+            return new ModelUpdateResponse<Void>((Void) null);
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Restart of server " + serverName + " failed", e));
+        }
+    }
+
+    @Override
+    public ModelUpdateResponse<Void> startServer(String serverName) {
+        try {
+            serverManager.startServer(serverName);
+            return new ModelUpdateResponse<Void>((Void) null);
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Start of server " + serverName + " failed", e));
+        }
+    }
+
+    @Override
+    public ModelUpdateResponse<Void> stopServer(String serverName, long gracefulTimeout) {
+        try {
+            serverManager.stopServer(serverName, gracefulTimeout);
+            return new ModelUpdateResponse<Void>((Void) null);
+        }
+        catch (Exception e) {
+            return new ModelUpdateResponse<Void>(new UpdateFailedException("Stop of server " + serverName + " failed", e));
+        }
     }
 }

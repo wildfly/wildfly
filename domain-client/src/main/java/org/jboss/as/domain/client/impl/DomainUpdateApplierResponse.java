@@ -45,20 +45,45 @@ public class DomainUpdateApplierResponse {
     private final UpdateFailedException domainFailure;
     private final Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
     private final List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
+    private final boolean cancelled;
+    private final boolean rolledBack;
+
+    public DomainUpdateApplierResponse(boolean cancelled) {
+        this.cancelled = cancelled;
+        this.rolledBack = !cancelled;
+        this.domainFailure = null;
+    }
 
     public DomainUpdateApplierResponse(final UpdateFailedException domainFailure) {
         this.domainFailure = domainFailure;
+        this.cancelled = false;
+        this.rolledBack = false;
     }
 
-    public DomainUpdateApplierResponse(final Map<String, UpdateFailedException> hostFailures,
-                                       final List<ServerIdentity> servers) {
+    public DomainUpdateApplierResponse(final Map<String, UpdateFailedException> hostFailures) {
         this.domainFailure = null;
         if (hostFailures != null) {
             this.hostFailures.putAll(hostFailures);
         }
+        this.cancelled = false;
+        this.rolledBack = false;
+    }
+
+    public DomainUpdateApplierResponse(final List<ServerIdentity> servers) {
+        this.domainFailure = null;
         if (servers != null) {
             this.servers.addAll(servers);
         }
+        this.cancelled = false;
+        this.rolledBack = false;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public boolean isRolledBack() {
+        return rolledBack;
     }
 
     public UpdateFailedException getDomainFailure() {

@@ -25,7 +25,8 @@ package org.jboss.as.domain.client.api;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
-import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
+
+import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.impl.DomainClientImpl;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.DomainModel;

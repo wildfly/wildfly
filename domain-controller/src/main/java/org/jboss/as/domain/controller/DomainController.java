@@ -22,39 +22,46 @@
 
 package org.jboss.as.domain.controller;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.stream.XMLInputFactory;
+
 import org.jboss.as.domain.client.api.DomainUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
 import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.stream.XMLInputFactory;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 
 /**
  * A Domain controller instance.
@@ -65,35 +72,68 @@ public class DomainController implements Service<DomainController> {
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller");
     private DomainModel domainModel;
-    private final ConcurrentMap<String, DomainControllerClient> clients = new ConcurrentHashMap<String, DomainControllerClient>();
+    private final ConcurrentMap<String, ServerManagerClient> clients = new ConcurrentHashMap<String, ServerManagerClient>();
     private final InjectedValue<XMLMapper> xmlMapper = new InjectedValue<XMLMapper>();
     private final InjectedValue<File> domainConfigDir = new InjectedValue<File>();
+    private final InjectedValue<File> domainDeploymentsDir = new InjectedValue<File>();
     private final InjectedValue<ScheduledExecutorService> scheduledExecutorService = new InjectedValue<ScheduledExecutorService>();
+    private volatile DomainConfigurationPersister configPersister;
     private ScheduledFuture<?> pollingFuture;
+    private DomainDeploymentHandler deploymentPlanHandler;
+    private DomainDeploymentRepository deploymentRepository;
+
+    public DomainController() {
+    }
+
+    /**
+     * For use in testing.
+     * @param configPersister
+     */
+    public DomainController(final DomainConfigurationPersister configPersister, final DomainDeploymentRepository deploymentRepository) {
+        assert configPersister != null : "configPersister is null";
+        assert deploymentRepository != null : "deploymentRepository is null";
+        this.configPersister = configPersister;
+        this.deploymentRepository = deploymentRepository;
+    }
 
     /**
      * Start the domain controller with configuration.  This will launch required service for the domain controller.
      */
-    public synchronized void start(final StartContext context) {
-        log.info("Starting Domain Controller");
+    @Override
+    public synchronized void start(final StartContext context) throws StartException {
 
-        log.info("Parsing Domain Configuration");
-        domainModel = parseDomain(xmlMapper.getValue(), domainConfigDir.getValue());
+        try {
+            log.info("Starting Domain Controller");
 
-        pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                for(DomainControllerClient client : clients.values()) {
-                    if(!client.isActive()) {
-                        log.warnf("Registered Server Manager [%s] is no longer active", client.getId());
+            if (configPersister == null) {
+                configPersister = new DomainConfigurationPersisterImpl(getDomainConfigDir());
+            }
+            if (deploymentRepository == null) {
+                deploymentRepository = new DomainDeploymentRepository(getDomainDeploymentsDir());
+            }
+
+            log.info("Parsing Domain Configuration");
+            domainModel = parseDomain(xmlMapper.getValue());
+
+            deploymentPlanHandler = new DomainDeploymentHandler(this, scheduledExecutorService.getValue());
+            pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
+                public void run() {
+                    for(ServerManagerClient client : clients.values()) {
+                        if(!client.isActive()) {
+                            log.warnf("Registered Server Manager [%s] is no longer active", client.getId());
+                        }
                     }
                 }
-            }
-        }, 30L, 30L, TimeUnit.SECONDS);
+            }, 30L, 30L, TimeUnit.SECONDS);
+        } catch (IllegalStateException e) {
+            throw new StartException("Failed to start " + getClass().getSimpleName(), e);
+        }
     }
 
     /**
      * Stop the domain controller
      */
+    @Override
     public synchronized void stop(final StopContext stopContext) {
         log.info("Stopping Domain Controller");
         domainModel = null;
@@ -102,11 +142,12 @@ public class DomainController implements Service<DomainController> {
         }
     }
 
+    @Override
     public DomainController getValue() throws IllegalStateException {
         return this;
     }
 
-    public void addClient(final DomainControllerClient domainControllerClient) {
+    public void addClient(final ServerManagerClient domainControllerClient) {
         if(clients.putIfAbsent(domainControllerClient.getId(), domainControllerClient) != null) {
             // TODO: Handle
         }
@@ -122,18 +163,11 @@ public class DomainController implements Service<DomainController> {
         return domainModel;
     }
 
-    private DomainModel parseDomain(final XMLMapper mapper,  final File domainConfigDir) {
-        final File domainXML = new File(domainConfigDir, "domain.xml");
-        if (!domainXML.exists()) {
-            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " does not exist. A DomainController cannot be launched without a valid domain.xml");
-        }
-        else if (! domainXML.canWrite()) {
-            throw new IllegalStateException("File " + domainXML.getAbsolutePath() + " is not writable. A DomainController cannot be launched without a writable domain.xml");
-        }
-
+    private DomainModel parseDomain(final XMLMapper mapper) {
         try {
+            Reader reader = configPersister.getConfigurationReader();
             final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
-            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(domainXML))));
+            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(reader)));
             final DomainModel domainModel = new DomainModel();
             for(final AbstractDomainModelUpdate<?> update : domainUpdates) {
                 domainModel.update(update);
@@ -154,95 +188,125 @@ public class DomainController implements Service<DomainController> {
         return domainConfigDir.getValue();
     }
 
+    File getDomainDeploymentsDir() {
+        return domainDeploymentsDir.getValue();
+    }
+
     public Injector<File> getDomainConfigDirInjector() {
         return domainConfigDir;
+    }
+
+    public Injector<File> getDomainDeploymentsDirInjector() {
+        return domainDeploymentsDir;
     }
 
     public Injector<ScheduledExecutorService> getScheduledExecutorServiceInjector() {
         return scheduledExecutorService;
     }
 
-    public <T> DomainUpdateResult<T> applyUpdate(AbstractDomainModelUpdate<T> update) {
-
-        // First apply to our DomainModel and push to all ServerManagers
-        DomainUpdateApplierResponse firstCut = applyUpdateToModel(update);
-
-        if (firstCut.getDomainFailure() != null) {
-            // A failure applying to the local DomainModel means nothing
-            // further was done
-            return new DomainUpdateResult<T>(firstCut.getDomainFailure());
+    public List<DomainUpdateResult<?>> applyUpdates(List<AbstractDomainModelUpdate<?>> updates) {
+        if (updates == null || updates.size() == 0) {
+            throw new IllegalArgumentException("updates is " + (updates == null ? "null" : "empty"));
         }
+        List<DomainUpdateResult<?>> result;
 
-        // If the push to ServerManagers resulted in any Server's that need
-        // update, push the change to those servers
-        Map<ServerIdentity, T> serverResults = null;
-        Map<ServerIdentity, Throwable> serverFailures = null;
+        List<DomainUpdateApplierResponse> domainResults = applyUpdatesToModel(updates);
 
-        List<ServerIdentity> servers = firstCut.getServers();
-        if (servers != null && servers.size() > 0) {
-
-            List<AbstractServerModelUpdate<?>> serverUpdates =
-                Collections.<AbstractServerModelUpdate<?>>singletonList(update.getServerModelUpdate());
-
-            for (ServerIdentity server : servers) {
-                List<UpdateResultHandlerResponse<?>> rsps = applyUpdateToServer(serverUpdates, server);
-                UpdateResultHandlerResponse<?> rsp = rsps.get(0);
-                if (rsp.getFailureResult() != null) {
-                    if (serverFailures == null) {
-                        serverFailures = new HashMap<ServerIdentity, Throwable>();
-                    }
-                    serverFailures.put(server, rsp.getFailureResult());
+        // Check the last update to verify overall success
+        DomainUpdateApplierResponse last = domainResults.get(domainResults.size() - 1);
+        if (last.isCancelled() || last.isRolledBack() || last.getDomainFailure() != null || last.getHostFailures().size() > 0) {
+            // Something failed; don't push to servers
+            result = new ArrayList<DomainUpdateResult<?>>();
+            for (DomainUpdateApplierResponse duar : domainResults) {
+                if (duar.isCancelled()) {
+                    result.add(new DomainUpdateResult<Object>(true));
+                }
+                else if (duar.isRolledBack()) {
+                    result.add(new DomainUpdateResult<Object>(false));
+                }
+                else if (duar.getDomainFailure() != null) {
+                    result.add(new DomainUpdateResult<Object>(duar.getDomainFailure()));
                 }
                 else {
-                    if (serverResults == null) {
-                        serverResults = new HashMap<ServerIdentity, T>();
-                    }
-                    @SuppressWarnings("unchecked")
-                    T result = (T) rsp.getSuccessResult();
-                    serverResults.put(server, result);
+                    result.add(new DomainUpdateResult<Object>(duar.getHostFailures()));
                 }
             }
         }
+        else {
+            // Push to servers
+            result = applyUpdatesToServers(updates, domainResults, false);
+        }
 
-        return new DomainUpdateResult<T>(firstCut.getHostFailures(), serverResults, serverFailures);
+        return result;
+    }
 
+    public <T> DomainUpdateResult<T> applyUpdate(AbstractDomainModelUpdate<T> update) {
+
+        @SuppressWarnings("unchecked")
+        DomainUpdateResult<T> result = (DomainUpdateResult<T>) applyUpdates(Collections.<AbstractDomainModelUpdate<?>>singletonList(update)).get(0);
+        return result;
     }
 
     public DomainUpdateApplierResponse applyUpdateToModel(AbstractDomainModelUpdate<?> update) {
-
-        try {
-            domainModel.update(update);
-            // FIXME persist!
-        } catch (UpdateFailedException e) {
-            return new DomainUpdateApplierResponse(e);
-        }
-
-        Map<String, UpdateFailedException> hostFailures = null;
-        List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
-        List<AbstractDomainModelUpdate<?>> updateList = Collections.<AbstractDomainModelUpdate<?>>singletonList(update);
-
-        // TODO this could be parallelized
-        for (Map.Entry<String, DomainControllerClient> entry : clients.entrySet()) {
-            DomainControllerClient client = entry.getValue();
-            List<ModelUpdateResponse<List<ServerIdentity>>> hostResponseList = client.updateDomainModel(updateList);
-            ModelUpdateResponse<List<ServerIdentity>> hostResponse = hostResponseList.get(0);
-            if (hostResponse.isSuccess()) {
-                servers.addAll(hostResponse.getResult());
-            }
-            else {
-                if (hostFailures == null) {
-                    hostFailures = new HashMap<String, UpdateFailedException>();
-                }
-                hostFailures.put(entry.getKey(), hostResponse.getUpdateException());
-            }
-        }
-
-        return new DomainUpdateApplierResponse(hostFailures, servers);
+        List<DomainUpdateApplierResponse> responses = applyUpdatesToModel(Collections.<AbstractDomainModelUpdate<?>>singletonList(update));
+        return responses.get(0);
     }
 
-    public List<UpdateResultHandlerResponse<?>> applyUpdateToServer(final List<AbstractServerModelUpdate<?>> updates, final ServerIdentity server) {
+    public List<DomainUpdateApplierResponse> applyUpdatesToModel(final List<AbstractDomainModelUpdate<?>> updates) {
 
-        DomainControllerClient client = clients.get(server.getHostName());
+        List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
+
+        // First we apply updates to our local model copy
+        boolean ok = true;
+        List<AbstractDomainModelUpdate<?>> rollbacks = new ArrayList<AbstractDomainModelUpdate<?>>();
+        for (AbstractDomainModelUpdate<?> update : updates) {
+            if (ok) {
+                try {
+                    AbstractDomainModelUpdate<?> rollback = update.getCompensatingUpdate(domainModel);
+                    domainModel.update(update);
+                    // Add the rollback after success so we don't rollback
+                    // the failed update -- which should not have changed anything
+                    rollbacks.add(0, rollback);
+                    // Stick in a placeholder result that will survive if
+                    // a domain update faiure triggers a rollback or will get replaced with
+                    // the final result if we apply to servers
+                    result.add(new DomainUpdateApplierResponse(false));
+                }
+                catch (UpdateFailedException e) {
+                    ok = false;
+                    result.add(new DomainUpdateApplierResponse(e));
+                }
+            } else {
+                // Add a cancellation response
+                result.add(new DomainUpdateApplierResponse(true));
+            }
+        }
+
+        if (!ok) {
+            // Apply compensating updates to fix our local model
+            for (int i = 0; i < rollbacks.size(); i++) {
+                AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
+                try {
+                    domainModel.update(rollback);
+                }
+                catch (UpdateFailedException e) {
+                    // TODO uh oh. Reload from the file?
+                }
+            }
+        }
+        else {
+            // Persist model
+            configPersister.persistConfiguration(domainModel);
+            // Move on to server managers.
+            result = applyUpdatesToServerManagers(updates, rollbacks);
+        }
+
+        return result;
+    }
+
+    public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
+
+        ServerManagerClient client = clients.get(server.getHostName());
         List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>();
 
         if (client == null) {
@@ -253,10 +317,10 @@ public class DomainController implements Service<DomainController> {
             }
         }
         else {
-            List<ModelUpdateResponse<?>> rsps = client.updateServerModel(updates, server.getServerName());
-            for (ModelUpdateResponse<?> rsp : rsps) {
+            List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> rsps = client.updateServerModel(server.getServerName(), updates, allowOverallRollback);
+            for (ModelUpdateResponse<UpdateResultHandlerResponse<?>> rsp : rsps) {
                 if (rsp.isSuccess()) {
-                    responses.add(UpdateResultHandlerResponse.createSuccessResponse(rsp.getResult()));
+                    responses.add(rsp.getResult());
                 }
                 else {
                     responses.add(UpdateResultHandlerResponse.createFailureResponse(rsp.getUpdateException()));
@@ -264,5 +328,262 @@ public class DomainController implements Service<DomainController> {
             }
         }
         return responses;
+    }
+
+    public void executeDeploymentPlan(DeploymentPlan plan, BlockingQueue<List<StreamedResponse>> responseQueue) {
+        deploymentPlanHandler.executeDeploymentPlan(plan, responseQueue);
+    }
+
+    public DomainDeploymentRepository getDomainDeploymentRepository() {
+        if (deploymentRepository == null) {
+            throw new IllegalStateException("Must call start before requesting " + DomainDeploymentRepository.class.getSimpleName());
+        }
+        return deploymentRepository;
+    }
+
+    private List<DomainUpdateApplierResponse> applyUpdatesToServerManagers(final List<AbstractDomainModelUpdate<?>> updates,
+            List<AbstractDomainModelUpdate<?>> rollbacks) {
+
+        List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
+
+        // We update server managers concurrently
+        boolean ok = true;
+        Map<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> futures = new HashMap<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>>();
+        for (Map.Entry<String, ServerManagerClient> entry : clients.entrySet()) {
+            final ServerManagerClient client = entry.getValue();
+            final Callable<List<ModelUpdateResponse<List<ServerIdentity>>>> callable = new Callable<List<ModelUpdateResponse<List<ServerIdentity>>>>() {
+
+                @Override
+                public List<ModelUpdateResponse<List<ServerIdentity>>> call() throws Exception {
+                    return client.updateDomainModel(updates);
+                }
+
+            };
+
+            futures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
+        }
+
+        // Collate the results for each update
+        for (int i = 0; i < updates.size(); i++) {
+
+            Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
+            List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
+
+            for (Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
+                try {
+                    List<ModelUpdateResponse<List<ServerIdentity>>> list = entry.getValue().get();
+                    if (list.size() > i) {
+                        ModelUpdateResponse<List<ServerIdentity>> hostResponse = list.get(i);
+                        if (hostResponse.isSuccess()) {
+                            servers.addAll(hostResponse.getResult());
+                        }
+                        else {
+                            hostFailures.put(entry.getKey(), hostResponse.getUpdateException());
+                        }
+                    }
+                    // else this host didn't get this far
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    hostFailures.put(entry.getKey(), new UpdateFailedException(e));
+                } catch (ExecutionException e) {
+                    hostFailures.put(entry.getKey(), new UpdateFailedException(e));
+                }
+            }
+            if (hostFailures.size() == 0) {
+                result.add(new DomainUpdateApplierResponse(servers));
+            }
+            else {
+                result.add(new DomainUpdateApplierResponse(hostFailures));
+                ok = false;
+                // No point processing other updates, as we are going to roll them back
+                // Act as if we did the whole thing one update at a time and this
+                // failure stopped us doing the rest
+                break;
+            }
+        }
+
+        if (!ok) {
+
+            // Some server manager failed, so we gotta roll 'em all back
+
+            // List of servers we fail to successfully roll back
+            Set<String> outOfSync = new HashSet<String>();
+
+            Map<String, Future<Boolean>> rollbackFutures = new HashMap<String, Future<Boolean>>(futures.size());
+            for (Map.Entry<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> entry : futures.entrySet()) {
+                try {
+                    // For this host figure out how many updates need to be rolled back
+                    List<ModelUpdateResponse<List<ServerIdentity>>> rspList = entry.getValue().get();
+                    int idx = rspList.size() - 1;
+                    if (idx >= 0 && !rspList.get(idx).isSuccess()) {
+                        idx--; // !isSuccess one shouldn't have affected model state so no rollback of it
+                    }
+                    if (idx < 0) {
+                        // This host didn't apply anything
+                        continue;
+                    }
+
+                    // Set up the rollback list
+                    final List<AbstractDomainModelUpdate<?>> serverRollbacks =
+                        (idx == rollbacks.size() -1) ? rollbacks : new ArrayList<AbstractDomainModelUpdate<?>>(idx + 1);
+                    if (serverRollbacks != rollbacks) {
+                        // Rollbacks are in reverse order from updates. We take
+                        // the last X=idx items from the rollback list since
+                        // those correspond to the updates that didn't fail and need rollback
+                        for (int j = rollbacks.size() - 1 - idx; j < rollbacks.size(); j++) {
+                            serverRollbacks.add(rollbacks.get(j));
+                        }
+                    }
+                    // Tell the host to roll back
+                    final ServerManagerClient client = clients.get(entry.getKey());
+                    Callable<Boolean> callable = new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(serverRollbacks);
+                            return Boolean.valueOf(rsp.size() == serverRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
+                        }
+                    };
+                    rollbackFutures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    outOfSync.add(entry.getKey());
+                } catch (ExecutionException e) {
+                    outOfSync.add(entry.getKey());
+                }
+            }
+
+            // Wait until rollbacks complete
+            for (Map.Entry<String, Future<Boolean>> entry : rollbackFutures.entrySet()) {
+                try {
+                    if (!entry.getValue().get()) {
+                        outOfSync.add(entry.getKey());
+                    }
+                }  catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    outOfSync.add(entry.getKey());
+                } catch (ExecutionException e) {
+                    outOfSync.add(entry.getKey());
+                }
+            }
+
+            for (String host : outOfSync) {
+                // Rollback failed; need to push the whole model
+                ServerManagerClient client = clients.get(host);
+                client.updateDomainModel(domainModel);
+            }
+
+            // Update the result list to record the rollbacks
+            for (int i = 0; i < result.size(); i++) {
+                DomainUpdateApplierResponse rsp = result.get(i);
+                if (rsp.getHostFailures().size() < 0) {
+                    result.set(i, new DomainUpdateApplierResponse(false));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<DomainUpdateResult<?>> applyUpdatesToServers(final List<AbstractDomainModelUpdate<?>> updates,
+                                                              final List<DomainUpdateApplierResponse> domainResults,
+                                                              final boolean allowOverallRollback) {
+        List<DomainUpdateResult<?>> result;
+        Map<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>> serverByDomain =
+            new HashMap<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>>();
+        Map<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>> resultsByUpdate = new HashMap<AbstractServerModelUpdate<?>, DomainUpdateResult<Object>>();
+        for (int i = 0; i < updates.size(); i++) {
+            AbstractDomainModelUpdate<?> domainUpdate = updates.get(i);
+            AbstractServerModelUpdate<?> serverUpdate = domainUpdate.getServerModelUpdate();
+            if (serverUpdate != null) {
+                serverByDomain.put(domainUpdate, serverUpdate);
+                resultsByUpdate.put(serverUpdate, new DomainUpdateResult<Object>());
+            }
+        }
+        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer = getUpdatesByServer(updates, domainResults, serverByDomain);
+
+        // TODO Add param to configure pushing out concurrently
+        for (Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
+            ServerIdentity server = entry.getKey();
+            List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
+            // Push them out -- TODO add rollback flag!
+            List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates, allowOverallRollback);
+            for (int i = 0; i < serverUpdates.size(); i++) {
+                UpdateResultHandlerResponse<?> rsp = rsps.get(i);
+                AbstractServerModelUpdate<?> serverUpdate = entry.getValue().get(i);
+                DomainUpdateResult<Object> dur = resultsByUpdate.get(serverUpdate);
+
+                if (rsp.isCancelled()) {
+                    dur = dur.newWithAddedCancellation(server);
+                }
+                else if (rsp.isTimedOut()) {
+                    dur = dur.newWithAddedTimeout(server);
+                }
+                else if (rsp.isRolledBack()) {
+                    dur = dur.newWithAddedRollback(server);
+                }
+                else if (rsp.getFailureResult() != null) {
+                    dur = dur.newWithAddedFailure(server, rsp.getFailureResult());
+                }
+                else {
+                    dur = dur.newWithAddedResult(server, rsp.getSuccessResult());
+                }
+                resultsByUpdate.put(serverUpdate, dur);
+            }
+        }
+
+        result = new ArrayList<DomainUpdateResult<?>>();
+        for (AbstractDomainModelUpdate<?> domainUpdate : updates) {
+            AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
+            DomainUpdateResult<?> dur = resultsByUpdate.get(serverUpdate);
+            if (dur == null) {
+                // Update did not impact servers
+                dur = new DomainUpdateResult<Object>();
+            }
+            result.add(dur);
+        }
+        return result;
+    }
+
+    private Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> getUpdatesByServer(
+            final List<AbstractDomainModelUpdate<?>> domainUpdates,
+            final List<DomainUpdateApplierResponse> domainResults,
+            final Map<AbstractDomainModelUpdate<?>, AbstractServerModelUpdate<?>> serverByDomain) {
+
+        Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> result = new HashMap<ServerIdentity, List<AbstractServerModelUpdate<?>>>();
+
+        for (int i = 0; i < domainResults.size(); i++) {
+            DomainUpdateApplierResponse domainResult = domainResults.get(i);
+            AbstractDomainModelUpdate<?> domainUpdate = domainUpdates.get(i);
+            AbstractServerModelUpdate<?> serverUpdate = serverByDomain.get(domainUpdate);
+            for (ServerIdentity server : domainResult.getServers()) {
+                List<AbstractServerModelUpdate<?>> serverList = result.get(server);
+                if (serverList == null) {
+                    serverList = new ArrayList<AbstractServerModelUpdate<?>>();
+                    result.put(server, serverList);
+                }
+                serverList.add(serverUpdate);
+            }
+        }
+        return result;
+    }
+
+    UpdateResultHandlerResponse<?> restartServer(ServerIdentity server, long gracefulTimeout) {
+        ServerManagerClient client = clients.get(server.getHostName());
+
+        if (client == null) {
+            // TODO better handle disappearance of host
+            return UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
+        }
+        else {
+            ModelUpdateResponse<Void> rsp = client.restartServer(server.getServerName(), gracefulTimeout);
+            if (rsp.isSuccess()) {
+                return UpdateResultHandlerResponse.createRestartResponse();
+            }
+            else {
+                return UpdateResultHandlerResponse.createFailureResponse(rsp.getUpdateException());
+            }
+        }
+
     }
 }

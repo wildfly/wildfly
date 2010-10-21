@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
@@ -44,7 +45,6 @@ import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
-import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.process.ProcessManagerClient;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
@@ -86,6 +86,10 @@ public final class ManagedServer {
      */
     static final String SERVER_PROCESS_NAME_PREFIX = "Server:";
 
+    public static String getServerProcessName(String serverName) {
+        return SERVER_PROCESS_NAME_PREFIX + serverName;
+    }
+
     private final String serverName;
     private final String serverProcessName;
     private final Map<String, String> systemProperties;
@@ -115,7 +119,7 @@ public final class ManagedServer {
         this.authKey = authKey;
 
         this.serverName = serverName;
-        this.serverProcessName = SERVER_PROCESS_NAME_PREFIX + serverName;
+        this.serverProcessName = getServerProcessName(serverName);
         this.environment = environment;
         this.processManagerClient = processManagerClient;
 
@@ -282,9 +286,14 @@ public final class ManagedServer {
         processManagerClient.removeProcess(serverProcessName);
     }
 
-    public <R> R applyUpdate(AbstractServerModelUpdate<R> update) throws UpdateFailedException {
+    public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates, boolean allowOverallRollback) {
         // FIXME implement RPC
-        throw new UpdateFailedException("ServerManager to Server RPC is not implemented");
+        throw new UnsupportedOperationException("ServerManager to Server RPC is not implemented");
+    }
+
+    public void gracefulShutdown(long timeout) throws IOException {
+        // FIXME implement RPC
+        throw new UnsupportedOperationException("ServerManager to Server RPC is not implemented");
     }
 
     private String getJavaCommand() {

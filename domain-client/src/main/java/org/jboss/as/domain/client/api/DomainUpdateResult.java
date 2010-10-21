@@ -24,7 +24,10 @@ package org.jboss.as.domain.client.api;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.model.UpdateFailedException;
 
@@ -40,25 +43,86 @@ public class DomainUpdateResult<R> implements Serializable {
 
     private static final long serialVersionUID = 4320577243229764829L;
 
+    private final boolean cancelled;
+    private final boolean rolledBack;
     private final UpdateFailedException domainFailure;
     private final Map<String, UpdateFailedException> hostFailures;
-    private final Map<ServerIdentity, R> serversResults;
+    private final Map<ServerIdentity, R> serverResults;
     private final Map<ServerIdentity, Throwable> serverFailures;
+    private final Set<ServerIdentity> serverCancellations;
+    private final Set<ServerIdentity> serverTimeouts;
+    private final Set<ServerIdentity> serverRollbacks;
+
+    public DomainUpdateResult() {
+        this.cancelled = false;
+        this.rolledBack = false;
+        this.domainFailure = null;
+        this.hostFailures = null;
+        this.serverResults = null;
+        this.serverFailures = null;
+        this.serverCancellations = null;
+        this.serverTimeouts = null;
+        this.serverRollbacks = null;
+    }
+
+    public DomainUpdateResult(boolean cancelled) {
+        this.cancelled = cancelled;
+        this.rolledBack = !cancelled;
+        this.domainFailure = null;
+        this.hostFailures = null;
+        this.serverResults = null;
+        this.serverFailures = null;
+        this.serverCancellations = null;
+        this.serverTimeouts = null;
+        this.serverRollbacks = null;
+    }
 
     public DomainUpdateResult(final UpdateFailedException domainFailure) {
         this.domainFailure = domainFailure;
         this.hostFailures = null;
-        this.serversResults = null;
+        this.serverResults = null;
         this.serverFailures = null;
+        this.serverCancellations = null;
+        this.serverTimeouts = null;
+        this.serverRollbacks = null;
+        this.cancelled = false;
+        this.rolledBack = false;
     }
 
-    public DomainUpdateResult(final Map<String, UpdateFailedException> hostFailures,
-                              final Map<ServerIdentity, R> serversResults,
-                              final Map<ServerIdentity, Throwable> serverFailures) {
+    public DomainUpdateResult(final Map<String, UpdateFailedException> hostFailures) {
         this.domainFailure = null;
         this.hostFailures = hostFailures;
-        this.serversResults = serversResults;
+        this.serverResults = null;
+        this.serverFailures = null;
+        this.serverCancellations = null;
+        this.serverTimeouts = null;
+        this.serverRollbacks = null;
+        this.cancelled = false;
+        this.rolledBack = false;
+    }
+
+    public DomainUpdateResult(final Map<ServerIdentity, R> serverResults,
+                              final Map<ServerIdentity, Throwable> serverFailures,
+                              final Set<ServerIdentity> serverCancellations,
+                              final Set<ServerIdentity> serverTimeouts,
+                              final Set<ServerIdentity> serverRollbacks) {
+        this.domainFailure = null;
+        this.hostFailures = null;
+        this.serverResults = serverResults;
         this.serverFailures = serverFailures;
+        this.serverCancellations = serverCancellations;
+        this.serverTimeouts = serverTimeouts;
+        this.serverRollbacks = serverRollbacks;
+        this.cancelled = false;
+        this.rolledBack = false;
+    }
+
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    public boolean isRolledBack() {
+        return this.rolledBack;
     }
 
     public UpdateFailedException getDomainFailure() {
@@ -66,15 +130,27 @@ public class DomainUpdateResult<R> implements Serializable {
     }
 
     public Map<String, UpdateFailedException> getHostFailures() {
-        return hostFailures == null ? null : Collections.unmodifiableMap(hostFailures);
+        return hostFailures == null ? Collections.<String, UpdateFailedException>emptyMap() : Collections.unmodifiableMap(hostFailures);
     }
 
     public Map<ServerIdentity, R> getServerResults() {
-        return serversResults == null ? null : Collections.unmodifiableMap(serversResults);
+        return serverResults == null ? Collections.<ServerIdentity, R>emptyMap() : Collections.unmodifiableMap(serverResults);
     }
 
     public Map<ServerIdentity, Throwable> getServerFailures() {
-        return serverFailures == null ? null : Collections.unmodifiableMap(serverFailures);
+        return serverFailures == null ? Collections.<ServerIdentity, Throwable>emptyMap() : Collections.unmodifiableMap(serverFailures);
+    }
+
+    public Set<ServerIdentity> getServerCancellations() {
+        return serverCancellations == null ? Collections.<ServerIdentity>emptySet() : Collections.unmodifiableSet(serverCancellations);
+    }
+
+    public Set<ServerIdentity> getServerTimeouts() {
+        return serverTimeouts == null ? Collections.<ServerIdentity>emptySet() : Collections.unmodifiableSet(serverTimeouts);
+    }
+
+    public Set<ServerIdentity> getServerRollbacks() {
+        return serverRollbacks == null ? Collections.<ServerIdentity>emptySet() : Collections.unmodifiableSet(serverRollbacks);
     }
 
     /**
@@ -83,10 +159,48 @@ public class DomainUpdateResult<R> implements Serializable {
      * @return true if the update was a success, false if not.
      */
     public boolean isSuccess() {
-        return domainFailure == null
+        return !cancelled
+            && rolledBack
+            && domainFailure == null
             && (hostFailures == null || hostFailures.size() == 0)
-            && (serverFailures == null || serverFailures.size() == 0);
+            && (serverFailures == null || serverFailures.size() == 0)
+            && (serverCancellations == null || serverCancellations.size() == 0)
+            && (serverTimeouts == null || serverTimeouts.size() == 0)
+            && (serverRollbacks == null || serverRollbacks.size() == 0);
     }
 
+    public DomainUpdateResult<R> newWithAddedResult(ServerIdentity server, R result) {
+        checkAllowServer();
+        Map<ServerIdentity, R> sr = (serverResults == null) ? new HashMap<ServerIdentity, R>() : new HashMap<ServerIdentity, R>(serverResults);
+        return new DomainUpdateResult<R>(sr, serverFailures, serverCancellations, serverTimeouts, serverRollbacks);
+    }
 
+    public DomainUpdateResult<R> newWithAddedFailure(ServerIdentity server, Throwable failure) {
+        checkAllowServer();
+        Map<ServerIdentity, Throwable> sf = (serverFailures == null) ? new HashMap<ServerIdentity, Throwable>() : new HashMap<ServerIdentity, Throwable>(serverFailures);
+        return new DomainUpdateResult<R>(serverResults, sf, serverCancellations, serverTimeouts, serverRollbacks);
+    }
+
+    public DomainUpdateResult<R> newWithAddedCancellation(ServerIdentity server) {
+        checkAllowServer();
+        Set<ServerIdentity> sc = (serverCancellations == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverCancellations);
+        return new DomainUpdateResult<R>(serverResults, serverFailures, sc, serverTimeouts, serverRollbacks);
+    }
+
+    public DomainUpdateResult<R> newWithAddedTimeout(ServerIdentity server) {
+        checkAllowServer();
+        Set<ServerIdentity> st = (serverTimeouts == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverTimeouts);
+        return new DomainUpdateResult<R>(serverResults, serverFailures, serverCancellations, st, serverRollbacks);
+    }
+
+    public DomainUpdateResult<R> newWithAddedRollback(ServerIdentity server) {
+        checkAllowServer();
+        Set<ServerIdentity> sr = (serverRollbacks == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverRollbacks);
+        return new DomainUpdateResult<R>(serverResults, serverFailures, serverCancellations, serverTimeouts, sr);
+    }
+
+    private void checkAllowServer() {
+        if (cancelled || rolledBack || domainFailure != null || (hostFailures != null && hostFailures.size() > 0))
+            throw new IllegalStateException("Cannot add server results to an update that was not successfully applied to the domain");
+    }
 }

@@ -28,6 +28,12 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 
 /**
+ * Callback interface for listeners that wish to receive notifications related
+ * to the execution of an update to the domain. Besides the domain-level notifications
+ * specified in this {@link UpdateResultHandler} sub-interface, implementations
+ * will also receive {@link UpdateResultHandler} notifications for every server to
+ * which the update is applied.
+ *
  * @author Brian Stansberry
  */
 public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerIdentity> {
@@ -54,5 +60,27 @@ public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerId
      *  subsequent invocations on the methods in the {@link UpdateResultHandler super-interface}
      */
     void handleServersIdentified(Collection<ServerIdentity> affectedServers);
+
+    /**
+     * Handle the event of the execution of the update being cancelled.
+     * This would occur as a result of a previously executed update in the same set of updates
+     * failing to apply successfully to the domain.
+     */
+    void handleCancelledByDomain();
+
+    /**
+     * Handle the event of the execution of the update being rolled back
+     * after it was successfully applied to the domain and to the server managers.
+     * This would occur as a result of another update in the same set of updates
+     * failing to apply successfully.
+     */
+    void handleDomainRollback();
+
+    /**
+     * Handle the final completion of the update, after which the update is no
+     * longer eligible to be rolled back. This notification will be
+     * emitted for every update, even if the update failed or was {@link #handleCancelled}.
+     */
+    void handleComplete();
 
 }

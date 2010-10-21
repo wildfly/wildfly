@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -40,12 +42,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
-import org.jboss.as.domain.controller.DomainConfigurationPersister;
+import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
-import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
 import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -199,12 +198,19 @@ public class ServerManager {
         }
     }
 
-    public <R> R applyUpdate(final String serverName, final AbstractServerModelUpdate<R> update) throws UpdateFailedException {
+    public List<UpdateResultHandlerResponse<?>> applyUpdates(final String serverName, final List<AbstractServerModelUpdate<?>> updates,
+            boolean allowOverallRollback) {
         final ManagedServer server = servers.get(serverName);
         if(server == null) {
-            throw new UpdateFailedException("No server available with name " + serverName);
+            UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(new UpdateFailedException("No server available with name " + serverName));
+            int size = updates.size();
+            List<UpdateResultHandlerResponse<?>> list = new ArrayList<UpdateResultHandlerResponse<?>>(size);
+            for (int i = 0; i < size; i++) {
+                list.add(urhr);
+            }
+            return list;
         }
-        return server.applyUpdate(update);
+        return server.applyUpdates(updates, allowOverallRollback);
     }
 
     /**
@@ -422,13 +428,8 @@ public class ServerManager {
             batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
                 .addInjection(domainController.getXmlMapperInjector(), mapper)
                 .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
+                .addInjection(domainController.getDomainDeploymentsDirInjector(), environment.getDomainDeploymentDir())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
-
-            // TODO consider having all these as components of DomainController
-            // and not independent services
-            DomainDeploymentRepository.addService(environment.getDomainDeploymentDir(), batchBuilder);
-            DomainDeploymentManagerImpl.addService(serviceContainer, batchBuilder);
-            DomainConfigurationPersister.addService(batchBuilder);
 
             final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
             batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
@@ -441,8 +442,6 @@ public class ServerManager {
             final DomainControllerClientOperationHandler domainControllerClientOperationHandler = new DomainControllerClientOperationHandler();
             batchBuilder.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
-                .addDependency(DomainDeploymentManager.SERVICE_NAME_LOCAL, DomainDeploymentManager.class, domainControllerClientOperationHandler.getDomainDeploymentManagerInjector())
-                .addDependency(DomainDeploymentRepository.SERVICE_NAME, DomainDeploymentRepository.class, domainControllerClientOperationHandler.getDomainDeploymentRepositoryInjector())
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
 
             batchBuilder.addService(SERVICE_NAME_BASE.append("local", "dc", "connection"), Service.NULL)
@@ -628,23 +627,63 @@ public class ServerManager {
         // TODO: use the actual address of the SM...
         InetSocketAddress managementSocket = new InetSocketAddress(0);
         HostModel hostConfig = getHostModel();
-        DomainModel domainConfig = getDomainModel();
         for (ServerElement serverEl : hostConfig.getServers()) {
             // TODO take command line input on what servers to start
             if (serverEl.isStart()) {
-                log.info("Starting server " + serverEl.getName());
+                String serverName = serverEl.getName();
+                log.info("Starting server " + serverName);
                 try {
-                    ManagedServer server = new ManagedServer(serverEl.getName(), domainConfig, hostConfig, environment, processManagerClient, managementSocket);
-                    servers.put(server.getServerProcessName(), server);
-                    // Now that the server is in the servers map we can start it
-                    server.addServerProcess();
-                    server.startServerProcess();
+                    startServer(serverName, managementSocket);
                 } catch (IOException e) {
                     // FIXME handle failure to start server
-                    log.error("Failed to start server " + serverEl.getName(), e);
+                    log.error("Failed to start server " + serverName, e);
                 }
             }
             else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
+    }
+
+    void startServer(String serverName) throws IOException {
+        String processName = ManagedServer.getServerProcessName(serverName);
+        ManagedServer server = servers.get(processName);
+        if (server != null) {
+            if (server.getState() != ServerState.STOPPED) {
+                throw new IllegalStateException("Server " + serverName + " is not stopped; state is " + server.getState());
+            }
+            server.removeServerProcess();
+            servers.remove(processName);
+        }
+        // TODO: use the actual address of the SM...
+        InetSocketAddress managementSocket = new InetSocketAddress(0);
+        startServer(serverName, managementSocket);
+    }
+
+    void stopServer(String serverName, long gracefulTimeout) throws IOException {
+        String processName = ManagedServer.getServerProcessName(serverName);
+        ManagedServer server = servers.get(processName);
+        if (server == null) {
+            throw new IllegalStateException(String.format("Server %s is unknown; cannot stop it", serverName));
+        }
+        if (gracefulTimeout > -1) {
+            server.gracefulShutdown(gracefulTimeout);
+            // FIXME figure out how/when server.removeServerProcess() && servers.remove(processName) happens
+        }
+        else {
+            server.stopServerProcess();
+            server.removeServerProcess();
+            servers.remove(processName);
+        }
+    }
+
+    void restartServer(String serverName, long gracefulTimeout) throws IOException {
+        stopServer(serverName, gracefulTimeout);
+        startServer(serverName);
+    }
+
+    private void startServer(String serverName, InetSocketAddress managementSocket) throws IOException {
+        ManagedServer server = new ManagedServer(serverName, getDomainModel(), getHostModel(), environment, processManagerClient, managementSocket);
+        servers.put(server.getServerProcessName(), server);
+        server.addServerProcess();
+        server.startServerProcess();
     }
 }

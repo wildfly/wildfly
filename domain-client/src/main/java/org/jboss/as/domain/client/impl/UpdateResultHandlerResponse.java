@@ -34,28 +34,42 @@ public class UpdateResultHandlerResponse<R> {
     private final Throwable failureResult;
     private final boolean cancelled;
     private final boolean timedOut;
+    private final boolean rolledBack;
+    private final boolean restarted;
 
     public static <R> UpdateResultHandlerResponse<R> createSuccessResponse(R result) {
-        return new UpdateResultHandlerResponse<R>(result, null, false, false);
+        return new UpdateResultHandlerResponse<R>(result, null, false, false, false, false);
     }
 
     public static <R> UpdateResultHandlerResponse<R> createFailureResponse(Throwable cause) {
-        return new UpdateResultHandlerResponse<R>(null, cause, false, false);
+        return new UpdateResultHandlerResponse<R>(null, cause, false, false, false, false);
     }
 
     public static <R> UpdateResultHandlerResponse<R> createCancellationResponse() {
-        return new UpdateResultHandlerResponse<R>(null, null, true, false);
+        return new UpdateResultHandlerResponse<R>(null, null, true, false, false, false);
     }
 
     public static <R> UpdateResultHandlerResponse<R> createTimeoutResponse() {
-        return new UpdateResultHandlerResponse<R>(null, null, false, true);
+        return new UpdateResultHandlerResponse<R>(null, null, false, true, false, false);
     }
 
-    private UpdateResultHandlerResponse(final R successResult, final Throwable failureResult, final boolean cancelled, final boolean timedOut) {
+    public static <R> UpdateResultHandlerResponse<R> createRollbackResponse() {
+        return new UpdateResultHandlerResponse<R>(null, null, false, false, true, false);
+    }
+
+    public static <R> UpdateResultHandlerResponse<R> createRestartResponse() {
+        return new UpdateResultHandlerResponse<R>(null, null, false, false, false, true);
+    }
+
+    private UpdateResultHandlerResponse(final R successResult, final Throwable failureResult,
+            final boolean cancelled, final boolean timedOut,
+            final boolean rolledBack, final boolean restarted) {
         this.successResult = successResult;
         this.failureResult = failureResult;
         this.cancelled = cancelled;
         this.timedOut = timedOut;
+        this.rolledBack = rolledBack;
+        this.restarted = restarted;
     }
 
 
@@ -73,6 +87,14 @@ public class UpdateResultHandlerResponse<R> {
 
     public boolean isTimedOut() {
         return timedOut;
+    }
+
+    public boolean isRolledBack() {
+        return rolledBack;
+    }
+
+    public boolean isServerRestarted() {
+        return restarted;
     }
 
 }

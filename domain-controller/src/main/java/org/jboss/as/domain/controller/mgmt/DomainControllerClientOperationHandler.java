@@ -28,29 +28,25 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
-import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
-import org.jboss.as.deployment.client.api.domain.InvalidDeploymentPlanException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.jboss.as.domain.client.api.DomainUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
 import org.jboss.as.domain.client.impl.DomainClientProtocol;
 import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
+import org.jboss.as.domain.controller.StreamedResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
@@ -93,12 +89,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append("client", "operation", "handler");
 
     private final InjectedValue<DomainController> domainControllerValue = new InjectedValue<DomainController>();
-    private final InjectedValue<DomainDeploymentManager> domainDeploymentManagerValue = new InjectedValue<DomainDeploymentManager>();
-    private final InjectedValue<DomainDeploymentRepository> domainDeploymentRepositoryValue = new InjectedValue<DomainDeploymentRepository>();
-
     private DomainController domainController;
-    private DomainDeploymentManager deploymentManager;
-    private DomainDeploymentRepository deploymentRepository;
 
     /** {@inheritDoc} */
     public final byte getIdentifier() {
@@ -109,10 +100,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
     public synchronized void start(StartContext context) throws StartException {
         try {
             domainController = domainControllerValue.getValue();
-            deploymentManager = domainDeploymentManagerValue.getValue();
-            deploymentRepository = domainDeploymentRepositoryValue.getValue();
         } catch (IllegalStateException e) {
-            throw new StartException(e);
+            throw new StartException(String.format("%S not injected", DomainController.class.getSimpleName()), e);
         }
     }
 
@@ -128,14 +117,6 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
     public Injector<DomainController> getDomainControllerInjector() {
         return domainControllerValue;
-    }
-
-    public Injector<DomainDeploymentManager> getDomainDeploymentManagerInjector() {
-        return domainDeploymentManagerValue;
-    }
-
-    public Injector<DomainDeploymentRepository> getDomainDeploymentRepositoryInjector() {
-        return domainDeploymentRepositoryValue;
     }
 
     /**
@@ -168,7 +149,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             case DomainClientProtocol.APPLY_UPDATES_REQUEST:
                 return new ApplyDomainModelUpdatesOperation();
             case DomainClientProtocol.APPLY_UPDATE_REQUEST:
-                return new ApplyDomainModelUpdateOperation();
+                return new ApplyUpdateToDomainModelUpdateOperation();
             case DomainClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
                 return new ExecuteDeploymentPlanOperation();
             case DomainClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
@@ -210,7 +191,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         protected final void readRequest(final InputStream inputStream) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
-            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
             int count = unmarshaller.readInt();
             updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
             for (int i = 0; i < count; i++) {
@@ -230,65 +211,11 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             }
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            marshaller.writeByte(DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
             marshaller.writeInt(responses.size());
             for (DomainUpdateResult<?> response : responses) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                if (response.getDomainFailure() != null) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                    marshaller.writeObject(response.getDomainFailure());
-                } else {
-                    marshaller.writeByte(DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
-                    marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
-                    Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
-                    if (hostFailures == null || hostFailures.size() == 0) {
-                        marshaller.writeInt(0);
-                    } else {
-                        marshaller.writeInt(hostFailures.size());
-                        for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
-                            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                            marshaller.writeUTF(entry.getKey());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                            marshaller.writeObject(entry.getValue());
-                        }
-                    }
-                    marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
-                    Map<ServerIdentity, Throwable> serverFailures = response.getServerFailures();
-                    if (serverFailures == null || serverFailures.size() == 0) {
-                        marshaller.writeInt(0);
-                    } else {
-                        marshaller.writeInt(serverFailures.size());
-                        for (Map.Entry<ServerIdentity, Throwable> entry : serverFailures.entrySet()) {
-                            ServerIdentity identity = entry.getKey();
-                            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                            marshaller.writeUTF(identity.getHostName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                            marshaller.writeUTF(identity.getServerGroupName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                            marshaller.writeUTF(identity.getServerName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                            marshaller.writeObject(entry.getValue());
-                        }
-                    }
-                    marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
-                    Map<ServerIdentity, ?> serverResults = response.getServerResults();
-                    if (serverResults == null || serverResults.size() == 0) {
-                        marshaller.writeInt(0);
-                    } else {
-                        marshaller.writeInt(serverResults.size());
-                        for (Map.Entry<ServerIdentity, ?> entry : serverFailures.entrySet()) {
-                            ServerIdentity identity = entry.getKey();
-                            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                            marshaller.writeUTF(identity.getHostName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                            marshaller.writeUTF(identity.getServerGroupName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                            marshaller.writeUTF(identity.getServerName());
-                            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
-                            marshaller.writeObject(entry.getValue());
-                        }
-                    }
-                }
+                marshaller.writeByte(DomainClientProtocol.RETURN_APPLY_UPDATE);
+                marshaller.writeObject(response);
             }
             marshaller.finish();
         }
@@ -298,7 +225,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         }
     }
 
-    private class ApplyDomainModelUpdateOperation extends ManagementResponse {
+    private class ApplyUpdateToDomainModelUpdateOperation extends ManagementResponse {
         private AbstractDomainModelUpdate<?> update;
 
         @Override
@@ -321,41 +248,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             DomainUpdateApplierResponse response = processUpdate();
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-            if (response.getDomainFailure() != null) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                marshaller.writeObject(response.getDomainFailure());
-            } else {
-                marshaller.writeByte(DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
-                Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
-                if (hostFailures == null || hostFailures.size() == 0) {
-                    marshaller.writeInt(0);
-                } else {
-                    marshaller.writeInt(hostFailures.size());
-                    for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
-                        marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                        marshaller.writeUTF(entry.getKey());
-                        marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                        marshaller.writeObject(entry.getValue());
-                    }
-                }
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
-                List<ServerIdentity> servers = response.getServers();
-                if (servers == null || servers.size() == 0) {
-                    marshaller.writeInt(0);
-                } else {
-                    marshaller.writeInt(servers.size());
-                    for (ServerIdentity server : servers) {
-                        marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                        marshaller.writeUTF(server.getHostName());
-                        marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                        marshaller.writeUTF(server.getServerGroupName());
-                        marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                        marshaller.writeUTF(server.getServerName());
-                    }
-                }
-            }
+            marshaller.writeByte(DomainClientProtocol.RETURN_APPLY_UPDATE);
+            marshaller.writeObject(response);
             marshaller.finish();
         }
 
@@ -395,24 +289,14 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             UpdateResultHandlerResponse<?> response = processUpdate();
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-            if (response.getFailureResult() != null) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                marshaller.writeObject(response.getFailureResult());
-            } else if (response.isCancelled()) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED);
-            } else if (response.isTimedOut()) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT);
-            } else {
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
-                marshaller.writeObject(response.getSuccessResult());
-            }
+            marshaller.writeByte(DomainClientProtocol.RETURN_APPLY_SERVER_MODEL_UPDATE);
+            marshaller.writeObject(response);
             marshaller.finish();
         }
 
         private UpdateResultHandlerResponse<?> processUpdate() {
             List<UpdateResultHandlerResponse<?>> list =
-                    domainController.applyUpdateToServer(Collections.<AbstractServerModelUpdate<?>>singletonList(update), server);
+                    domainController.applyUpdatesToServer(server, Collections.<AbstractServerModelUpdate<?>>singletonList(update), false);
             return list.get(0);
         }
     }
@@ -436,20 +320,32 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
-            final Future<DeploymentPlanResult> result;
-            try {
-                result = deploymentManager.execute(deploymentPlan);
-            } catch (InvalidDeploymentPlanException e) {
-                throw new ManagementException("Failed to execute deployment plan.", e);
-            }
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
-            try {
-                marshaller.writeObject(result.get());
-            } catch (Exception e) {
-                throw new ManagementException("Failed get deployment plan result.", e);
+
+            BlockingQueue<List<StreamedResponse>> responseQueue = new LinkedBlockingQueue<List<StreamedResponse>>();
+            domainController.executeDeploymentPlan(deploymentPlan, responseQueue);
+            StreamedResponse rsp;
+            do {
+                rsp = null;
+                List<StreamedResponse> rspList;
+                try {
+                    rspList = responseQueue.take();
+                }
+                catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Interrupted while reading deployment plan execution responses", ie);
+                }
+                for (StreamedResponse item : rspList) {
+                    rsp = item;
+                    marshaller.writeByte(rsp.getProtocolValue());
+                    if (rsp.getValue() != null) {
+                        marshaller.writeObject(rsp.getValue());
+                    }
+                }
             }
+            while (rsp != null && !rsp.isLastInStream());
+
             marshaller.finish();
         }
     }
@@ -474,7 +370,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_CONTENT);
                 final ChunkyByteInput contentInput = new ChunkyByteInput(input);
                 try {
-                    deploymentHash = deploymentRepository.addDeploymentContent(deploymentName, deploymentRuntimeName, contentInput);
+                    deploymentHash = domainController.getDomainDeploymentRepository().addDeploymentContent(deploymentName, deploymentRuntimeName, contentInput);
                 } finally {
                     contentInput.close();
                 }
@@ -488,9 +384,9 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_HASH_LENGTH);
+                output.writeByte(DomainClientProtocol.RETURN_DEPLOYMENT_HASH_LENGTH);
                 output.writeInt(deploymentHash.length);
-                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_HASH);
+                output.writeByte(DomainClientProtocol.RETURN_DEPLOYMENT_HASH);
                 output.write(deploymentHash);
                 output.close();
             } finally {

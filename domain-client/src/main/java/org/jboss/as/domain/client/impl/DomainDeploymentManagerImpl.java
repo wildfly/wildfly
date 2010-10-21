@@ -26,14 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
-import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
-import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
-import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
-import org.jboss.as.deployment.client.api.domain.InitialDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.api.domain.InvalidDeploymentPlanException;
-import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
-import org.jboss.as.deployment.client.impl.domain.InitialDeploymentPlanBuilderFactory;
+import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
+import org.jboss.as.domain.client.api.deployment.DeploymentPlanResult;
+import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
+import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.domain.client.api.deployment.InitialDeploymentPlanBuilder;
+import org.jboss.as.domain.client.impl.deployment.DeploymentContentDistributor;
+import org.jboss.as.domain.client.impl.deployment.InitialDeploymentPlanBuilderFactory;
 
 /**
  * Client-side {@link DomainDeploymentManager}.
@@ -68,7 +67,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
     }
 
     @Override
-    public Future<DeploymentPlanResult> execute(DeploymentPlan plan) throws InvalidDeploymentPlanException {
+    public Future<DeploymentPlanResult> execute(DeploymentPlan plan) {
         return this.client.execute(plan);
     }
 

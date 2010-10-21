@@ -65,6 +65,11 @@ public class RemoteDomainControllerTestCase {
 
         final DomainController domainController = new DomainController();
         domainController.getDomainConfigDirInjector().inject(new File(getClass().getResource("/test/configuration").toURI()));
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        File deploymentDir = new File(tmpDir, "domain-deployments-" + ((int) Math.random()));
+        deploymentDir.deleteOnExit();
+        deploymentDir.mkdirs();
+        domainController.getDomainDeploymentsDirInjector().inject(deploymentDir);
         final XMLMapper mapper = XMLMapper.Factory.create();
         StandardElementReaderRegistrar.Factory.getRegistrar().registerStandardDomainReaders(mapper);
         domainController.getXmlMapperInjector().inject(mapper);

@@ -72,6 +72,12 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-domain</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-deployment-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

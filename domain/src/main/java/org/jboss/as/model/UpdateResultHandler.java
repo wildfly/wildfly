@@ -80,8 +80,18 @@ public interface UpdateResultHandler<R, P> {
      */
     void handleRollbackFailure(Throwable cause, P param);
 
+    /**
+     * Handle cancellation of a rollback of the update.
+     *
+     * @param param the parameter passed in to the update method
+     */
     void handleRollbackCancellation(P param);
 
+    /**
+     * Handle a timeout in rolling back the update.
+     *
+     * @param param the parameter passed in to the update method
+     */
     void handleRollbackTimeout(P param);
 
     /**
@@ -127,10 +137,12 @@ public interface UpdateResultHandler<R, P> {
             this.param = param;
         }
 
+        @Override
         public void listenerAdded(final ServiceController<?> controller) {
             controller.setMode(ServiceController.Mode.REMOVE);
         }
 
+        @Override
         public void serviceRemoved(final ServiceController<?> controller) {
             resultHandler.handleSuccess(null, param);
         }
@@ -151,6 +163,7 @@ public interface UpdateResultHandler<R, P> {
             this.param = param;
         }
 
+        @Override
         public void serviceStarted(final ServiceController<?> controller) {
             try {
                 resultHandler.handleSuccess(null, param);
@@ -159,6 +172,7 @@ public interface UpdateResultHandler<R, P> {
             }
         }
 
+        @Override
         public void serviceFailed(final ServiceController<?> controller, final StartException reason) {
             try {
                 resultHandler.handleFailure(reason, param);
@@ -167,6 +181,7 @@ public interface UpdateResultHandler<R, P> {
             }
         }
 
+        @Override
         public void serviceRemoved(final ServiceController<?> controller) {
             try {
                 resultHandler.handleCancellation(param);

@@ -2,8 +2,6 @@ package org.jboss.as.deployment.client.api.server;
 
 import java.util.UUID;
 
-import org.jboss.as.deployment.client.api.domain.DeploymentActionResult;
-
 /**
  * Encapsulates the results of performing a configuration modification on an individual
  * server.
