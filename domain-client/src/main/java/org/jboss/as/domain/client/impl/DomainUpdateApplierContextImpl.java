@@ -46,7 +46,7 @@ class DomainUpdateApplierContextImpl<R> implements Context<R> {
     private final List<ServerIdentity> servers = new ArrayList<ServerIdentity>();
     private final DomainClientImpl client;
     private final AbstractServerModelUpdate<R> update;
-    private Future<UpdateResultHandlerResponse<R>> responseFuture;
+    private Future<Void> responseFuture;
     private boolean cancelled;
 
     static <R> Context<R> createDomainUpdateApplierContext(final DomainClientImpl client,
@@ -73,7 +73,7 @@ class DomainUpdateApplierContextImpl<R> implements Context<R> {
         }
         synchronized (this) {
             if (!cancelled) {
-                responseFuture = client.applyUpdateToServer(update, server);
+                responseFuture = client.applyUpdateToServer(update, server, resultHandler, param);
             }
         }
     }

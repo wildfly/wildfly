@@ -54,6 +54,7 @@ import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteOutput;
@@ -143,12 +144,14 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    <R> Future<UpdateResultHandlerResponse<R>> applyUpdateToServer(final AbstractServerModelUpdate<R> update,
-                                                           final ServerIdentity server) {
+    <R, P> Future<Void> applyUpdateToServer(final AbstractServerModelUpdate<R> update,
+                                                           final ServerIdentity server,
+                                                           final UpdateResultHandler<R, P> resultHandler,
+                                                           final P param) {
         try {
-            return new ApplyUpdateToServerOperation<R>(update, server).execute();
+            return new ApplyUpdateToServerOperation<R, P>(update, server, resultHandler, param).execute();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get deployment result future", e);
+            throw new RuntimeException("Failed to get update result future", e);
         }
     }
 
@@ -421,14 +424,20 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    private class ApplyUpdateToServerOperation<R> extends Request<UpdateResultHandlerResponse<R>> {
+    private class ApplyUpdateToServerOperation<R, P> extends Request<Void> {
         private final AbstractServerModelUpdate<R> update;
         private final ServerIdentity server;
+        private final UpdateResultHandler<R, P> resultHandler;
+        private final P param;
 
         private ApplyUpdateToServerOperation(final AbstractServerModelUpdate<R> update,
-                                             final ServerIdentity server) {
+                                             final ServerIdentity server,
+                                             final UpdateResultHandler<R, P> resultHandler,
+                                             final P param) {
             this.update = update;
             this.server = server;
+            this.resultHandler = resultHandler;
+            this.param = param;
         }
 
         @Override
@@ -459,23 +468,31 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final UpdateResultHandlerResponse<R> receiveResponse(final int protocolVersion, final ByteDataInput input) {
+        protected final Void receiveResponse(final int protocolVersion, final ByteDataInput input) {
             try {
                 byte resultCode = input.readByte();
                 if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
                     final Throwable exception = unmarshal(input, Throwable.class);
-                    return UpdateResultHandlerResponse.createFailureResponse(exception);
+                    if (resultHandler != null) {
+                        resultHandler.handleFailure(exception, param);
+                    }
                 }
                 else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED) {
-                    return UpdateResultHandlerResponse.createCancellationResponse();
+                    if (resultHandler != null) {
+                        resultHandler.handleCancellation(param);
+                    }
                 }
                 else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT) {
-                    return UpdateResultHandlerResponse.createTimeoutResponse();
+                    if (resultHandler != null) {
+                        resultHandler.handleTimeout(param);
+                    }
                 }
                 else if (resultCode == (byte) Protocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN) {
                     @SuppressWarnings("unchecked")
                     final R result = (R) unmarshal(input, Object.class);
-                    return UpdateResultHandlerResponse.createSuccessResponse(result);
+                    if (resultHandler != null) {
+                        resultHandler.handleSuccess(result, param);
+                    }
                 }
                 else {
                     throw new IOException("Invalid byte token.  Expecting '" +
@@ -486,6 +503,8 @@ public class DomainClientImpl implements DomainClient {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read update responses", e);
             }
+
+            return null;
         }
     }
 
