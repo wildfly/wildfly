@@ -44,7 +44,7 @@ import org.jboss.msc.value.Value;
 public class MBeanRegistrationService<T> implements Service<Void> {
     private static final Logger log = Logger.getLogger("org.jboss.as.jmx");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "registration");
-    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<T> value = new InjectedValue<T>();
     private final String name;
     private ObjectName objectName;
@@ -115,7 +115,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
     }
 
     public Injector<MBeanServer> getMBeanServerInjector() {
-        return mBeanServerValue;
+        return injectedMBeanServer;
     }
 
     public Injector<T> getValueInjector() {
@@ -123,7 +123,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
     }
 
     private MBeanServer getMBeanServer() {
-        MBeanServer mBeanServer = mBeanServerValue.getOptionalValue();
+        MBeanServer mBeanServer = injectedMBeanServer.getOptionalValue();
         if(mBeanServer == null) {
             mBeanServer = ManagementFactory.getPlatformMBeanServer();
         }

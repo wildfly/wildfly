@@ -63,7 +63,7 @@ import org.osgi.framework.launch.Framework;
  * @since 11-Sep-2010
  */
 public class FrameworkService implements Service<BundleContext> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi.system.context");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.parse("osgi.framework"));
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();

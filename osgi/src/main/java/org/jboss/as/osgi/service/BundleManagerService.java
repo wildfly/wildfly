@@ -67,7 +67,7 @@ import org.jboss.osgi.framework.plugin.ModuleManagerPlugin.ModuleSpecCreationHoo
  * @since 11-Sep-2010
  */
 public class BundleManagerService implements Service<BundleManager> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi.bundle.manager");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.parse("osgi.bundlemanager"));
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private InjectedValue<Configuration> injectedConfig = new InjectedValue<Configuration>();

@@ -39,7 +39,10 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -55,19 +58,27 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class JMXConnectorService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "connector");
-    private static final String RMI_BIND_NAME =  "jmxrmi";
+    private static final String RMI_BIND_NAME = "jmxrmi";
 
     private static final int BACKLOG = 50;
 
     private final Logger log = Logger.getLogger(JMXConnectorService.class);
-    private final InjectedValue<MBeanServer> mbeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<SocketBinding> registryPortBinding = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> serverPortBinding = new InjectedValue<SocketBinding>();
-
 
     private RMIConnectorServer adapter;
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
+
+    public static void addService(final BatchBuilder batchBuilder) {
+        JMXConnectorService jmxConnectorService = new JMXConnectorService();
+        BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService);
+        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector());
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-registry"), SocketBinding.class, jmxConnectorService.getRegistryPortBinding());
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-server"), SocketBinding.class, jmxConnectorService.getServerPortBinding());
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -80,7 +91,7 @@ public class JMXConnectorService implements Service<Void> {
 
             rmiServer = new RMIJRMPServerImpl(getRmiServerPort(), null, serverSocketFactory, env);
             JMXServiceURL url = buildJMXServiceURL();
-            adapter = new RMIConnectorServer(url, env, rmiServer, mbeanServerValue.getValue());
+            adapter = new RMIConnectorServer(url, env, rmiServer, injectedMBeanServer.getValue());
             adapter.start();
             registry.rebind(RMI_BIND_NAME, rmiServer.toStub());
         } catch (Exception e) {
@@ -88,9 +99,9 @@ public class JMXConnectorService implements Service<Void> {
         }
     }
 
-    public void stop(StopContext context)  {
+    public void stop(StopContext context) {
         try {
-           registry.unbind(RMI_BIND_NAME);
+            registry.unbind(RMI_BIND_NAME);
         } catch (Exception e) {
             log.error("Could not unbind jmx connector from registry", e);
         } finally {
@@ -112,23 +123,24 @@ public class JMXConnectorService implements Service<Void> {
 
     private JMXServiceURL buildJMXServiceURL() throws MalformedURLException {
         String host = getRmiRegistryAddressString();
-        if(host.indexOf(':') != -1) {  // is this a IPV6 literal address? if yes, surround with square brackets
+        if (host.indexOf(':') != -1) { // is this a IPV6 literal address? if yes, surround with square brackets
                                        // as per rfc2732.
                                        // IPV6 literal addresses have one or more colons
                                        // IPV4 addresses/hostnames have no colons
-           host = "[" + host + "]";
+            host = "[" + host + "]";
 
         }
         JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://" + host);
         return url;
-     }
+    }
+
     @Override
     public Void getValue() throws IllegalStateException {
         return null;
     }
 
     public InjectedValue<MBeanServer> getMBeanServerServiceInjector() {
-        return mbeanServerValue;
+        return injectedMBeanServer;
     }
 
     public InjectedValue<SocketBinding> getRegistryPortBinding() {

@@ -22,17 +22,15 @@
 
 package org.jboss.as.jmx;
 
-import javax.management.MBeanServer;
-
+import org.jboss.as.jmx.mbean.ManagedServiceContainerService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.services.net.SocketBinding;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElement> {
 
@@ -46,19 +44,9 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
 
-        //MBeanServer service
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
-
-        //JMXConnector service
-        JMXConnectorService jmxConnectorService = new JMXConnectorService();
-        batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
-            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
-            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-registry"), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
-            .addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-server"), SocketBinding.class, jmxConnectorService.getServerPortBinding())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
-
-
+        MBeanServerService.addService(batchBuilder);
+        JMXConnectorService.addService(batchBuilder);
+        ManagedServiceContainerService.addService(batchBuilder);
     }
 
     @Override

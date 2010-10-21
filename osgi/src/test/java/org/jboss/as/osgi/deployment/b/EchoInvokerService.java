@@ -36,7 +36,7 @@ import org.osgi.framework.ServiceReference;
 
 public class EchoInvokerService implements EchoInvoker, Service<EchoInvoker> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "xservice", "invoker");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.parse("osgi.xservice.invoker"));
 
     private BundleContext sysContext;
 
@@ -49,7 +49,7 @@ public class EchoInvokerService implements EchoInvoker, Service<EchoInvoker> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ServiceName serviceName = ServiceName.JBOSS.append("osgi.system.context");
+        ServiceName serviceName = ServiceName.JBOSS.append(ServiceName.parse("osgi.framework"));
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
             ServiceController<?> controller = serviceContainer.getRequiredService(serviceName);
