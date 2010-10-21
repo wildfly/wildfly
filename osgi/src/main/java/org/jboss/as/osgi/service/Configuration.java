@@ -55,7 +55,7 @@ import org.osgi.framework.Constants;
  */
 public class Configuration implements Service<Configuration> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi.configuration");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "configuration");
 
     /** The property that defines a comma seperated list of system module identifiers */
     static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";

@@ -62,7 +62,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
     private static final OSGiDeploymentListener listener = new OSGiDeploymentListener();
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi.deployment");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "deployment");
     public static boolean enableListener = true;
 
     private final Deployment deployment;
@@ -126,7 +126,9 @@ public class OSGiDeploymentService implements Service<Deployment> {
     public synchronized void stop(StopContext context) {
         log.infof("Uninstalling deployment: %s", deployment);
         try {
-            getDeployerService().undeploy(deployment);
+            Bundle bundle = deployment.getAttachment(Bundle.class);
+            if (bundle != null && bundle.getState() != Bundle.UNINSTALLED)
+                getDeployerService().undeploy(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
         }

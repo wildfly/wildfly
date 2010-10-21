@@ -24,15 +24,18 @@ package org.jboss.as.jmx;
 
 import java.lang.management.ManagementFactory;
 import javax.management.MBeanServer;
+
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Basic service managing an MBeanServer instance.
- * Note:  Just using the platform mbean server for now.
+ * Basic service managing an MBeanServer instance. Note: Just using the platform mbean server for now.
  *
  * @author John Bailey
  */
@@ -40,6 +43,11 @@ public class MBeanServerService implements Service<MBeanServer> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
     private MBeanServer mBeanServer;
+
+    public static void addService(final BatchBuilder batchBuilder) {
+        BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
+        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+    }
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
