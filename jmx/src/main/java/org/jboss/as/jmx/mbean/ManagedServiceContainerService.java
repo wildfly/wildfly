@@ -86,7 +86,7 @@ public class ManagedServiceContainerService implements Service<Void> {
             public List<String> listServicesByMode(String mode) {
                 if (mode == null)
                     return getServiceList(null);
-                String pattern = "mode " + Mode.valueOf(mode);
+                String pattern = "mode " + Mode.valueOf(mode.trim().toUpperCase());
                 return getServiceList(pattern);
             }
 
@@ -94,17 +94,21 @@ public class ManagedServiceContainerService implements Service<Void> {
             public List<String> listServicesByState(String state) {
                 if (state == null)
                     return getServiceList(null);
-                String pattern = "state=" + State.valueOf(state);
+                String pattern = "state=" + State.valueOf(state.trim().toUpperCase());
                 return getServiceList(pattern);
             }
 
             @Override
             public void setMode(String name, String mode) {
-                ServiceName serviceName = ServiceName.parse(name);
+                if (name == null)
+                    throw new IllegalArgumentException("Null name");
+                if (mode == null)
+                    throw new IllegalArgumentException("Null mode");
+                ServiceName serviceName = ServiceName.parse(name.trim());
                 ServiceController<?> controller = serviceContainer.getService(serviceName);
                 if (controller == null)
                     throw new IllegalStateException("Cannot obtain service: " + serviceName);
-                controller.setMode(Mode.valueOf(mode));
+                controller.setMode(Mode.valueOf(mode.trim().toUpperCase()));
             }
 
             private List<String> getServiceList(String pattern) {

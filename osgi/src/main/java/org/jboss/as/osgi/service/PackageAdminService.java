@@ -45,7 +45,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 15-Oct-2010
  */
 public class PackageAdminService implements Service<PackageAdmin> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.parse("osgi.packageadmin"));
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "packageadmin");
 
     private InjectedValue<BundleContext> injectedContext = new InjectedValue<BundleContext>();
     private PackageAdmin packageAdmin;

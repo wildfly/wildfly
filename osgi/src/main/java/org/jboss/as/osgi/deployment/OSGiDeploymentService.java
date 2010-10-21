@@ -62,7 +62,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
     private static final OSGiDeploymentListener listener = new OSGiDeploymentListener();
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ServiceName.parse("osgi.deployment"));
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "deployment");
     public static boolean enableListener = true;
 
     private final Deployment deployment;
