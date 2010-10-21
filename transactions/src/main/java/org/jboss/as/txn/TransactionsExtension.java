@@ -24,6 +24,7 @@ package org.jboss.as.txn;
 
 import org.jboss.as.Extension;
 import org.jboss.as.ExtensionContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
@@ -33,6 +34,8 @@ public final class TransactionsExtension implements Extension {
 
     public static final String NAMESPACE = "urn:jboss:domain:transactions:1.0";
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.txn");
+
     /** {@inheritDoc} */
     public void initialize(ExtensionContext context) {
         context.registerSubsystem(NAMESPACE, TransactionSubsystemElementParser.getInstance());
@@ -40,7 +43,7 @@ public final class TransactionsExtension implements Extension {
 
     /** {@inheritDoc} */
     public void activate(final ServiceActivatorContext context) {
-        //
+        log.info("Activating Transactions Extension");
     }
 
 }
