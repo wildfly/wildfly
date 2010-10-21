@@ -162,6 +162,9 @@ public class TldMetaDataParser extends MetaDataElementParser {
                 case JSP_VERSION:
                     if (version == Version.TLD_1_2) {
                         tld.setJspVersion(reader.getElementText());
+                    } else if (version != Version.TLD_1_1) {
+                        // This is not valid, but still being used in 2.0+ TLDs
+                        tld.setJspVersion(reader.getElementText());
                     } else {
                         throw unexpectedElement(reader);
                     }

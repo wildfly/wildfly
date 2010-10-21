@@ -58,10 +58,10 @@ public class TaglibMetaDataParser extends MetaDataElementParser {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case TAGLIB_URI:
-                    taglib.setTaglibUri(reader.getElementText());
+                    taglib.setTaglibUri(reader.getElementText().trim());
                     break;
                 case TAGLIB_LOCATION:
-                    taglib.setTaglibLocation(reader.getElementText());
+                    taglib.setTaglibLocation(reader.getElementText().trim());
                     break;
                 default: throw unexpectedElement(reader);
             }
