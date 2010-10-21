@@ -41,12 +41,12 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
+import org.jboss.as.web.deployment.WarAnnotationDeploymentProcessor;
 import org.jboss.as.web.deployment.WarAnnotationIndexProcessor;
 import org.jboss.as.web.deployment.WarDeploymentProcessor;
 import org.jboss.as.web.deployment.WarMetaDataProcessor;
 import org.jboss.as.web.deployment.WarModuleConfigProcessor;
 import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
-import org.jboss.as.web.deployment.WebAnnotationDeploymentProcessor;
 import org.jboss.as.web.deployment.WebClassloadingDependencyProcessor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
@@ -102,7 +102,7 @@ class WebDeploymentActivator {
         addDeploymentProcessor(batchBuilder, new TldParsingDeploymentProcessor(), TldParsingDeploymentProcessor.PRIORITY);
         // FIXME: SCIs
         addDeploymentProcessor(batchBuilder, new WebClassloadingDependencyProcessor(), WebClassloadingDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WebAnnotationDeploymentProcessor(), WebAnnotationDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WarAnnotationDeploymentProcessor(), WarAnnotationDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarMetaDataProcessor(), WarMetaDataProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarDeploymentProcessor(defaultHost), WarDeploymentProcessor.PRIORITY);
 

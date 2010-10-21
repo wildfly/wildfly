@@ -86,6 +86,11 @@
        <artifactId>jboss-metadata-common</artifactId>
     </dependency>
 
+     <dependency>
+       <groupId>org.jboss.spec.javax.annotation</groupId>
+       <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+    </dependency>
+
     <dependency>
        <groupId>org.jboss.spec.javax.servlet</groupId>
        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
