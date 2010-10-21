@@ -31,9 +31,11 @@ import java.io.Closeable;
  * Wrapper object to hold onto and close a VFS mount handle.
  *
  * @author John E. Bailey
+ * @author Jason T. Greene
  */
-public class MountHandle {
+public class MountHandle implements Closeable {
     public static final AttachmentKey<MountHandle> ATTACHMENT_KEY = new AttachmentKey<MountHandle>(MountHandle.class);
+
     private final Closeable handle;
 
     /**
@@ -43,6 +45,13 @@ public class MountHandle {
      */
     public MountHandle(final Closeable handle) {
         this.handle = handle;
+    }
+
+    /**
+     * Forcefully close this handle. Use with caution.
+     */
+    public void close() {
+        VFSUtils.safeClose(handle);
     }
 
     @Override

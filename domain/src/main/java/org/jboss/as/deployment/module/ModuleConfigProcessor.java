@@ -51,9 +51,22 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
         if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
             return;
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        final MountHandle deploymentRootMountHandler = context.getAttachment(MountHandle.ATTACHMENT_KEY);
+        final MountHandle rootMount = context.getAttachment(MountHandle.ATTACHMENT_KEY);
+        final NestedMounts mounts = context.getAttachment(NestedMounts.ATTACHMENT_KEY);
+
         final ModuleIdentifier moduleIdentifier = ModuleIdentifier.create("deployment." + deploymentRoot.getName());
-        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[]{new ModuleConfig.ResourceRoot(deploymentRoot, deploymentRootMountHandler)};
+
+        int numMounts = mounts == null ? 1 : mounts.size() + 1;
+        final ModuleConfig.ResourceRoot[] resourceRoots = new ModuleConfig.ResourceRoot[numMounts];
+
+        if (mounts != null) {
+            int i = 1;
+            for (NestedMounts.Entry entry : mounts) {
+                resourceRoots[i++] = new ModuleConfig.ResourceRoot(entry.file(), entry.mount());
+            }
+        }
+        resourceRoots[0] = new ModuleConfig.ResourceRoot(deploymentRoot, rootMount);
+
         final ModuleDependencies dependenciesAttachment = getAttachedDependencies(context);
         final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
         final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
