@@ -19,31 +19,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<server xmlns="urn:jboss:service:7.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
-<project name="as-examples" basedir="." default="example">
-
-    <target name="usage" unless="example">
-        <echo>To run an example pass in -Dexample=&lt;example.name&gt;</echo>
-        <echo>Valid example names are</echo>
-        <echo>  sar           - deploys mbeans packaged in a sar</echo>
-        <echo>  managedbean   - deploys a managed bean</echo>
-        <echo>  serviceloader - deploys a serviceloader style service</echo>
-        <echo>  messaging     - deploys HornetQ sender and receiver</echo>
-    	<echo>  rar           - deploys a resource adapter</echo>
-    </target>
-        
-    <target name="run" if="example">
-    	<echo>-Dexample=${example} was passed in. Running org.jboss.as.demos.${example}.runner.ExampleRunner</echo>
-        <java classname="org.jboss.as.demos.${example}.runner.ExampleRunner">
-        	<classpath>
-                <path refid="maven.test.classpath"/>
-        	</classpath>
-    	</java>
-    </target>
-                
-	
-    <target name="example" depends="usage,run">
-    </target>
-	
-	
-</project>
+    <mbean name="jboss:name=test,type=rar" code="org.jboss.as.demos.rar.mbean.Test"/>    
+</server>

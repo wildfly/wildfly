@@ -114,6 +114,10 @@ public class DeploymentUtils {
                 new HashMap<String, Object>()).getMBeanServerConnection();
     }
 
+    public String showJndi() throws Exception {
+        return (String)getConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
+    }
+
     private static class Deployment {
         final String archiveName;
         final Package pkg;
