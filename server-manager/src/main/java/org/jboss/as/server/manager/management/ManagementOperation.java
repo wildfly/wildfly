@@ -22,28 +22,23 @@
 
 package org.jboss.as.server.manager.management;
 
+import java.io.IOException;
+import java.io.InputStream;
 import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Management operation interface used to establish a general contract for operation handlers to conform to.
  *
  * @author John Bailey
  */
-public interface ManagementOperation {
+public abstract class ManagementOperation extends AbstractMessageHandler {
     /**
      * Code to identify this operation
      *
      * @return The request code
      */
-    byte getRequestCode();
-
-    /**
-     * Handle the request using the provided input and output
-     *
-     * @param input The request input
-     * @param output The request output
-     * @throws ManagementException If any problems occur handling the request
-     */
-    void handle(final ByteDataInput input, final ByteDataOutput output) throws ManagementException;
+    abstract byte getRequestCode();
 }

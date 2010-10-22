@@ -23,8 +23,6 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,14 +36,13 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.ServerManager;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
-import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
-import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
+import static org.jboss.as.server.manager.management.ManagementUtils.getMarshaller;
+import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
@@ -53,7 +50,7 @@ import org.jboss.logging.Logger;
  *
  * @author John Bailey
  */
-public class ServerManagerOperationHandler implements ManagementOperationHandler {
+public class ServerManagerOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler {
     private static final Logger log = Logger.getLogger("org.jboss.as.management");
 
     private final ServerManager serverManager;
@@ -73,41 +70,30 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
      * appropriate operation and execute it.
      *
      * @param connection  The connection
-     * @param dataStream The connection input
-     * @throws IOException If any problems occur performing the operation
+     * @param input The connection input
+     * @throws ManagementException If any problems occur performing the operation
      */
-    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+     public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
         final byte commandCode;
-        final ByteDataInput input = new SimpleByteDataInput(dataStream);
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             commandCode = input.readByte();
 
             final ManagementOperation operation = operationFor(commandCode);
             if (operation == null) {
-                throw new ManagementException("Invalid command code " + commandCode + " received from server manager");
+                throw new ManagementException("Invalid command code " + commandCode + " received");
             }
-            log.debugf("Received DomainController operation [%s]", operation);
+            log.debugf("Received ServerManager operation [%s]", operation);
 
-            OutputStream outputStream = null;
-            ByteDataOutput output = null;
             try {
-                outputStream = connection.writeMessage();
-                output = new SimpleByteDataOutput(outputStream);
-                operation.handle(input, output);
+                operation.handle(connection, input);
             } catch (Exception e) {
-                throw new ManagementException("Failed to execute domain controller operation", e);
-            } finally {
-                safeClose(output);
-                safeClose(outputStream);
+                throw new ManagementException("Failed to execute server manager operation", e);
             }
-        } catch (IOException e) {
+        } catch (ManagementException e) {
             throw e;
         } catch (Throwable t) {
-            throw new IOException("ServerManager Request failed to read command code", t);
-        } finally {
-            safeClose(input);
-            safeClose(dataStream);
+            throw new ManagementException("Request failed to read command code", t);
         }
     }
 
@@ -167,9 +153,12 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
-                final DomainModel domainModel = unmarshal(input, DomainModel.class);
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL);
+                final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
                 serverManager.setDomain(domainModel);
+                unmarshaller.finish();
                 log.info("Received domain update.");
             } catch (Exception e) {
                 throw new ManagementException("Unable to read domain from request", e);
@@ -192,14 +181,17 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
-                int count = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
                 for(int i = 0; i < count; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                    final AbstractDomainModelUpdate<?> update = unmarshal(input, AbstractDomainModelUpdate.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    final AbstractDomainModelUpdate<?> update = unmarshaller.readObject(AbstractDomainModelUpdate.class);
                     updates.add(update);
                 }
+                unmarshaller.finish();
                 log.infof("Received domain model updates %s", updates);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read domain model updates from request", e);
@@ -213,12 +205,15 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
                 responses.add(processUpdate(update));
             }
             try {
-                output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                output.writeInt(responses.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {
-                    output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                    marshal(output, response);
+                    marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send domain model update response.", e);
             }
@@ -249,14 +244,17 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
-                int count = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractHostModelUpdate<?>>(count);
                 for(int i = 0; i < count; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_HOST_MODEL_UPDATE);
-                    final AbstractHostModelUpdate<?> update = unmarshal(input, AbstractHostModelUpdate.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_HOST_MODEL_UPDATE);
+                    final AbstractHostModelUpdate<?> update = unmarshaller.readObject(AbstractHostModelUpdate.class);
                     updates.add(update);
                 }
+                unmarshaller.finish();
                 log.infof("Received host model updates %s", updates);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read host model updates from request.", e);
@@ -270,12 +268,15 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
                 responses.add(processUpdate(update));
             }
             try {
-                output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                output.writeInt(responses.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {
-                    output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                    marshal(output, response);
+                    marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send host model update response.", e);
             }
@@ -306,18 +307,21 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
         }
 
         @Override
-        protected void readRequest(ByteDataInput input) throws ManagementException {
+        protected void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_SERVER_NAME);
-                serverName = input.readUTF();
-                expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-                int count = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_NAME);
+                serverName = unmarshaller.readUTF();
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
                 for(int i = 0; i < count; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
-                    final AbstractServerModelUpdate<?> update = unmarshal(input, AbstractServerModelUpdate.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    final AbstractServerModelUpdate<?> update = unmarshaller.readObject(AbstractServerModelUpdate.class);
                     updates.add(update);
                 }
+                unmarshaller.finish();
                 log.infof("Received server model updates %s", updates);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read server model updates from request", e);
@@ -331,12 +335,15 @@ public class ServerManagerOperationHandler implements ManagementOperationHandler
                 responses.add(processUpdate(update));
             }
             try {
-                output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                output.writeInt(responses.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {
-                    output.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                    marshal(output, response);
+                    marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send domain model update response.", e);
             }

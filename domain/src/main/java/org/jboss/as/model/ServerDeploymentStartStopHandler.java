@@ -22,6 +22,7 @@
 
 package org.jboss.as.model;
 
+import java.io.Serializable;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 import java.io.Closeable;
@@ -63,9 +64,10 @@ import org.jboss.vfs.VirtualFile;
  *
  * @author Brian Stansberry
  */
-class ServerDeploymentStartStopHandler {
-
+class ServerDeploymentStartStopHandler implements Serializable {
+    private static final long serialVersionUID = 4804538479425267270L;
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
+
 
     <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash, final ServiceContainer serviceContainer,
             final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {

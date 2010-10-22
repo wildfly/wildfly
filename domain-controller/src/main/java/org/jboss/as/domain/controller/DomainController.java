@@ -79,6 +79,7 @@ public class DomainController implements Service<DomainController> {
 
         log.info("Parsing Domain Configuration");
         domainModel = parseDomain(xmlMapper.getValue(), domainConfigDir.getValue());
+
         pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
             public void run() {
                 for(DomainControllerClient client : clients.values()) {

@@ -23,7 +23,6 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -39,9 +38,9 @@ import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
-import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote server manager
@@ -49,7 +48,7 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  *
  * @author John Bailey
  */
-public abstract class ManagementRequest<T> implements MessageHandler {
+public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private final InetAddress address;
     private final int port;
     private final long connectTimeout;
@@ -103,10 +102,11 @@ public abstract class ManagementRequest<T> implements MessageHandler {
 
         final ProtocolClient protocolClient = new ProtocolClient(config);
         OutputStream dataOutput = null;
+        ByteDataOutput output = null;
         try {
             connection = protocolClient.connect();
             dataOutput = connection.writeMessage();
-            final ByteDataOutput output = new SimpleByteDataOutput(dataOutput);
+            output = new SimpleByteDataOutput(dataOutput);
 
             // Start by writing the header
             final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
@@ -114,6 +114,7 @@ public abstract class ManagementRequest<T> implements MessageHandler {
         } catch (IOException e) {
             throw new ManagementException("Failed to connect using protocol client", e);
         } finally {
+            safeClose(output);
             safeClose(dataOutput);
         }
         return future;
@@ -135,60 +136,34 @@ public abstract class ManagementRequest<T> implements MessageHandler {
         }
     }
 
-    public void handleShutdown(Connection connection) throws IOException {
-        safeClose(connection);
-    }
-
-    public void handleFailure(Connection connection, IOException e) throws IOException {
-
-    }
-
-    public void handleFinished(Connection connection) throws IOException {
-        // NOOP
-    }
-
-    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+    public void handle(Connection connection, ByteDataInput input) throws ManagementException {
         try {
-            future.set(receiveResponse(connection, dataStream));
+            expectHeader(input, ManagementProtocol.RESPONSE_START);
+            byte responseCode = input.readByte();
+            if (responseCode != getResponseCode()) {
+                throw new ManagementException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
+            }
+            connection.setMessageHandler(responseBodyHandler);
         } catch (ManagementException e) {
             future.setException(e);
         } catch (Throwable t) {
             future.setException(new ManagementException("Failed to handle management message", t));
-        } finally {
-            safeClose(dataStream);
         }
     }
 
-    private class InitiatingMessageHandler implements MessageHandler {
-        public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
-            // First read the response header
-            final ByteDataInput input = new SimpleByteDataInput(dataStream);
+    private class InitiatingMessageHandler extends AbstractMessageHandler {
+        void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
             final ManagementResponseHeader responseHeader;
             try {
                 responseHeader = new ManagementResponseHeader(input);
-
                 if (requestId != responseHeader.getResponseId()) {
-                    throw new IOException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
+                    throw new ManagementException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
                 }
-
                 connection.setMessageHandler(ManagementRequest.this);
                 sendRequest(responseHeader.getVersion(), connection);
-
-            } catch (ManagementException e) {
-                throw new IOException("Failed to read response header", e);
+            } catch (IOException e) {
+                throw new ManagementException("Failed to read response header", e);
             }
-        }
-
-        public void handleShutdown(Connection connection) throws IOException {
-            ManagementRequest.this.handleShutdown(connection);
-        }
-
-        public void handleFailure(Connection connection, IOException e) throws IOException {
-            ManagementRequest.this.handleFailure(connection, e);
-        }
-
-        public void handleFinished(Connection connection) throws IOException {
-            ManagementRequest.this.handleFinished(connection);
         }
     }
 
@@ -199,17 +174,73 @@ public abstract class ManagementRequest<T> implements MessageHandler {
      * @param connection      The connection
      * @throws ManagementException If any errors occur
      */
-    protected abstract void sendRequest(final int protocolVersion, final Connection connection) throws ManagementException;
+    protected void sendRequest(final int protocolVersion, final Connection connection) throws ManagementException {
+        OutputStream outputStream = null;
+        ByteDataOutput output = null;
+        try {
+            try {
+                outputStream = connection.writeMessage();
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(ManagementProtocol.REQUEST_OPERATION);
+                output.writeByte(getRequestCode());
+                output.writeByte(ManagementProtocol.REQUEST_START);
+            } finally {
+                safeClose(output);
+                safeClose(outputStream);
+            }
 
-    /**
-     * Receive the response from the request.
-     *
-     * @param connection The connection
-     * @param dataStream The dataStream to read from
-     * @return The result of the operation
-     * @throws ManagementException If any errors occur
-     */
-    protected abstract T receiveResponse(final Connection connection, final InputStream dataStream) throws ManagementException;
+            try {
+                outputStream = connection.writeMessage();
+                output = new SimpleByteDataOutput(outputStream);
+                sendRequest(protocolVersion, output);
+            } finally {
+                safeClose(output);
+                safeClose(outputStream);
+            }
+
+            try {
+                outputStream = connection.writeMessage();
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(ManagementProtocol.REQUEST_END);
+            } finally {
+                safeClose(output);
+                safeClose(outputStream);
+            }
+        } catch (ManagementException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new ManagementException("Failed to send management request", t);
+        }
+    }
+
+    protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+    }
+
+    protected abstract byte getRequestCode();
+
+    protected abstract byte getResponseCode();
+
+    private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
+        void handle(Connection connection, ByteDataInput input) throws ManagementException {
+            future.set(receiveResponse(input));
+            connection.setMessageHandler(responseEndHandler);
+        }
+    };
+
+    private MessageHandler responseEndHandler = new AbstractMessageHandler() {
+        void handle(Connection connection, ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.RESPONSE_END);
+                connection.setMessageHandler(MessageHandler.NULL);
+            } catch (IOException e) {
+                throw new ManagementException("Failed to read response end", e);
+            }
+        }
+    };
+
+    protected T receiveResponse(final ByteDataInput input) throws ManagementException {
+        return null;
+    }
 
     private final class ResponseFuture<T> implements Future<T>{
         private volatile T result;

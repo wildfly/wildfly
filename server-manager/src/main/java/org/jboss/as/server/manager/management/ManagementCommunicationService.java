@@ -154,10 +154,10 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
     }
 
     public MessageHandler handleConnected(Connection connection) throws IOException {
-        return new HeaderMessageHandler();
+        return new ManagementHeaderMessageHandler();
     }
 
-    private class HeaderMessageHandler implements MessageHandler {
+    private class ManagementHeaderMessageHandler implements MessageHandler {
         public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
             final int workingVersion;
             final ManagementRequestHeader requestHeader;

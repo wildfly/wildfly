@@ -35,25 +35,34 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * @author John Bailey
  */
-public class ProtocolUtils {
+class ProtocolUtils {
     private static final MarshallerFactory MARSHALLER_FACTORY;
     private static final MarshallingConfiguration CONFIG;
 
     static {
-        try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        MarshallerFactory marshallerFactory;
         CONFIG = new MarshallingConfiguration();
-        CONFIG.setClassResolver(ModularClassResolver.getInstance());
+        try {
+            marshallerFactory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
+            CONFIG.setClassResolver(ModularClassResolver.getInstance());
+        } catch (ModuleLoadException e) {
+            final ClassLoader classLoader = ProtocolUtils.class.getClassLoader();
+            marshallerFactory = Marshalling.getMarshallerFactory("river", classLoader);
+            CONFIG.setClassResolver(new SimpleClassResolver(classLoader));
+        }
+        if(marshallerFactory == null) {
+            throw new RuntimeException("Failed to construct a Marshaller factory");
+        }
+        MARSHALLER_FACTORY = marshallerFactory;
     }
 
     private ProtocolUtils() {
@@ -114,5 +123,13 @@ public class ProtocolUtils {
         } finally {
             chunked.close();
         }
+    }
+
+    public static Marshaller getMarshaller() throws Exception {
+        return MARSHALLER_FACTORY.createMarshaller(CONFIG);
+    }
+
+    public static Unmarshaller getUnmarshaller() throws Exception {
+        return MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
     }
 }

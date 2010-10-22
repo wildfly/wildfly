@@ -23,9 +23,14 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.MessageHandler;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
 /**
@@ -33,25 +38,15 @@ import static org.jboss.as.server.manager.management.ManagementUtils.expectHeade
  *
  * @author John Bailey
  */
-public abstract class ManagementResponse implements ManagementOperation {
+public abstract class ManagementResponse extends ManagementOperation {
 
     /** {@inheritDoc} */
-    public void handle(ByteDataInput input, ByteDataOutput output) throws ManagementException {
+    public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
         try {
             expectHeader(input, ManagementProtocol.REQUEST_START);
-            readRequest(input);
-            expectHeader(input, ManagementProtocol.REQUEST_END);
+            connection.setMessageHandler(requestBodyHandler);
         } catch (IOException e) {
             throw new ManagementException("Failed to read request.", e);
-        }
-        try {
-            output.writeByte(ManagementProtocol.RESPONSE_START);
-            output.writeByte(getResponseCode());
-            sendResponse(output);
-            output.writeByte(ManagementProtocol.RESPONSE_END);
-            output.flush();
-        } catch (IOException e) {
-            throw new ManagementException("Failed to send response", e);
         }
     }
 
@@ -68,16 +63,66 @@ public abstract class ManagementResponse implements ManagementOperation {
      * @param input The request input
      * @throws ManagementException If any problems occur reading the request information
      */
-    protected void readRequest(ByteDataInput input) throws ManagementException {
+    protected void readRequest(final ByteDataInput input) throws ManagementException {
     }
 
     /**
      * Write the response information.
      *
-     * @param output The request output
+     * @param output The output
      * @throws ManagementException If any problems occur writing the response information
      */
-    protected void sendResponse(ByteDataOutput output) throws ManagementException {
+    protected void sendResponse(final ByteDataOutput output) throws IOException, ManagementException {
     }
 
+    final MessageHandler requestBodyHandler = new AbstractMessageHandler() {
+        final void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+            readRequest(input);
+            connection.setMessageHandler(requestEndHandler);
+        }
+    };
+
+    final MessageHandler requestEndHandler = new AbstractMessageHandler() {
+        final void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+            try {
+                expectHeader(input, ManagementProtocol.REQUEST_END);
+            } catch (IOException e) {
+                throw new ManagementException("Failed to read request end", e);
+            }
+
+            try {
+                OutputStream outputStream = null;
+                ByteDataOutput output = null;
+                try {
+                    outputStream = connection.writeMessage();
+                    output = new SimpleByteDataOutput(outputStream);
+                    output.writeByte(ManagementProtocol.RESPONSE_START);
+                    output.writeByte(getResponseCode());
+                } finally {
+                    safeClose(output);
+                    safeClose(outputStream);
+                }
+
+                try {
+                    outputStream = connection.writeMessage();
+                    output = new SimpleByteDataOutput(outputStream);
+                    sendResponse(output);
+                } finally {
+                    safeClose(output);
+                    safeClose(outputStream);
+                }
+
+                try {
+                    outputStream = connection.writeMessage();
+                    output = new SimpleByteDataOutput(outputStream);
+                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                } finally {
+                    safeClose(output);
+                    safeClose(outputStream);
+                }
+            } catch (IOException e) {
+                throw new ManagementException("Failed to send response", e);
+            }
+        }
+    };
 }

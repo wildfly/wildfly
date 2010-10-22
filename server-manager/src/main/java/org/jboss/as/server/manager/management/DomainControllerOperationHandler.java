@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,16 +53,15 @@ import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.SimpleByteDataInput;
-import org.jboss.as.protocol.SimpleByteDataOutput;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
-import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
-import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
+import static org.jboss.as.server.manager.management.ManagementUtils.getMarshaller;
+import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -79,7 +77,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  */
-public class DomainControllerOperationHandler implements ManagementOperationHandler, Service<DomainControllerOperationHandler> {
+public class  DomainControllerOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler, Service<DomainControllerOperationHandler> {
     private static final Logger log = Logger.getLogger("org.jboss.as.management");
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append("operation", "handler");
 
@@ -157,12 +155,11 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
      * appropriate operation and execute it.
      *
      * @param connection  The connection
-     * @param dataStream The connection input
-     * @throws IOException If any problems occur performing the operation
+     * @param input The connection input
+     * @throws ManagementException If any problems occur performing the operation
      */
-    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
+    public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
         final byte commandCode;
-        final ByteDataInput input = new SimpleByteDataInput(dataStream);
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             commandCode = input.readByte();
@@ -173,41 +170,16 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             }
             log.debugf("Received DomainController operation [%s]", operation);
 
-            OutputStream outputStream = null;
-            ByteDataOutput output = null;
             try {
-                outputStream = connection.writeMessage();
-                output = new SimpleByteDataOutput(outputStream);
-                operation.handle(input, output);
+                operation.handle(connection, input);
             } catch (Exception e) {
                 throw new ManagementException("Failed to execute domain controller operation", e);
-            } finally {
-                safeClose(output);
-                safeClose(outputStream);
             }
-        } catch (IOException e) {
+        } catch (ManagementException e) {
             throw e;
         } catch (Throwable t) {
-            throw new IOException("ServerManager Request failed to read command code", t);
-        } finally {
-            safeClose(input);
-            safeClose(dataStream);
+            throw new ManagementException("ServerManager Request failed to read command code", t);
         }
-    }
-
-    /** {@inheritDoc} */
-    public void handleShutdown(final Connection connection) throws IOException {
-        connection.shutdownWrites();
-    }
-
-    /** {@inheritDoc} */
-    public void handleFailure(final Connection connection, final IOException e) throws IOException {
-        connection.close();
-    }
-
-    /** {@inheritDoc} */
-    public void handleFinished(final Connection connection) throws IOException {
-        // nothing
     }
 
     private ManagementOperation operationFor(final byte commandByte) {
@@ -285,8 +257,11 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
-                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
-                marshal(output, domainController.getDomainModel());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
+                marshaller.writeObject(domainController.getDomainModel());
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to write domain configuration to server manager", e);
             }
@@ -356,8 +331,7 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             }
         }
 
-        @Override
-        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
                 output.writeByte(ManagementProtocol.PARAM_NUM_FILES);
                 if (localPath == null || !localPath.exists()) {
@@ -434,11 +408,13 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             return ManagementProtocol.GET_DOMAIN_RESPONSE;
         }
 
-        @Override
-        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
-                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
-                marshal(output, domainController.getDomainModel());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
+                marshaller.writeObject(domainController.getDomainModel());
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to write domain configuration to client", e);
             }
@@ -460,87 +436,92 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                int count = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
                 for (int i = 0; i < count; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                    final AbstractDomainModelUpdate<?> update = unmarshal(input, AbstractDomainModelUpdate.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    final AbstractDomainModelUpdate<?> update = unmarshaller.readObject(AbstractDomainModelUpdate.class);
                     updates.add(update);
                 }
+                unmarshaller.finish();
                 log.infof("Received domain model updates %s", updates);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read domain model updates from request", e);
             }
         }
 
-        @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             List<DomainUpdateResult<?>> responses = new ArrayList<DomainUpdateResult<?>>(updates.size());
             for (AbstractDomainModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
-                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                output.writeInt(responses.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                marshaller.writeInt(responses.size());
                 for (DomainUpdateResult<?> response : responses) {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
                     if (response.getDomainFailure() != null) {
-                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                        marshal(output, response.getDomainFailure());
+                        marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                        marshaller.writeObject(response.getDomainFailure());
                     } else {
-                        output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
-                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                        marshaller.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
+                        marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
                         Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
                         if (hostFailures == null || hostFailures.size() == 0) {
-                            output.writeInt(0);
+                            marshaller.writeInt(0);
                         } else {
-                            output.writeInt(hostFailures.size());
+                            marshaller.writeInt(hostFailures.size());
                             for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
-                                output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
-                                output.writeUTF(entry.getKey());
-                                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                                marshal(output, entry.getValue());
+                                marshaller.writeByte(ManagementProtocol.PARAM_HOST_NAME);
+                                marshaller.writeUTF(entry.getKey());
+                                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                                marshaller.writeObject(entry.getValue());
                             }
                         }
-                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
+                        marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
                         Map<ServerIdentity, Throwable> serverFailures = response.getServerFailures();
                         if (serverFailures == null || serverFailures.size() == 0) {
-                            output.writeInt(0);
+                            marshaller.writeInt(0);
                         } else {
-                            output.writeInt(serverFailures.size());
+                            marshaller.writeInt(serverFailures.size());
                             for (Map.Entry<ServerIdentity, Throwable> entry : serverFailures.entrySet()) {
                                 ServerIdentity identity = entry.getKey();
-                                output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
-                                output.writeUTF(identity.getHostName());
-                                output.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
-                                output.writeUTF(identity.getServerGroupName());
-                                output.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
-                                output.writeUTF(identity.getServerName());
-                                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                                marshal(output, entry.getValue());
+                                marshaller.writeByte(ManagementProtocol.PARAM_HOST_NAME);
+                                marshaller.writeUTF(identity.getHostName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
+                                marshaller.writeUTF(identity.getServerGroupName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
+                                marshaller.writeUTF(identity.getServerName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                                marshaller.writeObject(entry.getValue());
                             }
                         }
-                        output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
+                        marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
                         Map<ServerIdentity, ?> serverResults = response.getServerResults();
                         if (serverResults == null || serverResults.size() == 0) {
-                            output.writeInt(0);
+                            marshaller.writeInt(0);
                         } else {
-                            output.writeInt(serverResults.size());
+                            marshaller.writeInt(serverResults.size());
                             for (Map.Entry<ServerIdentity, ?> entry : serverFailures.entrySet()) {
                                 ServerIdentity identity = entry.getKey();
-                                output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
-                                output.writeUTF(identity.getHostName());
-                                output.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
-                                output.writeUTF(identity.getServerGroupName());
-                                output.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
-                                output.writeUTF(identity.getServerName());
-                                output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
-                                marshal(output, entry.getValue());
+                                marshaller.writeByte(ManagementProtocol.PARAM_HOST_NAME);
+                                marshaller.writeUTF(identity.getHostName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
+                                marshaller.writeUTF(identity.getServerGroupName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
+                                marshaller.writeUTF(identity.getServerName());
+                                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
+                                marshaller.writeObject(entry.getValue());
                             }
                         }
                     }
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send domain model update response.", e);
             }
@@ -566,53 +547,58 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                update = unmarshal(input, AbstractDomainModelUpdate.class);
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                update = unmarshaller.readObject(AbstractDomainModelUpdate.class);
+                unmarshaller.finish();
                 log.infof("Received domain model update %s", update);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read domain model updates from request", e);
             }
         }
 
-        @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             DomainUpdateApplierResponse response = processUpdate();
             try {
-                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
                 if (response.getDomainFailure() != null) {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                    marshal(output, response.getDomainFailure());
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                    marshaller.writeObject(response.getDomainFailure());
                 } else {
-                    output.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                    marshaller.writeByte(ManagementProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
                     Map<String, UpdateFailedException> hostFailures = response.getHostFailures();
                     if (hostFailures == null || hostFailures.size() == 0) {
-                        output.writeInt(0);
+                        marshaller.writeInt(0);
                     } else {
-                        output.writeInt(hostFailures.size());
+                        marshaller.writeInt(hostFailures.size());
                         for (Map.Entry<String, UpdateFailedException> entry : hostFailures.entrySet()) {
-                            output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
-                            output.writeUTF(entry.getKey());
-                            output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                            marshal(output, entry.getValue());
+                            marshaller.writeByte(ManagementProtocol.PARAM_HOST_NAME);
+                            marshaller.writeUTF(entry.getKey());
+                            marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                            marshaller.writeObject(entry.getValue());
                         }
                     }
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
                     List<ServerIdentity> servers = response.getServers();
                     if (servers == null || servers.size() == 0) {
-                        output.writeInt(0);
+                        marshaller.writeInt(0);
                     } else {
-                        output.writeInt(servers.size());
+                        marshaller.writeInt(servers.size());
                         for (ServerIdentity server : servers) {
-                            output.writeByte(ManagementProtocol.PARAM_HOST_NAME);
-                            output.writeUTF(server.getHostName());
-                            output.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
-                            output.writeUTF(server.getServerGroupName());
-                            output.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
-                            output.writeUTF(server.getServerName());
+                            marshaller.writeByte(ManagementProtocol.PARAM_HOST_NAME);
+                            marshaller.writeUTF(server.getHostName());
+                            marshaller.writeByte(ManagementProtocol.PARAM_SERVER_GROUP_NAME);
+                            marshaller.writeUTF(server.getServerGroupName());
+                            marshaller.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
+                            marshaller.writeUTF(server.getServerName());
                         }
                     }
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send domain model update response.", e);
             }
@@ -639,15 +625,18 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_HOST_NAME);
-                String hostName = input.readUTF();
-                expectHeader(input, ManagementProtocol.PARAM_SERVER_GROUP_NAME);
-                String serverGroupName = input.readUTF();
-                expectHeader(input, ManagementProtocol.PARAM_SERVER_NAME);
-                String serverName = input.readUTF();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_HOST_NAME);
+                String hostName = unmarshaller.readUTF();
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_GROUP_NAME);
+                String serverGroupName = unmarshaller.readUTF();
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_NAME);
+                String serverName = unmarshaller.readUTF();
                 server = new ServerIdentity(hostName, serverGroupName, serverName);
-                expectHeader(input, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
-                update = unmarshal(input, AbstractServerModelUpdate.class);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
+                update = unmarshaller.readObject(AbstractServerModelUpdate.class);
+                unmarshaller.finish();
                 log.infof("Received server model update %s", update);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read domain model updates from request", e);
@@ -658,18 +647,21 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             UpdateResultHandlerResponse<?> response = processUpdate();
             try {
-                output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
                 if (response.getFailureResult() != null) {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                    marshal(output, response.getFailureResult());
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                    marshaller.writeObject(response.getFailureResult());
                 } else if (response.isCancelled()) {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED);
                 } else if (response.isTimedOut()) {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT);
                 } else {
                     output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
-                    marshal(output, response.getSuccessResult());
+                    marshaller.writeObject(response.getSuccessResult());
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send domain model update response.", e);
             }
@@ -697,8 +689,11 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
         @Override
         protected final void readRequest(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_PLAN);
-                deploymentPlan = unmarshal(input, DeploymentPlan.class);
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_DEPLOYMENT_PLAN);
+                deploymentPlan = unmarshaller.readObject(DeploymentPlan.class);
+                unmarshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to read deployment plan from request", e);
             }
@@ -706,11 +701,13 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
 
         @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
-
             try {
                 final Future<DeploymentPlanResult> result = deploymentManager.execute(deploymentPlan);
-                output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
-                marshal(output, result.get());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+                marshaller.writeObject(result.get());
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send deployment plan result.", e);
             }
@@ -748,7 +745,6 @@ public class DomainControllerOperationHandler implements ManagementOperationHand
             }
         }
 
-        @Override
         protected void sendResponse(final ByteDataOutput output) throws ManagementException {
             try {
                 output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_HASH_LENGTH);

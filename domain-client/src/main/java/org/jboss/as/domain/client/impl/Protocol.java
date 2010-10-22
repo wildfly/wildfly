@@ -25,7 +25,7 @@ package org.jboss.as.domain.client.impl;
 /**
  * @author John Bailey
  */
-public interface Protocol {
+interface Protocol {
 
     byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
     int VERSION_FIELD = 0x00; // The version field header

@@ -24,8 +24,6 @@ package org.jboss.as.server.manager.management;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.jboss.as.protocol.ChunkyByteInput;
-import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshaller;
@@ -48,11 +46,16 @@ public class ManagementUtils {
     private static final MarshallingConfiguration CONFIG;
 
     static {
+        MarshallerFactory marshallerFactory;
         try {
-            MARSHALLER_FACTORY = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
+            marshallerFactory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
         } catch (ModuleLoadException e) {
-            throw new RuntimeException(e);
+            marshallerFactory = Marshalling.getMarshallerFactory("river", ManagementUtils.class.getClassLoader());
         }
+        if(marshallerFactory == null) {
+            throw new RuntimeException("Failed to construct a Marshaller factory");
+        }
+        MARSHALLER_FACTORY = marshallerFactory;
         CONFIG = new MarshallingConfiguration();
         CONFIG.setClassResolver(ModularClassResolver.getInstance());
     }
@@ -62,27 +65,25 @@ public class ManagementUtils {
 
     public static <T> T unmarshal(final ByteInput input, final Class<T> expectedType) throws Exception {
         final Unmarshaller unmarshaller = MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
-        final ChunkyByteInput chunked = new ChunkyByteInput(input);
-        try {
-            unmarshaller.start(chunked);
-            final T result = unmarshaller.readObject(expectedType);
-            unmarshaller.finish();
-            return result;
-        } finally {
-            chunked.close();
-        }
+        unmarshaller.start(input);
+        final T result = unmarshaller.readObject(expectedType);
+        unmarshaller.finish();
+        return result;
     }
 
     public static void marshal(final ByteOutput output, final Object object) throws Exception {
-        final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
-        final ChunkyByteOutput chunked = new ChunkyByteOutput(output);
-        try {
-            marshaller.start(chunked);
-            marshaller.writeObject(object);
-            marshaller.finish();
-        } finally {
-            chunked.close();
-        }
+        final Marshaller marshaller = getMarshaller();
+        marshaller.start(output);
+        marshaller.writeObject(object);
+        marshaller.finish();
+    }
+
+    public static Marshaller getMarshaller() throws Exception {
+        return MARSHALLER_FACTORY.createMarshaller(CONFIG);
+    }
+
+    public static Unmarshaller getUnmarshaller() throws Exception {
+        return MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
     }
 
     public static void expectHeader(final DataInput input, int expected) throws IOException, ManagementException {

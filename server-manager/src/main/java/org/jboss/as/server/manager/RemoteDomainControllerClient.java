@@ -37,12 +37,14 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.server.manager.management.AbstractManagementRequest;
 import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
+import org.jboss.as.server.manager.management.ManagementRequest;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
-import static org.jboss.as.server.manager.management.ManagementUtils.marshal;
-import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
+import static org.jboss.as.server.manager.management.ManagementUtils.getMarshaller;
+import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * A remote domain controller client.  Provides a mechanism to communicate with remote clients.
@@ -120,12 +122,12 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
                 '}';
     }
 
-    private abstract class ServerManagerRequest<T> extends AbstractManagementRequest<T> {
+    private abstract class ServerManagerRequest<T> extends ManagementRequest<T> {
         private ServerManagerRequest() {
-            this(20, 15L, 10L); // TODO: Configurable
+            this(10L); // TODO: Configurable
         }
 
-        private ServerManagerRequest(int connectionRetryLimit, long connectionRetryInterval, long connectTimeout) {
+        private ServerManagerRequest(long connectTimeout) {
             super(address, port, connectTimeout, executorService, threadFactory);
         }
 
@@ -154,10 +156,12 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
 
         @Override
         protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
             try {
-                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
-                marshal(output, domainModel);
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
+                marshaller.writeObject(domainModel);
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Failed to write domain model for request", e);
             }
@@ -165,11 +169,6 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
     }
 
     private class IsActiveRequest extends ServerManagerRequest<Boolean> {
-
-        private IsActiveRequest() {
-            super(1, 0L, 10L);
-        }
-
         @Override
         public final byte getRequestCode() {
             return ManagementProtocol.IS_ACTIVE_REQUEST;
@@ -206,14 +205,16 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
 
         @Override
         protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
             try {
-                output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
-                output.writeInt(updates.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
                 for(AbstractDomainModelUpdate<?> update : updates) {
-                    output.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                    marshal(output, update);
+                    marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    marshaller.writeObject(update);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Failed to write domain model updates", e);
             }
@@ -222,18 +223,21 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         @Override
         protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                int responseCount = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {
                     throw new ManagementException("Invalid domain model update response.  Response count not equal to update count.");
                 }
                 final List<ModelUpdateResponse<List<ServerIdentity>>> responses = new ArrayList<ModelUpdateResponse<List<ServerIdentity>>>(responseCount);
                 for(int i = 0; i < responseCount; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
                     @SuppressWarnings("unchecked")
-                    final ModelUpdateResponse<List<ServerIdentity>> response = unmarshal(input, ModelUpdateResponse.class);
+                    final ModelUpdateResponse<List<ServerIdentity>> response = unmarshaller.readObject(ModelUpdateResponse.class);
                     responses.add(response);
                 }
+                unmarshaller.finish();
                 return responses;
             } catch (Exception e) {
                 throw new ManagementException("Failed to receive domain model update responses.", e);
@@ -260,14 +264,16 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
 
         @Override
         protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
             try {
-                output.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
-                output.writeInt(updates.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
                 for(AbstractHostModelUpdate<?> update : updates) {
-                    output.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE);
-                    marshal(output, update);
+                    marshaller.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE);
+                    marshaller.writeObject(update);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Failed to write host model updates", e);
             }
@@ -276,17 +282,20 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         @Override
         protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                int responseCount = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {
                     throw new ManagementException("Invalid host model update response.  Response count not equal to update count.");
                 }
                 final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
                 for(int i = 0; i < responseCount; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                    final ModelUpdateResponse<?> response = unmarshal(input, ModelUpdateResponse.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    final ModelUpdateResponse<?> response = unmarshaller.readObject(ModelUpdateResponse.class);
                     responses.add(response);
                 }
+                unmarshaller.finish();
                 return responses;
             } catch (Exception e) {
                 throw new ManagementException("Failed to receive host model update responses.", e);
@@ -315,16 +324,18 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
 
         @Override
         protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
             try {
-                output.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
-                output.writeChars(serverName);
-                output.writeByte(ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-                output.writeInt(updates.size());
+                final Marshaller marshaller = getMarshaller();
+                marshaller.start(output);
+                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
+                marshaller.writeChars(serverName);
+                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
                 for(AbstractServerModelUpdate<?> update : updates) {
-                    output.writeByte(ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
-                    marshal(output, update);
+                    marshaller.writeByte(ManagementProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    marshaller.writeObject(update);
                 }
+                marshaller.finish();
             } catch (Exception e) {
                 throw new ManagementException("Failed to write host model updates", e);
             }
@@ -333,17 +344,20 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         @Override
         protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-                int responseCount = input.readInt();
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {
                     throw new ManagementException("Invalid host model update response.  Response count not equal to update count.");
                 }
                 final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
                 for(int i = 0; i < responseCount; i++) {
-                    expectHeader(input, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                    final ModelUpdateResponse<?> response = unmarshal(input, ModelUpdateResponse.class);
+                    expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    final ModelUpdateResponse<?> response = unmarshaller.readObject(ModelUpdateResponse.class);
                     responses.add(response);
                 }
+                unmarshaller.finish();
                 return responses;
             } catch (Exception e) {
                 throw new ManagementException("Failed to receive server model update responses.", e);

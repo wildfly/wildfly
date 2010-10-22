@@ -37,10 +37,11 @@ import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
+import org.jboss.as.server.manager.management.ManagementRequest;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
-import static org.jboss.as.server.manager.management.ManagementUtils.unmarshal;
-import org.jboss.as.server.manager.management.AbstractManagementRequest;
+import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * Connection to a remote domain controller.
@@ -107,7 +108,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         return remoteFileRepository;
     }
 
-    private abstract static class DomainControllerRequest<T> extends AbstractManagementRequest<T> {
+    private abstract static class DomainControllerRequest<T> extends ManagementRequest<T> {
         protected final String serverManagerId;
 
         private DomainControllerRequest(final RemoteDomainControllerConnection connection) {
@@ -170,9 +171,13 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         @Override
         protected final DomainModel receiveResponse(final ByteDataInput input) throws ManagementException {
             try {
-                expectHeader(input, ManagementProtocol.PARAM_DOMAIN_MODEL);
+                final Unmarshaller unmarshaller = getUnmarshaller();
+                unmarshaller.start(input);
+                expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL);
                 log.infof("Registered with remote domain controller");
-                return unmarshal(input, DomainModel.class);
+                final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
+                unmarshaller.finish();
+                return domainModel;
             } catch (Exception e) {
                 throw new ManagementException("Failed to read domain model from response", e);
             }
