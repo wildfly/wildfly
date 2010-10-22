@@ -28,7 +28,8 @@ package org.jboss.as.deployment;
  * @author John E. Bailey
  */
 public enum DeploymentPhases {
-    VALIDATE(0L),
+    STRUCTURE(0L),
+    VALIDATE(STRUCTURE.plus(1000000L)),
     PARSE_DESCRIPTORS(VALIDATE.plus(1000000L)),
     MODULE_DEPENDENCIES(PARSE_DESCRIPTORS.plus(1000000L)),
     MODULARIZE(MODULE_DEPENDENCIES.plus(1000000L)),

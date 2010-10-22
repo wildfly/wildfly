@@ -49,7 +49,7 @@ import org.jboss.vfs.VisitorAttributes;
 public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(90L);
+    public static final long PRIORITY = DeploymentPhases.STRUCTURE.plus(100);
 
 
     /**
