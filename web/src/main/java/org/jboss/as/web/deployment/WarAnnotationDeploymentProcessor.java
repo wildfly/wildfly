@@ -98,7 +98,9 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         final ClassLoader classLoader = module.getClassLoader();
 
         // Process web-inf/classes
-        annotationsMetaData.put("", processAnnotations(index.getRootIndex(), classLoader));
+        if (index.getRootIndex() != null) {
+            annotationsMetaData.put("", processAnnotations(index.getRootIndex(), classLoader));
+        }
 
         // Process lib/*.jar
         for(final String pathName : index.getPathNames()) {
