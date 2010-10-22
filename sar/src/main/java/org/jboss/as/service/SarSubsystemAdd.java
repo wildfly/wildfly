@@ -79,7 +79,7 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
         addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ServiceActivatorDependencyProcessor(), ServiceActivatorDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), ModuleDependencyProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), NestedJarInlineProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
         final InjectedValue<DeploymentModuleLoader> deploymentModuleLoaderValue = new InjectedValue<DeploymentModuleLoader>();
         addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(deploymentModuleLoaderValue), DeploymentModuleLoaderProcessor.PRIORITY)
