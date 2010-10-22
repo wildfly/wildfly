@@ -87,6 +87,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
         }
         final ClassLoader classLoader = module.getClassLoader();
+        final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
 
         // Create the context
         final StandardContext webContext = new StandardContext();
@@ -99,13 +100,21 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         webContext.addLifecycleListener(config);
 
-        //
+        // Set the path name
         final String deploymentName = context.getName();
-        String pathName = deploymentRoot.getName();
-        if (pathName.equals("ROOT.war")) {
-            pathName = "";
+        String pathName = null;
+        if (metaData.getContextRoot() == null) {
+            pathName = deploymentRoot.getName();
+            if (pathName.equals("ROOT.war")) {
+                pathName = "";
+            } else {
+                pathName = "/" + pathName.substring(0, pathName.length() - 4);
+            }
         } else {
-            pathName = "/" + pathName.substring(0, pathName.length() - 4);
+            pathName = metaData.getContextRoot();
+            if ("/".equals(pathName)) {
+                pathName = "";
+            }
         }
         webContext.setPath(pathName);
         webContext.setIgnoreAnnotations(true);
@@ -121,7 +130,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.setLoader(loader);
 
         // Set the session cookies flag according to metadata
-        final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         switch (metaData.getSessionCookies()) {
            case JBossWebMetaData.SESSION_COOKIES_ENABLED:
                webContext.setCookies(true);
