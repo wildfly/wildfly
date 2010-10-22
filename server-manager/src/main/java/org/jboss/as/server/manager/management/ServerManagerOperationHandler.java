@@ -23,6 +23,8 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,15 +35,16 @@ import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.manager.ServerManager;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 import static org.jboss.as.server.manager.management.ManagementUtils.getMarshaller;
 import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -73,11 +76,11 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
      * @param input The connection input
      * @throws ManagementException If any problems occur performing the operation
      */
-     public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+     public void handle(final Connection connection, final InputStream input) throws ManagementException {
         final byte commandCode;
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-            commandCode = input.readByte();
+            commandCode = StreamUtils.readByte(input);
 
             final ManagementOperation operation = operationFor(commandCode);
             if (operation == null) {
@@ -151,10 +154,10 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL);
                 final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
                 serverManager.setDomain(domainModel);
@@ -179,10 +182,10 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
                 int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
@@ -199,14 +202,14 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
             for(AbstractDomainModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {
@@ -242,10 +245,10 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
                 int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractHostModelUpdate<?>>(count);
@@ -262,14 +265,14 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
             for(AbstractHostModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {
@@ -307,10 +310,10 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected void readRequest(final ByteDataInput input) throws ManagementException {
+        protected void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_NAME);
                 serverName = unmarshaller.readUTF();
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
@@ -329,14 +332,14 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
         }
 
         @Override
-        protected void sendResponse(ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(updates.size());
             for(AbstractServerModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 marshaller.writeInt(responses.size());
                 for(ModelUpdateResponse<?> response : responses) {

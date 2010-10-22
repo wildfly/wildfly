@@ -23,6 +23,7 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -38,7 +39,9 @@ import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
+import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 
@@ -111,6 +114,8 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             // Start by writing the header
             final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
             managementRequestHeader.write(output);
+            output.close();
+            dataOutput.close();
         } catch (IOException e) {
             throw new ManagementException("Failed to connect using protocol client", e);
         } finally {
@@ -136,10 +141,10 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         }
     }
 
-    public void handle(Connection connection, ByteDataInput input) throws ManagementException {
+    public void handle(Connection connection, InputStream input) throws ManagementException {
         try {
             expectHeader(input, ManagementProtocol.RESPONSE_START);
-            byte responseCode = input.readByte();
+            byte responseCode = StreamUtils.readByte(input);
             if (responseCode != getResponseCode()) {
                 throw new ManagementException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
             }
@@ -152,9 +157,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     }
 
     private class InitiatingMessageHandler extends AbstractMessageHandler {
-        void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+        void handle(final Connection connection, final InputStream inputStream) throws ManagementException {
             final ManagementResponseHeader responseHeader;
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 responseHeader = new ManagementResponseHeader(input);
                 if (requestId != responseHeader.getResponseId()) {
                     throw new ManagementException("Invalid request ID expecting " + requestId + " received " + responseHeader.getResponseId());
@@ -163,6 +170,8 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 sendRequest(responseHeader.getVersion(), connection);
             } catch (IOException e) {
                 throw new ManagementException("Failed to read response header", e);
+            } finally {
+                safeClose(input);
             }
         }
     }
@@ -184,6 +193,8 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 output.writeByte(ManagementProtocol.REQUEST_OPERATION);
                 output.writeByte(getRequestCode());
                 output.writeByte(ManagementProtocol.REQUEST_START);
+                output.close();
+                outputStream.close();
             } finally {
                 safeClose(output);
                 safeClose(outputStream);
@@ -191,10 +202,9 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
 
             try {
                 outputStream = connection.writeMessage();
-                output = new SimpleByteDataOutput(outputStream);
-                sendRequest(protocolVersion, output);
+                sendRequest(protocolVersion, outputStream);
+                outputStream.close();
             } finally {
-                safeClose(output);
                 safeClose(outputStream);
             }
 
@@ -202,6 +212,8 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 outputStream = connection.writeMessage();
                 output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(ManagementProtocol.REQUEST_END);
+                output.close();
+                outputStream.close();
             } finally {
                 safeClose(output);
                 safeClose(outputStream);
@@ -213,7 +225,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         }
     }
 
-    protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+    protected void sendRequest(final int protocolVersion, final OutputStream output) throws ManagementException {
     }
 
     protected abstract byte getRequestCode();
@@ -221,14 +233,14 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     protected abstract byte getResponseCode();
 
     private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
-        void handle(Connection connection, ByteDataInput input) throws ManagementException {
+        void handle(final Connection connection, final InputStream input) throws ManagementException {
             future.set(receiveResponse(input));
             connection.setMessageHandler(responseEndHandler);
         }
     };
 
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
-        void handle(Connection connection, ByteDataInput input) throws ManagementException {
+        void handle(final Connection connection, final InputStream input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.RESPONSE_END);
                 connection.setMessageHandler(MessageHandler.NULL);
@@ -238,7 +250,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         }
     };
 
-    protected T receiveResponse(final ByteDataInput input) throws ManagementException {
+    protected T receiveResponse(final InputStream input) throws ManagementException {
         return null;
     }
 

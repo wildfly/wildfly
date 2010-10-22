@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,11 @@ import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
+import static org.jboss.as.protocol.StreamUtils.readUTFZBytes;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.FileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerClient;
 
@@ -61,6 +67,8 @@ import static org.jboss.as.server.manager.management.ManagementUtils.getMarshall
 import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -69,7 +77,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
 
 /**
  * {@link org.jboss.as.server.manager.management.ManagementOperationHandler} implementation used to handle request
@@ -158,11 +165,11 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
      * @param input The connection input
      * @throws ManagementException If any problems occur performing the operation
      */
-    public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+    public void handle(final Connection connection, final InputStream input) throws ManagementException {
         final byte commandCode;
         try {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-            commandCode = input.readByte();
+            commandCode = StreamUtils.readByte(input);
 
             final ManagementOperation operation = operationFor(commandCode);
             if (operation == null) {
@@ -210,19 +217,19 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
 
     private abstract class DomainControllerOperation extends ManagementResponse {
         @Override
-        protected void readRequest(final ByteDataInput input) throws ManagementException {
+        protected void readRequest(final InputStream input) throws ManagementException {
             super.readRequest(input);
             final String serverManagerId;
             try {
                 expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_ID);
-                serverManagerId = input.readUTF();
+                serverManagerId = readUTFZBytes(input);
                 readRequest(serverManagerId, input);
             } catch (IOException e) {
                 throw new ManagementException("ServerManager Request failed.  Unable to read signature", e);
             }
         }
 
-        protected abstract void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException;
+        protected abstract void readRequest(final String serverManagerId, final InputStream input) throws ManagementException;
     }
 
     private class RegisterOperation extends DomainControllerOperation {
@@ -237,8 +244,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final String serverManagerId, final InputStream inputStream) throws ManagementException {
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, ManagementProtocol.PARAM_SERVER_MANAGER_HOST);
                 final int addressSize = input.readInt();
                 byte[] addressBytes = new byte[addressSize];
@@ -251,14 +260,16 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 log.infof("Server manager registered [%s]", client);
             } catch (Exception e) {
                 throw new ManagementException("Unable to read server manager connection information from request", e);
+            } finally {
+                safeClose(input);
             }
         }
 
         @Override
-        protected final void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected final void sendResponse(final OutputStream output) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
                 marshaller.writeObject(domainController.getDomainModel());
                 marshaller.finish();
@@ -279,7 +290,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final String serverManagerId, final InputStream input) throws ManagementException {
             log.infof("Server manager unregistered [%s]", serverManagerId);
             domainController.removeClient(serverManagerId);
         }
@@ -298,16 +309,20 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final String serverManagerId, final InputStream inputStream) throws ManagementException {
             final byte rootId;
             final String filePath;
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, ManagementProtocol.PARAM_ROOT_ID);
                 rootId = input.readByte();
                 expectHeader(input, ManagementProtocol.PARAM_FILE_PATH);
                 filePath = input.readUTF();
             } catch (Exception e) {
                 throw new ManagementException("Unable to read file request attributes", e);
+            } finally {
+                safeClose(input);
             }
 
             log.infof("Server manager [%s] requested file [%s] from root [%d]", serverManagerId, filePath, rootId);
@@ -331,8 +346,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
             }
         }
 
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream outputStream) throws ManagementException {
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(ManagementProtocol.PARAM_NUM_FILES);
                 if (localPath == null || !localPath.exists()) {
                     output.writeInt(-1);
@@ -346,8 +363,11 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                         writeFile(child, output);
                     }
                 }
+                output.close();
             } catch (Exception e) {
                 throw new ManagementException("Unable to write response to server manager", e);
+            } finally {
+                safeClose(output);
             }
         }
 
@@ -408,10 +428,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
             return ManagementProtocol.GET_DOMAIN_RESPONSE;
         }
 
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream outputStream) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(outputStream));
                 marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
                 marshaller.writeObject(domainController.getDomainModel());
                 marshaller.finish();
@@ -434,10 +454,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream inputStream) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(inputStream));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 int count = unmarshaller.readInt();
                 updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
@@ -453,14 +473,14 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
             }
         }
 
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream outputStream) throws ManagementException {
             List<DomainUpdateResult<?>> responses = new ArrayList<DomainUpdateResult<?>>(updates.size());
             for (AbstractDomainModelUpdate<?> update : updates) {
                 responses.add(processUpdate(update));
             }
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(outputStream));
                 marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 marshaller.writeInt(responses.size());
                 for (DomainUpdateResult<?> response : responses) {
@@ -545,10 +565,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream inputStream) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(inputStream));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE);
                 update = unmarshaller.readObject(AbstractDomainModelUpdate.class);
                 unmarshaller.finish();
@@ -558,11 +578,11 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
             }
         }
 
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             DomainUpdateApplierResponse response = processUpdate();
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
                 if (response.getDomainFailure() != null) {
                     marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
@@ -623,10 +643,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_HOST_NAME);
                 String hostName = unmarshaller.readUTF();
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_SERVER_GROUP_NAME);
@@ -644,11 +664,11 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             UpdateResultHandlerResponse<?> response = processUpdate();
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT);
                 if (response.getFailureResult() != null) {
                     marshaller.writeByte(ManagementProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
@@ -658,7 +678,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 } else if (response.isTimedOut()) {
                     marshaller.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT);
                 } else {
-                    output.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
+                    marshaller.writeByte(ManagementProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
                     marshaller.writeObject(response.getSuccessResult());
                 }
                 marshaller.finish();
@@ -687,10 +707,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_DEPLOYMENT_PLAN);
                 deploymentPlan = unmarshaller.readObject(DeploymentPlan.class);
                 unmarshaller.finish();
@@ -700,11 +720,11 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream output) throws ManagementException {
             try {
                 final Future<DeploymentPlanResult> result = deploymentManager.execute(deploymentPlan);
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
                 marshaller.writeObject(result.get());
                 marshaller.finish();
@@ -727,8 +747,10 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final ByteDataInput input) throws ManagementException {
+        protected final void readRequest(final InputStream inputStream) throws ManagementException {
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_NAME);
                 final String deploymentName = input.readUTF();
                 expectHeader(input, ManagementProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
@@ -742,17 +764,24 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 }
             } catch (Exception e) {
                 throw new ManagementException("Unable to read deployment content from request", e);
+            } finally {
+                safeClose(input);
             }
         }
 
-        protected void sendResponse(final ByteDataOutput output) throws ManagementException {
+        protected void sendResponse(final OutputStream outputStream) throws ManagementException {
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_HASH_LENGTH);
                 output.writeInt(deploymentHash.length);
                 output.writeByte(ManagementProtocol.PARAM_DEPLOYMENT_HASH);
                 output.write(deploymentHash);
+                output.close();
             } catch (Exception e) {
                 throw new ManagementException("Unable to send deployment hash", e);
+            } finally {
+                safeClose(output);
             }
         }
     }

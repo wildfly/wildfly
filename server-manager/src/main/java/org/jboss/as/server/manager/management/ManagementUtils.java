@@ -24,6 +24,8 @@ package org.jboss.as.server.manager.management;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.io.InputStream;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshaller;
@@ -86,10 +88,18 @@ public class ManagementUtils {
         return MARSHALLER_FACTORY.createUnmarshaller(CONFIG);
     }
 
+    public static void expectHeader(final InputStream input, int expected) throws IOException, ManagementException {
+        expectHeader(StreamUtils.readByte(input), expected);
+    }
+
     public static void expectHeader(final DataInput input, int expected) throws IOException, ManagementException {
-        byte header = input.readByte();
-        if (header != (byte) expected) {
-            throw new ManagementException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
+        expectHeader(input.readByte(), expected);
+    }
+
+    private static void expectHeader(final byte actual, int expected) throws IOException, ManagementException {
+        if (actual != (byte) expected) {
+            throw new ManagementException("Invalid byte token.  Expecting '" + expected + "' received '" + actual + "'");
         }
     }
+
 }

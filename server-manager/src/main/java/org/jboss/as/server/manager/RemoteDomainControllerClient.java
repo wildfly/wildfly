@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.manager;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +37,6 @@ import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
 import org.jboss.as.server.manager.management.ManagementRequest;
@@ -44,6 +44,8 @@ import static org.jboss.as.server.manager.management.ManagementUtils.expectHeade
 import static org.jboss.as.server.manager.management.ManagementUtils.getMarshaller;
 import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.marshalling.Marshaller;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -155,10 +157,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+        protected final void sendRequest(final int protocolVersion, final OutputStream outputStream) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(outputStream));
                 marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL);
                 marshaller.writeObject(domainModel);
                 marshaller.finish();
@@ -180,7 +182,7 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected Boolean receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected Boolean receiveResponse(final InputStream input) throws ManagementException {
             return true;  // If we made it here, we correctly established a connection
         }
     }
@@ -204,10 +206,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
                 marshaller.writeInt(updates.size());
                 for(AbstractDomainModelUpdate<?> update : updates) {
@@ -221,10 +223,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {
@@ -263,10 +265,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
                 marshaller.writeInt(updates.size());
                 for(AbstractHostModelUpdate<?> update : updates) {
@@ -280,10 +282,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<?>> receiveResponse(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {
@@ -323,10 +325,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws ManagementException {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(ManagementProtocol.PARAM_SERVER_NAME);
                 marshaller.writeChars(serverName);
                 marshaller.writeByte(ManagementProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
@@ -342,10 +344,10 @@ public class RemoteDomainControllerClient implements DomainControllerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected List<ModelUpdateResponse<?>> receiveResponse(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
                 int responseCount = unmarshaller.readInt();
                 if(responseCount != updates.size()) {

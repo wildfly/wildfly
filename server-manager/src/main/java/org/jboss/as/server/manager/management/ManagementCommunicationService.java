@@ -199,6 +199,9 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 // Now write the response header
                 final ManagementResponseHeader responseHeader = new ManagementResponseHeader(workingVersion, requestHeader.getRequestId());
                 responseHeader.write(output);
+
+                output.close();
+                dataOutput.close();
             } catch (IOException e) {
                 throw e;
             } catch (Throwable t) {

@@ -25,9 +25,11 @@ package org.jboss.as.domain.client.impl;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.ChunkyByteOutput;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshaller;
@@ -59,7 +61,7 @@ class ProtocolUtils {
             marshallerFactory = Marshalling.getMarshallerFactory("river", classLoader);
             CONFIG.setClassResolver(new SimpleClassResolver(classLoader));
         }
-        if(marshallerFactory == null) {
+        if (marshallerFactory == null) {
             throw new RuntimeException("Failed to construct a Marshaller factory");
         }
         MARSHALLER_FACTORY = marshallerFactory;
@@ -93,10 +95,17 @@ class ProtocolUtils {
         }
     }
 
+    static void expectHeader(final InputStream input, int expected) throws IOException {
+        expectHeader(StreamUtils.readByte(input), expected);
+    }
+
     static void expectHeader(final DataInput input, int expected) throws IOException {
-        byte header = input.readByte();
-        if (header != (byte) expected) {
-            throw new IOException("Invalid byte token.  Expecting '" + expected + "' received '" + header + "'");
+        expectHeader(input.readByte(), expected);
+    }
+
+    private static void expectHeader(final byte actual, int expected) throws IOException {
+        if (actual != (byte) expected) {
+            throw new IOException("Invalid byte token.  Expecting '" + expected + "' received '" + actual + "'");
         }
     }
 

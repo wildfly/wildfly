@@ -24,6 +24,7 @@ package org.jboss.as.domain.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,8 +54,12 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteOutput;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.marshalling.Marshaller;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -172,10 +177,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final DomainModel receiveResponse(final ByteDataInput input) {
+        protected final DomainModel receiveResponse(final InputStream input) {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, Protocol.PARAM_DOMAIN_MODEL);
                 final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
                 unmarshaller.finish();
@@ -204,10 +209,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 marshaller.writeInt(updates.size());
                 for (AbstractDomainModelUpdate<?> update : updates) {
@@ -221,10 +226,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final List<DomainUpdateResult<?>> receiveResponse(final ByteDataInput input) {
+        protected final List<DomainUpdateResult<?>> receiveResponse(final InputStream input) {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, Protocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
                 final int updateCount = unmarshaller.readInt();
                 final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
@@ -319,10 +324,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(Protocol.PARAM_DOMAIN_MODEL_UPDATE);
                 marshaller.writeObject(update);
                 marshaller.finish();
@@ -332,10 +337,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final DomainUpdateApplierResponse receiveResponse(final ByteDataInput input) {
+        protected final DomainUpdateApplierResponse receiveResponse(final InputStream input) {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(unmarshaller, Protocol.PARAM_APPLY_UPDATE_RESULT);
                 byte resultCode = unmarshaller.readByte();
                 if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
@@ -412,16 +417,16 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
-                output.writeByte(Protocol.PARAM_HOST_NAME);
-                output.writeUTF(server.getHostName());
-                output.writeByte(Protocol.PARAM_SERVER_GROUP_NAME);
-                output.writeUTF(server.getServerGroupName());
-                output.writeByte(Protocol.PARAM_SERVER_NAME);
-                output.writeUTF(server.getServerName());
+                marshaller.start(createByteOutput(output));
+                marshaller.writeByte(Protocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(server.getHostName());
+                marshaller.writeByte(Protocol.PARAM_SERVER_GROUP_NAME);
+                marshaller.writeUTF(server.getServerGroupName());
+                marshaller.writeByte(Protocol.PARAM_SERVER_NAME);
+                marshaller.writeUTF(server.getServerName());
 
                 marshaller.writeByte(Protocol.PARAM_SERVER_MODEL_UPDATE);
                 marshaller.writeObject(update);
@@ -432,10 +437,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final Void receiveResponse(final ByteDataInput input) {
+        protected final Void receiveResponse(final InputStream input) {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 byte resultCode = unmarshaller.readByte();
                 if (resultCode == (byte) Protocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
                     final Throwable exception = unmarshaller.readObject(Throwable.class);
@@ -492,10 +497,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream output) {
             try {
                 final Marshaller marshaller = getMarshaller();
-                marshaller.start(output);
+                marshaller.start(createByteOutput(output));
                 marshaller.writeByte(Protocol.PARAM_DEPLOYMENT_PLAN);
                 marshaller.writeObject(deploymentPlan);
                 marshaller.finish();
@@ -505,10 +510,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final DeploymentPlanResult receiveResponse(final ByteDataInput input) {
+        protected final DeploymentPlanResult receiveResponse(final InputStream input) {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(createByteInput(input));
                 expectHeader(input, Protocol.PARAM_DEPLOYMENT_PLAN_RESULT);
                 final DeploymentPlanResult result = unmarshaller.readObject(DeploymentPlanResult.class);
                 unmarshaller.finish();
@@ -541,8 +546,10 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) {
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(Protocol.PARAM_DEPLOYMENT_NAME);
                 output.writeUTF(name);
                 output.writeByte(Protocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
@@ -560,14 +567,19 @@ public class DomainClientImpl implements DomainClient {
                     safeClose(inputStream);
                     safeClose(chunkyByteOutput);
                 }
+                output.close();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to send deployment content", e);
+            } finally {
+                safeClose(output);
             }
         }
 
         @Override
-        protected final byte[] receiveResponse(final ByteDataInput input) {
+        protected final byte[] receiveResponse(final InputStream inputStream) {
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, Protocol.PARAM_DEPLOYMENT_HASH_LENGTH);
                 int length = input.readInt();
                 byte[] hash = new byte[length];
@@ -576,6 +588,8 @@ public class DomainClientImpl implements DomainClient {
                 return hash;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read deployment hash from response", e);
+            } finally {
+                 safeClose(input);
             }
         }
     }
@@ -599,22 +613,31 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(int protocolVersion, ByteDataOutput output) {
+        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) {
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(Protocol.PARAM_DEPLOYMENT_NAME);
                 output.writeUTF(deploymentName);
+                output.close();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to write updates to domain controller", e);
+            } finally {
+                safeClose(output);
             }
         }
 
         @Override
-        protected final Boolean receiveResponse(final ByteDataInput input) {
+        protected final Boolean receiveResponse(final InputStream inputStream) {
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, Protocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
                 return input.readBoolean();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read domain model from response", e);
+            } finally {
+                safeClose(input);
             }
         }
     }

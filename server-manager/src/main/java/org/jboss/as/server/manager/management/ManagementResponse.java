@@ -23,8 +23,8 @@
 package org.jboss.as.server.manager.management;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 
 import org.jboss.as.protocol.Connection;
@@ -41,7 +41,7 @@ import static org.jboss.as.server.manager.management.ManagementUtils.expectHeade
 public abstract class ManagementResponse extends ManagementOperation {
 
     /** {@inheritDoc} */
-    public void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+    public void handle(final Connection connection, final InputStream input) throws ManagementException {
         try {
             expectHeader(input, ManagementProtocol.REQUEST_START);
             connection.setMessageHandler(requestBodyHandler);
@@ -63,7 +63,7 @@ public abstract class ManagementResponse extends ManagementOperation {
      * @param input The request input
      * @throws ManagementException If any problems occur reading the request information
      */
-    protected void readRequest(final ByteDataInput input) throws ManagementException {
+    protected void readRequest(final InputStream input) throws ManagementException {
     }
 
     /**
@@ -72,18 +72,18 @@ public abstract class ManagementResponse extends ManagementOperation {
      * @param output The output
      * @throws ManagementException If any problems occur writing the response information
      */
-    protected void sendResponse(final ByteDataOutput output) throws IOException, ManagementException {
+    protected void sendResponse(final OutputStream output) throws IOException, ManagementException {
     }
 
     final MessageHandler requestBodyHandler = new AbstractMessageHandler() {
-        final void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
-            readRequest(input);
+        final void handle(final Connection connection, final InputStream input) throws ManagementException {
             connection.setMessageHandler(requestEndHandler);
+            readRequest(input);
         }
     };
 
     final MessageHandler requestEndHandler = new AbstractMessageHandler() {
-        final void handle(final Connection connection, final ByteDataInput input) throws ManagementException {
+        final void handle(final Connection connection, final InputStream input) throws ManagementException {
             try {
                 expectHeader(input, ManagementProtocol.REQUEST_END);
             } catch (IOException e) {
@@ -98,6 +98,8 @@ public abstract class ManagementResponse extends ManagementOperation {
                     output = new SimpleByteDataOutput(outputStream);
                     output.writeByte(ManagementProtocol.RESPONSE_START);
                     output.writeByte(getResponseCode());
+                    output.close();
+                    outputStream.close();
                 } finally {
                     safeClose(output);
                     safeClose(outputStream);
@@ -105,10 +107,9 @@ public abstract class ManagementResponse extends ManagementOperation {
 
                 try {
                     outputStream = connection.writeMessage();
-                    output = new SimpleByteDataOutput(outputStream);
-                    sendResponse(output);
+                    sendResponse(outputStream);
+                    outputStream.close();
                 } finally {
-                    safeClose(output);
                     safeClose(outputStream);
                 }
 
@@ -116,6 +117,8 @@ public abstract class ManagementResponse extends ManagementOperation {
                     outputStream = connection.writeMessage();
                     output = new SimpleByteDataOutput(outputStream);
                     output.writeByte(ManagementProtocol.RESPONSE_END);
+                    output.close();
+                    outputStream.close();
                 } finally {
                     safeClose(output);
                     safeClose(outputStream);

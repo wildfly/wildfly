@@ -56,12 +56,9 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 
     /** {@inheritDoc} */
     public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
-        SimpleByteDataInput input = null;
         try {
-            input = new SimpleByteDataInput(dataStream);
-            handle(connection, input);
+            handle(connection, dataStream);
         } finally {
-            safeClose(input);
             safeClose(dataStream);
         }
     }
@@ -72,5 +69,5 @@ public abstract class AbstractMessageHandler implements MessageHandler {
      * @param connection The connection
      * @param input The request input
      */
-    abstract void handle(final Connection connection, final ByteDataInput input) throws IOException;
+    abstract void handle(final Connection connection, final InputStream input) throws IOException;
 }

@@ -55,16 +55,13 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     }
 
     /** {@inheritDoc} */
-    public void handleMessage(Connection connection, InputStream dataStream) throws IOException {
-        SimpleByteDataInput input = null;
+    public void handleMessage(final Connection connection, final InputStream inputStream) throws IOException {
         try {
-            input = new SimpleByteDataInput(dataStream);
-            handle(connection, input);
+            handle(connection, inputStream);
         } catch (ManagementException e) {
-            throw new IOException("Failed to handle handle management operation", e);
+            throw new IOException("Failed to handle management operation", e);
         } finally {
-            safeClose(input);
-            safeClose(dataStream);
+            safeClose(inputStream);
         }
     }
 
@@ -72,8 +69,8 @@ public abstract class AbstractMessageHandler implements MessageHandler {
      * Handle the request using the provided input and output
      *
      * @param connection The connection
-     * @param input The request input
+     * @param inputStream The request input
      * @throws ManagementException If any problems occur handling the request
      */
-    abstract void handle(final Connection connection, final ByteDataInput input) throws ManagementException;
+    abstract void handle(final Connection connection, final InputStream inputStream) throws ManagementException;
 }

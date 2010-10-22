@@ -26,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,12 +36,17 @@ import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.server.manager.management.ManagementException;
 import org.jboss.as.server.manager.management.ManagementProtocol;
 import org.jboss.as.server.manager.management.ManagementRequest;
 import static org.jboss.as.server.manager.management.ManagementUtils.expectHeader;
 import static org.jboss.as.server.manager.management.ManagementUtils.getUnmarshaller;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -122,11 +128,10 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws ManagementException {
             try {
-                output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_ID);
-                output.writeUTF(serverManagerId);
+                output.write(ManagementProtocol.PARAM_SERVER_MANAGER_ID);
+                StreamUtils.writeUTFZBytes(output, serverManagerId);
             } catch (Exception e) {
                 throw new ManagementException("Failed to write local management connection information in request", e);
             }
@@ -154,25 +159,30 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected void sendRequest(int protocolVersion, ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
+        protected void sendRequest(int protocolVersion, OutputStream outputStream) throws ManagementException {
+            super.sendRequest(protocolVersion, outputStream);
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_HOST);
                 final byte[] address = localManagementAddress.getAddress();
                 output.writeInt(address.length);
                 output.write(address);
                 output.writeByte(ManagementProtocol.PARAM_SERVER_MANAGER_PORT);
                 output.writeInt(localManagementPort);
+                output.close();
             } catch (Exception e) {
                 throw new ManagementException("Failed to write local management connection information in request", e);
+            } finally {
+                safeClose(output);
             }
         }
 
         @Override
-        protected final DomainModel receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected final DomainModel receiveResponse(final InputStream input) throws ManagementException {
             try {
                 final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(input);
+                unmarshaller.start(Marshalling.createByteInput(input));
                 expectHeader(unmarshaller, ManagementProtocol.PARAM_DOMAIN_MODEL);
                 log.infof("Registered with remote domain controller");
                 final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
@@ -200,7 +210,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected Void receiveResponse(ByteDataInput input) throws ManagementException {
+        protected Void receiveResponse(final InputStream input) throws ManagementException {
             log.infof("Unregistered with remote domain controller");
             return null;
         }
@@ -229,20 +239,25 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         }
 
         @Override
-        protected final void sendRequest(final int protocolVersion, final ByteDataOutput output) throws ManagementException {
-            super.sendRequest(protocolVersion, output);
+        protected final void sendRequest(final int protocolVersion, final OutputStream outputStream) throws ManagementException {
+            super.sendRequest(protocolVersion, outputStream);
+            ByteDataOutput output = null;
             try {
+                output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(ManagementProtocol.PARAM_ROOT_ID);
                 output.writeByte(rootId);
                 output.writeByte(ManagementProtocol.PARAM_FILE_PATH);
                 output.writeUTF(filePath);
+                output.close();
             } catch (IOException e) {
                 throw new ManagementException("Failed to send sync file request", e);
+            } finally {
+                safeClose(output);
             }
         }
 
         @Override
-        protected final File receiveResponse(final ByteDataInput input) throws ManagementException {
+        protected final File receiveResponse(final InputStream inputStream) throws ManagementException {
             final File localPath;
             switch (rootId) {
                 case 0: {
@@ -262,7 +277,9 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                     localPath = null;
                 }
             }
+            ByteDataInput input = null;
             try {
+                input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, ManagementProtocol.PARAM_NUM_FILES);
                 int numFiles = input.readInt();
                 switch (numFiles) {
@@ -313,6 +330,8 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                 }
             } catch (IOException e) {
                 throw new ManagementException("Failed to process sync file response", e);
+            } finally {
+                safeClose(input);
             }
             return localPath;
         }

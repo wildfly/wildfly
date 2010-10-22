@@ -23,6 +23,7 @@
 package org.jboss.as.domain.client.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -41,7 +42,9 @@ import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
+import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
@@ -79,6 +82,8 @@ abstract class Request<T> extends AbstractMessageHandler {
             dataOutput = connection.writeMessage();
             output = new SimpleByteDataOutput(dataOutput);
             writeRequestHeader(output);
+            output.close();
+            dataOutput.close();
         } finally {
             safeClose(output);
             safeClose(dataOutput);
@@ -99,10 +104,10 @@ abstract class Request<T> extends AbstractMessageHandler {
         }
     }
 
-    void handle(final Connection connection, final ByteDataInput input) throws IOException {
+    void handle(final Connection connection, final InputStream input) throws IOException {
         try {
             expectHeader(input, Protocol.RESPONSE_START);
-            byte responseCode = input.readByte();
+            byte responseCode = (byte) StreamUtils.readByte(input);
             if (responseCode != getResponseCode()) {
                 throw new IOException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
             }
@@ -127,6 +132,8 @@ abstract class Request<T> extends AbstractMessageHandler {
             output.writeByte(Protocol.REQUEST_OPERATION);
             output.writeByte(getRequestCode());
             output.writeByte(Protocol.REQUEST_START);
+            output.close();
+            outputStream.close();
         } finally {
             safeClose(output);
             safeClose(outputStream);
@@ -134,8 +141,8 @@ abstract class Request<T> extends AbstractMessageHandler {
 
         try {
             outputStream = connection.writeMessage();
-            output = new SimpleByteDataOutput(outputStream);
-            sendRequest(protocolVersion, output);
+            sendRequest(protocolVersion, outputStream);
+            outputStream.close();
         } finally {
             safeClose(output);
             safeClose(outputStream);
@@ -145,29 +152,31 @@ abstract class Request<T> extends AbstractMessageHandler {
             outputStream = connection.writeMessage();
             output = new SimpleByteDataOutput(outputStream);
             output.writeByte(Protocol.REQUEST_END);
+            output.close();
+            outputStream.close();
         } finally {
             safeClose(output);
             safeClose(outputStream);
         }
     }
 
-    protected void sendRequest(final int protocolVersion, final ByteDataOutput output) throws IOException {
+    protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
 
     }
 
-    protected T receiveResponse(final ByteDataInput input) {
+    protected T receiveResponse(final InputStream input) {
         return null;
     }
 
     private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
-        void handle(Connection connection, ByteDataInput input) throws IOException {
+        void handle(final Connection connection, final InputStream input) throws IOException {
             future.set(receiveResponse(input));
             connection.setMessageHandler(responseEndHandler);
         }
     };
 
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
-        void handle(Connection connection, ByteDataInput input) throws IOException {
+        void handle(final Connection connection, final InputStream input) throws IOException {
             expectHeader(input, Protocol.RESPONSE_END);
             connection.setMessageHandler(MessageHandler.NULL);
         }
@@ -180,10 +189,16 @@ abstract class Request<T> extends AbstractMessageHandler {
             this.request = request;
         }
 
-        void handle(Connection connection, ByteDataInput input) throws IOException {
-            final int workingVersion = readResponseHeader(input);
-            connection.setMessageHandler(request);
-            request.sendRequest(workingVersion, connection);
+        void handle(final Connection connection, final InputStream inputStream) throws IOException {
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                final int workingVersion = readResponseHeader(input);
+                connection.setMessageHandler(request);
+                request.sendRequest(workingVersion, connection);
+            } finally {
+                safeClose(input);
+            }
         }
     }
 
