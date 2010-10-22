@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -329,6 +328,8 @@ public final class ManagedServer {
     }
 
     private static class ServerManagerCommServiceActivator implements ServiceActivator, Serializable {
+
+        private static final long serialVersionUID = 2522252040771977214L;
 
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
 

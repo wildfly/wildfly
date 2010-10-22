@@ -357,11 +357,6 @@ public class ServerManagerEnvironment {
         return defaultJVM;
     }
 
-    private static InetAddress findLocalhost() {
-        // FIXME implement findLocalhost
-        throw new UnsupportedOperationException("implement me");
-    }
-
     /**
      * Get a File from configuration.
      * @return the CanonicalFile form for the given name.

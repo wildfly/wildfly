@@ -27,7 +27,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -45,7 +44,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class DomainControllerConnectionService implements Service<Void> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "client");
-    private static final Logger log = Logger.getLogger("org.jboss.as.server.manager");
 
     private final InjectedValue<InetAddress> domainControllerAddress = new InjectedValue<InetAddress>();
     private final InjectedValue<Integer> domainControllerPort = new InjectedValue<Integer>();

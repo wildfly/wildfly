@@ -41,7 +41,6 @@ import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -59,7 +58,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ManagementCommunicationService implements Service<ManagementCommunicationService>, ConnectionHandler {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "management", "communication");
-    private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
+
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();

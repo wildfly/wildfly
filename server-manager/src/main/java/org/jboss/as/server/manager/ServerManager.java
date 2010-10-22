@@ -59,6 +59,7 @@ import org.jboss.as.process.ProcessManagerClient;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.server.ServerState;
+import org.jboss.as.server.manager.management.DomainControllerClientOperationHandler;
 import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
 import org.jboss.as.server.manager.management.ManagementCommunicationService;
 import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
@@ -434,9 +435,14 @@ public class ServerManager {
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
                 .addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerOperationHandler.getThreadFactoryInjector())
-                .addDependency(DomainDeploymentManager.SERVICE_NAME_LOCAL, DomainDeploymentManager.class, domainControllerOperationHandler.getDomainDeploymentManagerInjector())
-                .addDependency(DomainDeploymentRepository.SERVICE_NAME, DomainDeploymentRepository.class, domainControllerOperationHandler.getDomainDeploymentRepositoryInjector())
                 .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
+
+            final DomainControllerClientOperationHandler domainControllerClientOperationHandler = new DomainControllerClientOperationHandler();
+            batchBuilder.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
+                .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
+                .addDependency(DomainDeploymentManager.SERVICE_NAME_LOCAL, DomainDeploymentManager.class, domainControllerClientOperationHandler.getDomainDeploymentManagerInjector())
+                .addDependency(DomainDeploymentRepository.SERVICE_NAME, DomainDeploymentRepository.class, domainControllerClientOperationHandler.getDomainDeploymentRepositoryInjector())
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
 
             batchBuilder.addService(SERVICE_NAME_BASE.append("local", "dc", "connection"), Service.NULL)

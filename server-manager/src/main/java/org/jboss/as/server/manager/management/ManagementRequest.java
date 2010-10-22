@@ -34,6 +34,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.net.SocketFactory;
+
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
@@ -254,11 +255,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         return null;
     }
 
-    private final class ResponseFuture<T> implements Future<T>{
-        private volatile T result;
+    private final class ResponseFuture<R> implements Future<R>{
+        private volatile R result;
         private volatile Exception exception;
 
-        public T get() throws InterruptedException, ExecutionException {
+        public R get() throws InterruptedException, ExecutionException {
             boolean intr = false;
             try {
                 synchronized (this) {
@@ -280,7 +281,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         }
 
 
-        void set(final T result) {
+        void set(final R result) {
             synchronized (this) {
                 this.result = result;
                 notifyAll();
@@ -306,7 +307,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             return result != null || exception != null;
         }
 
-        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }

@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.manager.management;
 
-import org.jboss.as.protocol.ByteDataInput;
-import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.MessageHandler;
 
 /**

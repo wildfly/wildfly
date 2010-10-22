@@ -27,15 +27,12 @@ import java.net.InetAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
-import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.server.manager.LocalFileRepository;
 import org.jboss.as.server.manager.RemoteDomainControllerConnection;
 import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.as.server.manager.StandardElementReaderRegistrar;
 import org.jboss.as.services.net.NetworkInterfaceService;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,9 +61,6 @@ public class RemoteDomainControllerTestCase {
         operationHandler.getThreadFactoryInjector().inject(Executors.defaultThreadFactory());
         operationHandler.getExecutorServiceInjector().inject(executorService);
         operationHandler.getLocalFileRepositoryInjector().inject(new LocalFileRepository(new ServerManagerEnvironment(System.getProperties(), false, System.in, System.out, System.err, "test", InetAddress.getLocalHost(), 3223, InetAddress.getLocalHost(), 3223, "java")));
-        operationHandler.getDomainDeploymentManagerInjector().inject(new DomainDeploymentManagerImpl(ServiceContainer.Factory.create()));
-        operationHandler.getDomainDeploymentRepositoryInjector().inject(new DomainDeploymentRepository(new File(getClass().getResource("/test/deployments").toURI())));
-
 
         final DomainController domainController = new DomainController();
         domainController.getDomainConfigDirInjector().inject(new File(getClass().getResource("/test/configuration").toURI()));
@@ -84,7 +78,7 @@ public class RemoteDomainControllerTestCase {
 
         domainControllerConnection = new RemoteDomainControllerConnection("sm", InetAddress.getLocalHost(), 12345, InetAddress.getLocalHost(), 11223, null, 1000, Executors.newScheduledThreadPool(2), Executors.defaultThreadFactory());
     }
-   
+
     @Test
     public void testRegister() throws Exception {
         final DomainModel domain = domainControllerConnection.register();

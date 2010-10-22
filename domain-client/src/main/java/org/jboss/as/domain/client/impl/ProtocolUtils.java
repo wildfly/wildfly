@@ -71,16 +71,16 @@ class ProtocolUtils {
     }
 
     static void writeRequestHeader(final DataOutput output) throws Exception {
-        output.write(Protocol.SIGNATURE);
-        output.writeByte(Protocol.VERSION_FIELD);
-        output.writeInt(Protocol.VERSION);
+        output.write(DomainClientProtocol.SIGNATURE);
+        output.writeByte(DomainClientProtocol.VERSION_FIELD);
+        output.writeInt(DomainClientProtocol.VERSION);
         output.writeInt(0);
-        output.writeByte(Protocol.DOMAIN_CONTROLLER_REQUEST);
+        output.writeByte(DomainClientProtocol.DOMAIN_CONTROLLER_CLIENT_REQUEST);
     }
 
     static int readResponseHeader(final DataInput input) throws IOException {
         validateSignature(input);
-        expectHeader(input, Protocol.VERSION_FIELD);
+        expectHeader(input, DomainClientProtocol.VERSION_FIELD);
         final int version = input.readInt();
         final int responseId = input.readInt();
         assert responseId == 0;
@@ -90,7 +90,7 @@ class ProtocolUtils {
     static void validateSignature(final DataInput input) throws IOException {
         final byte[] signatureBytes = new byte[4];
         input.readFully(signatureBytes);
-        if (!Arrays.equals(Protocol.SIGNATURE, signatureBytes)) {
+        if (!Arrays.equals(DomainClientProtocol.SIGNATURE, signatureBytes)) {
             throw new IOException("Invalid signature [" + Arrays.toString(signatureBytes) + "]");
         }
     }

@@ -27,7 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Protocol header used for management operation responses. Provides the default header fields from
+ * DomainClientProtocol header used for management operation responses. Provides the default header fields from
  * {@link ManagementProtocolHeader}.
  *
  * @author John Bailey

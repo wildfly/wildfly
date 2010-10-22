@@ -25,7 +25,7 @@ package org.jboss.as.domain.client.impl;
 /**
  * @author John Bailey
  */
-interface Protocol {
+public interface DomainClientProtocol {
 
     byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
     int VERSION_FIELD = 0x00; // The version field header
@@ -36,7 +36,7 @@ interface Protocol {
     int RESPONSE_START = 0x03;
     int RESPONSE_END = 0x04;
 
-    int DOMAIN_CONTROLLER_REQUEST = 0x05;
+    int DOMAIN_CONTROLLER_CLIENT_REQUEST = 0x0A;
 
     int REQUEST_OPERATION = 0x10;
 

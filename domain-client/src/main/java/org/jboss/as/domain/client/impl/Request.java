@@ -104,10 +104,11 @@ abstract class Request<T> extends AbstractMessageHandler {
         }
     }
 
+    @Override
     void handle(final Connection connection, final InputStream input) throws IOException {
         try {
-            expectHeader(input, Protocol.RESPONSE_START);
-            byte responseCode = (byte) StreamUtils.readByte(input);
+            expectHeader(input, DomainClientProtocol.RESPONSE_START);
+            byte responseCode = StreamUtils.readByte(input);
             if (responseCode != getResponseCode()) {
                 throw new IOException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
             }
@@ -129,9 +130,9 @@ abstract class Request<T> extends AbstractMessageHandler {
         try {
             outputStream = connection.writeMessage();
             output = new SimpleByteDataOutput(outputStream);
-            output.writeByte(Protocol.REQUEST_OPERATION);
+            output.writeByte(DomainClientProtocol.REQUEST_OPERATION);
             output.writeByte(getRequestCode());
-            output.writeByte(Protocol.REQUEST_START);
+            output.writeByte(DomainClientProtocol.REQUEST_START);
             output.close();
             outputStream.close();
         } finally {
@@ -151,7 +152,7 @@ abstract class Request<T> extends AbstractMessageHandler {
         try {
             outputStream = connection.writeMessage();
             output = new SimpleByteDataOutput(outputStream);
-            output.writeByte(Protocol.REQUEST_END);
+            output.writeByte(DomainClientProtocol.REQUEST_END);
             output.close();
             outputStream.close();
         } finally {
@@ -169,6 +170,7 @@ abstract class Request<T> extends AbstractMessageHandler {
     }
 
     private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
+        @Override
         void handle(final Connection connection, final InputStream input) throws IOException {
             future.set(receiveResponse(input));
             connection.setMessageHandler(responseEndHandler);
@@ -176,19 +178,21 @@ abstract class Request<T> extends AbstractMessageHandler {
     };
 
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
+        @Override
         void handle(final Connection connection, final InputStream input) throws IOException {
-            expectHeader(input, Protocol.RESPONSE_END);
+            expectHeader(input, DomainClientProtocol.RESPONSE_END);
             connection.setMessageHandler(MessageHandler.NULL);
         }
     };
 
-    private class InitiatingMessageHandler<T> extends AbstractMessageHandler {
-        private final Request<T> request;
+    private class InitiatingMessageHandler<R> extends AbstractMessageHandler {
+        private final Request<R> request;
 
-        private InitiatingMessageHandler(Request<T> request) {
+        private InitiatingMessageHandler(Request<R> request) {
             this.request = request;
         }
 
+        @Override
         void handle(final Connection connection, final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
@@ -202,11 +206,11 @@ abstract class Request<T> extends AbstractMessageHandler {
         }
     }
 
-    private final class ResponseFuture<T> implements Future<T> {
-        private volatile T result;
+    private final class ResponseFuture<R> implements Future<R> {
+        private volatile R result;
         private volatile Exception exception;
 
-        public T get() throws InterruptedException, ExecutionException {
+        public R get() throws InterruptedException, ExecutionException {
             boolean intr = false;
             try {
                 synchronized (this) {
@@ -228,7 +232,7 @@ abstract class Request<T> extends AbstractMessageHandler {
         }
 
 
-        void set(final T result) {
+        void set(final R result) {
             synchronized (this) {
                 this.result = result;
                 notifyAll();
@@ -254,7 +258,7 @@ abstract class Request<T> extends AbstractMessageHandler {
             return result != null || exception != null;
         }
 
-        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }
