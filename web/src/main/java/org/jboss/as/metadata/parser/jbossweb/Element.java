@@ -71,7 +71,7 @@ public enum Element {
     REPLICATION_GRANULARITY("replication-granularity"),
     REPLICATION_MODE("replication-mode"),
     REPLICATION_TRIGGER("replication-trigger"),
-    ROLES_ALLOWED("roles-allowed"),
+    ROLE_ALLOWED("role-allowed"),
     RUN_AS("run-as"),
     RUN_AS_PRINCIPAL("run-as-principal"),
 
