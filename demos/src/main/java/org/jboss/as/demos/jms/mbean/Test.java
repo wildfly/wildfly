@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.messaging.mbean;
+package org.jboss.as.demos.jms.mbean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +43,9 @@ import org.jboss.logging.Logger;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class TestJms {
+public class Test implements TestMBean {
 
-    static final Logger log = Logger.getLogger(TestJms.class);
+    static final Logger log = Logger.getLogger(Test.class);
 
     private QueueConnection conn;
     private Queue queue;
@@ -55,9 +55,13 @@ public class TestJms {
 
     public void start() throws Exception {
         InitialContext ctx = new InitialContext();
+
+        System.out.println(ctx.lookup("ConnectionFactory"));
+        System.out.println(ctx.lookup("queue/test"));
+
         QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
         conn = qcf.createQueueConnection();
-        queue = (Queue)ctx.lookup("queue/TestQueue");
+        queue = (Queue)ctx.lookup("queue/test");
         session = conn.createQueueSession(true, QueueSession.AUTO_ACKNOWLEDGE);
 
         // Set the async listener
@@ -84,7 +88,7 @@ public class TestJms {
         }
     }
 
-    public List<String> readMessages(String txt) {
+    public List<String> readMessages() {
         synchronized (receivedMessages) {
             List<String> list = new ArrayList<String>(receivedMessages);
             receivedMessages.clear();
