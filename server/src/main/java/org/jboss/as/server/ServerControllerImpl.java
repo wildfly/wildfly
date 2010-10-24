@@ -41,6 +41,11 @@ final class ServerControllerImpl implements ServerController {
         this.container = container;
     }
 
+    /** {@inheritDoc} */
+    public ServerModel getServerModel() {
+        return serverModel;
+    }
+
     public <R, P> void update(final AbstractServerModelUpdate<R> update, final UpdateResultHandler<R, P> resultHandler, final P param) {
         final UpdateContextImpl updateContext = new UpdateContextImpl(container.batchBuilder(), container);
         synchronized (serverModel) {

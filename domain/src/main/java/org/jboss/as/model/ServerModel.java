@@ -73,7 +73,8 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     private ProfileElement profile;
     private SocketBindingGroupElement socketBindings;
     private int portOffset;
-    private PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
+    private final PropertiesElement systemProperties = new PropertiesElement(Element.PROPERTY, true);
+    private ManagementElement managementElement;
 
     /**
      * Construct a new instance.
@@ -166,6 +167,10 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         return paths.get(name);
     }
 
+    public ManagementElement getManagementElement() {
+        return managementElement;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Class<ServerModel> getElementClass() {
@@ -200,6 +205,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
                     path.writeContent(streamWriter);
                 }
                 streamWriter.writeEndElement();
+            }
+        }
+
+        synchronized (managementElement) {
+            if (managementElement != null) {
+                managementElement.writeContent(streamWriter);
             }
         }
 
@@ -370,4 +381,21 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     boolean removeDeploymentRepository(final String path) {
         return repositories.remove(path) != null;
     }
+
+    boolean addManagementElement(String interfaceName, int port) {
+        if (managementElement != null)
+            return false;
+        managementElement = new ManagementElement(interfaceName, port);
+        return true;
+    }
+
+    boolean removeManagementElement() {
+        if (managementElement != null) {
+            managementElement = null;
+            return true;
+        }
+        return false;
+    }
+
+
 }

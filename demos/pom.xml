@@ -59,7 +59,17 @@
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-domain-client</artifactId>
+    </dependency>
   
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-standalone-client</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.jboss.shrinkwrap</groupId>
       <artifactId>shrinkwrap-api</artifactId>
@@ -79,6 +89,56 @@
         <groupId>org.jboss.spec.javax.jms</groupId>
         <artifactId>jboss-jms-api_1.1_spec</artifactId>
     </dependency>
-
+    
+        <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-connector</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jmx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-managed-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-messaging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-osgi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-remoting</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-sar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-threads</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-transactions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.integration</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+        </dependency>
+        
   </dependencies>
 </project>

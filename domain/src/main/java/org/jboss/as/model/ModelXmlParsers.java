@@ -157,6 +157,10 @@ public final class ModelXmlParsers {
             parseServerModelPaths(reader, list);
             element = nextElement(reader);
         }
+        if (element == Element.MANAGEMENT) {
+            parseServerManagement(reader, list);
+            element = nextElement(reader);
+        }
         // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, list);
@@ -1704,6 +1708,59 @@ public final class ModelXmlParsers {
 
         if (maxThreads > 0) {
             list.add(new HostManagementSocketThreadsUpdate(maxThreads));
+        }
+        reader.discardRemainder();
+    }
+
+    static void parseServerManagement(final XMLExtendedStreamReader reader,
+            final List<? super AbstractServerModelUpdate<?>> list) throws XMLStreamException {
+
+        // Handle attributes
+        String interfaceName = null;
+        int port = 0;
+        int maxThreads = -1;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case INTERFACE: {
+                        interfaceName = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = Integer.parseInt(value);
+                        if (port < 0) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + port + " -- cannot be negative",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    case MAX_THREADS: {
+                        maxThreads = Integer.parseInt(value);
+                        if (maxThreads < 1) {
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
+                                    "' value " + maxThreads + " -- must be greater than 0",
+                                    reader.getLocation());
+                        }
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if(interfaceName == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.INTERFACE.getLocalName()));
+        }
+        list.add(new ServerModelManagementSocketAdd(interfaceName, port));
+
+        if (maxThreads > 0) {
+            list.add(new ServerModelManagementSocketThreadsUpdate(maxThreads));
         }
         reader.discardRemainder();
     }

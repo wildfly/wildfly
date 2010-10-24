@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceName;
 
@@ -37,6 +38,13 @@ public interface ServerController {
      * The name at which this controller is installed.
      */
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("as", "server", "controller");
+
+    /**
+     * Get the server model
+     *
+     * @return the server model
+     */
+    ServerModel getServerModel();
 
     /**
      * Apply a persistent update.

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager.management;
+package org.jboss.as.server.standalone.management;
 
 /**
  * @author John Bailey
@@ -81,8 +81,12 @@ public interface ManagementProtocol {
     int PARAM_SERVER_MODEL_UPDATE = 0x42;
     int UPDATE_SERVER_MODEL_RESPONSE = 0x43;
 
-
     // Standalone server
+    int APPLY_UPDATES_REQUEST = 0x45;
+    int EXECUTE_DEPLOYMENT_PLAN_REQUEST = 0x51;
+    int ADD_DEPLOYMENT_CONTENT_REQUEST = 0x55;
+    int CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST = 0x62;
+
     int SERVER_CONTROLLER_REQUEST = 0x75;
     int GET_SERVER_MODEL_REQUEST = 0x76;
     int GET_SERVER_MODEL_RESPONSE = 0x77;

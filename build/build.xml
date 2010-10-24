@@ -183,6 +183,8 @@
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
+       	<module-def name="org.jboss.as.aggregate" />
+    	
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>

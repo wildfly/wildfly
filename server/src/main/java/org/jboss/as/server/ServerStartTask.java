@@ -47,6 +47,7 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
+import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
@@ -195,6 +196,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 update.applyUpdateBootAction(context);
             }
         }
+
+        StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
 
         try {
             serverStartupListener.startBatch(createDeploymentTask(container, serverStartupListener));

@@ -128,6 +128,7 @@
         <module>protocol</module>
         <module>domain</module>
         <module>domain-client</module>
+        <module>standalone-client</module>
         <module>connector</module>
         <module>server-manager</module>
         <module>server</module>
@@ -359,6 +360,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-server-manager</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-standalone-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

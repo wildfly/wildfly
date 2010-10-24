@@ -50,6 +50,8 @@
         <extension module="org.jboss.as.transactions"/>
     </extensions>
 
+    <management interface="default" port="9999"/>
+
     <profile name="something">
         <subsystem xmlns="urn:jboss:domain:threads:1.0">
             <scheduled-thread-pool name="remoting">
