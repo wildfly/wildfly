@@ -26,13 +26,14 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartException;
@@ -59,20 +60,13 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
-        final NestedMounts mounts = new NestedMounts();
-
+        final List<VirtualFile> list = new ArrayList<VirtualFile>(1);
         try {
             deploymentRoot.visit(new VirtualFileVisitor() {
                 public void visit(VirtualFile virtualFile) {
                     if (virtualFile.getName().endsWith(".jar")) {
-                        try {
-                            MountHandle handle = new MountHandle(VFS.mountZip(virtualFile, virtualFile, TempFileProviderService.provider()));
-                            mounts.add(virtualFile, handle);
-                        } catch (IOException e) {
-                            log.warnf("Could not mount %s in deployment %s, skipping", virtualFile.getPathNameRelativeTo(deploymentRoot), deploymentRoot.getName());
-                        }
+                        list.add(virtualFile);
                     }
                 }
                 public VisitorAttributes getAttributes() {
@@ -80,17 +74,23 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
                 }
             });
         } catch (IOException e) {
-            for (NestedMounts.Entry mount: mounts) {
-                mount.mount().close();
-            }
-
             throw new DeploymentUnitProcessingException("Could not mount nested jars in deployment: " + deploymentRoot.getName(), e);
         }
 
-        if (mounts.size() > 0) {
-            context.putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
-            context.getBatchServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
+        if (list.size() == 0)
+            return;
+
+        final NestedMounts mounts = new NestedMounts(list.size());
+        for (VirtualFile file : list)
+        try {
+            MountHandle handle = new MountHandle(VFS.mountZip(file, file, TempFileProviderService.provider()));
+            mounts.add(file, handle);
+        } catch (IOException e) {
+            log.warnf("Could not mount %s in deployment %s, skipping", file.getPathNameRelativeTo(deploymentRoot), deploymentRoot.getName());
         }
+
+        context.putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
+        context.getBatchServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
     }
 
     static class CloseListener implements ServiceListener<Void> {

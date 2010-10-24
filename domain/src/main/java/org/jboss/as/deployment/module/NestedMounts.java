@@ -37,7 +37,11 @@ import org.jboss.vfs.VirtualFile;
  */
 public final class NestedMounts implements Iterable<NestedMounts.Entry> {
     public static AttachmentKey<NestedMounts> ATTACHMENT_KEY = new AttachmentKey<NestedMounts>(NestedMounts.class);
-    private final List<Entry> mounts = new ArrayList<Entry>(1);
+    private final List<Entry> mounts;
+
+    public NestedMounts(int initialCapacity) {
+        mounts = new ArrayList<Entry>(initialCapacity);
+    }
 
     public static final class Entry {
         private VirtualFile file;
