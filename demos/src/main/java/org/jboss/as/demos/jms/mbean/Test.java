@@ -36,6 +36,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 
 /**
  * JMS Example (waiting for JMS to be implemented)
@@ -54,25 +55,41 @@ public class Test implements TestMBean {
     private final List<String> receivedMessages = new ArrayList<String>();
 
     public void start() throws Exception {
-        InitialContext ctx = new InitialContext();
+        //HornetQ needs the proper TCL
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        try {
+            InitialContext ctx = new InitialContext();
 
-        System.out.println(ctx.lookup("ConnectionFactory"));
-        System.out.println(ctx.lookup("queue/test"));
+            Module module = Module.forClass(Test.class);
+            Thread.currentThread().setContextClassLoader(module.getClassLoader());
+            System.out.println(ctx.lookup("ConnectionFactory"));
+            System.out.println(ctx.lookup("queue/test"));
 
-        QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
-        conn = qcf.createQueueConnection();
-        queue = (Queue)ctx.lookup("queue/test");
-        session = conn.createQueueSession(true, QueueSession.AUTO_ACKNOWLEDGE);
+            QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
+            conn = qcf.createQueueConnection();
+            conn.start();
+            queue = (Queue)ctx.lookup("queue/test");
+            session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
-        // Set the async listener
-        QueueReceiver recv = session.createReceiver(queue);
-        recv.setMessageListener(new ExampeMessageListener());
+            // Set the async listener
+            QueueReceiver recv = session.createReceiver(queue);
+            recv.setMessageListener(new ExampeMessageListener());
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     public void stop() throws Exception {
-        conn.stop();
-        session.close();
-        conn.close();
+        if (conn != null) {
+            conn.stop();
+        }
+        if (session != null) {
+            session.close();
+        }
+        if (conn != null) {
+            conn.close();
+        }
     }
 
     public void sendMessage(String txt) throws Exception {
