@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import javax.naming.InitialContext;
-
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.logging.Logger;
@@ -56,7 +54,6 @@ class ConnectionFactoryService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
         try {
-            jmsManager.setContext(new InitialContext());
             jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
         } catch (Exception e) {
             throw new StartException("failed to create connection-factory", e);

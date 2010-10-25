@@ -23,6 +23,8 @@
 package org.jboss.as.messaging.jms;
 
 import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
@@ -31,10 +33,10 @@ import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -49,10 +51,15 @@ public class JMSService implements Service<JMSServerManager> {
     private JMSServerManager jmsServer;
 
     public static void addService(final BatchBuilder builder) {
-        final JMSService service = new JMSService();
-        builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
-            .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-            .setInitialMode(Mode.ACTIVE);
+        try {
+            final JMSService service = new JMSService();
+            builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
+                .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
+                .addInjection(service.getContextInjector(), (Context)new InitialContext())
+                .setInitialMode(Mode.ACTIVE);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected JMSService() {
@@ -65,7 +72,7 @@ public class JMSService implements Service<JMSServerManager> {
             final JMSServerManager jmsServer = new JMSServerManagerImpl(hornetQServer.getValue());
 
             final Context jndiContext = contextInjector.getOptionalValue();
-            if(context != null) {
+            if(jndiContext != null) {
                 jmsServer.setContext(jndiContext);
             }
 
