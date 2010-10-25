@@ -22,21 +22,26 @@
 
 package org.jboss.as.server.standalone.management;
 
-import static org.jboss.as.server.standalone.management.ManagementUtils.expectHeader;
+import java.io.IOException;
+import org.jboss.as.protocol.ProtocolUtils;
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.StreamUtils.readByte;
+import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementResponse;
+import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.protocol.Connection;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerController;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -48,51 +53,28 @@ import org.jboss.msc.value.InjectedValue;
  * @author Emanuel Muckenhuber
  */
 class ServerControllerOperationHandler extends AbstractMessageHandler implements ManagementOperationHandler, Service<ManagementOperationHandler> {
+    private static final MarshallingConfiguration CONFIG;
+    static {
+        CONFIG = new MarshallingConfiguration();
+        CONFIG.setClassResolver(new SimpleClassResolver(ServerControllerOperationHandler.class.getClassLoader()));
+    }
 
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
 
     public static final ServiceName SERVICE_NAME = ServerController.SERVICE_NAME.append("operation", "handler");
 
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
-    private final InjectedValue<ScheduledExecutorService> executorServiceValue = new InjectedValue<ScheduledExecutorService>();
-    private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
-    private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
-    private final InjectedValue<ServerDeploymentManager> deploymentManagerValue = new InjectedValue<ServerDeploymentManager>();
 
     private ServerController serverController;
-    private ScheduledExecutorService executorService;
-    private ThreadFactory threadFactory;
-    private ServerDeploymentRepository deploymentRepository;
-    private ServerDeploymentManager deploymentManager;
 
     InjectedValue<ServerController> getServerControllerInjector() {
         return serverControllerValue;
-    }
-
-    InjectedValue<ThreadFactory> getThreadFactoryInjector() {
-        return threadFactoryValue;
-    }
-
-    InjectedValue<ScheduledExecutorService> getExecutorServiceInjector() {
-        return executorServiceValue;
-    }
-
-    InjectedValue<ServerDeploymentRepository> getDeploymentRepositoryInjector() {
-        return deploymentRepositoryValue;
-    }
-
-    InjectedValue<ServerDeploymentManager> getDeploymentManagerInjector() {
-        return deploymentManagerValue;
     }
 
     /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
         try {
             serverController = serverControllerValue.getValue();
-            executorService = executorServiceValue.getValue();
-            deploymentRepository = deploymentRepositoryValue.getValue();
-            deploymentManager = deploymentManagerValue.getValue();
-            this.threadFactory = threadFactoryValue.getValue();
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }
@@ -101,9 +83,6 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     /** {@inheritDoc} */
     public void stop(StopContext context) {
        serverController = null;
-       executorService = null;
-       deploymentRepository = null;
-       deploymentManager = null;
     }
 
     /** {@inheritDoc} */
@@ -112,46 +91,35 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     }
 
     /** {@inheritDoc} */
-    void handle(Connection connection, InputStream input) throws ManagementException {
-        final byte commandCode;
-        try {
-            expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-            commandCode = StreamUtils.readByte(input);
+    public void handle(Connection connection, InputStream input) throws IOException {
+        expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
+        final byte commandCode = readByte(input);
 
-            final ManagementOperation operation = operationFor(commandCode);
-            if (operation == null) {
-                throw new ManagementException("Invalid command code " + commandCode + " received from standalone client");
-            }
-            log.debugf("Received operation [%s]", operation);
-
-            try {
-                operation.handle(connection, input);
-            } catch (Exception e) {
-                throw new ManagementException("Failed to execute operation", e);
-            }
-        } catch (ManagementException e) {
-            throw e;
-        } catch (Throwable t) {
-            throw new ManagementException("Request failed to read command code", t);
+        final AbstractMessageHandler operation = operationFor(commandCode);
+        if (operation == null) {
+            throw new IOException("Invalid command code " + commandCode + " received from standalone client");
         }
+        log.debugf("Received operation [%s]", operation);
+
+        operation.handle(connection, input);
     }
 
     /** {@inheritDoc} */
     public byte getIdentifier() {
-        return ManagementProtocol.SERVER_CONTROLLER_REQUEST;
+        return StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST;
     }
 
-    private ManagementOperation operationFor(final byte commandByte) {
+    private AbstractMessageHandler operationFor(final byte commandByte) {
         switch (commandByte) {
-            case ManagementProtocol.GET_SERVER_MODEL_REQUEST:
+            case StandaloneClientProtocol.GET_SERVER_MODEL_REQUEST:
                 return new GetServerModel();
-            case ManagementProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
+            case StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
                 return null;
-            case ManagementProtocol.APPLY_UPDATES_REQUEST:
+            case StandaloneClientProtocol.APPLY_UPDATES_REQUEST:
                 return null;
-            case ManagementProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST:
+            case StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST:
                 return null;
-            case ManagementProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
+            case StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
                 return null;
             default:
                 return null;
@@ -159,29 +127,22 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     }
 
     private class GetServerModel extends ManagementResponse {
-
-        @Override
-        public final byte getRequestCode() {
-            return ManagementProtocol.GET_SERVER_MODEL_REQUEST;
-        }
-
         @Override
         protected final byte getResponseCode() {
-            return ManagementProtocol.GET_SERVER_MODEL_RESPONSE;
+            return StandaloneClientProtocol.GET_SERVER_MODEL_RESPONSE;
         }
 
         @Override
-        protected void sendResponse(final OutputStream outputStream) throws ManagementException {
-            try {
-                final Marshaller marshaller = ManagementUtils.getMarshaller();
-                marshaller.start(createByteOutput(outputStream));
-                marshaller.writeByte(ManagementProtocol.PARAM_SERVER_MODEL);
-                marshaller.writeObject(serverController.getServerModel());
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new ManagementException("Unable to write domain configuration to client", e);
-            }
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(outputStream));
+            marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL);
+            marshaller.writeObject(serverController.getServerModel());
+            marshaller.finish();
         }
     }
 
+    private static Marshaller getMarshaller() throws IOException {
+        return ProtocolUtils.getMarshaller(CONFIG);
+    }
 }

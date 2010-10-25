@@ -66,10 +66,6 @@ public class StandaloneServerManagementServices {
             final ServerControllerOperationHandler serverControllerOperationHandler = new ServerControllerOperationHandler();
             batchBuilder.addService(ServerControllerOperationHandler.SERVICE_NAME, serverControllerOperationHandler)
                     .addDependency(ServerController.SERVICE_NAME, ServerController.class, serverControllerOperationHandler.getServerControllerInjector())
-                    .addInjection(serverControllerOperationHandler.getExecutorServiceInjector(), Executors.newScheduledThreadPool(1))
-                    .addInjection(serverControllerOperationHandler.getThreadFactoryInjector(), Executors.defaultThreadFactory())
-                    .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, serverControllerOperationHandler.getDeploymentRepositoryInjector())
-                    .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, serverControllerOperationHandler.getDeploymentManagerInjector())
                     .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(serverControllerOperationHandler))
                     .setInitialMode(ServiceController.Mode.ACTIVE);
         }

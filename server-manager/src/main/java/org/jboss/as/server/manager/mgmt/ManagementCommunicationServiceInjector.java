@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.standalone.management;
+package org.jboss.as.server.manager.mgmt;
 
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.inject.InjectionException;
@@ -29,7 +29,7 @@ import org.jboss.msc.value.Value;
 
 /**
  * Injector used to add a {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} to the
- * {@link ManagementCommunicationService}.
+ * {@link org.jboss.as.server.manager.mgmt.ManagementCommunicationService}.
  *
  * @author John Bailey
  */
@@ -48,7 +48,7 @@ public class ManagementCommunicationServiceInjector implements Injector<Manageme
 
     /**
      * Add the {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} to the injected
-     * {@link ManagementCommunicationService}.
+     * {@link org.jboss.as.server.manager.mgmt.ManagementCommunicationService}.
      *
      * @param value The ManagementCommunicationService
      * @throws InjectionException
@@ -60,7 +60,7 @@ public class ManagementCommunicationServiceInjector implements Injector<Manageme
 
     /**
      * Remove the {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} from the injected
-     * {@link ManagementCommunicationService}.
+     * {@link org.jboss.as.server.manager.mgmt.ManagementCommunicationService}.
      */
     public synchronized void uninject() {
         if(communicationService  != null) {

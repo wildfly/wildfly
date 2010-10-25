@@ -20,34 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager;
-
-import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.model.DomainModel;
+package org.jboss.as.protocol.mgmt;
 
 /**
- * Contract for communicating with a domain controller.
- *
  * @author John Bailey
  */
-public interface DomainControllerConnection {
-    /**
-     * Register with the domain controller.
-     *
-     * @return The latest domain model
-     */
-    DomainModel register();
+public interface ManagementProtocol {
+    // Headers
+    byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
+    int VERSION_FIELD = 0x00; // The version field header
+    int VERSION = 1; // The current protocol version
 
-    /*
-     * Unregister from the domain controller.
-     */
-    void unregister();
+    int REQUEST_START = 0x01;
+    int REQUEST_OPERATION = 0x02;
+    int REQUEST_BODY = 0x03;
+    int REQUEST_END = 0x04;
+    int RESPONSE_START = 0x05;
+    int RESPONSE_BODY = 0x06;
+    int RESPONSE_END = 0x07;
 
-    /**
-     * Get the file repository for the domain controller.  This can be used to pull contents from the domain
-     * controllers repository.
-     *
-     * @return The file repository
-     */
-    FileRepository getRemoteFileRepository();
+
 }

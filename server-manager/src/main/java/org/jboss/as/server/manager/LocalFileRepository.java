@@ -24,6 +24,7 @@ package org.jboss.as.server.manager;
 
 import java.io.File;
 
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.model.DeploymentUnitElement;
 
 

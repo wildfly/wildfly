@@ -23,6 +23,7 @@
 package org.jboss.as.server.manager;
 
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.model.DomainModel;
 
 /**

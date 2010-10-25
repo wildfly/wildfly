@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

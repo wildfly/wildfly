@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.standalone.management;
+package org.jboss.as.server.manager.mgmt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,15 +35,15 @@ import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ConnectionHandler;
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolServer;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

@@ -43,8 +43,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
 import org.jboss.as.domain.controller.DomainConfigurationPersister;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentManagerImpl;
 import org.jboss.as.domain.controller.deployment.DomainDeploymentRepository;
+import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
@@ -59,12 +61,11 @@ import org.jboss.as.process.ProcessManagerClient;
 import org.jboss.as.process.ProcessMessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import org.jboss.as.server.ServerState;
-import org.jboss.as.server.manager.management.DomainControllerClientOperationHandler;
-import org.jboss.as.server.manager.management.DomainControllerOperationHandler;
-import org.jboss.as.server.manager.management.ManagementCommunicationService;
-import org.jboss.as.server.manager.management.ManagementCommunicationServiceInjector;
-import org.jboss.as.server.manager.management.ManagementOperationHandlerService;
-import org.jboss.as.server.manager.management.ServerManagerOperationHandler;
+import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
+import org.jboss.as.server.manager.mgmt.ManagementCommunicationService;
+import org.jboss.as.server.manager.mgmt.ManagementCommunicationServiceInjector;
+import org.jboss.as.server.manager.mgmt.ManagementOperationHandlerService;
+import org.jboss.as.server.manager.mgmt.ServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -417,7 +418,6 @@ public class ServerManager {
             extensionRegistrar.registerStandardDomainReaders(mapper);
 
             final DomainController domainController = new DomainController();
-
 
             batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
                 .addInjection(domainController.getXmlMapperInjector(), mapper)

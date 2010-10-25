@@ -20,34 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager;
-
-import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.model.DomainModel;
+package org.jboss.as.protocol.mgmt;
 
 /**
- * Contract for communicating with a domain controller.
- *
  * @author John Bailey
  */
-public interface DomainControllerConnection {
-    /**
-     * Register with the domain controller.
-     *
-     * @return The latest domain model
-     */
-    DomainModel register();
-
-    /*
-     * Unregister from the domain controller.
-     */
-    void unregister();
-
-    /**
-     * Get the file repository for the domain controller.  This can be used to pull contents from the domain
-     * controllers repository.
-     *
-     * @return The file repository
-     */
-    FileRepository getRemoteFileRepository();
+public interface ServerManagerProtocol {
+    int SERVER_MANAGER_REQUEST = 0x25;
+    int PARAM_DOMAIN_MODEL = 0x13;
+    int UPDATE_FULL_DOMAIN_REQUEST = 0x26;
+    int UPDATE_FULL_DOMAIN_RESPONSE = 0x27;
+    int UPDATE_DOMAIN_MODEL_REQUEST = 0x28;
+    int PARAM_DOMAIN_MODEL_UPDATE_COUNT = 0x29;
+    int PARAM_DOMAIN_MODEL_UPDATE = 0x30;
+    int PARAM_MODEL_UPDATE_RESPONSE_COUNT = 0x31;
+    int PARAM_MODEL_UPDATE_RESPONSE = 0x32;
+    int UPDATE_DOMAIN_MODEL_RESPONSE = 0x33;
+    int UPDATE_HOST_MODEL_REQUEST = 0x34;
+    int PARAM_HOST_MODEL_UPDATE_COUNT = 0x35;
+    int PARAM_HOST_MODEL_UPDATE = 0x36;
+    int UPDATE_HOST_MODEL_RESPONSE = 0x37;
+    int IS_ACTIVE_REQUEST = 0x38;
+    int IS_ACTIVE_RESPONSE = 0x39;
+    int UPDATE_SERVER_MODEL_REQUEST = 0x40;
+    int PARAM_SERVER_NAME = 0x41;
+    int PARAM_SERVER_MODEL_UPDATE_COUNT = 0x42;
+    int PARAM_SERVER_MODEL_UPDATE = 0x43;
+    int UPDATE_SERVER_MODEL_RESPONSE = 0x44;
 }

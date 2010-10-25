@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.standalone.management;
+package org.jboss.as.server.manager.mgmt;
 
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.msc.service.Service;

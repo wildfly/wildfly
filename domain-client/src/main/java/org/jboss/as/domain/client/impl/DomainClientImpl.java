@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlan;
 import org.jboss.as.deployment.client.api.domain.DeploymentPlanResult;
 import org.jboss.as.deployment.client.api.domain.DomainDeploymentManager;
@@ -43,9 +44,6 @@ import org.jboss.as.domain.client.api.DomainUpdateApplier;
 import org.jboss.as.domain.client.api.DomainUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 
-import static org.jboss.as.domain.client.impl.ProtocolUtils.expectHeader;
-import static org.jboss.as.domain.client.impl.ProtocolUtils.getMarshaller;
-import static org.jboss.as.domain.client.impl.ProtocolUtils.getUnmarshaller;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -54,12 +52,19 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteOutput;
+import org.jboss.as.protocol.ProtocolUtils;
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.jboss.as.protocol.mgmt.ManagementException;
+import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.marshalling.Marshaller;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -68,8 +73,14 @@ import org.jboss.marshalling.Unmarshaller;
  * @author John Bailey
  */
 public class DomainClientImpl implements DomainClient {
+    private static final MarshallingConfiguration CONFIG;
+    static {
+        CONFIG = new MarshallingConfiguration();
+        CONFIG.setClassResolver(new SimpleClassResolver(DomainClientImpl.class.getClassLoader()));
+    }
 
     private volatile DomainDeploymentManager deploymentManager;
+    private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
 
     private final InetAddress address;
     private final int port;
@@ -83,12 +94,20 @@ public class DomainClientImpl implements DomainClient {
 
     @Override
     public DomainModel getDomainModel() {
-        return new GetDomainOperation().executeForResult();
+        try {
+            return new GetDomainOperation().executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to get domain model.", e);
+        }
     }
 
     @Override
     public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
-        return new ApplyUpdatesOperation(updates).executeForResult();
+        try {
+            return new ApplyUpdatesOperation(updates).executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to apply domain updates", e);
+        }
     }
 
     @Override
@@ -114,7 +133,11 @@ public class DomainClientImpl implements DomainClient {
 
     @Override
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
-        return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+        try {
+            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to add deployment content.", e);
+        }
     }
 
     @Override
@@ -159,9 +182,13 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    private abstract class DomainClientRequest<T> extends Request<T> {
+    private abstract class DomainClientRequest<T> extends ManagementRequest<T> {
         private DomainClientRequest() {
-            super(address, port, executorService, threadFactory);
+            super(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
+        }
+
+        protected byte getHandlerId() {
+            return DomainClientProtocol.DOMAIN_CONTROLLER_CLIENT_REQUEST;
         }
     }
 
@@ -177,17 +204,13 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected final DomainModel receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, DomainClientProtocol.PARAM_DOMAIN_MODEL);
-                final DomainModel domainModel = unmarshaller.readObject(DomainModel.class);
-                unmarshaller.finish();
-                return domainModel;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read domain model from response", e);
-            }
+        protected final DomainModel receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainClientProtocol.PARAM_DOMAIN_MODEL);
+            final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
+            unmarshaller.finish();
+            return domainModel;
         }
     }
 
@@ -209,100 +232,92 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                marshaller.writeInt(updates.size());
-                for (AbstractDomainModelUpdate<?> update : updates) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                    marshaller.writeObject(update);
-                }
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to write updates to domain controller", e);
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            marshaller.writeInt(updates.size());
+            for (AbstractDomainModelUpdate<?> update : updates) {
+                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                marshaller.writeObject(update);
             }
+            marshaller.finish();
         }
 
         @Override
-        protected final List<DomainUpdateResult<?>> receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                final int updateCount = unmarshaller.readInt();
-                final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
-                for (int i = 0; i < updateCount; i++) {
-                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                    byte resultCode = unmarshaller.readByte();
-                    if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                        final UpdateFailedException updateFailedException = unmarshaller.readObject(UpdateFailedException.class);
-                        results.add(new DomainUpdateResult<Object>(updateFailedException));
-                    } else if (resultCode == (byte) DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
-                        Map<String, UpdateFailedException> hostFailures = null;
-                        Map<ServerIdentity, Object> serverResults = null;
-                        Map<ServerIdentity, Throwable> serverFailures = null;
-                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
-                        int hostFailureCount = unmarshaller.readInt();
-                        if (hostFailureCount > 0) {
-                            hostFailures = new HashMap<String, UpdateFailedException>();
-                            for (int j = 0; j < hostFailureCount; j++) {
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-                                final String hostName = unmarshaller.readUTF();
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                                final UpdateFailedException updateFailedException = unmarshaller.readObject(UpdateFailedException.class);
-                                hostFailures.put(hostName, updateFailedException);
-                            }
+        protected final List<DomainUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            final int updateCount = unmarshaller.readInt();
+            final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
+            for (int i = 0; i < updateCount; i++) {
+                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+                byte resultCode = unmarshaller.readByte();
+                if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                    final UpdateFailedException updateFailedException = unmarshal(unmarshaller, UpdateFailedException.class);
+                    results.add(new DomainUpdateResult<Object>(updateFailedException));
+                } else if (resultCode == (byte) DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
+                    Map<String, UpdateFailedException> hostFailures = null;
+                    Map<ServerIdentity, Object> serverResults = null;
+                    Map<ServerIdentity, Throwable> serverFailures = null;
+                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                    int hostFailureCount = unmarshaller.readInt();
+                    if (hostFailureCount > 0) {
+                        hostFailures = new HashMap<String, UpdateFailedException>();
+                        for (int j = 0; j < hostFailureCount; j++) {
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
+                            final String hostName = unmarshaller.readUTF();
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                            final UpdateFailedException updateFailedException = unmarshal(unmarshaller, UpdateFailedException.class);
+                            hostFailures.put(hostName, updateFailedException);
                         }
-                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
-                        int serverFailureCount = unmarshaller.readInt();
-                        if (serverFailureCount > 0) {
-                            serverFailures = new HashMap<ServerIdentity, Throwable>();
-                            for (int j = 0; j < hostFailureCount; j++) {
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-                                final String hostName = unmarshaller.readUTF();
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                                final String serverGroupName = unmarshaller.readUTF();
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
-                                final String serverName = unmarshaller.readUTF();
-                                ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                                final Throwable serverException = unmarshaller.readObject(Throwable.class);
-                                serverFailures.put(identity, serverException);
-                            }
-                        }
-                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
-                        int serverResultCount = unmarshaller.readInt();
-                        if (serverResultCount > 0) {
-                            serverResults = new HashMap<ServerIdentity, Object>();
-                            for (int j = 0; j < hostFailureCount; j++) {
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-                                final String hostName = unmarshaller.readUTF();
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                                final String serverGroupName = unmarshaller.readUTF();
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
-                                final String serverName = unmarshaller.readUTF();
-                                ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
-                                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
-                                final Object serverResult = unmarshaller.readObject(Object.class);
-                                serverResults.put(identity, serverResult);
-                            }
-                        }
-                        results.add(new DomainUpdateResult<Object>(hostFailures, serverResults, serverFailures));
-                    } else {
-                        throw new IOException("Invalid byte token.  Expecting '" +
-                                DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
-                                "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
-                                "' received '" + resultCode + "'");
                     }
-
+                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_FAILURE_COUNT);
+                    int serverFailureCount = unmarshaller.readInt();
+                    if (serverFailureCount > 0) {
+                        serverFailures = new HashMap<ServerIdentity, Throwable>();
+                        for (int j = 0; j < hostFailureCount; j++) {
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
+                            final String hostName = unmarshaller.readUTF();
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
+                            final String serverGroupName = unmarshaller.readUTF();
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
+                            final String serverName = unmarshaller.readUTF();
+                            ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                            final Throwable serverException = unmarshal(unmarshaller, Throwable.class);
+                            serverFailures.put(identity, serverException);
+                        }
+                    }
+                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_RESULT_COUNT);
+                    int serverResultCount = unmarshaller.readInt();
+                    if (serverResultCount > 0) {
+                        serverResults = new HashMap<ServerIdentity, Object>();
+                        for (int j = 0; j < hostFailureCount; j++) {
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
+                            final String hostName = unmarshaller.readUTF();
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
+                            final String serverGroupName = unmarshaller.readUTF();
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
+                            final String serverName = unmarshaller.readUTF();
+                            ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN);
+                            final Object serverResult = unmarshal(unmarshaller, Object.class);
+                            serverResults.put(identity, serverResult);
+                        }
+                    }
+                    results.add(new DomainUpdateResult<Object>(hostFailures, serverResults, serverFailures));
+                } else {
+                    throw new IOException("Invalid byte token.  Expecting '" +
+                            DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
+                            "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                            "' received '" + resultCode + "'");
                 }
-                unmarshaller.finish();
-                return results;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read update responses", e);
+
             }
+            unmarshaller.finish();
+            return results;
         }
     }
 
@@ -324,68 +339,60 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                marshaller.writeObject(update);
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to write updates to domain controller", e);
-            }
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+            marshaller.writeObject(update);
+            marshaller.finish();
         }
 
         @Override
-        protected final DomainUpdateApplierResponse receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                byte resultCode = unmarshaller.readByte();
-                if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                    final UpdateFailedException updateFailedException = unmarshaller.readObject(UpdateFailedException.class);
-                    return new DomainUpdateApplierResponse(updateFailedException);
-                } else if (resultCode == (byte) DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
-                    Map<String, UpdateFailedException> hostFailures = null;
-                    List<ServerIdentity> servers = null;
-                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
-                    int hostFailureCount = unmarshaller.readInt();
-                    if (hostFailureCount > 0) {
-                        hostFailures = new HashMap<String, UpdateFailedException>();
-                        for (int j = 0; j < hostFailureCount; j++) {
-                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-                            final String hostName = unmarshaller.readUTF();
-                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                            final UpdateFailedException updateFailedException = unmarshaller.readObject(UpdateFailedException.class);
-                            hostFailures.put(hostName, updateFailedException);
-                        }
+        protected final DomainUpdateApplierResponse receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+            byte resultCode = unmarshaller.readByte();
+            if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                final UpdateFailedException updateFailedException = unmarshal(unmarshaller, UpdateFailedException.class);
+                return new DomainUpdateApplierResponse(updateFailedException);
+            } else if (resultCode == (byte) DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS) {
+                Map<String, UpdateFailedException> hostFailures = null;
+                List<ServerIdentity> servers = null;
+                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_HOST_FAILURE_COUNT);
+                int hostFailureCount = unmarshaller.readInt();
+                if (hostFailureCount > 0) {
+                    hostFailures = new HashMap<String, UpdateFailedException>();
+                    for (int j = 0; j < hostFailureCount; j++) {
+                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
+                        final String hostName = unmarshaller.readUTF();
+                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                        final UpdateFailedException updateFailedException = unmarshal(unmarshaller, UpdateFailedException.class);
+                        hostFailures.put(hostName, updateFailedException);
                     }
-                    expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
-                    int serverResultCount = unmarshaller.readInt();
-                    if (serverResultCount > 0) {
-                        servers = new ArrayList<ServerIdentity>();
-                        for (int j = 0; j < hostFailureCount; j++) {
-                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-                            final String hostName = unmarshaller.readUTF();
-                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                            final String serverGroupName = unmarshaller.readUTF();
-                            expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
-                            final String serverName = unmarshaller.readUTF();
-                            ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
-                            servers.add(identity);
-                        }
-                    }
-                    unmarshaller.finish();
-                    return new DomainUpdateApplierResponse(hostFailures, servers);
-                } else {
-                    throw new IOException("Invalid byte token.  Expecting '" +
-                            DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
-                            "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
-                            "' received '" + resultCode + "'");
                 }
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read update responses", e);
+                expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_SERVER_COUNT);
+                int serverResultCount = unmarshaller.readInt();
+                if (serverResultCount > 0) {
+                    servers = new ArrayList<ServerIdentity>();
+                    for (int j = 0; j < hostFailureCount; j++) {
+                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
+                        final String hostName = unmarshaller.readUTF();
+                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
+                        final String serverGroupName = unmarshaller.readUTF();
+                        expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
+                        final String serverName = unmarshaller.readUTF();
+                        ServerIdentity identity = new ServerIdentity(hostName, serverGroupName, serverName);
+                        servers.add(identity);
+                    }
+                }
+                unmarshaller.finish();
+                return new DomainUpdateApplierResponse(hostFailures, servers);
+            } else {
+                throw new IOException("Invalid byte token.  Expecting '" +
+                        DomainClientProtocol.APPLY_UPDATE_RESULT_DOMAIN_MODEL_SUCCESS +
+                        "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                        "' received '" + resultCode + "'");
             }
         }
     }
@@ -417,63 +424,55 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-                marshaller.writeUTF(server.getHostName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-                marshaller.writeUTF(server.getServerGroupName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-                marshaller.writeUTF(server.getServerName());
-                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-                marshaller.writeObject(update);
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to write updates to domain controller", e);
-            }
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+            marshaller.writeUTF(server.getHostName());
+            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
+            marshaller.writeUTF(server.getServerGroupName());
+            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
+            marshaller.writeUTF(server.getServerName());
+            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+            marshaller.writeObject(update);
+            marshaller.finish();
         }
 
         @Override
-        protected final Void receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                byte resultCode = unmarshaller.readByte();
-                if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                    final Throwable exception = unmarshaller.readObject(Throwable.class);
-                    if (resultHandler != null) {
-                        resultHandler.handleFailure(exception, param);
-                    }
+        protected final Void receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            byte resultCode = unmarshaller.readByte();
+            if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                final Throwable exception = unmarshal(unmarshaller, Throwable.class);
+                if (resultHandler != null) {
+                    resultHandler.handleFailure(exception, param);
                 }
-                else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED) {
-                    if (resultHandler != null) {
-                        resultHandler.handleCancellation(param);
-                    }
-                }
-                else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT) {
-                    if (resultHandler != null) {
-                        resultHandler.handleTimeout(param);
-                    }
-                }
-                else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN) {
-                    @SuppressWarnings("unchecked")
-                    final R result = (R)unmarshaller.readObject(Object.class);
-                    if (resultHandler != null) {
-                        resultHandler.handleSuccess(result, param);
-                    }
-                }
-                else {
-                    throw new IOException("Invalid byte token.  Expecting '" +
-                            DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN +
-                            "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
-                            "' received '" + resultCode + "'");
-                }
-                unmarshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read update responses", e);
             }
+            else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_CANCELLED) {
+                if (resultHandler != null) {
+                    resultHandler.handleCancellation(param);
+                }
+            }
+            else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_TIMED_OUT) {
+                if (resultHandler != null) {
+                    resultHandler.handleTimeout(param);
+                }
+            }
+            else if (resultCode == (byte) DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN) {
+                @SuppressWarnings("unchecked")
+                final R result = (R)unmarshal(unmarshaller, Object.class);
+                if (resultHandler != null) {
+                    resultHandler.handleSuccess(result, param);
+                }
+            }
+            else {
+                throw new IOException("Invalid byte token.  Expecting '" +
+                        DomainClientProtocol.PARAM_APPLY_SERVER_MODEL_UPDATE_RESULT_RETURN +
+                        "' or '" + DomainClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION +
+                        "' received '" + resultCode + "'");
+            }
+            unmarshaller.finish();
             return null;
         }
     }
@@ -496,30 +495,22 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN);
-                marshaller.writeObject(deploymentPlan);
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to send deployment plan", e);
-            }
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN);
+            marshaller.writeObject(deploymentPlan);
+            marshaller.finish();
         }
 
         @Override
-        protected final DeploymentPlanResult receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, DomainClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
-                final DeploymentPlanResult result = unmarshaller.readObject(DeploymentPlanResult.class);
-                unmarshaller.finish();
-                return result;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read deployment plan result from response", e);
-            }
+        protected final DeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+            final DeploymentPlanResult result = unmarshal(unmarshaller, DeploymentPlanResult.class);
+            unmarshaller.finish();
+            return result;
         }
     }
 
@@ -545,7 +536,7 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) {
+        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
@@ -567,15 +558,13 @@ public class DomainClientImpl implements DomainClient {
                     safeClose(chunkyByteOutput);
                 }
                 output.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to send deployment content", e);
             } finally {
                 safeClose(output);
             }
         }
 
         @Override
-        protected final byte[] receiveResponse(final InputStream inputStream) {
+        protected final byte[] receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
                 input = new SimpleByteDataInput(inputStream);
@@ -585,8 +574,6 @@ public class DomainClientImpl implements DomainClient {
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_HASH);
                 input.readFully(hash);
                 return hash;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read deployment hash from response", e);
             } finally {
                  safeClose(input);
             }
@@ -612,32 +599,36 @@ public class DomainClientImpl implements DomainClient {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) {
+        protected void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_NAME);
                 output.writeUTF(deploymentName);
                 output.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to write updates to domain controller", e);
             } finally {
                 safeClose(output);
             }
         }
 
         @Override
-        protected final Boolean receiveResponse(final InputStream inputStream) {
+        protected final Boolean receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
                 return input.readBoolean();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read domain model from response", e);
             } finally {
                 safeClose(input);
             }
         }
+    }
+
+    private static Marshaller getMarshaller() throws IOException {
+        return ProtocolUtils.getMarshaller(CONFIG);
+    }
+
+    private static Unmarshaller getUnmarshaller() throws IOException {
+        return ProtocolUtils.getUnmarshaller(CONFIG);
     }
 }

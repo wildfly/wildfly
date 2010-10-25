@@ -20,34 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.manager;
-
-import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.model.DomainModel;
+package org.jboss.as.domain.controller.mgmt;
 
 /**
- * Contract for communicating with a domain controller.
- *
  * @author John Bailey
  */
-public interface DomainControllerConnection {
-    /**
-     * Register with the domain controller.
-     *
-     * @return The latest domain model
-     */
-    DomainModel register();
+public interface DomainControllerProtocol {
+    int DOMAIN_CONTROLLER_REQUEST = 0x08;
 
-    /*
-     * Unregister from the domain controller.
-     */
-    void unregister();
-
-    /**
-     * Get the file repository for the domain controller.  This can be used to pull contents from the domain
-     * controllers repository.
-     *
-     * @return The file repository
-     */
-    FileRepository getRemoteFileRepository();
+    int PARAM_SERVER_MANAGER_ID = 0x09;
+    int PARAM_SERVER_MANAGER_HOST = 0x10;
+    int PARAM_SERVER_MANAGER_PORT = 0x11;
+    int REGISTER_REQUEST = 0x12;
+    int PARAM_DOMAIN_MODEL = 0x13;
+    int REGISTER_RESPONSE = 0x14;
+    int UNREGISTER_REQUEST = 0x15;
+    int UNREGISTER_RESPONSE = 0x16;
+    int SYNC_FILE_REQUEST = 0x17;
+    int PARAM_ROOT_ID = 0x18;
+    int PARAM_FILE_PATH = 0x19;
+    int PARAM_NUM_FILES = 0x20;
+    int PARAM_FILE_SIZE = 0x21;
+    int FILE_START = 0x22;
+    int FILE_END = 0x23;
+    int SYNC_FILE_RESPONSE = 0x24;
 }

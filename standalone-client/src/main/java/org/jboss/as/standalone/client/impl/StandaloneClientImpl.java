@@ -22,10 +22,13 @@
 
 package org.jboss.as.standalone.client.impl;
 
+import java.util.concurrent.TimeUnit;
+import org.jboss.as.protocol.ProtocolUtils;
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.jboss.as.standalone.client.impl.ProtocolUtils.expectHeader;
-import static org.jboss.as.standalone.client.impl.ProtocolUtils.getMarshaller;
-import static org.jboss.as.standalone.client.impl.ProtocolUtils.getUnmarshaller;
+import org.jboss.as.protocol.mgmt.ManagementException;
+import org.jboss.as.protocol.mgmt.ManagementRequest;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -53,6 +56,8 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
@@ -60,7 +65,12 @@ import org.jboss.marshalling.Unmarshaller;
  * @author Kabir Khan
  */
 public class StandaloneClientImpl implements StandaloneClient {
-
+    private static final MarshallingConfiguration CONFIG;
+    static {
+        CONFIG = new MarshallingConfiguration();
+        CONFIG.setClassResolver(new SimpleClassResolver(StandaloneClientImpl.class.getClassLoader()));
+    }
+    private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
     private final InetAddress address;
     private final int port;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -73,17 +83,29 @@ public class StandaloneClientImpl implements StandaloneClient {
 
     /** {@inheritDoc} */
     public ServerModel getServerModel() {
-        return new GetServerModel().executeForResult();
+        try {
+            return new GetServerModel().executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to get server model.", e);
+        }
     }
 
     /** {@inheritDoc} */
     public StandaloneUpdateResult<?> applyUpdates(List<AbstractServerModelUpdate<?>> updates) {
-        return new ApplyUpdatesOperation(updates).executeForResult();
+        try {
+            return new ApplyUpdatesOperation(updates).executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to apply server module updates.", e);
+        }
     }
 
     /** {@inheritDoc} */
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
-        return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+        try {
+            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to add deployment content.", e);
+        }
     }
 
     /** {@inheritDoc} */
@@ -100,12 +122,20 @@ public class StandaloneClientImpl implements StandaloneClient {
     }
 
     boolean isDeploymentNameUnique(String name) {
-        return new CheckUnitDeploymentNameOperation(name).executeForResult();
+        try {
+            return new CheckUnitDeploymentNameOperation(name).executeForResult();
+        } catch (Exception e) {
+            throw new ManagementException("Failed to check deployment name uniqueness.", e);
+        }
     }
 
-    abstract class StandaloneClientRequest<T> extends Request<T> {
+    abstract class StandaloneClientRequest<T> extends ManagementRequest<T> {
         StandaloneClientRequest() {
-            super(address, port, executorService, threadFactory);
+            super(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
+        }
+
+        protected byte getHandlerId() {
+            return StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST;
         }
     }
 
@@ -122,17 +152,13 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
-        protected ServerModel receiveResponse(InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL);
-                final ServerModel serverModel = unmarshaller.readObject(ServerModel.class);
-                unmarshaller.finish();
-                return serverModel;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read server model from response", e);
-            }
+        protected ServerModel receiveResponse(InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL);
+            final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
+            unmarshaller.finish();
+            return serverModel;
         }
     }
 
@@ -154,37 +180,29 @@ public class StandaloneClientImpl implements StandaloneClient {
 
         /** {@inheritDoc} */
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                marshaller.writeInt(updates.size());
-                for (AbstractServerModelUpdate<?> update : updates) {
-                    marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-                    marshaller.writeObject(update);
-                }
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("failed to send updates to the server", e);
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            marshaller.writeInt(updates.size());
+            for (AbstractServerModelUpdate<?> update : updates) {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+                marshaller.writeObject(update);
             }
+            marshaller.finish();
         }
 
         /** {@inheritDoc} */
-        protected StandaloneUpdateResult<Object> receiveResponse(InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-                byte resultCode = unmarshaller.readByte();
-                if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                    final UpdateFailedException failure = unmarshaller.readObject(UpdateFailedException.class);
-                    return new StandaloneUpdateResult<Object>(null, failure);
-                } else {
-                    final Object result = unmarshaller.readObject(Object.class);
-                    return new StandaloneUpdateResult<Object>(result, null);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("failed read update result from response", e);
+        protected StandaloneUpdateResult<Object> receiveResponse(InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            byte resultCode = unmarshaller.readByte();
+            if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                final UpdateFailedException failure = unmarshal(unmarshaller, UpdateFailedException.class);
+                return new StandaloneUpdateResult<Object>(null, failure);
+            } else {
+                final Object result = unmarshal(unmarshaller, Object.class);
+                return new StandaloneUpdateResult<Object>(result, null);
             }
         }
     }
@@ -211,7 +229,7 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
-        protected void sendRequest(int protocolVersion, OutputStream outputStream) {
+        protected void sendRequest(int protocolVersion, OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
@@ -233,15 +251,13 @@ public class StandaloneClientImpl implements StandaloneClient {
                     safeClose(chunkyByteOutput);
                 }
                 output.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to send deployment content", e);
             } finally {
                 safeClose(output);
             }
         }
 
         /** {@inheritDoc} */
-        protected final byte[] receiveResponse(final InputStream inputStream) {
+        protected final byte[] receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
                 input = new SimpleByteDataInput(inputStream);
@@ -251,8 +267,6 @@ public class StandaloneClientImpl implements StandaloneClient {
                 expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_HASH);
                 input.readFully(hash);
                 return hash;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read deployment hash from response", e);
             } finally {
                  safeClose(input);
             }
@@ -277,30 +291,22 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
-        protected void sendRequest(final int protocolVersion, final OutputStream output) {
-            try {
-                final Marshaller marshaller = getMarshaller();
-                marshaller.start(createByteOutput(output));
-                marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
-                marshaller.writeObject(deploymentPlan);
-                marshaller.finish();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to send deployment plan", e);
-            }
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
+            marshaller.writeObject(deploymentPlan);
+            marshaller.finish();
         }
 
         /** {@inheritDoc} */
-        protected final ServerDeploymentPlanResult receiveResponse(final InputStream input) {
-            try {
-                final Unmarshaller unmarshaller = getUnmarshaller();
-                unmarshaller.start(createByteInput(input));
-                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
-                final ServerDeploymentPlanResult result = unmarshaller.readObject(ServerDeploymentPlanResult.class);
-                unmarshaller.finish();
-                return result;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read deployment plan result from response", e);
-            }
+        protected final ServerDeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+            final ServerDeploymentPlanResult result = unmarshal(unmarshaller, ServerDeploymentPlanResult.class);
+            unmarshaller.finish();
+            return result;
         }
     }
 
@@ -322,32 +328,36 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
-        protected void sendRequest(int protocolVersion, OutputStream outputStream) {
+        protected void sendRequest(int protocolVersion, OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
                 output.writeUTF(deploymentName);
                 output.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to write updates to domain controller", e);
             } finally {
                 safeClose(output);
             }
         }
 
         /** {@inheritDoc} */
-        protected final Boolean receiveResponse(final InputStream inputStream) {
+        protected final Boolean receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
                 return input.readBoolean();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read domain model from response", e);
             } finally {
                 safeClose(input);
             }
         }
+    }
+
+    private static Marshaller getMarshaller() throws IOException {
+        return ProtocolUtils.getMarshaller(CONFIG);
+    }
+
+    private static Unmarshaller getUnmarshaller() throws IOException {
+        return ProtocolUtils.getUnmarshaller(CONFIG);
     }
 }
