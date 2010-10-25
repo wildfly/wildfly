@@ -64,7 +64,8 @@ public class DeploymentChainImpl implements DeploymentChain {
     @Override
     public void addProcessor(DeploymentUnitProcessor processor, long priority) {
         final Set<OrderedProcessor> processors = this.orderedProcessors;
-        processors.add(new OrderedProcessor(processor, priority));
+        if (!processors.add(new OrderedProcessor(processor, priority)))
+            throw new IllegalArgumentException("Duplicate processor name and priority: " + processor.getClass().getSimpleName() + ":" + priority);
     }
 
     @Override
@@ -79,26 +80,26 @@ public class DeploymentChainImpl implements DeploymentChain {
 
     private static class OrderedProcessor implements Comparable<OrderedProcessor> {
         private final DeploymentUnitProcessor processor;
+        private final String name;
         private final long processingOrder;
 
         private OrderedProcessor(final DeploymentUnitProcessor processor, final long processingOrder) {
             this.processor = processor;
+            this.name = processor.getClass().getName();
             this.processingOrder = processingOrder;
         }
 
         @Override
         public int compareTo(final OrderedProcessor other) {
-            long thisOrder = this.processingOrder;
-            long otherOrder = other.processingOrder;
-            return (thisOrder < otherOrder ? -1 : (thisOrder == otherOrder ? 0 : 1));
+            long diff = this.processingOrder - other.processingOrder;
+            return diff != 0L ? (diff < 0L ? -1 : 1) : this.name.compareTo(other.name);
         }
 
         @Override
         public boolean equals(final Object o) {
             if(this == o) return true;
-            if(o == null || getClass() != o.getClass()) return false;
             final OrderedProcessor that = (OrderedProcessor) o;
-            return processingOrder == that.processingOrder && (processor != null ? processor.equals(that.processor) : that.processor == null);
+            return this.processingOrder == that.processingOrder && this.name.equals(that.name);
         }
 
         @Override
