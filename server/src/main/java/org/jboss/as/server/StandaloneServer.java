@@ -49,7 +49,7 @@ public class StandaloneServer {
 
     private final ServerEnvironment environment;
 
-    protected StandaloneServer(ServerEnvironment environment) {
+    public StandaloneServer(ServerEnvironment environment) {
         if (environment == null) {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
@@ -58,6 +58,10 @@ public class StandaloneServer {
     }
 
     public void start() throws ServerStartException {
+       start(Collections.<ServiceActivator>emptyList());
+    }
+
+    public void start(List<ServiceActivator> serviceActivators) throws ServerStartException {
         final File standalone = new File(environment.getServerConfigurationDir(), STANDALONE_XML);
         if(! standalone.isFile()) {
             throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
@@ -73,7 +77,8 @@ public class StandaloneServer {
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
-        final ServerStartTask startTask = new ServerStartTask("server name", 0, Collections.<ServiceActivator>emptyList(), updates, environment);
+
+        final ServerStartTask startTask = new ServerStartTask("server name", 0, serviceActivators, updates, environment);
         startTask.run(Collections.<ServiceActivator>emptyList());
 
         // TODO remove life thread

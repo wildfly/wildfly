@@ -413,7 +413,9 @@ public final class ModelXmlParsers {
 
             // Register element handlers for this extension
             try {
-                for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
+               //for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
+               Module module = Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString(moduleName));
+               for (Extension extension : module.loadService(Extension.class)) {
                     extension.initialize(extensionContext);
                 }
             } catch (ModuleLoadException e) {
