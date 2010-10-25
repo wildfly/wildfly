@@ -150,6 +150,9 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
                 <connection-factory name="testConnectionFactory">
+                   <connectors>
+                       <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
+                   </connectors>
                    <entries>
                       <entry name="ConnectionFactory" />
                    </entries>

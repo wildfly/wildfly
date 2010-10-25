@@ -32,7 +32,7 @@ enum Attribute {
     UNKNOWN(null),
 
     NAME("name"),
-    CONNECTOR_NAME("connector-name"), CONNECTOR_BACKUP_NAME("connector-backup-name"),
+    CONNECTOR_NAME("connector-name"), CONNECTOR_BACKUP_NAME("backup-connector-name"),
     DISCOVERY_GROUP_NAME("discovery-group-nam"),
 
     ;

@@ -302,7 +302,7 @@ public class JMSSubsystemParser implements XMLStreamConstants, XMLElementReader<
                     }
                 }
             }
-            if(connector != null) {
+            if(connector == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.CONNECTOR_NAME));
             }
             final Element element = Element.forName(reader.getLocalName());
