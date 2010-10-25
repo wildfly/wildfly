@@ -35,18 +35,20 @@ import java.util.logging.Handler;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class LoggerHandlerService extends AbstractLoggerService {
+
     private final InjectedValue<Handler> handlerValue = new InjectedValue<Handler>();
+
     private Handler handler;
 
     protected LoggerHandlerService(final String name) {
         super(name);
     }
 
-    protected void start(final StartContext context, final Logger logger) throws StartException {
+    protected synchronized void start(final StartContext context, final Logger logger) throws StartException {
         logger.addHandler(handler = handlerValue.getValue());
     }
 
-    protected void stop(final StopContext context, final Logger logger) {
+    protected synchronized void stop(final StopContext context, final Logger logger) {
         try {
             logger.removeHandler(handler);
         } finally {

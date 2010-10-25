@@ -32,7 +32,9 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractLoggerService implements Service<Logger> {
+
     private final String name;
+
     private Logger logger;
 
     protected AbstractLoggerService(final String name) {
@@ -45,6 +47,7 @@ public abstract class AbstractLoggerService implements Service<Logger> {
 
     public final synchronized void start(final StartContext context) throws StartException {
         logger = Logger.getLogger(getName());
+        start(context, logger);
     }
 
     protected abstract void start(final StartContext context, final Logger logger) throws StartException;

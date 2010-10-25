@@ -22,55 +22,43 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceController;
 
 /**
- * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class LoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
+public final class LoggerHandlerRemove extends AbstractLoggingSubsystemUpdate<Void> {
 
-    private static final long serialVersionUID = -9178350859833986971L;
+    private static final long serialVersionUID = 1370469831899844699L;
 
-    private final String name;
+    private final String loggerName;
 
-    public LoggerRemove(String name) {
-        this.name = name;
+    private final String handlerName;
+
+    public LoggerHandlerRemove(final String loggerName, final String handlerName) {
+        this.loggerName = loggerName;
+        this.handlerName = handlerName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final ServiceController<?> controller = updateContext.getServiceContainer().getRequiredService(LogServices.loggerName(name));
+            final ServiceController<?> controller = updateContext.getServiceContainer().getRequiredService(LogServices.loggerHandlerName(loggerName, handlerName));
             controller.setMode(ServiceController.Mode.REMOVE);
-            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
         } catch (Throwable t) {
-            resultHandler.handleFailure(t, param);
+            handler.handleFailure(t, param);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public LoggerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
-        final LoggerElement loggerElement = original.getLogger(name);
-        final LoggerAdd add = new LoggerAdd(name, loggerElement.isUseParentHandlers());
-        add.setLevelName(loggerElement.getLevel());
-        return add;
+    public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(final LoggingSubsystemElement original) {
+        return new LoggerHandlerAdd(loggerName, handlerName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final AbstractLoggerElement<?> logger = element.removeLogger(name);
-        if (logger == null) {
-            throw new UpdateFailedException(String.format("logger (%s) does not exist", name));
-        }
+    protected void applyUpdate(final LoggingSubsystemElement element) throws UpdateFailedException {
+        element.getLogger(loggerName).getHandlers().remove(handlerName);
     }
 }

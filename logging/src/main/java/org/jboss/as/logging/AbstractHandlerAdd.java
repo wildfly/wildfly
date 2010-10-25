@@ -23,11 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.model.AbstractSubsystemUpdate;
-import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.model.UpdateResultHandler;
-
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -38,41 +34,44 @@ public abstract class AbstractHandlerAdd extends AbstractLoggingSubsystemUpdate<
 
     private final String name;
 
-    private Level level;
+    private String levelName;
+
     private Boolean autoflush;
+
     private String encoding;
+
     private AbstractFormatterSpec formatter;
+
     private String[] subhandlers;
 
     protected AbstractHandlerAdd(final String name) {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-
-    }
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(LoggingSubsystemElement original) {
-        return new HandlerRemoveUpdate(name);
+        return new HandlerRemove(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final AbstractHandlerElement<?> handler = createHandler(name);
-        handler.setLevel(level);
+        final AbstractHandlerElement<?> handler = createElement(name);
+        handler.setLevelName(levelName);
         handler.setAutoflush(autoflush);
         handler.setEncoding(encoding);
         formatter.apply(handler);
-        handler.setSubhandlers(subhandlers);
+        if (subhandlers != null) handler.setSubhandlers(subhandlers);
         element.addHandler(handler.getName(), handler);
     }
 
-    protected abstract AbstractHandlerElement<?> createHandler(String name);
+    protected abstract AbstractHandlerElement<?> createElement(String name);
 
-    public void setLevel(final Level level) {
-        this.level = level;
+    public void setLevelName(final String levelName) {
+        this.levelName = levelName;
     }
 
     public void setAutoflush(final Boolean autoflush) {
@@ -87,7 +86,7 @@ public abstract class AbstractHandlerAdd extends AbstractLoggingSubsystemUpdate<
         this.formatter = formatter;
     }
 
-    public void setSubhandlers(final String[] subhandlers) {
+    public void setSubhandlers(final String... subhandlers) {
         this.subhandlers = subhandlers;
     }
 
@@ -107,8 +106,8 @@ public abstract class AbstractHandlerAdd extends AbstractLoggingSubsystemUpdate<
         return autoflush;
     }
 
-    public Level getLevel() {
-        return level;
+    public String getLevelName() {
+        return levelName;
     }
 
     public String getName() {

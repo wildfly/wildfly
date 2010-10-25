@@ -31,23 +31,31 @@ public abstract class AbstractFileHandlerElement<E extends AbstractFileHandlerEl
 
     private static final long serialVersionUID = -9214638141059862173L;
 
-    private String fileName;
+    private String relativeTo;
+
+    private String path;
+
     private boolean append = true;
 
     protected AbstractFileHandlerElement(final String name, final QName elementName) {
         super(name, elementName);
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getRelativeTo() {
+        return relativeTo;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public boolean isAppend() {
         return append;
     }
 
-    void setFileName(final String fileName) {
-        this.fileName = fileName;
+    void setPath(final String relativeTo, final String path) {
+        this.relativeTo = relativeTo;
+        this.path = path;
     }
 
     public void setAppend(final boolean append) {

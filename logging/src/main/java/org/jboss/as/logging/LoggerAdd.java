@@ -26,6 +26,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
@@ -35,20 +36,16 @@ import java.util.logging.Level;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class LoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
+public class LoggerAdd extends AbstractLoggerAdd {
 
     private static final long serialVersionUID = 4230922005791983261L;
 
     private final String name;
 
-    private Level level;
     private boolean useParentHandlers = true;
-    private FilterType filter;
-    private String[] handlers;
 
-    public LoggerAdd(final String name, final Level level, final boolean useParentHandlers) {
+    public LoggerAdd(final String name, final boolean useParentHandlers) {
         this.name = name;
-        this.level = level;
         this.useParentHandlers = useParentHandlers;
     }
 
@@ -56,36 +53,42 @@ public class LoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
-    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final LoggerService service = new LoggerService(name);
-        service.setLevel(level);
-        service.setUseParentHandlers(useParentHandlers);
-        final BatchServiceBuilder<Logger> builder = updateContext.getBatchBuilder().addService(LogServices.getLoggerName(name), service);
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
-    }
-
-    /** {@inheritDoc} */
-    public LoggerRemove getCompensatingUpdate(LoggingSubsystemElement original) {
-        return new LoggerRemove(name);
-    }
-
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
         final LoggerElement logger = new LoggerElement(name);
-        logger.setLevel(level);
         logger.setUseParentHandlers(useParentHandlers);
-        if(! element.addLogger(logger)) {
+        if (!element.addLogger(logger)) {
             throw new UpdateFailedException("duplicate logger " + name);
         }
     }
 
-    public Level getLevel() {
-        return level;
+    protected AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException {
+        final LoggerElement newElement = new LoggerElement(name);
+        newElement.setUseParentHandlers(useParentHandlers);
+        if (!element.addLogger(newElement)) {
+            throw new UpdateFailedException("Logger " + name + " already exists");
+        }
+        return newElement;
     }
 
-    public void setLevel(final Level level) {
-        this.level = level;
+    /**
+     * {@inheritDoc}
+     */
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+        try {
+            final String loggerName = getLoggerName();
+            final LoggerService service = new LoggerService(loggerName);
+            service.setLevel(Level.parse(getLevelName()));
+            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchServiceBuilder<Logger> builder = batchBuilder.addService(LogServices.loggerName(loggerName), service);
+            builder.setInitialMode(ServiceController.Mode.ACTIVE);
+            builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+        } catch (Throwable t) {
+            resultHandler.handleFailure(t, param);
+            return;
+        }
     }
 
     public boolean isUseParentHandlers() {
@@ -96,19 +99,7 @@ public class LoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
         this.useParentHandlers = useParentHandlers;
     }
 
-    public FilterType getFilter() {
-        return filter;
-    }
-
-    public void setFilter(final FilterType filter) {
-        this.filter = filter;
-    }
-
-    public String[] getHandlers() {
-        return handlers;
-    }
-
-    public void setHandlers(final String... handlers) {
-        this.handlers = handlers;
+    public String getLoggerName() {
+        return name;
     }
 }

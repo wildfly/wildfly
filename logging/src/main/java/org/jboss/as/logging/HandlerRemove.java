@@ -22,41 +22,53 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class HandlerRemoveUpdate extends AbstractLoggingSubsystemUpdate<Void> {
+public class HandlerRemove extends AbstractLoggingSubsystemUpdate<Void> {
 
     private static final long serialVersionUID = 4158226899360272190L;
 
     private final String name;
 
-    public HandlerRemoveUpdate(String name) {
-        super();
+    public HandlerRemove(String name) {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
-    }
-
-    /** {@inheritDoc} */
-    public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(LoggingSubsystemElement original) {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        AbstractHandlerElement<?> handler = element.removeHandler(name);
-        if(handler == null) {
-            throw new UpdateFailedException("failed to remove handler " + name);
+        try {
+            final ServiceController<?> controller = updateContext.getServiceContainer().getRequiredService(LogServices.handlerName(name));
+            controller.setMode(ServiceController.Mode.REMOVE);
+            controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
+        } catch (Throwable t) {
+            resultHandler.handleFailure(t, param);
+            return;
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public AbstractHandlerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
+        return original.getHandler(name).getAdd();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
+        AbstractHandlerElement<?> handler = element.removeHandler(name);
+        if (handler == null) {
+            throw new UpdateFailedException("failed to remove handler " + name);
+        }
+    }
 }

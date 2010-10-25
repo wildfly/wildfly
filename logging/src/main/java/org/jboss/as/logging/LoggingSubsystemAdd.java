@@ -37,14 +37,16 @@ public class LoggingSubsystemAdd extends AbstractSubsystemAdd<LoggingSubsystemEl
         super(Namespace.LOGGING_1_0.getUriString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        // TODO Auto-generated method stub
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected LoggingSubsystemElement createSubsystemElement() {
         return new LoggingSubsystemElement();
     }
-
 }

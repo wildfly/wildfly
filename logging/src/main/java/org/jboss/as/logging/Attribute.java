@@ -29,12 +29,12 @@ import java.util.Map;
  *
  */
 public enum Attribute {
+
     UNKNOWN(null),
 
     APPEND("append"),
     AUTOFLUSH("autoflush"),
     CATEGORY("category"),
-    ENCODING("encoding"),
     FILE_NAME("file-name"),
     MIN_INCLUSIVE("min-inclusive"),
     MIN_LEVEL("min-level"),
@@ -44,14 +44,18 @@ public enum Attribute {
     NAME("name"),
     NEW_LEVEL("new-level"),
     OVERFLOW_ACTION("overflow-action"),
+    PATH("path"),
     PATTERN("pattern"),
     QUEUE_LENGTH("queue-length"),
+    RELATIVE_TO("relative-to"),
     REPLACEMENT("replacement"),
     REPLACE_ALL("replace-all"),
     ROTATE_SIZE("rotate-size"),
     SUFFIX("suffix"),
     TARGET("target"),
-    ;
+    USE_PARENT_HANDLERS("use-parent-handlers"),
+    VALUE("value"),;
+
     private final String name;
 
     Attribute(final String name) {
@@ -90,5 +94,4 @@ public enum Attribute {
     public String toString() {
         return getLocalName();
     }
-
 }

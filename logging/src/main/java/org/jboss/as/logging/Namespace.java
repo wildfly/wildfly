@@ -32,8 +32,7 @@ public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    LOGGING_1_0("urn:jboss:domain:logging:1.0")
-    ;
+    LOGGING_1_0("urn:jboss:domain:logging:1.0");
 
     /**
      * The current namespace version.
@@ -70,5 +69,4 @@ public enum Namespace {
         final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }
-
 }

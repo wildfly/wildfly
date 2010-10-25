@@ -22,9 +22,9 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.logmanager.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,11 +36,14 @@ public final class RootLoggerElement extends AbstractLoggerElement<RootLoggerEle
     RootLoggerElement() {
     }
 
-    BatchServiceBuilder<Logger> createService(final BatchBuilder builder) {
-        return builder.addService(LogServices.JBOSS_LOGGING.append("logger", "root"), new LoggerLevelService(""));
-    }
-
+    @Override
     protected Class<RootLoggerElement> getElementClass() {
         return RootLoggerElement.class;
+    }
+
+
+    @Override
+    protected void writeAttributes(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        // no attributes
     }
 }

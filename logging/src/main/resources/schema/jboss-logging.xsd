@@ -50,24 +50,6 @@
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="handlerBaseType">
-        <xs:annotation>
-            <xs:documentation>
-                The base type for all handlers.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:all>
-            <xs:element name="level" type="refType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
-            <xs:element name="subhandlers" type="handlersType" minOccurs="0"/>
-            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
-        </xs:all>
-        <xs:attribute name="name" type="xs:string" use="optional"/>
-        <xs:attribute name="encoding" type="xs:string" use="optional"/>
-        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="false"/>
-    </xs:complexType>
-
     <xs:complexType name="propertiesType">
         <xs:annotation>
             <xs:documentation>
@@ -113,7 +95,7 @@
         <xs:all minOccurs="1" maxOccurs="1">
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
-            <xs:element name="handlers" minOccurs="0" type="handlersType"/>
+            <xs:element name="handlers" type="handlersType" minOccurs="0"/>
         </xs:all>
     </xs:complexType>
 
@@ -137,18 +119,27 @@
                 Defines a handler which writes to the console.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="handlerBaseType">
-                <xs:attribute name="target" use="optional" default="System.out">
-                    <xs:simpleType>
-                        <xs:restriction base="xs:string">
-                            <xs:enumeration value="System.out"/>
-                            <xs:enumeration value="System.err"/>
-                        </xs:restriction>
-                    </xs:simpleType>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="target" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="name" use="required">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="System.out"/>
+                                <xs:enumeration value="System.err"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="fileHandlerType">
@@ -157,12 +148,17 @@
                 Defines a handler which writes to a file.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="handlerBaseType">
-                <xs:attribute name="file-name" type="xs:string" use="required"/>
-                <xs:attribute name="append" type="xs:boolean" use="optional"/>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="file" type="pathType" minOccurs="1"/>
+            <xs:element name="append" type="booleanValueType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="periodicFileHandlerType">
@@ -172,11 +168,18 @@
                 suffix string, which should be in a format understood by java.text.SimpleDateFormat.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="fileHandlerType">
-                <xs:attribute name="suffix" type="xs:string" use="required"/>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="file" type="pathType"/>
+            <xs:element name="suffix" type="valueType"/>
+            <xs:element name="append" type="booleanValueType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
         <xs:complexType name="sizeFileHandlerType">
@@ -186,12 +189,19 @@
                 certain point and keeping a fixed number of backups.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="fileHandlerType">
-                <xs:attribute name="rotate-size" type="xs:string" use="optional" default="500k"/>
-                <xs:attribute name="max-backup-index" type="xs:positiveInteger" use="optional" default="1"/>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="file" type="pathType"/>
+            <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>
+            <xs:element name="max-backup-index" type="positiveIntType" minOccurs="0"/>
+            <xs:element name="append" type="booleanValueType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="asyncHandlerType">
@@ -201,19 +211,53 @@
                 introduce a substantial amount of lag.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="handlerBaseType">
-                <xs:attribute name="queue-length" type="xs:positiveInteger" use="optional" default="512"/>
-                <xs:attribute name="overflow-action" use="optional" default="block">
-                    <xs:simpleType>
-                        <xs:restriction base="xs:string">
-                            <xs:enumeration value="block"/>
-                            <xs:enumeration value="discard"/>
-                        </xs:restriction>
-                    </xs:simpleType>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+            <xs:element name="queue-length" type="positiveIntType" minOccurs="0"/>
+            <xs:element name="overflow-action" type="overflowActionType" minOccurs="0"/>
+            <xs:element name="subhandlers" type="handlersType"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="overflowActionType">
+        <xs:attribute name="value" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="block"/>
+                    <xs:enumeration value="discard"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="positiveIntType">
+        <xs:attribute name="value" use="required" type="xs:positiveInteger"/>
+    </xs:complexType>
+
+    <xs:complexType name="booleanValueType">
+        <xs:attribute name="value" use="required" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="valueType">
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="pathType">
+        <xs:attribute name="relative-to" use="optional" default="jboss.server.log.dir" type="xs:string"/>
+        <xs:attribute name="path" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="sizeType">
+        <xs:attribute name="value">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="^[0-9]+[bkmgtp]?$"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="filterType">

@@ -22,12 +22,10 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,10 +42,6 @@ public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandle
         super(name, ELEMENT_NAME);
     }
 
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
-    }
-
     protected Class<PeriodicRotatingFileHandlerElement> getElementClass() {
         return PeriodicRotatingFileHandlerElement.class;
     }
@@ -56,11 +50,22 @@ public final class PeriodicRotatingFileHandlerElement extends AbstractFileHandle
         this.suffix = suffix;
     }
 
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Element.FILE.getLocalName());
+        final String relativeTo = getRelativeTo();
+        if (relativeTo != null) streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
+        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), getPath());
+        streamWriter.writeEmptyElement(Element.SUFFIX.getLocalName());
+        streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), suffix);
+        super.writeElements(streamWriter);
     }
 
     AbstractHandlerAdd createAdd(final String name) {
-        return null;
+        final PeriodicRotatingFileHandlerAdd add = new PeriodicRotatingFileHandlerAdd(name);
+        add.setAppend(isAppend());
+        add.setRelativeTo(getRelativeTo());
+        add.setPath(getPath());
+        add.setSuffix(suffix);
+        return add;
     }
 }

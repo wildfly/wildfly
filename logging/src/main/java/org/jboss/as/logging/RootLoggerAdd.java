@@ -26,6 +26,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
@@ -35,34 +36,35 @@ import java.util.logging.Level;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public class RootLoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
+public class RootLoggerAdd extends AbstractLoggerAdd {
 
     private static final long serialVersionUID = 4230922005791983261L;
-    private final Level level;
 
-    public RootLoggerAdd(final Level level) {
-        this.level = level;
+    protected String getLoggerName() {
+        return "";
     }
 
-    /** {@inheritDoc} */
+    protected AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException {
+        final RootLoggerElement newElement = new RootLoggerElement();
+        if (!element.setRootLogger(newElement)) {
+            throw new UpdateFailedException("Root logger already defined");
+        }
+        return newElement;
+    }
+    /**
+     * {@inheritDoc}
+     */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final RootLoggerService service = new RootLoggerService();
-        service.setLevel(level);
-        final BatchServiceBuilder<Logger> builder = updateContext.getBatchBuilder().addService(LogServices.ROOT_LOGGER, service);
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
-    }
-
-    /** {@inheritDoc} */
-    public RootLoggerRemove getCompensatingUpdate(LoggingSubsystemElement original) {
-        return new RootLoggerRemove();
-    }
-
-    /** {@inheritDoc} */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final RootLoggerElement logger = new RootLoggerElement();
-        logger.setLevel(level);
-        if(! element.setRootLogger(logger)) {
-            throw new UpdateFailedException("Root logger already exists");
+        try {
+            final RootLoggerService service = new RootLoggerService();
+            service.setLevel(Level.parse(getLevelName()));
+            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchServiceBuilder<Logger> builder = batchBuilder.addService(LogServices.ROOT_LOGGER, service);
+            builder.setInitialMode(ServiceController.Mode.ACTIVE);
+            builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+        } catch (Throwable t) {
+            resultHandler.handleFailure(t, param);
+            return;
         }
     }
 

@@ -30,17 +30,22 @@ import org.jboss.msc.service.ServiceName;
 public final class LogServices {
 
     public static final ServiceName JBOSS_LOGGING = ServiceName.JBOSS.append("logging");
+
     public static final ServiceName LOGGER = JBOSS_LOGGING.append("logger");
+
     public static final ServiceName ROOT_LOGGER = JBOSS_LOGGING.append("root-logger");
+
     public static final ServiceName LOGGER_HANDLER = JBOSS_LOGGING.append("logger-handler");
+
     public static final ServiceName ROOT_LOGGER_HANDLER = JBOSS_LOGGING.append("root-logger-handler");
+
     public static final ServiceName HANDLER = JBOSS_LOGGING.append("handler");
 
     private LogServices() {
     }
 
-    public static ServiceName getLoggerName(final String name) {
-        return LOGGER.append(name);
+    public static ServiceName loggerName(final String name) {
+        return "".equals(name) ? ROOT_LOGGER : LOGGER.append(name);
     }
 
     public static ServiceName loggerHandlerName(final String loggerName, final String handlerName) {

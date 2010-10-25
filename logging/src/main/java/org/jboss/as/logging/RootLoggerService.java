@@ -27,6 +27,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
@@ -34,7 +35,11 @@ import java.util.logging.Level;
  */
 final class RootLoggerService extends AbstractLoggerService {
 
+    private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger("org.jboss.as.logging");
+
     private Level level;
+
+    private Handler[] saved;
 
     protected RootLoggerService() {
         super("");
@@ -42,10 +47,18 @@ final class RootLoggerService extends AbstractLoggerService {
 
     protected void start(final StartContext context, final Logger logger) throws StartException {
         logger.setLevel(level);
+        log.info("Removing bootstrap log handlers");
+        saved = logger.clearHandlers();
     }
 
     protected void stop(final StopContext context, final Logger logger) {
         logger.setLevel(null);
+        logger.setUseParentHandlers(true);
+        logger.clearHandlers();
+        for (Handler handler : saved) {
+            logger.addHandler(handler);
+        }
+        log.info("Restored bootstrap log handlers");
     }
 
     public synchronized Level getLevel() {
@@ -54,5 +67,9 @@ final class RootLoggerService extends AbstractLoggerService {
 
     public synchronized void setLevel(final Level level) {
         this.level = level;
+        final Logger logger = getLogger();
+        if (logger != null) {
+            logger.setLevel(level);
+        }
     }
 }

@@ -31,9 +31,9 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
     private final String subsystemNamespaceUri;
     private final boolean requiresRestart;
 
-    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri, final boolean restart) {
+    protected AbstractSubsystemUpdate(final String subsystemNamespaceUri, final boolean requiresRestart) {
         this.subsystemNamespaceUri = subsystemNamespaceUri;
-        requiresRestart = restart;
+        this.requiresRestart = requiresRestart;
     }
 
     protected AbstractSubsystemUpdate(final String subsystemNamespaceUri) {

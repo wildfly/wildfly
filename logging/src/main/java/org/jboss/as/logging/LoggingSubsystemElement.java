@@ -44,7 +44,9 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
     private static final long serialVersionUID = -615878954033668252L;
 
     private RootLoggerElement rootLoggerElement;
+
     private final NavigableMap<String, LoggerElement> loggers = new TreeMap<String, LoggerElement>();
+
     private final NavigableMap<String, AbstractHandlerElement<?>> handlers = new TreeMap<String, AbstractHandlerElement<?>>();
 
     public LoggingSubsystemElement() {
@@ -104,10 +106,12 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         return handlers.remove(name);
     }
 
+    @Override
     protected Class<LoggingSubsystemElement> getElementClass() {
         return LoggingSubsystemElement.class;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         for (AbstractHandlerElement<?> element : handlers.values()) {
             final QName elementName = element.getElementName();
@@ -120,35 +124,55 @@ public final class LoggingSubsystemElement extends AbstractSubsystemElement<Logg
         }
         final RootLoggerElement rootLoggerElement = this.rootLoggerElement;
         if (rootLoggerElement != null) {
+            streamWriter.writeStartElement(Element.ROOT_LOGGER.getLocalName());
             rootLoggerElement.writeContent(streamWriter);
         }
+
+        streamWriter.writeEndElement();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected void getUpdates(List<? super AbstractSubsystemUpdate<LoggingSubsystemElement, ?>> list) {
         if (rootLoggerElement != null) {
-            list.add(new RootLoggerAdd(rootLoggerElement.getLevel()));
+            final RootLoggerAdd rootLoggerAdd = new RootLoggerAdd();
+            rootLoggerAdd.setLevelName(rootLoggerElement.getLevel());
+            list.add(rootLoggerAdd);
             for (String handlerName : rootLoggerElement.getHandlers()) {
                 list.add(new LoggerHandlerAdd("", handlerName));
             }
-            final FilterElement filterElement = rootLoggerElement.getFilter();
-            if (filterElement != null) {
-            }
         }
         for (LoggerElement element : loggers.values()) {
-
+            final String name = element.getName();
+            final LoggerAdd add = new LoggerAdd(name);
+            add.setLevelName(element.getLevel());
+            add.setUseParentHandlers(element.isUseParentHandlers());
+            list.add(add);
+            for (String handlerName : element.getHandlers()) {
+                list.add(new LoggerHandlerAdd(name, handlerName));
+            }
+        }
+        for (AbstractHandlerElement<?> handlerElement : handlers.values()) {
+            list.add(handlerElement.getAdd());
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected boolean isEmpty() {
         return rootLoggerElement == null && loggers.isEmpty() && handlers.isEmpty();
     }
 
+    @Override
     protected LoggingSubsystemAdd getAdd() {
         return new LoggingSubsystemAdd();
     }
 
+    @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
     }
 }

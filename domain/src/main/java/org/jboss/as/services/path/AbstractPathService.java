@@ -50,7 +50,7 @@ public abstract class AbstractPathService implements Service<String> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.path = resolvePath();
+        path = resolvePath();
     }
 
     @Override

@@ -22,7 +22,6 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
@@ -40,6 +39,7 @@ public final class LoggerHandlerAdd extends AbstractLoggingSubsystemUpdate<Void>
     private static final long serialVersionUID = -7863090205710498113L;
 
     private final String loggerName;
+
     private final String handlerName;
 
     public LoggerHandlerAdd(final String loggerName, final String handlerName) {
@@ -56,16 +56,28 @@ public final class LoggerHandlerAdd extends AbstractLoggingSubsystemUpdate<Void>
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final LoggerHandlerService service = new LoggerHandlerService(loggerName);
-        final BatchServiceBuilder<Logger> serviceBuilder = updateContext.getBatchBuilder().addService(LogServices.loggerHandlerName(loggerName, handlerName), service);
-        final Injector<Handler> injector = service.getHandlerInjector();
-        serviceBuilder.addDependency(LogServices.handlerName(handlerName), Handler.class, injector);
+        try {
+            final LoggerHandlerService service = new LoggerHandlerService(loggerName);
+            final BatchServiceBuilder<Logger> serviceBuilder = updateContext.getBatchBuilder().addService(LogServices.loggerHandlerName(loggerName, handlerName), service);
+            serviceBuilder.addDependency(LogServices.loggerName(loggerName));
+            final Injector<Handler> injector = service.getHandlerInjector();
+            serviceBuilder.addDependency(LogServices.handlerName(handlerName), Handler.class, injector);
+            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
+        } catch (Throwable t) {
+            handler.handleFailure(t, param);
+            return;
+        }
     }
 
-    public AbstractSubsystemUpdate<LoggingSubsystemElement, ?> getCompensatingUpdate(final LoggingSubsystemElement original) {
-        return null;
+    public AbstractLoggingSubsystemUpdate<Void> getCompensatingUpdate(final LoggingSubsystemElement original) {
+        return new LoggerHandlerRemove(loggerName, handlerName);
     }
 
     protected void applyUpdate(final LoggingSubsystemElement element) throws UpdateFailedException {
+        final AbstractLoggerElement<?> logger = loggerName.length() == 0 ? element.getRootLogger() : element.getLogger(loggerName);
+        if (logger == null) {
+            throw new UpdateFailedException("No logger element with a name of '" + loggerName + "' exists");
+        }
+        logger.getHandlers().add(handlerName);
     }
 }

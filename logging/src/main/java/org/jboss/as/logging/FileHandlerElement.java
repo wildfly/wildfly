@@ -22,12 +22,10 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,19 +40,23 @@ public final class FileHandlerElement extends AbstractFileHandlerElement<FileHan
         super(name, ELEMENT_NAME);
     }
 
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
-    }
-
     protected Class<FileHandlerElement> getElementClass() {
         return FileHandlerElement.class;
     }
 
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Element.FILE.getLocalName());
+        final String relativeTo = getRelativeTo();
+        if (relativeTo != null) streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
+        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), getPath());
+        super.writeElements(streamWriter);
     }
 
-    AbstractHandlerAdd createAdd(final String name) {
-        return null;
+    FileHandlerAdd createAdd(final String name) {
+        final FileHandlerAdd add = new FileHandlerAdd(name);
+        add.setPath(getPath());
+        add.setRelativeTo(getRelativeTo());
+        add.setAppend(isAppend());
+        return add;
     }
 }

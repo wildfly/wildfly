@@ -23,6 +23,7 @@
 package org.jboss.as.protocol;
 
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -202,6 +203,9 @@ final class ConnectionImpl implements Connection {
                                 log.tracef("Received data chunk of size %d", Integer.valueOf(cnt));
                                 while (cnt > 0) {
                                     int sc = is.read(buffer, 0, Math.min(cnt, bufferSize));
+                                    if (sc == -1) {
+                                        throw new EOFException("Unexpected end of stream");
+                                    }
                                     mos.write(buffer, 0, sc);
                                     cnt -= sc;
                                 }

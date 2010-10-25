@@ -22,13 +22,10 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.Location;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
-
-import java.util.logging.Handler;
+import javax.xml.stream.XMLStreamException;
 
 public final class ConsoleHandlerElement extends AbstractHandlerElement<ConsoleHandlerElement> {
 
@@ -38,28 +35,35 @@ public final class ConsoleHandlerElement extends AbstractHandlerElement<ConsoleH
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.CONSOLE_HANDLER.getLocalName());
 
-    public ConsoleHandlerElement(final Location location, final String name) {
+    public ConsoleHandlerElement(final String name) {
         super(name, ELEMENT_NAME);
         target = Target.SYSTEM_OUT;
-    }
-
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
     }
 
     public Target getTarget() {
         return target;
     }
 
+    public void setTarget(final Target target) {
+        this.target = target;
+    }
+
+    @Override
     protected Class<ConsoleHandlerElement> getElementClass() {
         return ConsoleHandlerElement.class;
     }
 
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
+    @Override
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Element.TARGET.getLocalName());
+        streamWriter.writeAttribute(Attribute.NAME.getLocalName(), target.toString());
+        super.writeElements(streamWriter);
     }
 
-    AbstractHandlerAdd createAdd(final String name) {
-        return null;
+    @Override
+    ConsoleHandlerAdd createAdd(final String name) {
+        final ConsoleHandlerAdd add = new ConsoleHandlerAdd(name);
+        add.setTarget(target);
+        return add;
     }
 }

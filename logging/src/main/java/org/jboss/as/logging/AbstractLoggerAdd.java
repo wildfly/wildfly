@@ -22,28 +22,41 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.logmanager.filters.AnyFilter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import java.util.logging.Filter;
+import org.jboss.as.model.UpdateFailedException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AnyFilterType extends MultiFilterType {
+public abstract class AbstractLoggerAdd extends AbstractLoggingSubsystemUpdate<Void> {
 
-    public AnyFilterType(final FilterType[] members) {
-        super(members);
+    private static final long serialVersionUID = 1370469831899844699L;
+
+    private String levelName;
+
+    protected AbstractLoggerAdd() {
     }
 
-    protected Filter createFilterInstance(Filter[] filters) {
-        return new AnyFilter(filters);
+    public String getLevelName() {
+        return levelName;
     }
 
-    public void writeContent(final XMLExtendedStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement(Element.ALL.getLocalName());
-        super.writeContent(writer);
+    public void setLevelName(final String levelName) {
+        this.levelName = levelName;
     }
+
+    protected abstract String getLoggerName();
+
+    /**
+     * {@inheritDoc}
+     */
+    public LoggerRemove getCompensatingUpdate(LoggingSubsystemElement original) {
+        return new LoggerRemove(getLoggerName());
+    }
+
+    protected void applyUpdate(final LoggingSubsystemElement element) throws UpdateFailedException {
+        AbstractLoggerElement<?> loggerElement = addNewElement(element);
+        loggerElement.setLevel(levelName);
+    }
+
+    protected abstract AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException;
 }

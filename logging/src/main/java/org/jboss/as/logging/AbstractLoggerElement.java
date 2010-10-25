@@ -22,14 +22,12 @@
 
 package org.jboss.as.logging;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
-
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -38,47 +36,43 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
 
     private static final long serialVersionUID = -4071924125278221764L;
 
-    private static final String[] NONE = new String[0];
+    private List<String> handlers = new ArrayList<String>();
 
-    private String[] handlers = NONE;
-
-    private Level level;
-    private FilterElement filter;
+    private String level;
 
     AbstractLoggerElement() {
     }
 
-    void setLevel(final Level level) {
+    void setLevel(final String level) {
         this.level = level;
     }
 
-    void setFilter(final FilterElement filter) {
-        this.filter = filter;
-    }
-
-    void setHandlers(final List<String> handlers) {
-        this.handlers = handlers.toArray(new String[handlers.size()]);
-    }
-
     public List<String> getHandlers() {
-        return Arrays.asList(handlers);
+        return handlers;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         if (level != null) {
-            streamWriter.writeEmptyElement("level");
+            streamWriter.writeEmptyElement(Element.LEVEL.getLocalName());
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), level);
         }
-        if (filter != null) {
-            streamWriter.writeStartElement("filter");
-            filter.writeContent(streamWriter);
+
+        if (handlers != null && handlers.size() > 0) {
+            streamWriter.writeStartElement(Element.HANDLERS.getLocalName());
+            for (String handler : handlers) {
+                streamWriter.writeEmptyElement(Element.HANDLER.getLocalName());
+                streamWriter.writeAttribute(Attribute.NAME.getLocalName(), handler);
+            }
+            streamWriter.writeEndElement();
         }
+
+        streamWriter.writeEndElement();
     }
 
-    public Level getLevel() {
+    public String getLevel() {
         return level;
     }
 
-    public FilterElement getFilter() {
-        return filter;
-    }
+    protected abstract void writeAttributes(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException;
 }

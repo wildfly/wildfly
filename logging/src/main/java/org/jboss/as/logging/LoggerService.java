@@ -27,6 +27,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
@@ -35,7 +36,10 @@ import java.util.logging.Level;
 final class LoggerService extends AbstractLoggerService {
 
     private boolean useParentHandlers = true;
+
     private Level level;
+
+    private Handler[] saved;
 
     protected LoggerService(final String name) {
         super(name);
@@ -44,11 +48,16 @@ final class LoggerService extends AbstractLoggerService {
     protected void start(final StartContext context, final Logger logger) throws StartException {
         logger.setLevel(level);
         logger.setUseParentHandlers(useParentHandlers);
+        saved = logger.clearHandlers();
     }
 
     protected void stop(final StopContext context, final Logger logger) {
         logger.setLevel(null);
         logger.setUseParentHandlers(true);
+        logger.clearHandlers();
+        for (Handler handler : saved) {
+            logger.addHandler(handler);
+        }
     }
 
     public synchronized boolean isUseParentHandlers() {
@@ -69,5 +78,9 @@ final class LoggerService extends AbstractLoggerService {
 
     public synchronized void setLevel(final Level level) {
         this.level = level;
+        final Logger logger = getLogger();
+        if (logger != null) {
+            logger.setLevel(level);
+        }
     }
 }

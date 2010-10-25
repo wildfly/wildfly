@@ -33,13 +33,14 @@ public abstract class AbstractLoggingSubsystemUpdate<R> extends AbstractSubsyste
 
     private static final long serialVersionUID = 9131720142262127602L;
 
-    public AbstractLoggingSubsystemUpdate() {
+    protected AbstractLoggingSubsystemUpdate() {
         super(Namespace.CURRENT.getUriString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Class<LoggingSubsystemElement> getModelElementType() {
         return LoggingSubsystemElement.class;
     }
-
 }

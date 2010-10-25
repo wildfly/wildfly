@@ -29,15 +29,19 @@ import java.util.Map;
  *
  */
 public enum Element {
+
     UNKNOWN(null),
 
     ACCEPT("accept"),
     ALL("all"),
     ANY("any"),
+    APPEND("append"),
     ASYNC_HANDLER("async-handler"),
     CHANGE_LEVEL("change-level"),
     CONSOLE_HANDLER("console-handler"),
     DENY("deny"),
+    ENCODING("encoding"),
+    FILE("file"),
     FILE_HANDLER("file-handler"),
     FILTER("filter"),
     FORMATTER("formatter"),
@@ -47,16 +51,20 @@ public enum Element {
     LEVEL_RANGE("level-range"),
     LOGGER("logger"),
     MATCH("match"),
+    MAX_BACKUP_INDEX("max-backup-index"),
     NOT("not"),
+    OVERFLOW_ACTION("overflow-action"),
     PATTERN_FORMATTER("pattern-formatter"),
     PERIODIC_ROTATING_FILE_HANDLER("periodic-rotating-file-handler"),
     PROPERTIES("properties"),
+    QUEUE_LENGTH("queue-length"),
     REPLACE("replace"),
     ROOT_LOGGER("root-logger"),
+    ROTATE_SIZE("rotate-size"),
     SIZE_ROTATING_FILE_HANDLER("size-rotating-file-handler"),
     SUBHANDLERS("subhandlers"),
-
-    ;
+    SUFFIX("suffix"),
+    TARGET("target"),;
 
     private final String name;
 
@@ -88,5 +96,4 @@ public enum Element {
         final Element element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
-
 }

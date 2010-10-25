@@ -31,8 +31,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import java.util.logging.Level;
-
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -46,8 +44,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
     private String[] subhandlers = NONE;
     private String encoding;
     private Boolean autoflush;
-    private FilterElement filter;
-    private Level level;
+    private String levelName;
     private AbstractFormatterElement<?> formatter;
     private PropertiesElement properties;
 
@@ -72,12 +69,8 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         return autoflush;
     }
 
-    public FilterElement getFilter() {
-        return filter;
-    }
-
-    public Level getLevel() {
-        return level;
+    public String getLevelName() {
+        return levelName;
     }
 
     public AbstractFormatterElement<?> getFormatter() {
@@ -88,25 +81,20 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         return properties;
     }
 
+    @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         // Attributes
-        if (name != null) {
-            streamWriter.writeAttribute("name", name);
-        }
-        if (autoflush != null) {
-            streamWriter.writeAttribute("autoflush", autoflush.toString());
-        }
-        if (encoding != null) {
-            streamWriter.writeAttribute("encoding", encoding.toString());
-        }
+        writeAttributes(streamWriter);
         // Elements
-        if (level != null) {
+        writeElements(streamWriter);
+
+        streamWriter.writeEndElement();
+    }
+
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if (levelName != null) {
             streamWriter.writeEmptyElement("level");
-            streamWriter.writeAttribute("name", level.getName());
-        }
-        if (filter != null) {
-            streamWriter.writeStartElement("filter");
-            filter.writeContent(streamWriter);
+            streamWriter.writeAttribute("name", levelName);
         }
         if (formatter != null) {
             streamWriter.writeStartElement("formatter");
@@ -129,12 +117,20 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
         }
     }
 
-    void setLevel(final Level level) {
-        this.level = level;
+    protected void writeAttributes(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if (name != null) {
+            streamWriter.writeAttribute("name", name);
+        }
+        if (autoflush != null) {
+            streamWriter.writeAttribute("autoflush", autoflush.toString());
+        }
+        if (encoding != null) {
+            streamWriter.writeAttribute("encoding", encoding.toString());
+        }
     }
 
-    void setFilter(final FilterElement filter) {
-        this.filter = filter;
+    void setLevelName(final String levelName) {
+        this.levelName = levelName;
     }
 
     void setEncoding(final String encoding) {
@@ -159,7 +155,7 @@ public abstract class AbstractHandlerElement<E extends AbstractHandlerElement<E>
 
     AbstractHandlerAdd getAdd() {
         final AbstractHandlerAdd add = createAdd(name);
-        add.setLevel(level);
+        add.setLevelName(levelName);
         add.setAutoflush(autoflush);
         add.setEncoding(encoding);
         add.setFormatter(formatter.getSpecification());

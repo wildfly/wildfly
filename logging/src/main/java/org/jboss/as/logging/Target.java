@@ -26,9 +26,9 @@ package org.jboss.as.logging;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum Target {
+
     SYSTEM_OUT,
-    SYSTEM_ERR,
-    ;
+    SYSTEM_ERR,;
 
     public static Target fromString(String value) {
         if (value.equals("System.out")) {
@@ -37,6 +37,20 @@ public enum Target {
             return SYSTEM_ERR;
         } else {
             return null;
+        }
+    }
+
+    public String toString() {
+        switch (this) {
+            case SYSTEM_OUT: {
+                return "System.out";
+            }
+            case SYSTEM_ERR: {
+                return "System.err";
+            }
+            default: {
+                throw new IllegalStateException();
+            }
         }
     }
 }

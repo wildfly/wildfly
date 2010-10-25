@@ -38,7 +38,7 @@ public class AbsolutePathService extends AbstractPathService {
 
     private final String absolutePath;
 
-    public static final BatchServiceBuilder<String> addService(final String name, final String abstractPath, final BatchBuilder batchBuilder) {
+    public static BatchServiceBuilder<String> addService(final String name, final String abstractPath, final BatchBuilder batchBuilder) {
         ServiceName sname = pathNameOf(name);
         AbsolutePathService service = new AbsolutePathService(abstractPath);
         return batchBuilder.addService(sname, service);
@@ -53,7 +53,7 @@ public class AbsolutePathService extends AbstractPathService {
         }
         // Use File.getAbsolutePath() to make relative paths absolute
         File f = new File(abstractPath);
-        this.absolutePath = f.getAbsolutePath();
+        absolutePath = f.getAbsolutePath();
     }
 
     @Override

@@ -33,15 +33,16 @@ import org.jboss.msc.service.ServiceActivatorContext;
  */
 public final class LoggingExtension implements Extension {
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void initialize(ExtensionContext context) {
         context.registerSubsystem(Namespace.LOGGING_1_0.getUriString(), LoggingSubsystemParser.getInstance());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void activate(final ServiceActivatorContext context) {
-        //
     }
-
-
 }

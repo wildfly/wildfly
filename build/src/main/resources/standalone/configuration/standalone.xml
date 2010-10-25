@@ -40,6 +40,7 @@
     <extensions>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
+        <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.managed-beans"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.naming"/>
@@ -53,6 +54,31 @@
     <management interface="default" port="9999"/>
 
     <profile name="something">
+        <subsystem xmlns="urn:jboss:domain:logging:1.0">
+            <console-handler name="CONSOLE">
+                <level name="INFO"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+
+            <periodic-rotating-file-handler name="FILE">
+                <level name="INFO"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="server.log"/>
+                <suffix value=".yyyy-MM-dd"/>
+            </periodic-rotating-file-handler>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </root-logger>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:threads:1.0">
             <scheduled-thread-pool name="remoting">
                 <max-threads count="10" per-cpu="20"/>

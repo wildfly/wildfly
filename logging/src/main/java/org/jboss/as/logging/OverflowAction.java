@@ -26,7 +26,7 @@ package org.jboss.as.logging;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum OverflowAction {
+
     BLOCK,
-    DISCARD,
-    ;
+    DISCARD,;
 }

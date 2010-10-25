@@ -24,6 +24,8 @@ package org.jboss.as.logging;
 
 import java.io.Serializable;
 
+import java.util.logging.Handler;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -32,4 +34,6 @@ public abstract class AbstractFormatterSpec implements Serializable {
     private static final long serialVersionUID = -2383088369142242658L;
 
     protected abstract void apply(AbstractHandlerElement<?> handlerElement);
+
+    protected abstract void apply(Handler handler);
 }

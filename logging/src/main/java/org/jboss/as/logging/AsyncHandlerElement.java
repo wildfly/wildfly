@@ -23,14 +23,10 @@
 package org.jboss.as.logging;
 
 import java.util.Locale;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-
-import java.util.logging.Handler;
 
 public final class AsyncHandlerElement extends AbstractHandlerElement<AsyncHandlerElement> {
 
@@ -39,14 +35,11 @@ public final class AsyncHandlerElement extends AbstractHandlerElement<AsyncHandl
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.ASYNC_HANDLER.getLocalName());
 
     private int queueLength = 512;
+
     private OverflowAction overflowAction = OverflowAction.BLOCK;
 
     protected AsyncHandlerElement(final String name) {
         super(name, ELEMENT_NAME);
-    }
-
-    BatchServiceBuilder<Handler> addServices(final BatchBuilder batchBuilder) {
-        return null;
     }
 
     protected Class<AsyncHandlerElement> getElementClass() {
@@ -61,17 +54,18 @@ public final class AsyncHandlerElement extends AbstractHandlerElement<AsyncHandl
         this.overflowAction = overflowAction;
     }
 
-    public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.QUEUE_LENGTH.getLocalName(), Integer.toString(queueLength));
-        streamWriter.writeAttribute(Attribute.OVERFLOW_ACTION.getLocalName(), overflowAction.name().toLowerCase(Locale.US));
-        super.writeContent(streamWriter);
-    }
-
-    AbstractHandlerAdd getAdd() {
-        return super.getAdd();
+    protected void writeElements(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeEmptyElement(Element.QUEUE_LENGTH.getLocalName());
+        streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), Integer.toString(queueLength));
+        streamWriter.writeEmptyElement(Element.OVERFLOW_ACTION.getLocalName());
+        streamWriter.writeAttribute(Attribute.VALUE.getLocalName(), overflowAction.name().toLowerCase(Locale.US));
+        super.writeElements(streamWriter);
     }
 
     AbstractHandlerAdd createAdd(final String name) {
-        return null;
+        final AsyncHandlerAdd add = new AsyncHandlerAdd(name);
+        add.setOverflowAction(overflowAction);
+        add.setQueueLength(queueLength);
+        return add;
     }
 }

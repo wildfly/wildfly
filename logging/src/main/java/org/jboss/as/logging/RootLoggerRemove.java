@@ -26,6 +26,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceNotFoundException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -38,30 +39,41 @@ public class RootLoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
     public RootLoggerRemove() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = updateContext.getServiceContainer().getService(LogServices.ROOT_LOGGER);
-        if (service != null) {
-            service.setMode(ServiceController.Mode.REMOVE);
+        final ServiceController<?> service;
+        try {
+            service = updateContext.getServiceContainer().getRequiredService(LogServices.ROOT_LOGGER);
+        } catch (ServiceNotFoundException e) {
+            resultHandler.handleFailure(e, param);
+            return;
         }
-        resultHandler.handleSuccess(null, param);
+        service.setMode(ServiceController.Mode.REMOVE);
+        service.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(resultHandler, param));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public RootLoggerAdd getCompensatingUpdate(LoggingSubsystemElement original) {
         final RootLoggerElement loggerElement = original.getRootLogger();
         if (loggerElement == null) {
             return null;
         }
-        return new RootLoggerAdd(loggerElement.getLevel());
+        final RootLoggerAdd add = new RootLoggerAdd();
+        add.setLevelName(loggerElement.getLevel());
+        return add;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
         final AbstractLoggerElement<?> logger = element.clearRootLogger();
-        if(logger == null) {
+        if (logger == null) {
             throw new UpdateFailedException("Root logger not defined");
         }
     }
-
 }
