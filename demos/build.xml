@@ -28,7 +28,8 @@
         <echo>  sar           - deploys mbeans packaged in a sar</echo>
         <echo>  managedbean   - deploys a managed bean</echo>
         <echo>  serviceloader - deploys a serviceloader style service</echo>
-        <echo>  messaging     - deploys HornetQ sender and receiver</echo>
+        <echo>  messaging     - deploys HornetQ native sender and receiver</echo>
+        <echo>  jms           - deploys HornetQ JMS sender and receiver</echo>
     	<echo>  rar           - deploys a resource adapter</echo>
     </target>
         
