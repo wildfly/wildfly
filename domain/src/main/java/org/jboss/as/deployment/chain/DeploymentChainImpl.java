@@ -78,12 +78,15 @@ public class DeploymentChainImpl implements DeploymentChain {
         return "DeploymentChainImpl{name='" + name + "' processors=" + orderedProcessors + "}";
     }
 
-    private static class OrderedProcessor implements Comparable<OrderedProcessor> {
+    private static final class OrderedProcessor implements Comparable<OrderedProcessor> {
         private final DeploymentUnitProcessor processor;
         private final String name;
         private final long processingOrder;
 
         private OrderedProcessor(final DeploymentUnitProcessor processor, final long processingOrder) {
+            if (processor == null)
+                throw new IllegalArgumentException("Processor can not be null");
+
             this.processor = processor;
             this.name = processor.getClass().getName();
             this.processingOrder = processingOrder;
@@ -97,14 +100,19 @@ public class DeploymentChainImpl implements DeploymentChain {
 
         @Override
         public boolean equals(final Object o) {
-            if(this == o) return true;
+            if (this == o)
+                return true;
+
+            if (!(o instanceof OrderedProcessor))
+                return false;
+
             final OrderedProcessor that = (OrderedProcessor) o;
             return this.processingOrder == that.processingOrder && this.name.equals(that.name);
         }
 
         @Override
         public int hashCode() {
-            int result = processor != null ? processor.hashCode() : 0;
+            int result = name.hashCode();
             result = 31 * result + (int) (processingOrder ^ (processingOrder >>> 32));
             return result;
         }
