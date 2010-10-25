@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -260,8 +261,13 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
                     }
                     Future<ServerDeploymentPlanResult> future = injectedDeploymentManager.getValue().execute(plan);
 
-                    ServerDeploymentPlanResult result = future.get();
-                    // FIXME deal with result
+                    try {
+                        ServerDeploymentPlanResult result = future.get(60, TimeUnit.SECONDS);
+                        // FIXME deal with result
+                    } catch (TimeoutException e) {
+                        // This could be a WARN but deployments could validly take over 60 seconds
+                        log.infof("Deployment plan %s did not complete within 60 seconds. Resuming scanning for deployment changes.", plan.getId());
+                    }
                 }
 
                 log.tracef("Scan complete");
