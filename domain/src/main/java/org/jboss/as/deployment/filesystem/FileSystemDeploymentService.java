@@ -242,6 +242,7 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
                 // deployed that we didn't find on the scan
                 Set<String> toRemove = new HashSet<String>(deployed);
                 toRemove.removeAll(foundDeployed.keySet());
+                toRemove.removeAll(newlyAdded); // in case user removed the marker and added replacement
                 for (String missing : toRemove) {
                     builder = builder.undeploy(missing).andRemoveUndeployed();
                 }

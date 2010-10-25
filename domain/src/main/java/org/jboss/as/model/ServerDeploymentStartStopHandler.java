@@ -103,7 +103,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
             @SuppressWarnings("unchecked")
             final ServiceController<DeploymentService> controller = (ServiceController<DeploymentService>) serviceContainer.getService(deploymentServiceName);
             if(controller != null && controller.getMode() != ServiceController.Mode.REMOVE) {
-                RedeploymentServiceTracker tracker = new RedeploymentServiceTracker();
+                RedeploymentServiceTracker tracker = new RedeploymentServiceTracker(deploymentName);
                 controller.addListener(tracker);
                 synchronized (tracker) {
                     controller.setMode(ServiceController.Mode.REMOVE);
@@ -283,7 +283,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         }
 
         @Override
-        public void serviceStopped(ServiceController<?> controller) {
+        public void serviceRemoved(ServiceController<?> controller) {
             if (resultHandler != null) {
                 recordResult(controller);
             }
@@ -294,11 +294,18 @@ class ServerDeploymentStartStopHandler implements Serializable {
 
     private static class RedeploymentServiceTracker extends AbstractServiceListener<Object> {
 
+        private final String deploymentName;
+
+        RedeploymentServiceTracker(final String deploymentName) {
+            this.deploymentName = deploymentName;
+        }
+
         @Override
-        public void serviceRemoved(ServiceController<? extends Object> controller) {
+        public void serviceRemoved(ServiceController<?> controller) {
             synchronized (this) {
                 notifyAll();
             }
+            log.infof("Undeployed %s", deploymentName);
         }
 
     }
