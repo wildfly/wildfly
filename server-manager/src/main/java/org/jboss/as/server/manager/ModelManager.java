@@ -28,13 +28,16 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
+import org.jboss.as.model.NewRepositoryContentUpdate;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.staxmapper.XMLMapper;
@@ -52,6 +55,7 @@ public class ModelManager {
     private volatile HostModel hostModel;
 
     private final StandardElementReaderRegistrar extensionRegistrar;
+    private FileRepository repository;
 
     ModelManager(final ServerManagerEnvironment environment, final StandardElementReaderRegistrar extensionRegistrar) {
         assert environment != null : "environment is null";
@@ -85,10 +89,18 @@ public class ModelManager {
         this.domainModel = model;
     }
 
+    void setFileRepository(final FileRepository repository) {
+        this.repository = repository;
+    }
+
     public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update, boolean applyToDomain) throws UpdateFailedException {
 
         if (applyToDomain) {
             try {
+                // Force a sync if our repository falls back to a remote
+                if (update instanceof NewRepositoryContentUpdate && repository != null)
+                    repository.getDeploymentRoot(((NewRepositoryContentUpdate) update).getHash());
+
                 domainModel.update(update);
             }
             catch (UpdateFailedException e) {
@@ -97,6 +109,7 @@ public class ModelManager {
                 throw e;
             }
         }
+
 
         List<String> serverNames = update.getAffectedServers(domainModel, getHostModel());
         if (serverNames.size() == 0) {

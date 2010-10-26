@@ -25,7 +25,6 @@
  */
 package org.jboss.as.server.manager;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -70,8 +69,6 @@ import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -106,12 +103,14 @@ public class ServerManager {
     private final StandardElementReaderRegistrar extensionRegistrar;
     private final FileRepository fileRepository;
     private final ModelManager modelManager;
-    private DomainControllerConnection domainControllerConnection;
-    private ProcessManagerClient processManagerClient;
     private final ServiceContainer serviceContainer = ServiceContainer.Factory.create();
     private final AtomicBoolean serversStarted = new AtomicBoolean();
     private final AtomicBoolean stopping = new AtomicBoolean();
     private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
+
+    private DomainControllerConnection domainControllerConnection;
+    private ProcessManagerClient processManagerClient;
+    private FallbackRepository remoteBackedRepository;
 
     /**
      * The auth code of the server manager itself.
@@ -561,6 +560,11 @@ public class ServerManager {
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
         this.domainControllerConnection = domainControllerConnection;
+
+        // By having a remote repo as a secondary content will be synced only if needed
+        FallbackRepository repository = new FallbackRepository(fileRepository, domainControllerConnection.getRemoteFileRepository());
+        modelManager.setFileRepository(repository);
+        this.remoteBackedRepository = repository;
     }
 
     public ModelManager getModelManager() {
@@ -603,17 +607,14 @@ public class ServerManager {
     }
 
     private void synchronizeDeployments() {
-        FileRepository remoteRepo = domainControllerConnection.getRemoteFileRepository();
         DomainModel domainConfig = getDomainModel();
         Set<String> serverGroupNames = domainConfig.getServerGroupNames();
         for (ServerElement server : getHostModel().getServers()) {
             String serverGroupName = server.getServerGroup();
             if (serverGroupNames.remove(serverGroupName)) {
                 for (ServerGroupDeploymentElement deployment : domainConfig.getServerGroup(serverGroupName).getDeployments()) {
-                    File[] local = fileRepository.getDeploymentFiles(deployment.getSha1Hash());
-                    if (local == null || local.length == 0) {
-                        remoteRepo.getDeploymentFiles(deployment.getSha1Hash());
-                    }
+                    // Force a sync
+                    remoteBackedRepository.getDeploymentFiles(deployment.getSha1Hash());
                 }
             }
         }

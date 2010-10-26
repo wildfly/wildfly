@@ -336,6 +336,8 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
 
         @Override
         public final File getFile(String relativePath) {
+
+
             return getFile(relativePath, (byte)0);
         }
 
@@ -352,7 +354,8 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
 
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
-            return localFileRepository.getDeploymentRoot(deploymentHash);
+            String hex = DeploymentUnitElement.bytesToHexString(deploymentHash);
+            return getFile(hex, (byte)2);
         }
 
         private File getFile(final String relativePath, final byte repoId) {

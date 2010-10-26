@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Brian Stansberry
  */
-public final class DomainDeploymentAdd extends AbstractDomainModelUpdate<Void> {
+public final class DomainDeploymentAdd extends AbstractDomainModelUpdate<Void> implements NewRepositoryContentUpdate {
 
     private static final long serialVersionUID = -9076890219875153928L;
 
