@@ -64,6 +64,7 @@ public class RelativeOrderingMetaDataParser extends MetaDataElementParser {
                     }
                     OthersMetaData others = new OthersMetaData();
                     order2.add(others);
+                    requireNoContent(reader);
                     break;
                 default: throw unexpectedElement(reader);
             }

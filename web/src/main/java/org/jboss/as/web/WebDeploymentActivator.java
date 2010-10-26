@@ -92,7 +92,6 @@ class WebDeploymentActivator {
         addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
 
         // Web specific deployment processors ....
-        // FIXME: redo annotations
         addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), WarStructureDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarAnnotationIndexProcessor(), WarAnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarModuleConfigProcessor(), WarModuleConfigProcessor.PRIORITY);
