@@ -74,6 +74,7 @@ public class __TestStandaloneClient {
 
         Future<ServerDeploymentPlanResult> deploymentResult = manager.execute(manager.newDeploymentPlan().deploy(deployment).build());
         System.out.println("Deployment result:" + deploymentResult);
+        System.out.println("Contained deployment result:" + deploymentResult.get());
 
     }
 }

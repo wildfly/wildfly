@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.client.api.server;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -31,7 +32,13 @@ import java.util.UUID;
  */
 public class SimpleServerDeploymentActionResult
 extends AbstractServerUpdateActionResult<ServerDeploymentActionResult>
-implements ServerDeploymentActionResult {
+implements ServerDeploymentActionResult, Serializable {
+
+    private static final long serialVersionUID = 1075795087623522316L;
+
+    private SimpleServerDeploymentActionResult() {
+
+    }
 
     public SimpleServerDeploymentActionResult(UUID id, Result result) {
         this(id, result, null);

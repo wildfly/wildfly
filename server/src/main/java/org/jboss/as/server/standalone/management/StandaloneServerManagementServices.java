@@ -24,6 +24,8 @@ package org.jboss.as.server.standalone.management;
 
 import java.util.concurrent.Executors;
 
+import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.model.ManagementElement;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.ServerController;
@@ -58,6 +60,8 @@ public class StandaloneServerManagementServices {
                     .addDependency(ServerController.SERVICE_NAME, ServerController.class, clientOperationHandler.getServerControllerInjector())
                     .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(clientOperationHandler))
                     .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, clientOperationHandler.getConfigurationPersisterValue())
+                    .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, clientOperationHandler.getDeploymentRepositoryInjector())
+                    .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, clientOperationHandler.getDeploymentManagerInjector())
                     .addDependency(ShutdownHandler.SERVICE_NAME, ShutdownHandler.class, clientOperationHandler.getShutdownHandlerValue())
                     .setInitialMode(ServiceController.Mode.ACTIVE);
         }

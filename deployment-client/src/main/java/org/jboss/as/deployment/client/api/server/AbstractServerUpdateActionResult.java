@@ -37,6 +37,11 @@ public abstract class AbstractServerUpdateActionResult<T extends ServerUpdateAct
     private final Throwable deploymentException;
     private T rollbackResult;
 
+    protected AbstractServerUpdateActionResult() {
+        this.id = null;
+        this.deploymentException = null;
+    }
+
     public AbstractServerUpdateActionResult(UUID id, Result result) {
         this(id, result, null);
     }

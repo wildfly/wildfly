@@ -25,6 +25,7 @@ package org.jboss.as.server.standalone.management;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.readByte;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -38,14 +39,20 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.client.api.server.DeploymentPlan;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.protocol.ByteDataInput;
+import org.jboss.as.protocol.ByteDataOutput;
+import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
+import org.jboss.as.protocol.SimpleByteDataInput;
+import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -54,9 +61,9 @@ import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.server.ServerController;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerUpdateController;
+import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
-import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
@@ -96,13 +103,16 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
     private final InjectedValue<ShutdownHandler> shutdownHandlerValue = new InjectedValue<ShutdownHandler>();
     private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
+    private final InjectedValue<ServerDeploymentManager> deploymentManagerValue = new InjectedValue<ServerDeploymentManager>();
+    private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
 
     private ServerController serverController;
     private ShutdownHandler shutdownHandler;
     private ServerConfigurationPersister configurationPersister;
     private ServerDeploymentManager deploymentManager;
+    private ServerDeploymentRepository deploymentRepository;
 
-    private Executor executor = Executors.newCachedThreadPool();
+    private final Executor executor = Executors.newCachedThreadPool();
 
     InjectedValue<ServerController> getServerControllerInjector() {
         return serverControllerValue;
@@ -116,12 +126,22 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         return shutdownHandlerValue;
     }
 
+    public InjectedValue<ServerDeploymentManager> getDeploymentManagerInjector() {
+        return deploymentManagerValue;
+    }
+
+    public InjectedValue<ServerDeploymentRepository> getDeploymentRepositoryInjector() {
+        return deploymentRepositoryValue;
+    }
+
     /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
         try {
             serverController = serverControllerValue.getValue();
             configurationPersister = configurationPersisterValue.getValue();
             shutdownHandler = shutdownHandlerValue.getValue();
+            deploymentManager = deploymentManagerValue.getValue();
+            deploymentRepository = deploymentRepositoryValue.getValue();
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }
@@ -138,6 +158,7 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     }
 
     /** {@inheritDoc} */
+    @Override
     public void handle(Connection connection, InputStream input) throws IOException {
         expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
         final byte commandCode = readByte(input);
@@ -161,11 +182,11 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
             case StandaloneClientProtocol.GET_SERVER_MODEL_REQUEST:
                 return new GetServerModel();
             case StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
-                return null;
+                return new AddDeploymentContentOperation();
             case StandaloneClientProtocol.APPLY_UPDATES_REQUEST:
                 return new ApplyUpdates();
             case StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST:
-                return null;
+                return new CheckUnitDeploymentNameOperation();
             case StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
                 return new ExecuteDeploymentPlanOperation();
             default:
@@ -191,15 +212,17 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
     private class ApplyUpdates extends ManagementResponse {
 
-        private boolean preventShutdown = false;
+        private final boolean preventShutdown = false;
         private List<AbstractServerModelUpdate<?>> updates;
 
         /** {@inheritDoc} */
+        @Override
         protected byte getResponseCode() {
             return StandaloneClientProtocol.APPLY_UPDATES_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void readRequest(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
@@ -215,6 +238,7 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void sendResponse(OutputStream output) throws IOException {
             List<ResultHandler<?, Void>> results = new ArrayList<ResultHandler<?, Void>>(updates.size());
 
@@ -284,6 +308,51 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
     }
 
+    private class AddDeploymentContentOperation extends ManagementResponse {
+        private byte[] deploymentHash;
+
+        @Override
+        protected final byte getResponseCode() {
+            return StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final InputStream inputStream) throws IOException {
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
+                final String deploymentName = input.readUTF();
+                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
+                final String deploymentRuntimeName = input.readUTF();
+                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_CONTENT);
+                final ChunkyByteInput contentInput = new ChunkyByteInput(input);
+                try {
+                    deploymentHash = deploymentRepository.addDeploymentContent(deploymentName, deploymentRuntimeName, contentInput);
+                } finally {
+                    contentInput.close();
+                }
+            } finally {
+                safeClose(input);
+            }
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            ByteDataOutput output = null;
+            try {
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_HASH_LENGTH);
+                output.writeInt(deploymentHash.length);
+                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_HASH);
+                output.write(deploymentHash);
+                output.close();
+            } finally {
+                safeClose(output);
+            }
+        }
+    }
+
     private class ExecuteDeploymentPlanOperation extends ManagementResponse {
         private DeploymentPlan deploymentPlan;
 
@@ -313,6 +382,43 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
                 throw new ManagementException("Failed get deployment plan result.", e);
             }
             marshaller.finish();
+        }
+    }
+
+    private class CheckUnitDeploymentNameOperation extends ManagementResponse {
+        private String deploymentName;
+
+        @Override
+        protected final byte getResponseCode() {
+            return StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final InputStream inputStream) throws IOException {
+
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
+                deploymentName = input.readUTF();
+            } finally {
+                safeClose(input);
+            }
+
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            //TODO check it is unique
+            ByteDataOutput output = null;
+            try {
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
+                output.writeBoolean(true);
+                output.close();
+            } finally {
+                safeClose(output);
+            }
         }
     }
 

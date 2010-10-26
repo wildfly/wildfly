@@ -22,13 +22,9 @@
 
 package org.jboss.as.standalone.client.impl;
 
-import java.util.concurrent.TimeUnit;
-import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
-import org.jboss.as.protocol.mgmt.ManagementException;
-import org.jboss.as.protocol.mgmt.ManagementRequest;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -42,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.deployment.client.api.server.DeploymentPlan;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
@@ -52,8 +49,11 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.ChunkyByteOutput;
+import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementException;
+import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 import org.jboss.marshalling.Marshaller;
@@ -135,6 +135,7 @@ public class StandaloneClientImpl implements StandaloneClient {
             super(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
         }
 
+        @Override
         protected byte getHandlerId() {
             return StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST;
         }
@@ -143,16 +144,19 @@ public class StandaloneClientImpl implements StandaloneClient {
     private class GetServerModel extends StandaloneClientRequest<ServerModel> {
 
         /** {@inheritDoc} */
+        @Override
         protected byte getRequestCode() {
             return StandaloneClientProtocol.GET_SERVER_MODEL_REQUEST;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected byte getResponseCode() {
             return StandaloneClientProtocol.GET_SERVER_MODEL_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected ServerModel receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
@@ -170,16 +174,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         protected byte getRequestCode() {
             return StandaloneClientProtocol.APPLY_UPDATES_REQUEST;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected byte getResponseCode() {
             return StandaloneClientProtocol.APPLY_UPDATES_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
@@ -193,6 +200,7 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         protected List<StandaloneUpdateResult<?>> receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
@@ -226,16 +234,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         public final byte getRequestCode() {
             return StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final byte getResponseCode() {
             return StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void sendRequest(int protocolVersion, OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
@@ -264,6 +275,7 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final byte[] receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
@@ -288,16 +300,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         public final byte getRequestCode() {
             return StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final byte getResponseCode() {
             return StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
@@ -307,10 +322,11 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final ServerDeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
             final ServerDeploymentPlanResult result = unmarshal(unmarshaller, ServerDeploymentPlanResult.class);
             unmarshaller.finish();
             return result;
@@ -325,16 +341,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         public final byte getRequestCode() {
             return StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final byte getResponseCode() {
             return StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_RESPONSE;
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void sendRequest(int protocolVersion, OutputStream outputStream) throws IOException {
             ByteDataOutput output = null;
             try {
@@ -348,6 +367,7 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
+        @Override
         protected final Boolean receiveResponse(final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
