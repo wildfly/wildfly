@@ -41,6 +41,29 @@
     <properties>
         <!-- This part of the testuite we want to execute by default. -->
         <skipExecUnitTests>false</skipExecUnitTests>
-    </properties>
+    </properties>    
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/BatchFailuresUnitTestCase.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+    
+    </dependencies>
 
 </project>

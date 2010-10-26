@@ -65,6 +65,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipExec>${skipExecUnitTests}</skipExec>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>
