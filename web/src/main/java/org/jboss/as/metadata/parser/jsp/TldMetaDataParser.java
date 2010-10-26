@@ -33,6 +33,7 @@ import org.jboss.as.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.web.spec.FunctionMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.metadata.web.spec.TagFileMetaData;
 import org.jboss.metadata.web.spec.TagMetaData;
 import org.jboss.metadata.web.spec.Tld11MetaData;
 import org.jboss.metadata.web.spec.Tld12MetaData;
@@ -197,6 +198,14 @@ public class TldMetaDataParser extends MetaDataElementParser {
                         tld.setTags(tags);
                     }
                     tags.add(TagMetaDataParser.parse(reader, version));
+                    break;
+                case TAG_FILE:
+                    List<TagFileMetaData> tagfiles = tld.getTagFiles();
+                    if (tagfiles == null) {
+                        tagfiles = new ArrayList<TagFileMetaData>();
+                        tld.setTagFiles(tagfiles);
+                    }
+                    tagfiles.add(TagFileMetaDataParser.parse(reader));
                     break;
                 case FUNCTION:
                     List<FunctionMetaData> functions = tld.getFunctions();
