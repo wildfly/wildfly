@@ -44,7 +44,6 @@ public class ExampleRunner {
 
             deploymentUtils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=config");
-            deploymentUtils.waitForDeploymentHack(objectName);
 
             MBeanServerConnection mbeanServer = deploymentUtils.getConnection();
 

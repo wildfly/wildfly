@@ -37,15 +37,13 @@ import org.jboss.as.demos.jms.mbean.Test;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("jms-mbean.sar", Test.class.getPackage(), true);
+        DeploymentUtils utils = new DeploymentUtils("jms-mbean.sar", Test.class.getPackage());
         try {
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=jms");
-            utils.waitForDeploymentHack(objectName);
 
             MBeanServerConnection mbeanServer = utils.getConnection();
 
-            Thread.sleep(1000);
             System.out.println("Sending message: Test");
             mbeanServer.invoke(objectName, "sendMessage", new Object[] {"Test"}, new String[] {"java.lang.String"});
             Thread.sleep(1000);

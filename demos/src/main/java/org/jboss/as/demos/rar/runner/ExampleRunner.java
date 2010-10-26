@@ -42,7 +42,6 @@ public class ExampleRunner {
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=rar");
-            utils.waitForDeploymentHack(objectName);
 
 
             //System.out.println(utils.showJndi());

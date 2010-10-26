@@ -33,15 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
+import org.jboss.as.deployment.client.api.server.DeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -60,11 +59,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 public class DeploymentUtils {
 
     private final List<Deployment> deployments = new ArrayList<Deployment>();
-    private final StandaloneClient client;
+    private final ServerDeploymentManager manager;
 
 
     public DeploymentUtils() throws UnknownHostException {
-        client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        manager = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999).getDeploymentManager();
     }
 
     public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
@@ -86,33 +85,19 @@ public class DeploymentUtils {
     }
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
+        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
         for (Deployment deployment : deployments) {
-            deployment.deploy();
+            builder = deployment.addDeployment(manager, builder);
         }
+        manager.execute(builder.build()).get();
     }
 
-    public synchronized void undeploy() {
-        for (int i = deployments.size() - 1 ; i >= 0 ; i--) {
-            deployments.get(i).undeploy();
+    public synchronized void undeploy() throws ExecutionException, InterruptedException {
+        DeploymentPlanBuilder builder = manager.newDeploymentPlan();
+        for (Deployment deployment : deployments) {
+            builder = deployment.removeDeployment(builder);
         }
-    }
-
-    /**
-     * FIXME remove once we use the deployment API
-     */
-    public void waitForDeploymentHack(ObjectName objectName) throws Exception {
-        MBeanServerConnection mbeanServer = getConnection();
-
-        for (int i = 0 ; i < 10 ; i++) {
-            try {
-                System.out.println("Checking remote server for " + objectName + "...");
-                mbeanServer.getMBeanInfo(objectName);
-                System.out.println(objectName + " was found!");
-                return;
-            } catch (InstanceNotFoundException e) {
-                Thread.sleep(1000);
-            }
-        }
+        manager.execute(builder.build()).get();
     }
 
     public MBeanServerConnection getConnection() throws Exception {
@@ -161,15 +146,15 @@ public class DeploymentUtils {
             }
         }
 
-        public synchronized void deploy() throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
-            ServerDeploymentManager manager = client.getDeploymentManager();
+        public synchronized DeploymentPlanBuilder addDeployment(ServerDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
+            System.out.println("Deploying " + realArchive.getName());
             deployment = manager.addDeploymentContent(realArchive);
-            ServerDeploymentPlanResult result = manager.execute(manager.newDeploymentPlan().add(deployment, realArchive).deploy(deployment).build()).get();
+            return builder.add(deployment, realArchive).deploy(deployment);
         }
 
-        public synchronized void undeploy() {
-            ServerDeploymentManager manager = client.getDeploymentManager();
-            manager.execute(manager.newDeploymentPlan().undeploy(deployment).remove(deployment).build());
+        public synchronized DeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
+            System.out.println("Undeploying " + realArchive.getName());
+            return builder.undeploy(deployment).remove(deployment);
         }
 
         private File getSourceMetaInfDir() {

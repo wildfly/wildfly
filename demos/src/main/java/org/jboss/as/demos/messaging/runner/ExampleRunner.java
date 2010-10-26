@@ -43,7 +43,6 @@ public class ExampleRunner {
 
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=messaging");
-            utils.waitForDeploymentHack(objectName);
 
             MBeanServerConnection mbeanServer = utils.getConnection();
 
