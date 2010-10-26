@@ -72,7 +72,7 @@ public class __TestStandaloneClient {
         String deployment = manager.addDeploymentContent(file.toURL());
         System.out.println("Added deployment " + deployment);
 
-        Future<ServerDeploymentPlanResult> deploymentResult = manager.execute(manager.newDeploymentPlan().deploy(deployment).build());
+        Future<ServerDeploymentPlanResult> deploymentResult = manager.execute(manager.newDeploymentPlan().add(deployment, file).deploy(deployment).build());
         System.out.println("Deployment result:" + deploymentResult);
         System.out.println("Contained deployment result:" + deploymentResult.get());
 
