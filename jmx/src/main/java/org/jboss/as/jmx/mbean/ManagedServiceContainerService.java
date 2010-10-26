@@ -59,7 +59,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ManagedServiceContainerService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "container");
-    public static final ObjectName OBJECT_NAME = ObjectNameFactory.create("jboss", "mbean", "ServiceContainer");
+    public static final ObjectName OBJECT_NAME = ObjectNameFactory.create("jboss.internal", "mbean", "ServiceContainer");
 
     private final Logger log = Logger.getLogger(ManagedServiceContainerService.class);
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
