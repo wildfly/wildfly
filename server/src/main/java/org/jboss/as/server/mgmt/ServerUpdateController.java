@@ -159,6 +159,8 @@ public class ServerUpdateController {
     private void applyUpdates() {
 
         if (updates.size() == 0) {
+            // No other event is going to trigger a transition from ACTIVE,
+            // so we do it directly
             transition(false);
             return;
         }
@@ -240,6 +242,14 @@ public class ServerUpdateController {
 
     /** Only invoke with the object monitor held */
     private void applyRollbacks() {
+
+        if (rollbacks.size() == 0) {
+            // No other event is going to trigger a transition from ROLLING_BACK,
+            // so we do it directly
+            transition(false);
+            return;
+        }
+
         BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         UpdateContext updateContext = new SimpleUpdateContext(serviceContainer, batchBuilder);
         boolean failed = false;
