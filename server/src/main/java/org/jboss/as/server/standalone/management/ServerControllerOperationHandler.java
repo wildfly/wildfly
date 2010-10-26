@@ -33,6 +33,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.jboss.as.deployment.client.api.server.DeploymentPlan;
@@ -49,6 +52,11 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.server.ServerController;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
+import org.jboss.as.server.mgmt.ServerUpdateController;
+import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
+import org.jboss.as.server.mgmt.ServerUpdateController.Status;
+import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
@@ -59,6 +67,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -85,18 +94,34 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     public static final ServiceName SERVICE_NAME = ServerController.SERVICE_NAME.append("operation", "handler");
 
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
+    private final InjectedValue<ShutdownHandler> shutdownHandlerValue = new InjectedValue<ShutdownHandler>();
+    private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
 
     private ServerController serverController;
+    private ShutdownHandler shutdownHandler;
+    private ServerConfigurationPersister configurationPersister;
     private ServerDeploymentManager deploymentManager;
+
+    private Executor executor = Executors.newCachedThreadPool();
 
     InjectedValue<ServerController> getServerControllerInjector() {
         return serverControllerValue;
+    }
+
+    InjectedValue<ServerConfigurationPersister> getConfigurationPersisterValue() {
+        return configurationPersisterValue;
+    }
+
+    InjectedValue<ShutdownHandler> getShutdownHandlerValue() {
+        return shutdownHandlerValue;
     }
 
     /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
         try {
             serverController = serverControllerValue.getValue();
+            configurationPersister = configurationPersisterValue.getValue();
+            shutdownHandler = shutdownHandlerValue.getValue();
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }
@@ -164,8 +189,9 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         }
     }
 
-
     private class ApplyUpdates extends ManagementResponse {
+
+        private boolean preventShutdown = false;
         private List<AbstractServerModelUpdate<?>> updates;
 
         /** {@inheritDoc} */
@@ -191,29 +217,68 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         /** {@inheritDoc} */
         protected void sendResponse(OutputStream output) throws IOException {
             List<ResultHandler<?, Void>> results = new ArrayList<ResultHandler<?, Void>>(updates.size());
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            final ServerUpdateController controller = new ServerUpdateController(serverController.getServerModel(),
+                    ServiceContainer.Factory.create(), executor,
+                    new ServerUpdateCommitHandler() {
+                        public void handleUpdateRollback(ServerUpdateController controller, Status priorStatus) {
+                            latch.countDown();
+                        }
+                        public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
+                            configurationPersister.configurationModified();
+                            latch.countDown();
+                        }
+                    }, true, preventShutdown);
+
+            boolean requiresRestart = false;
             for(final AbstractServerModelUpdate<?> update : updates) {
-                results.add(processUpdate(update));
+                requiresRestart |= update.requiresRestart();
+                results.add(addUpdate(update, controller));
             }
+
+            controller.executeUpdates();
+            try {
+                latch.await();
+            } catch(Exception e) {
+                throw new ManagementException("failed to execute updates", e);
+            }
+
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
             marshaller.writeInt(results.size());
             for(ResultHandler<?, Void> result : results) {
                 marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                if(result.e != null) {
+                if(result.failure != null) {
                     marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                    marshaller.writeObject(result.e);
+                    marshaller.writeObject(result.failure);
                 } else {
                     marshaller.writeByte(StandaloneClientProtocol.APPLY_UPDATE_RESULT_SERVER_MODEL_SUCCESS);
                     marshaller.writeObject(result.result);
                 }
             }
             marshaller.finish();
+            if(! preventShutdown && requiresRestart) {
+                executor.execute(new Runnable() {
+                     public void run() {
+                         // TODO proper restart handling
+                         // serverController.shutdown();
+                         // SystemExiter.exit(10);
+                         try {
+                             shutdownHandler.shutdownRequested();
+                         } catch (Exception e) {
+                             // log exception since shutdown is not implemented
+                             log.warn(e);
+                         }
+                     }
+                 });
+            }
         }
 
-        private <T> ResultHandler<T, Void> processUpdate(AbstractServerModelUpdate<T> update) {
+        private <T> ResultHandler<T, Void> addUpdate(AbstractServerModelUpdate<T> update, ServerUpdateController controller) {
             ResultHandler<T, Void> handler = new ResultHandler<T, Void>();
-            serverController.update(update, handler, null);
+            controller.addServerModelUpdate(update, handler, null);
             return handler;
         }
 
@@ -260,9 +325,8 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     }
 
     private class ResultHandler<R, P> implements UpdateResultHandler<R, P> {
-
+        UpdateFailedException failure;
         R result;
-        UpdateFailedException e;
 
         /** {@inheritDoc} */
         public void handleSuccess(R result, P param) {
@@ -271,9 +335,9 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         /** {@inheritDoc} */
         public void handleFailure(Throwable cause, P param) {
             if(cause instanceof UpdateFailedException) {
-                e = (UpdateFailedException) cause;
+                failure = (UpdateFailedException) cause;
             } else {
-                e = new UpdateFailedException(cause);
+                failure = new UpdateFailedException(cause);
             }
         }
         /** {@inheritDoc} */
@@ -300,7 +364,6 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         public void handleRollbackTimeout(P param) {
             //
         }
-
     }
 
 }

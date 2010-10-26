@@ -435,6 +435,11 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
             }
         }
 
+        /** {@inheritDoc} */
+        public void handleUpdateRollback(ServerUpdateController controller, Status priorStatus) {
+            generateResult(priorStatus);
+        }
+
         @Override
         public void handleUpdateCommit(ServerUpdateController controller,
                 org.jboss.as.server.mgmt.ServerUpdateController.Status priorStatus) {

@@ -85,7 +85,7 @@ public interface StandaloneClient {
          * @param port The remote port
          * @return A domain client
          */
-        public StandaloneClient create(final InetAddress address, int port) {
+        public static StandaloneClient create(final InetAddress address, int port) {
             return new StandaloneClientImpl(address, port);
         }
     }

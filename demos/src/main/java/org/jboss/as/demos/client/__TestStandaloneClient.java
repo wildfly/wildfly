@@ -34,6 +34,7 @@ import org.jboss.as.model.PathElementUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerPathAdd;
 import org.jboss.as.standalone.client.api.StandaloneClient;
+import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 
 /**
  *
@@ -43,15 +44,23 @@ public class __TestStandaloneClient {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Creating client");
-        StandaloneClient client = new StandaloneClient.Factory().create(InetAddress.getByName("localhost"), 9999);
+        StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
         System.out.println("Created client, getting model...");
         ServerModel model = client.getServerModel();
         System.out.println("Got model " + model);  //Why is this null?
 
-
+        // Apply update
         List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
         updates.add(new ServerPathAdd(new PathElementUpdate("org.jboss.test", "/home/emuckenh/Downloads", null)));
-        client.applyUpdates(updates);
+
+
+        for(final StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
+            if(result.isSuccess()) {
+                System.out.println(result.getResult());
+            } else {
+                result.getFailure().printStackTrace(System.out);
+            }
+        }
 
         System.out.println("Created client, getting dm...");
         ServerDeploymentManager manager = client.getDeploymentManager();

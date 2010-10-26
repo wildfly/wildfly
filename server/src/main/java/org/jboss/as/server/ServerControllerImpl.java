@@ -28,16 +28,21 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ServerControllerImpl implements ServerController {
+final class ServerControllerImpl implements ServerController, Service<ServerController> {
     private final ServiceContainer container;
-    private final ServerModel serverModel = new ServerModel();
+    private final ServerModel serverModel;
 
-    ServerControllerImpl(final ServiceContainer container) {
+    ServerControllerImpl(final ServerModel model, final ServiceContainer container) {
+        this.serverModel = model;
         this.container = container;
     }
 
@@ -80,5 +85,20 @@ final class ServerControllerImpl implements ServerController {
         public ServiceContainer getServiceContainer() {
             return serviceContainer;
         }
+    }
+
+    /** {@inheritDoc} */
+    public ServerController getValue() throws IllegalStateException {
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    public void start(StartContext context) throws StartException {
+        //
+    }
+
+    /** {@inheritDoc} */
+    public void stop(StopContext context) {
+        //
     }
 }

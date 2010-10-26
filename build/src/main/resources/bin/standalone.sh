@@ -184,5 +184,9 @@ while true; do
             wait $JBOSS_PID 2>/dev/null
       fi
    fi
-   exit $JBOSS_STATUS
+   if [ "$JBOSS_STATUS" -eq 10 ]; then
+      echo "Restarting JBoss..."
+   else
+      exit $JBOSS_STATUS
+   fi
 done
