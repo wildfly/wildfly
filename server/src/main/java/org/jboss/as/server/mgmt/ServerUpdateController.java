@@ -196,7 +196,7 @@ public class ServerUpdateController {
                 // to the rollback list. Do it last because if this update
                 // directly fails, we roll it back in catch block below.
                 // The 'rollbacks' list is for updates that succeeeded.
-                if (allowOverallRollback) {
+                if (allowOverallRollback && rollbackTuple != null) {
                     // Add this latest update's rollback to the list
                     rollbacks.add(0, rollbackTuple);
                 }
@@ -219,7 +219,8 @@ public class ServerUpdateController {
                         }
                     }
                 }
-                // else creating the rollbackTuple failed at the beginning of 'try'
+                // else there was no compensating update or creating the
+                // rollbackTuple failed at the beginning of 'try'
                 // and there is nothing else needing to be done here
             }
         }
@@ -421,10 +422,14 @@ public class ServerUpdateController {
         }
 
         private ServerModelUpdateTuple<Object, P> getRollbackTuple(ServerModel serverModel) {
+            ServerModelUpdateTuple<Object, P> rollbackTuple = null;
             @SuppressWarnings("unchecked") // Safe because we aren't going to use the result
             AbstractServerModelUpdate<Object> compensating = (AbstractServerModelUpdate<Object>) update.getCompensatingUpdate(serverModel);
-            RollbackUpdateResultHandler<P> rollbackHandler = RollbackUpdateResultHandler.getRollbackUpdateResultHandler(resultHandler.getDelegate());
-            return new ServerModelUpdateTuple<Object, P>(compensating, rollbackHandler, param);
+            if (compensating != null) {
+                RollbackUpdateResultHandler<P> rollbackHandler = RollbackUpdateResultHandler.getRollbackUpdateResultHandler(resultHandler.getDelegate());
+                rollbackTuple = new ServerModelUpdateTuple<Object, P>(compensating, rollbackHandler, param);
+            }
+            return rollbackTuple;
         }
     }
 
