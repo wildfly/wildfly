@@ -48,11 +48,11 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -318,23 +318,12 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
         @Override
         protected final void readRequest(final InputStream inputStream) throws IOException {
-            ByteDataInput input = null;
-            try {
-                input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
-                final String deploymentName = input.readUTF();
-                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
-                final String deploymentRuntimeName = input.readUTF();
-                expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                final ChunkyByteInput contentInput = new ChunkyByteInput(input);
-                try {
-                    deploymentHash = deploymentRepository.addDeploymentContent(deploymentName, deploymentRuntimeName, contentInput);
-                } finally {
-                    contentInput.close();
-                }
-            } finally {
-                safeClose(input);
-            }
+            expectHeader(inputStream, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
+            final String deploymentName = StreamUtils.readUTFZBytes(inputStream);
+            expectHeader(inputStream, StandaloneClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
+            final String deploymentRuntimeName = StreamUtils.readUTFZBytes(inputStream);
+            expectHeader(inputStream, StandaloneClientProtocol.PARAM_DEPLOYMENT_CONTENT);
+            deploymentHash = deploymentRepository.addDeploymentContent(deploymentName, deploymentRuntimeName, inputStream);
         }
 
         @Override

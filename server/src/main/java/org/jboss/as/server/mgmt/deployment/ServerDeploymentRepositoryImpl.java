@@ -96,8 +96,7 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
                 BufferedInputStream bis = new BufferedInputStream(stream);
                 byte[] bytes = new byte[8192];
                 int read;
-                //while ((read = bis.read(bytes)) > -1) {
-                while ((read = bis.read(bytes)) > 0) { //Needed to change this to 0, maybe stream from client isn't getting closed properly?
+                while ((read = bis.read(bytes)) > -1) {
                     dos.write(bytes, 0, read);
                 }
             }

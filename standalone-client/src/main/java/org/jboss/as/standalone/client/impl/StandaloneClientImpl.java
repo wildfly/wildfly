@@ -48,10 +48,10 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.standalone.client.api.StandaloneClient;
@@ -248,29 +248,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         /** {@inheritDoc} */
         @Override
         protected void sendRequest(int protocolVersion, OutputStream outputStream) throws IOException {
-            ByteDataOutput output = null;
+            outputStream.write(StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
+            StreamUtils.writeUTFZBytes(outputStream, name);
+            outputStream.write(StandaloneClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
+            StreamUtils.writeUTFZBytes(outputStream, runtimeName);
+            outputStream.write(StandaloneClientProtocol.PARAM_DEPLOYMENT_CONTENT);
             try {
-                output = new SimpleByteDataOutput(outputStream);
-                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
-                output.writeUTF(name);
-                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
-                output.writeUTF(runtimeName);
-                output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                ChunkyByteOutput chunkyByteOutput = null;
-                try {
-                    chunkyByteOutput = new ChunkyByteOutput(output, 8192);
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = inputStream.read(buffer)) != -1) {
-                        chunkyByteOutput.write(buffer, 0, read);
-                    }
-                } finally {
-                    safeClose(inputStream);
-                    safeClose(chunkyByteOutput);
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, read);
                 }
-                output.close();
             } finally {
-                safeClose(output);
+                safeClose(inputStream);
             }
         }
 
