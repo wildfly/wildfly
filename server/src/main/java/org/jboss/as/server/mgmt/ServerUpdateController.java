@@ -386,6 +386,7 @@ public class ServerUpdateController {
 
     }
 
+    /** Data object that associates an update with its result handler and param */
     private class ServerModelUpdateTuple<R, P> {
 
         private final AbstractServerModelUpdate<R> update;
@@ -427,6 +428,11 @@ public class ServerUpdateController {
         }
     }
 
+    /**
+     * The actual result handler we pass to the applyUpdate method when we execute updates.
+     * Uses the callback notifications to track the completion of the updates,
+     * then passes the notifications on to any actual end-user handler that was passed in.
+     */
     private class DelegatingUpdateResultHandler<R, P> implements UpdateResultHandler<R, P> {
 
         private final UpdateResultHandler<? super R, P> delegate;

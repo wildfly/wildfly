@@ -87,7 +87,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             // Add a listener so we can get ahold of the DeploymentService
-            batchBuilder.addListener(new DeploymentServiceTracker<P>(resultHandler, param));
+            batchBuilder.addListener(new DeploymentServiceTracker<P>(deploymentServiceName, resultHandler, param));
 
             activate(deploymentName, runtimeName, deploymentHash, deploymentServiceName, new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
         }
@@ -227,7 +227,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
 //        return (path.endsWith(File.separator)) ? path + fileName : path + File.separator + fileName;
 //    }
 
-    private static class AbstractDeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
+    private abstract static class AbstractDeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
 
         protected final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler;
         protected final P param;
@@ -241,8 +241,10 @@ class ServerDeploymentStartStopHandler implements Serializable {
         @Override
         public void serviceFailed(ServiceController<?> controller, StartException reason) {
 
-            if (resultHandler != null) {
+            if (resultHandler != null && isCorrectService(controller)) {
                 resultHandler.handleFailure(reason, param);
+                // Ignore any further notifications
+                controller.removeListener(this);
             }
         }
 
@@ -252,22 +254,35 @@ class ServerDeploymentStartStopHandler implements Serializable {
                 (param instanceof UUID) ? new SimpleServerDeploymentActionResult((UUID) param, Result.EXECUTED)
                                         : null;
             resultHandler.handleSuccess(result, param);
+            // Ignore any further notifications
+            controller.removeListener(this);
         }
+
+        protected abstract boolean isCorrectService(ServiceController<?> service);
 
     }
 
     private static class DeploymentServiceTracker<P> extends AbstractDeploymentServiceTracker<P> {
 
-        private DeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
-                final P param) {
+        private final ServiceName deploymentServiceName;
+
+        private DeploymentServiceTracker(final ServiceName deploymentServiceName,
+                final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
             super(resultHandler, param);
+            assert deploymentServiceName != null : "deploymentServiceName is null";
+            this.deploymentServiceName = deploymentServiceName;
         }
 
         @Override
         public void serviceStarted(ServiceController<?> controller) {
-            if (resultHandler != null) {
+            if (resultHandler != null && isCorrectService(controller)) {
                 recordResult(controller);
             }
+        }
+
+        @Override
+        protected boolean isCorrectService(ServiceController<?> controller) {
+            return deploymentServiceName.equals(controller.getName());
         }
 
     }
@@ -288,6 +303,12 @@ class ServerDeploymentStartStopHandler implements Serializable {
                 recordResult(controller);
             }
             log.infof("Undeployed %s", deploymentName);
+        }
+
+        @Override
+        protected boolean isCorrectService(ServiceController<?> controller) {
+            // We are only registered with a single service
+            return true;
         }
 
     }
