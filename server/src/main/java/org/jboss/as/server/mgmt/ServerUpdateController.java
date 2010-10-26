@@ -70,7 +70,6 @@ public class ServerUpdateController {
     }
 
     public static interface ServerUpdateCommitHandler {
-        void handleUpdateRollback(ServerUpdateController controller, Status priorStatus);
         void handleUpdateCommit(ServerUpdateController controller, Status priorStatus);
     }
 
@@ -205,7 +204,6 @@ public class ServerUpdateController {
                 }
             }
             catch (Exception e) {
-                logger.errorf(e, "Caught exception applying update %s", update.getUpdate().toString());
                 update.handleFailure(e);
 
                 if (rollbackTuple != null) {
@@ -339,14 +337,12 @@ public class ServerUpdateController {
             public void run() {
                 logger.debug("Rolling back");
                 synchronized (ServerUpdateController.this) {
-                    Status priorStatus = status;
                     if (status != Status.MARKED_ROLLBACK) {
                         // Failure has already been handled by executeUpdate()
                         return;
                     }
                     status = Status.ROLLING_BACK;
                     applyRollbacks();
-                    commitHandler.handleUpdateRollback(ServerUpdateController.this, priorStatus);
                 }
             }
         };

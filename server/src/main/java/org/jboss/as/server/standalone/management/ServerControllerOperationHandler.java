@@ -59,11 +59,12 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.server.ServerController;
+import org.jboss.as.server.SystemExiter;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerUpdateController;
-import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
+import org.jboss.as.server.mgmt.ShutdownHandler;
 import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
@@ -246,9 +247,6 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
             final ServerUpdateController controller = new ServerUpdateController(serverController.getServerModel(),
                     ServiceContainer.Factory.create(), executor,
                     new ServerUpdateCommitHandler() {
-                        public void handleUpdateRollback(ServerUpdateController controller, Status priorStatus) {
-                            latch.countDown();
-                        }
                         public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
                             configurationPersister.configurationModified();
                             latch.countDown();
@@ -287,14 +285,9 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
                 executor.execute(new Runnable() {
                      public void run() {
                          // TODO proper restart handling
-                         // serverController.shutdown();
-                         // SystemExiter.exit(10);
-                         try {
-                             shutdownHandler.shutdownRequested();
-                         } catch (Exception e) {
-                             // log exception since shutdown is not implemented
-                             log.warn(e);
-                         }
+                         serverController.shutdown();
+                         SystemExiter.exit(10);
+                         // shutdownHandler.shutdownRequested();
                      }
                  });
             }
