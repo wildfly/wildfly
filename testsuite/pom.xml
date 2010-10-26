@@ -96,6 +96,13 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-build</artifactId>
             <type>pom</type>
+            <exclusions>
+              <exclusion>
+                <!--  Don't pull in the old jboss logging spi jar brought in by Arquillian -->
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-spi</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
     
     </dependencies>
