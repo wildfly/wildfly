@@ -54,7 +54,7 @@ public final class ThreadsSubsystemElement extends AbstractSubsystemElement<Thre
 
     @Override
     protected Class<ThreadsSubsystemElement> getElementClass() {
-        return null;
+        return ThreadsSubsystemElement.class;
     }
 
     @Override
