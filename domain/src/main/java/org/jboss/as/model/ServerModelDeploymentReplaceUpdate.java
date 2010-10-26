@@ -22,14 +22,12 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 /**
 * Update used when updating a deployment element to be started.
 *
 * @author Brian Stansberry
 */
-public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String newDeployment;
@@ -93,7 +91,7 @@ public class ServerModelDeploymentReplaceUpdate extends AbstractServerModelUpdat
 
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (deploymentElement != null) {
             startStopHandler.redeploy(newDeployment, deploymentElement.getRuntimeName(), deploymentElement.getSha1Hash(),
                     updateContext.getServiceContainer(), resultHandler, param);

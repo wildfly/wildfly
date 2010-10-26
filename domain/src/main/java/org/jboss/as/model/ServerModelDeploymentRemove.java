@@ -22,15 +22,13 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 /**
  * Update to a standalone element to remove a deployment.
  *
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = -3612085673646053177L;
 
     private final String deploymentName;
@@ -55,7 +53,7 @@ public class ServerModelDeploymentRemove extends AbstractServerModelUpdate<Serve
 
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);
         }

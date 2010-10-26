@@ -27,7 +27,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVir
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.UUID;
 import java.util.jar.Manifest;
 
 import org.jboss.as.deployment.DeploymentFailureListener;
@@ -36,9 +35,6 @@ import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-import org.jboss.as.deployment.client.api.server.SimpleServerDeploymentActionResult;
-import org.jboss.as.deployment.client.api.server.ServerUpdateActionResult.Result;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
@@ -70,7 +66,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
 
 
     <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             BatchBuilder batchBuilder = serviceContainer.batchBuilder();
             deploy(deploymentName, runtimeName, deploymentHash, batchBuilder, serviceContainer, resultHandler, param);
@@ -83,7 +79,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
 
     <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
             final BatchBuilder batchBuilder, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             // Add a listener so we can get ahold of the DeploymentService
@@ -97,7 +93,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
     }
 
     <P> void redeploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
-            final ServiceContainer serviceContainer, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final ServiceContainer serviceContainer, final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             @SuppressWarnings("unchecked")
@@ -129,7 +125,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
     }
 
     <P> void undeploy(final String deploymentName, final ServiceContainer serviceContainer,
-            final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+            final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
             @SuppressWarnings("unchecked")
@@ -139,8 +135,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
                 controller.setMode(ServiceController.Mode.REMOVE);
             }
             else if (resultHandler != null) {
-                SimpleServerDeploymentActionResult result = (param instanceof UUID) ? new SimpleServerDeploymentActionResult((UUID) param, Result.EXECUTED) : null;
-                resultHandler.handleSuccess(result, param);
+                resultHandler.handleSuccess(null, param);
             }
         }
         catch (RuntimeException e) {
@@ -229,10 +224,10 @@ class ServerDeploymentStartStopHandler implements Serializable {
 
     private abstract static class AbstractDeploymentServiceTracker<P> extends AbstractServiceListener<Object> {
 
-        protected final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler;
+        protected final UpdateResultHandler<?, P> resultHandler;
         protected final P param;
 
-        protected AbstractDeploymentServiceTracker(final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler,
+        protected AbstractDeploymentServiceTracker(final UpdateResultHandler<?, P> resultHandler,
                 final P param) {
             this.resultHandler = resultHandler;
             this.param = param;
@@ -249,11 +244,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         }
 
         protected void recordResult(ServiceController<? extends Object> controller) {
-            // FIXME UpdateResultHandler should take ServiceName as result type
-            SimpleServerDeploymentActionResult result =
-                (param instanceof UUID) ? new SimpleServerDeploymentActionResult((UUID) param, Result.EXECUTED)
-                                        : null;
-            resultHandler.handleSuccess(result, param);
+            resultHandler.handleSuccess(null, param);
             // Ignore any further notifications
             controller.removeListener(this);
         }
@@ -267,7 +258,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         private final ServiceName deploymentServiceName;
 
         private DeploymentServiceTracker(final ServiceName deploymentServiceName,
-                final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+                final UpdateResultHandler<?, P> resultHandler, final P param) {
             super(resultHandler, param);
             assert deploymentServiceName != null : "deploymentServiceName is null";
             this.deploymentServiceName = deploymentServiceName;
@@ -292,7 +283,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         private final String deploymentName;
 
         private UndeploymentServiceTracker(final String deploymentName,
-                final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+                final UpdateResultHandler<?, P> resultHandler, final P param) {
             super(resultHandler, param);
             this.deploymentName = deploymentName;
         }

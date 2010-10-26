@@ -32,7 +32,7 @@ import org.jboss.as.deployment.client.api.server.ServerUpdateActionResult.Result
 * @author John E. Bailey
 * @author Brian Stansberry
 */
-public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final ServerDeploymentStartStopHandler startStopHandler;
@@ -73,7 +73,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
     }
 
     @Override
-    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, final P param) {
+    public <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         // TODO using the deploymentElement cached in the model update method
         // has a bad smell
         if (deploymentElement != null) {
@@ -86,7 +86,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
             }
         }
         else if (resultHandler != null) {
-            resultHandler.handleSuccess(new SimpleServerDeploymentActionResult(null, Result.EXECUTED), param);
+            resultHandler.handleSuccess(null, param);
         }
     }
 }

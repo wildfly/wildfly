@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 
 /**
  * Update used when replacing a deployment in a server group with another deployment.
@@ -31,7 +29,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
  *
  * @author Brian Stansberry
  */
-public class ServerGroupDeploymentReplaceUpdate extends AbstractModelUpdate<ServerGroupElement, ServerDeploymentActionResult> {
+public class ServerGroupDeploymentReplaceUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String uniqueName;

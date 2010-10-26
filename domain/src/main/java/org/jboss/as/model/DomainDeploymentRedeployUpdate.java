@@ -28,15 +28,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 /**
  * Add a deployment to the domain and replace all occurences of an earlier
  * version of the same deployment.
  *
  * @author Brian Stansberry
  */
-public final class DomainDeploymentRedeployUpdate extends AbstractDomainModelUpdate<ServerDeploymentActionResult> {
+public final class DomainDeploymentRedeployUpdate extends AbstractDomainModelUpdate<Void> {
 
     private static final long serialVersionUID = -9076890219875153928L;
 

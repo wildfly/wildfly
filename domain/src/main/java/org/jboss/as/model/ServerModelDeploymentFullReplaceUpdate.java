@@ -29,7 +29,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 *
 * @author Brian Stansberry
 */
-public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelUpdate<Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 //    private static final Logger log = Logger.getLogger("org.jboss.as.model");
 
@@ -68,7 +68,7 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
 
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (redeploy) {
             ServerDeploymentStartStopHandler startStopHandler = new ServerDeploymentStartStopHandler();
             startStopHandler.redeploy(deploymentUniqueName, deploymentRuntimeName, hash, updateContext.getServiceContainer(), resultHandler, param);

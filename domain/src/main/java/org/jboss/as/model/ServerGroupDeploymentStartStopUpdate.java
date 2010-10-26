@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 
 /**
  * Update used when updating a deployment element to be started or stopped.
@@ -31,7 +29,7 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<ServerGroupElement, ServerDeploymentActionResult> {
+public class ServerGroupDeploymentStartStopUpdate extends AbstractModelUpdate<ServerGroupElement, Void> {
     private static final long serialVersionUID = 5773083013951607950L;
 
     private final String deploymentUnitName;

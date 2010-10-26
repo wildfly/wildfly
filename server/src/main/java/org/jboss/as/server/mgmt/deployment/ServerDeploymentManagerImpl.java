@@ -294,7 +294,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
      * @param resultHandler the handler for the result of the action
      * @param overallUpdate the overall update
      */
-    private void addServerGroupDeploymentUpdate(DeploymentActionImpl action, UpdateResultHandler<? super ServerDeploymentActionResult, UUID> resultHandler, final ServerUpdateController controller) {
+    private void addServerGroupDeploymentUpdate(DeploymentActionImpl action, UpdateResultHandler<Object, UUID> resultHandler, final ServerUpdateController controller) {
 
         switch (action.getType()) {
             case ADD: {
@@ -369,10 +369,12 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
 
         private final SimpleFuture<ServerDeploymentPlanResult> future;
         private final DeploymentPlan plan;
+        private final Result successResult;
 
         private UpdateResultHandlerImpl(final SimpleFuture<ServerDeploymentPlanResult> future, final DeploymentPlan plan) {
             this.future = future;
             this.plan = plan;
+            this.successResult = (plan.isGracefulShutdown() || plan.isShutdown()) ? Result.CONFIGURATION_MODIFIED_REQUIRES_RESTART : Result.EXECUTED;
         }
 
         @Override
@@ -421,12 +423,7 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         @Override
         public void handleSuccess(Object result, UUID param) {
             synchronized (updateResults) {
-                if (result instanceof ServerDeploymentActionResult) {
-                    updateResults.put(param, (ServerDeploymentActionResult) result);
-                }
-                else {
-                    updateResults.put(param, new SimpleServerDeploymentActionResult(param, Result.EXECUTED));
-                }
+                updateResults.put(param, new SimpleServerDeploymentActionResult(param, successResult));
             }
         }
 

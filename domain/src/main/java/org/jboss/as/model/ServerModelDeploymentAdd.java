@@ -24,15 +24,13 @@ package org.jboss.as.model;
 
 import java.util.Arrays;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-
 /**
  * Update to the ServerModel element to add a new deployment.
  *
  * @author John E. Bailey
  * @author Brian Stansberry
  */
-public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDeploymentActionResult> {
+public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<Void> {
 
     private static final long serialVersionUID = -5804608026829597800L;
 
@@ -73,7 +71,7 @@ public class ServerModelDeploymentAdd extends AbstractServerModelUpdate<ServerDe
 
     @Override
     public <P> void applyUpdate(UpdateContext updateContext,
-            UpdateResultHandler<? super ServerDeploymentActionResult, P> resultHandler, P param) {
+            UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);
         }

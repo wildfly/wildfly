@@ -37,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.deployment.DeploymentAction;
@@ -378,11 +377,11 @@ public class DomainDeploymentHandler {
         return new DeploymentSetUpdates(actionUpdates, plan);
     }
 
-    private static void addServerGroupUpdates(final DeploymentSetPlan plan, final ActionUpdates au, final AbstractModelUpdate<ServerGroupElement, ServerDeploymentActionResult> serverGroupUpdate) {
+    private static void addServerGroupUpdates(final DeploymentSetPlan plan, final ActionUpdates au, final AbstractModelUpdate<ServerGroupElement, ?> serverGroupUpdate) {
         AbstractServerModelUpdate<?> smu = null;
         for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
             for (ServerGroupDeploymentPlan sgdp : ssgp) {
-                AbstractDomainModelUpdate<?> dmu = new DomainServerGroupUpdate<ServerDeploymentActionResult>(sgdp.getServerGroupName(), serverGroupUpdate);
+                AbstractDomainModelUpdate<?> dmu = DomainServerGroupUpdate.create(sgdp.getServerGroupName(), serverGroupUpdate);
                 au.domainUpdates.add(dmu);
                 if (smu == null) {
                     smu = dmu.getServerModelUpdate();
