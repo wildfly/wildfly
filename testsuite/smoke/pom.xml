@@ -49,21 +49,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
                     <excludes>
                         <exclude>**/BatchFailuresUnitTestCase.java</exclude>
                     </excludes>
+                    <enableAssertions>false</enableAssertions>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     
     <dependencies>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
-    
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-server</artifactId>
+        <version>${project.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
 
 </project>
