@@ -21,20 +21,17 @@
  */
 package org.jboss.as.demos;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
@@ -42,6 +39,10 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
+import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,15 +60,20 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 public class DeploymentUtils {
 
     private final List<Deployment> deployments = new ArrayList<Deployment>();
+    private final StandaloneClient client;
 
-    public DeploymentUtils() {
+
+    public DeploymentUtils() throws UnknownHostException {
+        client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
     }
 
-    public DeploymentUtils(String archiveName, Package pkg) {
+    public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
+        this();
         addDeployment(archiveName, pkg);
     }
 
-    public DeploymentUtils(String archiveName, Package pkg, boolean show) {
+    public DeploymentUtils(String archiveName, Package pkg, boolean show) throws UnknownHostException {
+        this();
         addDeployment(archiveName, pkg, show);
     }
 
@@ -79,7 +85,7 @@ public class DeploymentUtils {
         deployments.add(new Deployment(archiveName, pkg, show));
     }
 
-    public synchronized void deploy() throws IOException {
+    public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         for (Deployment deployment : deployments) {
             deployment.deploy();
         }
@@ -118,13 +124,13 @@ public class DeploymentUtils {
         return (String)getConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
     }
 
-    private static class Deployment {
+    private class Deployment {
         final String archiveName;
         final Package pkg;
         final JavaArchive archive;
         final File realArchive;
 
-        File deployedArchive;
+        String deployment;
 
         public Deployment(String archiveName, Package pkg, boolean show) {
             this.archiveName = archiveName;
@@ -155,57 +161,15 @@ public class DeploymentUtils {
             }
         }
 
-        public synchronized void deploy() throws IOException {
-            File file = realArchive.getParentFile().getParentFile().getParentFile().getParentFile();
-            file = new File(file, "build");
-            file = new File(file, "target");
-            file = new File(file, "standalone");
-            file = new File(file, "deployments");
-
-            if (!file.exists()) {
-                throw new IllegalStateException("Deploy directory " + file + " does not exist");
-            }
-
-            deployedArchive = new File(file, archiveName);
-            if (deployedArchive.exists()) {
-                deployedArchive.delete();
-            }
-
-            System.out.println("Deploying " + realArchive + " to " + deployedArchive);
-            InputStream in = null;
-            OutputStream out = null;
-
-            try {
-                in = new BufferedInputStream(new FileInputStream(realArchive));
-                out = new BufferedOutputStream(new FileOutputStream(deployedArchive));
-
-                int i = in.read();
-                while (i != -1) {
-                    out.write(i);
-                    i = in.read();
-                }
-                out.flush();
-            } finally {
-                close(in);
-                close(out);
-            }
+        public synchronized void deploy() throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
+            ServerDeploymentManager manager = client.getDeploymentManager();
+            deployment = manager.addDeploymentContent(realArchive);
+            ServerDeploymentPlanResult result = manager.execute(manager.newDeploymentPlan().add(deployment, realArchive).deploy(deployment).build()).get();
         }
 
         public synchronized void undeploy() {
-            if (deployedArchive == null) {
-                throw new IllegalStateException(archiveName + " is not deployed");
-            }
-            if (deployedArchive.exists()) {
-                System.out.println("Undeploying " + deployedArchive);
-                deployedArchive.delete();
-            } else {
-                File file = new File(deployedArchive.getParentFile(), deployedArchive.getName() + ".deployed");
-                if (file.exists()) {
-                    System.out.println("Undeploying " + file);
-                    file.delete();
-                }
-            }
-            deployedArchive = null;
+            ServerDeploymentManager manager = client.getDeploymentManager();
+            manager.execute(manager.newDeploymentPlan().undeploy(deployment).remove(deployment).build());
         }
 
         private File getSourceMetaInfDir() {

@@ -76,5 +76,9 @@ public class __TestStandaloneClient {
         System.out.println("Deployment result:" + deploymentResult);
         System.out.println("Contained deployment result:" + deploymentResult.get());
 
+        Thread.sleep(3000);
+
+        manager.execute(manager.newDeploymentPlan().undeploy(deployment).remove(deployment).build());
+
     }
 }
