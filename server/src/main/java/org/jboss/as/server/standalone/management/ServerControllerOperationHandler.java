@@ -22,26 +22,42 @@
 
 package org.jboss.as.server.standalone.management;
 
-import java.io.IOException;
-import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.readByte;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
+import org.jboss.as.deployment.client.api.server.DeploymentPlan;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
+import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
+import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
-import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
-import static org.jboss.marshalling.Marshalling.createByteOutput;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.jboss.as.protocol.Connection;
 import org.jboss.as.server.ServerController;
+import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
+import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -56,7 +72,12 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     private static final MarshallingConfiguration CONFIG;
     static {
         CONFIG = new MarshallingConfiguration();
-        CONFIG.setClassResolver(new SimpleClassResolver(ServerControllerOperationHandler.class.getClassLoader()));
+        try {
+            final ClassLoader cl = Module.getModuleFromCurrentLoader(ModuleIdentifier.create("org.jboss.as.aggregate")).getClassLoader();
+            CONFIG.setClassResolver(new SimpleClassResolver(cl));
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static final Logger log = Logger.getLogger("org.jboss.server.management");
@@ -66,6 +87,7 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     private final InjectedValue<ServerController> serverControllerValue = new InjectedValue<ServerController>();
 
     private ServerController serverController;
+    private ServerDeploymentManager deploymentManager;
 
     InjectedValue<ServerController> getServerControllerInjector() {
         return serverControllerValue;
@@ -116,11 +138,11 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
             case StandaloneClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
                 return null;
             case StandaloneClientProtocol.APPLY_UPDATES_REQUEST:
-                return null;
+                return new ApplyUpdates();
             case StandaloneClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST:
                 return null;
             case StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
-                return null;
+                return new ExecuteDeploymentPlanOperation();
             default:
                 return null;
         }
@@ -142,7 +164,143 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         }
     }
 
+
+    private class ApplyUpdates extends ManagementResponse {
+        private List<AbstractServerModelUpdate<?>> updates;
+
+        /** {@inheritDoc} */
+        protected byte getResponseCode() {
+            return StandaloneClientProtocol.APPLY_UPDATES_RESPONSE;
+        }
+
+        /** {@inheritDoc} */
+        protected void readRequest(InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            int count = unmarshaller.readInt();
+            updates = new ArrayList<AbstractServerModelUpdate<?>>();
+            for (int i = 0; i < count; i++) {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+                final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
+                updates.add(update);
+            }
+            unmarshaller.finish();
+        }
+
+        /** {@inheritDoc} */
+        protected void sendResponse(OutputStream output) throws IOException {
+            List<ResultHandler<?, Void>> results = new ArrayList<ResultHandler<?, Void>>(updates.size());
+            for(final AbstractServerModelUpdate<?> update : updates) {
+                results.add(processUpdate(update));
+            }
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+            marshaller.writeInt(results.size());
+            for(ResultHandler<?, Void> result : results) {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+                if(result.e != null) {
+                    marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                    marshaller.writeObject(result.e);
+                } else {
+                    marshaller.writeByte(StandaloneClientProtocol.APPLY_UPDATE_RESULT_SERVER_MODEL_SUCCESS);
+                    marshaller.writeObject(result.result);
+                }
+            }
+            marshaller.finish();
+        }
+
+        private <T> ResultHandler<T, Void> processUpdate(AbstractServerModelUpdate<T> update) {
+            ResultHandler<T, Void> handler = new ResultHandler<T, Void>();
+            serverController.update(update, handler, null);
+            return handler;
+        }
+
+    }
+
+    private class ExecuteDeploymentPlanOperation extends ManagementResponse {
+        private DeploymentPlan deploymentPlan;
+
+        @Override
+        protected final byte getResponseCode() {
+            return StandaloneClientProtocol.EXECUTE_DEPLOYMENT_PLAN_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
+            deploymentPlan = unmarshal(unmarshaller, DeploymentPlan.class);
+            unmarshaller.finish();
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream output) throws IOException {
+            final Future<ServerDeploymentPlanResult> result = deploymentManager.execute(deploymentPlan);
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+            try {
+                marshaller.writeObject(result.get());
+            } catch (Exception e) {
+                throw new ManagementException("Failed get deployment plan result.", e);
+            }
+            marshaller.finish();
+        }
+    }
+
     private static Marshaller getMarshaller() throws IOException {
         return ProtocolUtils.getMarshaller(CONFIG);
     }
+
+    private static Unmarshaller getUnmarshaller() throws IOException {
+        return ProtocolUtils.getUnmarshaller(CONFIG);
+    }
+
+    private class ResultHandler<R, P> implements UpdateResultHandler<R, P> {
+
+        R result;
+        UpdateFailedException e;
+
+        /** {@inheritDoc} */
+        public void handleSuccess(R result, P param) {
+            this.result = result;
+        }
+        /** {@inheritDoc} */
+        public void handleFailure(Throwable cause, P param) {
+            if(cause instanceof UpdateFailedException) {
+                e = (UpdateFailedException) cause;
+            } else {
+                e = new UpdateFailedException(cause);
+            }
+        }
+        /** {@inheritDoc} */
+        public void handleCancellation(P param) {
+            //
+        }
+        /** {@inheritDoc} */
+        public void handleTimeout(P param) {
+            //
+        }
+        /** {@inheritDoc} */
+        public void handleRollbackSuccess(P param) {
+            //
+        }
+        /** {@inheritDoc} */
+        public void handleRollbackFailure(Throwable cause, P param) {
+            //
+        }
+        /** {@inheritDoc} */
+        public void handleRollbackCancellation(P param) {
+            //
+        }
+        /** {@inheritDoc} */
+        public void handleRollbackTimeout(P param) {
+            //
+        }
+
+    }
+
 }

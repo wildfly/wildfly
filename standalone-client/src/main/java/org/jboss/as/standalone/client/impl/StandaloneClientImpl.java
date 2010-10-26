@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -91,7 +92,7 @@ public class StandaloneClientImpl implements StandaloneClient {
     }
 
     /** {@inheritDoc} */
-    public StandaloneUpdateResult<?> applyUpdates(List<AbstractServerModelUpdate<?>> updates) {
+    public List<StandaloneUpdateResult<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates) {
         try {
             return new ApplyUpdatesOperation(updates).executeForResult();
         } catch (Exception e) {
@@ -162,7 +163,7 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
     }
 
-    private class ApplyUpdatesOperation extends StandaloneClientRequest<StandaloneUpdateResult<Object>> {
+    private class ApplyUpdatesOperation extends StandaloneClientRequest<List<StandaloneUpdateResult<?>>> {
         private final List<AbstractServerModelUpdate<?>> updates;
         public ApplyUpdatesOperation(List<AbstractServerModelUpdate<?>> updates) {
             this.updates = updates;
@@ -192,18 +193,24 @@ public class StandaloneClientImpl implements StandaloneClient {
         }
 
         /** {@inheritDoc} */
-        protected StandaloneUpdateResult<Object> receiveResponse(InputStream input) throws IOException {
+        protected List<StandaloneUpdateResult<?>> receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
             expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-            byte resultCode = unmarshaller.readByte();
-            if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                final UpdateFailedException failure = unmarshal(unmarshaller, UpdateFailedException.class);
-                return new StandaloneUpdateResult<Object>(null, failure);
-            } else {
-                final Object result = unmarshal(unmarshaller, Object.class);
-                return new StandaloneUpdateResult<Object>(result, null);
+            final int updateCount = unmarshaller.readInt();
+            List<StandaloneUpdateResult<?>> results = new ArrayList<StandaloneUpdateResult<?>>();
+            for (int i = 0; i < updateCount; i++) {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+                byte resultCode = unmarshaller.readByte();
+                if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                    final UpdateFailedException failure = unmarshal(unmarshaller, UpdateFailedException.class);
+                    results.add(new StandaloneUpdateResult<Object>(null, failure));
+                } else {
+                    final Object result = unmarshal(unmarshaller, Object.class);
+                    results.add(new StandaloneUpdateResult<Object>(result, null));
+                }
             }
+            return results;
         }
     }
 

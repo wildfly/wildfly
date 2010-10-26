@@ -53,7 +53,7 @@ public interface StandaloneClient {
      * @param updates The server updates to apply
      * @return The results of the update
      */
-    StandaloneUpdateResult<?> applyUpdates(List<AbstractServerModelUpdate<?>> updates);
+    List<StandaloneUpdateResult<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates);
 
     /**
      * Add the content for a deployment to the server.

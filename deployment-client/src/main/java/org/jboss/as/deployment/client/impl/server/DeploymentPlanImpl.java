@@ -38,6 +38,7 @@ import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
  */
 public class DeploymentPlanImpl implements DeploymentPlan {
 
+    private static final long serialVersionUID = -119621318892470668L;
     private final UUID uuid = UUID.randomUUID();
     private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
     private final boolean globalRollback;

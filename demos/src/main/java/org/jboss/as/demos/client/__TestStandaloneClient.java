@@ -23,11 +23,16 @@ package org.jboss.as.demos.client;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
+import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.PathElementUpdate;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.ServerPathAdd;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 
 /**
@@ -42,6 +47,12 @@ public class __TestStandaloneClient {
         System.out.println("Created client, getting model...");
         ServerModel model = client.getServerModel();
         System.out.println("Got model " + model);  //Why is this null?
+
+
+        List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
+        updates.add(new ServerPathAdd(new PathElementUpdate("org.jboss.test", "/home/emuckenh/Downloads", null)));
+        client.applyUpdates(updates);
+
         System.out.println("Created client, getting dm...");
         ServerDeploymentManager manager = client.getDeploymentManager();
         System.out.println("Got manager " + manager);

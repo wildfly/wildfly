@@ -21,6 +21,7 @@
  */
 package org.jboss.as.deployment.client.api.server;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ import org.jboss.as.deployment.client.api.DeploymentAction;
  *
  * @author Brian Stansberry
  */
-public interface DeploymentPlan {
+public interface DeploymentPlan extends Serializable {
 
     /**
      * Gets the unique id of the plan.
