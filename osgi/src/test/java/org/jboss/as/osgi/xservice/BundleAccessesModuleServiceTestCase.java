@@ -182,8 +182,6 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
     }
 
     private void registerTargetService(final ModuleIdentifier moduleId) throws Exception {
-        assertLoadClass(moduleId, Echo.class.getName());
-        assertLoadClass(moduleId, EchoTargetService.class.getName());
         BatchedWork work = new BatchedWork() {
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {
