@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
@@ -33,7 +31,6 @@ import javax.naming.spi.ObjectFactory;
 import static org.jboss.as.naming.util.NamingUtils.asReference;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class
@@ -42,6 +39,11 @@ import org.jboss.modules.ModuleIdentifier;
  * @author John Bailey
  */
 public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuilder, ObjectFactory {
+
+    public static final ObjectFactoryBuilder INSTANCE = new ObjectFactoryBuilder();
+
+    private ObjectFactoryBuilder() {
+    }
 
     /**
      * Create an object factory.  If the object parameter is a reference it will attempt to create an {@link javax.naming.spi.ObjectFactory}
@@ -54,8 +56,11 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
      * @throws NamingException If any problems occur
      */
     public ObjectFactory createObjectFactory(final Object obj, Hashtable<?, ?> environment) throws NamingException {
-        if (obj instanceof Reference) {
-            return factoryFromReference(asReference(obj), environment);
+        try {
+            if (obj instanceof Reference) {
+                return factoryFromReference(asReference(obj), environment);
+            }
+        } catch(Throwable ignored) {
         }
         return this;
     }
@@ -63,23 +68,34 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     /**
      * Create an object instance.
      *
-     * @param obj Object containing reference information
+     * @param ref Object containing reference information
      * @param name The name relative to nameCtx
      * @param nameCtx The naming context
      * @param environment The environment information
      * @return The object
      * @throws Exception If any error occur
      */
-    public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final  Hashtable<?, ?> environment) throws Exception {
-        // TODO support URL references
+    public Object getObjectInstance(final Object ref, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
+        ClassLoader classLoader;
+        if(ref instanceof ReferenceWithClassLoader) {
+            classLoader = ReferenceWithClassLoader.class.cast(ref).getBindingLoader();
+        } else {
+            classLoader = getClassLoader();
+        }
+        Object result = getObjectInstanceFromFactories(ref, name, nameCtx, environment, classLoader);
+        if(result == null) {
+            result = ref;
+        }
+        return result;
+    }
 
+    private Object getObjectInstanceFromFactories(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment, final ClassLoader classLoader) {
         final String factoriesProp = (String)environment.get(Context.OBJECT_FACTORIES);
         if(factoriesProp != null) {
-            final ClassLoader contextCl = getContextClassLoader();
             final String[] classes = factoriesProp.split(":");
             for(String className : classes) {
                 try {
-                    final Class<?> factoryClass = contextCl.loadClass(className);
+                    final Class<?> factoryClass = classLoader.loadClass(className);
                     final ObjectFactory objectFactory = ObjectFactory.class.cast(factoryClass.newInstance());
                     final Object result = objectFactory.getObjectInstance(obj, name, nameCtx, environment);
                     if(result != null) {
@@ -89,40 +105,54 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
                 }
             }
         }
-        return obj;
+        return null;
     }
 
-    private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws NamingException {
+    private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {
         if (reference instanceof ModularReference) {
-            return factoryFromModularReference(ModularReference.class.cast(reference));
+            return factoryFromModularReference(ModularReference.class.cast(reference), environment);
+        } else if(reference instanceof ReferenceWithClassLoader) {
+                return factoryFromReferenceClassLoader(ReferenceWithClassLoader.class.cast(reference), environment);
         }
-        final ClassLoader contextCl = getContextClassLoader();
-        Class<?> factoryClass = null;
-        try {
-            factoryClass = contextCl.loadClass(reference.getFactoryClassName());
-            return ObjectFactory.class.cast(factoryClass.newInstance());
-        } catch (Throwable ignored) {
-        }
-        return this;
+        return factoryFromReference(reference, getClassLoader(), environment);
     }
 
-    private ObjectFactory factoryFromModularReference(ModularReference modularReference) throws NamingException {
+    private ObjectFactory factoryFromModularReference(ModularReference modularReference, final Hashtable<?, ?> environment) throws Exception {
+        final Module module = Module.getCurrentModuleLoader().loadModule(modularReference.getModuleIdentifier());
+        final ClassLoader classLoader = module.getClassLoader();
+        return factoryFromReference(modularReference, classLoader, environment);
+    }
+
+    private ObjectFactory factoryFromReference(final Reference reference, final ClassLoader classLoader, final Hashtable<?, ?> environment) throws Exception {
         try {
-            final Module module = Module.getCurrentModuleLoader().loadModule(modularReference.getModuleIdentifier());
-            final Class<?> factoryClass = module.getClassLoader().loadClass(modularReference.getFactoryClassName());
+            final Class<?> factoryClass = classLoader.loadClass(reference.getFactoryClassName());
             return ObjectFactory.class.cast(factoryClass.newInstance());
         } catch (Throwable t) {
-            throw namingException("Failed to create object factory from modular reference.", t);
+            throw namingException("Failed to create object factory from classloader.", t);
         }
     }
 
-    private ClassLoader getContextClassLoader() {
-        return AccessController.doPrivileged(
-            new PrivilegedAction<ClassLoader>() {
-                public ClassLoader run() {
-                    return Thread.currentThread().getContextClassLoader();
-                }
-            }
-        );
+    private ObjectFactory factoryFromReferenceClassLoader(final ReferenceWithClassLoader referenceWithClassLoader, final Hashtable<?, ?> environment) throws Exception {
+        return new ReferenceClassLoaderFactory(factoryFromReference(referenceWithClassLoader, referenceWithClassLoader.getBindingLoader(), environment));
+    }
+
+    private ClassLoader getClassLoader() {
+        ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        if(classLoader == null) {
+            classLoader = SecurityActions.getCallingClassLoader();
+        }
+        return classLoader;
+    }
+
+    private static class ReferenceClassLoaderFactory implements ObjectFactory {
+        final ObjectFactory actualFactory;
+
+        private ReferenceClassLoaderFactory(ObjectFactory actualFactory) {
+            this.actualFactory = actualFactory;
+        }
+
+        public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+            return actualFactory.getObjectInstance(obj, name, nameCtx, environment);
+        }
     }
 }

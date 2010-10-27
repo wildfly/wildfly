@@ -22,6 +22,11 @@
 
 package org.jboss.as.naming;
 
+import javax.naming.spi.ObjectFactory;
+import static org.jboss.as.naming.SecurityActions.getContextClassLoader;
+import org.jboss.as.naming.context.ModularReference;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.context.ReferenceWithClassLoader;
 import org.jboss.as.naming.util.NameParser;
 import org.jboss.as.naming.util.NamingUtils;
 
@@ -51,6 +56,7 @@ import static org.jboss.as.naming.util.NamingUtils.isEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+import org.jboss.logging.Logger;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.
@@ -58,6 +64,8 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
  * @author John E. Bailey
  */
 public class NamingContext implements EventContext {
+    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
+
     /*
      * The active naming store to use for any context created without a name store.
      */
@@ -70,6 +78,28 @@ public class NamingContext implements EventContext {
      */
     public static void setActiveNamingStore(final NamingStore namingStore) {
         ACTIVE_NAMING_STORE = namingStore;
+    }
+
+    private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
+
+    /**
+     * Initialize the naming components required by {@link javax.naming.spi.NamingManager}.
+     */
+    public static void initializeNamingManager() {
+        // Setup naming environment
+        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+        try {
+            //If we are reusing the JVM. e.g. in tests we should not set this again
+            if (!NamingManager.hasInitialContextFactoryBuilder())
+                NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+        } catch (NamingException e) {
+            log.warn("Failed to set InitialContextFactoryBuilder", e);
+        }
+        try {
+            NamingManager.setObjectFactoryBuilder(ObjectFactoryBuilder.INSTANCE);
+        } catch(Throwable t) {
+            log.warn("Failed to set ObjectFactoryBuilder", t);
+        }
     }
 
     /* The name parser */
@@ -184,7 +214,9 @@ public class NamingContext implements EventContext {
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = asReference(object).getClassName();
+            final Reference reference = asReference(object);
+            className = reference.getClassName();
+            object = getReferenceBindObject(reference);
         }
         try {
             namingStore.bind(this, absoluteName, object, className);
@@ -209,7 +241,9 @@ public class NamingContext implements EventContext {
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            className = asReference(object).getClassName();
+            final Reference reference = asReference(object);
+            className = reference.getClassName();
+            object = getReferenceBindObject(reference);
         }
         try {
             namingStore.rebind(this, absoluteName, object, className);
@@ -427,12 +461,25 @@ public class NamingContext implements EventContext {
 
     private Object getObjectInstance(final Object object, final Name name, final Hashtable environment) throws NamingException {
         try {
-            return NamingManager.getObjectInstance(object, name, this, environment);
+            final ObjectFactoryBuilder factoryBuilder = ObjectFactoryBuilder.INSTANCE;
+            final ObjectFactory objectFactory = factoryBuilder.createObjectFactory(object, environment);
+            return objectFactory.getObjectInstance(object, name, this, environment);
         } catch(NamingException e) {
             throw e;
         } catch(Throwable t) {
             throw namingException("Could not dereference object", t);
         }
+    }
+
+    private Object getReferenceBindObject(final Reference reference) {
+        if(reference instanceof LinkRef || reference instanceof ModularReference) {
+            return reference;
+        }
+        ClassLoader classLoader = getContextClassLoader();
+        if(classLoader == null) {
+            classLoader = SecurityActions.getCallingClass().getClassLoader();
+        }
+        return new ReferenceWithClassLoader(reference, classLoader);
     }
 
     private Object resolveLink(Object result) throws NamingException {

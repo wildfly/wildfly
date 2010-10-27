@@ -26,6 +26,7 @@ import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.naming.InitialContextFactoryBuilder;
+import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.logging.Logger;
@@ -50,27 +51,12 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
         super(NamingExtension.NAMESPACE);
     }
 
-    private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
-
     private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         log.info("Activating Naming Subsystem");
 
-        // Setup naming environment
-        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
-        try {
-            //If we are reusing the JVM. e.g. in tests we should not set this again
-            if (!NamingManager.hasInitialContextFactoryBuilder())
-                NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
-        } catch (NamingException e) {
-            log.warn("Failed to set InitialContextFactoryBuilder", e);
-        }
-        try {
-            NamingManager.setObjectFactoryBuilder(new ObjectFactoryBuilder());
-        } catch(Throwable t) {
-            log.warn("Failed to set ObjectFactoryBuilder", t);
-        }
+        NamingContext.initializeNamingManager();
 
         // Create the Naming Service
         final BatchBuilder builder = updateContext.getBatchBuilder();

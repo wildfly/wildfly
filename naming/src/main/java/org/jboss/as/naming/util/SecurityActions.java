@@ -1,0 +1,175 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.as.naming.util;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import javax.naming.InitialContext;
+import org.jboss.as.naming.NamingContext;
+
+/**
+ * Package privileged actions
+ *
+ * @author Scott.Stark@jboss.org
+ * @author Jason T. Greene
+ * @author John E. Bailey
+ * @version $Id $
+ */
+public class SecurityActions {
+    private interface TCLAction {
+        class UTIL {
+            static TCLAction getTCLAction() {
+                return System.getSecurityManager() == null ? NON_PRIVILEGED : PRIVILEGED;
+            }
+
+            static ClassLoader getContextClassLoader() {
+                return getTCLAction().getContextClassLoader();
+            }
+
+            static ClassLoader getContextClassLoader(Thread thread) {
+                return getTCLAction().getContextClassLoader(thread);
+            }
+
+            static void setContextClassLoader(ClassLoader cl) {
+                getTCLAction().setContextClassLoader(cl);
+            }
+
+            static void setContextClassLoader(Thread thread, ClassLoader cl) {
+                getTCLAction().setContextClassLoader(thread, cl);
+            }
+        }
+
+        TCLAction NON_PRIVILEGED = new TCLAction() {
+            public ClassLoader getContextClassLoader() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+
+            public ClassLoader getContextClassLoader(Thread thread) {
+                return thread.getContextClassLoader();
+            }
+
+            public void setContextClassLoader(ClassLoader cl) {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
+
+            public void setContextClassLoader(Thread thread, ClassLoader cl) {
+                thread.setContextClassLoader(cl);
+            }
+        };
+
+        TCLAction PRIVILEGED = new TCLAction() {
+            private final PrivilegedAction<ClassLoader> getTCLPrivilegedAction = new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            };
+
+            public ClassLoader getContextClassLoader() {
+                return AccessController.doPrivileged(getTCLPrivilegedAction);
+            }
+
+            public ClassLoader getContextClassLoader(final Thread thread) {
+                return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                    public ClassLoader run() {
+                        return thread.getContextClassLoader();
+                    }
+                });
+            }
+
+            public void setContextClassLoader(final ClassLoader cl) {
+                AccessController.doPrivileged(
+                        new PrivilegedAction<ClassLoader>() {
+                            public ClassLoader run() {
+                                Thread.currentThread().setContextClassLoader(cl);
+                                return null;
+                            }
+                        }
+                );
+            }
+
+            public void setContextClassLoader(final Thread thread, final ClassLoader cl) {
+                AccessController.doPrivileged(
+                        new PrivilegedAction<ClassLoader>() {
+                            public ClassLoader run() {
+                                thread.setContextClassLoader(cl);
+                                return null;
+                            }
+                        }
+                );
+            }
+        };
+
+        ClassLoader getContextClassLoader();
+
+        ClassLoader getContextClassLoader(Thread thread);
+
+        void setContextClassLoader(ClassLoader cl);
+
+        void setContextClassLoader(Thread thread, ClassLoader cl);
+    }
+
+    private static final class Hack extends SecurityManager {
+        @Override
+        protected Class<?>[] getClassContext() {
+            return super.getClassContext();
+        }
+    }
+
+    private static Hack hack = AccessController.doPrivileged(new PrivilegedAction<Hack>() {
+        @Override
+        public Hack run() {
+            return new Hack();
+        }
+    });
+
+    protected static Class<?> getCallingClassProtected() {
+        final Class<?>[] stack = hack.getClassContext();
+        Class<?> current = null;
+        for (Class<?> aClass : stack) {
+            if (aClass != current) {
+                if (current == InitialContext.class)
+                    return aClass;
+                if (current == NamingContext.class && aClass != InitialContext.class)
+                    return aClass;
+                current = aClass;
+            }
+        }
+        return null;
+    }
+
+    public static ClassLoader getCallingClassLoaderProtected() {
+        final Class<?> callingClass = getCallingClassProtected();
+        if(callingClass != null) {
+            return callingClass.getClassLoader();
+        }
+        return null;
+    }
+
+    protected static ClassLoader getContextClassLoaderProtected() {
+        return TCLAction.UTIL.getContextClassLoader();
+    }
+
+    protected static void setContextClassLoaderProtected(ClassLoader loader) {
+        TCLAction.UTIL.setContextClassLoader(loader);
+    }
+}

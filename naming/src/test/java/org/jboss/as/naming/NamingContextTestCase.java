@@ -22,8 +22,11 @@
 
 package org.jboss.as.naming;
 
+import javax.naming.spi.NamingManager;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.naming.Binding;
@@ -55,6 +58,11 @@ import static org.junit.Assert.fail;
 public class NamingContextTestCase {
 
     private NamingContext namingContext;
+
+    @BeforeClass
+    public static void setupObjectFactoryBuilder() throws Exception {
+        NamingContext.initializeNamingManager();
+    }
 
     @Before
     public void setup() throws Exception {
