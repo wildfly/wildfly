@@ -235,6 +235,11 @@
                                             <exclude>org.jboss.logging:jboss-logging-log4j</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-jdk</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
+                                            <exclude>org.slf4j:slf4j-nop</exclude>
+                                            <exclude>org.slf4j:slf4j-jdk14</exclude>
+                                            <exclude>org.slf4j:slf4j-log4j12</exclude>
+                                            <exclude>org.slf4j:slf4j-log4j13</exclude>
+                                            <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
 
                                             <!-- JBAS-7558 Exclude older jboss-javaee artifacts -->
                                             <exclude>org.jboss.javaee:jboss-javaee</exclude>
@@ -1047,6 +1052,12 @@
                 <groupId>org.jboss.osgi.common</groupId>
                 <artifactId>jboss-osgi-common</artifactId>
                 <version>${version.org.jboss.osgi.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
