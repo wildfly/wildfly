@@ -44,6 +44,18 @@ public final class ConnectorServices {
 
     public static final ServiceName RESOURCE_ADAPTER_REGISTRY_SERVICE = ServiceName.JBOSS.append("raregistry");
 
+    /** MDR service name **/
+    public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
+
+    public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
+
+    public static final ServiceName DATASOURCES_SERVICE = ServiceName.JBOSS.append("datasources");
+
+    public static final ServiceName JNDI_STRATEGY_SERVICE = ServiceName.JBOSS.append("jndistrategy");
+
+    private ConnectorServices() {
+    }
+
     /**
      * convenient method to check notNull of value
      * @param <T> type of the value
@@ -55,8 +67,5 @@ public final class ConnectorServices {
         if (value == null)
             throw new IllegalStateException("Service not started");
         return value;
-    }
-
-    private ConnectorServices() {
     }
 }

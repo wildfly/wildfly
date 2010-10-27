@@ -20,48 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.mdr;
+package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
+ * A Element.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
 
-    private final MetadataRepository value;
+public enum Element {
+    /** always the first **/
+    UNKNOWN(null), SUBSYSTEM("subsystem"), DATASOURCES("datasources");
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
+    private final String name;
+
+    Element(final String name) {
+        this.name = name;
+    }
 
     /**
-     * Create instance
+     * Get the local name of this element.
+     * @return the local name
      */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
+    public String getLocalName() {
+        return name;
     }
 
-    @Override
-    public MetadataRepository getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
+    private static final Map<String, Element> MAP;
+
+    static {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null)
+                map.put(name, element);
+        }
+        MAP = map;
     }
 
-    @Override
-    public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
     }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
 }

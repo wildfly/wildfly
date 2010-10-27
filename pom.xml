@@ -53,6 +53,7 @@
         <org.jboss.as.codename></org.jboss.as.codename>
 
         <!-- Dependency versions. Please keep alphabetical -->
+        <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP1</version.javax.enterprise.cdi-api>
         <version.javax.faces.jsf-api>2.0.2-FCS</version.javax.faces.jsf-api>
@@ -462,6 +463,12 @@
             <!-- External Dependencies -->
 
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${version.com.h2database.h2}</version>
+            </dependency>
+            
+            <dependency>
                 <groupId>javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${version.org.javassist}</version>
@@ -768,6 +775,20 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-validator</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>jdbc-local</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+                <type>rar</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ironjacamar</groupId>
+                <artifactId>jdbc-xa</artifactId>
+                <version>${version.org.jboss.ironjacamar}</version>
+                <type>rar</type>
             </dependency>
 
             <dependency>

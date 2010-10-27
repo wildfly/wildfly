@@ -19,34 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.jboss.as.connector.registry;
-
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
-
-import java.util.Set;
+package org.jboss.as.demos.ds.mbean;
 
 /**
- * The interface for the resource adapter deployment registry
+ * Test for datasources
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public interface ResourceAdapterDeploymentRegistry {
+public interface TestMBean {
 
-    /**
-     * Register a resource adapter deployment
-     * @param deployment The deployment
-     */
-    void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment);
-
-    /**
-     * Unregister a resource adapter deployment
-     * @param deployment The deployment
-     */
-    void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment);
-
-    /**
-     * Get the resource adapter deployments
-     * @return The set of deployments
-     */
-    Set<ResourceAdapterDeployment> getResourceAdapterDeployments();
+    String test() throws Exception;
 }

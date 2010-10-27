@@ -20,33 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.registry;
+package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
-
-import java.util.Set;
+import org.jboss.as.Extension;
+import org.jboss.as.ExtensionContext;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
- * The interface for the resource adapter deployment registry
- * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * A ConnectorExtension.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
-public interface ResourceAdapterDeploymentRegistry {
+public final class DataSourcesExtension implements Extension {
+    private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
 
-    /**
-     * Register a resource adapter deployment
-     * @param deployment The deployment
-     */
-    void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment);
+    public void initialize(final ExtensionContext context) {
+        context.<DataSourcesSubsystemElement> registerSubsystem(Namespace.CURRENT.getUriString(),
+                new DataSourcesSubsystemElementParser());
+    }
 
-    /**
-     * Unregister a resource adapter deployment
-     * @param deployment The deployment
-     */
-    void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment);
-
-    /**
-     * Get the resource adapter deployments
-     * @return The set of deployments
-     */
-    Set<ResourceAdapterDeployment> getResourceAdapterDeployments();
+    @Override
+    public void activate(final ServiceActivatorContext context) {
+        log.debugf("Activating Datasources Extension");
+    }
 }

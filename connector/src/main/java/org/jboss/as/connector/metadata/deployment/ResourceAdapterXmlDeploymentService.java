@@ -20,12 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.mdr;
+package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -33,35 +30,36 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
+ * A ResourceAdapterXmlDeploymentService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+public final class ResourceAdapterXmlDeploymentService extends AbstractResourceAdapterDeploymentService implements
+        Service<ResourceAdapterDeployment> {
 
-    private final MetadataRepository value;
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
-
-    /**
-     * Create instance
-     */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
-    }
-
-    @Override
-    public MetadataRepository getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
+    /** create an instance **/
+    public ResourceAdapterXmlDeploymentService(ResourceAdapterDeployment value) {
+        super(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+        log.debugf("Starting sevice %s",
+                ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+
+        super.start(context);
     }
 
+    /**
+     * Stop
+     */
     @Override
     public void stop(StopContext context) {
-
+        log.debugf("Stopping sevice %s",
+                ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        super.stop(context);
     }
 
 }

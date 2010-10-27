@@ -19,49 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.demos.ds.mbean;
 
-package org.jboss.as.connector.mdr;
+import java.sql.Connection;
+import java.sql.ResultSet;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
+ * Test for datasources
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+public class Test implements TestMBean {
 
-    private final MetadataRepository value;
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
-
-    /**
-     * Create instance
-     */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
-    }
+    private static final String JNDI_NAME = "java:/H2DS";
 
     @Override
-    public MetadataRepository getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
+    public String test() throws Exception {
+        InitialContext context = new InitialContext();
+        DataSource ds = (DataSource) context.lookup(JNDI_NAME);
+        Connection conn = ds.getConnection();
+        ResultSet rs = conn.prepareStatement("select 1").executeQuery();
+        if (rs.next()) {
+            return rs.getString(1);
+        }
+        return "Success";
     }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
-    }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
 }

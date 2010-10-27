@@ -20,12 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.mdr;
+package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-
+import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -33,30 +30,29 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
+ * A ConnectorConfigService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+final class DataSourcesService implements Service<DataSources> {
+    private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
-    private final MetadataRepository value;
+    private final DataSources value;
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
+    /** create an instance **/
+    public DataSourcesService(DataSources value) {
+        super();
+        this.value = value;
 
-    /**
-     * Create instance
-     */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
     }
 
     @Override
-    public MetadataRepository getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
+    public DataSources getValue() throws IllegalStateException {
+        return value;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+        log.debugf("Starting DataSources Service");
     }
 
     @Override

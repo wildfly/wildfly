@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.registry;
 
-import org.jboss.as.connector.ResourceAdapterDeployment;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 
 import java.util.Collections;
 import java.util.HashSet;

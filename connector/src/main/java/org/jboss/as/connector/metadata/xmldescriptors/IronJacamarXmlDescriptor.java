@@ -20,33 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.registry;
+package org.jboss.as.connector.metadata.xmldescriptors;
 
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
+import java.io.Serializable;
 
-import java.util.Set;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 
 /**
- * The interface for the resource adapter deployment registry
- * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * A RaXmlDescriptor.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
-public interface ResourceAdapterDeploymentRegistry {
+public final class IronJacamarXmlDescriptor implements Serializable {
+
+    private static final long serialVersionUID = 3148478338698997486L;
+
+    public static final AttachmentKey<IronJacamarXmlDescriptor> ATTACHMENT_KEY = AttachmentKey
+            .create(IronJacamarXmlDescriptor.class);
+
+    private final IronJacamar ironJacamar;
 
     /**
-     * Register a resource adapter deployment
-     * @param deployment The deployment
+     * Create a new RaXmlDescriptor.
+     * @param resourceAdapters
      */
-    void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment);
+    public IronJacamarXmlDescriptor(IronJacamar ironJacamar) {
+        super();
+        this.ironJacamar = ironJacamar;
+    }
 
     /**
-     * Unregister a resource adapter deployment
-     * @param deployment The deployment
+     * Get the resource adapters.
+     * @return the resource adapters.
      */
-    void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment);
+    public IronJacamar getIronJacamar() {
+        return ironJacamar;
+    }
 
-    /**
-     * Get the resource adapter deployments
-     * @return The set of deployments
-     */
-    Set<ResourceAdapterDeployment> getResourceAdapterDeployments();
 }

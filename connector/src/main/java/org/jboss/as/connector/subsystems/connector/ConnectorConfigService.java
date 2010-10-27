@@ -20,48 +20,56 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.mdr;
+package org.jboss.as.connector.subsystems.connector;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-
+import org.jboss.jca.Version;
+import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
+ * A ConnectorConfigService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration> {
 
-    private final MetadataRepository value;
+    private final ConnectorSubsystemConfiguration value;
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
+    private final InjectedValue<CloneableBootstrapContext> defaultBootstrapContext = new InjectedValue<CloneableBootstrapContext>();
 
-    /**
-     * Create instance
-     */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
+    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
+
+    /** create an instance **/
+    public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
+        super();
+        this.value = value;
     }
 
     @Override
-    public MetadataRepository getValue() throws IllegalStateException {
+    public ConnectorSubsystemConfiguration getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+        this.value.setDefaultBootstrapContext(defaultBootstrapContext.getValue());
+        log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
+        log.tracef("config=%s", value);
     }
 
     @Override
     public void stop(StopContext context) {
 
+    }
+
+    public Injector<CloneableBootstrapContext> getDefaultBootstrapContextInjector() {
+        return defaultBootstrapContext;
     }
 
 }

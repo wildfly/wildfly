@@ -50,11 +50,20 @@
         <mkdir dir="${output.dir}/standalone/deployments"/>
     </target>
 
+    <target name="copy-deployments">
+        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" todir="target/${org.jboss.as.version}/standalone/deployments"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" todir="target/${org.jboss.as.version}/standalone/deployments"/>
+    </target>
+
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
 
         <!-- All modules.  Keep alphabetical -->
+
+        <module-def name="com.h2database.h2">
+            <maven-resource group="com.h2database" artifact="h2"/>
+        </module-def>
 
         <module-def name="javaee.api"/>
 
@@ -445,5 +454,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="clean-target, modules, copy-files, make-dirs"/>
+    <target name="all" depends="clean-target, modules, copy-files, make-dirs, copy-deployments"/>
 </project>
