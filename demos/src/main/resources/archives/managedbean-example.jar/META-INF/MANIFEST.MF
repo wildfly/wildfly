@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Dependencies: system,org.jboss.logging,javax.annotation.api,javax.interceptor.api,org.jboss.as.managed-beans,org.javassist
+Dependencies: org.jboss.logging,javax.annotation.api,javax.interceptor.api,org.jboss.as.managed-beans,org.javassist
