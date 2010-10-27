@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,7 +46,10 @@ class QueueService implements Service<Void> {
     private final boolean temporary;
 
     public QueueService(String address, String queueName, String filter, boolean durable, boolean temporary) {
-        this.address = address;
+        if(queueName == null) {
+            throw new IllegalArgumentException("null queue name");
+        }
+        this.address = address != null ? address : queueName;
         this.queueName = queueName;
         this.filter = filter;
         this.durable = durable;
@@ -65,7 +69,12 @@ class QueueService implements Service<Void> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        // TODO Undeploy core queues means nothing on core queues, so no need to do anything here?
+        try {
+            final HornetQServer hornetQService = this.hornetQService.getValue();
+            hornetQService.destroyQueue(new SimpleString(queueName), null);
+        } catch(Exception e) {
+            Logger.getLogger("org.jboss.messaging").warnf(e, "failed to destroy queue (%s)", queueName);
+        }
     }
 
     /** {@inheritDoc} */

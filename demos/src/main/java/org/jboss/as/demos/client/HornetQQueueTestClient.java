@@ -53,7 +53,7 @@ import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 /**
  * @author Emanuel Muckenhuber
  */
-public class TestCoreQueueAdd {
+public class HornetQQueueTestClient {
 
     public static void main(String[] args) throws Exception {
 
@@ -102,6 +102,7 @@ public class TestCoreQueueAdd {
         final QueueRemove remove = new QueueRemove(queueName);
         applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
 
+        // Check that the queue does not exists
         if(queueExists(queueName, sf)) {
             throw new IllegalStateException();
         }
