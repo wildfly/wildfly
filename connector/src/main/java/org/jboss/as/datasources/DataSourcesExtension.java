@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
  * A ConnectorExtension.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public final class DataSourcesExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
@@ -41,6 +41,6 @@ public final class DataSourcesExtension implements Extension {
 
     @Override
     public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Datasources Extension");
+        log.debugf("Activating Datasources Extension");
     }
 }

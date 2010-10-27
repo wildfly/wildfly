@@ -31,7 +31,8 @@ import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
 public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdaptersSubsystemElement> {
 
@@ -58,12 +59,14 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
         final ResourceAdaptersService raService = new ResourceAdaptersService(resourceAdapters);
         final BatchServiceBuilder<ResourceAdapters> serviceBuilder = builder.addService(
                 ResourceAdaptersServices.RESOURCEADAPTERS_SERVICE, raService);
-        serviceBuilder.setInitialMode(Mode.ON_DEMAND);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
 
     }
 
     protected ResourceAdaptersSubsystemElement createSubsystemElement() {
-        return new ResourceAdaptersSubsystemElement();
+        ResourceAdaptersSubsystemElement element = new ResourceAdaptersSubsystemElement();
+        element.setResourceAdapters(resourceAdapters);
+        return element;
     }
 
 }

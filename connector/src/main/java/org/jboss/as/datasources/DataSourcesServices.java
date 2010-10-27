@@ -26,7 +26,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * A ConnectorServices.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public final class DataSourcesServices {
 

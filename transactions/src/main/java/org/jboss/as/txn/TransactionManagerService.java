@@ -70,7 +70,7 @@ import com.arjuna.common.internal.util.logging.jakarta.Log4JLogger;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class TransactionManagerService implements Service<TransactionManager> {
+final class TransactionManagerService implements Service<com.arjuna.ats.jbossatx.jta.TransactionManagerService> {
 
     private final InjectedValue<JBossXATerminator> xaTerminatorInjector = new InjectedValue<JBossXATerminator>();
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
@@ -231,8 +231,13 @@ final class TransactionManagerService implements Service<TransactionManager> {
         recoveryManagerService = null;
     }
 
-    public synchronized TransactionManager getValue() throws IllegalStateException {
-        return TxnServices.notNull(value).getTransactionManager();
+    public synchronized com.arjuna.ats.jbossatx.jta.TransactionManagerService getValue() throws IllegalStateException {
+        AccessController.doPrivileged(new SetContextLoaderAction(TransactionManagerService.class.getClassLoader()));
+        try {
+            return TxnServices.notNull(value);
+        } finally {
+            AccessController.doPrivileged(CLEAR_ACTION);
+        }
     }
 
     Injector<JBossXATerminator> getXaTerminatorInjector() {

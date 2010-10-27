@@ -41,7 +41,7 @@ import org.jboss.jandex.Type;
  *
  * A AnnotationRepositoryImpl.
  *
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  *
  */
 public class JandexAnnotationRepositoryImpl implements AnnotationRepository {

@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 
 /**
  * A ConnectorExtension.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ConnectorExtension implements Extension {
@@ -42,6 +42,6 @@ public final class ConnectorExtension implements Extension {
 
     @Override
     public void activate(final ServiceActivatorContext context) {
-        log.info("Activating Connector Extension");
+        log.debugf("Activating Connector Extension");
     }
 }

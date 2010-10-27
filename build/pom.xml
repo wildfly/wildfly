@@ -478,6 +478,11 @@
         </dependency>
 
         <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
           <groupId>org.hornetq</groupId>
           <artifactId>hornetq-core</artifactId>
         </dependency>

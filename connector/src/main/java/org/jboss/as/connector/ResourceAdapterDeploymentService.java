@@ -22,43 +22,32 @@
 
 package org.jboss.as.connector;
 
-import org.jboss.jca.core.naming.SimpleJndiStrategy;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.jca.core.spi.mdr.NotFoundException;
-import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 
 /**
  * A ResourceAdapterDeploymentService.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ResourceAdapterDeploymentService implements Service<CommonDeployment> {
+public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
+        Service<ResourceAdapterDeployment> {
 
-    private final CommonDeployment value;
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
 
-    private final Value<MetadataRepository> mdr;
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
-
-    /** create an instance **/
-    public ResourceAdapterDeploymentService(CommonDeployment value, Value<MetadataRepository> mdr) {
-        this.value = value;
-        this.mdr = mdr;
-    }
-
-    @Override
-    public CommonDeployment getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
+    public ResourceAdapterDeploymentService(ResourceAdapterDeployment value) {
+        super(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        log.debugf("Starting sevice %s",
+                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
+        super.start(context);
     }
 
     /**
@@ -66,41 +55,9 @@ public final class ResourceAdapterDeploymentService implements Service<CommonDep
      */
     @Override
     public void stop(StopContext context) {
-        if (value != null) {
-            try {
-                mdr.getValue().unregisterResourceAdapter(value.getURL().toExternalForm());
-            } catch (Throwable t) {
-                log.warn("Exception during unregistering deployment", t);
-            }
-        }
-
-        log.debug("Undeploying: " + value.getDeploymentName());
-
-        if (mdr != null && mdr.getValue() != null && value.getCfs() != null && value.getJndiNames() != null) {
-            for (int i = 0; i < value.getCfs().length; i++) {
-                try {
-                    String cf = value.getCfs()[i].getClass().getName();
-                    String jndi = value.getJndiNames()[i];
-
-                    mdr.getValue().unregisterJndiMapping(value.getURL().toExternalForm(), cf, jndi);
-                } catch (NotFoundException nfe) {
-                    log.warn("Exception during JNDI unbinding", nfe);
-                }
-            }
-        }
-
-        if (value.getCfs() != null && value.getJndiNames() != null) {
-            try {
-                (new SimpleJndiStrategy()).unbindConnectionFactories(value.getDeploymentName(), value.getCfs(),
-                        value.getJndiNames());
-            } catch (Throwable t) {
-                log.warn("Exception during JNDI unbinding", t);
-            }
-        }
-
-        if (value != null && value.getResourceAdapter() != null) {
-            value.getResourceAdapter().stop();
-        }
+        log.debugf("Stopping sevice %s",
+                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        super.stop(context);
     }
 
 }

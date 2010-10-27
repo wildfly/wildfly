@@ -22,8 +22,9 @@
 
 package org.jboss.as.connector;
 
-import org.jboss.jca.Version;
-import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import java.util.concurrent.Executor;
+
+import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -31,35 +32,45 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.threads.BlockingExecutor;
+import org.jboss.tm.JBossXATerminator;
 
 /**
- * A ConnectorConfigService.
+ * A WorkManager Service.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration> {
+final class WorkManagerService implements Service<WorkManager> {
 
-    private final ConnectorSubsystemConfiguration value;
+    private final WorkManager value;
 
-    private final InjectedValue<CloneableBootstrapContext> defaultBootstrapContext = new InjectedValue<CloneableBootstrapContext>();
+    private final InjectedValue<Executor> executorShort = new InjectedValue<Executor>();
+
+    private final InjectedValue<Executor> executorLong = new InjectedValue<Executor>();
+
+    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     /** create an instance **/
-    public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
+    public WorkManagerService(WorkManager value) {
         super();
+        log.debugf("Building WorkManager");
         this.value = value;
+
     }
 
     @Override
-    public ConnectorSubsystemConfiguration getValue() throws IllegalStateException {
+    public WorkManager getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.value.setDefaultBootstrapContext(defaultBootstrapContext.getValue());
-        log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
-        log.tracef("config=%s", value);
+        this.value.setLongRunningThreadPool((BlockingExecutor) executorLong.getValue());
+        this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
+        this.value.setXATerminator(xaTerminator.getValue());
+
+        log.debugf("Starting JCA WorkManager");
     }
 
     @Override
@@ -67,8 +78,16 @@ final class ConnectorConfigService implements Service<ConnectorSubsystemConfigur
 
     }
 
-    public Injector<CloneableBootstrapContext> getDefaultBootstrapContextInjector() {
-        return defaultBootstrapContext;
+    public Injector<Executor> getExecutorShortInjector() {
+        return executorShort;
+    }
+
+    public Injector<Executor> getExecutorLongInjector() {
+        return executorLong;
+    }
+
+    public Injector<JBossXATerminator> getXaTerminatorInjector() {
+        return xaTerminator;
     }
 
 }

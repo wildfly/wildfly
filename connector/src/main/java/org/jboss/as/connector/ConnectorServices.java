@@ -26,13 +26,23 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * A ConnectorServices.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class ConnectorServices {
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
+    public static final ServiceName DEFAULT_BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector",
+            "defaultbootstrapcontext");
+
+    public static final ServiceName WORKMANAGER_SERVICE = ServiceName.JBOSS.append("connector", "workmanager");
+
     public static final ServiceName RESOURCE_ADAPTER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra");
+
+    public static final ServiceName RESOURCE_ADAPTER_XML_SERVICE_PREFIX = ServiceName.JBOSS.append("raxml");
+
+    public static final ServiceName RESOURCE_ADAPTER_REGISTRY_SERVICE = ServiceName.JBOSS.append("raregistry");
 
     /**
      * convenient method to check notNull of value

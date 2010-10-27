@@ -29,6 +29,7 @@
 
     <dependencies>
         <module name="org.jboss.logging"/>
+        <module name="system"/>
         <!-- <module name="stax.stax-api"/> -->
     </dependencies>
 </module>

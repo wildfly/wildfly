@@ -34,6 +34,8 @@ import static org.jboss.as.model.ParseUtils.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 /**
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ConnectorSubsystemElementParser implements
@@ -52,6 +54,8 @@ public final class ConnectorSubsystemElementParser implements
                     if (!visited.add(element)) {
                         throw unexpectedElement(reader);
                     }
+                    final EnumSet<Element> requiredElement = EnumSet.of(Element.DEFAULT_WORKMANAGER);
+
                     switch (element) {
                         case ARCHIVE_VALIDATION: {
                             final int cnt = reader.getAttributeCount();
@@ -81,11 +85,40 @@ public final class ConnectorSubsystemElementParser implements
                         case BEAN_VALIDATION: {
                             final boolean enabled = readBooleanAttributeElement(reader, Attribute.ENABLED.getLocalName());
                             add.setBeanValidation(enabled);
-                            requireNoContent(reader);
                             break;
+                        }
+                        case DEFAULT_WORKMANAGER: {
+                            final EnumSet<Attribute> required = EnumSet.of(Attribute.SHORT_RUNNING_THREAD_POOL,
+                                    Attribute.LONG_RUNNING_THREAD_POOL);
+                            final int cnt = reader.getAttributeCount();
+                            for (int i = 0; i < cnt; i++) {
+                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                                switch (attribute) {
+                                    case SHORT_RUNNING_THREAD_POOL: {
+                                        add.setShortRunningThreadPool(reader.getAttributeValue(i));
+                                        required.remove(Attribute.SHORT_RUNNING_THREAD_POOL);
+                                        break;
+                                    }
+                                    case LONG_RUNNING_THREAD_POOL: {
+                                        add.setLongRunningThreadPool(reader.getAttributeValue(i));
+                                        required.remove(Attribute.LONG_RUNNING_THREAD_POOL);
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!required.isEmpty()) {
+                                missingRequired(reader, required);
+                            }
+                            requireNoContent(reader);
+                            requiredElement.remove(Element.DEFAULT_WORKMANAGER);
+                            break;
+
                         }
                         default:
                             throw unexpectedElement(reader);
+                    }
+                    if (!requiredElement.isEmpty()) {
+                        missingRequiredElement(reader, requiredElement);
                     }
                     break;
                 }

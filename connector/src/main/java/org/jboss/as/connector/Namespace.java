@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * A Namespace.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public enum Namespace {
     // must be first

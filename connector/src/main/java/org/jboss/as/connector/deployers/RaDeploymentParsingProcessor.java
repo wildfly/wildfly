@@ -22,10 +22,7 @@
 
 package org.jboss.as.connector.deployers;
 
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.metadata.ra.RaParser;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.msc.value.Value;
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 import java.io.File;
 import java.io.InputStream;
@@ -36,30 +33,25 @@ import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.logging.Logger;
+import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.metadata.ra.RaParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a standard jca xml descriptor
  * and attaching the corresponding metadata. It take care also to register this
  * metadata into IronJacamar's MetadataRepository
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
-
-    private final Value<MetadataRepository> mdr;
 
     /**
      * Construct a new instance.
      */
-    public RaDeploymentParsingProcessor(Value<MetadataRepository> mdr) {
+    public RaDeploymentParsingProcessor() {
         super();
-        this.mdr = mdr;
     }
 
     /**
@@ -81,23 +73,22 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             serviceXmlFile = deploymentRoot.getChild("/META-INF/ra.xml");
         }
 
-        if (serviceXmlFile == null || !serviceXmlFile.exists())
-            return;
-
         InputStream xmlStream = null;
         Connector result = null;
         try {
-            xmlStream = serviceXmlFile.openStream();
-            result = (new RaParser()).parse(xmlStream);
-            File root = new File(deploymentRoot.asDirectoryURI());
-            URL url = deploymentRoot.asFileURL();
+            if (serviceXmlFile != null && serviceXmlFile.exists()) {
+
+                xmlStream = serviceXmlFile.openStream();
+                result = (new RaParser()).parse(xmlStream);
+                if (result == null)
+                    throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
+            }
+            File root = deploymentRoot.getPhysicalFile();
+            URL url = root.toURI().toURL();
             String deploymentName = deploymentRoot.getName().substring(0, deploymentRoot.getName().indexOf(".rar"));
-            if (result != null) {
-                ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
-                // TODO register into mdr
-                context.putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
-            } else
-                throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
+            ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
+            context.putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);
         } finally {
@@ -105,10 +96,4 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    /**
-     * @return the mdr
-     */
-    public Value<MetadataRepository> getMdr() {
-        return mdr;
-    }
 }

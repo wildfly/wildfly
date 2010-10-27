@@ -25,6 +25,7 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.resource.api">
     <dependencies>
         <module name="javax.transaction.api" export="true"/>
+        <module name="system"/>
     </dependencies>
 
     <resources>

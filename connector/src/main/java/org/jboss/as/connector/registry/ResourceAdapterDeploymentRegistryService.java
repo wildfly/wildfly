@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.mdr;
+package org.jboss.as.connector.registry;
 
-import org.jboss.jca.core.mdr.SimpleMetadataRepository;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.as.connector.ConnectorServices;
 
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -32,35 +31,37 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A MdrService. it provide access to IronJacamar's metadata repository
- * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * The resource adapter deployment registry service
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class MdrService implements Service<MetadataRepository> {
+public final class ResourceAdapterDeploymentRegistryService implements Service<ResourceAdapterDeploymentRegistry> {
 
-    private final MetadataRepository value;
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
+    private ResourceAdapterDeploymentRegistry value;
 
     /**
-     * Create instance
+     * Create an instance
      */
-    public MdrService() {
-        this.value = new SimpleMetadataRepository();
+    public ResourceAdapterDeploymentRegistryService() {
+        this.value = new ResourceAdapterDeploymentRegistryImpl();
     }
 
     @Override
-    public MetadataRepository getValue() throws IllegalStateException {
-        return MdrServices.notNull(value);
+    public ResourceAdapterDeploymentRegistry getValue() throws IllegalStateException {
+        return ConnectorServices.notNull(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+        log.debugf("Starting sevice %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
     }
 
+    /**
+     * Stop
+     */
     @Override
     public void stop(StopContext context) {
-
+        log.debugf("Stopping sevice %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
     }
-
 }

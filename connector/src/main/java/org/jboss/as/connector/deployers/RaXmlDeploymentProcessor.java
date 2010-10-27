@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,29 +35,22 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.ResourceAdapterDeployment;
-import org.jboss.as.connector.ResourceAdapterDeploymentService;
-import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
+import org.jboss.as.connector.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.descriptor.ConnectorXmlDescriptor;
-import org.jboss.as.connector.descriptor.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.mdr.MdrServices;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.Connector.Version;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.metadata.merge.Merger;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 import org.jboss.jca.core.naming.ExplicitJndiStrategy;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
@@ -72,23 +64,26 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
- * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.radeployer");
+public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(110L);
+    public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.raxmldeployer");
 
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
+    private final InjectedValue<ResourceAdapters> raxmlValue = new InjectedValue<ResourceAdapters>();
     private final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
 
-    public ParsedRaDeploymentProcessor() {
+    public RaXmlDeploymentProcessor() {
         super();
     }
 
@@ -100,62 +95,71 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
-        final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = context
-                .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
+        ResourceAdapters raxmls = null;
 
-        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        raxmls = raxmlValue.getValue();
+
+        if (raxmls == null)
+            return;
+
+        log.tracef("processing Raxml");
+        Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+
         if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
 
-        final ClassLoader classLoader = module.getClassLoader();
-
-        Connector cmd = connectorXmlDescriptor != null ? connectorXmlDescriptor.getConnector() : null;
-        final IronJacamar ijmd = ironJacamarXmlDescriptor != null ? ironJacamarXmlDescriptor.getIronJacamar() : null;
-
         try {
-            // Annotation merging
-            Annotations annotator = new Annotations();
-            AnnotationRepository repository = new JandexAnnotationRepositoryImpl(
-                    context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY), classLoader);
-            cmd = annotator.merge(cmd, repository, classLoader);
+            final ClassLoader classLoader = module.getClassLoader();
 
-            // Validate metadata
-            cmd.validate();
+            final BatchBuilder batchBuilder = context.getBatchBuilder();
 
-            // Merge metadata
-            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
+            for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
-            AS7RaDeployer raDeployer = new AS7RaDeployer();
+                String archive = raxml.getArchive();
+                URL deployment = null;
+                Set<String> deployments = mdr.getValue().getResourceAdapters();
 
-            raDeployer.setConfiguration(config.getValue());
-            URL url = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getUrl();
-            String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
-            File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
-            CommonDeployment raDeployment = raDeployer.doDeploy(url, deploymentName, root, classLoader, cmd, ijmd);
+                for (String s : deployments) {
+                    if (s.endsWith(archive) || s.endsWith(archive.substring(0, archive.indexOf(".rar"))))
+                        deployment = new URL(s);
+                }
 
-            if (raDeployment.isActivateDeployment()) {
-                final BatchBuilder batchBuilder = context.getBatchBuilder();
+                if (deployment != null) {
 
-                ResourceAdapterDeployment dply = new ResourceAdapterDeployment(module.getIdentifier(), raDeployment);
-                ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(dply);
-                // Create the service
-                batchBuilder
-                        .addService(
-                                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor
-                                        .getDeploymentName()), raDeployementService)
-                        .addDependency(MdrServices.IRONJACAMAR_MDR, MetadataRepository.class,
-                                raDeployementService.getMdrInjector())
+                    Connector cmd = mdr.getValue().getResourceAdapter(deployment.toExternalForm());
+                    IronJacamar ijmd = mdr.getValue().getIronJacamar(deployment.toExternalForm());
+                    File root = mdr.getValue().getRoot(deployment.toExternalForm());
+
+                    cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
+
+                    String deploymentName = archive.substring(0, archive.indexOf(".rar"));
+
+                    AS7RaDeployer raDeployer = new AS7RaDeployer();
+
+                    raDeployer.setConfiguration(config.getValue());
+
+                    CommonDeployment raxmlDeployment = raDeployer.doDeploy(connectorXmlDescriptor.getUrl(), deploymentName,
+                            root, classLoader, cmd, ijmd, raxml);
+
+                    ResourceAdapterDeployment dply = new ResourceAdapterDeployment(module.getIdentifier(), raxmlDeployment);
+                    ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(dply);
+                    // Create the service
+                    batchBuilder
+                        .addService(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(deploymentName), service)
+                        .addDependency(MdrServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
                         .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class,
-                                raDeployementService.getRegistryInjector()).setInitialMode(Mode.ACTIVE);
+                                       service.getRegistryInjector())
+                        .setInitialMode(Mode.ACTIVE);
 
-                registry.getValue().registerResourceAdapterDeployment(dply);
+                    registry.getValue().registerResourceAdapterDeployment(dply);
+                }
             }
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }
     }
 
-    public Injector<MetadataRepository> getMdrInjector() {
+    public Value<MetadataRepository> getMdr() {
         return mdr;
     }
 
@@ -163,17 +167,15 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         return registry;
     }
 
-    public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxmInjector() {
+    public Value<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxm() {
         return txm;
     }
 
-    public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
+    public Value<ConnectorSubsystemConfiguration> getConfig() {
         return config;
     }
 
     private class AS7RaDeployer extends AbstractResourceAdapterDeployer {
-
-        private String deploymentName;
 
         public AS7RaDeployer() {
             // validate at class level
@@ -181,15 +183,13 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         public CommonDeployment doDeploy(URL url, String deploymentName, File root, ClassLoader cl, Connector cmd,
-                IronJacamar ijmd) throws Throwable {
+                IronJacamar ijmd, ResourceAdapter ra) throws Throwable {
 
             this.setConfiguration(getConfig().getValue());
 
-            this.deploymentName = deploymentName;
-
             this.start();
 
-            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd);
+            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd, ra);
 
             return dep;
         }
@@ -232,50 +232,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         @Override
         protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
-            if (cmd != null && ijmd != null) {
-                Set<String> raClasses = new HashSet<String>();
-                Set<String> ijClasses = new HashSet<String>();
-
-                if (cmd.getVersion() == Version.V_10) {
-                    ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
-                    raClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
-                } else {
-                    ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null
-                            && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
-                        List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                        if (cdMetas.size() > 0) {
-                            for (ConnectionDefinition cdMeta : cdMetas) {
-                                raClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
-                            }
-                        }
-                    }
-                }
-
-                if (raClasses.size() == 0)
-                    return false;
-
-                if (ijmd.getConnectionDefinitions() != null) {
-                    for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
-                        String clz = def.getClassName();
-
-                        if (clz == null && raClasses.size() == 1)
-                            return true;
-
-                        if (clz != null)
-                            ijClasses.add(clz);
-                    }
-                }
-
-                for (String clz : raClasses) {
-                    if (!ijClasses.contains(clz))
-                        return false;
-                }
-
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         @Override
@@ -342,8 +299,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         @Override
         protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, IronJacamar ij)
                 throws AlreadyExistsException {
-            log.debugf("Registering ResourceAdapter %s", url.toExternalForm() + deploymentName);
-            mdr.getValue().registerResourceAdapter(url.toExternalForm() + deploymentName, file, connector, ij);
+            log.debugf("Registering ResourceAdapter %s", url.toExternalForm());
+            mdr.getValue().registerResourceAdapter(url.toExternalForm(), file, connector, ij);
         }
     }
 
@@ -363,11 +320,19 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxm() {
+    public Injector<ResourceAdapters> getRaxmlValueInjector() {
+        return raxmlValue;
+    }
+
+    public Injector<MetadataRepository> getMdrInjector() {
+        return mdr;
+    }
+
+    public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxmInjector() {
         return txm;
     }
 
-    public InjectedValue<ConnectorSubsystemConfiguration> getConfig() {
+    public Injector<ConnectorSubsystemConfiguration> getConfigInjector() {
         return config;
     }
 }

@@ -23,18 +23,21 @@
 package org.jboss.as.resourceadapters;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A ConnectorConfigService.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * A ResourceAdaptersService.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 final class ResourceAdaptersService implements Service<ResourceAdapters> {
 
     private final ResourceAdapters value;
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
     /** create an instance **/
     public ResourceAdaptersService(ResourceAdapters value) {
@@ -43,12 +46,12 @@ final class ResourceAdaptersService implements Service<ResourceAdapters> {
 
     @Override
     public ResourceAdapters getValue() throws IllegalStateException {
-        return ResourceAdaptersServices.notNull(value);
+        return value;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        // TODO invoke dsDeployer, merging and registering to mdr/jndi
+        log.debugf("Starting ResourceAdapters Service");
     }
 
     @Override

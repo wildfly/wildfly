@@ -45,7 +45,7 @@ import org.jboss.msc.service.StartException;
  * @author Jason T. Greene
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(102L);
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(750L);
     public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = new AttachmentKey<Module>(Module.class);
 
 

@@ -22,8 +22,6 @@
 
 package org.jboss.as.txn;
 
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -67,7 +65,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.ACTIVE);
 
         final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
-        final BatchServiceBuilder<TransactionManager> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
+        final BatchServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceBuilder = builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService);
         transactionManagerServiceBuilder.addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector());
         transactionManagerServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector());

@@ -27,12 +27,12 @@ import java.util.Map;
 
 /**
  * A Element.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 
 public enum Element {
     /** always the first **/
-    UNKNOWN(null), SUBSYSTEM("subsystem");
+    UNKNOWN(null), SUBSYSTEM("subsystem"), RESOURCE_ADAPTERS("resource-adapters");
 
     private final String name;
 

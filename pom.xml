@@ -71,7 +71,7 @@
         <version.org.jboss.arquillian>1.0.0.Alpha4.SP2</version.org.jboss.arquillian>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
-        <version.org.jboss.ironjacamar>1.0.0.Beta2.1</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.0.Beta2</version.org.jboss.jandex>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.jboss-vfs>3.0.0.CR5</version.org.jboss.jboss-vfs>
@@ -115,6 +115,8 @@
         <version.org.jboss.threads.jboss-threads>2.0.0.CR6</version.org.jboss.threads.jboss-threads>
         <version.org.jboss.xnio.xnio-api>2.1.0.CR2</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
+        <version.org.hibernate.validator>4.1.0.Final</version.org.hibernate.validator>
+        <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.mockito>1.8.4</version.org.mockito>
         <version.org.picketbox>4.0.0.Alpha1</version.org.picketbox>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
@@ -698,10 +700,6 @@
                         <artifactId>jboss-security-spi-bare</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.threads</groupId>
-                        <artifactId>jboss-threads</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.picketbox</groupId>
                         <artifactId>jbosssx</artifactId>
                     </exclusion>
@@ -1262,6 +1260,12 @@
                 <groupId>org.jboss.xnio</groupId>
                 <artifactId>xnio-nio</artifactId>
                 <version>${version.org.jboss.xnio.xnio-nio}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.hibernate</groupId>
+              <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate.validator}</version>
             </dependency>
 
             <dependency>

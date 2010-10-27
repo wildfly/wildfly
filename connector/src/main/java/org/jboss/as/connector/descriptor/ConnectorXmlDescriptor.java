@@ -32,7 +32,7 @@ import org.jboss.as.deployment.AttachmentKey;
 
 /**
  * A ConnectorXmlDescriptor.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public final class ConnectorXmlDescriptor implements Serializable {
 

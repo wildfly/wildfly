@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector;
 
-import org.jboss.jca.Version;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -31,35 +31,48 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
+import org.jboss.tm.JBossXATerminator;
 
 /**
- * A ConnectorConfigService.
+ * A DefaultBootStrapContextService Service
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-final class ConnectorConfigService implements Service<ConnectorSubsystemConfiguration> {
+final class DefaultBootStrapContextService implements Service<CloneableBootstrapContext> {
 
-    private final ConnectorSubsystemConfiguration value;
+    private final CloneableBootstrapContext value;
 
-    private final InjectedValue<CloneableBootstrapContext> defaultBootstrapContext = new InjectedValue<CloneableBootstrapContext>();
+    private final InjectedValue<WorkManager> workManagerValue = new InjectedValue<WorkManager>();
+
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txManager = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+
+    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
+
+    public Value<WorkManager> getWorkManagerValue() {
+        return workManagerValue;
+    }
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     /** create an instance **/
-    public ConnectorConfigService(ConnectorSubsystemConfiguration value) {
+    public DefaultBootStrapContextService(CloneableBootstrapContext value) {
         super();
+        log.debugf("Building DefaultBootstrapContext");
         this.value = value;
+
     }
 
     @Override
-    public ConnectorSubsystemConfiguration getValue() throws IllegalStateException {
+    public CloneableBootstrapContext getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.value.setDefaultBootstrapContext(defaultBootstrapContext.getValue());
-        log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
-        log.tracef("config=%s", value);
+        this.value.setWorkManager(workManagerValue.getValue());
+        this.value.setTransactionSynchronizationRegistry(txManager.getValue().getTransactionSynchronizationRegistry());
+        this.value.setXATerminator(xaTerminator.getValue());
+        log.debugf("Starting JCA DefaultBootstrapContext");
     }
 
     @Override
@@ -67,8 +80,16 @@ final class ConnectorConfigService implements Service<ConnectorSubsystemConfigur
 
     }
 
-    public Injector<CloneableBootstrapContext> getDefaultBootstrapContextInjector() {
-        return defaultBootstrapContext;
+    public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxManagerInjector() {
+        return txManager;
+    }
+
+    public Injector<JBossXATerminator> getXaTerminatorInjector() {
+        return xaTerminator;
+    }
+
+    public Injector<WorkManager> getWorkManagerValueInjector() {
+        return workManagerValue;
     }
 
 }

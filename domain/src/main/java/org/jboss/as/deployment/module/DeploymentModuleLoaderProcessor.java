@@ -35,7 +35,7 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(101L);
+    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(500L);
 
     static final AttachmentKey<DeploymentModuleLoader> ATTACHMENT_KEY = new AttachmentKey<DeploymentModuleLoader>(DeploymentModuleLoader.class);
 

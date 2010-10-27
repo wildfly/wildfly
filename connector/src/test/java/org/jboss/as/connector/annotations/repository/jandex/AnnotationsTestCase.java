@@ -80,7 +80,7 @@ public class AnnotationsTestCase {
      */
     @Test(expected = ValidateException.class)
     public void testProcessNullArguments() throws Throwable {
-        annotations.process(null, null);
+        annotations.process(null, null, null);
     }
 
     /**
@@ -90,7 +90,7 @@ public class AnnotationsTestCase {
      */
     @Test(expected = ValidateException.class)
     public void testProcessNullAnnotationRepository() throws Throwable {
-        annotations.process(null, null);
+        annotations.process(null, null, null);
     }
 
     /**
@@ -118,7 +118,7 @@ public class AnnotationsTestCase {
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
 
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             t.printStackTrace();
             fail(t.getMessage());
@@ -150,7 +150,7 @@ public class AnnotationsTestCase {
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
 
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
 
             fail("Success");
         } catch (Throwable t) {
@@ -183,7 +183,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             t.printStackTrace();
             fail(t.getMessage());
@@ -215,7 +215,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             fail(t.getMessage());
         }
@@ -245,7 +245,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             fail(t.getMessage());
         }
@@ -276,7 +276,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             fail(t.getMessage());
         }
@@ -307,7 +307,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             fail(t.getMessage());
         }
@@ -338,7 +338,7 @@ public class AnnotationsTestCase {
             }
             final Index index = indexer.complete();
             AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null);
+            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             fail(t.getMessage());
         }

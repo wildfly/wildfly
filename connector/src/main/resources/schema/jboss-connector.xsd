@@ -49,6 +49,15 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            
+            <xs:element name="default-workmanager" type="default-workmanagerType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configurations for thread pools used by default workmanager
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            
         </xs:all>
     </xs:complexType>
 
@@ -81,6 +90,23 @@
             <xs:annotation>
                 <xs:documentation>
                     Specify whether bean validation is enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="default-workmanagerType">
+        <xs:attribute name="short-running-thread-pool" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify the name of short running thread pool
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="long-running-thread-pool" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify the name of long running thread pool
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

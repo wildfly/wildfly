@@ -4,11 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * A Attribute.
- *
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public enum Attribute {
     /** always the first **/
@@ -25,7 +22,11 @@ public enum Attribute {
      * fail-on-warn attribute
      *
      */
-    FAIL_ON_WARN("fail-on-warn");
+    FAIL_ON_WARN("fail-on-warn"),
+
+    SHORT_RUNNING_THREAD_POOL("short-running-thread-pool"),
+
+    LONG_RUNNING_THREAD_POOL("long-running-thread-pool");
 
     private final String name;
 

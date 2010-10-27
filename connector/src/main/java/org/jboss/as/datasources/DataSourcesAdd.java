@@ -22,15 +22,20 @@
 
 package org.jboss.as.datasources;
 
+import org.jboss.as.connector.mdr.MdrServices;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsystemElement> {
@@ -55,14 +60,22 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
+
         final DataSourcesService dsService = new DataSourcesService(datasources);
         final BatchServiceBuilder<DataSources> serviceBuilder = builder.addService(DataSourcesServices.DATASOURCES_SERVICE,
                 dsService);
-        serviceBuilder.setInitialMode(Mode.ON_DEMAND);
+        serviceBuilder.addDependency(MdrServices.IRONJACAMAR_MDR, MetadataRepository.class, dsService.getMdrInjector());
+        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
+                com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dsService.getTxmInjector());
+        // TODO: depends on jdbc services
+
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
     }
 
     protected DataSourcesSubsystemElement createSubsystemElement() {
-        return new DataSourcesSubsystemElement();
+        DataSourcesSubsystemElement element = new DataSourcesSubsystemElement();
+        element.setDatasources(datasources);
+        return element;
     }
 
 }

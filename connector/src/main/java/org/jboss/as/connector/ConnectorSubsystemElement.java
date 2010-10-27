@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
@@ -34,7 +35,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A ConnectorSubsystemElement.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 final class ConnectorSubsystemElement extends AbstractSubsystemElement<ConnectorSubsystemElement> {
 
@@ -45,6 +46,10 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
     private boolean archiveValidationFailOnError = true;
     private boolean archiveValidationFailOnWarn = false;
     private boolean beanValidation = true;
+
+    private String longRunningThreadPool;
+
+    private String shortRunningThreadPool;
 
     public ConnectorSubsystemElement() {
         super(Namespace.CONNECTOR_1_0.getUriString());
@@ -65,6 +70,10 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
         streamWriter.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
         streamWriter.writeAttribute(Attribute.ENABLED.getLocalName(), Boolean.toString(beanValidation));
 
+        streamWriter.writeEmptyElement(Element.DEFAULT_WORKMANAGER.getLocalName());
+        streamWriter.writeAttribute(Attribute.SHORT_RUNNING_THREAD_POOL.getLocalName(), shortRunningThreadPool);
+        streamWriter.writeAttribute(Attribute.LONG_RUNNING_THREAD_POOL.getLocalName(), longRunningThreadPool);
+
         streamWriter.writeEndElement();
     }
 
@@ -79,12 +88,14 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
     }
 
     @Override
-    protected ConnectorSubsystemAdd getAdd() {
+    protected AbstractSubsystemAdd<ConnectorSubsystemElement> getAdd() {
         final ConnectorSubsystemAdd add = new ConnectorSubsystemAdd();
         add.setArchiveValidation(archiveValidation);
         add.setArchiveValidationFailOnError(archiveValidationFailOnError);
         add.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
         add.setBeanValidation(beanValidation);
+        add.setLongRunningThreadPool(longRunningThreadPool);
+        add.setShortRunningThreadPool(shortRunningThreadPool);
         return add;
     }
 
@@ -92,5 +103,53 @@ final class ConnectorSubsystemElement extends AbstractSubsystemElement<Connector
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         // requires restart
+    }
+
+    public boolean isArchiveValidation() {
+        return archiveValidation;
+    }
+
+    public void setArchiveValidation(boolean archiveValidation) {
+        this.archiveValidation = archiveValidation;
+    }
+
+    public boolean isArchiveValidationFailOnError() {
+        return archiveValidationFailOnError;
+    }
+
+    public void setArchiveValidationFailOnError(boolean archiveValidationFailOnError) {
+        this.archiveValidationFailOnError = archiveValidationFailOnError;
+    }
+
+    public boolean isArchiveValidationFailOnWarn() {
+        return archiveValidationFailOnWarn;
+    }
+
+    public void setArchiveValidationFailOnWarn(boolean archiveValidationFailOnWarn) {
+        this.archiveValidationFailOnWarn = archiveValidationFailOnWarn;
+    }
+
+    public boolean isBeanValidation() {
+        return beanValidation;
+    }
+
+    public void setBeanValidation(boolean beanValidation) {
+        this.beanValidation = beanValidation;
+    }
+
+    public String getLongRunningThreadPool() {
+        return longRunningThreadPool;
+    }
+
+    public void setLongRunningThreadPool(String longRunningThreadPool) {
+        this.longRunningThreadPool = longRunningThreadPool;
+    }
+
+    public String getShortRunningThreadPool() {
+        return shortRunningThreadPool;
+    }
+
+    public void setShortRunningThreadPool(String shortRunningThreadPool) {
+        this.shortRunningThreadPool = shortRunningThreadPool;
     }
 }

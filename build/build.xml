@@ -397,6 +397,10 @@
             <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 
+        <module-def name="org.hibernate.validator">
+            <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
+        </module-def>
+
         <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="jboss-security-spi"/>
             <maven-resource group="org.picketbox" artifact="jbosssx"/>

@@ -22,8 +22,6 @@
 
 package org.jboss.as.resourceadapters;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.ExtensionContext;
@@ -36,12 +34,13 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import static org.jboss.as.model.ParseUtils.*;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
 public final class ResourceAdaptersSubsystemElementParser implements
         XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<ResourceAdaptersSubsystemElement>>> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
+    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
     public void readElement(final XMLExtendedStreamReader reader,
             final ParseResult<ExtensionContext.SubsystemConfiguration<ResourceAdaptersSubsystemElement>> result)
@@ -50,25 +49,24 @@ public final class ResourceAdaptersSubsystemElementParser implements
 
         try {
             String localName = null;
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case RESOURCEADAPTERS_1_0: {
-                        localName = reader.getLocalName();
-                        final Element element = Element.forName(reader.getLocalName());
-                        log.tracef("%s -> %s", localName, element);
-                        switch (element) {
-                            case SUBSYSTEM: {
-                                ResourceAdapterParser parser = new ResourceAdapterParser();
-                                add.setResourceAdapters(parser.parse(reader));
-                                requireNoContent(reader);
-                                break;
-                            }
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case RESOURCEADAPTERS_1_0: {
+                    localName = reader.getLocalName();
+                    final Element element = Element.forName(reader.getLocalName());
+                    log.tracef("%s -> %s", localName, element);
+                    switch (element) {
+                        case SUBSYSTEM: {
+                            ResourceAdapterParser parser = new ResourceAdapterParser();
+                            add.setResourceAdapters(parser.parse(reader));
+                            requireNoContent(reader);
+                            break;
                         }
                     }
                 }
             }
+            // }
         } catch (Exception e) {
-            log.error(reader.getText());
+            // log.error(reader.getText());
             throw new XMLStreamException(e);
         }
 

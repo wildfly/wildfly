@@ -35,13 +35,11 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.ConnectorSubsystemConfiguration;
-import org.jboss.as.connector.ResourceAdapterDeployment;
 import org.jboss.as.connector.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.descriptor.ConnectorXmlDescriptor;
 import org.jboss.as.connector.descriptor.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.mdr.MdrServices;
-import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
@@ -86,7 +84,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
     private final InjectedValue<ConnectorSubsystemConfiguration> config = new InjectedValue<ConnectorSubsystemConfiguration>();
-    private final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
 
     public ParsedRaDeploymentProcessor() {
         super();
@@ -136,19 +133,15 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             if (raDeployment.isActivateDeployment()) {
                 final BatchBuilder batchBuilder = context.getBatchBuilder();
 
-                ResourceAdapterDeployment dply = new ResourceAdapterDeployment(module.getIdentifier(), raDeployment);
-                ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(dply);
+                ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(raDeployment);
                 // Create the service
                 batchBuilder
                         .addService(
                                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor
                                         .getDeploymentName()), raDeployementService)
                         .addDependency(MdrServices.IRONJACAMAR_MDR, MetadataRepository.class,
-                                raDeployementService.getMdrInjector())
-                        .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class,
-                                raDeployementService.getRegistryInjector()).setInitialMode(Mode.ACTIVE);
+                                raDeployementService.getMdrInjector()).setInitialMode(Mode.ACTIVE);
 
-                registry.getValue().registerResourceAdapterDeployment(dply);
             }
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
@@ -157,10 +150,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
     public Injector<MetadataRepository> getMdrInjector() {
         return mdr;
-    }
-
-    public Injector<ResourceAdapterDeploymentRegistry> getRegistryInjector() {
-        return registry;
     }
 
     public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxmInjector() {

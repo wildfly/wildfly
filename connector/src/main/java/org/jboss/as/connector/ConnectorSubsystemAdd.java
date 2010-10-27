@@ -22,14 +22,28 @@
 
 package org.jboss.as.connector;
 
+import java.util.concurrent.Executor;
+
+import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.txn.TxnServices;
+import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import org.jboss.jca.core.api.workmanager.WorkManager;
+import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
+import org.jboss.jca.core.workmanager.WorkManagerImpl;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.tm.JBossXATerminator;
 
 /**
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorSubsystemElement> {
@@ -40,6 +54,9 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
     private boolean archiveValidationFailOnWarn = false;
     private boolean beanValidation = true;
 
+    private String shortRunningThreadPool = null;
+    private String longRunningThreadPool = null;
+
     protected ConnectorSubsystemAdd() {
         super(Namespace.CURRENT.getUriString());
     }
@@ -49,23 +66,71 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
             final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
+        new RaDeploymentActivator().activate(new ServiceActivatorContext() {
+            public BatchBuilder getBatchBuilder() {
+                return builder;
+            }
+        });
+
+        WorkManager wm = new WorkManagerImpl();
+
+        final WorkManagerService wmService = new WorkManagerService(wm);
+        final BatchServiceBuilder<WorkManager> wmServiceBuilder = builder.addService(ConnectorServices.WORKMANAGER_SERVICE,
+                wmService);
+        wmServiceBuilder.addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
+                wmService.getExecutorShortInjector());
+        wmServiceBuilder.addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
+                wmService.getExecutorLongInjector());
+        wmServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                wmService.getXaTerminatorInjector());
+        wmServiceBuilder.setInitialMode(Mode.ACTIVE);
+
+        CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
+        final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
+        final BatchServiceBuilder<CloneableBootstrapContext> defaultBootCtxServiceBuilder = builder.addService(
+                ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService);
+        defaultBootCtxServiceBuilder.addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
+                defaultBootCtxService.getWorkManagerValueInjector());
+        defaultBootCtxServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
+                defaultBootCtxService.getXaTerminatorInjector());
+        defaultBootCtxServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
+                com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, defaultBootCtxService.getTxManagerInjector());
+
+        defaultBootCtxServiceBuilder.setInitialMode(Mode.ACTIVE);
+
         final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
 
         config.setArchiveValidation(archiveValidation);
         config.setArchiveValidationFailOnError(archiveValidationFailOnError);
         config.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
-        config.setBeanValidation(beanValidation);
+        config.setBeanValidation(false);
 
         final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-
-        final BatchServiceBuilder<ConnectorSubsystemConfiguration> serviceBuilder = builder.addService(
+        final BatchServiceBuilder<ConnectorSubsystemConfiguration> configServiceBuilder = builder.addService(
                 ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
-        serviceBuilder.setInitialMode(Mode.ACTIVE);
+        configServiceBuilder.addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,
+                CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector());
+        configServiceBuilder.setInitialMode(Mode.ACTIVE);
+    }
 
+    protected void applyUpdate(ConnectorSubsystemElement element) throws UpdateFailedException {
+        element.setArchiveValidation(archiveValidation);
+        element.setArchiveValidationFailOnError(archiveValidationFailOnError);
+        element.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
+        element.setBeanValidation(false);
+        element.setLongRunningThreadPool(longRunningThreadPool);
+        element.setShortRunningThreadPool(shortRunningThreadPool);
     }
 
     protected ConnectorSubsystemElement createSubsystemElement() {
-        return new ConnectorSubsystemElement();
+        ConnectorSubsystemElement element = new ConnectorSubsystemElement();
+        element.setArchiveValidation(archiveValidation);
+        element.setArchiveValidationFailOnError(archiveValidationFailOnError);
+        element.setArchiveValidationFailOnWarn(archiveValidationFailOnWarn);
+        element.setBeanValidation(false);
+        element.setLongRunningThreadPool(longRunningThreadPool);
+        element.setShortRunningThreadPool(shortRunningThreadPool);
+        return element;
     }
 
     public boolean isArchiveValidation() {
@@ -93,10 +158,27 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
     }
 
     public boolean isBeanValidation() {
-        return beanValidation;
+        return false;
     }
 
     public void setBeanValidation(final boolean beanValidation) {
         this.beanValidation = beanValidation;
     }
+
+    public String getShortRunningThreadPool() {
+        return shortRunningThreadPool;
+    }
+
+    public void setShortRunningThreadPool(String shortRunningThreadPool) {
+        this.shortRunningThreadPool = shortRunningThreadPool;
+    }
+
+    public String getLongRunningThreadPool() {
+        return longRunningThreadPool;
+    }
+
+    public void setLongRunningThreadPool(String longRunningThreadPool) {
+        this.longRunningThreadPool = longRunningThreadPool;
+    }
+
 }

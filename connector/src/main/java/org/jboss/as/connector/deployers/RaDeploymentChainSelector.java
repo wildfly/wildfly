@@ -30,7 +30,7 @@ import org.jboss.vfs.VirtualFile;
 /**
  * A RarDeploymentChainSelector. Deployment chain selector which determines
  * whether the rar deployment chain should handle this deployment.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentChainSelector implements DeploymentChainProvider.Selector {
     private static final String ARCHIVE_EXTENSION = ".rar";

@@ -32,15 +32,22 @@
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.as.domain"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.threads"/>
+        <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.common-core"/>
         <module name="org.jboss.integration.jboss-jca-spi"/>
         <module name="org.jboss.integration.jboss-transaction-spi"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.ironjacamar.impl"/>
+        <module name="org.jboss.jandex"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.threads"/>
+        <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
         <module name="system"/>
     </dependencies>

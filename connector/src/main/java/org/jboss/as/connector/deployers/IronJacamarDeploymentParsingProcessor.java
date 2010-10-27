@@ -34,7 +34,8 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -42,19 +43,20 @@ import org.jboss.vfs.VirtualFile;
  * DeploymentUnitProcessor responsible for parsing a iron-jacamar.xml descriptor
  * and attaching the corresponding IronJacamar metadata. It take care also to
  * register this metadata into IronJacamar0s MetadataRepository
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
 public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(501L);
 
-    private final Value<MetadataRepository> mdr;
+    private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
 
     /**
      * Construct a new instance.
      */
-    public IronJacamarDeploymentParsingProcessor(Value<MetadataRepository> mdr) {
+    public IronJacamarDeploymentParsingProcessor() {
         super();
-        this.mdr = mdr;
+
     }
 
     /**
@@ -86,7 +88,6 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
             result = (new IronJacamarParser()).parse(xmlStream);
             if (result != null) {
                 IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
-                // TODO register into mdr
                 context.putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             } else
                 throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
@@ -100,7 +101,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
     /**
      * @return the mdr
      */
-    public Value<MetadataRepository> getMdr() {
+    public Injector<MetadataRepository> getMdrInjector() {
         return mdr;
     }
 }

@@ -33,7 +33,7 @@ import java.util.List;
  *
  * A AnnotationImpl.
  *
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  *
  */
 public class AnnotationImpl implements Annotation {
@@ -105,27 +105,41 @@ public class AnnotationImpl implements Annotation {
     public final Object getAnnotation() {
         try {
             if (isOnField()) {
-                final Class<?> clazz = cl.loadClass(className);
-                Field field = clazz.getField(memberName);
-                return field.getAnnotation(annotationClass);
+                Class<?> clazz = cl.loadClass(className);
+                while (!clazz.equals(Object.class)) {
+                    try {
+                       Field field = clazz.getDeclaredField(memberName);
+                       return field.getAnnotation(annotationClass);
+                    } catch (Throwable t) {
+                       clazz = clazz.getSuperclass();
+                    }
+                }
             } else if (isOnMethod()) {
-                final Class<?> clazz = cl.loadClass(className);
+                Class<?> clazz = cl.loadClass(className);
                 Class<?>[] params = new Class<?>[parameterTypes.size()];
                 int i = 0;
                 for (String paramClazz : parameterTypes) {
                     params[i] = cl.loadClass(paramClazz);
                     i++;
                 }
-                Method method = clazz.getMethod(memberName, params);
-                return method.getAnnotation(annotationClass);
+                while (!clazz.equals(Object.class)) {
+                    try {
+                       Method method = clazz.getDeclaredMethod(memberName, params);
+                       return method.getAnnotation(annotationClass);
+                    } catch (Throwable t) {
+                       clazz = clazz.getSuperclass();
+                    }
+                }
             } else { // onclass
-                final Class<?> clazz = cl.loadClass(className);
+                Class<?> clazz = cl.loadClass(className);
                 return clazz.getAnnotation(annotationClass);
             }
         } catch (Exception e) {
-            return null;
+           System.out.println(e.getMessage());
+           e.printStackTrace(System.out);
         }
 
+        return null;
     }
 
     /**

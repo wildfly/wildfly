@@ -26,11 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * A Element.
- *
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
- *
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 
 public enum Element {
@@ -40,7 +37,10 @@ public enum Element {
     ARCHIVE_VALIDATION("archive-validation"),
 
     /** bean-validation element **/
-    BEAN_VALIDATION("bean-validation");
+    BEAN_VALIDATION("bean-validation"),
+
+    /** default-workmanager element **/
+    DEFAULT_WORKMANAGER("default-workmanager");
 
     private final String name;
 

@@ -29,15 +29,10 @@ import org.jboss.jca.deployers.common.Configuration;
 
 /**
  * A ConnectorSubsystemConfiguration.
- * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
 public class ConnectorSubsystemConfiguration implements Configuration {
-    @Override
-    public String toString() {
-        return "ConnectorSubsystemConfiguration [beanValidation=" + beanValidation + ", archiveValidation=" + archiveValidation
-                + ", archiveValidationFailOnWarn=" + archiveValidationFailOnWarn + ", archiveValidationFailOnError="
-                + archiveValidationFailOnError + "]";
-    }
 
     /** Preform bean validation */
     private final AtomicBoolean beanValidation = new AtomicBoolean(true);
@@ -51,11 +46,12 @@ public class ConnectorSubsystemConfiguration implements Configuration {
     /** Archive validation: Fail on Error */
     private final AtomicBoolean archiveValidationFailOnError = new AtomicBoolean(true);
 
+    private CloneableBootstrapContext defaultBootstrapContext;
+
     /**
      * Create a new ConnectorSubsystemConfiguration.
      */
     public ConnectorSubsystemConfiguration() {
-
     }
 
     /**
@@ -126,25 +122,24 @@ public class ConnectorSubsystemConfiguration implements Configuration {
 
     @Override
     public void setDefaultBootstrapContext(CloneableBootstrapContext value) {
-        // TODO Auto-generated method stub
+        this.defaultBootstrapContext = value;
 
     }
 
     @Override
     public CloneableBootstrapContext getDefaultBootstrapContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.defaultBootstrapContext;
     }
 
     @Override
     public void setBootstrapContexts(Map<String, CloneableBootstrapContext> value) {
-        // TODO Auto-generated method stub
+        // TODO if and when we will provide multiple bootstrap contexts
 
     }
 
     @Override
     public Map<String, CloneableBootstrapContext> getBootstrapContexts() {
-        // TODO Auto-generated method stub
+        // TODO if and when we will provide multiple bootstrap contexts
         return null;
     }
 

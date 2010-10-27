@@ -26,4 +26,9 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+
+  <dependencies>
+    <module name="org.jboss.logging"/>
+    <module name="system"/>
+  </dependencies>
 </module>

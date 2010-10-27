@@ -76,6 +76,8 @@
             <subsystem xmlns="urn:jboss:domain:connector:1.0">
                 <archive-validation enabled="true"/>
                 <bean-validation enabled="true"/>
+                <default-workmanager short-running-thread-pool="jca-short-running"
+				long-running-thread-pool="jca-long-running" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />

@@ -22,8 +22,6 @@
 
 package org.jboss.as.datasources;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.ExtensionContext;
@@ -34,7 +32,8 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
 public final class DataSourcesSubsystemElementParser implements
         XMLElementReader<ParseResult<ExtensionContext.SubsystemConfiguration<DataSourcesSubsystemElement>>> {
@@ -48,22 +47,21 @@ public final class DataSourcesSubsystemElementParser implements
 
         try {
             String localName = null;
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                switch (Namespace.forUri(reader.getNamespaceURI())) {
-                    case DATASOURCES_1_0: {
-                        localName = reader.getLocalName();
-                        final Element element = Element.forName(reader.getLocalName());
-                        log.tracef("%s -> %s", localName, element);
-                        switch (element) {
-                            case SUBSYSTEM: {
-                                DsParser parser = new DsParser();
-                                add.setDatasources(parser.parse(reader));
-                                break;
-                            }
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DATASOURCES_1_0: {
+                    localName = reader.getLocalName();
+                    final Element element = Element.forName(reader.getLocalName());
+                    log.tracef("%s -> %s", localName, element);
+                    switch (element) {
+                        case SUBSYSTEM: {
+                            DsParser parser = new DsParser();
+                            add.setDatasources(parser.parse(reader));
+                            break;
                         }
                     }
                 }
             }
+
         } catch (Exception e) {
             throw new XMLStreamException(e);
         }
