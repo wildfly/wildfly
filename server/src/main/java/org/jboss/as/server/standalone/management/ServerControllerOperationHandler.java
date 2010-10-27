@@ -400,12 +400,12 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            //TODO check it is unique
+            boolean unique = serverController.getServerModel().getDeployment(deploymentName) == null;
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
                 output.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
-                output.writeBoolean(true);
+                output.writeBoolean(unique);
                 output.close();
             } finally {
                 safeClose(output);
