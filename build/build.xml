@@ -176,6 +176,10 @@
 
         <module-def name="org.apache.commons.logging"/>
 
+        <module-def name="org.hibernate.validator">
+            <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
+        </module-def>
+
         <module-def name="org.hornetq">
             <maven-resource group="org.hornetq" artifact="hornetq-core"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms"/>
@@ -406,8 +410,8 @@
             <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 
-        <module-def name="org.hibernate.validator">
-            <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
+        <module-def name="org.osgi.util.tracker">
+            <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 
         <module-def name="org.picketbox">

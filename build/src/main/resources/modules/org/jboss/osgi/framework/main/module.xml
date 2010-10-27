@@ -31,13 +31,17 @@
     <dependencies>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.osgi.deployment"/>
-        <module name="org.jboss.osgi.spi"/>
-        <module name="org.jboss.osgi.resolver"/>
-        <module name="org.jboss.osgi.vfs"/>
+        <module name="org.jboss.osgi.deployment" export="true"/>
+        <module name="org.jboss.osgi.spi" export="true"/>
+        <module name="org.jboss.osgi.resolver" export="true"/>
+        <module name="org.jboss.osgi.vfs" export="true"/>
         <module name="org.jboss.vfs"/>
         <module name="org.osgi.core"/>
-        <module name="org.osgi.compendium"/>
+        <module name="org.osgi.util.tracker" export="true">
+            <exports>
+                <include path="org/osgi/util/tracker"/>
+            </exports>
+        </module>
         <module name="system" export="true">
             <exports>
                 <include path="org/jboss/modules"/>

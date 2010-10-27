@@ -28,8 +28,5 @@
     </resources>
 
     <dependencies>
-        <module name="org.osgi.core"/>
-        <module name="org.osgi.compendium"/>
-        <module name="org.apache.aries.util"/>
     </dependencies>
 </module>

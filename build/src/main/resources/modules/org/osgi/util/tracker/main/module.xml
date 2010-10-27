@@ -22,11 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.apache.aries.util">
+<module xmlns="urn:jboss:module:1.0" name="org.osgi.util.tracker">
+
+	<!--
+		This is the compendium as jar which is a dependency of the framework 
+	-->
+	 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="org.osgi.core"/>
     </dependencies>
+    
 </module>
