@@ -37,12 +37,12 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.protocol.ProtocolUtils;
+import static org.jboss.as.protocol.StreamUtils.readByte;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ServerManagerProtocol;
 import org.jboss.as.server.manager.ServerManager;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
@@ -84,9 +84,8 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
      */
      @Override
     public void handle(final Connection connection, final InputStream input) throws IOException {
-        final byte commandCode;
         expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
-        commandCode = StreamUtils.readByte(input);
+        final byte commandCode = readByte(input);
 
         final AbstractMessageHandler operation = operationFor(commandCode);
         if (operation == null) {

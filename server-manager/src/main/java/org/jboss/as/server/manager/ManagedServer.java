@@ -24,6 +24,7 @@ package org.jboss.as.server.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
@@ -45,19 +46,33 @@ import org.jboss.as.model.PropertiesElement;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.process.ProcessManagerClient;
+import org.jboss.as.protocol.Connection;
+import org.jboss.as.protocol.ProtocolUtils;
+import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.server.ServerManagerClient;
+import org.jboss.as.server.ServerManagerConnectionService;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.as.server.ServerState;
+import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
+import static org.jboss.marshalling.Marshalling.createByteInput;
+import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassTable;
+import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Represents a managed server.
@@ -99,7 +114,9 @@ public final class ManagedServer {
     private final ProcessManagerClient processManagerClient;
     private final AtomicInteger respawnCount = new AtomicInteger();
     private final List<AbstractServerModelUpdate<?>> updateList = new ArrayList<AbstractServerModelUpdate<?>>();
+    private final InetSocketAddress managementSocket;
     private volatile ServerState state;
+    private Connection serverManagementConnection;
 
     private final byte[] authKey;
 
@@ -122,6 +139,7 @@ public final class ManagedServer {
         this.serverProcessName = getServerProcessName(serverName);
         this.environment = environment;
         this.processManagerClient = processManagerClient;
+        this.managementSocket = managementSocket;
 
         ServerFactory.combine(domainModel, hostModel, serverName, updateList);
 
@@ -168,6 +186,7 @@ public final class ManagedServer {
         this.systemProperties = properties;
 
         this.state = ServerState.BOOTING;
+
     }
 
     public ServerState getState() {
@@ -264,8 +283,9 @@ public final class ManagedServer {
 
         setState(ServerState.BOOTING);
 
+
         processManagerClient.startProcess(serverProcessName);
-        ServiceActivator serverManagerCommActivator = new ServerManagerCommServiceActivator();
+        ServiceActivator serverManagerCommActivator = new ServerManagerCommServiceActivator(managementSocket);
         ServerStartTask startTask = new ServerStartTask(serverName, portOffset, Collections.<ServiceActivator>singletonList(serverManagerCommActivator), updateList);
         final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
         final OutputStream os = processManagerClient.sendStdin(serverProcessName);
@@ -287,8 +307,14 @@ public final class ManagedServer {
     }
 
     public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates, boolean allowOverallRollback) {
-        // FIXME implement RPC
-        throw new UnsupportedOperationException("ServerManager to Server RPC is not implemented");
+        if(serverManagementConnection == null) {
+            throw new IllegalArgumentException("Updates can not be applied to a managed server without a management connection");
+        }
+        try {
+            return new ApplyUpdatesRequest(updates).executeForResult(serverManagementConnection);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to apply updates to server [" + serverName + "]", e);
+        }
     }
 
     public void gracefulShutdown(long timeout) throws IOException {
@@ -311,6 +337,9 @@ public final class ManagedServer {
         return f.getAbsolutePath();
     }
 
+    public void setServerManagementConnection(Connection serverManagementConnection) {
+        this.serverManagementConnection = serverManagementConnection;
+    }
 
     /**
      * Equivalent to default JAVA_OPTS in < AS 7 run.conf file
@@ -337,11 +366,84 @@ public final class ManagedServer {
     }
 
     private static class ServerManagerCommServiceActivator implements ServiceActivator, Serializable {
+        private final InetSocketAddress managementSocket;
+
+        private ServerManagerCommServiceActivator(InetSocketAddress managementSocket) {
+            this.managementSocket = managementSocket;
+        }
 
         private static final long serialVersionUID = 2522252040771977214L;
 
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
+            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
+            final ServerManagerConnectionService smConnection = new ServerManagerConnectionService();
+            batchBuilder.addService(ServerManagerConnectionService.SERVICE_NAME, smConnection)
+                .addInjection(smConnection.getSmAddressInjector(), managementSocket)
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+
+            final ServerManagerClient client = new ServerManagerClient();
+            batchBuilder.addService(ServerManagerClient.SERVICE_NAME, client)
+                .addDependency(ServerManagerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
+                .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, client.getServerModelInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE);
         }
+    }
+
+    private static class ApplyUpdatesRequest extends ManagementRequest<List<UpdateResultHandlerResponse<?>>> {
+        private final List<AbstractServerModelUpdate<?>> updates;
+
+        private ApplyUpdatesRequest(List<AbstractServerModelUpdate<?>> updates) {
+            this.updates = updates;
+        }
+
+        protected byte getHandlerId() {
+            return DomainServerProtocol.SERVER_TO_SERVER_MANAGER_OPERATION;
+        }
+
+        protected byte getRequestCode() {
+            return DomainServerProtocol.SERVER_MODEL_UPDATES_REQUEST;
+        }
+
+        protected byte getResponseCode() {
+            return DomainServerProtocol.SERVER_MODEL_UPDATES_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+            marshaller.writeInt(updates.size());
+            for (AbstractServerModelUpdate<?> update : updates) {
+                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
+                marshaller.writeObject(update);
+            }
+            marshaller.finish();
+        }
+
+        @Override
+        protected final List<UpdateResultHandlerResponse<?>> receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
+            final int updateCount = unmarshaller.readInt();
+            final List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(updateCount);
+            for (int i = 0; i < updateCount; i++) {
+                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
+                UpdateResultHandlerResponse<?> updateResult = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
+                results.add(updateResult);
+            }
+            unmarshaller.finish();
+            return results;
+        }
+    }
+
+    private static Marshaller getMarshaller() throws IOException {
+        return ProtocolUtils.getMarshaller(ProtocolUtils.MODULAR_CONFIG);
+    }
+
+    private static Unmarshaller getUnmarshaller() throws IOException {
+        return ProtocolUtils.getUnmarshaller(ProtocolUtils.MODULAR_CONFIG);
     }
 }

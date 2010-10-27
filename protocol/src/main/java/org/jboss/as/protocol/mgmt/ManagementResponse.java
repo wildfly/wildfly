@@ -29,7 +29,6 @@ import java.io.OutputStream;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
@@ -43,8 +42,8 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
 
     /** {@inheritDoc} */
     public void handle(final Connection connection, final InputStream input) throws IOException {
-        expectHeader(input, ManagementProtocol.REQUEST_START);
         connection.setMessageHandler(requestBodyHandler);
+        expectHeader(input, ManagementProtocol.REQUEST_START);
     }
 
     /**
@@ -82,7 +81,8 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
 
     final MessageHandler requestEndHandler = new AbstractMessageHandler() {
         public final void handle(final Connection connection, final InputStream input) throws IOException {
-                expectHeader(input, ManagementProtocol.REQUEST_END);
+            connection.setMessageHandler(MessageHandler.NULL);
+            expectHeader(input, ManagementProtocol.REQUEST_END);
 
             OutputStream outputStream = null;
             ByteDataOutput output = null;

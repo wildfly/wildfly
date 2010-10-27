@@ -65,6 +65,7 @@ import org.jboss.as.server.manager.mgmt.ManagementCommunicationService;
 import org.jboss.as.server.manager.mgmt.ManagementCommunicationServiceInjector;
 import org.jboss.as.server.manager.mgmt.ManagementOperationHandlerService;
 import org.jboss.as.server.manager.mgmt.ServerManagerOperationHandler;
+import org.jboss.as.server.manager.mgmt.ServerToServerManagerOperationHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.as.threads.ThreadFactoryService;
@@ -170,6 +171,16 @@ public class ServerManager {
         } else {
             activateRemoteDomainControllerConnection(serviceActivatorContext);
         }
+
+        // Last but not least the server manager service
+        final ManagementElement managementElement = getHostModel().getManagementElement();
+        final ServerManagerService serverManagerService = new ServerManagerService(this);
+        batchBuilder.addService(SERVICE_NAME_BASE, serverManagerService)
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, serverManagerService.getManagementInterfaceInjector())
+            .addInjection(serverManagerService.getManagementPortInjector(), managementElement.getPort())
+            .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, serverManagerService.getDomainControllerConnectionInjector())
+            .setInitialMode(ServiceController.Mode.ACTIVE);
+
         try {
             batchBuilder.install();
         } catch (ServiceRegistryException e) {
@@ -444,15 +455,8 @@ public class ServerManager {
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
 
-            batchBuilder.addService(SERVICE_NAME_BASE.append("local", "dc", "connection"), Service.NULL)
-                .addDependency(DomainController.SERVICE_NAME, DomainController.class, new Injector<DomainController>(){
-                    public void inject(DomainController value) throws InjectionException {
-                        setDomainControllerConnection(new LocalDomainControllerConnection(ServerManager.this, domainController, fileRepository));
-                    }
-                    public void uninject() {
-                        setDomainControllerConnection(null);
-                    }
-                });
+            batchBuilder.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(ServerManager.this, domainController, fileRepository))
+                .addDependency(DomainController.SERVICE_NAME);
 
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
@@ -463,13 +467,14 @@ public class ServerManager {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
-        final BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
-            .addListener(new AbstractServiceListener<Void>() {
+        final BatchServiceBuilder<DomainControllerConnection> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
+            .addListener(new AbstractServiceListener<DomainControllerConnection>() {
                 @Override
-                public void serviceFailed(ServiceController<? extends Void> serviceController, StartException reason) {
+                public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {
                     log.error("Failed to register with domain controller.", reason);
                 }
             })
+            .addAliases(DomainControllerConnection.SERVICE_NAME)
             .setInitialMode(ServiceController.Mode.ACTIVE);
 
         HostModel hostConfig = getHostModel();
@@ -541,20 +546,21 @@ public class ServerManager {
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE);
 
-        //  Add the server manager operation handler
+        //  Add the DC to server manager operation handler
         final ManagementOperationHandlerService<ServerManagerOperationHandler> operationHandlerService
                 = new ManagementOperationHandlerService<ServerManagerOperationHandler>(new ServerManagerOperationHandler(this));
             batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "manager"), operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
+
+        //  Add the server to server manager operation handler
+        final ManagementOperationHandlerService<ServerToServerManagerOperationHandler> serverOperationHandlerService
+                = new ManagementOperationHandlerService<ServerToServerManagerOperationHandler>(new ServerToServerManagerOperationHandler(this));
+            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "server", "manager"), serverOperationHandlerService)
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverOperationHandlerService));
     }
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {
         this.domainControllerConnection = domainControllerConnection;
-        if(domainControllerConnection == null) {
-            return;
-        }
-        final DomainModel domainModel = domainControllerConnection.register();
-        setDomain(domainModel);
     }
 
     public ModelManager getModelManager() {
@@ -577,19 +583,9 @@ public class ServerManager {
      */
     public void setDomain(final DomainModel domain) {
         modelManager.setDomainModel(domain);
-        synchronizeDeployments();
-        if(serversStarted.compareAndSet(false, true)) {
-            if (!environment.isRestart()) {
-                startServers();
-            } else {
-                // FIXME -- this got dropped in the move to an update-based boot
-                // handle it properly
-//                reconnectServers();
-            }
-        }
     }
 
-    ManagedServer getServer(String name) {
+    public ManagedServer getServer(String name) {
         return servers.get(name);
     }
 
@@ -623,23 +619,30 @@ public class ServerManager {
         }
     }
 
-    private void startServers() {
-        // TODO: use the actual address of the SM...
-        InetSocketAddress managementSocket = new InetSocketAddress(0);
-        HostModel hostConfig = getHostModel();
-        for (ServerElement serverEl : hostConfig.getServers()) {
-            // TODO take command line input on what servers to start
-            if (serverEl.isStart()) {
-                String serverName = serverEl.getName();
-                log.info("Starting server " + serverName);
-                try {
-                    startServer(serverName, managementSocket);
-                } catch (IOException e) {
-                    // FIXME handle failure to start server
-                    log.error("Failed to start server " + serverName, e);
+    void startServers(final InetSocketAddress managementSocket) {
+        if(serversStarted.compareAndSet(false, true)) {
+            if (!environment.isRestart()) {
+                synchronizeDeployments();
+                HostModel hostConfig = getHostModel();
+                for (ServerElement serverEl : hostConfig.getServers()) {
+                    // TODO take command line input on what servers to start
+                    if (serverEl.isStart()) {
+                        String serverName = serverEl.getName();
+                        log.info("Starting server " + serverName);
+                        try {
+                            startServer(serverName, managementSocket);
+                        } catch (IOException e) {
+                            // FIXME handle failure to start server
+                            log.error("Failed to start server " + serverName, e);
+                        }
+                    }
+                    else log.info("Server " + serverEl.getName() + " is configured to not be started");
                 }
+            } else {
+                // FIXME -- this got dropped in the move to an update-based boot
+                // handle it properly
+//                reconnectServers();
             }
-            else log.info("Server " + serverEl.getName() + " is configured to not be started");
         }
     }
 

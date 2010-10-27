@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.SocketFactory;
 
 import org.jboss.as.protocol.ByteDataInput;
@@ -60,6 +61,11 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private final ThreadFactory threadFactory;
     private int requestId = 0;
     private final ResponseFuture<T> future = new ResponseFuture<T>();
+    private T result;
+
+    public ManagementRequest() {
+        this(null, -1, 0L, null, null);
+    }
 
     /**
      * Construct a new request object with the required connection parameters.
@@ -96,7 +102,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         final int timeout = (int) TimeUnit.SECONDS.toMillis(connectTimeout);
 
         final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
-        config.setMessageHandler(new InitiatingMessageHandler());
+        config.setMessageHandler(initiatingMessageHandler);
         config.setConnectTimeout(timeout);
         config.setReadExecutor(executorService);
         config.setSocketFactory(SocketFactory.getDefault());
@@ -104,23 +110,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         config.setThreadFactory(threadFactory);
 
         final ProtocolClient protocolClient = new ProtocolClient(config);
-        OutputStream dataOutput = null;
-        ByteDataOutput output = null;
-        try {
-            final Connection connection = protocolClient.connect();
-            dataOutput = connection.writeMessage();
-            output = new SimpleByteDataOutput(dataOutput);
-
-            // Start by writing the header
-            final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
-            managementRequestHeader.write(output);
-            output.close();
-            dataOutput.close();
-        } finally {
-            safeClose(output);
-            safeClose(dataOutput);
-        }
-        return future;
+        return execute(protocolClient.connect());
     }
 
     /**
@@ -133,20 +123,56 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         return execute().get();
     }
 
+    /**
+     * Execute the request with an existing connection.
+     *
+     * @param connection An existing connection
+     * @return A future result
+     * @throws IOException If any errors occur
+     */
+    public Future<T> execute(final Connection connection) throws IOException {
+        OutputStream dataOutput = null;
+        ByteDataOutput output = null;
+        try {
+            dataOutput = connection.writeMessage();
+            output = new SimpleByteDataOutput(dataOutput);
+            // Start by writing the header
+            final ManagementRequestHeader managementRequestHeader = new ManagementRequestHeader(ManagementProtocol.VERSION, requestId, getHandlerId());
+            managementRequestHeader.write(output);
+            connection.setMessageHandler(initiatingMessageHandler);
+            output.close();
+            dataOutput.close();
+        } finally {
+            safeClose(output);
+            safeClose(dataOutput);
+        }
+        return future;
+    }
+
+    /**
+     * Execute the request with an existing connection and wait for the result.
+     *
+     * @return The result
+     * @throws IOException If any problems occur
+     */
+    public T executeForResult(final Connection connection) throws Exception {
+        return execute(connection).get();
+    }
+
     public void handle(Connection connection, InputStream input) throws IOException {
         try {
+            connection.setMessageHandler(responseBodyHandler);
             expectHeader(input, ManagementProtocol.RESPONSE_START);
             byte responseCode = StreamUtils.readByte(input);
             if (responseCode != getResponseCode()) {
                 throw new IOException("Invalid response code.  Expecting '" + getResponseCode() + "' received '" + responseCode + "'");
             }
-            connection.setMessageHandler(responseBodyHandler);
         } catch (Exception e) {
             future.setException(e);
         }
     }
 
-    private class InitiatingMessageHandler extends AbstractMessageHandler {
+    private MessageHandler initiatingMessageHandler = new AbstractMessageHandler() {
         public final void handle(final Connection connection, final InputStream inputStream) throws IOException {
             final ManagementResponseHeader responseHeader;
             ByteDataInput input = null;
@@ -162,7 +188,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 safeClose(input);
             }
         }
-    }
+    };
 
     /**
      * Execute the request body.  This is run after the connection is established and the headers are exchanged.
@@ -219,7 +245,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(responseEndHandler);
             expectHeader(input, ManagementProtocol.RESPONSE_BODY);
-            future.set(receiveResponse(input));
+            result = receiveResponse(input);
         }
     };
 
@@ -227,6 +253,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(MessageHandler.NULL);
             expectHeader(input, ManagementProtocol.RESPONSE_END);
+            future.set(result);
         }
     };
 
@@ -237,12 +264,13 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private final class ResponseFuture<R> implements Future<R>{
         private volatile R result;
         private volatile Exception exception;
+        private AtomicBoolean valueSet = new AtomicBoolean();
 
         public R get() throws InterruptedException, ExecutionException {
             boolean intr = false;
             try {
                 synchronized (this) {
-                    while (this.result == null && exception == null) {
+                    while (!valueSet.get()) {
                         try {
                             wait();
                         } catch (InterruptedException e) {
@@ -262,15 +290,19 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
 
         void set(final R result) {
             synchronized (this) {
-                this.result = result;
-                notifyAll();
+                if(valueSet.compareAndSet(false, true)) {
+                    this.result = result;
+                    notifyAll();
+                }
             }
         }
 
         void setException(final Exception exception) {
             synchronized (this) {
-                this.exception = exception;
-                notifyAll();
+                if(valueSet.compareAndSet(false, true)) {
+                    this.exception = exception;
+                    notifyAll();
+                }
             }
         }
 

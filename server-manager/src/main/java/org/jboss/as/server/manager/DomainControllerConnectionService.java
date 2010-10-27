@@ -43,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John E. Bailey
  */
-public class DomainControllerConnectionService implements Service<Void> {
+public class DomainControllerConnectionService implements Service<DomainControllerConnection> {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller", "client");
 
     private final InjectedValue<InetAddress> domainControllerAddress = new InjectedValue<InetAddress>();
@@ -60,6 +60,8 @@ public class DomainControllerConnectionService implements Service<Void> {
     private final FileRepository localRepository;
 
     private final long connectTimeout;
+
+    private DomainControllerConnection domainControllerConnection;
 
     public DomainControllerConnectionService(final ServerManager serverManager, final FileRepository localRepository, final long connectTimeout) {
         this.serverManager = serverManager;
@@ -83,7 +85,7 @@ public class DomainControllerConnectionService implements Service<Void> {
             }
         }
         final NetworkInterfaceBinding managementInterface = localManagementInterface.getValue();
-        serverManager.setDomainControllerConnection(new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), managementInterface.getAddress(), localManagementPort.getValue(), localRepository, connectTimeout, executorService.getValue(), threadFactoryValue.getValue()));
+        domainControllerConnection = new RemoteDomainControllerConnection(serverManager.getName(), dcAddress, domainControllerPort.getValue(), managementInterface.getAddress(), localManagementPort.getValue(), localRepository, connectTimeout, executorService.getValue(), threadFactoryValue.getValue());
     }
 
     /**
@@ -92,16 +94,16 @@ public class DomainControllerConnectionService implements Service<Void> {
      * @param context The stop context.
      */
     public synchronized void stop(final StopContext context) {
-
+        domainControllerConnection = null;
     }
 
     /**
      * No value for this service.
      *
-     * @return {@code null}
+     * @return a remote domain controller connection
      */
-    public Void getValue() throws IllegalStateException {
-        return null;
+    public DomainControllerConnection getValue() throws IllegalStateException {
+        return domainControllerConnection;
     }
 
     public Injector<InetAddress> getDomainControllerAddressInjector() {

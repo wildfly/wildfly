@@ -25,12 +25,16 @@ package org.jboss.as.server.manager;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.model.DomainModel;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
  *
  * @author John Bailey
  */
-public class LocalDomainControllerConnection implements DomainControllerConnection {
+public class LocalDomainControllerConnection implements DomainControllerConnection, Service<DomainControllerConnection> {
     private final DomainController domainController;
     private final LocalDomainControllerClient client;
     private final FileRepository fileRepository;
@@ -46,6 +50,16 @@ public class LocalDomainControllerConnection implements DomainControllerConnecti
         this.domainController = domainController;
         client = new LocalDomainControllerClient(serverManager);
         this.fileRepository = fileRepository;
+    }
+
+    public void start(StartContext context) throws StartException {
+    }
+
+    public void stop(StopContext context) {
+    }
+
+    public DomainControllerConnection getValue() throws IllegalStateException {
+        return this;
     }
 
     /** {@inheritDoc} */
