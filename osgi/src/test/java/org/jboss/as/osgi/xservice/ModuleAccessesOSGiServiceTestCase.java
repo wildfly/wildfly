@@ -172,6 +172,8 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
         Bundle apiBundle = getBundleManager().installBundle(apiId);
         assertBundleState(Bundle.INSTALLED, apiBundle.getState());
         
+        // [TODO] Remove this assertion when it is clear when the MCL becomes available
+        // [JBAS-8561] Bundle cannot load class from dependent module
         assertLoadClass(apiBundle, Echo.class.getName());
 
         JavaArchive targetArchive = getTargetBundleArchive();
