@@ -56,7 +56,8 @@ class QueueService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             final HornetQServer hornetQService = this.hornetQService.getValue();
-            hornetQService.deployQueue(new SimpleString(address), new SimpleString(queueName), new SimpleString(filter), durable, temporary);
+            hornetQService.deployQueue(new SimpleString(address), new SimpleString(queueName),
+                    filter != null ? new SimpleString(filter) : null, durable, temporary);
         } catch (Exception e) {
             throw new StartException(e);
         }
