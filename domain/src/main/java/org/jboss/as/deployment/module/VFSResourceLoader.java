@@ -156,7 +156,7 @@ public class VFSResourceLoader implements ResourceLoader {
             if (!file.exists()) {
                 return null;
             }
-            return new VFSEntryResource(file, root.toURL());
+            return new VFSEntryResource(file, file.toURL());
         } catch (MalformedURLException e) {
             // must be invalid...?  (todo: check this out)
             return null;
