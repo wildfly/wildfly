@@ -22,9 +22,12 @@
 
 package org.jboss.as.server;
 
+import java.util.List;
+
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -45,6 +48,26 @@ public interface ServerController {
      * @return the server model
      */
     ServerModel getServerModel();
+
+    /**
+     * Apply a series of updates.
+     *
+     * @param updates the updates
+     * @param rollbackOnFailure <code>true</code> if successfully applied updates
+     *                          should be rolled back if an update later in the list fails
+     * @param modelOnly <code>true</code> if the updates should only be applied
+     *                  to the ServerModel and should not be applied
+     *                to the runtime, <code>false</code> if they should also
+     *                be applied to the runtime. A {@code true} value is only
+     *                legal on a standalone server
+     *
+     * @return the results of the updates
+     *
+     * @throws IllegalStateException if this is not a standalone server and
+     *           {@code modelOnly} is {@code true}
+     */
+    List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
+            boolean rollbackOnFailure, boolean applyToRuntime);
 
     /**
      * Apply a persistent update.

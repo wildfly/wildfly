@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
@@ -47,6 +46,7 @@ import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.ServerFactory;
 import org.jboss.as.model.ServerGroupElement;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.process.ProcessManagerClient;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
@@ -54,6 +54,7 @@ import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
+import org.jboss.as.server.ServerController;
 import org.jboss.as.server.ServerManagerClient;
 import org.jboss.as.server.ServerManagerConnectionService;
 import org.jboss.as.server.ServerStartTask;
@@ -307,20 +308,28 @@ public final class ManagedServer {
         processManagerClient.removeProcess(serverProcessName);
     }
 
-    public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates, boolean allowOverallRollback) {
+    public List<UpdateResultHandlerResponse<?>> applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
         if(serverManagementConnection == null) {
             throw new IllegalArgumentException("Updates can not be applied to a managed server without a management connection");
         }
         try {
-            return new ApplyUpdatesRequest(updates).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(serverManagementConnection));
+            return new ApplyUpdatesRequest(updates, allowOverallRollback).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(serverManagementConnection));
         } catch (Exception e) {
             throw new RuntimeException("Failed to apply updates to server [" + serverName + "]", e);
         }
     }
 
     public void gracefulShutdown(long timeout) throws IOException {
-        // FIXME implement RPC
+        // FIXME implement gracefulShutdown RPC
         throw new UnsupportedOperationException("ServerManager to Server RPC is not implemented");
+    }
+
+    public ServerModel getServerModel() {
+        try {
+            return new GetServerModelRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(serverManagementConnection));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get ServerModel from server [" + serverName + "]", e);
+        }
     }
 
     private String getJavaCommand() {
@@ -386,26 +395,31 @@ public final class ManagedServer {
             final ServerManagerClient client = new ServerManagerClient();
             batchBuilder.addService(ServerManagerClient.SERVICE_NAME, client)
                 .addDependency(ServerManagerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
-                .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, client.getServerModelInjector())
+                .addDependency(ServerController.SERVICE_NAME, ServerController.class, client.getServerControllerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         }
     }
 
     private static class ApplyUpdatesRequest extends ManagementRequest<List<UpdateResultHandlerResponse<?>>> {
         private final List<AbstractServerModelUpdate<?>> updates;
+        private final boolean allowOverallRollback;
 
-        private ApplyUpdatesRequest(List<AbstractServerModelUpdate<?>> updates) {
+        private ApplyUpdatesRequest(final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
             this.updates = updates;
+            this.allowOverallRollback = allowOverallRollback;
         }
 
+        @Override
         protected byte getHandlerId() {
             return DomainServerProtocol.SERVER_TO_SERVER_MANAGER_OPERATION;
         }
 
+        @Override
         protected byte getRequestCode() {
             return DomainServerProtocol.SERVER_MODEL_UPDATES_REQUEST;
         }
 
+        @Override
         protected byte getResponseCode() {
             return DomainServerProtocol.SERVER_MODEL_UPDATES_RESPONSE;
         }
@@ -414,6 +428,8 @@ public final class ManagedServer {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
+            marshaller.writeByte(DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
+            marshaller.writeBoolean(allowOverallRollback);
             marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for (AbstractServerModelUpdate<?> update : updates) {
@@ -437,6 +453,40 @@ public final class ManagedServer {
             }
             unmarshaller.finish();
             return results;
+        }
+    }
+
+    private static class GetServerModelRequest extends ManagementRequest<ServerModel> {
+
+        @Override
+        protected byte getHandlerId() {
+            return DomainServerProtocol.SERVER_TO_SERVER_MANAGER_OPERATION;
+        }
+
+        @Override
+        protected byte getRequestCode() {
+            return DomainServerProtocol.GET_SERVER_MODEL_REQUEST;
+        }
+
+        @Override
+        protected byte getResponseCode() {
+            return DomainServerProtocol.GET_SERVER_MODEL_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.finish();
+        }
+
+        @Override
+        protected final ServerModel receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
+            unmarshaller.finish();
+            return serverModel;
         }
     }
 

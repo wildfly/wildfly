@@ -23,8 +23,6 @@
 package org.jboss.as.server.manager;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +31,7 @@ import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.domain.client.impl.HostUpdateApplierResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
@@ -50,7 +49,7 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class ModelManager {
 
-    private final File hostXml;
+    private final HostConfigurationPersister configPersister;
     private DomainModel domainModel;
     private volatile HostModel hostModel;
 
@@ -58,9 +57,14 @@ public class ModelManager {
     private FileRepository repository;
 
     ModelManager(final ServerManagerEnvironment environment, final StandardElementReaderRegistrar extensionRegistrar) {
-        assert environment != null : "environment is null";
+        this(new HostConfigurationPersisterImpl(environment.getDomainConfigurationDir()), extensionRegistrar);
+    }
+
+    ModelManager(final HostConfigurationPersister configPersister, final StandardElementReaderRegistrar extensionRegistrar) {
+
+        assert configPersister != null : "configPersister is null";
         assert extensionRegistrar != null : "extensionRegistrar is null";
-        this.hostXml = new File(environment.getDomainConfigurationDir(), "host.xml");
+        this.configPersister = configPersister;
         this.extensionRegistrar = extensionRegistrar;
     }
 
@@ -71,7 +75,7 @@ public class ModelManager {
 
     public HostModel getHostModel() {
         if (hostModel == null) {
-            synchronized (hostXml) {
+            synchronized (configPersister) {
                 if (hostModel == null) {
                     hostModel = parseHostXml();
                 }
@@ -104,7 +108,7 @@ public class ModelManager {
                 domainModel.update(update);
             }
             catch (UpdateFailedException e) {
-                // FIXME mark ourself in a state where we require
+                // TODO mark ourself in a state where we require
                 // correction by the DC.
                 throw e;
             }
@@ -124,12 +128,76 @@ public class ModelManager {
         return ids;
     }
 
+
+    public List<HostUpdateApplierResponse> applyHostModelUpdates(List<AbstractHostModelUpdate<?>> updates) {
+
+
+        List<HostUpdateApplierResponse> result = new ArrayList<HostUpdateApplierResponse>(updates.size());
+
+        // First we apply updates to our local model copy
+        boolean ok = true;
+        List<AbstractHostModelUpdate<?>> rollbacks = new ArrayList<AbstractHostModelUpdate<?>>();
+        for (AbstractHostModelUpdate<?> update : updates) {
+            if (ok) {
+                try {
+                    AbstractHostModelUpdate<?> rollback = update.getCompensatingUpdate(hostModel);
+                    hostModel.update(update);
+                    // Add the rollback after success so we don't rollback
+                    // the failed update -- which should not have changed anything
+                    rollbacks.add(0, rollback);
+                    // Stick in a placeholder result that will survive if
+                    // a host update faiure triggers a rollback or will get replaced with
+                    // the final result if we apply to servers
+                    result.add(new HostUpdateApplierResponse(false));
+                }
+                catch (UpdateFailedException e) {
+                    ok = false;
+                    result.add(new HostUpdateApplierResponse(e));
+                }
+            } else {
+                // Add a cancellation response
+                result.add(new HostUpdateApplierResponse(true));
+            }
+        }
+
+        if (!ok) {
+            // Apply compensating updates to fix our local model
+            for (int i = 0; i < rollbacks.size(); i++) {
+                AbstractHostModelUpdate<?> rollback = rollbacks.get(i);
+                try {
+                    hostModel.update(rollback);
+                }
+                catch (UpdateFailedException e) {
+                    // TODO uh oh. Reload from the file?
+                }
+            }
+        }
+        else {
+            // Persist model
+            configPersister.persistConfiguration(hostModel);
+
+            for (AbstractHostModelUpdate<?> update : updates) {
+                result.add(new HostUpdateApplierResponse(getAffectedServers(update)));
+            }
+        }
+
+        return result;
+    }
+
     public List<ServerIdentity> applyHostModelUpdate(AbstractHostModelUpdate<?> update) throws UpdateFailedException {
 
-        getHostModel().update(update);
+        List<HostUpdateApplierResponse> rsps = applyHostModelUpdates(Collections.<AbstractHostModelUpdate<?>>singletonList(update));
+        HostUpdateApplierResponse rsp = rsps.get(0);
+        if (rsp.getHostFailure() != null) {
+            throw rsp.getHostFailure();
+        }
+        else {
+            return rsp.getServers();
+        }
+    }
 
-        // FIXME persist host.xml
 
+    private List<ServerIdentity> getAffectedServers(AbstractHostModelUpdate<?> update) {
         List<String> serverNames = update.getAffectedServers(hostModel);
         if (serverNames.size() == 0) {
             return Collections.emptyList();
@@ -145,18 +213,11 @@ public class ModelManager {
 
     private HostModel parseHostXml() {
 
-        if (!hostXml.exists()) {
-            throw new IllegalStateException("File " + hostXml.getAbsolutePath() + " does not exist.");
-        }
-        else if (! hostXml.canWrite()) {
-            throw new IllegalStateException("File " + hostXml.getAbsolutePath() + " is not writeable.");
-        }
-
         try {
             final List<AbstractHostModelUpdate<?>> hostUpdates = new ArrayList<AbstractHostModelUpdate<?>>();
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardHostReaders(mapper);
-            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(this.hostXml))));
+            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(configPersister.getConfigurationReader())));
             final HostModel hostModel = new HostModel();
             for(final AbstractHostModelUpdate<?> update : hostUpdates) {
                 hostModel.update(update);

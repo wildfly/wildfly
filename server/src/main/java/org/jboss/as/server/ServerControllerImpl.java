@@ -22,33 +22,83 @@
 
 package org.jboss.as.server;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
+import org.jboss.as.model.UpdateResultHandlerResponse;
+import org.jboss.as.protocol.mgmt.ManagementException;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
+import org.jboss.as.server.mgmt.ServerUpdateController;
+import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
+import org.jboss.as.server.mgmt.ServerUpdateController.Status;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ServerControllerImpl implements ServerController, Service<ServerController> {
+
+    private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
+    private final InjectedValue<ExecutorService> executorValue = new InjectedValue<ExecutorService>();
+
     private final ServiceContainer container;
     private final ServerModel serverModel;
+    private final boolean standalone;
+    private ServerConfigurationPersister configurationPersister;
+    private ExecutorService executor;
 
-    ServerControllerImpl(final ServerModel model, final ServiceContainer container) {
+
+    ServerControllerImpl(final ServerModel model, final ServiceContainer container, final boolean standalone) {
         this.serverModel = model;
         this.container = container;
+        this.standalone = standalone;
     }
 
     /** {@inheritDoc} */
     public ServerModel getServerModel() {
         return serverModel;
+    }
+
+    @Override
+    public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
+            boolean rollbackOnFailure, boolean modelOnly) {
+
+        if (modelOnly && !standalone) {
+            throw new IllegalStateException("model-only updates are not valid on a domain-based server");
+        }
+
+        List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(updates.size());
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, latch);
+        final ServerUpdateController controller = new ServerUpdateController(getServerModel(),
+                container, executor, handler, rollbackOnFailure, modelOnly);
+
+        for(int i = 0; i < updates.size(); i++) {
+            controller.addServerModelUpdate(updates.get(i), handler, Integer.valueOf(i));
+        }
+
+        controller.executeUpdates();
+        try {
+            latch.await();
+        } catch(Exception e) {
+            throw new ManagementException("failed to execute updates", e);
+        }
+
+        return results;
     }
 
     public <R, P> void update(final AbstractServerModelUpdate<R> update, final UpdateResultHandler<R, P> resultHandler, final P param) {
@@ -66,6 +116,14 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     public void shutdown() {
         container.shutdown();
+    }
+
+    public InjectedValue<ServerConfigurationPersister> getConfigurationPersisterValue() {
+        return configurationPersisterValue;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorValue() {
+        return executorValue;
     }
 
     final class UpdateContextImpl implements UpdateContext {
@@ -94,11 +152,89 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     /** {@inheritDoc} */
     public void start(StartContext context) throws StartException {
-        //
+        try {
+            configurationPersister = configurationPersisterValue.getValue();
+            executor = executorValue.getValue();
+        } catch (IllegalStateException e) {
+            throw new StartException(e);
+        }
     }
 
     /** {@inheritDoc} */
     public void stop(StopContext context) {
         //
+    }
+
+    private class ServerUpdateCommitHandlerImpl implements ServerUpdateCommitHandler, UpdateResultHandler<Object, Integer> {
+
+        private final List<UpdateResultHandlerResponse<?>> responses;
+        private final CountDownLatch latch;
+
+        public ServerUpdateCommitHandlerImpl(List<UpdateResultHandlerResponse<?>> responses, CountDownLatch latch) {
+            this.responses = responses;
+            this.latch = latch;
+        }
+
+        @Override
+        public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
+            configurationPersister.configurationModified();
+            latch.countDown();
+        }
+
+        @Override
+        public void handleCancellation(Integer param) {
+            responses.set(param, UpdateResultHandlerResponse.createCancellationResponse());
+        }
+
+        @Override
+        public void handleFailure(Throwable cause, Integer param) {
+            responses.set(param, UpdateResultHandlerResponse.createFailureResponse(cause));
+        }
+
+        @Override
+        public void handleRollbackCancellation(Integer param) {
+            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            if (rsp == null) {
+                throw new IllegalStateException("No response assoicated with index " + param);
+            }
+            responses.set(param, UpdateResultHandlerResponse.createRollbackCancelledResponse(rsp));
+        }
+
+        @Override
+        public void handleRollbackFailure(Throwable cause, Integer param) {
+            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            if (rsp == null) {
+                throw new IllegalStateException("No response assoicated with index " + param);
+            }
+            responses.set(param, UpdateResultHandlerResponse.createRollbackFailedResponse(rsp, cause));
+        }
+
+        @Override
+        public void handleRollbackSuccess(Integer param) {
+            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            if (rsp == null) {
+                throw new IllegalStateException("No response assoicated with index " + param);
+            }
+            responses.set(param, UpdateResultHandlerResponse.createRollbackResponse(rsp));
+        }
+
+        @Override
+        public void handleRollbackTimeout(Integer param) {
+            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            if (rsp == null) {
+                throw new IllegalStateException("No response assoicated with index " + param);
+            }
+            responses.set(param, UpdateResultHandlerResponse.createRollbackTimedOutResponse(rsp));
+        }
+
+        @Override
+        public void handleSuccess(Object result, Integer param) {
+            responses.set(param, UpdateResultHandlerResponse.createSuccessResponse(result));
+        }
+
+        @Override
+        public void handleTimeout(Integer param) {
+            responses.set(param, UpdateResultHandlerResponse.createTimeoutResponse());
+        }
     }
 }

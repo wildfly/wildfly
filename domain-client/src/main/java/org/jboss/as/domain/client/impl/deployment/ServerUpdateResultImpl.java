@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerUpdateResult;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 
 /**
  * Default implementation of {@link ServerUpdateResult}.

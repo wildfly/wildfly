@@ -20,27 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.mgmt.domain;
+package org.jboss.as.domain.client.api;
 
 /**
- * @author John Bailey
+ * Status of server.
+ *
+ * @author Brian Stansberry
  */
-public interface DomainServerProtocol {
-    int SERVER_TO_SERVER_MANAGER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
-    int REGISTER_REQUEST = 0x00;
-    int PARAM_SERVER_NAME = 0x01;
-    int REGISTER_RESPONSE = 0x02;
+public enum ServerStatus {
 
-
-    int SERVER_MODEL_UPDATES_REQUEST = 0x10;
-    int PARAM_ALLOW_ROLLBACK = 0x28;
-    int PARAM_SERVER_MODEL_UPDATE_COUNT = 0x29;
-    int PARAM_SERVER_MODEL_UPDATE = 0x30;
-    int PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT = 0x31;
-    int PARAM_SERVER_MODEL_UPDATE_RESPONSE = 0x32;
-    int SERVER_MODEL_UPDATES_RESPONSE = 0x15;
-
-    int GET_SERVER_MODEL_REQUEST = 0x20;
-    int GET_SERVER_MODEL_RESPONSE = 0x21;
-
+    /** The server is disabled; i.e. configured not to start automatically */
+    DISABLED,
+    /** The server is starting */
+    STARTING,
+    /** The server is started */
+    STARTED,
+    /** The server is stopping */
+    STOPPING,
+    /** The server is stopped */
+    STOPPED,
+    /** The server failed to start */
+    FAILED,
+    /**
+     * The status of the server is currently unknown. This is the status of
+     * any server whose server manager is currently unreachable.
+     */
+    UNKNOWN,
+    /** Status indicating the server manager does not recognize the server name */
+    DOES_NOT_EXIST
 }

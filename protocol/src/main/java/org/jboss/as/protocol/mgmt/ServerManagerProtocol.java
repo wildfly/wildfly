@@ -23,6 +23,9 @@
 package org.jboss.as.protocol.mgmt;
 
 /**
+ * Headers used in the management protocol between the Domain Controller and
+ * the Server Manager.
+ *
  * @author John Bailey
  */
 public interface ServerManagerProtocol {
@@ -48,4 +51,22 @@ public interface ServerManagerProtocol {
     int PARAM_SERVER_MODEL_UPDATE_COUNT = 0x43;
     int PARAM_SERVER_MODEL_UPDATE = 0x44;
     int UPDATE_SERVER_MODEL_RESPONSE = 0x45;
+    int GET_HOST_MODEL_REQUEST = 0x46;
+    int GET_HOST_MODEL_RESPONSE = 0x47;
+    int GET_SERVER_MODEL_REQUEST = 0x48;
+    int RETURN_SERVER_MODEL = 0x49;
+    int GET_SERVER_MODEL_RESPONSE = 0x50;
+    int GET_SERVER_LIST_REQUEST = 0x51;
+    int RETURN_SERVER_COUNT = 0x52;
+    int RETURN_SERVER_NAME = 0x53;
+    int RETURN_SERVER_GROUP_NAME = 0x54;
+    int RETURN_SERVER_STATUS = 0x55;
+    int GET_SERVER_LIST_RESPONSE = 0x57;
+    int START_SERVER_REQUEST = 0x58;
+    int START_SERVER_RESPONSE = 0x59;
+    int STOP_SERVER_REQUEST = 0x60;
+    int PARAM_GRACEFUL_TIMEOUT = 0x61;
+    int STOP_SERVER_RESPONSE = 0x62;
+    int RESTART_SERVER_REQUEST = 0x63;
+    int RESTART_SERVER_RESPONSE = 0x64;
 }

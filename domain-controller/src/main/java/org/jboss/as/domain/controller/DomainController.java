@@ -45,14 +45,19 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.stream.XMLInputFactory;
 
 import org.jboss.as.domain.client.api.DomainUpdateResult;
+import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -95,6 +100,8 @@ public class DomainController implements Service<DomainController> {
         this.configPersister = configPersister;
         this.deploymentRepository = deploymentRepository;
     }
+
+    // ---------------------------------------------------------------  Service
 
     /**
      * Start the domain controller with configuration.  This will launch required service for the domain controller.
@@ -147,6 +154,8 @@ public class DomainController implements Service<DomainController> {
         return this;
     }
 
+    // ----------------------------------  Operations invoked by Server Manager
+
     public void addClient(final ServerManagerClient domainControllerClient) {
         if(clients.putIfAbsent(domainControllerClient.getId(), domainControllerClient) != null) {
             // TODO: Handle
@@ -159,8 +168,102 @@ public class DomainController implements Service<DomainController> {
         }
     }
 
+    // -----------------------------------  Operations invoked by DomainClient
+
     public synchronized DomainModel getDomainModel() {
         return domainModel;
+    }
+
+    public Set<String> getServerManagerNames() {
+        return Collections.unmodifiableSet(clients.keySet());
+    }
+
+    public HostModel getHostModel(final String serverManagerName) {
+
+        ServerManagerClient client = clients.get(serverManagerName);
+        if (client == null) {
+            return null;
+        }
+        else {
+            return client.getHostModel();
+        }
+    }
+
+    public Map<ServerIdentity, ServerStatus> getServerStatuses() {
+        Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
+        Map<String, Future<Map<ServerIdentity, ServerStatus>>> futures = new HashMap<String, Future<Map<ServerIdentity, ServerStatus>>>();
+        for (Map.Entry<String, ServerManagerClient> entry : clients.entrySet()) {
+            final ServerManagerClient client = entry.getValue();
+            Callable<Map<ServerIdentity, ServerStatus>> callable = new Callable<Map<ServerIdentity, ServerStatus>>() {
+
+                @Override
+                public Map<ServerIdentity, ServerStatus> call() {
+                    return client.getServerStatuses();
+                }
+
+            };
+            futures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
+        }
+
+        for (Map.Entry<String, Future<Map<ServerIdentity, ServerStatus>>> entry : futures.entrySet()) {
+            try {
+                Map<ServerIdentity, ServerStatus> map = entry.getValue().get();
+                if (map != null) {
+                    result.putAll(map);
+                }
+            } catch (InterruptedException e) {
+                log.errorf("Interrupted while reading server statuses from server manager %s -- aborting", entry.getKey());
+                Thread.currentThread().interrupt();
+                break;
+            } catch (ExecutionException e) {
+                log.errorf(e, "Caught exception while reading server statuses from server manager %s -- ignoring that server manager", entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    public ServerModel getServerModel(final String serverManagerName, final String serverName) {
+
+        ServerManagerClient client = clients.get(serverManagerName);
+        if (client == null) {
+            return null;
+        }
+        else {
+            return client.getServerModel(serverName);
+        }
+    }
+
+    public ServerStatus startServer(final String serverManagerName, final String serverName) {
+
+        ServerManagerClient client = clients.get(serverManagerName);
+        if (client == null) {
+            return ServerStatus.UNKNOWN;
+        }
+        else {
+            return client.startServer(serverName);
+        }
+    }
+
+    public ServerStatus stopServer(final String serverManagerName, final String serverName, final long gracefulTimeout) {
+
+        ServerManagerClient client = clients.get(serverManagerName);
+        if (client == null) {
+            return ServerStatus.UNKNOWN;
+        }
+        else {
+            return client.stopServer(serverName, gracefulTimeout);
+        }
+    }
+
+    public ServerStatus restartServer(final String serverManagerName, final String serverName, final long gracefulTimeout) {
+
+        ServerManagerClient client = clients.get(serverManagerName);
+        if (client == null) {
+            return ServerStatus.UNKNOWN;
+        }
+        else {
+            return client.restartServer(serverName, gracefulTimeout);
+        }
     }
 
     private DomainModel parseDomain(final XMLMapper mapper) {
@@ -307,25 +410,18 @@ public class DomainController implements Service<DomainController> {
     public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
 
         ServerManagerClient client = clients.get(server.getHostName());
-        List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>();
+        List<UpdateResultHandlerResponse<?>> responses;
 
         if (client == null) {
             // TODO better handle disappearance of host
+            responses = new ArrayList<UpdateResultHandlerResponse<?>>();
             UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
             for (int i = 0; i < updates.size(); i++) {
                 responses.add(failure);
             }
         }
         else {
-            List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> rsps = client.updateServerModel(server.getServerName(), updates, allowOverallRollback);
-            for (ModelUpdateResponse<UpdateResultHandlerResponse<?>> rsp : rsps) {
-                if (rsp.isSuccess()) {
-                    responses.add(rsp.getResult());
-                }
-                else {
-                    responses.add(UpdateResultHandlerResponse.createFailureResponse(rsp.getUpdateException()));
-                }
-            }
+            responses = client.updateServerModel(server.getServerName(), updates, allowOverallRollback);
         }
         return responses;
     }
@@ -506,7 +602,7 @@ public class DomainController implements Service<DomainController> {
         for (Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
             ServerIdentity server = entry.getKey();
             List<AbstractServerModelUpdate<?>> serverUpdates = entry.getValue();
-            // Push them out -- TODO add rollback flag!
+            // Push them out
             List<UpdateResultHandlerResponse<?>> rsps = applyUpdatesToServer(server, serverUpdates, allowOverallRollback);
             for (int i = 0; i < serverUpdates.size(); i++) {
                 UpdateResultHandlerResponse<?> rsp = rsps.get(i);
@@ -569,21 +665,32 @@ public class DomainController implements Service<DomainController> {
     }
 
     UpdateResultHandlerResponse<?> restartServer(ServerIdentity server, long gracefulTimeout) {
-        ServerManagerClient client = clients.get(server.getHostName());
+        ServerStatus status = restartServer(server.getHostName(), server.getServerName(), gracefulTimeout);
+        switch (status) {
+            case STARTED:
+                return UpdateResultHandlerResponse.createRestartResponse();
+            default: {
+                UpdateFailedException ufe = new UpdateFailedException("Server " + server + " did not restart. Server status is " + status);
+                return UpdateResultHandlerResponse.createFailureResponse(ufe);
+            }
 
+        }
+    }
+
+    public List<HostUpdateResult<?>> applyHostUpdates(String serverManagerName, List<AbstractHostModelUpdate<?>> updates) {
+
+        List<HostUpdateResult<?>> result;
+        ServerManagerClient client = clients.get(serverManagerName);
         if (client == null) {
-            // TODO better handle disappearance of host
-            return UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
+            result = new ArrayList<HostUpdateResult<?>>(updates.size());
+            HostUpdateResult<Object> hur = new HostUpdateResult<Object>(new UpdateFailedException("Host " + serverManagerName + " is unknown"));
+            for (int i = 0; i < updates.size(); i++) {
+                result.add(hur);
+            }
         }
         else {
-            ModelUpdateResponse<Void> rsp = client.restartServer(server.getServerName(), gracefulTimeout);
-            if (rsp.isSuccess()) {
-                return UpdateResultHandlerResponse.createRestartResponse();
-            }
-            else {
-                return UpdateResultHandlerResponse.createFailureResponse(rsp.getUpdateException());
-            }
+            result = client.updateHostModel(updates);
         }
-
+        return result;
     }
 }

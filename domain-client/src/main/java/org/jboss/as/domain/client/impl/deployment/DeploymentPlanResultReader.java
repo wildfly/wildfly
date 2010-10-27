@@ -40,7 +40,8 @@ import org.jboss.as.domain.client.api.deployment.DeploymentSetPlanResult;
 import org.jboss.as.domain.client.api.deployment.InvalidDeploymentPlanException;
 import org.jboss.as.domain.client.impl.DomainClientProtocol;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.model.UpdateResultHandlerResponse;
+
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.marshalling.Unmarshaller;
 

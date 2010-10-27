@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 
 class ServerUpdatePolicy {
     private final ConcurrentGroupServerUpdatePolicy parent;

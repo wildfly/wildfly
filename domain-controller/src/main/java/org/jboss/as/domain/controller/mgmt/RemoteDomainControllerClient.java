@@ -27,19 +27,25 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import java.util.concurrent.ThreadFactory;
+
+import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
 import org.jboss.as.domain.controller.ServerManagerClient;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
-import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.model.HostModel;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementException;
@@ -85,7 +91,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     }
 
     /** {@inheritDoc} */
-    public List<ModelUpdateResponse<?>> updateHostModel(final List<AbstractHostModelUpdate<?>> updates) {
+    public List<HostUpdateResult<?>> updateHostModel(final List<AbstractHostModelUpdate<?>> updates) {
         try {
             return new UpdateHostModelRequest(updates).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
@@ -102,7 +108,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    public List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
+    public List<UpdateResultHandlerResponse<?>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
         try {
             return new UpdateServerModelRequest(updates, serverName, allowOverallRollback).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
@@ -119,35 +125,62 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     }
 
     @Override
-    public ModelUpdateResponse<Void> restartServer(String serverName, long gracefulTimeout) {
+    public HostModel getHostModel() {
         try {
-            // FIXME implement restartServer
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-        catch (Exception e) {
-            return new ModelUpdateResponse<Void>(new UpdateFailedException("Restart of server " + serverName + " failed", e));
+            return new GetHostModelRequest().executeForResult(getConnectionStrategy());
+        } catch (Exception e) {
+            // TODO how to handle exception
+            return null;
         }
     }
 
     @Override
-    public ModelUpdateResponse<Void> startServer(String serverName) {
+    public ServerModel getServerModel(String serverName) {
         try {
-            // FIXME implement startServer
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-        catch (Exception e) {
-            return new ModelUpdateResponse<Void>(new UpdateFailedException("Start of server " + serverName + " failed", e));
+            return new GetServerModelRequest(serverName).executeForResult(getConnectionStrategy());
+        } catch (Exception e) {
+            // TODO how to handle getServerModel exception
+            return null;
         }
     }
 
     @Override
-    public ModelUpdateResponse<Void> stopServer(String serverName, long gracefulTimeout) {
+    public Map<ServerIdentity, ServerStatus> getServerStatuses() {
         try {
-            // FIXME implement stopServer
-            throw new UnsupportedOperationException("Not yet implemented");
+            return new GetServerStatusesRequest().executeForResult(getConnectionStrategy());
+        } catch (Exception e) {
+            // TODO how to handle getServerStatuses exception
+            return null;
+        }
+    }
+
+    @Override
+    public ServerStatus restartServer(String serverName, long gracefulTimeout) {
+        try {
+            return new RestartServerRequest(serverName, gracefulTimeout).executeForResult(getConnectionStrategy());
         }
         catch (Exception e) {
-            return new ModelUpdateResponse<Void>(new UpdateFailedException("Stop of server " + serverName + " failed", e));
+            return ServerStatus.UNKNOWN;
+        }
+    }
+
+    @Override
+    public ServerStatus startServer(String serverName) {
+        try {
+            return new StartServerRequest(serverName).executeForResult(getConnectionStrategy());
+        }
+        catch (Exception e) {
+            return ServerStatus.UNKNOWN;
+        }
+    }
+
+    @Override
+    public ServerStatus stopServer(String serverName, long gracefulTimeout) {
+        try {
+            return new StopServerRequest(serverName, gracefulTimeout).executeForResult(getConnectionStrategy());
+        }
+        catch (Exception e) {
+            return ServerStatus.UNKNOWN;
         }
     }
 
@@ -164,6 +197,28 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         @Override
         protected byte getHandlerId() {
             return ServerManagerProtocol.SERVER_MANAGER_REQUEST;
+        }
+    }
+
+    private class GetHostModelRequest extends ServerManagerRequest<HostModel> {
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.GET_HOST_MODEL_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.GET_HOST_MODEL_RESPONSE;
+        }
+
+        @Override
+        protected HostModel receiveResponse(InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            HostModel hm = unmarshal(unmarshaller, HostModel.class);
+            unmarshaller.finish();
+            return hm;
         }
     }
 
@@ -263,7 +318,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class UpdateHostModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<?>>> {
+    private class UpdateHostModelRequest extends ServerManagerRequest<List<HostUpdateResult<?>>> {
         private final List<AbstractHostModelUpdate<?>> updates;
 
         private UpdateHostModelRequest(final List<AbstractHostModelUpdate<?>> updates) {
@@ -294,7 +349,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<?>> receiveResponse(final InputStream input) throws IOException {
+        protected List<HostUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
             ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
@@ -302,10 +357,10 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid host model update response.  Response count not equal to update count.");
             }
-            final List<ModelUpdateResponse<?>> responses = new ArrayList<ModelUpdateResponse<?>>(responseCount);
+            final List<HostUpdateResult<?>> responses = new ArrayList<HostUpdateResult<?>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
                 ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                final ModelUpdateResponse<?> response = unmarshal(unmarshaller, ModelUpdateResponse.class);
+                final HostUpdateResult<?> response = unmarshal(unmarshaller, HostUpdateResult.class);
                 responses.add(response);
             }
             unmarshaller.finish();
@@ -313,7 +368,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class UpdateServerModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>> {
+    private class UpdateServerModelRequest extends ServerManagerRequest<List<UpdateResultHandlerResponse<?>>> {
         private final List<AbstractServerModelUpdate<?>> updates;
         private final String serverName;
         private final boolean allowOverallRollback;
@@ -353,7 +408,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
 
         @Override
-        protected List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> receiveResponse(final InputStream input) throws IOException {
+        protected List<UpdateResultHandlerResponse<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
             ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
@@ -361,15 +416,166 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid host model update response.  Response count not equal to update count.");
             }
-            final List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> responses = new ArrayList<ModelUpdateResponse<UpdateResultHandlerResponse<?>>>(responseCount);
+            final List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
                 ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                @SuppressWarnings("unchecked")
-                final ModelUpdateResponse<UpdateResultHandlerResponse<?>> response = unmarshal(unmarshaller, ModelUpdateResponse.class);
+                final UpdateResultHandlerResponse<?> response = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
                 responses.add(response);
             }
             unmarshaller.finish();
             return responses;
+        }
+    }
+
+    private class GetServerStatusesRequest extends ServerManagerRequest<Map<ServerIdentity, ServerStatus>> {
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.GET_SERVER_LIST_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.GET_SERVER_LIST_RESPONSE;
+        }
+
+        @Override
+        protected Map<ServerIdentity, ServerStatus> receiveResponse(InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_COUNT);
+            int count = unmarshaller.readInt();
+            final Map<ServerIdentity, ServerStatus> map = new HashMap<ServerIdentity, ServerStatus>();
+            for (int i = 0; i < count; i ++) {
+                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_GROUP_NAME);
+                String groupName = unmarshaller.readUTF();
+                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_NAME);
+                String serverName = unmarshaller.readUTF();
+                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_STATUS);
+                ServerStatus status = unmarshal(unmarshaller, ServerStatus.class);
+                map.put(new ServerIdentity(id, groupName, serverName), status);
+            }
+            return map;
+        }
+    }
+
+    private class GetServerModelRequest extends ServerManagerRequest<ServerModel> {
+        private final String serverName;
+
+        private GetServerModelRequest(final String serverName) {
+            this.serverName = serverName;
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.GET_SERVER_MODEL_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.GET_SERVER_MODEL_RESPONSE;
+        }
+
+        @Override
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
+            marshaller.writeChars(serverName);
+            marshaller.finish();
+        }
+
+        @Override
+        protected ServerModel receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            final ServerModel response = unmarshal(unmarshaller, ServerModel.class);
+            unmarshaller.finish();
+            return response;
+        }
+    }
+
+    private class StartServerRequest extends ServerStatusChangeRequest {
+
+        private StartServerRequest(final String serverName) {
+            super(serverName, null);
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.START_SERVER_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.START_SERVER_RESPONSE;
+        }
+    }
+
+    private class RestartServerRequest extends ServerStatusChangeRequest {
+
+        private RestartServerRequest(final String serverName, final long gracefulTimeout) {
+            super(serverName, gracefulTimeout);
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.RESTART_SERVER_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.RESTART_SERVER_RESPONSE;
+        }
+    }
+
+    private class StopServerRequest extends ServerStatusChangeRequest {
+
+        private StopServerRequest(final String serverName, final long gracefulTimeout) {
+            super(serverName, gracefulTimeout);
+        }
+
+        @Override
+        public final byte getRequestCode() {
+            return ServerManagerProtocol.STOP_SERVER_REQUEST;
+        }
+
+        @Override
+        protected final byte getResponseCode() {
+            return ServerManagerProtocol.STOP_SERVER_RESPONSE;
+        }
+    }
+
+    private abstract class ServerStatusChangeRequest extends ServerManagerRequest<ServerStatus> {
+        private final String serverName;
+        private final Long gracefulTimeout;
+
+        private ServerStatusChangeRequest(final String serverName, final Long gracefulTimeout) {
+            this.serverName = serverName;
+            this.gracefulTimeout = gracefulTimeout;
+        }
+
+        @Override
+        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
+            marshaller.writeChars(serverName);
+            if (gracefulTimeout != null) {
+                marshaller.writeByte(ServerManagerProtocol.PARAM_GRACEFUL_TIMEOUT);
+                marshaller.writeLong(gracefulTimeout);
+            }
+            marshaller.finish();
+        }
+
+        @Override
+        protected ServerStatus receiveResponse(final InputStream input) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(input));
+            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_STATUS);
+            ServerStatus response = unmarshal(unmarshaller, ServerStatus.class);
+            unmarshaller.finish();
+            return response;
         }
     }
 

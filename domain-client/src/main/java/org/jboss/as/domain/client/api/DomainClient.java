@@ -26,11 +26,16 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.impl.DomainClientImpl;
 import org.jboss.as.model.AbstractDomainModelUpdate;
+import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
+import org.jboss.as.model.ServerModel;
 
 /**
  * Client interface used to interact with the domain management infrastructure.  THis interface allows clients to get
@@ -46,6 +51,13 @@ public interface DomainClient extends Closeable {
      * @return The domain model
      */
     DomainModel getDomainModel();
+
+    /**
+     * Gets the list of currently running server managers.
+     *
+     * @return the names of the server managers. Will not be <code>null</code>
+     */
+    List<String> getServerManagerNames();
 
     /**
      * Apply a series of updates to the domain.
@@ -68,7 +80,9 @@ public interface DomainClient extends Closeable {
     <R, P> void applyUpdate(AbstractDomainModelUpdate<R> update, DomainUpdateApplier<R, P> updateApplier, P param);
 
     /**
-     * Add the content for a deployment to the domain controller.
+     * Add the content for a deployment to the domain controller. Note that
+     * {@link #getDeploymentManager() the DomainDeploymentManager offers a
+     * more convenient API for manipulating domain deployments.
      *
      * @param name The deployment name
      * @param runtimeName The runtime name
@@ -84,6 +98,79 @@ public interface DomainClient extends Closeable {
      * @return the deployment manager. Will not be {@code null}
      */
     DomainDeploymentManager getDeploymentManager();
+
+    /**
+     * Get the host model for the given host.
+     *
+     * @param serverManagerName  the name of the server manager responsible for the host
+     * @return The host model, or <code>null</code> if the host is unknown
+     */
+    HostModel getHostModel(String serverManagerName);
+
+    /**
+     * Apply a series of updates to a host's server manager.
+     *
+     * @param serverManagerName the name of the server manager
+     * @param updates The host updates to apply
+     * @return The results of the update
+     */
+    List<HostUpdateResult<?>> applyHostUpdates(String serverManagerName, List<AbstractHostModelUpdate<?>> updates);
+
+    /**
+     * Gets a list of all servers known to the domain, along with their current
+     * {@link ServerStatus status}. Servers associated with server managers that
+     * are currently off line will not be included.
+     *
+     * @return the servers and their current status. Will not be <code>null</code>
+     */
+    Map<ServerIdentity, ServerStatus> getServerStatuses();
+
+    /**
+     * Get the server model representing the current running configuration for a server.
+     *
+     * @param serverManager the name of the server manager responsible for the server
+     * @param serverName the name of the server
+     * @return The server model, or <code>null</code> if the server is unknown or not currently started
+     */
+    ServerModel getServerModel(String serverManagerName, String serverName);
+
+    /**
+     * Starts the given server. Ignored if the server is not stopped.
+     *
+     * @param serverManager the name of the server manager responsible for the server
+     * @param serverName the name of the server
+     *
+     * @return the status of the server following the start. Will not be <code>null</code>
+     */
+    ServerStatus startServer(String serverManagerName, String serverName);
+
+    /**
+     * Stops the given server.
+     *
+     * @param serverManager the name of the server manager responsible for the server
+     * @param serverName the name of the server
+     * @param gracefulShutdownTimeout maximum period to wait to allow the server
+     *           to gracefully handle long running tasks before shutting down,
+     *           or {@code -1} to shutdown immediately
+     * @param timeUnit time unit in which {@code gracefulShutdownTimeout} is expressed
+     *
+     * @return the status of the server following the stop. Will not be <code>null</code>
+     */
+    ServerStatus stopServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
+
+    /**
+     * Restarts the given server.
+     *
+     * @param serverManager the name of the server manager responsible for the server
+     * @param serverName the name of the server
+     * @param gracefulShutdownTimeout maximum period to wait to allow the server
+     *           to gracefully handle long running tasks before shutting down,
+     *           or {@code -1} to shutdown immediately
+     * @param timeUnit time unit in which {@code gracefulShutdownTimeout} is expressed
+     *
+     * @return the status of the server following the restart. Will not be <code>null</code>
+     */
+    ServerStatus restartServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
 
     /**
      * Factory used to create an {@link org.jboss.as.domain.client.api.DomainClient} instance for a remote address

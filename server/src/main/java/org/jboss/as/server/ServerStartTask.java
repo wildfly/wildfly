@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,7 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
@@ -139,7 +141,12 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         log.info("Activating core services");
 
         // The server controller
-        batchBuilder.addService(ServerController.SERVICE_NAME, new ServerControllerImpl(serverModel, container));
+        // TODO make ServerConfigurationPersister internal
+        // TODO share thread pool
+        ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, environment.isStandalone());
+        batchBuilder.addService(ServerController.SERVICE_NAME, serverController)
+            .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, serverController.getConfigurationPersisterValue())
+            .addInjection(serverController.getExecutorValue(), Executors.newCachedThreadPool());
 
         // Server environment services
         ServerEnvironmentServices.addServices(environment, batchBuilder);

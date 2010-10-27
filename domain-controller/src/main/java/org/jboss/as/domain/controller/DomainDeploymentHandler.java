@@ -47,7 +47,6 @@ import org.jboss.as.domain.client.api.deployment.InvalidDeploymentPlanException;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
 import org.jboss.as.domain.client.impl.DomainClientProtocol;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -63,6 +62,7 @@ import org.jboss.as.model.ServerGroupDeploymentRemove;
 import org.jboss.as.model.ServerGroupDeploymentReplaceUpdate;
 import org.jboss.as.model.ServerGroupDeploymentStartStopUpdate;
 import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.logging.Logger;
 
 /**

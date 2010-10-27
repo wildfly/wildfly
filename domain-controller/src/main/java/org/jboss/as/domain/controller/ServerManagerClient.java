@@ -23,13 +23,18 @@
 package org.jboss.as.domain.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
+import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.DomainModel;
+import org.jboss.as.model.HostModel;
+import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 
 /**
  * Client interface via which a domain controller interacts with a server manager.
@@ -61,20 +66,43 @@ public interface ServerManagerClient {
     void updateDomainModel(DomainModel domain);
 
     /**
-     * Update the client with a list of host model updates.
-     *
-     * @param updates The updates to process
-     * @return A list of response objects to reflect the result of each update executed.
-     */
-    List<ModelUpdateResponse<?>> updateHostModel(List<AbstractHostModelUpdate<?>> updates);
-
-    /**
      * Update the client with a list of domain model updates.
      *
      * @param updates The updates to process
      * @return A list of response objects to reflect the result of each update executed.
      */
     List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(List<AbstractDomainModelUpdate<?>> updates);
+
+    /**
+     * Get the current state of the server manager's {@link HostModel}.
+     *
+     * @return the host model. Will not return <code>null</code>
+     */
+    HostModel getHostModel();
+
+    /**
+     * Update the client with a list of host model updates.
+     *
+     * @param updates The updates to process
+     * @return A list of response objects to reflect the result of each update executed.
+     */
+    List<HostUpdateResult<?>> updateHostModel(List<AbstractHostModelUpdate<?>> updates);
+
+    /**
+     * Gets a list of all servers known to the server manager, along with their current
+     * {@link ServerStatus status}.
+     *
+     * @return the servers and their current status. Will not be <code>null</code>
+     */
+    Map<ServerIdentity, ServerStatus> getServerStatuses();
+
+    /**
+     * Gets the current running configuration for the given server.
+     *
+     * @param serverName the name of the server. Cannot be <code>null</code>
+     * @return the server model, or <code>null</code> if the server is unknown or not running
+     */
+    ServerModel getServerModel(String serverName);
 
     /**
      * Update the given server with a server model update.
@@ -88,7 +116,7 @@ public interface ServerManagerClient {
      *
      * @return list of response objects reflecting the result of each update executed.
      */
-    List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> updateServerModel(final String serverName,
+    List<UpdateResultHandlerResponse<?>> updateServerModel(final String serverName,
             final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback);
 
     /**
@@ -97,9 +125,9 @@ public interface ServerManagerClient {
      * @param serverName the name of the server that should be started.
      *                   Cannot be <code>null</code>
      *
-     * @return response object indicating if the start was successful
+     * @return the status of the server following the start attempt
      */
-    ModelUpdateResponse<Void> startServer(String serverName);
+    ServerStatus startServer(String serverName);
 
     /**
      * Stop the given server.
@@ -110,9 +138,9 @@ public interface ServerManagerClient {
      *                        wait for graceful shutdown, or {@code -1} if
      *                        graceful shutdown is not required
      *
-     * @return response object indicating if the stop was successful
+     * @return the status of the server following the stop attempt
      */
-    ModelUpdateResponse<Void> stopServer(String serverName, long gracefulTimeout);
+    ServerStatus stopServer(String serverName, long gracefulTimeout);
 
     /**
      * Restart the given server.
@@ -123,7 +151,7 @@ public interface ServerManagerClient {
      *                        wait for graceful shutdown, or {@code -1} if
      *                        graceful shutdown is not required
      *
-     * @return response object indicating if the restart was successful
+     * @return the status of the server following the start attempt
      */
-    ModelUpdateResponse<Void> restartServer(String serverName, long gracefulTimeout);
+    ServerStatus restartServer(String serverName, long gracefulTimeout);
 }

@@ -27,9 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.as.domain.client.impl.UpdateResultHandlerResponse;
 import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.as.model.ServerModel;
+import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
@@ -70,7 +69,7 @@ import org.jboss.msc.value.InjectedValue;
 public class ServerManagerClient implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
-    private final InjectedValue<ServerModel> serverModel = new InjectedValue<ServerModel>();
+    private final InjectedValue<ServerController> serverController = new InjectedValue<ServerController>();
 
     /** {@inheritDoc} */
     public void start(final StartContext context) throws StartException {
@@ -106,11 +105,12 @@ public class ServerManagerClient implements Service<Void> {
      *
      * @return The injector
      */
-    public Injector<ServerModel> getServerModelInjector() {
-        return serverModel;
+    public Injector<ServerController> getServerControllerInjector() {
+        return serverController;
     }
 
     private MessageHandler managementHeaderMessageHandler = new AbstractMessageHandler() {
+        @Override
         public void handle(Connection connection, InputStream dataStream) throws IOException {
             final int workingVersion;
             final ManagementRequestHeader requestHeader;
@@ -162,6 +162,7 @@ public class ServerManagerClient implements Service<Void> {
 
 
     private MessageHandler requestStartHeader = new AbstractMessageHandler() {
+        @Override
         public void handle(Connection connection, InputStream input) throws IOException {
             expectHeader(input, ManagementProtocol.REQUEST_OPERATION);
             final byte commandCode = StreamUtils.readByte(input);
@@ -179,33 +180,42 @@ public class ServerManagerClient implements Service<Void> {
             case DomainServerProtocol.SERVER_MODEL_UPDATES_REQUEST: {
                 return new ApplyServerModelUpdatesOperation();
             }
+            case DomainServerProtocol.GET_SERVER_MODEL_REQUEST: {
+                return new GetServerModelOperation();
+            }
         }
         return null;
     }
 
     private class ServerRegisterRequest extends ManagementRequest<Void> {
+        @Override
         protected byte getHandlerId() {
             return DomainServerProtocol.SERVER_TO_SERVER_MANAGER_OPERATION;
         }
 
+        @Override
         protected byte getRequestCode() {
             return DomainServerProtocol.REGISTER_REQUEST;
         }
 
+        @Override
         protected byte getResponseCode() {
             return DomainServerProtocol.REGISTER_RESPONSE;
         }
 
 
+        @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             output.write(DomainServerProtocol.PARAM_SERVER_NAME);
-            writeUTFZBytes(output, serverModel.getValue().getServerName());
+            writeUTFZBytes(output, serverController.getValue().getServerModel().getServerName());
         }
     }
 
     private class ApplyServerModelUpdatesOperation extends ManagementResponse {
         private List<AbstractServerModelUpdate<?>> updates;
+        private boolean allowRollback;
 
+        @Override
         protected byte getResponseCode() {
             return DomainServerProtocol.SERVER_MODEL_UPDATES_RESPONSE;
         }
@@ -214,6 +224,8 @@ public class ServerManagerClient implements Service<Void> {
         protected final void readRequest(final InputStream inputStream) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
+            expectHeader(unmarshaller, DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
+            allowRollback = unmarshaller.readBoolean();
             expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
             int count = unmarshaller.readInt();
             updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
@@ -227,10 +239,7 @@ public class ServerManagerClient implements Service<Void> {
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
-            List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>(updates.size());
-            for (AbstractServerModelUpdate<?> update : updates) {
-                responses.add(processUpdate(update));
-            }
+            List<UpdateResultHandlerResponse<?>> responses = processUpdates();
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
@@ -242,8 +251,31 @@ public class ServerManagerClient implements Service<Void> {
             marshaller.finish();
         }
 
-        private UpdateResultHandlerResponse<?> processUpdate(final AbstractServerModelUpdate<?> update) {
-            return null;
+        private List<UpdateResultHandlerResponse<?>> processUpdates() {
+            return serverController.getValue().applyUpdates(updates, allowRollback, true);
+        }
+    }
+
+    private class GetServerModelOperation extends ManagementResponse {
+
+        @Override
+        protected byte getResponseCode() {
+            return DomainServerProtocol.GET_SERVER_MODEL_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final InputStream inputStream) throws IOException {
+            final Unmarshaller unmarshaller = getUnmarshaller();
+            unmarshaller.start(createByteInput(inputStream));
+            unmarshaller.finish();
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream output) throws IOException {
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            marshaller.writeObject(serverController.getValue().getServerModel());
+            marshaller.finish();
         }
     }
 
