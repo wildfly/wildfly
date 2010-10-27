@@ -34,6 +34,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.logging.Logger;
 
 /**
@@ -102,7 +103,7 @@ public class DomainDeploymentRepository {
             }
             sha1Bytes = messageDigest.digest();
         }
-        String sha1 = bytesToHexString(sha1Bytes);
+        String sha1 = DeploymentUnitElement.bytesToHexString(sha1Bytes);
         String partA = sha1.substring(0,2);
         String partB = sha1.substring(2);
         File base = new File(repoRoot, partA);
@@ -180,26 +181,6 @@ public class DomainDeploymentRepository {
                   }
             }
         }
-    }
-
-    // TODO move this sha1 translation stuff to a general utility class
-    private static char[] table = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
-
-    /**
-     * Convert a byte array into a hex string.
-     *
-     * @param bytes the bytes
-     * @return the string
-     */
-    protected static String bytesToHexString(final byte[] bytes) {
-        final StringBuilder builder = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
-        }
-        return builder.toString();
     }
 
 }

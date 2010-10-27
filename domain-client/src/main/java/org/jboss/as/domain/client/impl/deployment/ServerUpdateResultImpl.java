@@ -22,8 +22,10 @@
 
 package org.jboss.as.domain.client.impl.deployment;
 
+import java.io.Serializable;
 import java.util.UUID;
 
+import org.jboss.as.domain.client.api.RollbackCancelledException;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerUpdateResult;
 import org.jboss.as.model.UpdateResultHandlerResponse;
@@ -33,12 +35,14 @@ import org.jboss.as.model.UpdateResultHandlerResponse;
  *
  * @author Brian Stansberry
  */
-class ServerUpdateResultImpl<R> implements ServerUpdateResult<R> {
+class ServerUpdateResultImpl<R> implements ServerUpdateResult<R>, Serializable {
+
+    private static final long serialVersionUID = 5879115765933810032L;
 
     private final UUID actionId;
     private final ServerIdentity serverId;
     private final UpdateResultHandlerResponse<R> urhr;
-    private boolean rolledBack;
+    private UpdateResultHandlerResponse<?> rollbackResult;
 
     ServerUpdateResultImpl(final UUID actionId, final ServerIdentity serverId, final UpdateResultHandlerResponse<R> urhr) {
         assert actionId != null : "actionId is null";
@@ -76,7 +80,7 @@ class ServerUpdateResultImpl<R> implements ServerUpdateResult<R> {
 
     @Override
     public boolean isRolledBack() {
-        return rolledBack || urhr.isRolledBack();
+        return rollbackResult != null || urhr.isRolledBack();
     }
 
     @Override
@@ -84,13 +88,32 @@ class ServerUpdateResultImpl<R> implements ServerUpdateResult<R> {
         return urhr.isTimedOut();
     }
 
-    void markRolledBack() {
-        this.rolledBack = true;
+    void markRolledBack(UpdateResultHandlerResponse<?> rollbackResult) {
+        this.rollbackResult = rollbackResult;
     }
 
     @Override
     public boolean isServerRestarted() {
         return urhr.isServerRestarted();
+    }
+
+    @Override
+    public Throwable getRollbackFailure() {
+        if (rollbackResult == null) {
+            return null;
+        }
+        else if (rollbackResult.isCancelled()) {
+            return new RollbackCancelledException("Rollback was cancelled");
+        }
+        else if (rollbackResult.isRolledBack()) {
+            return new RollbackCancelledException("Rollback was itself rolled back");
+        }
+        else if (rollbackResult.isTimedOut()) {
+            return new RollbackCancelledException("Rollback timed out");
+        }
+        else {
+            return rollbackResult.getFailureResult();
+        }
     }
 
 }

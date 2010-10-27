@@ -77,6 +77,21 @@ public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerId
     void handleDomainRollback();
 
     /**
+     * Handle the event of the rollback of the update failing to apply to the domain.
+     *
+     * @param reason the reason for the failure
+     */
+    void handleDomainRollbackFailed(UpdateFailedException reason);
+
+    /**
+     * Handle the event of the rollback of the update failing to apply to one
+     * or more server managers (hosts).
+     *
+     * @param hostFailureReasons a map of host name to failure cause
+     */
+    void handleHostRollbackFailed(Map<String, UpdateFailedException> hostFailureReasons);
+
+    /**
      * Handle the final completion of the update, after which the update is no
      * longer eligible to be rolled back. This notification will be
      * emitted for every update, even if the update failed or was {@link #handleCancelled}.

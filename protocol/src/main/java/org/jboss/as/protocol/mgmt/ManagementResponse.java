@@ -40,7 +40,20 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  */
 public abstract class ManagementResponse extends AbstractMessageHandler {
 
+    private final MessageHandler finalMessageHandler;
+
+    protected ManagementResponse() {
+        this(MessageHandler.NULL);
+    }
+
+    protected ManagementResponse(final MessageHandler finalMessageHandler) {
+        if (finalMessageHandler == null)
+            throw new IllegalArgumentException("finalMessageHandler is null");
+        this.finalMessageHandler = finalMessageHandler;
+    }
+
     /** {@inheritDoc} */
+    @Override
     public void handle(final Connection connection, final InputStream input) throws IOException {
         connection.setMessageHandler(requestBodyHandler);
         expectHeader(input, ManagementProtocol.REQUEST_START);
@@ -72,6 +85,7 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
     }
 
     final MessageHandler requestBodyHandler = new AbstractMessageHandler() {
+        @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(requestEndHandler);
             expectHeader(input, ManagementProtocol.REQUEST_BODY);
@@ -80,8 +94,9 @@ public abstract class ManagementResponse extends AbstractMessageHandler {
     };
 
     final MessageHandler requestEndHandler = new AbstractMessageHandler() {
+        @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
-            connection.setMessageHandler(MessageHandler.NULL);
+            connection.setMessageHandler(finalMessageHandler);
             expectHeader(input, ManagementProtocol.REQUEST_END);
 
             OutputStream outputStream = null;

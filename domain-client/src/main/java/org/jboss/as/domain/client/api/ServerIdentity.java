@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.client.api;
 
+import java.io.Serializable;
+
 /**
  * Identifying information for a server in a domain. A bit of a misnomer, as
  * the server's name is sufficient identification since all servers in a
@@ -29,7 +31,10 @@ package org.jboss.as.domain.client.api;
  *
  * @author Brian Stansberry
  */
-public class ServerIdentity {
+public class ServerIdentity implements Serializable {
+
+    private static final long serialVersionUID = -5853735093238463353L;
+
     private final String hostName;
     private final String serverName;
     private final String serverGroupName;

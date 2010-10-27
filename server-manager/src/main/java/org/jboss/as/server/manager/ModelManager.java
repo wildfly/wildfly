@@ -39,6 +39,7 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.NewRepositoryContentUpdate;
 import org.jboss.as.model.ServerElement;
 import org.jboss.as.model.UpdateFailedException;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -48,6 +49,7 @@ import org.jboss.staxmapper.XMLMapper;
  * @author Brian Stansberry
  */
 public class ModelManager {
+    private static final Logger log = Logger.getLogger("org.jboss.as.server.manager");
 
     private final HostConfigurationPersister configPersister;
     private DomainModel domainModel;
@@ -99,6 +101,7 @@ public class ModelManager {
 
     public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update, boolean applyToDomain) throws UpdateFailedException {
 
+        log.debugf("Applying %s to server manager model", update.getClass().getSimpleName());
         if (applyToDomain) {
             try {
                 // Force a sync if our repository falls back to a remote
@@ -116,6 +119,8 @@ public class ModelManager {
 
 
         List<String> serverNames = update.getAffectedServers(domainModel, getHostModel());
+        log.debugf("Servers affected: %s", serverNames);
+
         if (serverNames.size() == 0) {
             return Collections.emptyList();
         }

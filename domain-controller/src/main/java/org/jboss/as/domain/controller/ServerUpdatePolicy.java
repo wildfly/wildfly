@@ -41,6 +41,11 @@ class ServerUpdatePolicy {
                             final String serverGroupName,
                             final Set<ServerIdentity> servers,
                             final ServerGroupDeploymentPlan groupPlan) {
+        assert parent != null : "parent is null";
+        assert serverGroupName != null : "serverGroupName is null";
+        assert servers != null : "servers is null";
+        assert groupPlan != null : "groupPlan is null";
+
         this.parent = parent;
         this.serverGroupName = serverGroupName;
         this.servers = servers;
@@ -50,6 +55,10 @@ class ServerUpdatePolicy {
         else {
             this.maxFailed = groupPlan.getMaxServerFailures();
         }
+    }
+
+    public String getServerGroupName() {
+        return serverGroupName;
     }
 
     public boolean canUpdateServer(ServerIdentity server) {
@@ -72,10 +81,12 @@ class ServerUpdatePolicy {
         }
 
         UpdateResultHandlerResponse<?> last = responses.size() == 0 ? null : responses.get(responses.size() - 1);
+
+        boolean serverFailed = last != null && (last.isCancelled()
+                        || last.isRolledBack() || last.isTimedOut()
+                        || last.getFailureResult() != null);
+
         synchronized (this) {
-            boolean serverFailed = last != null && last.isCancelled()
-                            || last.isRolledBack() || last.isTimedOut()
-                            || last.getFailureResult() != null;
             int previousFailed = failureCount;
             if (serverFailed) {
                 failureCount++;
@@ -93,5 +104,9 @@ class ServerUpdatePolicy {
                 }
             }
         }
+    }
+
+    public synchronized boolean isFailed() {
+        return failureCount > maxFailed;
     }
 }

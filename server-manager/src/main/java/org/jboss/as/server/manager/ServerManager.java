@@ -300,6 +300,7 @@ public class ServerManager {
             boolean allowOverallRollback) {
         final ManagedServer server = servers.get(ManagedServer.getServerProcessName(serverName));
         if(server == null) {
+            log.debugf("Cannot apply updates to unknown server %s", serverName);
             UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(new UpdateFailedException("No server available with name " + serverName));
             int size = updates.size();
             List<UpdateResultHandlerResponse<?>> list = new ArrayList<UpdateResultHandlerResponse<?>>(size);
@@ -540,7 +541,7 @@ public class ServerManager {
             final DomainControllerClientOperationHandler domainControllerClientOperationHandler = new DomainControllerClientOperationHandler();
             batchBuilder.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerClientOperationHandler));
 
             batchBuilder.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(ServerManager.this, domainController, fileRepository))
                 .addDependency(DomainController.SERVICE_NAME);

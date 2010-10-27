@@ -64,8 +64,16 @@ public interface DeploymentActionResult {
      * depending on the configuration of the deployment plan, an action
      * can be rolled back on individual servers without triggering a rollback
      * across the domain.
+     * <p>
+     * This method will return <code>true</code> if a rollback was attempted,
+     * whether or not it succeeded. See {@link #getDomainControllerRollbackFailure()}
+     * and {@link #getServerManagerRollbackFailures()} to see if their were
+     * failures on the domain controller or server managers; for each server
+     * see the {@link ServerUpdateResult} to see if there were failures
+     * on the servers.
+     * </p>
      *
-     * @return <code>true</code> if the action was rolled back; <code>false</code>
+     * @return <code>true</code> if rollback of the action was attempted; <code>false</code>
      *         otherwise
      */
     boolean isRolledBackOnDomain();
@@ -79,6 +87,14 @@ public interface DeploymentActionResult {
     UpdateFailedException getDomainControllerFailure();
 
     /**
+     * Gets any exception that occurred when rolling back this update on the
+     * domain controller.
+     *
+     * @return the exception, or <code>null</code>
+     */
+    UpdateFailedException getDomainControllerRollbackFailure();
+
+    /**
      * Gets any exceptions that occurred when applying this update on the
      * server managers.
      *
@@ -86,6 +102,15 @@ public interface DeploymentActionResult {
      *          server manager threw the exception. Will not be <code>null</code>
      */
     Map<String, UpdateFailedException> getServerManagerFailures();
+
+    /**
+     * Gets any exceptions that occurred when rolling back this update on the
+     * server managers.
+     *
+     * @return the exceptions, keyed by the name of the host whose
+     *          server manager threw the exception. Will not be <code>null</code>
+     */
+    Map<String, UpdateFailedException> getServerManagerRollbackFailures();
 
     /**
      * Gets the results of this action for each server group.

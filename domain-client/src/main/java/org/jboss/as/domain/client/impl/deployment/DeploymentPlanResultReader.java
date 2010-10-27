@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.jboss.as.domain.client.api.DomainUpdateListener;
+import org.jboss.as.domain.client.api.RollbackCancelledException;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerUpdateResult;
 import org.jboss.as.domain.client.api.deployment.DeploymentAction;
@@ -38,6 +39,7 @@ import org.jboss.as.domain.client.api.deployment.DeploymentPlanResult;
 import org.jboss.as.domain.client.api.deployment.DeploymentSetPlan;
 import org.jboss.as.domain.client.api.deployment.DeploymentSetPlanResult;
 import org.jboss.as.domain.client.api.deployment.InvalidDeploymentPlanException;
+import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentActionResult;
 import org.jboss.as.domain.client.impl.DomainClientProtocol;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
 import org.jboss.as.model.UpdateResultHandlerResponse;
@@ -69,37 +71,38 @@ public class DeploymentPlanResultReader {
         UUID planId = unmarshal(unmarshaller, UUID.class);
         if (!deploymentPlan.getId().equals(planId))
             throw new IllegalStateException("Incorrect id " + planId + " for result; expected " + deploymentPlan.getId());
-        byte responseCode = unmarshaller.readByte();
-        if (responseCode == DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_INVALID) {
+        byte header = unmarshaller.readByte();
+        if (header == DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_INVALID) {
             InvalidDeploymentPlanException e = unmarshal(unmarshaller, InvalidDeploymentPlanException.class);
             return new DeploymentPlanResultImpl(deploymentPlan, e);
         }
         else {
-            expectHeader(responseCode, DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID);
+            expectHeader(header, DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID);
             Map<UUID, DeploymentSetPlanResult> setResults = new HashMap<UUID, DeploymentSetPlanResult>();
             // Read in the set results
-            byte nextCode;
             do {
-                nextCode = readDeploymentSetResult(setResults);
+                header = readDeploymentSetResult(setResults);
             }
-            while (nextCode == DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID);
+            while (header == DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID);
 
-            if (nextCode == DomainClientProtocol.RETURN_DEPLOYMENT_SET_ROLLBACK) {
-                // FIXME handle rollbacks
-                throw new UnsupportedOperationException("implement deployment set rollbacks");
+            if (header == DomainClientProtocol.RETURN_DEPLOYMENT_SET_ROLLBACK) {
+                do {
+                    header = readDeploymentSetRollback(setResults);
+                }
+                while (header == DomainClientProtocol.RETURN_DEPLOYMENT_SET_ROLLBACK);
             }
-            else {
-                expectHeader(nextCode, DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_COMPLETE);
 
-                // Notify any listeners that actions are complete
-                for (DeploymentSetPlan setPlan : deploymentPlan.getDeploymentSetPlans()) {
-                    for (DeploymentAction action : setPlan.getDeploymentActions()) {
-                        for (DomainUpdateListener<?> listener : ((DeploymentActionImpl) action).getListeners()) {
-                            listener.handleComplete();
-                        }
+            expectHeader(header, DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_COMPLETE);
+
+            // Notify any listeners that actions are complete
+            for (DeploymentSetPlan setPlan : deploymentPlan.getDeploymentSetPlans()) {
+                for (DeploymentAction action : setPlan.getDeploymentActions()) {
+                    for (DomainUpdateListener<?> listener : ((DeploymentActionImpl) action).getListeners()) {
+                        listener.handleComplete();
                     }
                 }
             }
+
             return new DeploymentPlanResultImpl(deploymentPlan, setResults);
         }
     }
@@ -118,11 +121,14 @@ public class DeploymentPlanResultReader {
         do {
             nextHeader = readDeploymentActionResult(setPlan, actionResults);
         }
-        while (nextHeader != DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID);
+        while (nextHeader == DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID);
 
         // If the set plan generated server updates, those will come next
         if (nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT) {
-            nextHeader = readerServerDeploymentResults(actionResults);
+            do {
+                nextHeader = readServerDeploymentResult(actionResults);
+            }
+            while (nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT);
         }
 
         DeploymentSetPlanResult setResult = new DeploymentSetPlanResultImpl(setPlan, actionResults);
@@ -159,57 +165,154 @@ public class DeploymentPlanResultReader {
             }
         }
 
+        return unmarshaller.readByte();
+    }
+
+    private byte readServerDeploymentResult(Map<UUID, DeploymentActionResult> actionResults) throws IOException {
+
+        UUID actionId = unmarshal(unmarshaller, UUID.class);
+        DeploymentActionResultImpl actionResult = (DeploymentActionResultImpl) actionResults.get(actionId);
+        ServerIdentity serverId = readServerIdentity();
+        expectHeader(DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_RESULT);
+        @SuppressWarnings("unchecked")
+        UpdateResultHandlerResponse<Void> urhr = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
+
+        ServerUpdateResult<Void> sur = new ServerUpdateResultImpl<Void>(actionId, serverId, urhr);
+        actionResult.storeServerUpdateResult(serverId, sur);
+
+        // Notifiy and listeners
+        DeploymentActionImpl action = (DeploymentActionImpl) actionResult.getDeploymentAction();
+        for (DomainUpdateListener<?> listener : action.getListeners()) {
+            if (urhr.isCancelled()) {
+                listener.handleCancellation(serverId);
+            }
+            else if (urhr.isRolledBack()) {
+                listener.handleRollbackSuccess(serverId);
+            }
+            else if (urhr.isTimedOut()) {
+                listener.handleTimeout(serverId);
+            }
+            else if (urhr.getFailureResult() != null) {
+                listener.handleFailure(urhr.getFailureResult(), serverId);
+            }
+            else {
+                listener.handleSuccess(null, serverId);
+            }
+        }
+
+        return unmarshaller.readByte();
+    }
+
+    private byte readDeploymentSetRollback(Map<UUID, DeploymentSetPlanResult> setResults) throws IOException {
+        UUID setId = unmarshal(unmarshaller, UUID.class);
+
+        DeploymentSetPlanResult setResult = setResults.get(setId);
+        if (setResult == null) {
+            throw new IOException("Unknown deployment set plan " + setId);
+        }
+
+        // A valid deployment set plan will have at least one action
+        byte nextHeader = unmarshaller.readByte();
+        expectHeader(nextHeader, DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID);
+
+        do {
+            nextHeader = readDeploymentActionRollback(setResult);
+        }
+        while (nextHeader != DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID);
+
+        // If the set plan generated server updates, those will come next
+        if (nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_ROLLBACK) {
+            do {
+                nextHeader = readServerDeploymentRollbacks(setResult);
+            }
+            while(nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_ROLLBACK);
+        }
+
+        return nextHeader;
+    }
+
+    private byte readDeploymentActionRollback(DeploymentSetPlanResult setResult) throws IOException {
+
+        UUID actionId = unmarshal(unmarshaller, UUID.class);
+        DeploymentActionImpl action = findDeploymentAction(actionId, setResult.getDeploymentSetPlan());
+        Set<DomainUpdateListener<?>> listeners = action.getListeners();
+        expectHeader(DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_MODEL_RESULT);
+        DomainUpdateApplierResponse duar = unmarshal(unmarshaller, DomainUpdateApplierResponse.class);
+        DeploymentActionResultImpl actionResult = (DeploymentActionResultImpl) setResult.getDeploymentActionResults().get(actionId);
+        if (actionResult != null) {
+            actionResult.markRolledBack(duar);
+
+            // Notify any listeners
+            for (DomainUpdateListener<?> listener : listeners) {
+                if (duar.isCancelled()) {
+                    listener.handleDomainRollbackFailed(new RollbackCancelledException("Rollback of deployment action " + actionId + "was cancelled"));
+                }
+                else if (duar.isRolledBack()) {
+                    listener.handleDomainRollbackFailed(new RollbackCancelledException("Rollback of deployment action " + actionId + "was itself rolled back"));
+                }
+                else if (duar.getDomainFailure() != null) {
+                    listener.handleDomainRollbackFailed(duar.getDomainFailure());
+                }
+                else if (duar.getHostFailures().size() > 0) {
+                    listener.handleHostRollbackFailed(duar.getHostFailures());
+                }
+                else {
+                    listener.handleDomainRollback();
+                }
+            }
+        }
+
         byte nextHeader = unmarshaller.readByte();
         return nextHeader;
     }
 
-    private byte readerServerDeploymentResults(Map<UUID, DeploymentActionResult> actionResults) throws IOException {
-        byte nextHeader;
-        do {
-            UUID actionId = unmarshal(unmarshaller, UUID.class);
-            DeploymentActionResultImpl actionResult = (DeploymentActionResultImpl) actionResults.get(actionId);
-            ServerIdentity serverId = readServerIdentity();
-            expectHeader(DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_RESULT);
-            @SuppressWarnings("unchecked")
-            UpdateResultHandlerResponse<Void> urhr = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
+    private byte readServerDeploymentRollbacks(DeploymentSetPlanResult setResult) throws IOException {
 
-            ServerUpdateResult<Void> sur = new ServerUpdateResultImpl<Void>(actionId, serverId, urhr);
-            actionResult.storeServerUpdateResult(serverId, sur);
+        UUID actionId = unmarshal(unmarshaller, UUID.class);
+        DeploymentActionResultImpl actionResult = (DeploymentActionResultImpl) setResult.getDeploymentActionResults().get(actionId);
+        ServerIdentity serverId = readServerIdentity();
+        expectHeader(DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_RESULT);
+        @SuppressWarnings("unchecked")
+        UpdateResultHandlerResponse<Void> urhr = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
 
+        if (actionResult != null) {
             // Notifiy and listeners
             DeploymentActionImpl action = (DeploymentActionImpl) actionResult.getDeploymentAction();
             for (DomainUpdateListener<?> listener : action.getListeners()) {
                 if (urhr.isCancelled()) {
-                    listener.handleCancellation(serverId);
-                }
-                else if (urhr.isRolledBack()) {
-                    listener.handleRollbackSuccess(serverId);
-                }
-                else if (urhr.isTimedOut()) {
-                    listener.handleTimeout(serverId);
+                    listener.handleRollbackCancellation(serverId);
                 }
                 else if (urhr.getFailureResult() != null) {
-                    listener.handleFailure(urhr.getFailureResult(), serverId);
+                    listener.handleRollbackFailure(urhr.getFailureResult(), serverId);
+                }
+                else if (urhr.isRolledBack()) {
+                    listener.handleRollbackFailure(new RollbackCancelledException("Rollback of deployment action " + actionId + "was itself rolled back"), serverId);
+                }
+                else if (urhr.isTimedOut()) {
+                    listener.handleRollbackTimeout(serverId);
                 }
                 else {
-                    listener.handleSuccess(null, serverId);
+                    listener.handleRollbackSuccess(serverId);
                 }
             }
 
-            nextHeader = unmarshaller.readByte();
+            ServerGroupDeploymentActionResult sgdar = actionResult.getResultsByServerGroup().get(serverId.getServerGroupName());
+            ServerUpdateResultImpl<Void> sur = (ServerUpdateResultImpl<Void>) sgdar.getResultByServer().get(serverId.getServerName());
+            sur.markRolledBack(urhr);
         }
-        while (nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT);
 
-        return nextHeader;
+
+        return unmarshaller.readByte();
     }
 
     private ServerIdentity readServerIdentity() throws IOException {
         expectHeader(DomainClientProtocol.RETURN_HOST_NAME);
-        String hostName = unmarshaller.readUTF();
+        // Note: all StreamedResponse object values are marshalled as object, not UTF
+        String hostName = unmarshal(unmarshaller, String.class);
         expectHeader(DomainClientProtocol.RETURN_SERVER_GROUP_NAME);
-        String groupName = unmarshaller.readUTF();
+        String groupName = unmarshal(unmarshaller, String.class);
         expectHeader(DomainClientProtocol.RETURN_SERVER_NAME);
-        String serverName = unmarshaller.readUTF();
+        String serverName = unmarshal(unmarshaller, String.class);
         return new ServerIdentity(hostName, groupName, serverName);
     }
 

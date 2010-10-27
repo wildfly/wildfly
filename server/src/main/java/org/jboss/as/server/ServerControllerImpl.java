@@ -24,6 +24,8 @@ package org.jboss.as.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -38,6 +40,7 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerUpdateController;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -50,6 +53,8 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class ServerControllerImpl implements ServerController, Service<ServerController> {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
     private final InjectedValue<ExecutorService> executorValue = new InjectedValue<ExecutorService>();
@@ -76,25 +81,33 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
             boolean rollbackOnFailure, boolean modelOnly) {
 
+        int count = updates.size();
+        log.debugf("Received %s updates", count);
+
+        List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
         if (modelOnly && !standalone) {
-            throw new IllegalStateException("model-only updates are not valid on a domain-based server");
+            Exception e = new IllegalStateException("Update sets that only affect the configuration and not the runtime are not valid on a domain-based server");
+            for (int i = 0; i < count; i++) {
+                results.add(UpdateResultHandlerResponse.createFailureResponse(e));
+            }
+            return results;
         }
 
-        List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(updates.size());
-
         final CountDownLatch latch = new CountDownLatch(1);
-        ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, latch);
+        ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, count, latch);
         final ServerUpdateController controller = new ServerUpdateController(getServerModel(),
-                container, executor, handler, rollbackOnFailure, modelOnly);
+                container, executor, handler, rollbackOnFailure, !modelOnly);
 
-        for(int i = 0; i < updates.size(); i++) {
+        for(int i = 0; i < count; i++) {
             controller.addServerModelUpdate(updates.get(i), handler, Integer.valueOf(i));
         }
 
         controller.executeUpdates();
+        log.debugf("Executed %s updates", updates.size());
         try {
             latch.await();
-        } catch(Exception e) {
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new ManagementException("failed to execute updates", e);
         }
 
@@ -167,73 +180,94 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     private class ServerUpdateCommitHandlerImpl implements ServerUpdateCommitHandler, UpdateResultHandler<Object, Integer> {
 
+        private final int count;
+        private final Map<Integer, UpdateResultHandlerResponse<?>> map = new ConcurrentHashMap<Integer, UpdateResultHandlerResponse<?>>();
         private final List<UpdateResultHandlerResponse<?>> responses;
         private final CountDownLatch latch;
+        private final boolean trace = log.isTraceEnabled();
 
-        public ServerUpdateCommitHandlerImpl(List<UpdateResultHandlerResponse<?>> responses, CountDownLatch latch) {
+        public ServerUpdateCommitHandlerImpl(List<UpdateResultHandlerResponse<?>> responses, int count, CountDownLatch latch) {
             this.responses = responses;
+            this.count = count;
             this.latch = latch;
         }
 
         @Override
         public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
+            log.tracef("Committed with prior status %s", priorStatus);
             configurationPersister.configurationModified();
+
+            for (int i = 0; i < count; i++) {
+                responses.add(map.get(Integer.valueOf(i)));
+            }
             latch.countDown();
         }
 
         @Override
         public void handleCancellation(Integer param) {
-            responses.set(param, UpdateResultHandlerResponse.createCancellationResponse());
+            log.tracef("Update %s cancelled", param);
+            map.put(param, UpdateResultHandlerResponse.createCancellationResponse());
         }
 
         @Override
         public void handleFailure(Throwable cause, Integer param) {
-            responses.set(param, UpdateResultHandlerResponse.createFailureResponse(cause));
+            log.tracef("Update %s failed with %s", param, cause);
+            map.put(param, UpdateResultHandlerResponse.createFailureResponse(cause));
         }
 
         @Override
         public void handleRollbackCancellation(Integer param) {
-            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            log.tracef("Update %s rollback cancelled", param);
+            UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
-                throw new IllegalStateException("No response assoicated with index " + param);
+                log.warn("No response associated with index " + param);
+                return;
             }
-            responses.set(param, UpdateResultHandlerResponse.createRollbackCancelledResponse(rsp));
+            map.put(param, UpdateResultHandlerResponse.createRollbackCancelledResponse(rsp));
         }
 
         @Override
         public void handleRollbackFailure(Throwable cause, Integer param) {
-            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            log.tracef("Update %s rollback failed with %s", param, cause);
+            UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
-                throw new IllegalStateException("No response assoicated with index " + param);
+                log.warn("No response associated with index " + param);
+                return;
             }
-            responses.set(param, UpdateResultHandlerResponse.createRollbackFailedResponse(rsp, cause));
+            map.put(param, UpdateResultHandlerResponse.createRollbackFailedResponse(rsp, cause));
         }
 
         @Override
         public void handleRollbackSuccess(Integer param) {
-            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            log.tracef("Update %s rolled back", param);
+            UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
-                throw new IllegalStateException("No response assoicated with index " + param);
+                log.warn("No response associated with index " + param);
+                return;
             }
-            responses.set(param, UpdateResultHandlerResponse.createRollbackResponse(rsp));
+            map.put(param, UpdateResultHandlerResponse.createRollbackResponse(rsp));
         }
 
         @Override
         public void handleRollbackTimeout(Integer param) {
-            UpdateResultHandlerResponse<?> rsp = responses.get(param);
+            log.tracef("Update %s rollback timed out", param);
+            UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
-                throw new IllegalStateException("No response assoicated with index " + param);
+                log.warn("No response associated with index " + param);
+                return;
             }
-            responses.set(param, UpdateResultHandlerResponse.createRollbackTimedOutResponse(rsp));
+            map.put(param, UpdateResultHandlerResponse.createRollbackTimedOutResponse(rsp));
         }
 
         @Override
         public void handleSuccess(Object result, Integer param) {
-            responses.set(param, UpdateResultHandlerResponse.createSuccessResponse(result));
+            log.tracef("Update %s succeeded", param);
+            map.put(param, UpdateResultHandlerResponse.createSuccessResponse(result));
         }
 
         @Override
         public void handleTimeout(Integer param) {
+            log.tracef("Update %s timed out", param);
             responses.set(param, UpdateResultHandlerResponse.createTimeoutResponse());
         }
     }

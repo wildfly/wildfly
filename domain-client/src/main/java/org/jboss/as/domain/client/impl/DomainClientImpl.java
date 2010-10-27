@@ -56,7 +56,6 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.ChunkyByteOutput;
 import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
@@ -289,7 +288,7 @@ public class DomainClientImpl implements DomainClient {
         protected final DomainModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.PARAM_DOMAIN_MODEL);
+            expectHeader(unmarshaller, DomainClientProtocol.RETURN_DOMAIN_MODEL);
             final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
             unmarshaller.finish();
             return domainModel;
@@ -801,17 +800,14 @@ public class DomainClientImpl implements DomainClient {
                 output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
                 output.writeUTF(runtimeName);
                 output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                ChunkyByteOutput chunkyByteOutput = null;
                 try {
-                    chunkyByteOutput = new ChunkyByteOutput(output, 8192);
                     byte[] buffer = new byte[8192];
                     int read;
                     while ((read = inputStream.read(buffer)) != -1) {
-                        chunkyByteOutput.write(buffer, 0, read);
+                        output.write(buffer, 0, read);
                     }
                 } finally {
                     safeClose(inputStream);
-                    safeClose(chunkyByteOutput);
                 }
                 output.close();
             } finally {

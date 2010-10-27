@@ -45,7 +45,7 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
     private final DeploymentAction deploymentAction;
     private final DomainUpdateApplierResponse applierResponse;
     private final Map<String, ServerGroupDeploymentActionResult> serverResults = new HashMap<String, ServerGroupDeploymentActionResult>();
-    private boolean rolledBack;
+    private DomainUpdateApplierResponse rollbackResponse;
 
     DeploymentActionResultImpl(final DeploymentAction deploymentAction,
                                final DomainUpdateApplierResponse applierResponse) {
@@ -87,11 +87,21 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
 
     @Override
     public boolean isRolledBackOnDomain() {
-        return rolledBack ? true : applierResponse.isRolledBack();
+        return rollbackResponse != null ? true : applierResponse.isRolledBack();
     }
 
-    void markRolledBack() {
-        rolledBack = true;
+    @Override
+    public UpdateFailedException getDomainControllerRollbackFailure() {
+        return rollbackResponse == null ? null : rollbackResponse.getDomainFailure();
+    }
+
+    @Override
+    public Map<String, UpdateFailedException> getServerManagerRollbackFailures() {
+        return rollbackResponse == null ? Collections.<String, UpdateFailedException>emptyMap(): rollbackResponse.getHostFailures();
+    }
+
+    void markRolledBack(DomainUpdateApplierResponse rollbackResponse) {
+        this.rollbackResponse = rollbackResponse;
     }
 
     void storeServerUpdateResult(ServerIdentity server, ServerUpdateResult<Void> result) {

@@ -37,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import org.jboss.as.deployment.client.impl.DeploymentActionImpl;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.deployment.DeploymentAction;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
@@ -47,6 +46,7 @@ import org.jboss.as.domain.client.api.deployment.InvalidDeploymentPlanException;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
 import org.jboss.as.domain.client.impl.DomainClientProtocol;
 import org.jboss.as.domain.client.impl.DomainUpdateApplierResponse;
+import org.jboss.as.domain.client.impl.deployment.DeploymentActionImpl;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -88,15 +88,43 @@ public class DomainDeploymentHandler {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                runDeploymentPlan(plan, responseQueue);
+                boolean failed = false;
+                try {
+                    runDeploymentPlan(plan, responseQueue);
+                    logger.infof("Completed deployment plan %s", plan.getId());
+                }
+                catch (InterruptedException e) {
+                    failed = true;
+                    Thread.currentThread().interrupt();
+                    logger.errorf(e, "Interrupted while executing deployment plan %s", plan.getId());
+                }
+                catch (Exception e) {
+                    logger.errorf(e, "Caught exception executing deployment plan %s", plan.getId());
+                    failed = true;
+                }
+                catch (Error e) {
+                    logger.errorf(e, "Caught error executing deployment plan %s", plan.getId());
+                    throw e;
+                }
+
+                if (failed) {
+                    try {
+                        pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_COMPLETE, null, true));
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         };
 
         getDeploymentExecutor().submit(r);
     }
 
-    /** The actual deployment plan execution logic */
-    private void runDeploymentPlan(final DeploymentPlan plan, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+    /**
+     * The actual deployment plan execution logic
+     * @throws InterruptedException
+     */
+    private void runDeploymentPlan(final DeploymentPlan plan, final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
 
         pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_ID, plan.getId()));
 
@@ -106,6 +134,7 @@ public class DomainDeploymentHandler {
             try {
                 updateSets.add(createDeploymentSetUpdates(setPlan, getDomainModel()));
             } catch (InvalidDeploymentPlanException e) {
+                logger.errorf(e, "Deployment plan %s is invalid", plan.getId());
                 pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_INVALID, e, true));
                 return;
             }
@@ -118,6 +147,9 @@ public class DomainDeploymentHandler {
                 ok = executeDeploymentSet(updateSet, responseQueue);
                 if (ok) {
                     rollbackSets.add(0, updateSet); // roll back in reverse order
+                }
+                else {
+                    logger.debugf("Deployment set %s did not succeed", updateSet.setPlan.getId());
                 }
             } else {
                 // A previous set failed; just inform client this set is cancelled
@@ -140,14 +172,16 @@ public class DomainDeploymentHandler {
         return domainController.getDomainModel();
     }
 
-    private boolean executeDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+    private boolean executeDeploymentSet(final DeploymentSetUpdates updateSet,
+            final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
+
+        logger.debugf("Executing deployment set %s", updateSet.setPlan.getId());
 
         // Execute domain model update on domain controller and server managers
         List<DomainUpdateApplierResponse> rsps = domainController.applyUpdatesToModel(updateSet.getDomainUpdates());
 
         // Inform client of results
         pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID, updateSet.setPlan.getId()));
-        List<StreamedResponse> rspList = new ArrayList<StreamedResponse>();
         DeploymentAction lastResponseAction = null;
         for (int i = 0; i < rsps.size(); i++) {
             DomainUpdateApplierResponse duar = rsps.get(i);
@@ -157,8 +191,10 @@ public class DomainDeploymentHandler {
             if (duar.getDomainFailure() != null || duar.getHostFailures().size() > 0 || updateSet.isLastDomainUpdateForAction(i)) {
                 DeploymentAction action = updateSet.getDeploymentActionForDomainUpdate(i);
                 if (action != lastResponseAction) {
+                    List<StreamedResponse> rspList = new ArrayList<StreamedResponse>(2);
                     rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID, action.getId()));
                     rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_MODEL_RESULT, duar));
+                    responseQueue.put(rspList);
                     lastResponseAction = action;
                 }
             }
@@ -175,15 +211,26 @@ public class DomainDeploymentHandler {
         Runnable r = getServerUpdateTask(updateSet, rsps, responseQueue);
         r.run();
 
-        // FIXME If application to servers was not ok, roll back
-        throw new UnsupportedOperationException("handle rollback");
+        boolean ok = true;
+        for (ServerUpdatePolicy policy : updateSet.updatePolicies.values()) {
+            if (policy.isFailed()) {
+                logger.infof("Deployment set failed on %s", policy.getServerGroupName());
+                ok = false;
+                break;
+            }
+        }
+
+        if (!ok) {
+            rollbackDeploymentSet(updateSet, responseQueue);
+        }
+        return ok;
     }
 
     private ExecutorService getDeploymentExecutor() {
         return executorService;
     }
 
-    private void cancelDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+    private void cancelDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
 
         pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID, updateSet.setPlan.getId()));
 
@@ -193,23 +240,31 @@ public class DomainDeploymentHandler {
             rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID, au.action.getId()));
             rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_MODEL_RESULT, duar));
         }
+
+        responseQueue.put(rspList);
     }
 
     private void rollbackDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+
+
         // FIXME implement rollbackDeploymentSet
         throw new UnsupportedOperationException("implement me");
     }
 
-    private Runnable getServerUpdateTask(final DeploymentSetUpdates updateSet, final List<DomainUpdateApplierResponse> rsps, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+    private Runnable getServerUpdateTask(final DeploymentSetUpdates updateSet,
+            final List<DomainUpdateApplierResponse> rsps, final BlockingQueue<List<StreamedResponse>> responseQueue) {
 
+        logger.debugf("Creating server tasks for %s domain responses", rsps.size());
         // Organize all the impacted servers by ServerGroup, sorted within a group by ServerManager
         Map<String, SortedSet<ServerIdentity>> serversByGroup = new HashMap<String, SortedSet<ServerIdentity>>();
         for (DomainUpdateApplierResponse duar : rsps) {
             for (ServerIdentity serverId : duar.getServers()) {
-                SortedSet<ServerIdentity> set = serversByGroup.get(serverId.getServerGroupName());
+                String serverGroupName = serverId.getServerGroupName();
+                SortedSet<ServerIdentity> set = serversByGroup.get(serverGroupName);
                 if (set == null) {
+                    logger.debugf("Found affected servers in server group %s", serverGroupName);
                     set = new TreeSet<ServerIdentity>(ServerIdentityComparator.INSTANCE);
-                    serversByGroup.put(serverId.getServerGroupName(), set);
+                    serversByGroup.put(serverGroupName, set);
                 }
                 set.add(serverId);
             }
@@ -223,14 +278,19 @@ public class DomainDeploymentHandler {
         ConcurrentGroupServerUpdatePolicy predecessor = null;
         for (Set<ServerGroupDeploymentPlan> groupPlans : updateSet.setPlan.getServerGroupDeploymentPlans()) {
 
-            List<Runnable> concurrentList = new ArrayList<Runnable>(groupPlans.size());
+            List<Runnable> concurrentGroupsList = new ArrayList<Runnable>(groupPlans.size());
             ConcurrentGroupServerUpdatePolicy parent = new ConcurrentGroupServerUpdatePolicy(predecessor, groupPlans);
             predecessor = parent;
 
             for (ServerGroupDeploymentPlan groupPlan : groupPlans) {
                 String serverGroupName = groupPlan.getServerGroupName();
                 SortedSet<ServerIdentity> servers = serversByGroup.get(serverGroupName);
+                if (servers == null) {
+                    // Just KISS and use a placeholder
+                    servers = new TreeSet<ServerIdentity>();
+                }
                 ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, groupPlan);
+                updateSet.updatePolicies.put(serverGroupName, policy);
 
                 List<Runnable> groupTasks = new ArrayList<Runnable>(servers.size());
                 if (shutdown) {
@@ -245,24 +305,27 @@ public class DomainDeploymentHandler {
                 }
 
                 if (groupPlan.isRollingToServers()) {
-                    concurrentList.add(new RollingUpdateTask(groupTasks));
+                    concurrentGroupsList.add(new RollingUpdateTask(groupTasks));
                 }
                 else {
-                    concurrentList.add(new ConcurrentUpdateTask(groupTasks, getDeploymentExecutor()));
+                    concurrentGroupsList.add(new ConcurrentUpdateTask(groupTasks, getDeploymentExecutor()));
                 }
             }
-            masterList.add(new ConcurrentUpdateTask(concurrentList, getDeploymentExecutor()));
+            masterList.add(new ConcurrentUpdateTask(concurrentGroupsList, getDeploymentExecutor()));
         }
 
         return new RollingUpdateTask(masterList);
     }
 
-    private static void pushSingleResponse(BlockingQueue<List<StreamedResponse>> queue, StreamedResponse response) {
-        queue.add(Collections.singletonList(response));
+    private static void pushSingleResponse(BlockingQueue<List<StreamedResponse>> queue, StreamedResponse response) throws InterruptedException {
+        queue.put(Collections.singletonList(response));
     }
 
     /** Performs the translation from DeploymentAction to domain and server model updates */
     private static DeploymentSetUpdates createDeploymentSetUpdates(DeploymentSetPlan plan, DomainModel model) throws InvalidDeploymentPlanException {
+
+        logger.debugf("Creating DeploymentSetUpdates for deployment set %s", plan.getId());
+
         List<DeploymentAction> actions = plan.getDeploymentActions();
 
         if (actions.size() == 0) {
@@ -279,6 +342,7 @@ public class DomainDeploymentHandler {
             switch (action.getType()) {
                 case ADD: {
                     String deploymentName = dai.getDeploymentUnitUniqueName();
+                    logger.tracef("Add of deployment %s", deploymentName);
                     String runtimeName = dai.getNewContentFileName();
                     byte[] hash = dai.getNewContentHash();
                     if (runtimeName == null) {
@@ -300,11 +364,13 @@ public class DomainDeploymentHandler {
                     break;
                 }
                 case DEPLOY: {
+                    logger.tracef("Deploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), true);
                     addServerGroupUpdates(plan, au, sgdssu);
                     break;
                 }
                 case FULL_REPLACE: {
+                    logger.tracef("Full replace of deployment %s", dai.getDeploymentUnitUniqueName());
                     // Validate all relevant server groups are touched
                     String deploymentName = dai.getDeploymentUnitUniqueName();
                     Set<String> names = new LinkedHashSet<String>(model.getServerGroupNames());
@@ -331,12 +397,14 @@ public class DomainDeploymentHandler {
                     break;
                 }
                 case REDEPLOY: {
+                    logger.tracef("Redeploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     DomainDeploymentRedeployUpdate update = new DomainDeploymentRedeployUpdate(dai.getDeploymentUnitUniqueName());
                     au.domainUpdates.add(update);
                     au.serverUpdates.add(update.getServerModelUpdate());
                     break;
                 }
                 case REMOVE: {
+                    logger.tracef("Remove of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentRemove sgdr = new ServerGroupDeploymentRemove(dai.getDeploymentUnitUniqueName());
                     addServerGroupUpdates(plan, au, sgdr);
                     // If no server group is using this, remove from domain
@@ -360,11 +428,13 @@ public class DomainDeploymentHandler {
                     break;
                 }
                 case REPLACE: {
+                    logger.tracef("Replace of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentReplaceUpdate sgdru = new ServerGroupDeploymentReplaceUpdate(dai.getDeploymentUnitUniqueName(), dai.getNewContentFileName(), dai.getNewContentHash(), dai.getReplacedDeploymentUnitUniqueName());
                     addServerGroupUpdates(plan, au, sgdru);
                     break;
                 }
                 case UNDEPLOY: {
+                    logger.tracef("Undeploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), false);
                     addServerGroupUpdates(plan, au, sgdssu);
                     break;
@@ -373,6 +443,8 @@ public class DomainDeploymentHandler {
                     throw new IllegalStateException(String.format("Unknown %s %s", DeploymentAction.class.getSimpleName(), action.getType()));
             }
         }
+
+        logger.debugf("Created %s action updates", actionUpdates.size());
 
         return new DeploymentSetUpdates(actionUpdates, plan);
     }
@@ -396,6 +468,7 @@ public class DomainDeploymentHandler {
         private final List<ActionUpdates> actionUpdates;
         private final DeploymentSetPlan setPlan;
         private final Map<ServerIdentity, List<UpdateResultHandlerResponse<?>>> serverResults = new ConcurrentHashMap<ServerIdentity, List<UpdateResultHandlerResponse<?>>>();
+        private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();;
 
         private DeploymentSetUpdates(final List<ActionUpdates> actionUpdates, final DeploymentSetPlan setPlan) {
             this.actionUpdates = actionUpdates;
@@ -547,25 +620,31 @@ public class DomainDeploymentHandler {
 
         @Override
         protected void processUpdates() {
-            List<UpdateResultHandlerResponse<?>> rsps =
-                domainController.applyUpdatesToServer(serverId, updates.getServerUpdates(), allowOverallRollback);
-            updates.serverResults.put(serverId, rsps);
-            updatePolicy.recordServerResult(serverId, rsps);
+            try {
+                logger.debugf("Applying %s updates to  %s", updates.getServerUpdates().size(), serverId);
+                List<UpdateResultHandlerResponse<?>> rsps =
+                    domainController.applyUpdatesToServer(serverId, updates.getServerUpdates(), allowOverallRollback);
+                updates.serverResults.put(serverId, rsps);
+                updatePolicy.recordServerResult(serverId, rsps);
 
-            // Push responses to client
-            DeploymentAction lastResponseAction = null;
-            for (int i = 0; i < rsps.size(); i++) {
-                UpdateResultHandlerResponse<?> urhr = rsps.get(i);
-                // There can be multiple server updates for a given action, but we
-                // only send one response. Use this update result for the response if
-                // 1) it failed or 2) it's the last update associated with the action
-                if (urhr.getFailureResult() != null || updates.isLastServerUpdateForAction(i)) {
-                    DeploymentAction action = updates.getDeploymentActionForServerUpdate(i);
-                    if (action != lastResponseAction) {
-                        sendServerUpdateResult(action.getId(), urhr);
-                        lastResponseAction = action;
+                // Push responses to client
+                DeploymentAction lastResponseAction = null;
+                for (int i = 0; i < rsps.size(); i++) {
+                    UpdateResultHandlerResponse<?> urhr = rsps.get(i);
+                    // There can be multiple server updates for a given action, but we
+                    // only send one response. Use this update result for the response if
+                    // 1) it failed or 2) it's the last update associated with the action
+                    if (urhr.getFailureResult() != null || updates.isLastServerUpdateForAction(i)) {
+                        DeploymentAction action = updates.getDeploymentActionForServerUpdate(i);
+                        if (action != lastResponseAction) {
+                            sendServerUpdateResult(action.getId(), urhr);
+                            lastResponseAction = action;
+                        }
                     }
                 }
+            }
+            catch (Exception e) {
+                logger.errorf(e, "Caught exception applying updates to %s", serverId);
             }
         }
     }

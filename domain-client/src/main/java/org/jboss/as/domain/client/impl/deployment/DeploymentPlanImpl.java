@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.impl.deployment;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,9 @@ import org.jboss.as.domain.client.api.deployment.DeploymentSetPlan;
  *
  * @author Brian Stansberry
  */
-public class DeploymentPlanImpl implements DeploymentPlan {
+public class DeploymentPlanImpl implements DeploymentPlan, Serializable {
+
+    private static final long serialVersionUID = 4447681905208965268L;
 
     private final UUID uuid = UUID.randomUUID();
     private final List<DeploymentSetPlan> deploymentSets = new ArrayList<DeploymentSetPlan>();

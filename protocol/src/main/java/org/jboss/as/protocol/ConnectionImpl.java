@@ -237,8 +237,15 @@ final class ConnectionImpl implements Connection {
     void safeHandleMessage(final InputStream pis) {
         try {
             messageHandler.handleMessage(this, pis);
+        } catch (RuntimeException e) {
+            log.errorf(e, "Failed to read a message");
         } catch (IOException e) {
             log.errorf(e, "Failed to read a message");
+        } catch (NoClassDefFoundError e) {
+            log.errorf(e, "Failed to read a message");
+        } catch (Error e) {
+            log.errorf(e, "Failed to read a message");
+            throw e;
         } finally {
             StreamUtils.safeClose(pis);
         }
@@ -274,6 +281,7 @@ final class ConnectionImpl implements Connection {
             super(in);
         }
 
+        @Override
         public void close() throws IOException {
             try {
                 while (in.read() != -1) {}
@@ -291,10 +299,12 @@ final class ConnectionImpl implements Connection {
             super(socket.getOutputStream());
         }
 
+        @Override
         public void write(final int b) throws IOException {
             throw new IllegalStateException();
         }
 
+        @Override
         public void write(final byte[] b, final int off, final int len) throws IOException {
             if (len == 0) {
                 return;
@@ -317,6 +327,7 @@ final class ConnectionImpl implements Connection {
             }
         }
 
+        @Override
         public void close() throws IOException {
             synchronized (lock) {
                 if (sender != this) {
@@ -338,6 +349,7 @@ final class ConnectionImpl implements Connection {
             }
         }
 
+        @Override
         protected void finalize() throws Throwable {
             super.finalize();
             synchronized (lock) {

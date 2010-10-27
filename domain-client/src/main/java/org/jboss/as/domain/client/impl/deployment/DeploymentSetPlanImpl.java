@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.impl.deployment;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -39,7 +40,9 @@ import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
  *
  * @author Brian Stansberry
  */
-public class DeploymentSetPlanImpl implements DeploymentSetPlan {
+public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
+
+    private static final long serialVersionUID = -7652253540766375101L;
 
     private final UUID uuid;
     private final List<DeploymentAction> deploymentActions = new ArrayList<DeploymentAction>();

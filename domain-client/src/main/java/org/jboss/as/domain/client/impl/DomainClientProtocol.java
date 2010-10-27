@@ -29,7 +29,7 @@ public interface DomainClientProtocol {
 
     int DOMAIN_CONTROLLER_CLIENT_REQUEST = 0x0A;
 
-    int PARAM_DOMAIN_MODEL = 0x13;
+    int RETURN_DOMAIN_MODEL = 0x13;
     int PARAM_DOMAIN_MODEL_UPDATE = 0x14;
     int GET_DOMAIN_REQUEST = 0x15;
     int GET_DOMAIN_RESPONSE = 0x16;

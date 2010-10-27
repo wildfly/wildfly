@@ -69,6 +69,14 @@ public interface ServerUpdateResult<R> {
     boolean isRolledBack();
 
     /**
+     * Gets any failure that occurred when rolling back this action on this
+     * server.
+     *
+     * @return the exception, or <code>null</code> if no exception occurred
+     */
+    Throwable getRollbackFailure();
+
+    /**
      * Gets whether the application of the update to the server's runtime
      * required a server restart.
      *

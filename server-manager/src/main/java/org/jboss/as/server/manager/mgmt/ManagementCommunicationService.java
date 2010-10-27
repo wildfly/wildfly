@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import javax.net.ServerSocketFactory;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
@@ -181,7 +182,7 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 }
                 handler = handlers.get(handlerId);
                 if (handler == null) {
-                    throw new IOException("Management request failed.  NO handler found for id" + handlerId);
+                    throw new IOException("Management request failed.  NO handler found for id " + handlerId);
                 }
                 connection.setMessageHandler(handler);
             } catch (IOException e) {

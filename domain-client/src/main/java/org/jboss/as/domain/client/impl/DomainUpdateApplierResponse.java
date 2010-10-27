@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,7 +41,9 @@ import org.jboss.as.model.UpdateFailedException;
  *
  * @author Brian Stansberry
  */
-public class DomainUpdateApplierResponse {
+public class DomainUpdateApplierResponse implements Serializable {
+
+    private static final long serialVersionUID = -3525117172870002485L;
 
     private final UpdateFailedException domainFailure;
     private final Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();

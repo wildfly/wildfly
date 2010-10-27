@@ -67,7 +67,7 @@ public interface ServerController {
      *           {@code modelOnly} is {@code true}
      */
     List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
-            boolean rollbackOnFailure, boolean applyToRuntime);
+            boolean rollbackOnFailure, boolean modelOnly);
 
     /**
      * Apply a persistent update.

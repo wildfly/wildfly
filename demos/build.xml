@@ -23,15 +23,21 @@
 <project name="as-examples" basedir="." default="example">
 
     <target name="usage" unless="example">
-        <echo>To run an example pass in -Dexample=&lt;example.name&gt;</echo>
-        <echo>Valid example names are</echo>
-        <echo>  sar           - deploys mbeans packaged in a sar</echo>
-        <echo>  managedbean   - deploys a managed bean</echo>
-        <echo>  serviceloader - deploys a serviceloader style service</echo>
-        <echo>  messaging     - deploys HornetQ native sender and receiver</echo>
-        <echo>  jms           - deploys HornetQ JMS sender and receiver on the server</echo>
-        <echo>  jms.client    - Uses HornetQ JMS API from the client</echo>
-    	<echo>  rar           - deploys a resource adapter</echo>
+        <echo>To run an example:</echo>
+        <echo>1) In a separate console window,start either a standalone JBoss AS instance or a JBoss AS domain</echo>
+        <echo>2) Run mvn package -Dexample=&lt;example.name&gt; where "exammple.name is the name of the example</echo>
+    	<echo/>
+        <echo>Valid example names to run against a standalone JBoss AS instance are</echo>
+        <echo>  sar              - deploys mbeans packaged in a sar</echo>
+        <echo>  managedbean      - deploys a managed bean</echo>
+        <echo>  serviceloader    - deploys a serviceloader style service</echo>
+        <echo>  messaging        - deploys HornetQ native sender and receiver</echo>
+        <echo>  jms              - deploys HornetQ JMS sender and receiver</echo>
+        <echo>  jms.client       - Uses HornetQ JMS API from the client</echo>
+    	<echo>  rar              - deploys a resource adapter</echo>
+        <echo/>
+        <echo>Valid example names to run against a JBoss AS domain are</echo>
+        <echo>  messaging.domain - deploys HornetQ native sender and receiver</echo>
     </target>
         
     <target name="run" if="example">

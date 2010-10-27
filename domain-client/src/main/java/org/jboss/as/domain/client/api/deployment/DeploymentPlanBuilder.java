@@ -376,6 +376,13 @@ public interface DeploymentPlanBuilder {
      *
      * @return a builder that can continue building the overall deployment plan
      */
-    DeploymentPlanBuilder remove(String deploymentName);
+    RemoveDeploymentPlanBuilder remove(String deploymentName);
+
+    /**
+     * Creates the deployment plan.
+     *
+     * @return the deployment plan
+     */
+    DeploymentPlan build();
 
 }

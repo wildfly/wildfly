@@ -55,6 +55,7 @@ import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.server.ServerController;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerManagerClient;
 import org.jboss.as.server.ServerManagerConnectionService;
 import org.jboss.as.server.ServerStartTask;
@@ -246,7 +247,7 @@ public final class ManagedServer {
             command.add(sb.toString());
         }
 
-        command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/logs/boot.log");
+        command.add("-Dorg.jboss.boot.log.file=domain/servers/" + serverName + "/log/boot.log");
         // TODO: make this better
         command.add("-Dlogging.configuration=file:" + new File("").getAbsolutePath() + "/domain/configuration/logging.properties");
         command.add("-jar");
@@ -309,13 +310,26 @@ public final class ManagedServer {
     }
 
     public List<UpdateResultHandlerResponse<?>> applyUpdates(final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
+
         if(serverManagementConnection == null) {
-            throw new IllegalArgumentException("Updates can not be applied to a managed server without a management connection");
+            Exception e = new IllegalStateException("Updates can not be applied to a managed server without a management connection");
+            UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(e);
+            List<UpdateResultHandlerResponse<?>> result = new ArrayList<UpdateResultHandlerResponse<?>>(updates.size());
+            for (int i = 0; i < updates.size(); i++) {
+                result.add(urhr);
+            }
+            return result;
         }
+
         try {
             return new ApplyUpdatesRequest(updates, allowOverallRollback).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(serverManagementConnection));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to apply updates to server [" + serverName + "]", e);
+            UpdateResultHandlerResponse<?> urhr = UpdateResultHandlerResponse.createFailureResponse(e);
+            List<UpdateResultHandlerResponse<?>> result = new ArrayList<UpdateResultHandlerResponse<?>>(updates.size());
+            for (int i = 0; i < updates.size(); i++) {
+                result.add(urhr);
+            }
+            return result;
         }
     }
 
@@ -368,10 +382,16 @@ public final class ManagedServer {
         }
 
         sysProps.put(ServerManagerEnvironment.HOME_DIR, environment.getHomeDir().getAbsolutePath());
-        String key = "jboss.server.base.dir";
+        String key = ServerEnvironment.SERVER_BASE_DIR;
         if (sysProps.get(key) == null) {
             File serverBaseDir = new File(environment.getDomainServersDir(), serverName);
             sysProps.put(key, serverBaseDir.getAbsolutePath());
+        }
+        // Servers should use the server manager's deployment content repo
+        key = ServerEnvironment.SERVER_DEPLOY_DIR;
+        if (sysProps.get(key) == null) {
+            File serverDeploymentDir = environment.getDomainDeploymentDir();
+            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
         }
     }
 

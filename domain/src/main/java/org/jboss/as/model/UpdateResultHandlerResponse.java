@@ -22,13 +22,17 @@
 
 package org.jboss.as.model;
 
+import java.io.Serializable;
+
 /**
  * Encapsulates the possible values that can be passed to an
  * {@link UpdateResultHandler}'s callback methods.
  *
  * @author Brian Stansberry
  */
-public class UpdateResultHandlerResponse<R> {
+public class UpdateResultHandlerResponse<R> implements Serializable {
+
+    private static final long serialVersionUID = -5250735019112151634L;
 
     private final R successResult;
     private final Throwable failureResult;

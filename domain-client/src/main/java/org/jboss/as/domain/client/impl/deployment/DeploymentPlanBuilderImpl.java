@@ -33,6 +33,7 @@ import org.jboss.as.domain.client.api.deployment.AddDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.DeployDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.domain.client.api.deployment.RemoveDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlanBuilder;
@@ -189,9 +190,13 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     }
 
     @Override
-    public DeploymentPlanBuilder remove(String key) {
+    public RemoveDeploymentPlanBuilder remove(String key) {
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(key);
-        return getNewBuilder(mod);
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
+        boolean add = currentSet.hasServerGroupPlans();
+        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
+        newSet = newSet.addAction(mod);
+        return new RemoveDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 
     ServerGroupDeploymentPlanBuilder toServerGroup(final String serverGroupName) {

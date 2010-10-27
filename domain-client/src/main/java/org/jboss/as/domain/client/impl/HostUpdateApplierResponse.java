@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,9 @@ import org.jboss.as.model.UpdateFailedException;
  *
  * @author Brian Stansberry
  */
-public class HostUpdateApplierResponse {
+public class HostUpdateApplierResponse implements Serializable {
+
+    private static final long serialVersionUID = -429776145137267595L;
 
     private final UpdateFailedException hostFailure;
     private final List<ServerIdentity> servers = new ArrayList<ServerIdentity>();

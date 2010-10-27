@@ -29,7 +29,7 @@ package org.jboss.as.domain.client.api.deployment;
  *
  * @author Brian Stansberry
  */
-public interface ServerGroupDeploymentPlanBuilder {
+public interface ServerGroupDeploymentPlanBuilder extends DeploymentPlanBuilder {
 
     /**
      * Indicates that  all <code>deploy</code>, <code>undeploy</code> or

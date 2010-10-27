@@ -158,13 +158,13 @@ public class DomainController implements Service<DomainController> {
 
     public void addClient(final ServerManagerClient domainControllerClient) {
         if(clients.putIfAbsent(domainControllerClient.getId(), domainControllerClient) != null) {
-            // TODO: Handle
+            // TODO: Handle duplicate client
         }
     }
 
     public void removeClient(final String id) {
         if(clients.remove(id) == null) {
-            // TODO: Handle
+            // TODO: Handle non-existent client
         }
     }
 
@@ -357,7 +357,10 @@ public class DomainController implements Service<DomainController> {
 
     public List<DomainUpdateApplierResponse> applyUpdatesToModel(final List<AbstractDomainModelUpdate<?>> updates) {
 
-        List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
+        int updateCount = updates.size();
+        log.debugf("Applying %s domain updates", updateCount);
+
+        List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updateCount);
 
         // First we apply updates to our local model copy
         boolean ok = true;
@@ -376,6 +379,7 @@ public class DomainController implements Service<DomainController> {
                     result.add(new DomainUpdateApplierResponse(false));
                 }
                 catch (UpdateFailedException e) {
+                    log.debugf(e, "Failed applying %s", update);
                     ok = false;
                     result.add(new DomainUpdateApplierResponse(e));
                 }
@@ -398,6 +402,7 @@ public class DomainController implements Service<DomainController> {
             }
         }
         else {
+            log.debug("Domain updates applied successfully locally; pushing to server managers");
             // Persist model
             configPersister.persistConfiguration(domainModel);
             // Move on to server managers.
@@ -413,6 +418,7 @@ public class DomainController implements Service<DomainController> {
         List<UpdateResultHandlerResponse<?>> responses;
 
         if (client == null) {
+            log.debugf("Unknown server manager %s", server.getHostName());
             // TODO better handle disappearance of host
             responses = new ArrayList<UpdateResultHandlerResponse<?>>();
             UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
@@ -437,13 +443,16 @@ public class DomainController implements Service<DomainController> {
         return deploymentRepository;
     }
 
+    public boolean isDeploymentNameUnique(String deploymentName) {
+        return (domainModel.getDeployment(deploymentName) == null);
+    }
+
     private List<DomainUpdateApplierResponse> applyUpdatesToServerManagers(final List<AbstractDomainModelUpdate<?>> updates,
             List<AbstractDomainModelUpdate<?>> rollbacks) {
 
         List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
 
         // We update server managers concurrently
-        boolean ok = true;
         Map<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> futures = new HashMap<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>>();
         for (Map.Entry<String, ServerManagerClient> entry : clients.entrySet()) {
             final ServerManagerClient client = entry.getValue();
@@ -459,7 +468,10 @@ public class DomainController implements Service<DomainController> {
             futures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
         }
 
+        log.debugf("Domain updates pushed to %s server manager(s)", futures.size());
+
         // Collate the results for each update
+        boolean ok = true;
         for (int i = 0; i < updates.size(); i++) {
 
             Map<String, UpdateFailedException> hostFailures = new HashMap<String, UpdateFailedException>();
@@ -479,19 +491,23 @@ public class DomainController implements Service<DomainController> {
                     }
                     // else this host didn't get this far
                 } catch (InterruptedException e) {
+                    log.debug("Interrupted reading server manager response");
                     Thread.currentThread().interrupt();
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
                 } catch (ExecutionException e) {
+                    log.debug("Execution exception reading server manager response", e);
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
                 }
             }
             if (hostFailures.size() == 0) {
+                log.debugf("%s servers affected by update %s", servers.size(), i);
                 result.add(new DomainUpdateApplierResponse(servers));
             }
             else {
+                log.debugf("%s server managers failed on update %s", hostFailures.size(), i);
                 result.add(new DomainUpdateApplierResponse(hostFailures));
                 ok = false;
-                // No point processing other updates, as we are going to roll them back
+                // No point processing other updates, as we are going to roll them back.
                 // Act as if we did the whole thing one update at a time and this
                 // failure stopped us doing the rest
                 break;
@@ -501,6 +517,19 @@ public class DomainController implements Service<DomainController> {
         if (!ok) {
 
             // Some server manager failed, so we gotta roll 'em all back
+
+            log.warn("One or more updates failed on some server managers; rolling back");
+
+            // Apply compensating updates to fix our local model
+            for (int i = 0; i < rollbacks.size(); i++) {
+                AbstractDomainModelUpdate<?> rollback = rollbacks.get(i);
+                try {
+                    domainModel.update(rollback);
+                }
+                catch (UpdateFailedException e) {
+                    // TODO uh oh. Reload from the file?
+                }
+            }
 
             // List of servers we fail to successfully roll back
             Set<String> outOfSync = new HashSet<String>();
@@ -520,14 +549,14 @@ public class DomainController implements Service<DomainController> {
                     }
 
                     // Set up the rollback list
-                    final List<AbstractDomainModelUpdate<?>> serverRollbacks =
+                    final List<AbstractDomainModelUpdate<?>> serverManagerRollbacks =
                         (idx == rollbacks.size() -1) ? rollbacks : new ArrayList<AbstractDomainModelUpdate<?>>(idx + 1);
-                    if (serverRollbacks != rollbacks) {
+                    if (serverManagerRollbacks != rollbacks) {
                         // Rollbacks are in reverse order from updates. We take
                         // the last X=idx items from the rollback list since
                         // those correspond to the updates that didn't fail and need rollback
                         for (int j = rollbacks.size() - 1 - idx; j < rollbacks.size(); j++) {
-                            serverRollbacks.add(rollbacks.get(j));
+                            serverManagerRollbacks.add(rollbacks.get(j));
                         }
                     }
                     // Tell the host to roll back
@@ -535,8 +564,8 @@ public class DomainController implements Service<DomainController> {
                     Callable<Boolean> callable = new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(serverRollbacks);
-                            return Boolean.valueOf(rsp.size() == serverRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
+                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(serverManagerRollbacks);
+                            return Boolean.valueOf(rsp.size() == serverManagerRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
                         }
                     };
                     rollbackFutures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));

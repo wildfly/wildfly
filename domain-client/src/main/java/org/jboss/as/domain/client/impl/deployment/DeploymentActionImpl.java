@@ -39,6 +39,8 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private static final long serialVersionUID = 613098200977026475L;
 
     public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, byte[] hash) {
+        assert fileName != null : "fileName is null";
+        assert hash != null : "hash is null";
         return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, hash, null);
     }
 
@@ -55,10 +57,15 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     }
 
     public static DeploymentActionImpl getReplaceAction(String deploymentName, String replacedName) {
+        if (replacedName == null) {
+            throw new IllegalArgumentException("replacedName is null");
+        }
         return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
     }
 
     public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, byte[] hash) {
+        assert fileName != null : "fileName is null";
+        assert hash != null : "hash is null";
         return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, hash, null);
     }
 
@@ -75,6 +82,10 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private transient Set<DomainUpdateListener<?>> listeners;
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
+        assert type != null : "type is null";
+        if (deploymentUnitName == null) {
+            throw new IllegalArgumentException("deploymentUnitName is null");
+        }
         this.type = type;
         this.deploymentUnitName = deploymentUnitName;
         this.newContentFileName = newContentFileName;

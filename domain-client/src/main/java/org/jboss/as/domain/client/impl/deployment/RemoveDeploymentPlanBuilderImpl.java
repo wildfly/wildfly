@@ -22,43 +22,23 @@
 
 package org.jboss.as.domain.client.impl.deployment;
 
-import org.jboss.as.domain.client.api.deployment.DeploymentAction;
 import org.jboss.as.domain.client.api.deployment.RemoveDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.domain.client.api.deployment.UndeployDeploymentPlanBuilder;
-
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that exposes
- * directives that are only applicable following an <code>undeploy</code> directive.
+ * directives that are only applicable following a <code>remove</code>.
  *
  * @author Brian Stansberry
  */
-class UndeployDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements UndeployDeploymentPlanBuilder {
+class RemoveDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements RemoveDeploymentPlanBuilder {
 
-    private final DeploymentAction undeployModification;
-
-    UndeployDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
+    RemoveDeploymentPlanBuilderImpl(DeploymentPlanBuilderImpl existing, DeploymentSetPlanImpl setPlan, boolean replace) {
         super(existing, setPlan, replace);
-        DeploymentAction modification = setPlan.getLastAction();
-        if (modification.getType() != DeploymentAction.Type.UNDEPLOY) {
-            throw new IllegalStateException("Invalid action type " + modification.getType());
-        }
-        this.undeployModification = modification;
     }
 
     @Override
     public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
         return super.toServerGroup(serverGroupName);
-    }
-
-    @Override
-    public RemoveDeploymentPlanBuilder andRemoveUndeployed() {
-        DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(undeployModification.getDeploymentUnitUniqueName());
-        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
-        boolean add = currentSet.hasServerGroupPlans();
-        DeploymentSetPlanImpl newSet = add ? new DeploymentSetPlanImpl() : currentSet;
-        newSet = newSet.addAction(mod);
-        return new RemoveDeploymentPlanBuilderImpl(this, newSet, !add);
     }
 }

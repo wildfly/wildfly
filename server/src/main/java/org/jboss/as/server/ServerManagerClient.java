@@ -67,6 +67,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  */
 public class ServerManagerClient implements Service<Void> {
+
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "client");
     private final InjectedValue<Connection> smConnection = new InjectedValue<Connection>();
     private final InjectedValue<ServerController> serverController = new InjectedValue<ServerController>();
@@ -215,6 +216,10 @@ public class ServerManagerClient implements Service<Void> {
         private List<AbstractServerModelUpdate<?>> updates;
         private boolean allowRollback;
 
+        private ApplyServerModelUpdatesOperation() {
+            super(managementHeaderMessageHandler);
+        }
+
         @Override
         protected byte getResponseCode() {
             return DomainServerProtocol.SERVER_MODEL_UPDATES_RESPONSE;
@@ -252,11 +257,15 @@ public class ServerManagerClient implements Service<Void> {
         }
 
         private List<UpdateResultHandlerResponse<?>> processUpdates() {
-            return serverController.getValue().applyUpdates(updates, allowRollback, true);
+            return serverController.getValue().applyUpdates(updates, allowRollback, false);
         }
     }
 
     private class GetServerModelOperation extends ManagementResponse {
+
+        private GetServerModelOperation() {
+            super(managementHeaderMessageHandler);
+        }
 
         @Override
         protected byte getResponseCode() {

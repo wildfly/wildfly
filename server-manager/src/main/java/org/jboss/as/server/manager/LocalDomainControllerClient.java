@@ -46,7 +46,7 @@ import org.jboss.as.model.UpdateResultHandlerResponse;
  * @author John Bailey
  */
 public class LocalDomainControllerClient implements ServerManagerClient {
-    private static final String ID = "LOCAL";
+
     private final ServerManager serverManager;
 
     /**
@@ -61,7 +61,7 @@ public class LocalDomainControllerClient implements ServerManagerClient {
     /** {@inheritDoc} */
     @Override
     public String getId() {
-        return ID;
+        return serverManager.getName();
     }
 
     /** {@inheritDoc} */

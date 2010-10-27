@@ -67,8 +67,8 @@ public class ServerGroupDeploymentRemove extends AbstractModelUpdate<ServerGroup
 
     @Override
     protected void applyUpdate(ServerGroupElement element) throws UpdateFailedException {
-        if (element.getDeployment(uniqueName) != null) {
-            throw new UpdateFailedException("Deployment " + uniqueName + " already added");
+        if (element.getDeployment(uniqueName) == null) {
+            throw new UpdateFailedException("Deployment " + uniqueName + " already removed");
         }
         element.removeDeployment(uniqueName);
     }

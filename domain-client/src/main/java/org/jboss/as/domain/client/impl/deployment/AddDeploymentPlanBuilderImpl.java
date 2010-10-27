@@ -25,6 +25,7 @@ package org.jboss.as.domain.client.impl.deployment;
 import org.jboss.as.domain.client.api.deployment.AddDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.DeployDeploymentPlanBuilder;
 import org.jboss.as.domain.client.api.deployment.ReplaceDeploymentPlanBuilder;
+import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlanBuilder;
 
 /**
  * Variant of a {@link DeploymentPlanBuilderImpl} that exposes
@@ -54,5 +55,10 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     @Override
     public ReplaceDeploymentPlanBuilder andReplace(String toReplace) {
         return replace(newContentKey, toReplace);
+    }
+
+    @Override
+    public ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName) {
+        return super.toServerGroup(serverGroupName);
     }
 }

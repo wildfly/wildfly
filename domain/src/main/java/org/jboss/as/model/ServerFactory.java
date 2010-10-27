@@ -158,11 +158,11 @@ public final class ServerFactory {
         }
 
         list.add(new ServerProfileUpdate(serverGroup.getProfileName()));
-        // Merge subsystems
-        for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystemElement : leafProfile.getSubsystems()) {
-            // todo: find a better way around this generics issue
-            processSubsystem((AbstractSubsystemElement) subsystemElement, list);
-        }
+
+        // Merge subsystems from leafProfile and any parent profiles
+        Set<String> processedSubsystems = new HashSet<String>();
+        Set<String> processedProfiles = new HashSet<String>();
+        processProfile(domainModel, leafProfile, list, processedProfiles, processedSubsystems);
 
         // Merge deployments
         for (ServerGroupDeploymentElement element : serverGroup.getDeployments()) {
@@ -180,6 +180,52 @@ public final class ServerFactory {
         // TODO add domain deployment repository
         // BES 2010/10/12 -- why?
 
+    }
+
+    private static void processProfile(DomainModel domainModel, ProfileElement profile,
+            List<AbstractServerModelUpdate<?>> list, Set<String> processedProfiles,
+            Set<String> processedSubsystems) {
+
+        if (! processedProfiles.add(profile.getName())) {
+            // we already hit this one via another path
+            return;
+        }
+
+        // Parent profile subsystems first
+        for (String included : profile.getIncludedProfiles()) {
+            processProfile(domainModel, domainModel.getProfile(included), list, processedProfiles, processedSubsystems);
+        }
+
+        for (AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystemElement : profile.getSubsystems()) {
+            String namespaceURI = subsystemElement.getElementName().getNamespaceURI();
+            if (processedSubsystems.contains(namespaceURI)) {
+                // FIXME catch this problem in domain model parsing
+                throw findDuplicateProfile(namespaceURI, profile.getName(), processedProfiles, domainModel);
+            }
+            // todo: find a better way around this generics issue
+            processSubsystem((AbstractSubsystemElement) subsystemElement, list);
+            processedSubsystems.add(namespaceURI);
+        }
+    }
+
+    private static RuntimeException findDuplicateProfile(String namespaceURI, String currentProfile, Set<String> processedProfiles,
+            DomainModel domainModel) {
+        String duplicate = null;
+        for (String profile : processedProfiles) {
+            if (profile.equals(currentProfile)) {
+                continue;
+            }
+            ProfileElement pe = domainModel.getProfile(profile);
+            if (pe.getSubsystem(namespaceURI) != null) {
+                duplicate = profile;
+                break;
+            }
+        }
+        return new IllegalStateException(String.format("Subsystem with namespace %s " +
+                "is declared in multiple profiles that are related to each " +
+                "other via inclusion. Profiles are %s and %s. A subsystem can " +
+                "only appear once in a given server runtime, so declaring the " +
+                "same subsystem in multiple related profiles is illegal.", namespaceURI, duplicate, currentProfile));
     }
 
     private static void processSocketBindings(final SocketBindingGroupElement group, List<AbstractServerModelUpdate<?>> list) {

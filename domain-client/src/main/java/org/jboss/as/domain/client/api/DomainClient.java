@@ -184,7 +184,7 @@ public interface DomainClient extends Closeable {
          * @param port The remote port
          * @return A domain client
          */
-        public DomainClient create(final InetAddress address, int port) {
+        public static DomainClient create(final InetAddress address, int port) {
             return new DomainClientImpl(address, port);
         }
     }

@@ -51,7 +51,6 @@ import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
-import org.jboss.as.protocol.ChunkyByteInput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -158,6 +157,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 return new ApplyUpdateToDomainModelUpdateOperation();
             case DomainClientProtocol.EXECUTE_DEPLOYMENT_PLAN_REQUEST:
                 return new ExecuteDeploymentPlanOperation();
+            case DomainClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_REQUEST:
+                return new CheckUniqueDeploymentNameOperation();
             case DomainClientProtocol.ADD_DEPLOYMENT_CONTENT_REQUEST:
                 return new AddDeploymentContentOperation();
             case DomainClientProtocol.APPLY_SERVER_MODEL_UPDATE_REQUEST:
@@ -195,7 +196,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         protected void sendResponse(final OutputStream outputStream) throws IOException {
                 final Marshaller marshaller = getMarshaller();
                 marshaller.start(createByteOutput(outputStream));
-                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL);
+                marshaller.writeByte(DomainClientProtocol.RETURN_DOMAIN_MODEL);
                 marshaller.writeObject(domainController.getDomainModel());
                 marshaller.finish();
         }
@@ -600,6 +601,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 for (StreamedResponse item : rspList) {
                     rsp = item;
                     marshaller.writeByte(rsp.getProtocolValue());
+                    log.tracef("Marshalling StreamedResponse %s", rsp.getProtocolValue());
                     if (rsp.getValue() != null) {
                         marshaller.writeObject(rsp.getValue());
                     }
@@ -608,6 +610,39 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             while (rsp != null && !rsp.isLastInStream());
 
             marshaller.finish();
+        }
+    }
+
+    private class CheckUniqueDeploymentNameOperation extends ManagementResponse {
+        private String deploymentName;
+
+        @Override
+        protected final byte getResponseCode() {
+            return DomainClientProtocol.CHECK_UNIQUE_DEPLOYMENT_NAME_RESPONSE;
+        }
+
+        @Override
+        protected final void readRequest(final InputStream inputStream) throws IOException {
+            ByteDataInput input = null;
+            try {
+                input = new SimpleByteDataInput(inputStream);
+                expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_NAME);
+                deploymentName = input.readUTF();
+            } finally {
+                safeClose(input);
+            }
+        }
+
+        @Override
+        protected void sendResponse(final OutputStream outputStream) throws IOException {
+            ByteDataOutput output = null;
+            try {
+                output = new SimpleByteDataOutput(outputStream);
+                output.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
+                output.writeBoolean(domainController.isDeploymentNameUnique(deploymentName));
+            } finally {
+                safeClose(output);
+            }
         }
     }
 
@@ -629,13 +664,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
                 final String deploymentRuntimeName = input.readUTF();
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                final ChunkyByteInput contentInput = new ChunkyByteInput(input);
-                try {
-                    deploymentHash = domainController.getDomainDeploymentRepository().addDeploymentContent(deploymentName, deploymentRuntimeName, contentInput);
-                } finally {
-                    contentInput.close();
-                }
-            } finally {
+                deploymentHash = domainController.getDomainDeploymentRepository().addDeploymentContent(deploymentName, deploymentRuntimeName, (InputStream) input);
+           } finally {
                 safeClose(input);
             }
         }

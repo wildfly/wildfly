@@ -57,6 +57,8 @@ public abstract class AbstractMessageHandler implements MessageHandler {
     public void handleMessage(final Connection connection, final InputStream inputStream) throws IOException {
         try {
             handle(connection, inputStream);
+        } catch (IOException e) {
+            throw e;
         } catch (Exception e) {
             throw new IOException("Failed to handle management operation", e);
         } finally {
