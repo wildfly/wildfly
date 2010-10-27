@@ -33,30 +33,30 @@ import org.jboss.msc.service.ServiceController;
 public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<Void> {
 
     private static final long serialVersionUID = 5959855923764647668L;
-    private final String path;
+    private final String name;
 
-    public ServerDeploymentRepositoryEnable(String path) {
+    public ServerDeploymentRepositoryEnable(String name) {
         super(false, true);
-        this.path = path;
+        this.name = name;
     }
 
     /** {@inheritDoc} */
     protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        final DeploymentRepositoryElement repository = element.getDeploymentRepository(path);
+        final DeploymentRepositoryElement repository = element.getDeploymentRepository(name);
         if(repository == null) {
-            throw new UpdateFailedException("non existent deployment repository " + path);
+            throw new UpdateFailedException("non existent deployment repository " + name);
         }
         repository.setEnabled(true);
     }
 
     /** {@inheritDoc} */
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerDeploymentRepositoryDisable(path);
+        return new ServerDeploymentRepositoryDisable(name);
     }
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceContainer().getService(FileSystemDeploymentService.getServiceName(path));
+        final ServiceController<?> controller = context.getServiceContainer().getService(FileSystemDeploymentService.getServiceName(name));
         if(controller == null) {
             resultHandler.handleFailure(notConfigured(), param);
         } else {
@@ -71,7 +71,7 @@ public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<
     }
 
     private UpdateFailedException notConfigured() {
-        return new UpdateFailedException("No deployment repository named " + path + " is configured");
+        return new UpdateFailedException("No deployment repository named " + name + " is configured");
     }
 
 }

@@ -39,7 +39,10 @@ public class AbsolutePathService extends AbstractPathService {
     private final String absolutePath;
 
     public static BatchServiceBuilder<String> addService(final String name, final String abstractPath, final BatchBuilder batchBuilder) {
-        ServiceName sname = pathNameOf(name);
+        return addService(pathNameOf(name), abstractPath, batchBuilder);
+    }
+
+    public static BatchServiceBuilder<String> addService(final ServiceName sname, final String abstractPath, final BatchBuilder batchBuilder) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
         return batchBuilder.addService(sname, service);
     }

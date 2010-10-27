@@ -66,6 +66,7 @@
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
+                <xs:element name="management" type="managementType"/>
                 <xs:element name="profile" type="standalone-profileType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
@@ -314,12 +315,19 @@
                 content can be stored.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="path" use="optional" default="standalone/deploy">
+        <xs:attribute name="name" type="xs:string" use="optional" default="default" />
+        <xs:attribute name="relative-to" type="xs:string" use="optional">
+           <xs:annotation>
+                <xs:documentation>Reference to a filesystem path defined in the "paths" section
+                of the server configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" use="required">
             <xs:annotation>
-                <xs:documentation>Filesystem path indicating the location where deployment content should
-                    be stored. Either an absolute or relative path; if relative it is relative
-                    to the root of the JBoss AS installation. Location must be writable by
-                    the user that owns the JBoss AS process. Default is 'server/deploy'
+                <xs:documentation>The actual filesystem path. Treated as an absolute path, unless the 
+                'relative-to' attribute is specified, in which case the value
+                is treated as relative to that path.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

@@ -192,7 +192,9 @@ public final class ModelXmlParsers {
             // Handle attributes
             boolean enabled = true;
             int interval = 0;
-            String path = DeploymentRepositoryElement.DEFAULT_STANDALONE_PATH;
+            String path = null;
+            String name= null;
+            String relativeTo = null;
             final int attrCount = reader.getAttributeCount();
             for (int i = 0; i < attrCount; i ++) {
                 final String value = reader.getAttributeValue(i);
@@ -203,6 +205,14 @@ public final class ModelXmlParsers {
                     switch (attribute) {
                         case PATH: {
                             path = value;
+                            break;
+                        }
+                        case NAME: {
+                            name = value;
+                            break;
+                        }
+                        case RELATIVE_TO: {
+                            relativeTo = value;
                             break;
                         }
                         case SCAN_INTERVAL: {
@@ -218,8 +228,14 @@ public final class ModelXmlParsers {
                     }
                 }
             }
+            if(path == null) {
+                ParseUtils.missingRequired(reader, Collections.singleton("path"));
+            }
             requireNoContent(reader);
-            list.add(new ServerDeploymentRepositoryAdd(path, interval, enabled));
+            final ServerDeploymentRepositoryAdd action = new ServerDeploymentRepositoryAdd(path, interval, enabled);
+            action.setName(name);
+            action.setRelativeTo(relativeTo);
+            list.add(action);
             element = nextElement(reader);
         }
         if (element == Element.DEPLOYMENTS) {

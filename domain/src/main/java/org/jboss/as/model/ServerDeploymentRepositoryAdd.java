@@ -22,8 +22,6 @@
 
 package org.jboss.as.model;
 
-import java.io.File;
-
 import org.jboss.as.deployment.filesystem.FileSystemDeploymentService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -36,7 +34,11 @@ import org.jboss.msc.service.BatchServiceBuilder;
 public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Void> {
 
     private static final long serialVersionUID = -1611269698053636197L;
+    private static final String DEFAULT_NAME = "default";
+
     private final String path;
+    private String name;
+    private String relativeTo;
     private int interval = 0;
     private boolean enabled = true;
 
@@ -47,45 +49,49 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
         this.enabled = enabled;
     }
 
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getRelativePath() {
+        return relativeTo;
+    }
+    public void setRelativeTo(String relativePath) {
+        this.relativeTo = relativePath;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void applyUpdate(ServerModel element) throws UpdateFailedException {
-        if(! element.addDeploymentRepository(path)) {
-            throw new UpdateFailedException("duplicate deployment repository " + path);
+        final String repositoryName = repositoryName();
+        if(! element.addDeploymentRepository(repositoryName)) {
+            throw new UpdateFailedException("duplicate deployment repository " + repositoryName);
         }
-        final DeploymentRepositoryElement repository = element.getDeploymentRepository(path);
+        final DeploymentRepositoryElement repository = element.getDeploymentRepository(repositoryName);
         repository.setInterval(interval);
         repository.setEnabled(enabled);
+        repository.setPath(path);
+        repository.setRelativeTo(relativeTo);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractServerModelUpdate<?> getCompensatingUpdate(ServerModel original) {
-        return new ServerDeploymentRepositoryRemove(path);
+        return new ServerDeploymentRepositoryRemove(repositoryName());
     }
 
     /** {@inheritDoc} */
     @Override
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batch = updateContext.getBatchBuilder();
-        // FIXME
-        final String absolutePath = getAbsolutePath(path);
-        final BatchServiceBuilder<?> builder = FileSystemDeploymentService.addService(batch, absolutePath, interval, enabled);
+        final BatchServiceBuilder<?> builder = FileSystemDeploymentService.addService(batch, repositoryName(), relativeTo, path, interval, enabled);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
     }
 
-    private String getAbsolutePath(String path) {
-        if (File.separatorChar == '/') {
-            if (path.startsWith(File.separator)) {
-                return path;
-            }
-        }
-        else if (path.indexOf(":\\") == 1) {
-            return path;
-        }
-        // TODO. Yuck. Better would be to use ServerEnvironment
-        String jbossHome = System.getProperty("jboss.home.dir");
-        return jbossHome.endsWith(File.separator) ? jbossHome + path : jbossHome + File.separatorChar + path;
+    private String repositoryName() {
+        return name != null ? name : DEFAULT_NAME;
     }
 
 }

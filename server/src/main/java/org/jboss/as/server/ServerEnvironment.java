@@ -54,7 +54,7 @@ public class ServerEnvironment {
      * Constant that holds the name of the environment property
      * for specifying the base directory for server content.
      *
-     * <p>Defaults to <tt><em>HOME_DIR</em>/server</tt>.
+     * <p>Defaults to <tt><em>HOME_DIR</em>/standalone</tt>.
      */
     public static final String SERVER_BASE_DIR = "jboss.server.base.dir";
 
@@ -80,7 +80,7 @@ public class ServerEnvironment {
      * for specifying the directory which JBoss will use for
      * deployments.
      *
-     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/deployments</tt>.
+     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/deployments</tt>.
      */
     public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
 

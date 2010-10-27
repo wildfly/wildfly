@@ -53,7 +53,10 @@ public class ServerDeploymentRepositoryRemove extends AbstractServerModelUpdate<
         if(repository == null) {
             return null;
         }
-        return new ServerDeploymentRepositoryAdd(path, repository.getScanInterval(), repository.isScanEnabled());
+        ServerDeploymentRepositoryAdd action = new ServerDeploymentRepositoryAdd(path, repository.getScanInterval(), repository.isScanEnabled());
+        action.setName(repository.getName());
+        action.setRelativeTo(repository.getRelativeTo());
+        return action;
     }
 
     /** {@inheritDoc} */

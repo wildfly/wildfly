@@ -37,39 +37,47 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
 
     public static final String DEFAULT_STANDALONE_PATH = "standalone/deployments";
 
-    private final String path;
+    private final String name;
+    private String path;
+    private String relativeTo;
     private int interval = 0;
     private boolean enabled = true;
 
     /**
      * Creates a new {@code DeploymentRepsoitoryElement}
      *
-     * @param path the repository path
+     * @param path the repository name
      */
-    public DeploymentRepositoryElement(String path) {
-        this.path = path;
-    }
-
-    /**
-     * @param location
-     */
-    public DeploymentRepositoryElement(String path, int interval, boolean enabled) {
-        super();
-        if (path == null)
+    public DeploymentRepositoryElement(String name) {
+        if (name == null) {
             throw new IllegalArgumentException("path is null");
-        this.path = path;
-        this.interval = interval;
-        this.enabled = enabled;
+        }
+        this.name = name;
     }
 
     /**
-     * Gets the filesystem path of the root of the repository. Either absolute
-     * or relative to the current working directory.
+     * Get the repository name.
      *
-     * @return the path. Will not be <code>null</code>
+     * @return the name
      */
+    public String getName() {
+        return name;
+    }
+
     public String getPath() {
         return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getRelativeTo() {
+        return relativeTo;
+    }
+
+    public void setRelativeTo(String relativeTo) {
+        this.relativeTo = relativeTo;
     }
 
     public int getScanInterval() {
@@ -95,11 +103,19 @@ public class DeploymentRepositoryElement extends AbstractModelElement<Deployment
 
     @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), path);
-        if (interval != 0)
+        if (name != null) {
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), name);
+        }
+        if (interval != 0) {
             streamWriter.writeAttribute(Attribute.SCAN_INTERVAL.getLocalName(), String.valueOf(interval));
-        if (!enabled)
+        }
+        if (!enabled) {
             streamWriter.writeAttribute(Attribute.SCAN_ENABLED.getLocalName(), "false");
+        }
+        if (relativeTo != null) {
+            streamWriter.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), relativeTo);
+        }
+        streamWriter.writeAttribute(Attribute.PATH.getLocalName(), path);
         streamWriter.writeEndElement();
     }
 

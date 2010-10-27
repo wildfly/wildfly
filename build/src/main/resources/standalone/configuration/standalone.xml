@@ -229,6 +229,6 @@
         <property name="java.rmi.server.hostname" value="127.0.0.1"/>
     </system-properties>
     
-    <deployment-repository scan-interval="5000"/>
+    <deployment-repository scan-interval="5000" relative-to="jboss.server.base.dir" path="deployments" />
 
 </server>

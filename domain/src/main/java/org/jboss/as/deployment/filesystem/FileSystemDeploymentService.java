@@ -50,10 +50,13 @@ import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.services.path.AbsolutePathService;
+import org.jboss.as.services.path.RelativePathService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -72,21 +75,29 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "deployment", "filesystem");
 
-    //TODO Extenalize config
-    FileFilter filter = new ExtensibleFilter();
-
     public static ServiceName getServiceName(String path) {
         return BASE_SERVICE_NAME.append(path);
     }
 
-    public static BatchServiceBuilder<FileSystemDeploymentService> addService(final BatchBuilder batchBuilder, final String path, final int scanInterval, final boolean scanEnabled) {
-        FileSystemDeploymentService service = new FileSystemDeploymentService(new File(path), scanInterval, scanEnabled);
-        ServiceName name = getServiceName(path);
+    public static BatchServiceBuilder<FileSystemDeploymentService> addService(final BatchBuilder batchBuilder,
+            final String repositoryName, final String relativeTo, final String path, final int scanInterval, final boolean scanEnabled) {
+
+        final FileSystemDeploymentService service = new FileSystemDeploymentService(scanInterval, scanEnabled);
+        final ServiceName name = getServiceName(path);
+        final ServiceName pathService = name.append("path");
+
+        if(relativeTo != null) {
+            RelativePathService.addService(pathService, path, relativeTo, batchBuilder);
+        } else {
+            AbsolutePathService.addService(pathService, path, batchBuilder);
+        }
 
         BatchServiceBuilder<FileSystemDeploymentService> serviceBuilder = batchBuilder.addService(name, service)
             .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager)
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.injectedDeploymentRepository)
-            .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.injectedServerModel);
+            .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.injectedServerModel)
+            .addDependency(pathService, String.class, service.pathValue)
+            .setInitialMode(Mode.ACTIVE);
 
         // FIXME inject ScheduledExecutorService from an external service dependency
         final ScheduledExecutorService hack = Executors.newSingleThreadScheduledExecutor();
@@ -105,28 +116,19 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
     private final InjectedValue<ServerDeploymentManager> injectedDeploymentManager = new InjectedValue<ServerDeploymentManager>();
     private final InjectedValue<ServerDeploymentRepository> injectedDeploymentRepository = new InjectedValue<ServerDeploymentRepository>();
     private final InjectedValue<ServerModel> injectedServerModel = new InjectedValue<ServerModel>();
+    private final InjectedValue<String> pathValue = new InjectedValue<String>();
 
-    private final File deploymentDir;
+    private File deploymentDir;
     private int scanInterval = 0;
     private volatile boolean scanEnabled;
     private ScheduledFuture<?> scanTask;
     private final Lock scanLock = new ReentrantLock();
     private Set<String> deployed = new HashSet<String>();
 
-    public FileSystemDeploymentService(final File deploymentDir, final int scanInterval, final boolean scanEnabled) {
-        if (deploymentDir == null) {
-            throw new IllegalArgumentException("deploymentDir is null");
-        }
-        if (!deploymentDir.exists()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " does not exist");
-        }
-        if (!deploymentDir.isDirectory()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not a directory");
-        }
-        if (!deploymentDir.canWrite()) {
-            throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not writable");
-        }
-        this.deploymentDir = deploymentDir;
+    //TODO Extenalize filter config
+    private FileFilter filter = new ExtensibleFilter();
+
+    public FileSystemDeploymentService(final int scanInterval, final boolean scanEnabled) {
         this.scanInterval = scanInterval;
         this.scanEnabled = scanEnabled;
     }
@@ -170,6 +172,17 @@ public class FileSystemDeploymentService implements Service<FileSystemDeployment
             injectedDeploymentRepository.getValue();
             type = ServerModel.class.getSimpleName();
             injectedServerModel.getValue();
+            final File deploymentDir = new File(pathValue.getValue());
+            if (!deploymentDir.exists()) {
+                throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " does not exist");
+            }
+            if (!deploymentDir.isDirectory()) {
+                throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not a directory");
+            }
+            if (!deploymentDir.canWrite()) {
+                throw new IllegalArgumentException(deploymentDir.getAbsolutePath() + " is not writable");
+            }
+            this.deploymentDir = deploymentDir;
         }
         catch (IllegalStateException ise) {
             throw new StartException(type + "not injected");
