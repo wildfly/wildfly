@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.jboss.as.deployment.ServerDeploymentRepository;
@@ -106,14 +105,19 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
     private final InjectedValue<ServerConfigurationPersister> configurationPersisterValue = new InjectedValue<ServerConfigurationPersister>();
     private final InjectedValue<ServerDeploymentManager> deploymentManagerValue = new InjectedValue<ServerDeploymentManager>();
     private final InjectedValue<ServerDeploymentRepository> deploymentRepositoryValue = new InjectedValue<ServerDeploymentRepository>();
+    private final InjectedValue<Executor> executorValue = new InjectedValue<Executor>();
 
+    private final ServiceContainer serviceContainer;
     private ServerController serverController;
     private ShutdownHandler shutdownHandler;
     private ServerConfigurationPersister configurationPersister;
     private ServerDeploymentManager deploymentManager;
     private ServerDeploymentRepository deploymentRepository;
+    private Executor executor;
 
-    private final Executor executor = Executors.newCachedThreadPool();
+    ServerControllerOperationHandler(final ServiceContainer serviceContainer) {
+        this.serviceContainer = serviceContainer;
+    }
 
     InjectedValue<ServerController> getServerControllerInjector() {
         return serverControllerValue;
@@ -127,12 +131,16 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         return shutdownHandlerValue;
     }
 
-    public InjectedValue<ServerDeploymentManager> getDeploymentManagerInjector() {
+    InjectedValue<ServerDeploymentManager> getDeploymentManagerInjector() {
         return deploymentManagerValue;
     }
 
-    public InjectedValue<ServerDeploymentRepository> getDeploymentRepositoryInjector() {
+    InjectedValue<ServerDeploymentRepository> getDeploymentRepositoryInjector() {
         return deploymentRepositoryValue;
+    }
+
+    InjectedValue<Executor> getExecutorValue() {
+        return executorValue;
     }
 
     /** {@inheritDoc} */
@@ -143,6 +151,7 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
             shutdownHandler = shutdownHandlerValue.getValue();
             deploymentManager = deploymentManagerValue.getValue();
             deploymentRepository = deploymentRepositoryValue.getValue();
+            executor = executorValue.getValue();
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }
@@ -245,13 +254,13 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
             final CountDownLatch latch = new CountDownLatch(1);
             final ServerUpdateController controller = new ServerUpdateController(serverController.getServerModel(),
-                    ServiceContainer.Factory.create(), executor,
+                    serviceContainer, executor,
                     new ServerUpdateCommitHandler() {
                         public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
                             configurationPersister.configurationModified();
                             latch.countDown();
                         }
-                    }, true, preventShutdown);
+                    }, true, ! preventShutdown);
 
             boolean requiresRestart = false;
             for(final AbstractServerModelUpdate<?> update : updates) {
