@@ -171,6 +171,8 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
 
         Bundle apiBundle = getBundleManager().installBundle(apiId);
         assertBundleState(Bundle.INSTALLED, apiBundle.getState());
+        
+        assertLoadClass(apiBundle, Echo.class.getName());
 
         JavaArchive targetArchive = getTargetBundleArchive();
         Bundle targetBundle = executeDeploy(targetArchive);
