@@ -22,16 +22,16 @@
 
 package org.jboss.as.model;
 
-import java.io.Serializable;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.attachVirtualFile;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.jar.Manifest;
 
 import org.jboss.as.deployment.DeploymentFailureListener;
-import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
@@ -148,16 +148,17 @@ class ServerDeploymentStartStopHandler implements Serializable {
     private void activate(final String deploymentName, String runtimeName, final byte[] deploymentHash, final ServiceName deploymentServiceName, final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
         log.infof("Activating deployment: %s", deploymentName);
 
-        Closeable handle = null;
+        MountHandle handle = null;
         try {
             final ServerDeploymentRepository deploymentRepo = getDeploymentRepository(serviceContainer);
+
             // The mount point we will use for the repository file
-//          final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(runtimeName));
             final VirtualFile deploymentRoot = VFS.getChild("content/" + runtimeName);
 
             // Mount virtual file
             try {
-                handle = deploymentRepo.mountDeploymentContent(deploymentName, runtimeName, deploymentHash, deploymentRoot);
+                Closeable mount = deploymentRepo.mountDeploymentContent(deploymentName, runtimeName, deploymentHash, deploymentRoot);
+                handle = new MountHandle(mount);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to mount deployment archive", e);
             }
@@ -179,7 +180,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
             // Create the deployment unit context
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
-            deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, new MountHandle(handle));
+            deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);
 
             // Get the optional Manifest for this deployment
             try {

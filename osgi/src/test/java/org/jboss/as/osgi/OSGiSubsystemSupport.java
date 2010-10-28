@@ -91,6 +91,7 @@ import org.jboss.osgi.framework.bundle.BundleManager.IntegrationMode;
 import org.jboss.osgi.framework.plugin.ModuleManagerPlugin;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.mockito.Mockito;
@@ -142,7 +143,7 @@ public class OSGiSubsystemSupport {
 
     public ModuleLoader getClassifyingModuleLoader() {
         ServiceController<?> controller = serviceContainer.getService(ClassifyingModuleLoaderService.SERVICE_NAME);
-        return controller != null ? ((ClassifyingModuleLoaderService)controller.getValue()).getModuleLoader() : null;
+        return controller != null ? ((ClassifyingModuleLoaderService) controller.getValue()).getModuleLoader() : null;
     }
 
     public TestModuleLoader getTestModuleLoader() {
@@ -241,35 +242,28 @@ public class OSGiSubsystemSupport {
         return Configuration.getServiceValue(serviceContainer);
     }
 
-    public void assertLoadClass(ModuleIdentifier identifier, String className) throws Exception
-    {
-       Class<?> clazz = loadClass(identifier, className);
-       assertNotNull(clazz);
+    public void assertLoadClass(ModuleIdentifier identifier, String className) throws Exception {
+        Class<?> clazz = loadClass(identifier, className);
+        assertNotNull(clazz);
     }
 
-    public void assertLoadClass(ModuleIdentifier identifier, String className, ModuleIdentifier exporterId) throws Exception
-    {
-       Class<?> clazz = loadClass(identifier, className);
-       assertEquals(loadModule(exporterId).getClassLoader(), clazz.getClassLoader());
+    public void assertLoadClass(ModuleIdentifier identifier, String className, ModuleIdentifier exporterId) throws Exception {
+        Class<?> clazz = loadClass(identifier, className);
+        assertEquals(loadModule(exporterId).getClassLoader(), clazz.getClassLoader());
     }
 
-    public void assertLoadClassFails(ModuleIdentifier identifier, String className) throws Exception
-    {
-       try
-       {
-          loadClass(identifier, className);
-          fail("ClassNotFoundException expected");
-       }
-       catch (ClassNotFoundException ex)
-       {
-          // expected
-       }
+    public void assertLoadClassFails(ModuleIdentifier identifier, String className) throws Exception {
+        try {
+            loadClass(identifier, className);
+            fail("ClassNotFoundException expected");
+        } catch (ClassNotFoundException ex) {
+            // expected
+        }
     }
 
-    public Class<?> loadClass(ModuleIdentifier identifier, String className) throws Exception
-    {
-       Class<?> clazz = loadModule(identifier).getClassLoader().loadClass(className, true);
-       return clazz;
+    public Class<?> loadClass(ModuleIdentifier identifier, String className) throws Exception {
+        Class<?> clazz = loadModule(identifier).getClassLoader().loadClass(className, true);
+        return clazz;
     }
 
     public Module loadModule(ModuleIdentifier identifier) throws ModuleLoadException {
@@ -493,7 +487,8 @@ public class OSGiSubsystemSupport {
         public static void addService(final BatchBuilder batchBuilder) {
             TestBundleManagerService service = new TestBundleManagerService();
             BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
-            serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
+            serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class,
+                    service.injectedModuleLoader);
             serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
         }
 
@@ -524,7 +519,8 @@ public class OSGiSubsystemSupport {
                 ModuleLoader moduleLoader = plugin.getModuleLoader();
 
                 // Register the {@link ModuleLoader} with the {@link ClassifyingModuleLoaderService}
-                ServiceController<?> controller = serviceContainer.getRequiredService(ClassifyingModuleLoaderService.SERVICE_NAME);
+                ServiceController<?> controller = serviceContainer
+                        .getRequiredService(ClassifyingModuleLoaderService.SERVICE_NAME);
                 ClassifyingModuleLoaderService moduleLoaderService = (ClassifyingModuleLoaderService) controller.getValue();
                 Value<ModuleLoader> value = new ImmediateValue<ModuleLoader>(moduleLoader);
                 moduleLoaderInjector = new ClassifyingModuleLoaderInjector(Constants.JBOSGI_PREFIX, value);
@@ -590,11 +586,13 @@ public class OSGiSubsystemSupport {
         }
 
         @Override
-        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint)
-                throws IOException {
+        public Closeable mountDeploymentContent(String name, String runtimeName, byte[] hash, VirtualFile mountPoint) throws IOException {
             JavaArchive archive = repository.remove(name);
             ZipExporter exporter = archive.as(ZipExporter.class);
-            return VFS.mountZip(exporter.exportZip(), archive.getName(), mountPoint, TempFileProviderService.provider());
+            TempFileProvider tmpProvider = TempFileProviderService.provider();
+            Closeable mount = VFS.mountZip(exporter.exportZip(), archive.getName(), mountPoint, tmpProvider);
+            log.debugf("Mounted Zip: %s", mount);
+            return mount;
         }
     }
 }

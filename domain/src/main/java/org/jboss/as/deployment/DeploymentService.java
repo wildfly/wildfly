@@ -24,6 +24,7 @@ package org.jboss.as.deployment;
 
 import java.io.Closeable;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -38,6 +39,7 @@ import org.jboss.vfs.VFSUtils;
  * @author John E. Bailey
  */
 public class DeploymentService implements Service<Void> {
+    private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
 
     private final Closeable deploymentMount;
@@ -60,6 +62,7 @@ public class DeploymentService implements Service<Void> {
      * @throws StartException if any problems occur
      */
     public void start(StartContext context) throws StartException {
+        log.debugf("Start deployment service: %s", deploymentMount);
     }
 
     /**
@@ -68,6 +71,7 @@ public class DeploymentService implements Service<Void> {
      * @param context The stop context
      */
     public void stop(StopContext context) {
+        log.debugf("Stop deployment service: %s", deploymentMount);
         VFSUtils.safeClose(deploymentMount);
     }
 
