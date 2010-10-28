@@ -35,7 +35,7 @@ import org.jboss.as.protocol.ProtocolClient;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
- * Strategy used to retrieve a connection for {@link org.jboss.as.protocol.mgmt.ManagementRequest}. 
+ * Strategy used to retrieve a connection for {@link org.jboss.as.protocol.mgmt.ManagementRequest}.
  *
  * @author John Bailey
  */
