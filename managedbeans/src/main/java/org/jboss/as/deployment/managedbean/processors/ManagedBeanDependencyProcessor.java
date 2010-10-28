@@ -39,11 +39,13 @@ import javax.annotation.ManagedBean;
  * Deployment processor which adds a module dependencies for modules needed for managed bean deployments.
  *
  * @author John E. Bailey
+ * @author Jason T. Greene
  */
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
-    private static ModuleIdentifier JAVAX_ANNOTATION_API_ID = ModuleIdentifier.create("javax.annotation.api");
-    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
+    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");;
+    private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
+    private static ModuleIdentifier JBOSS_LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
 
     /**
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
@@ -53,12 +55,8 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
-        if (index == null) {
-            return; // Skip if there is no annotation index
-        }
-        if(!index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME).isEmpty()) {
-            ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_ANNOTATION_API_ID, true, false, false));
-        }
+        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAEE_API_ID, true, false, false));
+        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_LOGGING_ID, true, false, false));
+        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVASSIST_ID, true, false, false));
     }
 }
