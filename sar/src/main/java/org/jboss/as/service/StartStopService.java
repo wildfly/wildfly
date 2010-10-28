@@ -22,14 +22,14 @@
 
 package org.jboss.as.service;
 
+import java.lang.reflect.Method;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Method;
 
 /**
  * Service wrapper for legacy JBoss services that controls the service start and stop lifecycle.
@@ -56,7 +56,12 @@ public class StartStopService<T> implements Service<T> {
         log.debugf("Starting Service: %s", context.getController().getName());
         try {
             final Method startMethod = service.getClass().getMethod("start");
-            startMethod.invoke(service);
+            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            try {
+                startMethod.invoke(service);
+            } finally {
+                SecurityActions.resetThreadContextClassLoader(old);
+            }
         } catch(NoSuchMethodException e) {
         } catch(Exception e) {
             throw new StartException("Failed to execute legacy service start", e);
@@ -69,8 +74,13 @@ public class StartStopService<T> implements Service<T> {
         // Handle Stop
         log.debugf("Stopping Service: %s", context.getController().getName());
         try {
-            Method startMethod = service.getClass().getMethod("stop");
-            startMethod.invoke(service);
+            Method stopMethod = service.getClass().getMethod("stop");
+            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            try {
+                stopMethod.invoke(service);
+            } finally {
+                SecurityActions.resetThreadContextClassLoader(old);
+            }
         } catch(NoSuchMethodException e) {
         }  catch(Exception e) {
             log.error("Failed to execute legacy service stop", e);

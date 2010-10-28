@@ -36,7 +36,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
 
 /**
  * JMS Example (waiting for JMS to be implemented)
@@ -55,29 +54,18 @@ public class Test implements TestMBean {
     private final List<String> receivedMessages = new ArrayList<String>();
 
     public void start() throws Exception {
-        Module module = Module.forClass(Test.class);
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(module.getClassLoader());
-        try {
-            //HornetQ needs the proper TCL
-            InitialContext ctx = new InitialContext();
 
+        InitialContext ctx = new InitialContext();
 
-            System.out.println(ctx.lookup("ConnectionFactory"));
-            System.out.println(ctx.lookup("queue/test"));
+        QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
+        conn = qcf.createQueueConnection();
+        conn.start();
+        queue = (Queue)ctx.lookup("queue/test");
+        session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
-            QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
-            conn = qcf.createQueueConnection();
-            conn.start();
-            queue = (Queue)ctx.lookup("queue/test");
-            session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
-
-            // Set the async listener
-            QueueReceiver recv = session.createReceiver(queue);
-            recv.setMessageListener(new ExampeMessageListener());
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+        // Set the async listener
+        QueueReceiver recv = session.createReceiver(queue);
+        recv.setMessageListener(new ExampeMessageListener());
     }
 
     public void stop() throws Exception {

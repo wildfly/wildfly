@@ -1,6 +1,7 @@
 package org.jboss.as.service;
 
 import java.lang.reflect.Method;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -32,8 +33,13 @@ public class CreateDestroyService<T> implements Service<T> {
         // Handle create
         log.debugf("Creating Service: %s", context.getController().getName());
         try {
-            Method startMethod = service.getClass().getMethod("create");
-            startMethod.invoke(service);
+            Method createMethod = service.getClass().getMethod("create");
+            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            try {
+                createMethod.invoke(service);
+            } finally {
+                SecurityActions.resetThreadContextClassLoader(old);
+            }
         } catch(NoSuchMethodException e) {
         } catch(Exception e) {
             throw new StartException("Failed to execute legacy service create", e);
@@ -46,8 +52,14 @@ public class CreateDestroyService<T> implements Service<T> {
         // Handle destroy
         log.debugf("Destroying Service: %s", context.getController().getName());
         try {
-            Method startMethod = service.getClass().getMethod("destroy");
-            startMethod.invoke(service);
+            Method destroyMethod = service.getClass().getMethod("destroy");
+            ClassLoader old = SecurityActions.setThreadContextClassLoader(service.getClass().getClassLoader());
+            try {
+                destroyMethod.invoke(service);
+            } finally {
+                SecurityActions.resetThreadContextClassLoader(old);
+            }
+            destroyMethod.invoke(service);
         } catch(NoSuchMethodException e) {
         } catch(Exception e) {
             log.error("Failed to execute legacy service destroy", e);

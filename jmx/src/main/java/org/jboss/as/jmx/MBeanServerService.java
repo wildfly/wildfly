@@ -23,8 +23,10 @@
 package org.jboss.as.jmx;
 
 import java.lang.management.ManagementFactory;
+
 import javax.management.MBeanServer;
 
+import org.jboss.as.jmx.tcl.TcclMBeanServer;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
@@ -51,7 +53,7 @@ public class MBeanServerService implements Service<MBeanServer> {
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
-        mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        mBeanServer = new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer());
     }
 
     /** {@inheritDoc} */
