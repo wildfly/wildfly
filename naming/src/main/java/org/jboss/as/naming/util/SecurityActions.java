@@ -128,43 +128,6 @@ public class SecurityActions {
         void setContextClassLoader(Thread thread, ClassLoader cl);
     }
 
-    private static final class Hack extends SecurityManager {
-        @Override
-        protected Class<?>[] getClassContext() {
-            return super.getClassContext();
-        }
-    }
-
-    private static Hack hack = AccessController.doPrivileged(new PrivilegedAction<Hack>() {
-        @Override
-        public Hack run() {
-            return new Hack();
-        }
-    });
-
-    protected static Class<?> getCallingClassProtected() {
-        final Class<?>[] stack = hack.getClassContext();
-        Class<?> current = null;
-        for (Class<?> aClass : stack) {
-            if (aClass != current) {
-                if (current == InitialContext.class)
-                    return aClass;
-                if (current == NamingContext.class && aClass != InitialContext.class)
-                    return aClass;
-                current = aClass;
-            }
-        }
-        return null;
-    }
-
-    public static ClassLoader getCallingClassLoaderProtected() {
-        final Class<?> callingClass = getCallingClassProtected();
-        if(callingClass != null) {
-            return callingClass.getClassLoader();
-        }
-        return null;
-    }
-
     protected static ClassLoader getContextClassLoaderProtected() {
         return TCLAction.UTIL.getContextClassLoader();
     }

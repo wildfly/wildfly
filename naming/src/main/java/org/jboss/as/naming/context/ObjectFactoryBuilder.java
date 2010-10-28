@@ -76,20 +76,10 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
      * @throws Exception If any error occur
      */
     public Object getObjectInstance(final Object ref, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
-        ClassLoader classLoader;
-        if(ref instanceof ReferenceWithClassLoader) {
-            classLoader = ReferenceWithClassLoader.class.cast(ref).getBindingLoader();
-        } else {
-            classLoader = getClassLoader();
+        final ClassLoader classLoader = SecurityActions.getContextClassLoader();
+        if(classLoader == null) {
+            return ref;
         }
-        Object result = getObjectInstanceFromFactories(ref, name, nameCtx, environment, classLoader);
-        if(result == null) {
-            result = ref;
-        }
-        return result;
-    }
-
-    private Object getObjectInstanceFromFactories(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment, final ClassLoader classLoader) {
         final String factoriesProp = (String)environment.get(Context.OBJECT_FACTORIES);
         if(factoriesProp != null) {
             final String[] classes = factoriesProp.split(":");
@@ -97,7 +87,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
                 try {
                     final Class<?> factoryClass = classLoader.loadClass(className);
                     final ObjectFactory objectFactory = ObjectFactory.class.cast(factoryClass.newInstance());
-                    final Object result = objectFactory.getObjectInstance(obj, name, nameCtx, environment);
+                    final Object result = objectFactory.getObjectInstance(ref, name, nameCtx, environment);
                     if(result != null) {
                         return result;
                     }
@@ -111,10 +101,8 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {
         if (reference instanceof ModularReference) {
             return factoryFromModularReference(ModularReference.class.cast(reference), environment);
-        } else if(reference instanceof ReferenceWithClassLoader) {
-                return factoryFromReferenceClassLoader(ReferenceWithClassLoader.class.cast(reference), environment);
         }
-        return factoryFromReference(reference, getClassLoader(), environment);
+        return factoryFromReference(reference, SecurityActions.getContextClassLoader(), environment);
     }
 
     private ObjectFactory factoryFromModularReference(ModularReference modularReference, final Hashtable<?, ?> environment) throws Exception {
@@ -129,30 +117,6 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             return ObjectFactory.class.cast(factoryClass.newInstance());
         } catch (Throwable t) {
             throw namingException("Failed to create object factory from classloader.", t);
-        }
-    }
-
-    private ObjectFactory factoryFromReferenceClassLoader(final ReferenceWithClassLoader referenceWithClassLoader, final Hashtable<?, ?> environment) throws Exception {
-        return new ReferenceClassLoaderFactory(factoryFromReference(referenceWithClassLoader, referenceWithClassLoader.getBindingLoader(), environment));
-    }
-
-    private ClassLoader getClassLoader() {
-        ClassLoader classLoader = SecurityActions.getContextClassLoader();
-        if(classLoader == null) {
-            classLoader = SecurityActions.getCallingClassLoader();
-        }
-        return classLoader;
-    }
-
-    private static class ReferenceClassLoaderFactory implements ObjectFactory {
-        final ObjectFactory actualFactory;
-
-        private ReferenceClassLoaderFactory(ObjectFactory actualFactory) {
-            this.actualFactory = actualFactory;
-        }
-
-        public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-            return actualFactory.getObjectInstance(obj, name, nameCtx, environment);
         }
     }
 }

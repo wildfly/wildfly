@@ -24,6 +24,7 @@ package org.jboss.as.naming.context;
 
 import javax.naming.RefAddr;
 import javax.naming.Reference;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -35,6 +36,53 @@ import org.jboss.modules.ModuleIdentifier;
 public class ModularReference extends Reference {
     private static final long serialVersionUID = -4805781394834948096L;
     private final ModuleIdentifier moduleIdentifier;
+
+    /**
+     * Create a ModuleReference from a target type and factory class.
+     *
+     * @param type The class type for the reference
+     * @param factoryClass The factory class
+     * @return A ModularReference
+     */
+    public static ModularReference create(final Class<?> type, final Class<?> factoryClass) {
+        return create(type.getName(), factoryClass);
+    }
+
+    /**
+     * Create a ModuleReference from a target class name and factory class.
+     *
+     * @param className The class name for the reference
+     * @param factoryClass The factory class
+     * @return A ModularReference
+     */
+    public static ModularReference create(final String className, final Class<?> factoryClass) {
+        return new ModularReference(className, factoryClass.getName(), Module.forClass(factoryClass).getIdentifier());
+    }
+
+
+    /**
+     * Create a ModuleReference from a target type, reference address and factory class.
+     *
+     * @param type The class type for the reference
+     * @param addr The address of the object
+     * @param factoryClass The factory class
+     * @return A ModularReference
+     */
+    public static ModularReference create(final Class<?> type, final RefAddr addr, final Class<?> factoryClass) {
+        return create(type.getName(), addr, factoryClass);
+    }
+
+    /**
+     * Create a ModuleReference from a target class name, reference address and factory class.
+     *
+     * @param className The class name for the reference
+     * @param addr The address of the object
+     * @param factoryClass The factory class
+     * @return A ModularReference
+     */
+    public static ModularReference create(final String className, final RefAddr addr, final Class<?> factoryClass) {
+        return new ModularReference(className, addr, factoryClass.getName(), Module.forClass(factoryClass).getIdentifier());
+    }
 
     /**
      * Create an instance.

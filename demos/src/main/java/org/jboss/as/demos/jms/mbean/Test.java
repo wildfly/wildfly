@@ -55,23 +55,29 @@ public class Test implements TestMBean {
     private final List<String> receivedMessages = new ArrayList<String>();
 
     public void start() throws Exception {
-        //HornetQ needs the proper TCL
-        InitialContext ctx = new InitialContext();
-
         Module module = Module.forClass(Test.class);
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(module.getClassLoader());
-        System.out.println(ctx.lookup("ConnectionFactory"));
-        System.out.println(ctx.lookup("queue/test"));
+        try {
+            //HornetQ needs the proper TCL
+            InitialContext ctx = new InitialContext();
 
-        QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
-        conn = qcf.createQueueConnection();
-        conn.start();
-        queue = (Queue)ctx.lookup("queue/test");
-        session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
-        // Set the async listener
-        QueueReceiver recv = session.createReceiver(queue);
-        recv.setMessageListener(new ExampeMessageListener());
+            System.out.println(ctx.lookup("ConnectionFactory"));
+            System.out.println(ctx.lookup("queue/test"));
+
+            QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
+            conn = qcf.createQueueConnection();
+            conn.start();
+            queue = (Queue)ctx.lookup("queue/test");
+            session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+
+            // Set the async listener
+            QueueReceiver recv = session.createReceiver(queue);
+            recv.setMessageListener(new ExampeMessageListener());
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     public void stop() throws Exception {

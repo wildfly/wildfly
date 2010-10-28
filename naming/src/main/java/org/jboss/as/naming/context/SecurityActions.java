@@ -26,14 +26,6 @@ package org.jboss.as.naming.context;
  * @author John Bailey
  */
 public class SecurityActions extends org.jboss.as.naming.util.SecurityActions {
-    static Class<?> getCallingClass() {
-        return org.jboss.as.naming.util.SecurityActions.getCallingClassProtected();
-    }
-
-    static ClassLoader getCallingClassLoader() {
-        return org.jboss.as.naming.util.SecurityActions.getCallingClassLoaderProtected();
-    }
-
     static ClassLoader getContextClassLoader() {
         return org.jboss.as.naming.util.SecurityActions.getContextClassLoaderProtected();
     }

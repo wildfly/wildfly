@@ -23,10 +23,7 @@
 package org.jboss.as.naming;
 
 import javax.naming.spi.ObjectFactory;
-import static org.jboss.as.naming.SecurityActions.getContextClassLoader;
-import org.jboss.as.naming.context.ModularReference;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
-import org.jboss.as.naming.context.ReferenceWithClassLoader;
 import org.jboss.as.naming.util.NameParser;
 import org.jboss.as.naming.util.NamingUtils;
 
@@ -214,9 +211,7 @@ public class NamingContext implements EventContext {
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            final Reference reference = asReference(object);
-            className = reference.getClassName();
-            object = getReferenceBindObject(reference);
+            className = asReference(object).getClassName();
         }
         try {
             namingStore.bind(this, absoluteName, object, className);
@@ -241,9 +236,7 @@ public class NamingContext implements EventContext {
         }
         String className = object.getClass().getName();
         if(object instanceof Reference) {
-            final Reference reference = asReference(object);
-            className = reference.getClassName();
-            object = getReferenceBindObject(reference);
+            className = asReference(object).getClassName();
         }
         try {
             namingStore.rebind(this, absoluteName, object, className);
@@ -469,17 +462,6 @@ public class NamingContext implements EventContext {
         } catch(Throwable t) {
             throw namingException("Could not dereference object", t);
         }
-    }
-
-    private Object getReferenceBindObject(final Reference reference) {
-        if(reference instanceof LinkRef || reference instanceof ModularReference) {
-            return reference;
-        }
-        ClassLoader classLoader = getContextClassLoader();
-        if(classLoader == null) {
-            classLoader = SecurityActions.getCallingClass().getClassLoader();
-        }
-        return new ReferenceWithClassLoader(reference, classLoader);
     }
 
     private Object resolveLink(Object result) throws NamingException {
