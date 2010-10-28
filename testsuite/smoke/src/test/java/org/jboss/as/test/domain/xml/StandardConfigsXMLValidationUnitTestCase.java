@@ -31,6 +31,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
+import org.jboss.as.version.Version;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -102,6 +103,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
         // user.dir will point to the root of this module
         File f = new File(System.getProperty("user.dir"));
         f = new File(f, "../../build/target");
+        f = new File(f, Version.AS_VERSION);
         f = new File(f, xmlName);
         return f.toURI().toURL();
     }

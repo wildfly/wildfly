@@ -48,6 +48,10 @@
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.min.version>3.0-beta-1</maven.min.version>
 
+        <!-- Release Info -->
+        <org.jboss.as.version>jboss_7_0_0_M1</org.jboss.as.version>
+        <org.jboss.as.codename></org.jboss.as.codename>
+
         <!-- Dependency versions. Please keep alphabetical -->
         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
         <version.javax.enterprise.cdi-api>1.0-SP1</version.javax.enterprise.cdi-api>

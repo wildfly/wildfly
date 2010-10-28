@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.deployment;
 
+import org.jboss.as.version.Version;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -182,6 +183,7 @@ public abstract class AbstractDeploymentTest {
             f = new File(f, "build");
             assertTrue("The server 'build' dir exists", f.exists());
             f = new File(f, "target");
+            f = new File(f, Version.AS_VERSION);
             if(!f.exists())
                fail("The server hasn't been built yet.");
             assertTrue("The server 'build/target' dir exists", f.exists());

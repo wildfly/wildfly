@@ -24,8 +24,10 @@
 
     <import file="lib.xml"/>
 
+    <property name="output.dir" value="target/${org.jboss.as.version}"/>
+
     <target name="copy-files">
-        <copy todir="target">
+        <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
                 <include name="bin/**"/>
             </fileset>
@@ -37,20 +39,20 @@
             </fileset>
         </copy>
         <chmod perm="+x">
-            <fileset dir="target/bin">
+            <fileset dir="${output.dir}/bin">
                 <include name="**/*.sh"/>
             </fileset>
         </chmod>
     </target>
 
     <target name="make-dirs">
-        <mkdir dir="target/domain/deployments"/>
-        <mkdir dir="target/standalone/deployments"/>
+        <mkdir dir="${output.dir}/domain/deployments"/>
+        <mkdir dir="${output.dir}/standalone/deployments"/>
     </target>
 
     <target name="modules">
 
-        <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
+        <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
 
         <!-- All modules.  Keep alphabetical -->
 
@@ -415,7 +417,7 @@
     </target>
 
     <target name="clean-target">
-        <delete dir="target"/>
+        <delete dir="${output.dir}"/>
     </target>
 
     <target name="clean" depends="clean-target">
