@@ -113,8 +113,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      */
     ClassPathEntry[] createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException, DeploymentUnitProcessingException {
         final List<ClassPathEntry> entries = new ArrayList<ClassPathEntry>();
-        // deployment root
-        entries.add(new ClassPathEntry("", deploymentRoot, mountHandle));
         // WEB-INF classes
         entries.add(new ClassPathEntry(deploymentRoot.getChild(WEB_INF_CLASSES), null));
         // WEB-INF lib
