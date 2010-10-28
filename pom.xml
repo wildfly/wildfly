@@ -1297,7 +1297,11 @@
                     </exclusion>
                     <exclusion>
                         <groupId>apache-xerces</groupId>
-                        <artifactId>xml-api</artifactId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-reflect</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
