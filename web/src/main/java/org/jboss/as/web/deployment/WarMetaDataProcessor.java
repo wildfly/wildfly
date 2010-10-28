@@ -259,9 +259,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 // Add non overriding default distributable flag
                 webFragmentMetaData.setDistributable(new EmptyMetaData());
             }
-            WebMetaData jarAnnotatedMetaData = null;
-            if (annotationsMetaData != null)
-                jarAnnotatedMetaData = annotationsMetaData.get(jar);
+            WebMetaData jarAnnotatedMetaData = annotationsMetaData.get(jar);
             if ((isComplete || webFragmentMetaData.isMetadataComplete()) && jarAnnotatedMetaData != null) {
                 // Discard @WebFilter, @WebListener and @WebServlet
                 jarAnnotatedMetaData.setFilters(null);

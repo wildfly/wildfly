@@ -180,8 +180,6 @@ public class JBossContextConfig extends ContextConfig {
         if (context instanceof StandardContext) {
             ((StandardContext) context).setReplaceWelcomeFiles(true);
         }
-        // TODO remove that is a system propety in the next jbossweb version...
-        context.setCrossContext(true);
 
         // Version
         context.setVersion(metaData.getVersion());
