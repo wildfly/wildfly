@@ -410,7 +410,7 @@
             <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 
-        <module-def name="org.osgi.util.tracker">
+        <module-def name="org.osgi.util">
             <maven-resource group="org.osgi" artifact="org.osgi.compendium"/>
         </module-def>
 

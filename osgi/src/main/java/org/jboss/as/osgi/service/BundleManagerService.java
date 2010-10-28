@@ -22,10 +22,7 @@
 
 package org.jboss.as.osgi.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
@@ -33,11 +30,8 @@ import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
-import org.jboss.modules.DependencySpec;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.PathFilter;
-import org.jboss.modules.PathFilters;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -97,11 +91,14 @@ public class BundleManagerService implements Service<BundleManager> {
             Configuration config = injectedConfig.getValue();
             ServiceContainer container = context.getController().getServiceContainer();
             ModuleLoader moduleLoader = injectedModuleLoader.getValue().getModuleLoader();
+            Module frameworkModule = moduleLoader.loadModule(ModuleManagerPlugin.FRAMEWORK_IDENTIFIER);
             final Map<String, Object> props = new HashMap<String, Object>(config.getProperties());
             props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
             props.put(ModuleLoader.class.getName(), moduleLoader);
             props.put(ServiceContainer.class.getName(), container);
-            // david: This is a temporary workaround to configure the HTTP subsystem in OSGi
+            props.put(Module.class.getName(), frameworkModule);
+
+            // [TODO] This is a temporary workaround to configure the HTTP subsystem in OSGi
             // this will go away once the HTTP subsystem from AS implements the OSGi HTTP Service.
             props.put("org.osgi.service.http.port", "" + osgiHttpServerPortBinding.getValue().getSocketAddress().getPort());
 
@@ -116,10 +113,6 @@ public class BundleManagerService implements Service<BundleManager> {
             Value<ModuleLoader> value = new ImmediateValue<ModuleLoader>(osgiModuleLoader);
             osgiModuleLoaderInjector = new ClassifyingModuleLoaderInjector(Constants.JBOSGI_PREFIX, value);
             osgiModuleLoaderInjector.inject(moduleLoaderService);
-
-            // Setup the list of dependencies for the core framework
-            setupFrameworkDependencies(plugin);
-
         } catch (Throwable t) {
             throw new StartException("Failed to create BundleManager", t);
         }
@@ -136,41 +129,6 @@ public class BundleManagerService implements Service<BundleManager> {
         } catch (Exception ex) {
             log.errorf(ex, "Cannot stop OSGi BundleManager");
         }
-    }
-
-    private void setupFrameworkDependencies(ModuleManagerPlugin plugin) {
-
-        List<ModuleIdentifier> moduleIds = new ArrayList<ModuleIdentifier>();
-        moduleIds.add(ModuleIdentifier.create("org.jboss.logging"));
-        moduleIds.add(ModuleIdentifier.create("org.jboss.osgi.deployment"));
-        moduleIds.add(ModuleIdentifier.create("org.jboss.osgi.spi"));
-        moduleIds.add(ModuleIdentifier.create("org.osgi.core"));
-        moduleIds.add(ModuleIdentifier.create("org.osgi.util.tracker"));
-
-        // User defined dependencies can be added by 'org.jboss.osgi.system.modules'
-        String modulesProps = (String) bundleManager.getProperty(Configuration.PROP_JBOSS_OSGI_SYSTEM_MODULES);
-        if (modulesProps != null) {
-            for (String moduleProp : modulesProps.split(",")) {
-                ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp.trim());
-                moduleIds.add(moduleId);
-            }
-        }
-
-        PathFilter all = PathFilters.acceptAll();
-        ModuleLoader moduleLoader = bundleManager.getDefaultModuleLoader();
-        List<DependencySpec> moduleDependencies = new ArrayList<DependencySpec>();
-        for (ModuleIdentifier moduleId : moduleIds) {
-            PathFilter exp = all;
-
-            // [TODO] Remove this hack when the build supports export filter paths
-            if (moduleId.getName().equals("org.osgi.util.tracker"))
-                exp = PathFilters.in(Collections.singleton("org/osgi/util/tracker"));
-
-            DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(all, exp, moduleLoader, moduleId, false);
-            moduleDependencies.add(moduleDep);
-        }
-
-        plugin.setFrameworkDependencies(moduleDependencies);
     }
 
     @Override

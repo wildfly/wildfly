@@ -24,14 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.0" name="org.osgi.compendium">
 
-	<!--
-		This is the compendium as bundle which gets installed into the framework 
-	-->
-	 
     <resources>
         <!-- Insert resources here -->
     </resources>
 
-    <dependencies>
-    </dependencies>
+    <!-- This is an OSGi bundle. It cannot have module dependencies. -->
+    
 </module>

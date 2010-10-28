@@ -27,6 +27,6 @@
         <!-- Insert resources here -->
     </resources>
 
-    <dependencies>
-    </dependencies>
+    <!-- This is an OSGi bundle. It cannot have module dependencies. -->
+    
 </module>

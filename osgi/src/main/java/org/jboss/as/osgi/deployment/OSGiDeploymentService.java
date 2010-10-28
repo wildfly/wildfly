@@ -106,7 +106,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         ServiceController<?> frameworkController = serviceContainer.getService(FrameworkService.SERVICE_NAME);
         frameworkController.setMode(Mode.ACTIVE);
 
-        log.infof("Installing deployment: %s", deployment);
+        log.tracef("Installing deployment: %s", deployment);
         try {
             boolean autoStart = deployment.isAutoStart();
             deployment.setAutoStart(false);
@@ -124,11 +124,9 @@ public class OSGiDeploymentService implements Service<Deployment> {
      * @param context The stop context.
      */
     public synchronized void stop(StopContext context) {
-        log.infof("Uninstalling deployment: %s", deployment);
+        log.tracef("Uninstalling deployment: %s", deployment);
         try {
-            Bundle bundle = deployment.getAttachment(Bundle.class);
-            if (bundle != null && bundle.getState() != Bundle.UNINSTALLED)
-                getDeployerService().undeploy(deployment);
+            getDeployerService().undeploy(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
         }
@@ -184,7 +182,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
                 for (Deployment deployment : bundlesToStart) {
                     Bundle bundle = deployment.getAttachment(Bundle.class);
                     if (packageAdmin.getBundleType(bundle) != PackageAdmin.BUNDLE_TYPE_FRAGMENT) {
-                        log.infof("Starting bundle: %s", bundle);
+                        log.tracef("Starting bundle: %s", bundle);
                         try {
                             bundle.start();
                         } catch (BundleException ex) {

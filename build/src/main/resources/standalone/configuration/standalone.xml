@@ -119,9 +119,6 @@
         <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:osgi:1.0">
             <properties>
-                <property name="org.jboss.osgi.system.modules">
-                    org.apache.log4j 
-                </property>
                 <property name="org.osgi.framework.system.packages.extra">
                     org.apache.log4j;version=1.2,
                     org.jboss.logging;version=3.0,

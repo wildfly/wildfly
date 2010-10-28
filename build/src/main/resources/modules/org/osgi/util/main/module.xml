@@ -22,10 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.osgi.util.tracker">
+<module xmlns="urn:jboss:module:1.0" name="org.osgi.util">
 
 	<!--
-		This is the compendium as jar which is a dependency of the framework 
+		This is the compendium as jar which is a dependency of the framework
+        [TODO] Allow the build to define the set of exported paths 
 	-->
 	 
     <resources>
