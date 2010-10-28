@@ -27,6 +27,7 @@ import javax.management.ObjectName;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.managedbean.archive.SimpleManagedBean;
 import org.jboss.as.demos.managedbean.mbean.Test;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *
@@ -36,8 +37,9 @@ import org.jboss.as.demos.managedbean.mbean.Test;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("managedbean-example.jar", SimpleManagedBean.class.getPackage());
+        DeploymentUtils utils = null;
         try {
+            utils = new DeploymentUtils("managedbean-example.jar", SimpleManagedBean.class.getPackage());
             utils.addDeployment("managedbean-mbean.sar", Test.class.getPackage());
 
             utils.deploy();
@@ -51,6 +53,7 @@ public class ExampleRunner {
             System.out.println("echo returned " + o);
         } finally {
             utils.undeploy();
+            safeClose(utils);
         }
     }
 

@@ -47,6 +47,7 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
@@ -96,7 +97,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
     /** {@inheritDoc} */
     public DomainModel register() {
         try {
-            return new RegisterOperation(localManagementAddress, localManagementPort, this).executeForResult();
+            return new RegisterOperation(localManagementAddress, localManagementPort, this).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to register with the domain controller", e);
         }
@@ -105,7 +106,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
     /** {@inheritDoc} */
     public void unregister() {
         try {
-            new UnregisterOperation(this).execute();
+            new UnregisterOperation(this).execute(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to register with the domain controller", e);
         }
@@ -120,7 +121,6 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         protected final String serverManagerId;
 
         private DomainControllerRequest(final RemoteDomainControllerConnection connection) {
-            super(connection.dcAddress, connection.dcPort, connection.connectTimeout, connection.executorService, connection.threadFactory);
             this.serverManagerId = connection.serverManagerId;
         }
 
@@ -360,7 +360,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
 
         private File getFile(final String relativePath, final byte repoId) {
             try {
-                return new GetFileOperation(repoId, relativePath, localFileRepository, connection).executeForResult();
+                return new GetFileOperation(repoId, relativePath, localFileRepository, connection).executeForResult(connection.getConnectionStrategy());
             } catch (Exception e) {
                 throw new RuntimeException("Failed to get file from remote repository", e);
             }
@@ -369,5 +369,9 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
 
     private static Unmarshaller getUnmarshaller() throws IOException {
         return ProtocolUtils.getUnmarshaller(ProtocolUtils.MODULAR_CONFIG);
+    }
+
+    private ManagementRequestConnectionStrategy getConnectionStrategy() {
+        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(dcAddress, dcPort, connectTimeout, executorService, threadFactory);
     }
 }

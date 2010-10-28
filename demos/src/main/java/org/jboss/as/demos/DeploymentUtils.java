@@ -41,6 +41,7 @@ import javax.management.remote.JMXServiceURL;
 import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
 import org.jboss.as.deployment.client.api.server.DeploymentPlanBuilder;
 import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -56,14 +57,15 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class DeploymentUtils {
+public class DeploymentUtils implements Closeable {
 
     private final List<Deployment> deployments = new ArrayList<Deployment>();
+    private final StandaloneClient client;
     private final ServerDeploymentManager manager;
 
-
     public DeploymentUtils() throws UnknownHostException {
-        manager = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999).getDeploymentManager();
+        client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        manager = client.getDeploymentManager();
     }
 
     public DeploymentUtils(String archiveName, Package pkg) throws UnknownHostException {
@@ -107,6 +109,10 @@ public class DeploymentUtils {
 
     public String showJndi() throws Exception {
         return (String)getConnection().invoke(new ObjectName("jboss:type=JNDIView"), "list", new Object[] {true}, new String[] {"boolean"});
+    }
+
+    public void close() throws IOException {
+        safeClose(client);
     }
 
     private class Deployment {

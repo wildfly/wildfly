@@ -45,6 +45,7 @@ import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponse;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
@@ -75,7 +76,7 @@ public class ServerManagerClient implements Service<Void> {
     public void start(final StartContext context) throws StartException {
         final Connection smConnection = this.smConnection.getValue();
         try {
-            new ServerRegisterRequest().executeForResult(smConnection);
+            new ServerRegisterRequest().executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(smConnection));
         } catch (Exception e) {
             throw new StartException("Failed to send registration message to server manager", e);
         }

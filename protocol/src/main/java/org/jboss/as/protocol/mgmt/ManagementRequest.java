@@ -25,22 +25,16 @@ package org.jboss.as.protocol.mgmt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.SocketFactory;
 
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
-import org.jboss.as.protocol.ProtocolClient;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
@@ -54,35 +48,10 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
  * @author John Bailey
  */
 public abstract class ManagementRequest<T> extends AbstractMessageHandler {
-    private final InetAddress address;
-    private final int port;
-    private final long connectTimeout;
-    private final ExecutorService executorService;
-    private final ThreadFactory threadFactory;
     private int requestId = 0;
     private final ResponseFuture<T> future = new ResponseFuture<T>();
+    private ManagementRequestConnectionStrategy connectionStrategy;
     private T result;
-
-    public ManagementRequest() {
-        this(null, -1, 0L, null, null);
-    }
-
-    /**
-     * Construct a new request object with the required connection parameters.
-     *
-     * @param address                 The remote address to connect to
-     * @param port                    The remote port to connect to
-     * @param connectTimeout          The timeout for connecting
-     * @param executorService         The executor server to schedule tasks with
-     * @param threadFactory           The connection thread factory
-     */
-    public ManagementRequest(InetAddress address, int port, long connectTimeout, final ExecutorService executorService, final ThreadFactory threadFactory) {
-        this.address = address;
-        this.port = port;
-        this.connectTimeout = connectTimeout;
-        this.executorService = executorService;
-        this.threadFactory = threadFactory;
-    }
 
     /**
      * Get the handler id of the request.  These should match the id of a @{link org.jboss.as.server.manager.management.ManagementOperationHandler}.
@@ -95,45 +64,17 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
      * Execute the request by connecting and then delegating to the implementation's execute
      * and return a future used to get the response when complete.
      *
+     * @param connectionStrategy The connection strategy
      * @return A future to retrieve the result when the request is complete
-     * @throws Exception if any problems occur
+     * @throws IOException if any problems occur
      */
-    public final Future<T> execute() throws Exception {
-        final int timeout = (int) TimeUnit.SECONDS.toMillis(connectTimeout);
-
-        final ProtocolClient.Configuration config = new ProtocolClient.Configuration();
-        config.setMessageHandler(initiatingMessageHandler);
-        config.setConnectTimeout(timeout);
-        config.setReadExecutor(executorService);
-        config.setSocketFactory(SocketFactory.getDefault());
-        config.setServerAddress(new InetSocketAddress(address, port));
-        config.setThreadFactory(threadFactory);
-
-        final ProtocolClient protocolClient = new ProtocolClient(config);
-        return execute(protocolClient.connect());
-    }
-
-    /**
-     * Execute the request and wait for the result.
-     *
-     * @return The result
-     * @throws IOException If any problems occur
-     */
-    public T executeForResult() throws Exception {
-        return execute().get();
-    }
-
-    /**
-     * Execute the request with an existing connection.
-     *
-     * @param connection An existing connection
-     * @return A future result
-     * @throws IOException If any errors occur
-     */
-    public Future<T> execute(final Connection connection) throws IOException {
+    public Future<T> execute(final ManagementRequestConnectionStrategy connectionStrategy) throws IOException {
+        this.connectionStrategy = connectionStrategy;
         OutputStream dataOutput = null;
         ByteDataOutput output = null;
         try {
+            final Connection connection = connectionStrategy.getConnection();
+            connection.setMessageHandler(initiatingMessageHandler);
             dataOutput = connection.writeMessage();
             output = new SimpleByteDataOutput(dataOutput);
             // Start by writing the header
@@ -150,15 +91,17 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     }
 
     /**
-     * Execute the request with an existing connection and wait for the result.
+     * Execute the request and wait for the result.
      *
+     * @param connectionStrategy The connection strategy
      * @return The result
      * @throws IOException If any problems occur
      */
-    public T executeForResult(final Connection connection) throws Exception {
-        return execute(connection).get();
+    public T executeForResult(final ManagementRequestConnectionStrategy connectionStrategy) throws Exception {
+        return execute(connectionStrategy).get();
     }
 
+    /** {@inheritDoc} */
     public void handle(Connection connection, InputStream input) throws IOException {
         try {
             connection.setMessageHandler(responseBodyHandler);
@@ -254,6 +197,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
             connection.setMessageHandler(MessageHandler.NULL);
             expectHeader(input, ManagementProtocol.RESPONSE_END);
             future.set(result);
+            connectionStrategy.complete();
         }
     };
 

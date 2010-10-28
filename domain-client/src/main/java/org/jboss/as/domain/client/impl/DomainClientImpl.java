@@ -57,6 +57,7 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.marshalling.Marshaller;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
@@ -81,8 +82,8 @@ public class DomainClientImpl implements DomainClient {
 
     private final InetAddress address;
     private final int port;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
     public DomainClientImpl(InetAddress address, int port) {
         this.address = address;
@@ -92,7 +93,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public DomainModel getDomainModel() {
         try {
-            return new GetDomainOperation().executeForResult();
+            return new GetDomainOperation().executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to get domain model.", e);
         }
@@ -101,7 +102,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public List<DomainUpdateResult<?>> applyUpdates(final List<AbstractDomainModelUpdate<?>> updates) {
         try {
-            return new ApplyUpdatesOperation(updates).executeForResult();
+            return new ApplyUpdatesOperation(updates).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to apply domain updates", e);
         }
@@ -110,7 +111,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public <R, P> void applyUpdate(final AbstractDomainModelUpdate<R> update, final DomainUpdateApplier<R, P> updateApplier, final P param) {
         try {
-            DomainUpdateApplierResponse response = new ApplyUpdateToModelOperation(update).executeForResult();
+            DomainUpdateApplierResponse response = new ApplyUpdateToModelOperation(update).executeForResult(getConnectionStrategy());
             if (response.isCancelled()) {
                 updateApplier.handleCancelled();
             }
@@ -134,7 +135,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
         try {
-            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to add deployment content.", e);
         }
@@ -154,7 +155,7 @@ public class DomainClientImpl implements DomainClient {
 
     boolean isDeploymentNameUnique(final String deploymentName) {
         try {
-            return new CheckUnitDeploymentNameOperation(deploymentName).executeForResult();
+            return new CheckUnitDeploymentNameOperation(deploymentName).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new RuntimeException("Failed to determine if deployment name is unique", e);
         }
@@ -162,7 +163,7 @@ public class DomainClientImpl implements DomainClient {
 
     Future<DeploymentPlanResult> execute(final DeploymentPlan deploymentPlan) {
         try {
-            return new ExecuteDeploymentPlanOperation(deploymentPlan).execute();
+            return new ExecuteDeploymentPlanOperation(deploymentPlan).execute(getConnectionStrategy());
         }
         catch (Exception e) {
             throw new RuntimeException("Failed to get deployment result future", e);
@@ -174,17 +175,17 @@ public class DomainClientImpl implements DomainClient {
                                                            final UpdateResultHandler<R, P> resultHandler,
                                                            final P param) {
         try {
-            return new ApplyUpdateToServerOperation<R, P>(update, server, resultHandler, param).execute();
+            return new ApplyUpdateToServerOperation<R, P>(update, server, resultHandler, param).execute(getConnectionStrategy());
         } catch (Exception e) {
             throw new RuntimeException("Failed to get update result future", e);
         }
     }
 
-    private abstract class DomainClientRequest<T> extends ManagementRequest<T> {
-        private DomainClientRequest() {
-            super(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
-        }
+    public void close() throws IOException {
+        executorService.shutdown();
+    }
 
+    private abstract class DomainClientRequest<T> extends ManagementRequest<T> {
         @Override
         protected byte getHandlerId() {
             return DomainClientProtocol.DOMAIN_CONTROLLER_CLIENT_REQUEST;
@@ -521,5 +522,9 @@ public class DomainClientImpl implements DomainClient {
 
     private static Unmarshaller getUnmarshaller() throws IOException {
         return ProtocolUtils.getUnmarshaller(CONFIG);
+    }
+
+    private ManagementRequestConnectionStrategy getConnectionStrategy() {
+        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
     }
 }

@@ -27,6 +27,7 @@ import javax.management.ObjectName;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.serviceloader.archive.TestService;
 import org.jboss.as.demos.serviceloader.mbean.Test;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *
@@ -36,8 +37,9 @@ import org.jboss.as.demos.serviceloader.mbean.Test;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
+        DeploymentUtils utils = null;
         try {
+            utils = new DeploymentUtils("serviceloader-example.jar", TestService.class.getPackage());
             utils.addDeployment("serviceloader-mbean.sar", Test.class.getPackage());
 
             utils.deploy();
@@ -50,6 +52,7 @@ public class ExampleRunner {
             System.out.println("Received reply: " + s);
         } finally {
             utils.undeploy();
+            safeClose(utils);
         }
     }
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.client.api;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
@@ -37,7 +38,7 @@ import org.jboss.as.model.DomainModel;
  *
  * @author John Bailey
  */
-public interface DomainClient {
+public interface DomainClient extends Closeable {
 
     /**
      * Get the current domain model.

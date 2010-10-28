@@ -27,6 +27,7 @@ import javax.management.ObjectName;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.rar.archive.HelloWorldConnection;
 import org.jboss.as.demos.rar.mbean.Test;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *
@@ -36,8 +37,9 @@ import org.jboss.as.demos.rar.mbean.Test;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("rar-example.rar", HelloWorldConnection.class.getPackage(), true);
+        DeploymentUtils utils = null;
         try {
+            utils = new DeploymentUtils("rar-example.rar", HelloWorldConnection.class.getPackage(), true);
             utils.addDeployment("rar-mbean.sar", Test.class.getPackage(), true);
 
             utils.deploy();
@@ -56,6 +58,7 @@ public class ExampleRunner {
             System.out.println("Received reply: " + s);
         } finally {
             utils.undeploy();
+            safeClose(utils);
         }
     }
 

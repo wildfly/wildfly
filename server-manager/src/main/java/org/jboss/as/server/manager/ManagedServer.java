@@ -53,6 +53,7 @@ import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.server.ServerManagerClient;
 import org.jboss.as.server.ServerManagerConnectionService;
 import org.jboss.as.server.ServerStartTask;
@@ -311,7 +312,7 @@ public final class ManagedServer {
             throw new IllegalArgumentException("Updates can not be applied to a managed server without a management connection");
         }
         try {
-            return new ApplyUpdatesRequest(updates).executeForResult(serverManagementConnection);
+            return new ApplyUpdatesRequest(updates).executeForResult(new ManagementRequestConnectionStrategy.ExistingConnectionStrategy(serverManagementConnection));
         } catch (Exception e) {
             throw new RuntimeException("Failed to apply updates to server [" + serverName + "]", e);
         }

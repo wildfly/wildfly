@@ -28,6 +28,7 @@ import javax.management.ObjectName;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.jms.mbean.Test;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *
@@ -37,8 +38,9 @@ import org.jboss.as.demos.jms.mbean.Test;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = new DeploymentUtils("jms-mbean.sar", Test.class.getPackage());
+        DeploymentUtils utils = null;
         try {
+            utils = new DeploymentUtils("jms-mbean.sar", Test.class.getPackage());
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=jms");
 
@@ -51,6 +53,7 @@ public class ExampleRunner {
             System.out.println("Received messages: " + msgs);
         } finally {
             utils.undeploy();
+            safeClose(utils);
         }
     }
 

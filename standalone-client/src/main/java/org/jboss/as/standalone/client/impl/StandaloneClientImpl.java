@@ -25,6 +25,7 @@ package org.jboss.as.standalone.client.impl;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -74,8 +75,8 @@ public class StandaloneClientImpl implements StandaloneClient {
     private static final long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(5L);
     private final InetAddress address;
     private final int port;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(threadFactory);
 
     public StandaloneClientImpl(final InetAddress address, final int port) {
         this.address = address;
@@ -85,7 +86,7 @@ public class StandaloneClientImpl implements StandaloneClient {
     /** {@inheritDoc} */
     public ServerModel getServerModel() {
         try {
-            return new GetServerModel().executeForResult();
+            return new GetServerModel().executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to get server model.", e);
         }
@@ -94,7 +95,7 @@ public class StandaloneClientImpl implements StandaloneClient {
     /** {@inheritDoc} */
     public List<StandaloneUpdateResult<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates) {
         try {
-            return new ApplyUpdatesOperation(updates).executeForResult();
+            return new ApplyUpdatesOperation(updates).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to apply server module updates.", e);
         }
@@ -103,7 +104,7 @@ public class StandaloneClientImpl implements StandaloneClient {
     /** {@inheritDoc} */
     public byte[] addDeploymentContent(String name, String runtimeName, InputStream stream) {
         try {
-            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult();
+            return new AddDeploymentContentOperation(name, runtimeName, stream).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to add deployment content.", e);
         }
@@ -116,7 +117,7 @@ public class StandaloneClientImpl implements StandaloneClient {
 
     Future<ServerDeploymentPlanResult> execute(DeploymentPlan plan) {
         try {
-            return new ExecuteDeploymentPlanOperation(plan).execute();
+            return new ExecuteDeploymentPlanOperation(plan).execute(getConnectionStrategy());
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute deployment plan", e);
         }
@@ -124,17 +125,17 @@ public class StandaloneClientImpl implements StandaloneClient {
 
     boolean isDeploymentNameUnique(String name) {
         try {
-            return new CheckUnitDeploymentNameOperation(name).executeForResult();
+            return new CheckUnitDeploymentNameOperation(name).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to check deployment name uniqueness.", e);
         }
     }
 
-    abstract class StandaloneClientRequest<T> extends ManagementRequest<T> {
-        StandaloneClientRequest() {
-            super(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
-        }
+    public void close() throws IOException {
+        executorService.shutdown();
+    }
 
+    abstract class StandaloneClientRequest<T> extends ManagementRequest<T> {
         @Override
         protected byte getHandlerId() {
             return StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST;
@@ -376,5 +377,9 @@ public class StandaloneClientImpl implements StandaloneClient {
 
     private static Unmarshaller getUnmarshaller() throws IOException {
         return ProtocolUtils.getUnmarshaller(CONFIG);
+    }
+
+    private ManagementRequestConnectionStrategy getConnectionStrategy() {
+        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, CONNECTION_TIMEOUT, executorService, threadFactory);
     }
 }

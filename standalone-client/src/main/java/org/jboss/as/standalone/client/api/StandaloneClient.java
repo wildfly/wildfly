@@ -22,6 +22,7 @@
 
 package org.jboss.as.standalone.client.api;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
@@ -38,7 +39,7 @@ import org.jboss.as.standalone.client.impl.StandaloneClientImpl;
  * @author John Bailey
  * @author Emanuel Muckenhuber
  */
-public interface StandaloneClient {
+public interface StandaloneClient extends Closeable {
 
     /**
      * Get the current server model.

@@ -33,6 +33,7 @@ import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.PathElementUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerPathAdd;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 
@@ -44,41 +45,45 @@ public class __TestStandaloneClient {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Creating client");
-        StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-        System.out.println("Created client, getting model...");
-        ServerModel model = client.getServerModel();
-        System.out.println("Got model " + model);  //Why is this null?
+        StandaloneClient client = null;
+        try {
+            client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            System.out.println("Created client, getting model...");
+            ServerModel model = client.getServerModel();
+            System.out.println("Got model " + model);  //Why is this null?
 
-        // Apply update
-        List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
-        updates.add(new ServerPathAdd(new PathElementUpdate("org.jboss.test", "/home/emuckenh/Downloads", null)));
+            // Apply update
+            List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
+            updates.add(new ServerPathAdd(new PathElementUpdate("org.jboss.test", "/home/emuckenh/Downloads", null)));
 
 
-        for(final StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
-            if(result.isSuccess()) {
-                System.out.println(result.getResult());
-            } else {
-                result.getFailure().printStackTrace(System.out);
+            for(final StandaloneUpdateResult<?> result : client.applyUpdates(updates)) {
+                if(result.isSuccess()) {
+                    System.out.println(result.getResult());
+                } else {
+                    result.getFailure().printStackTrace(System.out);
+                }
             }
+
+            System.out.println("Created client, getting dm...");
+            ServerDeploymentManager manager = client.getDeploymentManager();
+            System.out.println("Got manager " + manager);
+            File file = new File("sar-example.sar");
+            if (!file.exists()) {
+                throw new IllegalStateException("No file sar-example.sar");
+            }
+            String deployment = manager.addDeploymentContent(file.toURL());
+            System.out.println("Added deployment " + deployment);
+
+            Future<ServerDeploymentPlanResult> deploymentResult = manager.execute(manager.newDeploymentPlan().add(deployment, file).deploy(deployment).build());
+            System.out.println("Deployment result:" + deploymentResult);
+            System.out.println("Contained deployment result:" + deploymentResult.get());
+
+            Thread.sleep(3000);
+
+            manager.execute(manager.newDeploymentPlan().undeploy(deployment).remove(deployment).build());
+        } finally {
+            safeClose(client);
         }
-
-        System.out.println("Created client, getting dm...");
-        ServerDeploymentManager manager = client.getDeploymentManager();
-        System.out.println("Got manager " + manager);
-        File file = new File("sar-example.sar");
-        if (!file.exists()) {
-            throw new IllegalStateException("No file sar-example.sar");
-        }
-        String deployment = manager.addDeploymentContent(file.toURL());
-        System.out.println("Added deployment " + deployment);
-
-        Future<ServerDeploymentPlanResult> deploymentResult = manager.execute(manager.newDeploymentPlan().add(deployment, file).deploy(deployment).build());
-        System.out.println("Deployment result:" + deploymentResult);
-        System.out.println("Contained deployment result:" + deploymentResult.get());
-
-        Thread.sleep(3000);
-
-        manager.execute(manager.newDeploymentPlan().undeploy(deployment).remove(deployment).build());
-
     }
 }

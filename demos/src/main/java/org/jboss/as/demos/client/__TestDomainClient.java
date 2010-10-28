@@ -25,6 +25,7 @@ package org.jboss.as.demos.client;
 import java.net.InetAddress;
 
 import org.jboss.as.domain.client.api.DomainClient;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * @author Emanuel Muckenhuber
@@ -32,9 +33,13 @@ import org.jboss.as.domain.client.api.DomainClient;
 public class __TestDomainClient {
 
     public static void main(String[] args) throws Exception {
-        DomainClient client = new DomainClient.Factory().create(InetAddress.getByName("localhost"), 9999);
-        System.out.println(client.getDomainModel());
-
+        DomainClient client = null;
+        try {
+            client = new DomainClient.Factory().create(InetAddress.getByName("localhost"), 9999);
+            System.out.println(client.getDomainModel());
+        } finally {
+            safeClose(client);
+        }
     }
 
 }

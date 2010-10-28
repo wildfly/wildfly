@@ -44,6 +44,7 @@ import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
+import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.protocol.mgmt.ServerManagerProtocol;
 import org.jboss.marshalling.Marshaller;
 import static org.jboss.marshalling.Marshalling.createByteInput;
@@ -77,7 +78,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     /** {@inheritDoc} */
     public void updateDomainModel(final DomainModel domain) {
         try {
-            new UpdateFullDomainRequest(domain).execute();
+            new UpdateFullDomainRequest(domain).execute(getConnectionStrategy());
         } catch (Exception e) {
             throw new RuntimeException("Failed to update domain", e);
         }
@@ -86,7 +87,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     /** {@inheritDoc} */
     public List<ModelUpdateResponse<?>> updateHostModel(final List<AbstractHostModelUpdate<?>> updates) {
         try {
-            return new UpdateHostModelRequest(updates).executeForResult();
+            return new UpdateHostModelRequest(updates).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to update host model", e);
         }
@@ -95,7 +96,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     /** {@inheritDoc} */
     public List<ModelUpdateResponse<List<ServerIdentity>>> updateDomainModel(final List<AbstractDomainModelUpdate<?>> updates) {
         try {
-            return new UpdateDomainModelRequest(updates).executeForResult();
+            return new UpdateDomainModelRequest(updates).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to update domain model", e);
         }
@@ -103,7 +104,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
     public List<ModelUpdateResponse<UpdateResultHandlerResponse<?>>> updateServerModel(final String serverName, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
         try {
-            return new UpdateServerModelRequest(updates, serverName, allowOverallRollback).executeForResult();
+            return new UpdateServerModelRequest(updates, serverName, allowOverallRollback).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to update domain model", e);
         }
@@ -111,7 +112,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
     public boolean isActive() {
         try {
-            return new IsActiveRequest().executeForResult();
+            return new IsActiveRequest().executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             return false;
         }
@@ -160,14 +161,6 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     }
 
     private abstract class ServerManagerRequest<T> extends ManagementRequest<T> {
-        private ServerManagerRequest() {
-            this(10L); // TODO: Configurable
-        }
-
-        private ServerManagerRequest(long connectTimeout) {
-            super(address, port, connectTimeout, executorService, threadFactory);
-        }
-
         @Override
         protected byte getHandlerId() {
             return ServerManagerProtocol.SERVER_MANAGER_REQUEST;
@@ -386,6 +379,10 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
     private static Unmarshaller getUnmarshaller() throws IOException {
         return ProtocolUtils.getUnmarshaller(ProtocolUtils.MODULAR_CONFIG);
+    }
+
+    private ManagementRequestConnectionStrategy getConnectionStrategy() {
+        return new ManagementRequestConnectionStrategy.EstablishConnectingStrategy(address, port, 10L, executorService, threadFactory);
     }
 
 }

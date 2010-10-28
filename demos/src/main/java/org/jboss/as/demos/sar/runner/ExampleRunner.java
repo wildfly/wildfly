@@ -27,7 +27,7 @@ import javax.management.ObjectName;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.sar.archive.ConfigService;
-
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 
 /**
@@ -38,9 +38,9 @@ import org.jboss.as.demos.sar.archive.ConfigService;
 public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
-
-        DeploymentUtils deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
+        DeploymentUtils deploymentUtils = null;
         try {
+            deploymentUtils = new DeploymentUtils("sar-example.sar", ConfigService.class.getPackage());
 
             deploymentUtils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=config");
@@ -60,6 +60,7 @@ public class ExampleRunner {
             Thread.sleep(3000);
         } finally {
             deploymentUtils.undeploy();
+            safeClose(deploymentUtils);
         }
     }
 }
