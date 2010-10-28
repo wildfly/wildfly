@@ -65,8 +65,8 @@
             <xs:sequence>
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
-                <xs:element name="management" type="managementType"/>
+                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
