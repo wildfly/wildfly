@@ -54,6 +54,10 @@
             <artifactId>jboss-as-domain</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jmx</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>

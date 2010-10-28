@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jmx.tcl;
+package org.jboss.as.jmx;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -47,6 +47,15 @@ class SecurityActions {
         }
     }
 
+    static void setSystemProperty(String key, String value) {
+        if (System.getSecurityManager() == null) {
+            SetSystemPropertyAction.NON_PRIVILEGED.setSystemProperty(key, value);
+        } else {
+            SetSystemPropertyAction.PRIVILEGED.setSystemProperty(key, value);
+        }
+    }
+
+
     private interface SetThreadContextClassLoaderAction {
 
         ClassLoader setThreadContextClassLoader(ClassLoader cl, boolean get);
@@ -69,6 +78,31 @@ class SecurityActions {
                         ClassLoader old = get ? Thread.currentThread().getContextClassLoader() : null;
                         Thread.currentThread().setContextClassLoader(cl);
                         return old;
+                    }
+                });
+            }
+        };
+    }
+
+    private interface SetSystemPropertyAction {
+
+        void setSystemProperty(String key, String value);
+
+        SetSystemPropertyAction NON_PRIVILEGED = new SetSystemPropertyAction() {
+            @Override
+            public void setSystemProperty(String key, String value) {
+                System.setProperty(key, value);
+            }
+        };
+
+        SetSystemPropertyAction PRIVILEGED = new SetSystemPropertyAction() {
+
+            @Override
+            public void setSystemProperty(final String key, final String value) {
+                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    public Void run() {
+                        System.setProperty(key, value);
+                        return null;
                     }
                 });
             }
