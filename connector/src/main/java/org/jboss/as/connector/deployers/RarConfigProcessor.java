@@ -13,6 +13,7 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JAVAX_ID = ModuleIdentifier.create("javax.resource.api");
     private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
+    private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
     private static ModuleIdentifier NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
     private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
@@ -29,6 +30,7 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(LOGGING_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(IRON_JACAMAR_ID, true, false, false));
+        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(IRON_JACAMAR_IMPL_ID, true, false, true));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(SYSTEM_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(NAMING_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(VALIDATION_ID, true, false, false));
