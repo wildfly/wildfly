@@ -124,19 +124,38 @@ class SharedWebMetaDataBuilder {
 
         final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
 
-        if (resourcesConfig != null) {
+        if (resourcesConfig != null && resourcesConfig.isDisabled() != null)
+            initParams.add(createParameter("listings", String.valueOf(resourcesConfig.isListings())));
+        else
+            initParams.add(createParameter("listings", "true"));
 
-            if(resourcesConfig.isDisabled() != null) {
-                initParams.add(createParameter("listings", String.valueOf(resourcesConfig.isListings())));
-            }
-            if(resourcesConfig.isReadOnly() != null) {
-                initParams.add(createParameter("readonly", String.valueOf(resourcesConfig.isReadOnly())));
-            }
-            // TODO more params...
-        }
-        // FIXME remove
-        initParams.add(createParameter("listings", "true"));
+        if (resourcesConfig != null && resourcesConfig.isReadOnly() != null)
+            initParams.add(createParameter("readonly", String.valueOf(resourcesConfig.isReadOnly())));
+        else
+            initParams.add(createParameter("readonly", "true"));
 
+        if (resourcesConfig != null && resourcesConfig.getSendfileSize() != null)
+            initParams.add(createParameter("sendfile", String.valueOf(resourcesConfig.getSendfileSize())));
+        else
+            initParams.add(createParameter("sendfile", "49152"));
+
+        if (resourcesConfig != null && resourcesConfig.getFileEncoding() != null)
+            initParams.add(createParameter("file-encoding", String.valueOf(resourcesConfig.getFileEncoding())));
+
+        if (resourcesConfig != null && resourcesConfig.isWebDav() != null)
+            initParams.add(createParameter("webdav", String.valueOf(resourcesConfig.isWebDav())));
+        else
+            initParams.add(createParameter("webdav", "false"));
+
+        if (resourcesConfig != null && resourcesConfig.getSecret() != null)
+            initParams.add(createParameter("secret", String.valueOf(resourcesConfig.getSecret())));
+
+        if (resourcesConfig != null && resourcesConfig.getMaxDepth() != null)
+            initParams.add(createParameter("max-depth", String.valueOf(resourcesConfig.getMaxDepth())));
+        else
+            initParams.add(createParameter("max-depth", "3"));
+
+        servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
         addServletMapping("DefaultServlet", metadata, "/");
     }
@@ -156,9 +175,102 @@ class SharedWebMetaDataBuilder {
         servlet.setName("jsp");
         servlet.setLoadOnStartup("" + 3);
         servlet.setServletClass("org.apache.jasper.servlet.JspServlet");
-        if (configuration != null) {
-            // TODO add init params
-        }
+
+        final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
+
+        if (configuration != null && configuration.isDevelopment() != null)
+            initParams.add(createParameter("development", String.valueOf(configuration.isDevelopment())));
+        else
+            initParams.add(createParameter("development", "false"));
+
+        if (configuration != null && configuration.isKeepGenerated() != null)
+            initParams.add(createParameter("keepgenerated", String.valueOf(configuration.isKeepGenerated())));
+        else
+            initParams.add(createParameter("keepgenerated", "true"));
+
+        if (configuration != null && configuration.isTrimSpaces() != null)
+            initParams.add(createParameter("trimSpaces", String.valueOf(configuration.isTrimSpaces())));
+        else
+            initParams.add(createParameter("trimSpaces", "false"));
+
+        if (configuration != null && configuration.isTagPooling() != null)
+            initParams.add(createParameter("enablePooling", String.valueOf(configuration.isTagPooling())));
+        else
+            initParams.add(createParameter("enablePooling", "true"));
+
+        if (configuration != null && configuration.isMappedFile() != null)
+            initParams.add(createParameter("mappedfile", String.valueOf(configuration.isMappedFile())));
+        else
+            initParams.add(createParameter("mappedfile", "true"));
+
+        if (configuration != null && configuration.getCheckInterval() != null)
+            initParams.add(createParameter("checkInterval", String.valueOf(configuration.getCheckInterval())));
+        else
+            initParams.add(createParameter("checkInterval", "0"));
+
+        if (configuration != null && configuration.getModificationTestInterval() != null)
+            initParams.add(createParameter("modificationTestIntervale", String.valueOf(configuration.getModificationTestInterval())));
+        else
+            initParams.add(createParameter("modificationTestInterval", "4"));
+
+        if (configuration != null && configuration.isRecompileOnFail() != null)
+            initParams.add(createParameter("recompileOnFail", String.valueOf(configuration.isRecompileOnFail())));
+        else
+            initParams.add(createParameter("recompileOnFail", "false"));
+
+        if (configuration != null && configuration.isSmap() != null) {
+            if (configuration.isSmap())
+                initParams.add(createParameter("suppressSmap", "false"));
+            else
+                initParams.add(createParameter("suppressSmap", "true"));
+        } else
+            initParams.add(createParameter("suppressSmap", "false"));
+
+        if (configuration != null && configuration.isDumpSmap() != null)
+            initParams.add(createParameter("dumpSmap", String.valueOf(configuration.isDumpSmap())));
+        else
+            initParams.add(createParameter("dumpSmap", "false"));
+
+        if (configuration != null && configuration.isGenerateStringsAsCharArrays() != null)
+            initParams.add(createParameter("genStringAsCharArray", String.valueOf(configuration.isGenerateStringsAsCharArrays())));
+        else
+            initParams.add(createParameter("genStringAsCharArray", "false"));
+
+        if (configuration != null && configuration.isErrorOnInvalidClassAttribute() != null)
+            initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", String.valueOf(configuration.isErrorOnInvalidClassAttribute())));
+        else
+            initParams.add(createParameter("errorOnUseBeanInvalidClassAttribute", "false"));
+
+        if (configuration != null && configuration.getScratchDir() != null)
+            initParams.add(createParameter("scratchdir", String.valueOf(configuration.getScratchDir())));
+        // jasper will find the right defaults.
+
+        if (configuration != null && configuration.getSourceVM() != null)
+            initParams.add(createParameter("compilerSourceVM", String.valueOf(configuration.getSourceVM())));
+        else
+            initParams.add(createParameter("compilerSourceVM", "1.5"));
+
+        if (configuration != null && configuration.getTargetVM() != null)
+            initParams.add(createParameter("compilerTargetVM", String.valueOf(configuration.getTargetVM())));
+        else
+            initParams.add(createParameter("compilerTargetVM", "1.5"));
+
+        if (configuration != null && configuration.getJavaEncoding() != null)
+            initParams.add(createParameter("javaEncoding", String.valueOf(configuration.getJavaEncoding())));
+        else
+            initParams.add(createParameter("javaEncoding", "UTF8"));
+
+        if (configuration != null && configuration.isXPoweredBy() != null)
+            initParams.add(createParameter("xpoweredBy", String.valueOf(configuration.isXPoweredBy())));
+        else
+            initParams.add(createParameter("xpoweredBy", "true"));
+
+        if (configuration != null && configuration.isDisplaySourceFragment() != null)
+            initParams.add(createParameter("displaySourceFragment", String.valueOf(configuration.isDisplaySourceFragment())));
+        else
+            initParams.add(createParameter("displaySourceFragment", "true"));
+
+        servlet.setInitParam(initParams);
         metadata.getServlets().add(servlet);
         addServletMapping("jsp", metadata, "*.jsp", "*.jspx");
     }
