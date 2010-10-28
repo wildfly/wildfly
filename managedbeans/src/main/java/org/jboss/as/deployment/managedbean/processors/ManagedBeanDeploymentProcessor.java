@@ -34,6 +34,7 @@ import org.jboss.as.deployment.managedbean.container.ManagedBeanObjectFactory;
 import org.jboss.as.deployment.managedbean.container.MethodResourceInjection;
 import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
 import org.jboss.as.deployment.managedbean.container.ResourceInjection;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextService;
 import org.jboss.as.deployment.naming.DuplicateBindingException;
 import org.jboss.as.deployment.naming.JndiName;
@@ -43,6 +44,7 @@ import org.jboss.as.deployment.naming.ResourceBinder;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -85,18 +87,21 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
 
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
+        final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
+        final ClassLoader classLoader = module.getClassLoader();
+
         for(ManagedBeanConfiguration managedBeanConfiguration : managedBeanConfigurations.getConfigurations().values()) {
-            processManagedBean(context, moduleContext, managedBeanConfiguration, batchBuilder);
+            processManagedBean(context, classLoader, moduleContext, managedBeanConfiguration, batchBuilder);
         }
     }
 
-    private void processManagedBean(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
+    private void processManagedBean(final DeploymentUnitContext deploymentContext, final ClassLoader classLoader, final ModuleContextConfig moduleContext, final ManagedBeanConfiguration managedBeanConfiguration, final BatchBuilder batchBuilder) throws DeploymentUnitProcessingException {
         final Class<?> beanClass = managedBeanConfiguration.getType();
         final String managedBeanName = managedBeanConfiguration.getName();
 
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
         final List<ManagedBeanInterceptor<?>> interceptors = new ArrayList<ManagedBeanInterceptor<?>>();
-        final ManagedBeanService<?> managedBeanService = createManagedBeanService(beanClass, managedBeanConfiguration, resourceInjections, interceptors);
+        final ManagedBeanService<?> managedBeanService = createManagedBeanService(beanClass, classLoader, managedBeanConfiguration, resourceInjections, interceptors);
 
         final ServiceName moduleContextServiceName = moduleContext.getContextServiceName();
 
@@ -132,8 +137,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             .addDependency(managedBeanServiceName);
     }
 
-    private <T> ManagedBeanService<T> createManagedBeanService(final Class<T> beanClass, final ManagedBeanConfiguration managedBeanConfiguration, List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
-        return new ManagedBeanService<T>(new ManagedBeanContainer<T>(beanClass, managedBeanConfiguration.getPostConstructMethods(), managedBeanConfiguration.getPreDestroyMethods(), resourceInjections, interceptors));
+    private <T> ManagedBeanService<T> createManagedBeanService(final Class<T> beanClass, final ClassLoader classLoader, final ManagedBeanConfiguration managedBeanConfiguration, List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
+        return new ManagedBeanService<T>(new ManagedBeanContainer<T>(beanClass, classLoader, managedBeanConfiguration.getPostConstructMethods(), managedBeanConfiguration.getPreDestroyMethods(), resourceInjections, interceptors));
     }
 
     private <T> ResourceInjection<T> processResource(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final Class<T> valueType, final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder<?> serviceBuilder, final ServiceName beanContextServiceName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {

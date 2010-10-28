@@ -29,6 +29,8 @@ import javassist.util.proxy.ProxyObject;
 import javax.interceptor.ExcludeClassInterceptors;
 import java.lang.reflect.Method;
 import java.util.List;
+import static org.jboss.as.deployment.managedbean.container.SecurityActions.getContextClassLoader;
+import static org.jboss.as.deployment.managedbean.container.SecurityActions.setContextClassLoader;
 
 /**
  * Method handler used to proxy managed bean method invocations.  For each method called it will check to see if the method
@@ -40,9 +42,10 @@ import java.util.List;
 public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements MethodHandler {
     private final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors;
     private final T instance;
+    private final ClassLoader deploymentClassLoader;
 
-    public static <T> T createProxy(final Class<T> managedBeanClass, final T managedBean, final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) throws IllegalAccessException, InstantiationException {
-        final ManagedBeanProxyHandler<T> handler = new ManagedBeanProxyHandler<T>(managedBean, interceptors);
+    public static <T> T createProxy(final Class<T> managedBeanClass, final ClassLoader deploymentClassLoader, final T managedBean, final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) throws IllegalAccessException, InstantiationException {
+        final ManagedBeanProxyHandler<T> handler = new ManagedBeanProxyHandler<T>(managedBean, interceptors, deploymentClassLoader);
         //return ProxyFactory.createProxy(managedBeanClass, );
         final ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(managedBeanClass);
@@ -65,10 +68,11 @@ public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements
      * @param managedBeanInstance The managed bean instance
      * @param interceptors The interceptor chain
      */
-    private ManagedBeanProxyHandler(T managedBeanInstance, List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors) {
+    private ManagedBeanProxyHandler(final T managedBeanInstance, final List<ManagedBeanInterceptor.AroundInvokeInterceptor<?>> interceptors, final ClassLoader deploymentClassLoader) {
         //super(managedBeanInstance);
         this.instance = managedBeanInstance;
         this.interceptors = interceptors;
+        this.deploymentClassLoader = deploymentClassLoader;
     }
 
     /**
@@ -80,6 +84,8 @@ public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements
      * @return The value of the invocation context execution
      */
     protected Object invokeMethod(T instance, Method method, Object[] arguments) {
+        final ClassLoader contextCl = getContextClassLoader();
+        setContextClassLoader(deploymentClassLoader);
         try {
             if(!method.isAnnotationPresent(ExcludeClassInterceptors.class)) {
                 return new InvocationContext<T>(instance, method, arguments, interceptors).proceed();
@@ -87,6 +93,8 @@ public class ManagedBeanProxyHandler<T> /* extends ProxyHandler<T> */ implements
             return method.invoke(instance, arguments);
         } catch(Throwable t) {
             throw new RuntimeException(t);
+        } finally {
+            setContextClassLoader(contextCl);
         }
     }
 

@@ -25,6 +25,8 @@ package org.jboss.as.deployment.managedbean.container;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import static org.jboss.as.deployment.managedbean.container.SecurityActions.getContextClassLoader;
+import static org.jboss.as.deployment.managedbean.container.SecurityActions.setContextClassLoader;
 
 /**
  * Container responsible for holding onto the components necessary for creating instance of managed beans.
@@ -35,6 +37,7 @@ import java.util.List;
  */
 public class ManagedBeanContainer<T> {
     private final Class<T> beanClass;
+    private final ClassLoader deploymentClassLoader;
     private final List<Method> postConstructMethods;
     private final List<Method> preDestroyMethods;
     private final List<ResourceInjection<?>> resourceInjections;
@@ -44,13 +47,15 @@ public class ManagedBeanContainer<T> {
      * Construct with managed bean configuration.
      *
      * @param beanClass The class of the managed bean
+     * @param deploymentClassLoader The classloader for the deployment
      * @param postConstructMethods The post construct methods
      * @param preDestroyMethods The pre destroy methods
      * @param resourceInjections The resource injections
      * @param interceptors The manged bean interceptors
      */
-    public ManagedBeanContainer(final Class<T> beanClass, final List<Method> postConstructMethods, final List<Method> preDestroyMethods, final List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
+    public ManagedBeanContainer(final Class<T> beanClass, final ClassLoader deploymentClassLoader, final List<Method> postConstructMethods, final List<Method> preDestroyMethods, final List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
         this.beanClass = beanClass;
+        this.deploymentClassLoader = deploymentClassLoader;
         this.postConstructMethods = postConstructMethods;
         this.preDestroyMethods = preDestroyMethods;
         this.resourceInjections = resourceInjections;
@@ -76,14 +81,20 @@ public class ManagedBeanContainer<T> {
             resourceInjection.inject(managedBean);
         }
         // Execute the post construct life-cycle
-        if (postConstructMethods != null) {
-            for(Method postConstructMethod : postConstructMethods) {
-                try {
-                    postConstructMethod.invoke(managedBean);
-                } catch (Throwable t) {
-                    throw new RuntimeException("Failed to invoke post construct method '" + postConstructMethod.getName() + "' for class " + beanClass, t);
+        final ClassLoader contextCl = getContextClassLoader();
+        setContextClassLoader(deploymentClassLoader);
+        try {
+            if (postConstructMethods != null) {
+                for(Method postConstructMethod : postConstructMethods) {
+                    try {
+                        postConstructMethod.invoke(managedBean);
+                    } catch (Throwable t) {
+                        throw new RuntimeException("Failed to invoke post construct method '" + postConstructMethod.getName() + "' for class " + beanClass, t);
+                    }
                 }
             }
+        } finally {
+            setContextClassLoader(contextCl);
         }
 
         if(!interceptors.isEmpty()) {
@@ -97,7 +108,7 @@ public class ManagedBeanContainer<T> {
                 }
             }
             try {
-                managedBean = ManagedBeanProxyHandler.createProxy(beanClass, managedBean, aroundInvokeInterceptors);
+                managedBean = ManagedBeanProxyHandler.createProxy(beanClass, deploymentClassLoader, managedBean, aroundInvokeInterceptors);
             } catch (Throwable t) {
                 throw new RuntimeException("Unable to create managed bean proxy for " + beanClass, t);
             }
