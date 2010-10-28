@@ -1,2 +1,1 @@
 Manifest-Version: 1.0
-Dependencies: system,org.jboss.logging

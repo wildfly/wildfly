@@ -67,6 +67,7 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
         super(SarExtension.NAMESPACE);
     }
 
+    @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
@@ -79,6 +80,7 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
         addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ServiceActivatorDependencyProcessor(), ServiceActivatorDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new SarModuleDependencyProcessor(), SarModuleDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), NestedJarInlineProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
         final InjectedValue<DeploymentModuleLoader> deploymentModuleLoaderValue = new InjectedValue<DeploymentModuleLoader>();
@@ -91,6 +93,7 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
         addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
     }
 
+    @Override
     protected SarSubsystemElement createSubsystemElement() {
         return new SarSubsystemElement();
     }

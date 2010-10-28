@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Dependencies: system,org.jboss.logging,javax.jms.api,org.hornetq
+Dependencies: javax.jms.api,org.hornetq
