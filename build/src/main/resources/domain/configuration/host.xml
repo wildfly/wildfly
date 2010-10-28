@@ -28,6 +28,8 @@
 
     <domain-controller>
        <local/>
+       <!-- Remote domain controller configuration with a host and port -->
+       <!-- <remote host="192.168.100.1" port="9999"/> -->
     </domain-controller>
 
     <interfaces>
