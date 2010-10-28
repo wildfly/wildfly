@@ -36,7 +36,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -65,7 +64,6 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);
                 if (webFragment.exists() && webFragment.isFile()) {
                     InputStream is = null;
-                    long time = System.currentTimeMillis();
                     try {
                         is = webFragment.openStream();
                         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -75,7 +73,6 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                     } catch (Exception e) {
                         throw new DeploymentUnitProcessingException("Failed to parse " + webFragment, e);
                     } finally {
-                        Logger.getLogger("org.jboss.web.WebFragmentParsingDeploymentProcessor").info("parse " + resourceRoot.getName() + ": " + (System.currentTimeMillis() - time) + "ms");
                         try {
                             if (is != null) {
                                 is.close();

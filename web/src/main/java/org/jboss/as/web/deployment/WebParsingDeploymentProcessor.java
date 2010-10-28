@@ -34,7 +34,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.servlet.WebMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
-import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -53,7 +52,6 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
         assert warMetaData != null;
         if (webXml.exists()) {
             InputStream is = null;
-            long time = System.currentTimeMillis();
             try {
                 is = webXml.openStream();
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -63,7 +61,6 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + webXml, e);
             } finally {
-                Logger.getLogger("org.jboss.web.WebParsingDeploymentProcessor").info("parse: " + (System.currentTimeMillis() - time) + "ms");
                 try {
                     if (is != null) {
                         is.close();

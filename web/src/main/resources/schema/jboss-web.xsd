@@ -71,65 +71,65 @@
      <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
      <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
      -->
-         <xs:element name="mime-mapping" minOccurs="0" maxOccurs="unbounded" type="propertiesWithRequiredValueType" />
+         <xs:element name="mime-mapping" minOccurs="0" maxOccurs="unbounded" type="mime-mappingType" />
          <xs:element name="welcome-file" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:sequence>
    </xs:complexType>
 
    <xs:complexType name="static-resourcesType">
-      <xs:attribute name="listings" default="true" type="boolean" />
+      <xs:attribute name="listings" default="true" type="xs:boolean" />
       <xs:attribute name="sendfile" default="49152" />
       <xs:attribute name="file-encoding" />
-      <xs:attribute name="read-only" default="true" type="boolean" />
-      <xs:attribute name="webdav" default="false" type="boolean" />
+      <xs:attribute name="read-only" default="true" type="xs:boolean" />
+      <xs:attribute name="webdav" default="false" type="xs:boolean" />
       <xs:attribute name="secret" />
       <xs:attribute name="max-depth" default="3" />
-      <xs:attribute name="disabled" default="false" type="boolean" " />
+      <xs:attribute name="disabled" default="false" type="xs:boolean" />
    </xs:complexType>
 
    <xs:complexType name="jsp-configurationType">
-      <xs:attribute name="development" default="false" type="boolean" />
-      <xs:attribute name="disabled" default="false" type="boolean" />
-      <xs:attribute name="keep-generated" default="true" type="boolean" />
-      <xs:attribute name="trim-spaces" default="false" type="boolean" />
-      <xs:attribute name="tag-pooling" default="true" type="boolean" />
-      <xs:attribute name="mapped-file" default="true" type="boolean" />
+      <xs:attribute name="development" default="false" type="xs:boolean" />
+      <xs:attribute name="disabled" default="false" type="xs:boolean" />
+      <xs:attribute name="keep-generated" default="true" type="xs:boolean" />
+      <xs:attribute name="trim-spaces" default="false" type="xs:boolean" />
+      <xs:attribute name="tag-pooling" default="true" type="xs:boolean" />
+      <xs:attribute name="mapped-file" default="true" type="xs:boolean" />
       <xs:attribute name="check-interval" default="0" />
       <xs:attribute name="modification-test-interval" default="4" />
-      <xs:attribute name="recompile-on-fail" default="false" type="boolean" />
-      <xs:attribute name="smap" default="true" type="boolean" />
-      <xs:attribute name="dump-smap" default="false" type="boolean" />
-      <xs:attribute name="generate-strings-as-char-arrays" default="false" type="boolean" />
-      <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="boolean" />
+      <xs:attribute name="recompile-on-fail" default="false" type="xs:boolean" />
+      <xs:attribute name="smap" default="true" type="xs:boolean" />
+      <xs:attribute name="dump-smap" default="false" type="xs:boolean" />
+      <xs:attribute name="generate-strings-as-char-arrays" default="false" type="xs:boolean" />
+      <xs:attribute name="error-on-use-bean-invalid-class-attribute" default="false" type="xs:boolean" />
       <xs:attribute name="scratch-dir" />
       <xs:attribute name="source-vm" default="1.5" />
       <xs:attribute name="target-vm" default="1.5" />
       <xs:attribute name="java-encoding" default="UTF8" />
-      <xs:attribute name="x-powered-by" default="true" type="boolean" />
-      <xs:attribute name="display-source-fragment" default="true" type="boolean" />
+      <xs:attribute name="x-powered-by" default="true" type="xs:boolean" />
+      <xs:attribute name="display-source-fragment" default="true" type="xs:boolean" />
    </xs:complexType>
 
 <!-- 
   <xs:complexType name="cgi-servletType">
     <xs:attribute name="debug" default="0"/>
     <xs:attribute name="cgi-path-prefix"/>
-    <xs:attribute name="pass-shell-environment" default="false" type="boolean"/>
+    <xs:attribute name="pass-shell-environment" default="false" type="xs:boolean"/>
     <xs:attribute name="cgi-executable" default="perl"/>
     <xs:attribute name="parameter-encoding"/>
   </xs:complexType>
 
   <xs:complexType name="ssi-servletType">
     <xs:attribute name="debug" default="0"/>
-    <xs:attribute name="webapp-relative" default="false" type="boolean"/>
+    <xs:attribute name="webapp-relative" default="false" type="xs:boolean"/>
     <xs:attribute name="expires"/>
-    <xs:attribute name="buffered" default="false" type="boolean"/>
+    <xs:attribute name="buffered" default="false" type="xs:boolean"/>
     <xs:attribute name="input-encoding"/>
     <xs:attribute name="output-encoding" default="UTF-8"/>
   </xs:complexType>
 
   <xs:complexType name="ssi-filterType">
     <xs:attribute name="debug" default="0"/>
-    <xs:attribute name="webapp-relative" default="false" type="boolean"/>
+    <xs:attribute name="webapp-relative" default="false" type="xs:boolean"/>
     <xs:attribute name="expires"/>
     <xs:attribute name="content-type-regex"/>
   </xs:complexType>
@@ -156,15 +156,15 @@
       <xs:attribute name="proxy-name" />
       <xs:attribute name="proxy-port" />
       <xs:attribute name="redirect-port" />
-      <xs:attribute name="secure" default="false" type="boolean" />
+      <xs:attribute name="secure" default="false" type="xs:boolean" />
       <xs:attribute name="max-post-size" />
       <xs:attribute name="max-save-post-size" />
-      <xs:attribute name="enabled" default="true" type="boolean" />
+      <xs:attribute name="enabled" default="true" type="xs:boolean" />
       <xs:attribute name="executor" type="xs:IDREF" />
       <!--
-         <xs:attribute name="native" default="true" type="boolean"/> 
+         <xs:attribute name="native" default="true" type="xs:boolean"/> 
          <xs:attribute name="default-virtual-server"/>
-         <xs:attribute name="production" default="false" type="boolean"/>
+         <xs:attribute name="production" default="false" type="xs:boolean"/>
       -->
    </xs:attributeGroup>
 
@@ -204,16 +204,14 @@
    </xs:attributeGroup>
 
    <xs:complexType name="http-access-logType">
-      <xs:complexType>
-         <xs:sequence>
-            <xs:element name="directory" type="directoryType" />
-         </xs:sequence>
-      </xs:complexType>
+      <xs:sequence>
+         <xs:element name="directory" type="directoryType" />
+      </xs:sequence>
       <xs:attribute name="pattern" default="common" />
-      <xs:attribute name="resolve-hosts" default="false" type="boolean" />
-      <xs:attribute name="extended" default="false" type="boolean" />
+      <xs:attribute name="resolve-hosts" default="false" type="xs:boolean" />
+      <xs:attribute name="extended" default="false" type="xs:boolean" />
       <xs:attribute name="prefix" default="access_log." />
-      <xs:attribute name="rotate" default="true" type="boolean" />
+      <xs:attribute name="rotate" default="true" type="xs:boolean" />
    </xs:complexType>
 
    <xs:complexType name="http-rewriteType">
@@ -286,6 +284,11 @@
       </xs:annotation>
       <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
       <xs:attribute name="path" type="xs:string" default="tx-object-store" />
+   </xs:complexType>
+
+   <xs:complexType name="mime-mappingType">
+       <xs:attribute name="name" use="required"/>
+       <xs:attribute name="value" use="optional"/>
    </xs:complexType>
 
 </xs:schema>

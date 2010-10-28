@@ -37,7 +37,7 @@ import org.jboss.msc.service.StopContext;
  */
 class WebDeploymentService implements Service<Context> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.web.deployment");
+    private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
 
     public WebDeploymentService(final StandardContext context) {
@@ -46,7 +46,6 @@ class WebDeploymentService implements Service<Context> {
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext startContext) throws StartException {
-        final long time = System.currentTimeMillis();
         try {
             context.create();
         } catch (Exception e) {
@@ -57,7 +56,7 @@ class WebDeploymentService implements Service<Context> {
         } catch (LifecycleException e) {
             throw new StartException("failed to start context", e);
         }
-        Logger.getLogger("org.jboss.web").info("starting context " + context.getName() + ": " + (System.currentTimeMillis() - time));
+        log.info("registering web context: " + context.getName());
         /*
          * Add security association valve after the authorization valves so that the authenticated user may be associated
          * with the request thread/session.

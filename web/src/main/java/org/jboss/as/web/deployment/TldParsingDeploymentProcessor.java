@@ -38,7 +38,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -108,7 +107,6 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             return new TldMetaData();
         }
         InputStream is = null;
-        long time = System.currentTimeMillis();
         try {
             is = tld.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -118,7 +116,6 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse " + tld, e);
         } finally {
-            Logger.getLogger("org.jboss.web.TldParsingDeploymentProcessor").info("parse " + tld.getName() + ": " + (System.currentTimeMillis() - time) + "ms");
             try {
                 if (is != null) {
                     is.close();

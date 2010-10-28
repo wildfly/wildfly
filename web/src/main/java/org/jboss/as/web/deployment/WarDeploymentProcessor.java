@@ -148,7 +148,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final BatchBuilder builder = context.getBatchBuilder();
         builder.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
             .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
-            .setInitialMode(Mode.IMMEDIATE);
+            .setInitialMode(Mode.ACTIVE);
     }
 
 }
