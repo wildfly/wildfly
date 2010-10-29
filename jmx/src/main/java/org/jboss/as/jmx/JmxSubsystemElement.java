@@ -43,6 +43,8 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
 
     private static final long serialVersionUID = 4808972600600585073L;
 
+    private JMXConnectorElement connector;
+
     /**
      * Construct a new instance.
      */
@@ -57,11 +59,18 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
 
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        if(connector != null) {
+            streamWriter.writeEmptyElement(Element.JMX_CONNECTOR.getLocalName());
+            connector.writeAttributes(streamWriter);
+        }
         streamWriter.writeEndElement();
     }
 
     /** {@inheritDoc} */
     protected void getUpdates(List<? super AbstractSubsystemUpdate<JmxSubsystemElement, ?>> list) {
+        if(connector != null) {
+            list.add(new JMXConnectorAdd(connector.getServerBinding(), connector.getRegistryBinding()));
+        }
     }
 
     /** {@inheritDoc} */
@@ -82,4 +91,13 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
             service.setMode(ServiceController.Mode.REMOVE);
         }
     }
+
+    public JMXConnectorElement getConnector() {
+        return connector;
+    }
+
+    public void setConnector(JMXConnectorElement connector) {
+        this.connector = connector;
+    }
+
 }

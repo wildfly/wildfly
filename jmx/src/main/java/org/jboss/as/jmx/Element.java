@@ -22,34 +22,47 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.jmx.mbean.ManagedServiceContainerService;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @author Thomas.Diesler@jboss.com
+ * @author Emanuel Muckenhuber
  */
-public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElement> {
+enum Element {
+    // must be first
+    UNKNOWN(null),
 
-    private static final long serialVersionUID = -3662389863046074060L;
+    JMX_CONNECTOR("jmx-connector"),
+    ;
 
-    public JmxSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
+    private final String name;
+
+    Element(final String name) {
+        this.name = name;
     }
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-
-        MBeanServerService.addService(batchBuilder);
-        ManagedServiceContainerService.addService(batchBuilder);
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
+        return name;
     }
 
-    @Override
-    protected JmxSubsystemElement createSubsystemElement() {
-        return new JmxSubsystemElement();
+    private static final Map<String, Element> MAP;
+
+    static {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
+
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
     }
 }

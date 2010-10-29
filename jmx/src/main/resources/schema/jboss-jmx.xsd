@@ -31,6 +31,14 @@
     <xs:element name="subsystem" type="subsystem"/>
 
     <xs:complexType name="subsystem">
+      <xs:sequence>
+         <xs:element name="jmx-connector" type="jmx-connectorType" />
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="jmx-connectorType">
+       <xs:attribute name="registry-binding" use="required" />
+       <xs:attribute name="server-binding" use="required" />
     </xs:complexType>
 
 </xs:schema>

@@ -30,6 +30,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 
 import javax.management.MBeanServer;
@@ -54,10 +56,10 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Jason T. Greene
- * @version $Revision: 1.1 $
  */
 public class JMXConnectorService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "connector");
+    private static final String SERVER_HOSTNAME = "java.rmi.server.hostname";
     private static final String RMI_BIND_NAME = "jmxrmi";
 
     private static final int BACKLOG = 50;
@@ -71,18 +73,20 @@ public class JMXConnectorService implements Service<Void> {
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
 
-    public static void addService(final BatchBuilder batchBuilder) {
+    public static BatchServiceBuilder<?> addService(final BatchBuilder batchBuilder, final String serverBinding, final String registryBinding) {
         JMXConnectorService jmxConnectorService = new JMXConnectorService();
-        BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService);
-        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector());
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-registry"), SocketBinding.class, jmxConnectorService.getRegistryPortBinding());
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("jmx-connector-server"), SocketBinding.class, jmxConnectorService.getServerPortBinding());
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
+                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(registryBinding), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(serverBinding), SocketBinding.class, jmxConnectorService.getServerPortBinding())
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+        return serviceBuilder;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
         log.info("Starting remote JMX connector");
+        setRmiServerProperty(serverPortBinding.getValue().getAddress().getHostAddress());
         try {
             RMIServerSocketFactory serverSocketFactory = new JMXServerSocketFactory(getRmiRegistryAddress());
 
@@ -178,6 +182,20 @@ public class JMXConnectorService implements Service<Void> {
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
             return new ServerSocket(port, BACKLOG, address);
+        }
+    }
+
+    private void setRmiServerProperty(final String address) {
+        SecurityManager sm = System.getSecurityManager();
+        if(sm != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                public Void run() {
+                    System.setProperty(SERVER_HOSTNAME, address);
+                    return null;
+                }
+            });
+        } else {
+            System.setProperty(SERVER_HOSTNAME, address);
         }
     }
 }

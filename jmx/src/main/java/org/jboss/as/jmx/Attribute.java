@@ -22,34 +22,51 @@
 
 package org.jboss.as.jmx;
 
-import org.jboss.as.jmx.mbean.ManagedServiceContainerService;
-import org.jboss.as.model.AbstractSubsystemAdd;
-import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- * @author Thomas.Diesler@jboss.com
+ * @author Emanuel Muckenhuber
  */
-public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElement> {
+enum Attribute {
 
-    private static final long serialVersionUID = -3662389863046074060L;
+    UNKNOWN(null),
 
-    public JmxSubsystemAdd() {
-        super(Namespace.CURRENT.getUriString());
+    SERVER_BINDING("server-binding"),
+    REGISTRY_BINDING("registry-binding"),
+    ;
+    private final String name;
+
+    Attribute(final String name) {
+        this.name = name;
     }
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-
-        MBeanServerService.addService(batchBuilder);
-        ManagedServiceContainerService.addService(batchBuilder);
+    /**
+     * Get the local name of this attribute.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
+        return name;
     }
 
-    @Override
-    protected JmxSubsystemElement createSubsystemElement() {
-        return new JmxSubsystemElement();
+    private static final Map<String, Attribute> MAP;
+
+    static {
+        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        for (Attribute element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
+
+    public static Attribute forName(String localName) {
+        final Attribute element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
+    }
+
+    public String toString() {
+        return getLocalName();
     }
 }

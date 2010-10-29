@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author Emanuel Muckenhuber
  */
-public enum Namespace {
+enum Namespace {
     // must be first
     UNKNOWN(null),
 

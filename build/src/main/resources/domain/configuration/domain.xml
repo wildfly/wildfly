@@ -203,7 +203,9 @@
             </subsystem>
 
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:jmx:1.0">
+                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
 
