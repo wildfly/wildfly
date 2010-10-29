@@ -1089,6 +1089,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.osgi.jmx</groupId>
+                <artifactId>jboss-osgi-jmx</artifactId>
+                <version>${version.org.jboss.osgi.jmx}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.osgi.resolver</groupId>
                 <artifactId>jbosgi-resolver-api</artifactId>
                 <version>${version.org.jboss.osgi.resolver}</version>

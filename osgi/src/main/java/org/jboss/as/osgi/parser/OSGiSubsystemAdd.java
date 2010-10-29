@@ -28,13 +28,12 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.OSGiSubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleManagerService;
-import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.Configuration;
+import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * OSGi subsystem add element.
@@ -73,11 +72,10 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         System.setProperty("jboss.protocol.handler.modules", value);
 
         Activation policy = subsystemState.getActivationPolicy();
-        Mode initialMode = (policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.PASSIVE);
         BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         Configuration.addService(batchBuilder, subsystemState);
-        BundleManagerService.addService(batchBuilder, initialMode);
-        FrameworkService.addService(batchBuilder, initialMode);
+        BundleManagerService.addService(batchBuilder);
+        FrameworkService.addService(batchBuilder, policy);
         PackageAdminService.addService(batchBuilder);
         new OSGiDeploymentActivator().activate(batchBuilder);
     }

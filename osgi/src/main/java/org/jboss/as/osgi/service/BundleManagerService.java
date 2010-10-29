@@ -74,15 +74,13 @@ public class BundleManagerService implements Service<BundleManager> {
     private Injector<ClassifyingModuleLoaderService> osgiModuleLoaderInjector;
     private BundleManager bundleManager;
 
-    public static void addService(final BatchBuilder batchBuilder, Mode initialMode) {
+    public static void addService(final BatchBuilder batchBuilder) {
         BundleManagerService service = new BundleManagerService();
         BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class,
-                service.injectedModuleLoader);
         serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class,
-                service.osgiHttpServerPortBinding);
-        serviceBuilder.setInitialMode(initialMode);
+        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.osgiHttpServerPortBinding);
+        serviceBuilder.setInitialMode(Mode.ON_DEMAND);
     }
 
     public synchronized void start(StartContext context) throws StartException {

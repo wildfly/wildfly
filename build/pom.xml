@@ -368,6 +368,11 @@
         </dependency>
         
         <dependency>
+            <groupId>org.jboss.osgi.jmx</groupId>
+            <artifactId>jboss-osgi-jmx</artifactId>
+        </dependency>
+        
+        <dependency>
             <groupId>org.jboss.osgi.resolver</groupId>
             <artifactId>jbosgi-resolver-felix</artifactId>
         </dependency>
