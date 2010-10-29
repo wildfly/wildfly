@@ -190,7 +190,7 @@ public class ServerManagerEnvironment {
 
         tmp = getFileFromProperty(DOMAIN_DEPLOYMENT_DIR);
         if (tmp == null) {
-            tmp = new File(this.domainBaseDir, "deployments");
+            tmp = new File(this.domainBaseDir, "content");
         }
         this.domainDeploymentDir = tmp;
         System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());

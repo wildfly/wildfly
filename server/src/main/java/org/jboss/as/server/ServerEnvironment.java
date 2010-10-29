@@ -160,7 +160,7 @@ public class ServerEnvironment {
 
         tmp = getFileFromProperty(SERVER_DEPLOY_DIR, props);
         if (tmp == null) {
-            tmp = new File(serverDataDir, "deployments");
+            tmp = new File(serverDataDir, "content");
         }
         serverDeployDir = tmp;
         System.setProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());

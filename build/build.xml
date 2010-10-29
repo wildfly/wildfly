@@ -46,7 +46,7 @@
     </target>
 
     <target name="make-dirs">
-        <mkdir dir="${output.dir}/domain/deployments"/>
+        <mkdir dir="${output.dir}/domain/content"/>
         <mkdir dir="${output.dir}/standalone/deployments"/>
     </target>
 
