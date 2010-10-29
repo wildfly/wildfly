@@ -33,7 +33,8 @@
                             urn:jboss:domain:managedbeans:1.0 jboss-managedbean.xsd
                             urn:jboss:domain:connector:1.0 jboss-connector.xsd
                             urn:jboss:domain:datasources:1.0 jboss-datasources.xsd
-                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd">
+                            urn:jboss:domain:resourceadapters:1.0 jboss-resource-adapters.xsd
+                            urn:jboss:domain:web:1.0 jboss-web.xsd">
 
     <extensions>
         <extension module="org.jboss.as.connector"/>
@@ -47,6 +48,7 @@
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.web"/>
     </extensions>
 
     <profiles>
@@ -148,10 +150,18 @@
                 </topic>
             </subsystem>
         </profile>
-
+        <profile name="web">
+            <subsystem xmlns="urn:jboss:domain:web:1.0">
+               <connector name="http" scheme="http" socket-binding="http"/>
+               <virtual-server name="localhost">
+                  <alias name="example.com" />
+               </virtual-server>
+             </subsystem>
+        </profile>
         <profile name="default">
             <include profile="messaging"/>
             <include profile="osgi"/>
+            <include profile="web"/>
 
             <subsystem xmlns="urn:jboss:domain:logging:1.0">
                 <console-handler name="CONSOLE">
