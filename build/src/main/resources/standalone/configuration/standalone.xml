@@ -202,7 +202,7 @@
                   <connector-ref connector-name="netty" backup-connector-name="in-vm"/>
                </connectors>
                <entries>
-                  <entry name="ConnectionFactory" />
+                  <entry name="RemoteConnectionFactory" />
                </entries>
             </connection-factory>
             <queue name="testQueue">
