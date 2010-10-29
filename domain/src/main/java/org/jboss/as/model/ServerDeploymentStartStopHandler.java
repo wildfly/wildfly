@@ -153,7 +153,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
             final ServerDeploymentRepository deploymentRepo = getDeploymentRepository(serviceContainer);
             // The mount point we will use for the repository file
 //          final VirtualFile deploymentRoot = VFS.getChild(getFullyQualifiedDeploymentPath(runtimeName));
-            final VirtualFile deploymentRoot = VFS.getChild("deployments/" + runtimeName);
+            final VirtualFile deploymentRoot = VFS.getChild("content/" + runtimeName);
 
             // Mount virtual file
             try {
