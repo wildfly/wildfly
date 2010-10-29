@@ -50,7 +50,101 @@
     </extensions>
 
     <profiles>
-        <profile name="something">
+        <profile name="osgi">
+            <subsystem xmlns="urn:jboss:domain:osgi:1.0">
+                <properties>
+                    <property name="org.jboss.osgi.system.modules">
+                        org.apache.log4j
+                    </property>
+                    <property name="org.osgi.framework.system.packages.extra">
+                        org.apache.log4j;version=1.2,
+                        org.jboss.logging;version=3.0,
+                        org.jboss.osgi.deployment.deployer;version=1.0,
+                        org.jboss.osgi.deployment.interceptor;version=1.0,
+                        org.jboss.osgi.spi;version=1.0,
+                        org.jboss.osgi.spi.capability;version=1.0,
+                        org.jboss.osgi.spi.util;version=1.0,
+                        org.jboss.osgi.testing;version=1.0
+                    </property>
+                </properties>
+                <modules>
+                    <module identifier="org.osgi.compendium"/>
+                    <module identifier="org.jboss.osgi.common" start="true"/>
+                    <module identifier="org.apache.aries.util"/>
+                    <module identifier="org.apache.aries.jmx" start="true"/>
+                </modules>
+            </subsystem>
+        </profile>
+        
+        <profile name="messaging">
+            <subsystem xmlns="urn:jboss:domain:messaging:1.0">
+                <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
+                <journal-file-size>102400</journal-file-size>
+                <journal-min-files>2</journal-min-files>
+                <journal-type>NIO</journal-type>
+                <!-- disable messaging persistence -->
+                <persistence-enabled>false</persistence-enabled>
+
+                <connectors>
+                    <in-vm-connector name="in-vm" server-id="0" />
+                    <netty-connector name="netty" socket-binding="netty" />
+                    <netty-connector name="netty-throughput" socket-binding="netty-throughput">
+                        <param key="batch-delay" value="50"/>
+                    </netty-connector>
+                </connectors>
+
+                <acceptors>
+                    <in-vm-acceptor name="in-vm" server-id="0" />
+                    <netty-acceptor name="netty" socket-binding="netty" />
+                    <netty-acceptor name="netty-throughput" socket-binding="netty-throughput">
+                        <param key="batch-delay" value="50"/>
+                        <param key="direct-deliver" value="false"/>
+                    </netty-acceptor>
+                </acceptors>
+
+                <security-settings>
+                    <security-setting match="#">
+                        <permission type="createNonDurableQueue" roles="guest"/>
+                        <permission type="deleteNonDurableQueue" roles="guest"/>
+                        <permission type="consume" roles="guest"/>
+                        <permission type="send" roles="guest"/>
+                    </security-setting>
+                </security-settings>
+
+                <address-settings>
+                    <!--default for catch all-->
+                    <address-setting match="#">
+                        <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+                        <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+                        <redelivery-delay>0</redelivery-delay>
+                        <max-size-bytes>10485760</max-size-bytes>
+                        <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                        <address-full-policy>BLOCK</address-full-policy>
+                    </address-setting>
+                </address-settings>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
+                <connection-factory name="testConnectionFactory">
+                    <connectors>
+                        <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
+                    </connectors>
+                    <entries>
+                        <entry name="ConnectionFactory" />
+                    </entries>
+                </connection-factory>
+                <queue name="testQueue">
+                    <entry name="queue/test" />
+                </queue>
+                <topic name="testTopic">
+                    <entry name="topic/test" />
+                </topic>
+            </subsystem>
+        </profile>
+
+        <profile name="default">
+            <include profile="messaging"/>
+            <include profile="osgi"/>
+
             <subsystem xmlns="urn:jboss:domain:logging:1.0">
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
@@ -58,7 +152,7 @@
                         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                     </formatter>
                 </console-handler>
-    
+
                 <periodic-rotating-file-handler name="FILE">
                     <level name="INFO"/>
                     <formatter>
@@ -67,7 +161,7 @@
                     <file relative-to="jboss.server.log.dir" path="server.log"/>
                     <suffix value=".yyyy-MM-dd"/>
                 </periodic-rotating-file-handler>
-    
+
                 <root-logger>
                     <level name="INFO"/>
                     <handlers>
@@ -76,7 +170,7 @@
                     </handlers>
                 </root-logger>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:threads:1.0">
+             <subsystem xmlns="urn:jboss:domain:threads:1.0">
                 <scheduled-thread-pool name="remoting">
                     <max-threads count="10" per-cpu="20"/>
                     <keepalive-time time="10" unit="seconds"/>
@@ -99,110 +193,19 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <core-environment socket-binding="txn-socket-process-id"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:connector:1.0">
-                <archive-validation enabled="true"/>
-                <bean-validation enabled="true"/>
-                <default-workmanager short-running-thread-pool="jca-short-running"
-				long-running-thread-pool="jca-long-running" />
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
-            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
-            <subsystem xmlns="urn:jboss:domain:osgi:1.0">
-                <properties>
-                    <property name="org.jboss.osgi.system.modules">
-                        org.apache.log4j 
-                    </property>
-                    <property name="org.osgi.framework.system.packages.extra">
-                        org.apache.log4j;version=1.2,
-                        org.jboss.logging;version=3.0,
-                        org.jboss.osgi.deployment.deployer;version=1.0,
-                        org.jboss.osgi.deployment.interceptor;version=1.0,
-                        org.jboss.osgi.spi;version=1.0,
-                        org.jboss.osgi.spi.capability;version=1.0,
-                        org.jboss.osgi.spi.util;version=1.0,
-                        org.jboss.osgi.testing;version=1.0
-                    </property>
-                </properties>
-                <modules>
-                    <module identifier="org.osgi.compendium"/>
-                    <module identifier="org.jboss.osgi.common" start="true"/>
-                    <module identifier="org.apache.aries.util"/>
-                    <module identifier="org.apache.aries.jmx" start="true"/>
-                </modules>
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:messaging:1.0">
-                <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-                <journal-file-size>102400</journal-file-size>  
-                <journal-min-files>2</journal-min-files>
-                <journal-type>NIO</journal-type>
-                <!-- disable messaging persistence -->
-                <persistence-enabled>false</persistence-enabled>
-    
-                <connectors>
-                   <in-vm-connector name="in-vm" server-id="0" />
-                   <netty-connector name="netty" socket-binding="netty" />
-                   <netty-connector name="netty-throughput" socket-binding="netty-throughput">
-                      <param key="batch-delay" value="50"/>
-                   </netty-connector>
-                </connectors>
-    
-                <acceptors>
-                   <in-vm-acceptor name="in-vm" server-id="0" />
-                   <netty-acceptor name="netty" socket-binding="netty" />
-                   <netty-acceptor name="netty-throughput" socket-binding="netty-throughput">
-                      <param key="batch-delay" value="50"/>
-                      <param key="direct-deliver" value="false"/>
-                   </netty-acceptor>
-                </acceptors>
 
-                <security-settings>   
-                   <security-setting match="#">   
-                       <permission type="createNonDurableQueue" roles="guest"/>   
-                       <permission type="deleteNonDurableQueue" roles="guest"/>
-                        <permission type="consume" roles="guest"/>   
-                        <permission type="send" roles="guest"/>   
-                   </security-setting>
-                </security-settings>
-
-                <address-settings>
-                   <!--default for catch all-->
-                   <address-setting match="#">
-                      <dead-letter-address>jms.queue.DLQ</dead-letter-address>
-                      <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                      <redelivery-delay>0</redelivery-delay>
-                      <max-size-bytes>10485760</max-size-bytes>
-                      <message-counter-history-day-limit>10</message-counter-history-day-limit>
-                      <address-full-policy>BLOCK</address-full-policy>
-                   </address-setting>
-                </address-settings>
-            </subsystem>
-            <subsystem xmlns="urn:jboss:domain:messaging:jms:1.0">
-                <connection-factory name="testConnectionFactory">
-                   <connectors>
-                       <connector-ref connector-name="in-vm" backup-connector-name="netty"/>
-                   </connectors>
-                   <entries>
-                      <entry name="ConnectionFactory" />
-                   </entries>
-                </connection-factory>
-                <queue name="testQueue">
-                   <entry name="queue/test" />
-                </queue>
-                <topic name="testTopic">
-                   <entry name="topic/test" />
-                </topic>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:managedbeans:1.0"/>
-        </profile>
 
-        <profile name="something2">
-            <include profile="something"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting-pool">
-                <connector name="default-connector" socket-binding="remoting"/>
+            <subsystem xmlns="urn:jboss:domain:connector:1.0">
+                <archive-validation enabled="true"/>
+                <bean-validation enabled="true"/>
+                <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
             </subsystem>
+            <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
+            <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         </profile>
     </profiles>
 
@@ -212,52 +215,17 @@
          are shown.
     -->
     <interfaces>
-
         <interface name="loopback">
-            <!--  Here we directly state the IP address -->
             <inet-address value="127.0.0.1"/>
         </interface>
         <interface name="external">
             <any-address/>
         </interface>
-        <interface name="internal">
-            <!-- 
-                Here we provide a set of criteria that are used to narrow the
-                set of IP addresses available on the host to one that is acceptable.
-            -->
-            <not><loopback/></not>
-            <point-to-point/>
-            <multicast/>
-            <up/>
-            <site-local-address/>
-
-            <!-- Alternatively... 
-            <public-address/>
-            -->
-            <nic name="eth0"/>
-            <nic-match pattern="eth[0-9]+"/>
-            <!-- The 'any' element means the included criteria are not exclusive -->
-            <any>
-                <subnet-match value="10.0.0.0/8"/>
-                <subnet-match value="192.168.0.0/16"/>
-            </any>
-        </interface>
-        <interface name="public3">
-            <!--  
-                Here we name the NIC; the IP address associated with NIC whose
-                byte representation has the lowest
-            -->
-            <nic name="eth1"/>
-        </interface>
-        <!-- 
-             For this one, no address selection criteria is provided, so 
-             an override at the host or server level is required. 
-        -->
-        <interface name="public4"/>
     </interfaces>
 
     <socket-binding-groups>
          <socket-binding-group name="standard-sockets" default-interface="external">
+            <include socket-binding-group="messaging-sockets"/>
             <socket-binding name="jmx-connector-registry" port="1090"/>
             <socket-binding name="jmx-connector-server" port="1091"/>
             <socket-binding name="jndi" port="1099"/>
@@ -268,47 +236,28 @@
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
             <socket-binding name="txn-socket-process-id" interface="loopback" port="4714"/>
+         </socket-binding-group>
+         <socket-binding-group name="messaging-sockets" default-interface="external">
             <socket-binding name="netty" port="5445" />
             <socket-binding name="netty-throughput" port="5455"/>
          </socket-binding-group>
-         <socket-binding-group name="standard-clustered-sockets" default-interface="internal">
-            <include socket-binding-group="standard-sockets"/>
-            <socket-binding name="cluster-udp" interface="internal" multicast-port="55200"/>
-            <socket-binding name="cluster-failure-detection" interface="internal" port="54200"/>
-            <socket-binding name="ha-jndi" port="1100"/>
-            <socket-binding name="ha-jndi-discovery" multicast-port="1102"/>
-         </socket-binding-group>
     </socket-binding-groups>
 
-<!--
-    <ssls>
-         <ssl name="jbossweb" password="changeit" cipher-suite="SSLv2+SSLv3"/>
-    </ssls>
--->
-
-    <system-properties>
-        <!-- RMI Servers without client socket factory overrides need this to be consistent
-             the interface they are bound on (e.g. jmx-connector-service)
-             Since the current domain binds to the any addres though, we don't need this
-             <property name="java.rmi.server.hostname" value="127.0.0.1"/>
-        -->
-        <property name="prop1" value="value1"/>
-        <property name="prop2" value="value2"/>
-    </system-properties>
-
     <server-groups>
-        <server-group name="main-server-group" profile="something">
+        <server-group name="main-server-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
 
-            <jvm name="icedtea1">
-                <heap size="512m" max-size="1024m"/>
+            <jvm name="default">
+               <heap size="64m" max-size="512m"/>
             </jvm>
+        </server-group>
 
-            <socket-binding-group ref="standard-clustered-sockets"/>
+        <server-group name="other-server-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
 
-            <system-properties>
-               <property name="prop1" value="value1"/>
-               <property name="prop2" value="value2"/>
-            </system-properties>
+            <jvm name="default">
+               <heap size="64m" max-size="512m"/>
+            </jvm>
         </server-group>
     </server-groups>
 

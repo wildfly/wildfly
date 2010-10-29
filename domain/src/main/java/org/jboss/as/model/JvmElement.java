@@ -195,6 +195,8 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
         this.name = toCombine[0].getName();
 
         for (JvmElement element : toCombine) {
+            if(element == null)
+                continue;
             if (! this.name.equals(element.getName())) {
                 throw new IllegalArgumentException("Jvm " + element.getName() + " has a different name from the other jvm elements; all must have the same name");
             }
@@ -241,12 +243,16 @@ public class JvmElement extends AbstractModelElement<JvmElement> {
 
         PropertiesElement[] combinedEnv = new PropertiesElement[toCombine.length];
         for (int i = 0; i < toCombine.length; i++) {
+            if(toCombine[i] == null)
+                continue;
             combinedEnv[i] = toCombine[i].getEnvironmentVariables();
         }
         this.environmentVariables = new PropertiesElement(Element.ENVIRONMENT_VARIABLES, true, combinedEnv);
 
         PropertiesElement[] combinedSysp = new PropertiesElement[toCombine.length];
         for (int i = 0; i < toCombine.length; i++) {
+            if(toCombine[i] == null)
+                continue;
             combinedSysp[i] = toCombine[i].getSystemProperties();
         }
         this.systemProperties = new PropertiesElement(Element.SYSTEM_PROPERTIES, true, combinedSysp);
