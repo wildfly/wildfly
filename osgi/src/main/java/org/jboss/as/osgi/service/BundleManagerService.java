@@ -30,8 +30,14 @@ import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.util.SystemPropertyActions;
 import org.jboss.logging.Logger;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.PathFilter;
+import org.jboss.modules.PathFilters;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
@@ -89,10 +95,10 @@ public class BundleManagerService implements Service<BundleManager> {
 
             // Setup the OSGi {@link Framework} properties
             Configuration config = injectedConfig.getValue();
+            Map<String, Object> props = new HashMap<String, Object>(config.getProperties());
             ServiceContainer container = context.getController().getServiceContainer();
             ModuleLoader moduleLoader = injectedModuleLoader.getValue().getModuleLoader();
-            Module frameworkModule = moduleLoader.loadModule(ModuleManagerPlugin.FRAMEWORK_IDENTIFIER);
-            final Map<String, Object> props = new HashMap<String, Object>(config.getProperties());
+            Module frameworkModule = new FrameworkModuleLoader(moduleLoader, props).getFrameworkModule();
             props.put(IntegrationMode.class.getName(), IntegrationMode.CONTAINER);
             props.put(ModuleLoader.class.getName(), moduleLoader);
             props.put(ServiceContainer.class.getName(), container);
@@ -134,5 +140,67 @@ public class BundleManagerService implements Service<BundleManager> {
     @Override
     public BundleManager getValue() throws IllegalStateException {
         return bundleManager;
+    }
+
+    /**
+     * Provides the Framework module with its dependencies
+     *
+     * User defined dependencies can be added by property
+     * 'org.jboss.osgi.system.modules' in the configuration
+     *
+     * In case there are no user defined system modules, this loader
+     * simply returns the default 'org.jboss.osgi.framework' module
+     */
+    static class FrameworkModuleLoader extends ModuleLoader {
+
+        private final ModuleSpec moduleSpec;
+        private final ModuleIdentifier frameworkIdentifier;
+        private Module defaultFrameworkModule;
+
+        FrameworkModuleLoader(ModuleLoader moduleLoader, Map<String, Object> props) throws ModuleLoadException {
+
+            defaultFrameworkModule = moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.osgi.framework"));
+            String modulesProps = (String) props.get(Configuration.PROP_JBOSS_OSGI_SYSTEM_MODULES);
+            if (modulesProps == null) {
+                frameworkIdentifier = defaultFrameworkModule.getIdentifier();
+                moduleSpec = null;
+                return;
+            }
+
+            // Setup the extended framework moduel spec
+            frameworkIdentifier = ModuleIdentifier.create("org.jboss.osgi.framework.extended");
+            ModuleSpec.Builder builder = ModuleSpec.build(frameworkIdentifier);
+            PathFilter all = PathFilters.acceptAll();
+
+            // Add a dependency on the default framework module
+            ModuleIdentifier moduleId = defaultFrameworkModule.getIdentifier();
+            DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(all, all, moduleLoader, moduleId, false);
+            builder.addDependency(moduleDep);
+
+            // Add the user defined module dependencies
+            for (String moduleProp : modulesProps.split(",")) {
+                moduleId = ModuleIdentifier.create(moduleProp.trim());
+                moduleDep = DependencySpec.createModuleDependencySpec(all, all, moduleLoader, moduleId, false);
+                builder.addDependency(moduleDep);
+            }
+
+            moduleSpec = builder.create();
+        }
+
+        Module getFrameworkModule() throws ModuleLoadException {
+            return (moduleSpec != null ? loadModule(moduleSpec.getModuleIdentifier()) : defaultFrameworkModule);
+        }
+
+        @Override
+        protected ModuleSpec findModule(ModuleIdentifier identifier) throws ModuleLoadException {
+            if (moduleSpec == null || identifier.equals(frameworkIdentifier) == false)
+                throw new IllegalStateException("Cannot provide ModuleSpec for: " + identifier);
+            return moduleSpec;
+        }
+
+        @Override
+        public String toString() {
+            return "ExtendedFrameworkModuleLoader";
+        }
     }
 }

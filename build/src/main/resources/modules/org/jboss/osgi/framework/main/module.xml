@@ -29,10 +29,6 @@
     </resources>
 
     <dependencies>
-        <!-- 
-          The standard OSGi property 'org.osgi.framework.system.packages.extra' names the 
-          user defined list of versioned packages that bundles can access from the Framework 
-        -->
         <module name="org.jboss.logging" export="true"/>
         <module name="org.jboss.msc" export="true"/>
         <module name="org.jboss.osgi.deployment" export="true"/>
@@ -43,13 +39,11 @@
         <module name="org.osgi.core" export="true"/>
         <module name="org.osgi.util" export="true">
             <exports>
+                <!-- [TODO] Move this to org.osgi.util when the build supports it -->
                 <include path="org/osgi/util/tracker"/>
                 <exclude path="**"/>
             </exports>
         </module>
         <module name="system" export="true"/>
-        
-        <!-- Dependency for jboss-osgi-common -->
-        <module name="org.apache.log4j" export="true"/>
     </dependencies>
 </module>
