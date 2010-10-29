@@ -22,11 +22,11 @@
 
 package org.jboss.as.jmx;
 
+import java.lang.management.ManagementFactory;
+
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 
 import org.jboss.as.jmx.tcl.TcclMBeanServer;
-import org.jboss.as.jmx.tcl.TcclMBeanServerBuilder;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
@@ -44,10 +44,6 @@ import org.jboss.msc.service.StopContext;
 public class MBeanServerService implements Service<MBeanServer> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
-    static {
-        SecurityActions.setSystemProperty("javax.management.builder.initial", TcclMBeanServerBuilder.class.getName());
-    }
-
     private MBeanServer mBeanServer;
 
     public static void addService(final BatchBuilder batchBuilder) {
@@ -57,15 +53,7 @@ public class MBeanServerService implements Service<MBeanServer> {
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
-        ClassLoader old = SecurityActions.setThreadContextClassLoader(this.getClass().getClassLoader());
-        try {
-            mBeanServer = MBeanServerFactory.newMBeanServer();
-            if (mBeanServer instanceof TcclMBeanServer == false) {
-                throw new IllegalStateException("Wrong MBeanServer class: " + mBeanServer.getClass().getName());
-            }
-        } finally {
-            SecurityActions.resetThreadContextClassLoader(old);
-        }
+        mBeanServer = new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer());
     }
 
     /** {@inheritDoc} */

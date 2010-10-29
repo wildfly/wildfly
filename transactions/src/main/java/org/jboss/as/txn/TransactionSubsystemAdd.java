@@ -22,7 +22,6 @@
 
 package org.jboss.as.txn;
 
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -73,7 +72,6 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector());
         transactionManagerServiceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingName), SocketBinding.class, transactionManagerService.getSocketProcessBindingInjector());
         transactionManagerServiceBuilder.addDependency(AbstractPathService.pathNameOf(INTERNAL_OBJECTSTORE_PATH), String.class, transactionManagerService.getPathInjector());
-        transactionManagerServiceBuilder.addDependencies(MBeanServerService.SERVICE_NAME);
         transactionManagerServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, builder);
