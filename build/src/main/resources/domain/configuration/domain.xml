@@ -72,9 +72,10 @@
                 </properties>
                 <modules>
                     <module identifier="org.osgi.compendium"/>
-                    <module identifier="org.jboss.osgi.common" start="true"/>
                     <module identifier="org.apache.aries.util"/>
+                    <module identifier="org.jboss.osgi.common" start="true"/>
                     <module identifier="org.apache.aries.jmx" start="true"/>
+                    <module identifier="org.jboss.osgi.jmx" start="true"/>
                 </modules>
             </subsystem>
         </profile>

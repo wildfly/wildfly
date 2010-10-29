@@ -108,6 +108,10 @@ public class BundleManagerService implements Service<BundleManager> {
             // this will go away once the HTTP subsystem from AS implements the OSGi HTTP Service.
             props.put("org.osgi.service.http.port", "" + osgiHttpServerPortBinding.getValue().getSocketAddress().getPort());
 
+            // Always clean the framework storage
+            // [TODO] Differentiate beetween user data and persisted bundles
+            props.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+
             // Get {@link ModuleLoader} for the OSGi layer
             bundleManager = new BundleManager(props);
             ModuleManagerPlugin plugin = bundleManager.getPlugin(ModuleManagerPlugin.class);

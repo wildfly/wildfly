@@ -358,8 +358,8 @@
             <maven-resource group="org.jboss.osgi.framework" artifact="jbosgi-framework-core"/>
         </module-def>
         
-        <module-def name="org.jboss.osgi.spi">
-            <maven-resource group="org.jboss.osgi" artifact="jboss-osgi-spi"/>
+        <module-def name="org.jboss.osgi.jmx">
+            <maven-resource group="org.jboss.osgi.jmx" artifact="jboss-osgi-jmx"/>
         </module-def>
         
         <module-def name="org.jboss.osgi.resolver">
@@ -367,6 +367,10 @@
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-spi"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-felix"/>
             <maven-resource group="org.jboss.osgi.resolver" artifact="jbosgi-resolver-metadata"/>
+        </module-def>
+        
+        <module-def name="org.jboss.osgi.spi">
+            <maven-resource group="org.jboss.osgi" artifact="jboss-osgi-spi"/>
         </module-def>
         
         <module-def name="org.jboss.osgi.vfs">
