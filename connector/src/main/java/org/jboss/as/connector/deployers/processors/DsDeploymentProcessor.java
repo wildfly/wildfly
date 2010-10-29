@@ -33,8 +33,6 @@ import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.module.ModuleConfig;
-import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -50,8 +48,6 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
@@ -109,25 +105,6 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                 // Local datasources
                 List<DataSource> dss = datasources.getDataSource();
                 if (dss != null && dss.size() > 0) {
-                    for (DataSource ds : dss) {
-                        try {
-                            log.tracef("Processing datasource deployement: %s", ds);
-
-                            if (ds.getModule() != null && !ds.getModule().trim().equals("")) {
-                                ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(ds.getModule());
-                                Module jdbcModule = Module.getDefaultModuleLoader().loadModule(jdbcIdentifier);
-
-                                // Hack: Link the jdbcModule
-                                ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(jdbcIdentifier, true,
-                                        false, false));
-                            } else {
-                                log.warnf("No module defined for %s", ds.getJndiName());
-                            }
-                        } catch (ModuleLoadException mle) {
-                            log.warnf("Unable to resolve %s for %s", ds.getModule(), ds.getJndiName());
-                        }
-                    }
-
                     AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log);
 
                     String uniqueJdbcLocalId = deploymentName;
@@ -143,25 +120,6 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                 // XA datasources
                 List<XaDataSource> xadss = datasources.getXaDataSource();
                 if (xadss != null && xadss.size() > 0) {
-                    for (XaDataSource xads : xadss) {
-                        try {
-                            log.tracef("Processing xa-datasource deployement: %s", xads);
-
-                            if (xads.getModule() != null && !xads.getModule().trim().equals("")) {
-                                ModuleIdentifier jdbcIdentifier = ModuleIdentifier.fromString(xads.getModule());
-                                Module jdbcModule = Module.getDefaultModuleLoader().loadModule(jdbcIdentifier);
-
-                                // Hack: Link the jdbcModule
-                                ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(jdbcIdentifier, true,
-                                        false, false));
-                            } else {
-                                log.warnf("No module defined for %s", xads.getJndiName());
-                            }
-                        } catch (ModuleLoadException mle) {
-                            log.warnf("Unable to resolve %s for %s", xads.getModule(), xads.getJndiName());
-                        }
-                    }
-
                     AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log);
 
                     String uniqueJdbcLocalId = null;

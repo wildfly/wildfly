@@ -46,7 +46,14 @@ public final class JndiStrategyService implements Service<JndiStrategy> {
      * Create an instance
      */
     public JndiStrategyService() {
-        this.value = new ExplicitJndiStrategy();
+        this(new ExplicitJndiStrategy());
+    }
+
+    /**
+     * Create an instance with a specified strategy.
+     */
+    public JndiStrategyService(final JndiStrategy strategy) {
+        this.value = strategy;
     }
 
     @Override

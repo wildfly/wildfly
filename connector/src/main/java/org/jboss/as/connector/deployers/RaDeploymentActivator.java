@@ -23,12 +23,14 @@
 package org.jboss.as.connector.deployers;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.DsDependencyProcessor;
 import org.jboss.as.connector.deployers.processors.DsDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
+import org.jboss.as.connector.jndi.AS7JndiStrategy;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
@@ -124,7 +126,7 @@ public class RaDeploymentActivator implements ServiceActivator {
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService);
 
-        JndiStrategyService jndiStrategyService = new JndiStrategyService();
+        JndiStrategyService jndiStrategyService = new JndiStrategyService(new AS7JndiStrategy());
         batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService);
 
         RaDeploymentParsingProcessor raDeploymentParsingProcessor = new RaDeploymentParsingProcessor();
@@ -164,6 +166,11 @@ public class RaDeploymentActivator implements ServiceActivator {
                 .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class,
                         raXmlDeploymentProcessor.getJndiInjector())
                 .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE);
+
+        DsDependencyProcessor dsDependencyProcessor = new DsDependencyProcessor();
+        addDeploymentProcessor(batchBuilder, dsDependencyProcessor, DsDependencyProcessor.PRIORITY)
+                .addDependency(ConnectorServices.DATASOURCES_SERVICE, DataSources.class,
+                        dsDependencyProcessor.getDsValueInjector()).setInitialMode(Mode.ACTIVE);
 
         DsDeploymentProcessor dsDeploymentProcessor = new DsDeploymentProcessor();
         addDeploymentProcessor(batchBuilder, dsDeploymentProcessor, DsDeploymentProcessor.PRIORITY)

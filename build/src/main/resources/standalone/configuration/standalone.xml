@@ -113,17 +113,24 @@
             <bean-validation enabled="false" />
             <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:datasources:1.0" />
-        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0">
-            <resource-adapters>
-                <resource-adapter>
-                    <archive>ra16out.rar</archive>
-                    <connection-definitions>
-                        <connection-definition class-name="org.jboss.jca.test.deployers.spec.rars.ra16out.TestManagedConnectionFactory" jndi-name="java:/testMeRar"/>
-                    </connection-definitions>
-                </resource-adapter>
-            </resource-adapters>
+        <subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+                    <driver-class>org.h2.Driver</driver-class>
+                    <module>com.h2database.h2</module>
+                    <pool></pool>
+                    <security>
+                        <user-name>sa</user-name>
+                        <password>sa</password>
+                    </security>
+                    <validation></validation>
+                    <time-out></time-out>
+                    <statement></statement>
+                </datasource>
+            </datasources>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0"/>
         <subsystem xmlns="urn:jboss:domain:osgi:1.0">
             <properties>
                 <property name="org.jboss.osgi.system.modules">
