@@ -21,6 +21,8 @@
  */
 package org.jboss.as.demos.jms.runner;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
@@ -28,7 +30,6 @@ import javax.management.ObjectName;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.jms.mbean.Test;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *

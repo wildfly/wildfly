@@ -57,7 +57,7 @@ public class Test implements TestMBean {
 
         InitialContext ctx = new InitialContext();
 
-        QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("ConnectionFactory");
+        QueueConnectionFactory qcf = (QueueConnectionFactory)ctx.lookup("java:/ConnectionFactory");
         conn = qcf.createQueueConnection();
         conn.start();
         queue = (Queue)ctx.lookup("queue/test");

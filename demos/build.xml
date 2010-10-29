@@ -29,7 +29,8 @@
         <echo>  managedbean   - deploys a managed bean</echo>
         <echo>  serviceloader - deploys a serviceloader style service</echo>
         <echo>  messaging     - deploys HornetQ native sender and receiver</echo>
-        <echo>  jms           - deploys HornetQ JMS sender and receiver</echo>
+        <echo>  jms           - deploys HornetQ JMS sender and receiver on the server</echo>
+        <echo>  jms.client    - Uses HornetQ JMS API from the client</echo>
     	<echo>  rar           - deploys a resource adapter</echo>
     </target>
         
