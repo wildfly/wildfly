@@ -22,22 +22,22 @@
 
 package org.jboss.as.deployment;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.Assert.fail;
 
 /**
  * Abstract test base for deployment tests.
@@ -73,8 +73,8 @@ public abstract class AbstractDeploymentTest {
 
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
-            public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
-                new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
+            public void execute(final BatchBuilder batchBuilder, final ServiceContainer serviceContainer) throws Exception {
+                ServerDeploymentTestSupport.deploy(new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true), batchBuilder, serviceContainer);
             }
         });
     }
@@ -84,6 +84,7 @@ public abstract class AbstractDeploymentTest {
     }
 
     protected void runWithLatchedBatch(final BatchedWork work) throws Exception {
+
         final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean completed = new AtomicBoolean(false);
@@ -115,4 +116,5 @@ public abstract class AbstractDeploymentTest {
     public static File getResourceFile(final Class<?> testClass, final String path) throws Exception {
         return new File(getResource(testClass, path).toURI());
     }
+
 }

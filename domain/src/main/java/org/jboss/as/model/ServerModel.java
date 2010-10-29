@@ -31,16 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -270,34 +266,6 @@ public final class ServerModel extends AbstractModel<ServerModel> {
         }
 
         streamWriter.writeEndElement();
-    }
-
-    public void activateDeployments(final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
-        final Map<String, ServerGroupDeploymentElement> deployments;
-        synchronized (this.deployments) {
-            deployments = new TreeMap<String, ServerGroupDeploymentElement>(this.deployments);
-        }
-        for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
-            try {
-                deploymentElement.activate(context, serviceContainer);
-            } catch(Throwable t) {
-                // TODO: Rollback deployments services added before failure?
-                log.error("Failed to activate deployment " + deploymentElement.getUniqueName(), t);
-            }
-        }
-        final Map<String, DeploymentRepositoryElement> repos;
-        synchronized (repositories) {
-            repos = new TreeMap<String, DeploymentRepositoryElement>(repositories);
-        }
-//        for (DeploymentRepositoryElement repo : repos.values()) {
-//            try {
-//                repo.activate(context);
-//            }
-//            catch(Throwable t) {
-//                // TODO: Rollback deployments services added before failure?
-//                log.error("Failed to activate deployment repository " + repo.getPath(), t);
-//            }
-//        }
     }
 
     boolean addExtension(final String name) {

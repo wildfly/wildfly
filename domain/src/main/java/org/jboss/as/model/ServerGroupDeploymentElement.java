@@ -24,9 +24,6 @@ package org.jboss.as.model;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -145,47 +142,4 @@ public final class ServerGroupDeploymentElement extends AbstractModelElement<Ser
         streamWriter.writeEndElement();
     }
 
-//    @Override
-    public void activate(final ServiceActivatorContext context, final ServiceContainer serviceContainer) {
-        // TODO move this into an update class
-        ServerDeploymentStartStopHandler support = new ServerDeploymentStartStopHandler();
-        support.deploy(uniqueName, runtimeName, sha1Hash, context.getBatchBuilder(), serviceContainer, NoOpUpdateResultHandler.INSTANCE, null);
-    }
-
-    private static class NoOpUpdateResultHandler implements UpdateResultHandler<ServerDeploymentActionResult, Void> {
-
-        private static final NoOpUpdateResultHandler INSTANCE = new NoOpUpdateResultHandler();
-        @Override
-        public void handleFailure(Throwable cause, Void param) {
-        }
-
-        @Override
-        public void handleSuccess(ServerDeploymentActionResult result, Void param) {
-        }
-
-        @Override
-        public void handleTimeout(Void param) {
-        }
-
-        @Override
-        public void handleCancellation(Void param) {
-        }
-
-        @Override
-        public void handleRollbackFailure(Throwable cause, Void param) {
-        }
-
-        @Override
-        public void handleRollbackSuccess(Void param) {
-        }
-
-        @Override
-        public void handleRollbackCancellation(Void param) {
-        }
-
-        @Override
-        public void handleRollbackTimeout(Void param) {
-        }
-
-    }
 }

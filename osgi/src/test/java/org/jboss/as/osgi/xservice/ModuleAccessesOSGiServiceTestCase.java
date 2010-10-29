@@ -162,7 +162,6 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
 
     @Test
     public void testModuleInvokesTargetBundleService() throws Exception {
-
         JavaArchive apiArchive = getAPIModuleArchive();
         assertNull("Bundle null", executeDeploy(apiArchive));
 

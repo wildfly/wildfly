@@ -22,7 +22,7 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.filesystem.FileSystemDeploymentService;
+import org.jboss.as.deployment.scanner.DeploymentScannerService;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -61,7 +61,7 @@ public class ServerDeploymentRepositoryRemove extends AbstractServerModelUpdate<
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceContainer().getService(FileSystemDeploymentService.getServiceName(path));
+        final ServiceController<?> controller = context.getServiceContainer().getService(DeploymentScannerService.getServiceName(path));
         if(controller == null) {
             resultHandler.handleSuccess(null, param);
             return;

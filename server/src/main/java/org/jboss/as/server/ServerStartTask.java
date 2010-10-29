@@ -49,6 +49,7 @@ import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
+import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService;
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
@@ -179,6 +180,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Server configuration persister - TODO: move into startServices, only start in standalone mode
         ServerConfigurationPersisterImpl.addService(serverModel, batchBuilder);
+
+        // Server deployment scanner factory
+        DeploymentScannerFactoryService.addService(batchBuilder);
 
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
                 new SocketBindingManagerService(portOffset)).setInitialMode(ServiceController.Mode.ON_DEMAND);

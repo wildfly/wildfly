@@ -22,7 +22,6 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentActionResult;
 
 /**
 * Update used when updating a deployment element to be started.

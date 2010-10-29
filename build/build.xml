@@ -204,10 +204,6 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
 
-        <module-def name="org.jboss.as.deployment-client">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-client"/>
-        </module-def>
-
         <module-def name="org.jboss.as.domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
@@ -270,6 +266,10 @@
 
         <module-def name="org.jboss.as.standalone"/>
 
+        <module-def name="org.jboss.as.standalone-client">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-standalone-client"/>
+        </module-def>
+    	
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>

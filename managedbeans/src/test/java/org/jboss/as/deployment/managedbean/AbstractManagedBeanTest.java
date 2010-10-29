@@ -22,6 +22,8 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,15 +34,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 
 /**
@@ -78,7 +79,7 @@ public abstract class AbstractManagedBeanTest {
     protected void executeDeployment(final VirtualFile deploymentRoot) throws Exception {
         runWithLatchedBatch(new BatchedWork() {
             public void execute(BatchBuilder batchBuilder, ServiceContainer serviceContainer) throws Exception {
-                new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
+                ServerDeploymentTestSupport.deploy(new ServerGroupDeploymentElement(deploymentRoot.getName(), deploymentRoot.getName(), BLANK_SHA1, true), batchBuilder, serviceContainer);
             }
         });
     }

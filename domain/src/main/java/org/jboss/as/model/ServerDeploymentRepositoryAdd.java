@@ -22,7 +22,9 @@
 
 package org.jboss.as.model;
 
-import org.jboss.as.deployment.filesystem.FileSystemDeploymentService;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.deployment.scanner.DeploymentScannerService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 
@@ -86,7 +88,7 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     @Override
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batch = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<?> builder = FileSystemDeploymentService.addService(batch, repositoryName(), relativeTo, path, interval, enabled);
+        final BatchServiceBuilder<?> builder = DeploymentScannerService.addService(batch, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
     }
 

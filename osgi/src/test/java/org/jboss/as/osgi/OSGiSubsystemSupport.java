@@ -51,6 +51,7 @@ import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.as.osgi.parser.OSGiSubsystemState;
@@ -72,7 +73,6 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -279,7 +279,7 @@ public class OSGiSubsystemSupport {
         BatchedWork work = new BatchedWork() {
             public void execute(BatchBuilder batchBuilder) throws Exception {
                 ServerGroupDeploymentElement depElement = new ServerGroupDeploymentElement(depname, depname, BLANK_SHA1, true);
-                depElement.activate(new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
+                ServerDeploymentTestSupport.deploy(depElement, batchBuilder, serviceContainer);
             }
         };
 

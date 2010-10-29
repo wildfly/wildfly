@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.deployment;
 
-import org.jboss.as.version.Version;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -41,14 +40,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
-import org.jboss.as.deployment.client.api.server.InitialDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
 import org.jboss.as.server.StandaloneServer;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
+import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.standalone.client.api.deployment.InitialDeploymentPlanBuilder;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.version.Version;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -62,7 +62,7 @@ import org.junit.Before;
 
 /**
  * A AbstractDeploymentTest.
- * 
+ *
  * @author <a href="alex@jboss.com">Alexey Loubyansky</a>
  * @version $Revision: 1.1 $
  */
@@ -102,12 +102,12 @@ public abstract class AbstractDeploymentTest {
    }
 
    protected void assertDeploy() throws IOException, DuplicateDeploymentNameException {
-      
+
       assertNotNull("Deployment manager has been initialized.", dm);
       InitialDeploymentPlanBuilder builder = dm.newDeploymentPlan();
       builder.add(managedBeansJar).andDeploy();
       Future<ServerDeploymentPlanResult> future = dm.execute(builder.build());
-   
+
       ServerDeploymentPlanResult result = null;
       try {
          result = future.get(2, TimeUnit.SECONDS);
@@ -120,9 +120,9 @@ public abstract class AbstractDeploymentTest {
       } catch (TimeoutException te) {
          fail("Timed out waiting for the deployment to complete " + te);
       }
-   
+
       assertFalse("The task wasn't cancelled", future.isCancelled());
-   
+
       assertNotNull("The result is not null", result);
       //System.out.println(result.getDeploymentPlanId());
       //ServerDeploymentActionResult deploymentActionResult = result.getDeploymentActionResult(result.getDeploymentPlanId());
@@ -131,13 +131,13 @@ public abstract class AbstractDeploymentTest {
 
    protected void addToJar(Class<?> cls) {
       assertNotNull("managedbeans.jar exists", managedBeansJar);
-   
+
       String classDir = cls.getPackage().getName().replace('.', '/');
       URL classDirURL = Thread.currentThread().getContextClassLoader().getResource(classDir);
       assertNotNull("support package is built", classDirURL);
       File classFile = new File(classDirURL.getFile(), cls.getSimpleName() + ".class");
       assertTrue(cls.getName() + " is found in " + classDirURL.getFile(), classFile.exists());
-      
+
       String pkg = cls.getPackage().getName();
       String path = pkg.replace('.', '/');
       File targetFile = new File(managedBeansJar.getFile(), path);
@@ -145,7 +145,7 @@ public abstract class AbstractDeploymentTest {
       targetFile = new File(targetFile, cls.getSimpleName() + ".class");
       //assertFalse(targetFile.getAbsoluteFile() + " doesn't exist", targetFile.exists());
       //targetFile.createNewFile();
-      
+
       FileInputStream fis = null;
       FileOutputStream fos = null;
       try {
@@ -169,7 +169,7 @@ public abstract class AbstractDeploymentTest {
                fos.close();
             } catch(IOException e) {}
       }
-   
+
       assertTrue(targetFile.getAbsoluteFile() + " exists", targetFile.exists());
    }
 
@@ -199,10 +199,10 @@ public abstract class AbstractDeploymentTest {
       String asHome = getASHome();
       Properties props = new Properties();
       props.setProperty(ServerEnvironment.HOME_DIR, asHome);
-   
+
       ServerEnvironment env = new ServerEnvironment(props, "embedded as7", true);
       System.setProperty("module.path", env.getModulesDir().getAbsolutePath());
-   
+
       DeploymentManagerProvider service = new DeploymentManagerProvider();
       StandaloneServer server = new StandaloneServer(env);
       try {
@@ -211,14 +211,14 @@ public abstract class AbstractDeploymentTest {
          e.printStackTrace();
          fail("Failed to start embedded server.");
       }
-      
+
       synchronized(service) {
          try {
             service.wait(5000);
          } catch(InterruptedException e) {
          }
       }
-      
+
       assertTrue("Deployment manager provider started.", service.isStarted());
       ServerDeploymentManager deploymentManager = service.getDeploymentManager();
       assertNotNull(deploymentManager);
@@ -226,19 +226,19 @@ public abstract class AbstractDeploymentTest {
    }
 
    protected static class DeploymentManagerProvider implements Service<DeploymentManagerProvider>, ServiceActivator {
-      
+
       private final InjectedValue<ServerDeploymentManager> deploymentManager = new InjectedValue<ServerDeploymentManager>();
-         
+
       private boolean started;
-   
+
       public boolean isStarted() {
          return started;
       }
-         
+
       public ServerDeploymentManager getDeploymentManager() {
          return deploymentManager.getValue();
       }
-         
+
       @Override
       public void start(StartContext context) throws StartException {
          started = true;
@@ -246,16 +246,16 @@ public abstract class AbstractDeploymentTest {
             this.notifyAll();
          }
       }
-   
+
       @Override
       public void stop(StopContext context) {
       }
-   
+
       @Override
       public DeploymentManagerProvider getValue() throws IllegalStateException {
          return this;
       }
-         
+
       @Override
       public void activate(ServiceActivatorContext ctx) {
          BatchBuilder builder = ctx.getBatchBuilder();

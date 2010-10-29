@@ -21,21 +21,22 @@
  */
 package org.jboss.as.demos.client;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.PathElementUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.ServerPathAdd;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
 
 /**
  *

@@ -32,7 +32,6 @@
         <module name="javax.annotation.api"/>
         <module name="javax.interceptor.api"/>
         <module name="org.javassist"/>
-        <module name="org.jboss.as.deployment-client"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.staxmapper"/>

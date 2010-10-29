@@ -21,6 +21,8 @@
  */
 package org.jboss.as.demos;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +40,10 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
-import org.jboss.as.deployment.client.api.server.DeploymentPlanBuilder;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.standalone.client.api.StandaloneClient;
+import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
+import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

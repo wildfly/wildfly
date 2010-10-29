@@ -31,13 +31,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.Future;
 
-import org.jboss.as.deployment.client.api.DuplicateDeploymentNameException;
-import org.jboss.as.deployment.client.api.server.DeploymentPlan;
-import org.jboss.as.deployment.client.api.server.InitialDeploymentPlanBuilder;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
-import org.jboss.as.deployment.client.api.server.ServerDeploymentPlanResult;
-import org.jboss.as.deployment.client.impl.DeploymentContentDistributor;
-import org.jboss.as.deployment.client.impl.server.InitialDeploymentPlanBuilderFactory;
+import org.jboss.as.standalone.client.api.deployment.DeploymentPlan;
+import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameException;
+import org.jboss.as.standalone.client.api.deployment.InitialDeploymentPlanBuilder;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.as.standalone.client.impl.deployment.DeploymentContentDistributor;
+import org.jboss.as.standalone.client.impl.deployment.InitialDeploymentPlanBuilderFactory;
 
 /**
  * @author Emanuel Muckenhuber

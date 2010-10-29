@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.List;
 
-import org.jboss.as.deployment.client.api.server.ServerDeploymentManager;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.standalone.client.impl.StandaloneClientImpl;
 
 /**
