@@ -24,6 +24,7 @@ package org.jboss.as.deployment.chain;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -47,7 +48,7 @@ public class DeploymentChainProvider implements Service<DeploymentChainProvider>
 
     public static final DeploymentChainProvider INSTANCE = new DeploymentChainProvider();
 
-    private final Set<OrderedChainSelector> selectors = new TreeSet<OrderedChainSelector>();
+    private final Set<OrderedChainSelector> selectors = new ConcurrentSkipListSet<OrderedChainSelector>();
     private final AtomicLong currentPriority = new AtomicLong(9999L);
 
     private DeploymentChainProvider() {}

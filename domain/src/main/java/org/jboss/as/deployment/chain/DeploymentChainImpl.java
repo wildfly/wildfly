@@ -22,12 +22,12 @@
 
 package org.jboss.as.deployment.chain;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Deployment chain implementation used to execute multiple DeploymentUnitProcessor instances in priority order.
@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * @author John E. Bailey
  */
 public class DeploymentChainImpl implements DeploymentChain {
-    private final Set<OrderedProcessor> orderedProcessors = new TreeSet<OrderedProcessor>();
+    private final Set<OrderedProcessor> orderedProcessors = new ConcurrentSkipListSet<OrderedProcessor>();
     private final String name;
 
     public DeploymentChainImpl(String name) {
