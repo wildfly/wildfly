@@ -55,7 +55,7 @@ public class ExampleRunner {
             utils = new DeploymentUtils("jmsclient-mbean.sar", FakeJndi.class.getPackage());
             utils.deploy();
 
-            QueueConnectionFactory qcf = lookup(utils, "ConnectionFactory", QueueConnectionFactory.class);
+            QueueConnectionFactory qcf = lookup(utils, "RemoteConnectionFactory", QueueConnectionFactory.class);
             Queue queue = lookup(utils, "queue/test", Queue.class);
 
             System.out.println("Got qcf " + qcf);
