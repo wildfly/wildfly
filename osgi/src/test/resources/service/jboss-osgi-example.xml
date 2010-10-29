@@ -20,11 +20,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:1.0" 
+<server name="OSGi Subsystem Example"
+        xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd urn:jboss:domain:osgi:1.0 jboss-osgi.xsd">
-
-    <name>OSGi Subsystem Example</name>
 
     <profile name="something">
         <subsystem xmlns="urn:jboss:domain:osgi:1.0">

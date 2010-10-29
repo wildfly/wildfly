@@ -39,6 +39,22 @@ public abstract class HostModelTestBase extends DomainModelElementTestBase {
         super(name);
     }
 
+
+    public void testName() throws Exception  {
+        StringBuilder sb = new StringBuilder("<host name=\"default\" xmlns=\"");
+        sb.append(getTargetNamespace());
+        sb.append('\"');
+        sb.append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+        sb.append(" xsi:schemaLocation=\"");
+        sb.append(getTargetNamespace());
+        sb.append(" ");
+        sb.append(getTargetNamespaceLocation());
+        sb.append("\"/>");
+        final String content = sb.toString();
+        final HostModel model = ModelParsingSupport.parseHostModel(getXMLMapper(), content);
+        assertEquals("default", model.getName());
+    }
+
     public void testManagement() throws Exception {
         final String content = "<management interface=\"public\" port=\"9999\"/>";
         final HostModel model = parse(content);
@@ -75,6 +91,7 @@ public abstract class HostModelTestBase extends DomainModelElementTestBase {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void testSerializationDeserialization() throws Exception {
         // TODO Auto-generated method stub
     }

@@ -46,8 +46,17 @@ public abstract class ServerModelTestBase extends DomainModelElementTestBase {
     }
 
     public void testName() throws Exception  {
-        final String content = "<name>default</name>";
-        final ServerModel model = parse(content);
+        StringBuilder sb = new StringBuilder("<server name=\"default\" xmlns=\"");
+        sb.append(getTargetNamespace());
+        sb.append('\"');
+        sb.append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+        sb.append(" xsi:schemaLocation=\"");
+        sb.append(getTargetNamespace());
+        sb.append(" ");
+        sb.append(getTargetNamespaceLocation());
+        sb.append("\"/>");
+        final String content = sb.toString();
+        final ServerModel model = ModelParsingSupport.parseServerModel(getXMLMapper(), content);
         assertEquals("default", model.getServerName());
     }
 
@@ -87,9 +96,8 @@ public abstract class ServerModelTestBase extends DomainModelElementTestBase {
     }
 
     public void testSystemProperties() throws Exception  {
-        final String content = "<name>default</name><system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\" value=\"value2\"/></system-properties>";
+        final String content = "<system-properties><property name=\"prop1\" value=\"value1\"/><property name=\"prop2\" value=\"value2\"/></system-properties>";
         final ServerModel model = parse(content);
-        assertEquals("default", model.getServerName());
         final PropertiesElement properties = model.getSystemProperties();
         Map<String, String> props = properties.getProperties();
         assertEquals(2, props.size());

@@ -22,6 +22,8 @@
 
 package org.jboss.as.model;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,12 +62,22 @@ public final class ServerModel extends AbstractModel<ServerModel> {
      */
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "model");
 
+    public static final String DEFAULT_STANDALONE_NAME;
+    static {
+        try {
+            DEFAULT_STANDALONE_NAME = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static final long serialVersionUID = -7764186426598416630L;
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final QName ELEMENT_NAME = new QName(Namespace.CURRENT.getUriString(), Element.SERVER.getLocalName());
 
-    private String serverName;
+    /** Name for this server that was actually provided via configuration */
+    private String configuredServerName;
     private final Set<String> extensions = new LinkedHashSet<String>();
     private final Map<String, DeploymentRepositoryElement> repositories = new LinkedHashMap<String, DeploymentRepositoryElement>();
     private final Map<String, ServerGroupDeploymentElement> deployments = new LinkedHashMap<String, ServerGroupDeploymentElement>();
@@ -87,12 +99,12 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     /**
      * Construct a new instance.
      *
-     * @param serverName the server name
+     * @param configuredServerName the server name
      * @param portOffset the port offset
      */
     public ServerModel(final String serverName, final int portOffset) {
         super(ELEMENT_NAME);
-        this.serverName = serverName;
+        this.configuredServerName = serverName;
         this.portOffset = portOffset;
     }
 
@@ -102,11 +114,11 @@ public final class ServerModel extends AbstractModel<ServerModel> {
      * @return the name. Will not be <code>null</code>
      */
     public String getServerName() {
-        return serverName;
+        return configuredServerName == null ? DEFAULT_STANDALONE_NAME : configuredServerName;
     }
 
     void setServerName(final String name) {
-        this.serverName = name;
+        this.configuredServerName = name;
     }
 
     /**
@@ -182,12 +194,11 @@ public final class ServerModel extends AbstractModel<ServerModel> {
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
 
-        writeNamespaces(streamWriter);
+        if (configuredServerName != null) {
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), configuredServerName);
+        }
 
-        // TODO re-evaluate the element order in the xsd; make sure this is correct
-        streamWriter.writeStartElement(Element.NAME.getLocalName());
-        streamWriter.writeCharacters(serverName);
-        streamWriter.writeEndElement();
+        writeNamespaces(streamWriter);
 
         if (! extensions.isEmpty()) {
             streamWriter.writeStartElement(Element.EXTENSIONS.getLocalName());

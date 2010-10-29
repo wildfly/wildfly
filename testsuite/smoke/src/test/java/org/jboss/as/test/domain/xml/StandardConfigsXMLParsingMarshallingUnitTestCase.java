@@ -187,7 +187,7 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Caught exception during processing of host.xml", e);
+            throw new RuntimeException("Caught exception during processing of standalone.xml", e);
         }
     }
 

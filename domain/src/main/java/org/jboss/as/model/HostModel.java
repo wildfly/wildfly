@@ -59,7 +59,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     private final Map<String, ServerElement> servers = new LinkedHashMap<String, ServerElement>();
     private final Map<String, JvmElement> jvms = new LinkedHashMap<String, JvmElement>();
     private final Map<String, PathElement> paths = new LinkedHashMap<String, PathElement>();
-    private String name;
+    private String configuredName;
     private LocalDomainControllerElement localDomainController;
     private RemoteDomainControllerElement remoteDomainController;
     private ManagementElement managementElement;
@@ -76,30 +76,30 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     /**
-     * Gets the host level configuration for the jvm with the given <code>name</name>.
+     * Gets the host level configuration for the jvm with the given <code>configuredName</configuredName>.
      * This configuration can extend or override any configuration for a jvm
-     * with the same name at the {@link ServerGroupElement#getJvm() server group level}.
+     * with the same configuredName at the {@link ServerGroupElement#getJvm() server group level}.
      * In turn, the details of the configuration of this jvm can be overridden at the
      * {@link ServerElement#getJvm() server level}.
      *
-     * @param name the name of the jvm
+     * @param configuredName the configuredName of the jvm
      * @return the jvm configuration, or <code>null</code> if there is none with
-     *         the given <code>name</name>
+     *         the given <code>configuredName</configuredName>
      */
     public JvmElement getJvm(String name) {
         return jvms.get(name);
     }
 
     /**
-     * Gets the host level configuration for the interface with the given <code>name</name>.
+     * Gets the host level configuration for the interface with the given <code>configuredName</configuredName>.
      * This configuration can override any configuration for an interface
-     * with the same name at the {@link DomainModel#getInterface(String) domain level}.
+     * with the same configuredName at the {@link DomainModel#getInterface(String) domain level}.
      * In turn, the details of the configuration of this interface can be overridden at the
      * {@link ServerElement#getInterfaces() server level}.
      *
-     * @param name the name of the interface
+     * @param configuredName the configuredName of the interface
      * @return the interface configuration, or <code>null</code> if there is none with
-     *         the given <code>name</name>
+     *         the given <code>configuredName</configuredName>
      */
     public InterfaceElement getInterface(String name) {
         synchronized (interfaces) {
@@ -144,11 +144,11 @@ public final class HostModel extends AbstractModel<HostModel> {
 
     /**
      * Gets the server configuration for the server with the given
-     * <code>name</code>.
+     * <code>configuredName</code>.
      *
-     * @param name the name of the server
+     * @param configuredName the configuredName of the server
      * @return the server configuration, or <code>null</code> if no server
-     *         named <code>name</code> is configured
+     *         named <code>configuredName</code> is configured
      */
     public ServerElement getServer(String name) {
         synchronized (servers) {
@@ -183,7 +183,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     public String getName() {
-        return name;
+        return configuredName == null ? DEFAULT_NAME : configuredName;
     }
 
     /**
@@ -198,7 +198,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     /**
      * Get a path element.
      *
-     * @param name the path name
+     * @param configuredName the path configuredName
      * @return the path configuration, or <code>null</code> if there is none
      */
     public PathElement getPath(final String name) {
@@ -214,6 +214,10 @@ public final class HostModel extends AbstractModel<HostModel> {
     /** {@inheritDoc} */
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+
+        if (configuredName != null) {
+            streamWriter.writeAttribute(Attribute.NAME.getLocalName(), configuredName);
+        }
 
         writeNamespaces(streamWriter);
 
@@ -309,7 +313,7 @@ public final class HostModel extends AbstractModel<HostModel> {
     }
 
     void setName(String name) {
-        this.name = name;
+        this.configuredName = name;
     }
 
     boolean addJvm(String jvmName) {

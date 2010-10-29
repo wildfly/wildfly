@@ -83,10 +83,17 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     /** Constructor variant for use by the ServerManager */
     public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
         this(serverName, portOffset, startServices, updates, null);
+        if (serverName == null || serverName.length() == 0) {
+            throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
+        }
     }
 
     /** Constructor variant for use by StandaloneServer */
-    public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
+    public ServerStartTask(final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
+        this(null, portOffset, startServices, updates, environment);
+    }
+
+    private ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
         this.serverName = serverName;
         this.portOffset = portOffset;
         this.startServices = startServices;
@@ -95,9 +102,16 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     }
 
     public void run(final List<ServiceActivator> startServices) {
-        MDC.put("process", "server-" + serverName);
+        if (serverName != null) {
+            MDC.put("process", "server-" + serverName);
 
-        log.infof("Starting server \"%s\"", serverName);
+            log.infof("Starting server \"%s\"", serverName);
+        }
+        else {
+            MDC.put("process", "standalone-server");
+
+            log.infof("Starting standalone server");
+        }
         final ServiceContainer container = ServiceContainer.Factory.create();
         final int threads = Runtime.getRuntime().availableProcessors();
         container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));

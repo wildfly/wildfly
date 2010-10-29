@@ -78,7 +78,7 @@ public class StandaloneServer {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
 
-        final ServerStartTask startTask = new ServerStartTask("server name", 0, serviceActivators, updates, environment);
+        final ServerStartTask startTask = new ServerStartTask(0, serviceActivators, updates, environment);
         startTask.run(Collections.<ServiceActivator>emptyList());
 
         // TODO remove life thread

@@ -112,11 +112,23 @@ public final class ModelXmlParsers {
         if (! prefixes.isEmpty()) list.add(new ServerNamespaceUpdate(prefixes));
 
         // Read attributes
+        String serverName = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
                 case DOMAIN_1_0: {
-                    throw unexpectedAttribute(reader, i);
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (serverName != null)
+                                throw unexpectedAttribute(reader, i);
+                            serverName = value;
+                            break;
+                        }
+                        default: throw unexpectedAttribute(reader, i);
+                    }
+                    break;
                 }
                 case XML_SCHEMA_INSTANCE: {
                     switch (Attribute.forName(reader.getAttributeLocalName(i))) {
@@ -133,19 +145,35 @@ public final class ModelXmlParsers {
                             throw unexpectedAttribute(reader, i);
                         }
                     }
+                    break;
+                }
+                case UNKNOWN: {
+                    if (reader.getAttributeNamespace(i) != null)
+                        throw unexpectedAttribute(reader, i);
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (serverName != null)
+                                throw unexpectedAttribute(reader, i);
+                            serverName = value;
+                            break;
+                        }
+                        default: throw unexpectedAttribute(reader, i);
+                    }
+                    break;
                 }
             }
+        }
+
+        if (serverName != null && serverName.length() != 0) {
+            list.add(new ServerNameUpdate(serverName));
         }
 
         // Content
         // Handle elements : sequence
 
         Element element = nextElement(reader);
-        if (element == Element.NAME) {
-            list.add(new ServerNameUpdate(reader.getElementText().trim()));
-            reader.require(END_ELEMENT, null, null);
-            element = nextElement(reader);
-        }
         if (element == Element.EXTENSIONS) {
             Set<String> extensionModules = parseExtensions(reader);
             for (String moduleName : extensionModules) {
@@ -261,11 +289,14 @@ public final class ModelXmlParsers {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
+                            if (name != null)
+                                throw unexpectedAttribute(reader, i);
                             name = value;
                             break;
                         }
                         default: throw unexpectedAttribute(reader, i);
                     }
+                    break;
                 }
                 case XML_SCHEMA_INSTANCE: {
                     switch (Attribute.forName(reader.getAttributeLocalName(i))) {
@@ -282,14 +313,28 @@ public final class ModelXmlParsers {
                             throw unexpectedAttribute(reader, i);
                         }
                     }
+                    break;
+                }
+                case UNKNOWN: {
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            if (name != null)
+                                throw unexpectedAttribute(reader, i);
+                            name = value;
+                            break;
+                        }
+                        default: throw unexpectedAttribute(reader, i);
+                    }
+                    break;
                 }
             }
         }
 
-        if (name == null) {
-            name = HostModel.DEFAULT_NAME;
+        if (name != null && name.length() != 0) {
+            list.add(new HostNameUpdate(name));
         }
-        list.add(new HostNameUpdate(name));
 
         // Content
         // Handle elements: sequence

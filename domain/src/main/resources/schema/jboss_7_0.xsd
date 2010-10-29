@@ -29,22 +29,16 @@
            attributeFormDefault="unqualified"
         >
 
-    <xs:element name="host">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
-                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
-                <xs:element name="system-properties" type="properties" minOccurs="0"/>
-                <xs:element name="management" type="managementType"/>
-                <xs:element name="domain-controller" type="domain-controllerType"/>
-                <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
-                <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
-                <xs:element name="servers" type="serversType" minOccurs="0"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
 
     <xs:element name="domain">
+        <xs:annotation>
+            <xs:documentation>
+                Root element for the master document specifying the core configuration
+                for the servers in a domain. There should be one such master
+                document per domain, available to the server manager that
+                is configured to act as the domain controller. 
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
@@ -58,12 +52,56 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-
-
-    <xs:element name="server">
+    
+    <xs:element name="host">
+        <xs:annotation>
+            <xs:documentation>
+                Root element for a document configuring a server manager and 
+                the group of servers under the control of that server manager.
+                The standard usage would be for a domain to have one such server manager
+                on each physical (or virtual) host machine. Emphasis in this 
+                document is on enumerating the servers, configuring items that 
+                are specific to the host environment (e.g. IP addresses), and
+                on any server-specific configuration settings. 
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="name" type="xs:string"/>
+                <xs:element name="extensions" type="extensionsType" minOccurs="0"/>
+                <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1" />
+                <xs:element name="system-properties" type="properties" minOccurs="0"/>
+                <xs:element name="management" type="managementType"/>
+                <xs:element name="domain-controller" type="domain-controllerType"/>
+                <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0"/>
+                <xs:element name="jvms" type="jvmsType" minOccurs="0"/>
+                <xs:element name="servers" type="serversType" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional">        
+                <xs:annotation>
+                    <xs:documentation>
+                        The name to use for this host's server manager. Must be
+                        unique across the domain. If not set, defaults to the 
+                        runtime value of InetAddress.getLocalHost().getHostName().
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="server">
+        <xs:annotation>
+            <xs:documentation>
+                Root element for a document specifying the configuration
+                of a single "standalone" server that does not operate
+                as part of a domain. 
+                
+                Note that this element is distinct from the 'serverType'
+                specified in this schema. The latter type forms part of the
+                configuration of a server that operates as part of a domain.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
@@ -74,13 +112,21 @@
                 <xs:element name="deployment-repository" type="standalone-deployment-repositoryType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="deployments" type="mapped-deploymentsType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional">        
+                <xs:annotation>
+                    <xs:documentation>
+                        The name to use for this server. If not set, defaults to 
+                        the runtime value of InetAddress.getLocalHost().getHostName().
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     
     <xs:complexType name="managementType">
         <xs:annotation>
             <xs:documentation>
-                Configuration of the host's management system.
+                Configuration of a host's or standalone server's 'management system.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="interface" type="xs:string" use="required">        
