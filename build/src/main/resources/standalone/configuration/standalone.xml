@@ -130,7 +130,8 @@
                     org.jboss.osgi.spi;version=1.0,
                     org.jboss.osgi.spi.capability;version=1.0,
                     org.jboss.osgi.spi.util;version=1.0,
-                    org.jboss.osgi.testing;version=1.0
+                    org.jboss.osgi.testing;version=1.0,
+                    org.jboss.osgi.vfs;version=1.0
                 </property>
             </properties>
             <modules>
