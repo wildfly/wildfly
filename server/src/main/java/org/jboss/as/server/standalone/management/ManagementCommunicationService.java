@@ -63,6 +63,12 @@ import org.jboss.msc.value.InjectedValue;
 public class ManagementCommunicationService implements Service<ManagementCommunicationService>, ConnectionHandler {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "management", "communication");
 
+    /**
+     * The (invalid if received here) protocol identifier for a client wishing
+     * to communicate with a server manager.
+     */
+    private final byte DOMAIN_CONTROLLER_CLIENT_REQUEST = 0x0A;
+
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<ExecutorService> executorServiceValue = new InjectedValue<ExecutorService>();
@@ -181,7 +187,17 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 }
                 handler = handlers.get(handlerId);
                 if (handler == null) {
-                    throw new IOException("Management request failed.  NO handler found for id" + handlerId);
+                    String msg = null;
+                    if (handlerId == DOMAIN_CONTROLLER_CLIENT_REQUEST) {
+                        msg = "Management request failed.  A request from a client " +
+                                "wishing to communicate with a domain controller " +
+                                "was received by this standalone server. Standalone " +
+                                "servers do not support the domain client protocol";
+                    }
+                    else {
+                        msg = "Management request failed.  No handler found for id " + handlerId;
+                    }
+                    throw new IOException(msg);
                 }
                 connection.setMessageHandler(handler);
             } catch (IOException e) {

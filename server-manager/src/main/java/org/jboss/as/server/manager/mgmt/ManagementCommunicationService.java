@@ -46,6 +46,7 @@ import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
+import org.jboss.as.standalone.client.impl.StandaloneClientProtocol;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -182,7 +183,17 @@ public class ManagementCommunicationService implements Service<ManagementCommuni
                 }
                 handler = handlers.get(handlerId);
                 if (handler == null) {
-                    throw new IOException("Management request failed.  NO handler found for id " + handlerId);
+                    String msg = null;
+                    if (handlerId == StandaloneClientProtocol.SERVER_CONTROLLER_REQUEST) {
+                        msg = "Management request failed.  A request from a client " +
+                                 "wishing to communicate with a standalone server " +
+                                 "was received by this server manager. Server " +
+                                 "managers do not support the standalone client protocol";
+                    }
+                    else {
+                        msg = "Management request failed.  No handler found for id " + handlerId;
+                    }
+                    throw new IOException(msg);
                 }
                 connection.setMessageHandler(handler);
             } catch (IOException e) {
