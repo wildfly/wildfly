@@ -36,6 +36,7 @@
         <echo>  jms.client       - Uses HornetQ JMS API from the client</echo>
         <echo>  rar              - deploys a resource adapter</echo>
         <echo>  ds               - deploys a test bean for resource adapter</echo>
+        <echo>  war              - deploys a simple servlet and connects to it</echo>
         <echo/>
         <echo>Valid example names to run against a JBoss AS domain are</echo>
         <echo>  messaging.domain - deploys HornetQ native sender and receiver</echo>
