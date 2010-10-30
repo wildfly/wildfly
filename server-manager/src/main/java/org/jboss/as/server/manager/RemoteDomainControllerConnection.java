@@ -233,6 +233,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         @Override
         protected final void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
             super.sendRequest(protocolVersion, outputStream);
+            log.debugf("Requesting files for path %s", filePath);
             ByteDataOutput output = null;
             try {
                 output = new SimpleByteDataOutput(outputStream);
@@ -250,15 +251,15 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         protected final File receiveResponse(final InputStream inputStream) throws IOException {
             final File localPath;
             switch (rootId) {
-                case 0: {
+                case (byte)DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                     localPath = localFileRepository.getFile(filePath);
                     break;
                 }
-                case 1: {
+                case (byte)DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
                     localPath = localFileRepository.getConfigurationFile(filePath);
                     break;
                 }
-                case 2: {
+                case (byte)DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = DeploymentUnitElement.hexStringToBytes(filePath);
                     localPath = localFileRepository.getDeploymentRoot(hash);
                     break;
@@ -272,6 +273,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, DomainControllerProtocol.PARAM_NUM_FILES);
                 int numFiles = input.readInt();
+                log.debugf("Received %d files for %s", numFiles, localPath);
                 switch (numFiles) {
                     case -1: { // Not found on DC
                         break;
@@ -314,6 +316,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                             if (totalRead != length) {
                                 throw new IOException("Did not read the entire file. Missing: " + (length - totalRead));
                             }
+
                             expectHeader(input, DomainControllerProtocol.FILE_END);
                         }
                     }
@@ -338,24 +341,24 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         public final File getFile(String relativePath) {
 
 
-            return getFile(relativePath, (byte)0);
+            return getFile(relativePath, (byte)DomainControllerProtocol.PARAM_ROOT_ID_FILE);
         }
 
         @Override
         public final File getConfigurationFile(String relativePath) {
-            return getFile(relativePath, (byte)1);
+            return getFile(relativePath, (byte)DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
         }
 
         @Override
         public final File[] getDeploymentFiles(byte[] deploymentHash) {
             String hex = DeploymentUnitElement.bytesToHexString(deploymentHash);
-            return getFile(hex, (byte)2).listFiles();
+            return getFile(hex, (byte)DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT).listFiles();
         }
 
         @Override
         public File getDeploymentRoot(byte[] deploymentHash) {
             String hex = DeploymentUnitElement.bytesToHexString(deploymentHash);
-            return getFile(hex, (byte)2);
+            return getFile(hex, (byte)DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
         }
 
         private File getFile(final String relativePath, final byte repoId) {

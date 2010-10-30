@@ -38,10 +38,13 @@ public interface DomainControllerProtocol {
     int UNREGISTER_RESPONSE = 0x16;
     int SYNC_FILE_REQUEST = 0x17;
     int PARAM_ROOT_ID = 0x18;
-    int PARAM_FILE_PATH = 0x19;
-    int PARAM_NUM_FILES = 0x20;
-    int PARAM_FILE_SIZE = 0x21;
-    int FILE_START = 0x22;
-    int FILE_END = 0x23;
-    int SYNC_FILE_RESPONSE = 0x24;
+    int PARAM_ROOT_ID_FILE = 0x19;
+    int PARAM_ROOT_ID_CONFIGURATION = 0x20;
+    int PARAM_ROOT_ID_DEPLOYMENT = 0x21;
+    int PARAM_FILE_PATH = 0x22;
+    int PARAM_NUM_FILES = 0x23;
+    int PARAM_FILE_SIZE = 0x24;
+    int FILE_START = 0x25;
+    int FILE_END = 0x26;
+    int SYNC_FILE_RESPONSE = 0x27;
 }

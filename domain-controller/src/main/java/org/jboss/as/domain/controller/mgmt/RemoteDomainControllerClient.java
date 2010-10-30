@@ -395,7 +395,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
-            marshaller.writeChars(serverName);
+            marshaller.writeUTF(serverName);
             marshaller.writeByte(ServerManagerProtocol.PARAM_ALLOW_ROLLBACK);
             marshaller.writeBoolean(allowOverallRollback);
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
@@ -481,7 +481,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
-            marshaller.writeChars(serverName);
+            marshaller.writeUTF(serverName);
             marshaller.finish();
         }
 
@@ -560,7 +560,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
-            marshaller.writeChars(serverName);
+            marshaller.writeUTF(serverName);
             if (gracefulTimeout != null) {
                 marshaller.writeByte(ServerManagerProtocol.PARAM_GRACEFUL_TIMEOUT);
                 marshaller.writeLong(gracefulTimeout);

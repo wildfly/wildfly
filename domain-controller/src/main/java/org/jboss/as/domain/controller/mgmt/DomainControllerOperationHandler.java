@@ -246,28 +246,28 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 rootId = input.readByte();
                 expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
                 filePath = input.readUTF();
+
+                log.debugf("Server manager [%s] requested file [%s] from root [%d]", serverManagerId, filePath, rootId);
+                switch (rootId) {
+                    case (byte)DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
+                        localPath = localFileRepository.getFile(filePath);
+                        break;
+                    }
+                    case (byte)DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION: {
+                        localPath = localFileRepository.getConfigurationFile(filePath);
+                        break;
+                    }
+                    case (byte)DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
+                        byte[] hash = DeploymentUnitElement.hexStringToBytes(filePath);
+                        localPath = localFileRepository.getDeploymentRoot(hash);
+                        break;
+                    }
+                    default: {
+                        throw new IOException(String.format("Invalid root id [%d]", rootId));
+                    }
+                }
             } finally {
                 safeClose(input);
-            }
-
-            log.infof("Server manager [%s] requested file [%s] from root [%d]", serverManagerId, filePath, rootId);
-            switch (rootId) {
-                case 0: {
-                    localPath = localFileRepository.getFile(filePath);
-                    break;
-                }
-                case 1: {
-                    localPath = localFileRepository.getConfigurationFile(filePath);
-                    break;
-                }
-                case 2: {
-                    byte[] hash = DeploymentUnitElement.hexStringToBytes(filePath);
-                    localPath = localFileRepository.getDeploymentRoot(hash);
-                    break;
-                }
-                default: {
-                    localPath = null;
-                }
             }
         }
 
@@ -338,6 +338,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 }
             }
             output.writeByte(DomainControllerProtocol.FILE_END);
+            log.infof("Wrote file [%s]", file);
         }
     }
 

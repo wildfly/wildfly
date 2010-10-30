@@ -101,12 +101,12 @@ public class ModelManager {
 
     public List<ServerIdentity> applyDomainModelUpdate(AbstractDomainModelUpdate<?> update, boolean applyToDomain) throws UpdateFailedException {
 
-        log.debugf("Applying %s to server manager model", update.getClass().getSimpleName());
+        log.debugf("Received update %s", update.getClass().getSimpleName());
         if (applyToDomain) {
             try {
                 // Force a sync if our repository falls back to a remote
                 if (update instanceof NewRepositoryContentUpdate && repository != null)
-                    repository.getDeploymentRoot(((NewRepositoryContentUpdate) update).getHash());
+                    repository.getDeploymentFiles(((NewRepositoryContentUpdate) update).getHash());
 
                 domainModel.update(update);
             }
@@ -119,7 +119,7 @@ public class ModelManager {
 
 
         List<String> serverNames = update.getAffectedServers(domainModel, getHostModel());
-        log.debugf("Servers affected: %s", serverNames);
+        log.debugf("Servers affected by %s: %s", update.getClass().getSimpleName(), serverNames);
 
         if (serverNames.size() == 0) {
             return Collections.emptyList();

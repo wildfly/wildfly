@@ -66,6 +66,6 @@ public class FallbackRepository implements FileRepository {
     @Override
     public File getDeploymentRoot(byte[] hash) {
         File file = primary.getDeploymentRoot(hash);
-        return file != null ? file : secondary.getDeploymentRoot(hash);
+        return (file != null && file.exists()) ? file : secondary.getDeploymentRoot(hash);
     }
 }
