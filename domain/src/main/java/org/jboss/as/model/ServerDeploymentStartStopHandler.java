@@ -60,12 +60,12 @@ import org.jboss.vfs.VirtualFile;
  *
  * @author Brian Stansberry
  */
-class ServerDeploymentStartStopHandler implements Serializable {
+public final class ServerDeploymentStartStopHandler implements Serializable {
     private static final long serialVersionUID = 4804538479425267270L;
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
 
 
-    <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash, final ServiceContainer serviceContainer,
+    public <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash, final ServiceContainer serviceContainer,
             final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             BatchBuilder batchBuilder = serviceContainer.batchBuilder();
@@ -77,7 +77,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         }
     }
 
-    <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
+    public <P> void deploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
             final BatchBuilder batchBuilder, final ServiceContainer serviceContainer,
             final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
@@ -92,7 +92,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         }
     }
 
-    <P> void redeploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
+    public <P> void redeploy(final String deploymentName, final String runtimeName, final byte[] deploymentHash,
             final ServiceContainer serviceContainer, final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);
@@ -124,7 +124,7 @@ class ServerDeploymentStartStopHandler implements Serializable {
         }
     }
 
-    <P> void undeploy(final String deploymentName, final ServiceContainer serviceContainer,
+    public <P> void undeploy(final String deploymentName, final ServiceContainer serviceContainer,
             final UpdateResultHandler<?, P> resultHandler, final P param) {
         try {
             ServiceName deploymentServiceName = DeploymentService.getServiceName(deploymentName);

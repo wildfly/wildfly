@@ -80,7 +80,7 @@ public class ServerEnvironment {
      * for specifying the directory which JBoss will use for
      * deployments.
      *
-     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/deployments</tt>.
+     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/content</tt>.
      */
     public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
 
@@ -101,6 +101,15 @@ public class ServerEnvironment {
      */
     public static final String SERVER_TEMP_DIR = "jboss.server.temp.dir";
 
+    /**
+     * Constant that holds the name of the environment property
+     * for specifying the directory which JBoss will use for internal
+     * system deployments.
+     *
+     * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/system-content</tt>.
+     */
+    private static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
+
     private final String processName;
 
     private final File homeDir;
@@ -112,6 +121,7 @@ public class ServerEnvironment {
     private final File serverLogDir;
     private final File serverTempDir;
     private final boolean standalone;
+    private final File serverSystemDeployDir;
 
     public ServerEnvironment(Properties props, String processName, boolean standalone) {
         this.standalone = standalone;
@@ -165,6 +175,13 @@ public class ServerEnvironment {
         serverDeployDir = tmp;
         System.setProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
 
+        tmp = getFileFromProperty(SERVER_SYSTEM_DEPLOY_DIR, props);
+        if (tmp == null) {
+            tmp = new File(serverDataDir, "system-content");
+        }
+        serverSystemDeployDir = tmp;
+        System.setProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
+
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "log");
@@ -211,6 +228,10 @@ public class ServerEnvironment {
 
     public File getServerDeployDir() {
         return serverDeployDir;
+    }
+
+    public File getServerSystemDeployDir() {
+        return serverSystemDeployDir;
     }
 
     public File getServerLogDir() {

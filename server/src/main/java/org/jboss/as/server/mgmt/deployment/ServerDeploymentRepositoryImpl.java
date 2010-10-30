@@ -132,6 +132,12 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
 
     @Override
     public Closeable mountDeploymentContent(String name, String runtimeName, byte[] deploymentHash, VirtualFile mountPoint) throws IOException {
+        // Internal deployments have no hash, and are unique by name
+        if (deploymentHash == null) {
+            File file = new File(serverEnvironment.getValue().getServerSystemDeployDir(), name);
+            return VFS.mountZip(file, mountPoint, TempFileProviderService.provider());
+        }
+
         // TODO recognize exploded content stored in a hot-deploy dir
         String sha1 = bytesToHexString(deploymentHash);
         String partA = sha1.substring(0,2);

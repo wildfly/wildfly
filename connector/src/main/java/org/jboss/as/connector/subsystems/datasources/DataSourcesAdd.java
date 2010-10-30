@@ -23,6 +23,8 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.RaDeploymentActivator;
+import org.jboss.as.connector.deployers.RaDeploymentChainSelector;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -60,10 +62,20 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
         final DataSourcesService dsService = new DataSourcesService(datasources);
-        final BatchServiceBuilder<DataSources> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
+        BatchServiceBuilder<?> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
                 dsService);
-
         serviceBuilder.setInitialMode(Mode.ACTIVE);
+
+        if (datasources == null)
+            return;
+
+        if (datasources.getDataSource().size() > 0 || datasources.getXaDataSource().size() > 0) {
+            serviceBuilder = builder.addServiceValueIfNotExist(JDBCRARDeployService.NAME, new JDBCRARDeployService());
+            serviceBuilder.addDependency(RaDeploymentActivator.RAR_DEPLOYMENT_CHAIN_SERVICE_NAME);
+            serviceBuilder.addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE);
+            serviceBuilder.addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+            serviceBuilder.setInitialMode(Mode.ACTIVE);
+        }
     }
 
     protected DataSourcesSubsystemElement createSubsystemElement() {
