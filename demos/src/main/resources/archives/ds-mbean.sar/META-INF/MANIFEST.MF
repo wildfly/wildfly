@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Dependencies: javax.api,com.h2database.h2
+Dependencies: javax.api,com.h2database.h2,org.jboss.integration.jboss-transaction-spi
