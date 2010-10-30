@@ -49,6 +49,12 @@ public class AS7JndiStrategy implements JndiStrategy {
     private static ConcurrentMap<String, Object> objs = new ConcurrentHashMap<String, Object>();
 
     /**
+     * Constructor
+     */
+    public AS7JndiStrategy() {
+    }
+
+    /**
      * Obtain the connection factory
      *
      * {@inheritDoc}

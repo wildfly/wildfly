@@ -24,7 +24,6 @@ package org.jboss.as.connector.jndi;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
-import org.jboss.jca.core.naming.ExplicitJndiStrategy;
 
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -46,14 +45,7 @@ public final class JndiStrategyService implements Service<JndiStrategy> {
      * Create an instance
      */
     public JndiStrategyService() {
-        this(new ExplicitJndiStrategy());
-    }
-
-    /**
-     * Create an instance with a specified strategy.
-     */
-    public JndiStrategyService(final JndiStrategy strategy) {
-        this.value = strategy;
+        this.value = new AS7JndiStrategy();
     }
 
     @Override

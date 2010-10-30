@@ -30,7 +30,6 @@ import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
-import org.jboss.as.connector.jndi.AS7JndiStrategy;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
@@ -126,7 +125,7 @@ public class RaDeploymentActivator implements ServiceActivator {
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
         batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService);
 
-        JndiStrategyService jndiStrategyService = new JndiStrategyService(new AS7JndiStrategy());
+        JndiStrategyService jndiStrategyService = new JndiStrategyService();
         batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService);
 
         RaDeploymentParsingProcessor raDeploymentParsingProcessor = new RaDeploymentParsingProcessor();
