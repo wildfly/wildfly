@@ -44,11 +44,14 @@ import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.container.ResourceContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Used to deploy/undeploy deployments to a running <b>standalone</b> application server
@@ -60,7 +63,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  */
 public class DeploymentUtils implements Closeable {
 
-    private final List<Deployment> deployments = new ArrayList<Deployment>();
+    private final List<AbstractDeployment> deployments = new ArrayList<AbstractDeployment>();
     private final StandaloneClient client;
     private final ServerDeploymentManager manager;
 
@@ -87,9 +90,17 @@ public class DeploymentUtils implements Closeable {
         deployments.add(new Deployment(archiveName, pkg, show));
     }
 
+    public synchronized void addWarDeployment(String archiveName, Package pkg) {
+        addWarDeployment(archiveName, pkg, false);
+    }
+
+    public synchronized void addWarDeployment(String archiveName, Package pkg, boolean show) {
+        deployments.add(new WarDeployment(archiveName, pkg, show));
+    }
+
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         DeploymentPlanBuilder builder = manager.newDeploymentPlan();
-        for (Deployment deployment : deployments) {
+        for (AbstractDeployment deployment : deployments) {
             builder = deployment.addDeployment(manager, builder);
         }
         manager.execute(builder.build()).get();
@@ -97,7 +108,7 @@ public class DeploymentUtils implements Closeable {
 
     public synchronized void undeploy() throws ExecutionException, InterruptedException {
         DeploymentPlanBuilder builder = manager.newDeploymentPlan();
-        for (Deployment deployment : deployments) {
+        for (AbstractDeployment deployment : deployments) {
             builder = deployment.removeDeployment(builder);
         }
         manager.execute(builder.build()).get();
@@ -116,33 +127,22 @@ public class DeploymentUtils implements Closeable {
         safeClose(client);
     }
 
-    private class Deployment {
-        final String archiveName;
-        final Package pkg;
-        final JavaArchive archive;
-        final File realArchive;
+    private abstract class AbstractDeployment{
 
         String deployment;
 
-        public Deployment(String archiveName, Package pkg, boolean show) {
-            this.archiveName = archiveName;
-            this.pkg = pkg;
-
-            ArchivePath metaInf = ArchivePaths.create("META-INF");
-
-            archive = ShrinkWrap.create(JavaArchive.class, archiveName);
-            archive.addPackage(pkg);
-
-            File sourceMetaInf = getSourceMetaInfDir();
-            addFiles(archive, sourceMetaInf, metaInf);
-
-            System.out.println(archive.toString(show));
-
-            realArchive = new File(getOutputDir(), archive.getName());
-            archive.as(ZipExporter.class).exportZip(realArchive, true);
+        public synchronized DeploymentPlanBuilder addDeployment(ServerDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
+            System.out.println("Deploying " + getRealArchive().getName());
+            deployment = manager.addDeploymentContent(getRealArchive());
+            return builder.add(deployment, getRealArchive()).deploy(deployment);
         }
 
-        private void addFiles(JavaArchive archive, File dir, ArchivePath dest) {
+        public synchronized DeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
+            System.out.println("Undeploying " + getRealArchive().getName());
+            return builder.undeploy(deployment).remove(deployment);
+        }
+
+        protected void addFiles(ResourceContainer<?> archive, File dir, ArchivePath dest) {
             for (String name : dir.list()) {
                 File file = new File(dir, name);
                 if (file.isDirectory()) {
@@ -153,18 +153,7 @@ public class DeploymentUtils implements Closeable {
             }
         }
 
-        public synchronized DeploymentPlanBuilder addDeployment(ServerDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
-            System.out.println("Deploying " + realArchive.getName());
-            deployment = manager.addDeploymentContent(realArchive);
-            return builder.add(deployment, realArchive).deploy(deployment);
-        }
-
-        public synchronized DeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {
-            System.out.println("Undeploying " + realArchive.getName());
-            return builder.undeploy(deployment).remove(deployment);
-        }
-
-        private File getSourceMetaInfDir() {
+        protected File getSourceMetaInfDir(String archiveName) {
             String name = "archives/" + archiveName + "/META-INF/MANIFEST.MF";
 
             URL url = Thread.currentThread().getContextClassLoader().getResource(name);
@@ -179,7 +168,7 @@ public class DeploymentUtils implements Closeable {
             }
         }
 
-        private File getOutputDir() {
+        protected File getOutputDir() {
             File file = new File("target");
             if (!file.exists()) {
                 throw new IllegalStateException("target/ does not exist");
@@ -198,13 +187,60 @@ public class DeploymentUtils implements Closeable {
             return file.getAbsoluteFile();
         }
 
-        private void close(Closeable c) {
-            try {
-                if (c != null) {
-                    c.close();
-                }
-            } catch (IOException ignore) {
-            }
+        protected File createArchive(Archive<?> archive) {
+            File realArchive = new File(getOutputDir(), archive.getName());
+            archive.as(ZipExporter.class).exportZip(realArchive, true);
+            return realArchive;
+        }
+
+        protected abstract File getRealArchive();
+    }
+
+    private class Deployment extends AbstractDeployment {
+        final File realArchive;
+
+        public Deployment(String archiveName, Package pkg, boolean show) {
+
+            ArchivePath metaInf = ArchivePaths.create("META-INF");
+
+            JavaArchive archive = ShrinkWrap.create(JavaArchive.class, archiveName);
+            archive.addPackage(pkg);
+
+            File sourceMetaInf = getSourceMetaInfDir(archiveName);
+            addFiles(archive, sourceMetaInf, metaInf);
+
+            System.out.println(archive.toString(show));
+            realArchive = createArchive(archive);
+        }
+
+        @Override
+        protected File getRealArchive() {
+            return realArchive;
+        }
+    }
+
+
+    private class WarDeployment extends AbstractDeployment {
+        final File realArchive;
+
+        public WarDeployment(String archiveName, Package pkg, boolean show) {
+
+            ArchivePath metaInf = ArchivePaths.create("META-INF");
+
+
+            WebArchive archive = ShrinkWrap.create(WebArchive.class, archiveName);
+            archive.addPackage(pkg);
+
+            File sourceMetaInf = getSourceMetaInfDir(archiveName);
+            addFiles(archive, sourceMetaInf, metaInf);
+
+            System.out.println(archive.toString(show));
+            realArchive = createArchive(archive);
+        }
+
+        @Override
+        protected File getRealArchive() {
+            return realArchive;
         }
     }
 }
