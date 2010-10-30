@@ -74,6 +74,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
             serviceBuilder.addDependency(RaDeploymentActivator.RAR_DEPLOYMENT_CHAIN_SERVICE_NAME);
             serviceBuilder.addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE);
             serviceBuilder.addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
+            serviceBuilder.addDependency(ConnectorServices.IRONJACAMAR_MDR);
             serviceBuilder.setInitialMode(Mode.ACTIVE);
         }
     }

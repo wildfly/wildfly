@@ -108,7 +108,7 @@ public class ServerEnvironment {
      *
      * <p>Defaults to <tt><em>SERVER_DATA_DIR</em>/system-content</tt>.
      */
-    private static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
+    public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
     private final String processName;
 

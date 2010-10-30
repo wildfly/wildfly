@@ -64,9 +64,17 @@ public class ServerManagerEnvironment {
      * Constant that holds the name of the environment property
      * for specifying the domain deployment URL.
      *
-     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/deployments</tt> .
+     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/content</tt> .
      */
     public static final String DOMAIN_DEPLOYMENT_DIR = "jboss.domain.deployment.dir";
+
+    /**
+     * Constant that holds the name of the environment property
+     * for specifying the domain system deployment URL.
+     *
+     * <p>Defaults to <tt><em>DOMAIN_BASE_DIR</em>/system-content</tt> .
+     */
+    public static final String DOMAIN_SYSTEM_DEPLOYMENT_DIR = "jboss.domain.system.deployment.dir";
 
     /**
      * Constant that holds the name of the environment property
@@ -93,6 +101,7 @@ public class ServerManagerEnvironment {
      */
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
+
     private final Properties props;
     private final String processName;
     private final InetAddress processManagerAddress;
@@ -104,6 +113,7 @@ public class ServerManagerEnvironment {
     private final File domainBaseDir;
     private final File domainConfigurationDir;
     private final File domainDeploymentDir;
+    private final File domainSystemDeploymentDir;
     private final File domainDataDir;
     private final File domainLogDir;
     private final File domainServersDir;
@@ -114,6 +124,7 @@ public class ServerManagerEnvironment {
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
+
 
     public ServerManagerEnvironment(Properties props, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
             String processName, InetAddress processManagerAddress, Integer processManagerPort, InetAddress serverManagerAddress,
@@ -195,6 +206,12 @@ public class ServerManagerEnvironment {
         this.domainDeploymentDir = tmp;
         System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
 
+        tmp = getFileFromProperty(DOMAIN_SYSTEM_DEPLOYMENT_DIR);
+        if (tmp == null) {
+            tmp = new File(this.domainBaseDir, "system-content");
+        }
+        this.domainSystemDeploymentDir = tmp;
+        System.setProperty(DOMAIN_DEPLOYMENT_DIR, this.domainDeploymentDir.getAbsolutePath());
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
@@ -335,6 +352,10 @@ public class ServerManagerEnvironment {
 
     public File getDomainDeploymentDir() {
         return domainDeploymentDir;
+    }
+
+    public File getDomainSystemDeploymentDir() {
+        return domainSystemDeploymentDir;
     }
 
     public File getDomainDataDir() {

@@ -393,6 +393,12 @@ public final class ManagedServer {
             File serverDeploymentDir = environment.getDomainDeploymentDir();
             sysProps.put(key, serverDeploymentDir.getAbsolutePath());
         }
+
+        key = ServerEnvironment.SERVER_SYSTEM_DEPLOY_DIR;
+        if (sysProps.get(key) == null) {
+            File serverDeploymentDir = environment.getDomainSystemDeploymentDir();
+            sysProps.put(key, serverDeploymentDir.getAbsolutePath());
+        }
     }
 
     private static class ServerManagerCommServiceActivator implements ServiceActivator, Serializable {
