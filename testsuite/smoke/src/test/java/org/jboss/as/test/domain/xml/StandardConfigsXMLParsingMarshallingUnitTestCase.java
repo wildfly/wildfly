@@ -262,8 +262,14 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
              f = new File(f, "build");
              assertTrue("The server 'build' dir exists", f.exists());
              f = new File(f, "target");
-             f = new File(f, Version.AS_VERSION);
-             if(!f.exists())
+             File[] children = f.listFiles();
+             f = null;
+             if (children != null)
+                 for (File child : children)
+                     if (child.getName().startsWith("jboss-"))
+                         f = child;
+
+             if(f == null || !f.exists())
                 fail("The server hasn't been built yet.");
              assertTrue("The server 'build/target' dir exists", f.exists());
              return f.getAbsolutePath();

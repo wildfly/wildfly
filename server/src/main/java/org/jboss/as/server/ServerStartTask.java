@@ -53,6 +53,7 @@ import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
+import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.logging.MDC;
 import org.jboss.msc.service.BatchBuilder;
@@ -275,7 +276,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", Long.valueOf(elapsedTime), Integer.valueOf(totalServices), Integer.valueOf(onDemandServices), Integer.valueOf(startedServices));
+                    log.infof("JBoss AS %s \"%s\" started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(totalServices), Integer.valueOf(onDemandServices), Integer.valueOf(startedServices));
                 } else {
                     final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", Integer.valueOf(totalServices), Long.valueOf(elapsedTime)));
                     buff.append("\nThe following services failed to start:\n");

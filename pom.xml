@@ -43,14 +43,14 @@
     <packaging>pom</packaging>
 
     <properties>
+         <!-- Release Info -->
+        <jboss.as.release.version>7.0.0.M1</jboss.as.release.version>
+        <jboss.as.release.codename>Halloween</jboss.as.release.codename>
+
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.min.version>3.0-beta-1</maven.min.version>
-
-        <!-- Release Info -->
-        <org.jboss.as.version>jboss_7_0_0_M1</org.jboss.as.version>
-        <org.jboss.as.codename></org.jboss.as.codename>
 
         <!-- Dependency versions. Please keep alphabetical -->
         <version.com.h2database.h2>1.2.144</version.com.h2database.h2>
@@ -180,6 +180,41 @@
                         <showWarnings>true</showWarnings>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                            <manifestEntries>
+                                <Implementation-URL>${project.url}</Implementation-URL>
+                                <JBossAS-Release-Version>${jboss.as.release.version}</JBossAS-Release-Version>
+                                <JBossAS-Release-Codename>${jboss.as.release.codename}</JBossAS-Release-Codename>
+                            </manifestEntries>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>Build-Information</name>
+                                    <manifestEntries>
+                                        <Maven-Version>${maven.version}</Maven-Version>
+                                        <Java-Version>${java.version}</Java-Version>
+                                        <Java-Vendor>${java.vendor}</Java-Vendor>
+                                        <Os-Name>${os.name}</Os-Name>
+                                        <Os-Arch>${os.arch}</Os-Arch>
+                                        <Os-Version>${os.version}</Os-Version>
+                                        <Scm-Url>${project.scm.developerConnection}</Scm-Url>
+                                        <Build-Time>${build.timestamp}</Build-Time>
+                                    </manifestEntries>
+                                </manifestSection>
+                            </manifestSections>
+                        </archive>
+                    </configuration>
+                </plugin>
+
 
                 <!-- Attach sources -->
                 <plugin>

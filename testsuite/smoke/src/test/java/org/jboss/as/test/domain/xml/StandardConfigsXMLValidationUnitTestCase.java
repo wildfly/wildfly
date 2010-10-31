@@ -103,7 +103,15 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
         // user.dir will point to the root of this module
         File f = new File(System.getProperty("user.dir"));
         f = new File(f, "../../build/target");
-        f = new File(f, Version.AS_VERSION);
+        File[] children = f.listFiles(); f = null;
+        if (children != null)
+            for (File child : children)
+                if (child.getName().startsWith("jboss-"))
+                    f = child;
+
+        if (f == null)
+            fail("Server not built");
+
         f = new File(f, xmlName);
         return f.toURI().toURL();
     }

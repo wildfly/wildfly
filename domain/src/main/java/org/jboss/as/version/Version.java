@@ -22,11 +22,35 @@
 
 package org.jboss.as.version;
 
+import java.io.InputStream;
+import java.util.jar.Manifest;
+
 /**
  * Common location to manager the AS version.
  *
  * @author John Bailey
+ * @author Jason T. Greene
  */
 public class Version {
-    public static final String AS_VERSION = "jboss_7_0_0_M1";
+    public static final String AS_VERSION;
+    public static final String AS_RELEASE_CODENAME;
+
+    static {
+        InputStream stream = Version.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
+        Manifest manifest = null;
+        try {
+            if (stream != null)
+                manifest = new Manifest(stream);
+        } catch (Exception e) {
+        }
+
+        String version = "Unknown", code = version;
+        if (manifest != null) {
+            version = manifest.getMainAttributes().getValue("JBossAS-Release-Version");
+            code = manifest.getMainAttributes().getValue("JBossAS-Release-Codename");
+        }
+
+        AS_VERSION = version;
+        AS_RELEASE_CODENAME = code;
+    }
 }

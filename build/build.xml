@@ -24,8 +24,7 @@
 
     <import file="lib.xml"/>
 
-    <property name="output.dir" value="target/${org.jboss.as.version}"/>
-
+    <property name="output.dir" value="target/jboss-${jboss.as.release.version}"/>
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
@@ -51,10 +50,10 @@
     </target>
 
     <target name="copy-deployments">
-        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/${org.jboss.as.version}/standalone/data/system-content/jdbc-local.rar"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/${org.jboss.as.version}/standalone/data/system-content/jdbc-xa.rar"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/${org.jboss.as.version}/domain/system-content/jdbc-local.rar"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/${org.jboss.as.version}/domain/system-content/jdbc-xa.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/jboss-${jboss.as.release.version}/standalone/data/system-content/jdbc-local.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/jboss-${jboss.as.release.version}/standalone/data/system-content/jdbc-xa.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/jboss-${jboss.as.release.version}/domain/system-content/jdbc-local.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/jboss-${jboss.as.release.version}/domain/system-content/jdbc-xa.rar"/>
     </target>
 
     <target name="modules">
