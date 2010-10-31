@@ -43,8 +43,8 @@ final class JDBCRARDeployService implements Service<JDBCRARDeployService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     private static final ServerDeploymentStartStopHandler handler = new ServerDeploymentStartStopHandler();
-    private static final String LOCAL_RAR_NAME="jdbc-local-1.0.0.Beta3.rar";
-    private static final String XA_RAR_NAME="jdbc-xa-1.0.0.Beta3.rar";
+    private static final String LOCAL_RAR_NAME="jdbc-local.rar";
+    private static final String XA_RAR_NAME="jdbc-xa.rar";
 
     /** create an instance **/
     public JDBCRARDeployService() {

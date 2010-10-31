@@ -51,10 +51,10 @@
     </target>
 
     <target name="copy-deployments">
-        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" todir="target/${org.jboss.as.version}/standalone/data/system-content"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" todir="target/${org.jboss.as.version}/standalone/data/system-content"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" todir="target/${org.jboss.as.version}/domain/system-content"/>
-        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" todir="target/${org.jboss.as.version}/domain/system-content"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/${org.jboss.as.version}/standalone/data/system-content/jdbc-local.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/${org.jboss.as.version}/standalone/data/system-content/jdbc-xa.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-local:rar}" tofile="target/${org.jboss.as.version}/domain/system-content/jdbc-local.rar"/>
+        <copy file="${org.jboss.ironjacamar:jdbc-xa:rar}" tofile="target/${org.jboss.as.version}/domain/system-content/jdbc-xa.rar"/>
     </target>
 
     <target name="modules">
