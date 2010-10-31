@@ -27,13 +27,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-
+import java.io.InputStream;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.model.Element;
 import org.jboss.as.model.HostModel;
@@ -78,8 +76,8 @@ public class HostConfigurationPersisterImpl implements HostConfigurationPersiste
     }
 
     @Override
-    public Reader getConfigurationReader() throws IOException {
-        return new FileReader(configFile);
+    public InputStream getConfigurationInputStream() throws IOException {
+        return new FileInputStream(configFile);
     }
 
     @Override
@@ -87,15 +85,15 @@ public class HostConfigurationPersisterImpl implements HostConfigurationPersiste
 
         FileOutputStream fos = null;
         BufferedOutputStream bos = null;
-        OutputStreamWriter writer = null;
+        XMLStreamWriter writer = null;
         try {
             backupConfigFile();
             configFile.createNewFile();
             fos = new FileOutputStream(configFile);
             bos = new BufferedOutputStream(fos);
-            writer = new OutputStreamWriter(bos);
+            writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
             final XMLMapper mapper = XMLMapper.Factory.create();
-            mapper.deparseDocument(new RootElementWriter(hostModel), XMLOutputFactory.newInstance().createXMLStreamWriter(writer));
+            mapper.deparseDocument(new RootElementWriter(hostModel), writer);
         }
         catch (Exception e) {
             logger.errorf(e, "Failed persisting configuration file %s" , configFile.getAbsolutePath());
@@ -104,7 +102,7 @@ public class HostConfigurationPersisterImpl implements HostConfigurationPersiste
              if (writer != null) {
                  try {
                     writer.close();
-                } catch (IOException e) {
+                } catch (XMLStreamException e) {
                     logger.warnf(e, "Failed closing writer to configuration file %s" , configFile.getAbsolutePath());
                 }
              }

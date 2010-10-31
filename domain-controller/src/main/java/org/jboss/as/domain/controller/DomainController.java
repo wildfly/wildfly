@@ -272,7 +272,7 @@ public class DomainController implements Service<DomainController> {
 
     private DomainModel parseDomain(final XMLMapper mapper) {
         try {
-            InputStream reader = configPersister.getConfigurationReader();
+            InputStream reader = configPersister.getConfigurationInputStream();
             final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
             mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final DomainModel domainModel = new DomainModel();

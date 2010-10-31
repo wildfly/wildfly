@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.manager;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -222,7 +222,7 @@ public class ModelManager {
             final List<AbstractHostModelUpdate<?>> hostUpdates = new ArrayList<AbstractHostModelUpdate<?>>();
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardHostReaders(mapper);
-            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(configPersister.getConfigurationReader())));
+            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(configPersister.getConfigurationInputStream())));
             final HostModel hostModel = new HostModel();
             for(final AbstractHostModelUpdate<?> update : hostUpdates) {
                 hostModel.update(update);

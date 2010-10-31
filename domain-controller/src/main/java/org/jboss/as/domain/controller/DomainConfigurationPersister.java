@@ -13,13 +13,13 @@ import org.jboss.as.model.DomainModel;
 public interface DomainConfigurationPersister {
 
     /**
-     * Gets a reader from which the persisted form of the domain configuration
+     * Gets an input stream from which the persisted form of the domain configuration
      * can be read.
      *
-     * @return the reader. Will not be <code>null</code>
+     * @return the input stream. Will not be <code>null</code>
      * @throws IOException if a problem accessing the persisted form occurs
      */
-    InputStream getConfigurationReader() throws IOException;
+    InputStream getConfigurationInputStream() throws IOException;
 
     /**
      * Persist the given domain model.

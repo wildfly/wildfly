@@ -1,7 +1,7 @@
 package org.jboss.as.server.manager;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 
 import org.jboss.as.model.HostModel;
 
@@ -13,13 +13,13 @@ import org.jboss.as.model.HostModel;
 public interface HostConfigurationPersister {
 
     /**
-     * Gets a reader from which the persisted form of the domain configuration
+     * Gets an input stream from which the persisted form of the host configuration
      * can be read.
      *
-     * @return the reader. Will not be <code>null</code>
+     * @return the input stream. Will not be <code>null</code>
      * @throws IOException if a problem accessing the persisted form occurs
      */
-    Reader getConfigurationReader() throws IOException;
+    InputStream getConfigurationInputStream() throws IOException;
 
     /**
      * Persist the given host model.

@@ -77,7 +77,7 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
     }
 
     @Override
-    public InputStream getConfigurationReader() throws IOException {
+    public InputStream getConfigurationInputStream() throws IOException {
         return new FileInputStream(configFile);
     }
 
@@ -95,10 +95,16 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
             xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
             final XMLMapper mapper = XMLMapper.Factory.create();
             mapper.deparseDocument(new RootElementWriter(domainModel), xmlWriter);
-            xmlWriter.close();
         } catch (Exception e) {
             logger.errorf(e, "Failed persisting configuration file %s" , configFile.getAbsolutePath());
         } finally {
+            if (xmlWriter != null) {
+                try {
+                    xmlWriter.close();
+               } catch (XMLStreamException e) {
+                   logger.warnf(e, "Failed closing writer to configuration file %s" , configFile.getAbsolutePath());
+               }
+            }
             StreamUtils.safeClose(bos);
             StreamUtils.safeClose(fos);
         }
