@@ -41,6 +41,7 @@ public interface DomainServerProtocol {
     int SERVER_MODEL_UPDATES_RESPONSE = 0x15;
 
     int GET_SERVER_MODEL_REQUEST = 0x20;
-    int GET_SERVER_MODEL_RESPONSE = 0x21;
+    int RETURN_SERVER_MODEL = 0x21;
+    int GET_SERVER_MODEL_RESPONSE = 0x22;
 
 }

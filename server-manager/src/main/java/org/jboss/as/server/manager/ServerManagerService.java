@@ -56,7 +56,8 @@ public class ServerManagerService implements Service<Void> {
         // Start the servers
         final NetworkInterfaceBinding interfaceBinding = managementInterface.getValue();
         final InetSocketAddress managementSocketAddress = new InetSocketAddress(interfaceBinding.getAddress(), managementPort.getValue());
-        serverManager.startServers(managementSocketAddress);
+        serverManager.setManagementSocketAddress(managementSocketAddress);
+        serverManager.startServers();
     }
 
     public void stop(StopContext context) {

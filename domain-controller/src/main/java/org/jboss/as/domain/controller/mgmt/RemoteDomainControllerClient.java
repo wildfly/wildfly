@@ -447,10 +447,10 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
             int count = unmarshaller.readInt();
             final Map<ServerIdentity, ServerStatus> map = new HashMap<ServerIdentity, ServerStatus>();
             for (int i = 0; i < count; i ++) {
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_GROUP_NAME);
-                String groupName = unmarshaller.readUTF();
                 ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_NAME);
                 String serverName = unmarshaller.readUTF();
+                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_GROUP_NAME);
+                String groupName = unmarshaller.readUTF();
                 ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_STATUS);
                 ServerStatus status = unmarshal(unmarshaller, ServerStatus.class);
                 map.put(new ServerIdentity(id, groupName, serverName), status);
@@ -489,6 +489,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected ServerModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
+            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_MODEL);
             final ServerModel response = unmarshal(unmarshaller, ServerModel.class);
             unmarshaller.finish();
             return response;

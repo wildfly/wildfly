@@ -363,6 +363,9 @@ public final class ManagedServer {
 
     public void setServerManagementConnection(Connection serverManagementConnection) {
         this.serverManagementConnection = serverManagementConnection;
+        // FIXME this isn't really correct; just means the server started
+        // enough to connect
+        setState(ServerState.STARTED);
     }
 
     /**
@@ -482,7 +485,7 @@ public final class ManagedServer {
         }
     }
 
-    private static class GetServerModelRequest extends ManagementRequest<ServerModel> {
+    private class GetServerModelRequest extends ManagementRequest<ServerModel> {
 
         @Override
         protected byte getHandlerId() {
@@ -500,16 +503,10 @@ public final class ManagedServer {
         }
 
         @Override
-        protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            marshaller.finish();
-        }
-
-        @Override
         protected final ServerModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
+            expectHeader(unmarshaller, DomainServerProtocol.RETURN_SERVER_MODEL);
             ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
             unmarshaller.finish();
             return serverModel;

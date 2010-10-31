@@ -226,6 +226,7 @@ public class DomainController implements Service<DomainController> {
 
         ServerManagerClient client = clients.get(serverManagerName);
         if (client == null) {
+            log.debugf("Received getServerModel request for unknown server manager %s", serverManagerName);
             return null;
         }
         else {
@@ -237,6 +238,7 @@ public class DomainController implements Service<DomainController> {
 
         ServerManagerClient client = clients.get(serverManagerName);
         if (client == null) {
+            log.debugf("Received startServer request for unknown server manager %s", serverManagerName);
             return ServerStatus.UNKNOWN;
         }
         else {
@@ -248,6 +250,7 @@ public class DomainController implements Service<DomainController> {
 
         ServerManagerClient client = clients.get(serverManagerName);
         if (client == null) {
+            log.debugf("Received stopServer request for unknown server manager %s", serverManagerName);
             return ServerStatus.UNKNOWN;
         }
         else {
@@ -259,6 +262,7 @@ public class DomainController implements Service<DomainController> {
 
         ServerManagerClient client = clients.get(serverManagerName);
         if (client == null) {
+            log.debugf("Received restartServer request for unknown server manager %s", serverManagerName);
             return ServerStatus.UNKNOWN;
         }
         else {

@@ -115,6 +115,7 @@ public class ServerManager {
     private final Map<String, ManagedServer> servers = new HashMap<String, ManagedServer>();
 
     private DomainControllerConnection domainControllerConnection;
+    private InetSocketAddress managementSocketAddress;
     private ProcessManagerClient processManagerClient;
     private FallbackRepository remoteBackedRepository;
 
@@ -192,7 +193,11 @@ public class ServerManager {
 
     public ServerModel getServerModel(String serverName) {
         ManagedServer client = servers.get(ManagedServer.getServerProcessName(serverName));
-        return client == null ? null : client.getServerModel();
+        if (client == null) {
+            log.debugf("Received getServerModel request for unknown server %s", serverName);
+            return null;
+        }
+        return client.getServerModel();
     }
 
     /**
@@ -656,6 +661,10 @@ public class ServerManager {
         this.remoteBackedRepository = repository;
     }
 
+    void setManagementSocketAddress(InetSocketAddress managementSocketAddress) {
+        this.managementSocketAddress = managementSocketAddress;
+    }
+
     public ModelManager getModelManager() {
         return modelManager;
     }
@@ -709,7 +718,7 @@ public class ServerManager {
         }
     }
 
-    void startServers(final InetSocketAddress managementSocket) {
+    void startServers() {
         if(serversStarted.compareAndSet(false, true)) {
             if (!environment.isRestart()) {
                 synchronizeDeployments();
@@ -720,7 +729,7 @@ public class ServerManager {
                         String serverName = serverEl.getName();
                         log.info("Starting server " + serverName);
                         try {
-                            startServer(serverName, managementSocket);
+                            startServer(serverName, managementSocketAddress);
                         } catch (IOException e) {
                             // FIXME handle failure to start server
                             log.error("Failed to start server " + serverName, e);
@@ -740,22 +749,43 @@ public class ServerManager {
         try {
             String processName = ManagedServer.getServerProcessName(serverName);
             ManagedServer server = servers.get(processName);
+            boolean canStart = true;
             if (server != null) {
                 if (server.getState() != ServerState.STOPPED) {
-                    throw new IllegalStateException("Server " + serverName + " is not stopped; state is " + server.getState());
+                    log.warnf("Received request to start server %s but it is not stopped; server state is ", serverName, server.getState());
+                    canStart = false;
                 }
-                server.removeServerProcess();
-                servers.remove(processName);
+                else {
+                    server.removeServerProcess();
+                    servers.remove(processName);
+                }
             }
-            // TODO: use the actual address of the SM...
-            InetSocketAddress managementSocket = new InetSocketAddress(0);
-            startServer(serverName, managementSocket);
+            if (canStart) {
+                startServer(serverName, managementSocketAddress);
+            }
         }
         catch (Exception e) {
             log.errorf(e, "Failed to start server %s", serverName);
         }
 
-        return determineServerStatus(serverName);
+        ServerStatus status = determineServerStatus(serverName);
+        // FIXME total hack; set up some sort of notification scheme
+        for (int i = 0; i < 50; i++) {
+            status = determineServerStatus(serverName);
+            if (status == ServerStatus.STARTING) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            else {
+                break;
+            }
+        }
+
+        return status;
     }
 
     public ServerStatus stopServer(String serverName, long gracefulTimeout) {

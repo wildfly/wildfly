@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ByteDataInput;
 import org.jboss.as.protocol.ByteDataOutput;
@@ -273,17 +274,18 @@ public class ServerManagerClient implements Service<Void> {
         }
 
         @Override
-        protected final void readRequest(final InputStream inputStream) throws IOException {
-            final Unmarshaller unmarshaller = getUnmarshaller();
-            unmarshaller.start(createByteInput(inputStream));
-            unmarshaller.finish();
+        protected void readRequest(InputStream input) throws IOException {
+            super.readRequest(input);
         }
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
+            ServerModel sm = serverController.getValue().getServerModel();
+
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeObject(serverController.getValue().getServerModel());
+            marshaller.writeByte(DomainServerProtocol.RETURN_SERVER_MODEL);
+            marshaller.writeObject(sm);
             marshaller.finish();
         }
     }

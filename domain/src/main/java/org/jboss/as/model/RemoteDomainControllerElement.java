@@ -51,6 +51,7 @@ public class RemoteDomainControllerElement extends AbstractModelElement<RemoteDo
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute(Attribute.HOST.getLocalName(), host);
         streamWriter.writeAttribute(Attribute.PORT.getLocalName(), Integer.toString(port));
+        streamWriter.writeEndElement();
     }
 
     public String getHost() {

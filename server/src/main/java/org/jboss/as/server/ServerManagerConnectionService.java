@@ -23,7 +23,6 @@
 package org.jboss.as.server;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import javax.net.SocketFactory;
@@ -31,7 +30,6 @@ import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.MessageHandler;
 import org.jboss.as.protocol.ProtocolClient;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
-import org.jboss.msc.ServiceNamed;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -64,7 +62,7 @@ public class ServerManagerConnectionService implements Service<Connection> {
         try {
             connection = protocolClient.connect();
         } catch (IOException e) {
-            throw new StartException("Failed to start remote SM connection", e);
+            throw new StartException("Failed to start remote Server Manager connection", e);
         }
     }
 

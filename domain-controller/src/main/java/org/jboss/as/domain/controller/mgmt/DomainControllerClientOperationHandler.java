@@ -217,7 +217,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 marshaller.writeByte(DomainClientProtocol.RETURN_SERVER_MANAGER_COUNT);
                 marshaller.writeInt(serverManagerNames.size());
                 for (String name : serverManagerNames) {
-                    marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                    marshaller.writeByte(DomainClientProtocol.RETURN_HOST_NAME);
                     marshaller.writeUTF(name);
                 }
                 marshaller.finish();

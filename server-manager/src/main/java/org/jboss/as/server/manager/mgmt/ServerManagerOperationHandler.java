@@ -288,9 +288,9 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
             marshaller.writeInt(serverStatuses.size());
             for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
                 marshaller.writeByte(ServerManagerProtocol.RETURN_SERVER_NAME);
-                marshaller.writeObject(entry.getKey().getServerName());
+                marshaller.writeUTF(entry.getKey().getServerName());
                 marshaller.writeByte(ServerManagerProtocol.RETURN_SERVER_GROUP_NAME);
-                marshaller.writeObject(entry.getKey().getServerGroupName());
+                marshaller.writeUTF(entry.getKey().getServerGroupName());
                 marshaller.writeByte(ServerManagerProtocol.RETURN_SERVER_STATUS);
                 marshaller.writeObject(entry.getValue());
             }
@@ -312,8 +312,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
 
         @Override
         protected ServerStatus processChange(String serverName, long gracefulTimeout) {
-            // TODO Auto-generated method stub
-            return null;
+            return serverManager.startServer(serverName);
         }
     }
 
@@ -330,8 +329,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
 
         @Override
         protected ServerStatus processChange(String serverName, long gracefulTimeout) {
-            // TODO Auto-generated method stub
-            return null;
+            return serverManager.stopServer(serverName, gracefulTimeout);
         }
     }
 
@@ -348,8 +346,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
 
         @Override
         protected ServerStatus processChange(String serverName, long gracefulTimeout) {
-            // TODO Auto-generated method stub
-            return null;
+            return serverManager.restartServer(serverName, gracefulTimeout);
         }
     }
 
@@ -410,6 +407,7 @@ public class ServerManagerOperationHandler extends AbstractMessageHandler implem
             ServerModel serverModel = serverManager.getServerModel(serverName);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
+            marshaller.writeByte(ServerManagerProtocol.RETURN_SERVER_MODEL);
             marshaller.writeObject(serverModel);
             marshaller.finish();
         }

@@ -216,11 +216,9 @@ public final class ServerModel extends AbstractModel<ServerModel> {
             }
         }
 
-        synchronized (managementElement) {
-            if (managementElement != null) {
-                streamWriter.writeStartElement(Element.MANAGEMENT.getLocalName());
-                managementElement.writeContent(streamWriter);
-            }
+        if (managementElement != null) {
+            streamWriter.writeStartElement(Element.MANAGEMENT.getLocalName());
+            managementElement.writeContent(streamWriter);
         }
 
         streamWriter.writeStartElement(Element.PROFILE.getLocalName());

@@ -184,7 +184,6 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         private final Map<Integer, UpdateResultHandlerResponse<?>> map = new ConcurrentHashMap<Integer, UpdateResultHandlerResponse<?>>();
         private final List<UpdateResultHandlerResponse<?>> responses;
         private final CountDownLatch latch;
-        private final boolean trace = log.isTraceEnabled();
 
         public ServerUpdateCommitHandlerImpl(List<UpdateResultHandlerResponse<?>> responses, int count, CountDownLatch latch) {
             this.responses = responses;
