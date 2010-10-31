@@ -51,7 +51,6 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.version.Version;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -225,8 +224,14 @@ public class StandardConfigsSerializationUnitTestCase extends TestCase {
              f = new File(f, "build");
              assertTrue("The server 'build' dir exists", f.exists());
              f = new File(f, "target");
-             f = new File(f, Version.AS_VERSION);
-             if(!f.exists())
+             File[] children = f.listFiles();
+             f = null;
+             if (children != null)
+                 for (File child : children)
+                     if (child.getName().startsWith("jboss-"))
+                         f = child;
+
+             if(f == null || !f.exists())
                 fail("The server hasn't been built yet.");
              assertTrue("The server 'build/target' dir exists", f.exists());
              return f.getAbsolutePath();
