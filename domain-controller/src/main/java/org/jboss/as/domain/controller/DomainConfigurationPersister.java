@@ -1,7 +1,7 @@
 package org.jboss.as.domain.controller;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 
 import org.jboss.as.model.DomainModel;
 
@@ -19,7 +19,7 @@ public interface DomainConfigurationPersister {
      * @return the reader. Will not be <code>null</code>
      * @throws IOException if a problem accessing the persisted form occurs
      */
-    Reader getConfigurationReader() throws IOException;
+    InputStream getConfigurationReader() throws IOException;
 
     /**
      * Persist the given domain model.

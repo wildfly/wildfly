@@ -21,9 +21,9 @@
  */
 package org.jboss.as.server;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +73,7 @@ public class StandaloneServer {
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardStandaloneReaders(mapper);
-            mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(new FileReader(standalone))));
+            mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(new FileInputStream(standalone))));
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }

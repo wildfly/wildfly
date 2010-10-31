@@ -22,21 +22,19 @@
 
 package org.jboss.as.domain.controller;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.io.InputStream;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -78,8 +76,8 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
     }
 
     @Override
-    public Reader getConfigurationReader() throws IOException {
-        return new FileReader(configFile);
+    public InputStream getConfigurationReader() throws IOException {
+        return new FileInputStream(configFile);
     }
 
     @Override
@@ -87,36 +85,19 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
 
         FileOutputStream fos = null;
         BufferedOutputStream bos = null;
-        OutputStreamWriter writer = null;
         try {
             backupConfigFile();
             configFile.createNewFile();
             fos = new FileOutputStream(configFile);
             bos = new BufferedOutputStream(fos);
-            writer = new OutputStreamWriter(bos);
             final XMLMapper mapper = XMLMapper.Factory.create();
-            mapper.deparseDocument(new RootElementWriter(domainModel), XMLOutputFactory.newInstance().createXMLStreamWriter(writer));
-        }
-        catch (Exception e) {
+            mapper.deparseDocument(new RootElementWriter(domainModel), XMLOutputFactory.newInstance().createXMLStreamWriter(bos));
+            fos.close();
+        } catch (Exception e) {
             logger.errorf(e, "Failed persisting configuration file %s" , configFile.getAbsolutePath());
+        } finally {
+            StreamUtils.safeClose(fos);
         }
-        finally {
-             if (writer != null) {
-                 try {
-                    writer.close();
-                } catch (IOException e) {
-                    logger.warnf(e, "Failed closing writer to configuration file %s" , configFile.getAbsolutePath());
-                }
-             }
-             if (fos != null) {
-                 try {
-                    fos.close();
-                } catch (IOException e) {
-                    logger.warnf(e, "Failed closing output stream to configuration file %s" , configFile.getAbsolutePath());
-                }
-             }
-        }
-
     }
 
     private void backupConfigFile() throws IOException {
@@ -130,36 +111,17 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
             backup.delete();
 
         if (!file.renameTo(backup)) {
-            FileOutputStream fos = null;
-            BufferedOutputStream bos = null;
-            FileInputStream fis = null;
+            final FileInputStream fis = new FileInputStream(file);
             try {
-                fos = new FileOutputStream(backup);
-                bos = new BufferedOutputStream(fos);
-                fis = new FileInputStream(file);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                byte[] bytes = new byte[8192];
-                int read;
-                while ((read = bis.read(bytes)) > -1) {
-                    bos.write(bytes, 0, read);
-                }
-            }
-            finally {
+                final FileOutputStream fos = new FileOutputStream(backup);
                 try {
-                    if (bos != null) {
-                        bos.close();
-                    }
-                 } catch (Exception ignored) {}
-                 try {
-                     if (fos != null) {
-                         fos.close();
-                     }
-                  } catch (Exception ignored) {}
-                  try {
-                      if (fis != null) {
-                          fis.close();
-                      }
-                   } catch (Exception ignored) {}
+                    StreamUtils.copyStream(fis, fos);
+                    fos.close();
+                } finally {
+                    StreamUtils.safeClose(fos);
+                }
+            } finally {
+                StreamUtils.safeClose(fis);
             }
         }
     }
@@ -179,7 +141,5 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
             domainModel.writeContent(streamWriter);
             streamWriter.writeEndDocument();
         }
-
     }
-
 }

@@ -22,9 +22,9 @@
 
 package org.jboss.as.domain.controller;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.Reader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -268,9 +268,9 @@ public class DomainController implements Service<DomainController> {
 
     private DomainModel parseDomain(final XMLMapper mapper) {
         try {
-            Reader reader = configPersister.getConfigurationReader();
+            InputStream reader = configPersister.getConfigurationReader();
             final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
-            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(reader)));
+            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final DomainModel domainModel = new DomainModel();
             for(final AbstractDomainModelUpdate<?> update : domainUpdates) {
                 domainModel.update(update);
