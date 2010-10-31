@@ -141,7 +141,7 @@
 	                    <connector-ref connector-name="netty" backup-connector-name="in-vm"/>
 	               </connectors>
 	               <entries>
-	                    <entry name="ConnectionFactory" />
+	                    <entry name="RemoteConnectionFactory" />
 	               </entries>
 	            </connection-factory>
                 <queue name="testQueue">
@@ -227,6 +227,7 @@
                 <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
+              <!-- Uncommet to add an in-memory datasource
               <datasources>
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                   <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
@@ -242,6 +243,7 @@
                   <statement></statement>
                 </datasource>
               </datasources>
+              -->
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resourceadapters:1.0" />
         </profile>
