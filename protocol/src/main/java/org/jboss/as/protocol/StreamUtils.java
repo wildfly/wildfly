@@ -284,7 +284,7 @@ public final class StreamUtils {
     private static final Logger log = Logger.getLogger("org.jboss.as.protocol");
 
     public static void safeClose(final Closeable closeable) {
-        try {
+        if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
             log.errorf(t, "Failed to close resource %s", closeable);
@@ -292,7 +292,7 @@ public final class StreamUtils {
     }
 
     public static void safeClose(final Socket socket) {
-        try {
+        if (socket != null) try {
             socket.close();
         } catch (Throwable t) {
             log.errorf(t, "Failed to close resource %s", socket);
