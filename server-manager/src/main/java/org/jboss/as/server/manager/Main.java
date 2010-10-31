@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
@@ -50,11 +51,11 @@ import org.jboss.stdio.StdioContext;
 public final class Main {
 
     public static String getVersionString() {
-        return "TRUNK SNAPSHOT";
+        return Version.AS_VERSION;
     }
 
     private static void usage() {
-        System.out.println("Usage: ./run.sh [args...]\n");
+        System.out.println("Usage: ./domain.sh [args...]\n");
         System.out.println("where args include:");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
         System.out.println("    -help                              Display this message and exit");

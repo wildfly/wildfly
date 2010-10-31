@@ -41,11 +41,11 @@ case "`uname`" in
 esac
 
 # Read an optional running configuration file
-if [ "x$RUN_CONF" = "x" ]; then
-    RUN_CONF="$DIRNAME/run.conf"
+if [ "x$DOMAIN_CONF" = "x" ]; then
+    DOMAIN_CONF="$DIRNAME/domain.conf"
 fi
-if [ -r "$RUN_CONF" ]; then
-    . "$RUN_CONF"
+if [ -r "$DOMAIN_CONF" ]; then
+    . "$DOMAIN_CONF"
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
