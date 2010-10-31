@@ -41,6 +41,7 @@
         <echo>Valid example names to run against a JBoss AS domain are</echo>
         <echo>  domain.servers   - shows domain, server manager and server configs, starts/stops servers</echo>
         <echo>  messaging.domain - deploys HornetQ native sender and receiver</echo>
+        <echo>  rar.domain       - deploys deploys a resource adapter</echo>
         <echo>  ds.domain        - deploys deploys a test bean for data sources</echo>
     </target>
         
