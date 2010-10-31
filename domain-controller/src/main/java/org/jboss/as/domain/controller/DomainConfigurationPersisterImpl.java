@@ -31,6 +31,7 @@ import java.io.InputStream;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.Element;
@@ -85,17 +86,20 @@ public class DomainConfigurationPersisterImpl implements DomainConfigurationPers
 
         FileOutputStream fos = null;
         BufferedOutputStream bos = null;
+        XMLStreamWriter xmlWriter = null;
         try {
             backupConfigFile();
             configFile.createNewFile();
             fos = new FileOutputStream(configFile);
             bos = new BufferedOutputStream(fos);
+            xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
             final XMLMapper mapper = XMLMapper.Factory.create();
-            mapper.deparseDocument(new RootElementWriter(domainModel), XMLOutputFactory.newInstance().createXMLStreamWriter(bos));
-            fos.close();
+            mapper.deparseDocument(new RootElementWriter(domainModel), xmlWriter);
+            xmlWriter.close();
         } catch (Exception e) {
             logger.errorf(e, "Failed persisting configuration file %s" , configFile.getAbsolutePath());
         } finally {
+            StreamUtils.safeClose(bos);
             StreamUtils.safeClose(fos);
         }
     }

@@ -227,7 +227,7 @@
                 <default-workmanager short-running-thread-pool="jca-short-running" long-running-thread-pool="jca-long-running" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:datasources:1.0">
-              <!-- Uncommet to add an in-memory datasource
+              <!-- Uncomment to add an in-memory datasource
               <datasources>
                 <datasource jndi-name="java:/H2DS" enabled="true" use-java-context="true" pool-name="H2DS">
                   <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>

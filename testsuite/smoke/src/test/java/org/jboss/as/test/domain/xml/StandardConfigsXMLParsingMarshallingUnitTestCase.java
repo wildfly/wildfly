@@ -21,15 +21,14 @@
  */
 package org.jboss.as.test.domain.xml;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -41,6 +40,7 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import junit.framework.TestCase;
 
@@ -53,7 +53,6 @@ import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ModelXmlParsers;
 import org.jboss.as.model.Namespace;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.version.Version;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -112,37 +111,37 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
 
     public void testHost() throws Exception {
         URL url = getXmlUrl("domain/configuration/host.xml");
-        Reader reader = getReader(url);
+        InputStream reader = getReader(url);
         HostModel model = parseHost(reader);
         String xml = writeModel(Element.HOST, model);
-        reader = new StringReader(xml);
+        reader = new ByteArrayInputStream(xml.getBytes());
         parseHost(reader);
     }
 
     public void testDomain() throws Exception {
         URL url = getXmlUrl("domain/configuration/domain.xml");
-        Reader reader = getReader(url);
+        InputStream reader = getReader(url);
         DomainModel model = parseDomain(reader);
         String xml = writeModel(Element.DOMAIN, model);
-        reader = new StringReader(xml);
+        reader = new ByteArrayInputStream(xml.getBytes());
         parseDomain(reader);
     }
 
     public void testStandalone() throws Exception {
         URL url = getXmlUrl("standalone/configuration/standalone.xml");
-        Reader reader = getReader(url);
+        InputStream reader = getReader(url);
         ServerModel model = parseServer(reader);
         String xml = writeModel(Element.SERVER, model);
-        reader = new StringReader(xml);
+        reader = new ByteArrayInputStream(xml.getBytes());
         parseServer(reader);
     }
 
-    private DomainModel parseDomain(final Reader reader) throws ModuleLoadException {
+    private DomainModel parseDomain(final InputStream reader) throws ModuleLoadException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         registerStandardDomainReaders(mapper);
         try {
             final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
-            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(reader)));
+            mapper.parseDocument(domainUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final DomainModel domainModel = new DomainModel();
             for(final AbstractDomainModelUpdate<?> update : domainUpdates) {
                 domainModel.update(update);
@@ -155,12 +154,12 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
         }
     }
 
-    private HostModel parseHost(final Reader reader) throws ModuleLoadException {
+    private HostModel parseHost(final InputStream reader) throws ModuleLoadException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         registerStandardHostReaders(mapper);
         try {
             final List<AbstractHostModelUpdate<?>> hostUpdates = new ArrayList<AbstractHostModelUpdate<?>>();
-            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(reader)));
+            mapper.parseDocument(hostUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final HostModel hostModel = new HostModel();
             for(final AbstractHostModelUpdate<?> update : hostUpdates) {
                 hostModel.update(update);
@@ -173,12 +172,12 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
         }
     }
 
-    private ServerModel parseServer(final Reader reader) throws ModuleLoadException {
+    private ServerModel parseServer(final InputStream reader) throws ModuleLoadException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         registerStandardServerReaders(mapper);
         try {
             final List<AbstractServerModelUpdate<?>> serverUpdates = new ArrayList<AbstractServerModelUpdate<?>>();
-            mapper.parseDocument(serverUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedReader(reader)));
+            mapper.parseDocument(serverUpdates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(reader)));
             final ServerModel serverModel = new ServerModel();
             for(final AbstractServerModelUpdate<?> update : serverUpdates) {
                 serverModel.update(update);
@@ -191,19 +190,29 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
         }
     }
 
-    private String writeModel(final Element element, final XMLContentWriter content) throws XMLStreamException, FactoryConfigurationError {
+    private String writeModel(final Element element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
         final XMLMapper mapper = XMLMapper.Factory.create();
-        final StringWriter writer = new StringWriter();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final BufferedOutputStream bos = new BufferedOutputStream(baos);
+        final XMLStreamWriter xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
         try {
-            mapper.deparseDocument(new RootElementWriter(element, content), XMLOutputFactory.newInstance().createXMLStreamWriter(writer));
+            mapper.deparseDocument(new RootElementWriter(element, content), xmlWriter);
+            xmlWriter.close();
         }
         catch (XMLStreamException e) {
+            xmlWriter.close();
+            bos.close();
+            baos.close();
             // Dump some diagnostics
             System.out.println("XML Content that was written prior to exception:");
-            System.out.println(writer.toString());
+            System.out.println(new String(baos.toByteArray()));
             throw e;
         }
-        return writer.toString();
+        finally {
+            bos.close();
+            baos.close();
+        }
+        return new String(baos.toByteArray());
     }
 
     private synchronized void registerStandardDomainReaders(XMLMapper mapper) throws ModuleLoadException {
@@ -225,11 +234,12 @@ public class StandardConfigsXMLParsingMarshallingUnitTestCase extends TestCase {
         return f.toURI().toURL();
     }
 
-    private Reader getReader(URL url) throws IOException {
+    private InputStream getReader(URL url) throws IOException {
         URLConnection connection = url.openConnection();
         InputStream is = connection.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is);
-        return isr;
+//        InputStreamReader isr = new InputStreamReader(is);
+//        return isr;
+        return is;
     }
 
     private class RootElementWriter implements XMLContentWriter {
