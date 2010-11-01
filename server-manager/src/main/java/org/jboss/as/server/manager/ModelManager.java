@@ -181,6 +181,8 @@ public class ModelManager {
             // Persist model
             configPersister.persistConfiguration(hostModel);
 
+            result.clear();
+
             for (AbstractHostModelUpdate<?> update : updates) {
                 result.add(new HostUpdateApplierResponse(getAffectedServers(update)));
             }

@@ -246,6 +246,9 @@ public final class HostModel extends AbstractModel<HostModel> {
             systemProperties.writeContent(streamWriter);
         }
 
+        streamWriter.writeStartElement(Element.MANAGEMENT.getLocalName());
+        managementElement.writeContent(streamWriter);
+
         streamWriter.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (localDomainController != null) {
             streamWriter.writeStartElement(Element.LOCAL.getLocalName());

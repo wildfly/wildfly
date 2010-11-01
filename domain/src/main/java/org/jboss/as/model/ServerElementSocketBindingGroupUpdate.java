@@ -41,7 +41,8 @@ public class ServerElementSocketBindingGroupUpdate extends AbstractModelUpdate<S
 
     @Override
     public ServerElementSocketBindingGroupUpdate getCompensatingUpdate(ServerElement original) {
-        return new ServerElementSocketBindingGroupUpdate(original.getSocketBindingGroupName());
+        final String originalName = original.getSocketBindingGroupName();
+        return originalName != null ? new ServerElementSocketBindingGroupUpdate(original.getSocketBindingGroupName()) : null;
     }
 
     @Override
