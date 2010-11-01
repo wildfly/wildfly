@@ -173,7 +173,7 @@ public class HostConfigurationPersisterImpl implements HostConfigurationPersiste
         @Override
         public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
             streamWriter.writeStartDocument();
-            streamWriter.writeStartElement(Element.DOMAIN.getLocalName());
+            streamWriter.writeStartElement(Element.HOST.getLocalName());
             hostModel.writeContent(streamWriter);
             streamWriter.writeEndDocument();
         }
