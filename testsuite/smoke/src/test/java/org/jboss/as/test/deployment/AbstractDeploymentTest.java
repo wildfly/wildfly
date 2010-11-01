@@ -33,14 +33,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerStartException;
 import org.jboss.as.server.StandaloneServer;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
@@ -48,7 +46,6 @@ import org.jboss.as.standalone.client.api.deployment.DuplicateDeploymentNameExce
 import org.jboss.as.standalone.client.api.deployment.InitialDeploymentPlanBuilder;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
-import org.jboss.as.version.Version;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
@@ -87,7 +84,7 @@ public abstract class AbstractDeploymentTest {
     }
 
    @Before
-   public void setUp() {
+   public void setUp() throws Exception {
       managedBeansJar = Thread.currentThread().getContextClassLoader().getResource("deployment/managedbeans.jar");
       assertNotNull("managedbeans.jar exists", managedBeansJar);
       File f = new File(managedBeansJar.getFile());
@@ -200,16 +197,10 @@ public abstract class AbstractDeploymentTest {
       return null;
    }
 
-   protected ServerDeploymentManager startEmbeddedAS() {
-      String asHome = getASHome();
-      Properties props = new Properties();
-      props.setProperty(ServerEnvironment.HOME_DIR, asHome);
-
-      ServerEnvironment env = new ServerEnvironment(props, "embedded as7", true);
-      System.setProperty("module.path", env.getModulesDir().getAbsolutePath());
+   protected ServerDeploymentManager startEmbeddedAS() throws IOException {
 
       DeploymentManagerProvider service = new DeploymentManagerProvider();
-      StandaloneServer server = new StandaloneServer(env);
+      StandaloneServer server = TestServerFactory.createServer("embedded");
       try {
          server.start(Collections.<ServiceActivator>singletonList(service));
       } catch (ServerStartException e) {
