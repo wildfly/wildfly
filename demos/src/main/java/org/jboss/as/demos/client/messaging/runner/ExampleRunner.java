@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.demos.client;
+package org.jboss.as.demos.client.messaging.runner;
 
 import java.net.InetAddress;
 import java.util.Collections;
@@ -51,9 +51,11 @@ import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 
 /**
+ * Demo using the AS management API to create and destroy a HornetQ core queue.
+ *
  * @author Emanuel Muckenhuber
  */
-public class HornetQQueueTestClient {
+public class ExampleRunner {
 
     public static void main(String[] args) throws Exception {
 
@@ -62,49 +64,53 @@ public class HornetQQueueTestClient {
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
         final StandaloneClient client = StandaloneClient.Factory.create(InetAddress.getByName("localhost"), 9999);
 
-        // Check that the queue does not exists
-        if(queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
-
-        // Create a new core queue using the standalone client
-        final QueueAdd add = new QueueAdd(queueName);
-        add.setAddress(queueName);
-        applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(add)), client);
-        // Check if the queue exists
-        if(! queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
-
-        ClientSession session = null;
         try {
-           session = sf.createSession();
-           ClientProducer producer = session.createProducer(queueName);
-           ClientMessage message = session.createMessage(false);
+            // Check that the queue does not exists
+            if(queueExists(queueName, sf)) {
+                throw new IllegalStateException();
+            }
 
-           final String propName = "myprop";
-           message.putStringProperty(propName, "Hello sent at " + new Date());
-           System.out.println("Sending the message.");
+            // Create a new core queue using the standalone client
+            final QueueAdd add = new QueueAdd(queueName);
+            add.setAddress(queueName);
+            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(add)), client);
+            // Check if the queue exists
+            if(! queueExists(queueName, sf)) {
+                throw new IllegalStateException();
+            }
 
-           producer.send(message);
+            ClientSession session = null;
+            try {
+               session = sf.createSession();
+               ClientProducer producer = session.createProducer(queueName);
+               ClientMessage message = session.createMessage(false);
 
-           ClientConsumer messageConsumer = session.createConsumer(queueName);
-           session.start();
+               final String propName = "myprop";
+               message.putStringProperty(propName, "Hello sent at " + new Date());
+               System.out.println("Sending the message.");
 
-           ClientMessage messageReceived = messageConsumer.receive(1000);
-           System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
+               producer.send(message);
+
+               ClientConsumer messageConsumer = session.createConsumer(queueName);
+               session.start();
+
+               ClientMessage messageReceived = messageConsumer.receive(1000);
+               System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
+            } finally {
+               if (session != null) {
+                  session.close();
+               }
+            }
+
+            final QueueRemove remove = new QueueRemove(queueName);
+            applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
+
+            // Check that the queue does not exists
+            if(queueExists(queueName, sf)) {
+                throw new IllegalStateException();
+            }
         } finally {
-           if (session != null) {
-              session.close();
-           }
-        }
-
-        final QueueRemove remove = new QueueRemove(queueName);
-        applyUpdates(Collections.<AbstractServerModelUpdate<?>>singletonList(ServerSubsystemUpdate.create(remove)), client);
-
-        // Check that the queue does not exists
-        if(queueExists(queueName, sf)) {
-            throw new IllegalStateException();
+            client.close();
         }
     }
 

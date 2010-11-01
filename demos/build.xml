@@ -38,6 +38,9 @@
         <echo>  ds               - deploys a test bean for data sources</echo>
         <echo>  war              - deploys a simple servlet and connects to it</echo>
         <echo>  webapp           - deploys a servlet using jms and a database</echo>
+        <echo>  client.messaging - creates a HornetQ core queue using the management API</echo>
+        <echo>  client.jms       - creates a JMS queue using the management API</echo>
+        <echo>  web.connector    - creates and removes a jboss web connector</echo>
         <echo/>
         <echo>Valid example names to run against a JBoss AS domain are</echo>
         <echo>  domain.configs   - reads the domain config and any available server manager configs</echo>
