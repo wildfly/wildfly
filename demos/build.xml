@@ -39,10 +39,11 @@
         <echo>  war              - deploys a simple servlet and connects to it</echo>
         <echo/>
         <echo>Valid example names to run against a JBoss AS domain are</echo>
+        <echo>  domain.configs   - reads the domain config and any available server manager configs</echo>
+        <echo>  domain.ds        - deploys deploys a test bean for data sources</echo>
+        <echo>  domain.messaging - deploys HornetQ native sender and receiver</echo>
+        <echo>  domain.rar       - deploys deploys a resource adapter</echo>
         <echo>  domain.servers   - shows domain, server manager and server configs, starts/stops servers</echo>
-        <echo>  messaging.domain - deploys HornetQ native sender and receiver</echo>
-        <echo>  rar.domain       - deploys deploys a resource adapter</echo>
-        <echo>  ds.domain        - deploys deploys a test bean for data sources</echo>
     </target>
         
     <target name="run" if="example">

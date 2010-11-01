@@ -23,7 +23,8 @@ package org.jboss.as.demos.domain.servers.runner;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
-import java.io.StringWriter;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.domain.client.api.DomainClient;
 import org.jboss.as.domain.client.api.ServerIdentity;
@@ -57,19 +59,6 @@ public class ExampleRunner {
         DomainClient client = null;
         try {
             client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-
-            System.out.println("\nReading the domain configuration:\n");
-            System.out.println(writeModel("domain", client.getDomainModel()));
-            System.out.println("\nReading the list of active server managers:\n");
-            List<String> serverManagers = client.getServerManagerNames();
-            for (String sm : serverManagers) {
-                System.out.println(sm);
-            }
-
-            for (String sm : serverManagers) {
-                System.out.println("\nReading host configuration for server manager " + sm + "\n");
-                System.out.println(writeModel("host", client.getHostModel(sm)));
-            }
 
             System.out.println("\nReading the list of configured servers:");
             Map<ServerIdentity, ServerStatus> statuses = new HashMap<ServerIdentity, ServerStatus>(client.getServerStatuses());
@@ -139,11 +128,13 @@ public class ExampleRunner {
         }
     }
 
-    private static String writeModel(final String element, final XMLContentWriter content) throws XMLStreamException, FactoryConfigurationError {
+    private static String writeModel(final String element, final XMLContentWriter content) throws Exception, FactoryConfigurationError {
         final XMLMapper mapper = XMLMapper.Factory.create();
-        final StringWriter writer = new StringWriter();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final BufferedOutputStream bos = new BufferedOutputStream(baos);
+        final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
         try {
-            mapper.deparseDocument(new RootElementWriter(element, content), XMLOutputFactory.newInstance().createXMLStreamWriter(writer));
+            mapper.deparseDocument(new RootElementWriter(element, content), writer);
         }
         catch (XMLStreamException e) {
             // Dump some diagnostics
@@ -151,7 +142,11 @@ public class ExampleRunner {
             System.out.println(writer.toString());
             throw e;
         }
-        return writer.toString();
+        finally {
+            writer.close();
+            bos.close();
+        }
+        return new String(baos.toByteArray());
     }
 
     private static class RootElementWriter implements XMLContentWriter {

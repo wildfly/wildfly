@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.rar.domain.runner;
+package org.jboss.as.demos.domain.rar.runner;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
