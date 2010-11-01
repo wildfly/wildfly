@@ -23,13 +23,12 @@
 package org.jboss.as.messaging.jms;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.MessagingSubsystemElement;
+import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
@@ -51,15 +50,11 @@ public class JMSService implements Service<JMSServerManager> {
     private JMSServerManager jmsServer;
 
     public static void addService(final BatchBuilder builder) {
-        try {
-            final JMSService service = new JMSService();
-            builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
-                .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
-                .addInjection(service.getContextInjector(), (Context)new InitialContext())
-                .setInitialMode(Mode.ACTIVE);
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
+        final JMSService service = new JMSService();
+        builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
+            .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
+            .addDependency(JavaContextService.SERVICE_NAME, Context.class, service.getContextInjector())
+            .setInitialMode(Mode.ACTIVE);
     }
 
     protected JMSService() {
