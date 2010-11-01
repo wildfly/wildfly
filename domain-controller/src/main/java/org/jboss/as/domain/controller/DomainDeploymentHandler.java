@@ -132,7 +132,7 @@ public class DomainDeploymentHandler {
         List<DeploymentSetUpdates> updateSets = new ArrayList<DeploymentSetUpdates>(setPlans.size());
         for (DeploymentSetPlan setPlan : setPlans) {
             try {
-                updateSets.add(createDeploymentSetUpdates(setPlan, getDomainModel()));
+                updateSets.add(createDeploymentSetUpdates(setPlan, getDomainModel(), setPlan.getDeploymentActions()));
             } catch (InvalidDeploymentPlanException e) {
                 logger.errorf(e, "Deployment plan %s is invalid", plan.getId());
                 pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_PLAN_INVALID, e, true));
@@ -142,26 +142,55 @@ public class DomainDeploymentHandler {
 
         List<DeploymentSetUpdates> rollbackSets = new ArrayList<DeploymentSetUpdates>(setPlans.size());
         boolean ok = true;
+        boolean rollbackFailed = false;
         for (DeploymentSetUpdates updateSet : updateSets) {
             if (ok) {
-                ok = executeDeploymentSet(updateSet, responseQueue);
-                if (ok) {
-                    rollbackSets.add(0, updateSet); // roll back in reverse order
+                try {
+                    ok = executeDeploymentSet(updateSet, responseQueue);
+                    if (ok) {
+                        rollbackSets.add(0, updateSet); // roll back in reverse order
+                    }
+                    else {
+                        logger.debugf("Deployment set %s did not succeed", updateSet.setPlan.getId());
+                    }
                 }
-                else {
-                    logger.debugf("Deployment set %s did not succeed", updateSet.setPlan.getId());
+                catch (RollbackFailedException e) {
+                    ok = false;
+                    rollbackFailed = true;
+                    logger.errorf("Rollback of deployment set %s did not succeed", updateSet.setPlan.getId());
                 }
             } else {
                 // A previous set failed; just inform client this set is cancelled
-                cancelDeploymentSet(updateSet, responseQueue);
+                cancelDeploymentSet(updateSet, false, responseQueue);
             }
         }
 
-        if (!ok && plan.isGlobalRollback()) {
-            // Rollback the sets that succeeded before the one that failed
-            // The one that failed will have rolled itself back.
-            for (DeploymentSetUpdates updateSet : rollbackSets) {
-                rollbackDeploymentSet(updateSet, responseQueue);
+        if (plan.isGlobalRollback()) {
+            if (!ok && !rollbackFailed) {
+                // Rollback the sets that succeeded before the one that failed
+                // The one that failed will have rolled itself back.
+                for (Iterator<DeploymentSetUpdates> iter = rollbackSets.iterator(); iter.hasNext();) {
+                    DeploymentSetUpdates updateSet = iter.next();
+                    try {
+                        rollbackDeploymentSet(updateSet, responseQueue);
+                        iter.remove();
+                    }
+                    catch (RollbackFailedException e) {
+                        rollbackFailed = true;
+                        logger.errorf("Rollback of deployment set %s did not succeed", updateSet.setPlan.getId());
+                        // Don't try further rollbacks
+                        break;
+                    }
+                }
+
+            }
+
+            if (rollbackFailed) {
+                // Any remaining members in rollbackSets are there because rollback
+                // of another set failed. So send notifications
+                for (DeploymentSetUpdates updateSet : rollbackSets) {
+                    cancelDeploymentSet(updateSet, true, responseQueue);
+                }
             }
         }
 
@@ -173,7 +202,7 @@ public class DomainDeploymentHandler {
     }
 
     private boolean executeDeploymentSet(final DeploymentSetUpdates updateSet,
-            final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
+            final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException, RollbackFailedException {
 
         logger.debugf("Executing deployment set %s", updateSet.setPlan.getId());
 
@@ -208,7 +237,7 @@ public class DomainDeploymentHandler {
         }
 
         // Apply to servers
-        Runnable r = getServerUpdateTask(updateSet, rsps, responseQueue);
+        Runnable r = getServerUpdateTask(updateSet, rsps, false, responseQueue);
         r.run();
 
         boolean ok = true;
@@ -230,9 +259,13 @@ public class DomainDeploymentHandler {
         return executorService;
     }
 
-    private void cancelDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
+    private void cancelDeploymentSet(final DeploymentSetUpdates updateSet,
+                                     final boolean forRollback,
+                                     final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException {
 
-        pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID, updateSet.setPlan.getId()));
+        byte type = forRollback ? (byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ROLLBACK
+                                : (byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ID;
+        pushSingleResponse(responseQueue, new StreamedResponse(type, updateSet.setPlan.getId()));
 
         List<StreamedResponse> rspList = new ArrayList<StreamedResponse>();
         DomainUpdateApplierResponse duar = new DomainUpdateApplierResponse(true);
@@ -244,15 +277,54 @@ public class DomainDeploymentHandler {
         responseQueue.put(rspList);
     }
 
-    private void rollbackDeploymentSet(final DeploymentSetUpdates updateSet, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+    private void rollbackDeploymentSet(final DeploymentSetUpdates updateSet,
+            final BlockingQueue<List<StreamedResponse>> responseQueue) throws InterruptedException, RollbackFailedException {
 
+        logger.debugf("Rolling back deployment set %s", updateSet.setPlan.getId());
 
-        // FIXME implement rollbackDeploymentSet
-        throw new UnsupportedOperationException("implement me");
+        // Execute domain model update on domain controller and server managers
+        List<DomainUpdateApplierResponse> rsps = domainController.applyUpdatesToModel(updateSet.getDomainRollbacks());
+
+        // Inform client of results
+        pushSingleResponse(responseQueue, new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_SET_ROLLBACK, updateSet.setPlan.getId()));
+        DeploymentAction lastResponseAction = null;
+        for (int i = 0; i < rsps.size(); i++) {
+            DomainUpdateApplierResponse duar = rsps.get(i);
+            // There can be multiple domain updates for a given action, but we
+            // only send one response. Use this update result for the response if
+            // 1) it failed or 2) it's the last update associated with the action
+            if (duar.getDomainFailure() != null || duar.getHostFailures().size() > 0 || updateSet.isLastDomainRollbackForAction(i)) {
+                DeploymentAction action = updateSet.getDeploymentActionForDomainUpdate(i);
+                if (action != lastResponseAction) {
+                    List<StreamedResponse> rspList = new ArrayList<StreamedResponse>(2);
+                    rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID, action.getId()));
+                    rspList.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_MODEL_RESULT, duar));
+                    responseQueue.put(rspList);
+                    lastResponseAction = action;
+                }
+            }
+        }
+
+        DomainUpdateApplierResponse last = rsps.get(rsps.size() - 1);
+        if (last.getDomainFailure() != null || last.getHostFailures().size() > 0) {
+            throw new RollbackFailedException();
+        }
+
+        // Apply to servers
+        Runnable r = getServerUpdateTask(updateSet, rsps, true, responseQueue);
+        r.run();
+
+        for (ServerUpdatePolicy policy : updateSet.rollbackPolicies.values()) {
+            if (policy.isFailed()) {
+                throw new RollbackFailedException();
+            }
+        }
     }
 
     private Runnable getServerUpdateTask(final DeploymentSetUpdates updateSet,
-            final List<DomainUpdateApplierResponse> rsps, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+            final List<DomainUpdateApplierResponse> rsps,
+            final boolean forRollbacks,
+            final BlockingQueue<List<StreamedResponse>> responseQueue) {
 
         logger.debugf("Creating server tasks for %s domain responses", rsps.size());
         // Organize all the impacted servers by ServerGroup, sorted within a group by ServerManager
@@ -289,13 +361,54 @@ public class DomainDeploymentHandler {
                     // Just KISS and use a placeholder
                     servers = new TreeSet<ServerIdentity>();
                 }
-                ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, groupPlan);
-                updateSet.updatePolicies.put(serverGroupName, policy);
+
+                ServerUpdatePolicy policy = null;
+                if (forRollbacks) {
+                    policy = new ServerUpdatePolicy(parent, serverGroupName, servers);
+                    updateSet.rollbackPolicies.put(serverGroupName, policy);
+                }
+                else {
+                    policy = new ServerUpdatePolicy(parent, serverGroupName, servers, groupPlan);
+                    updateSet.updatePolicies.put(serverGroupName, policy);
+                }
 
                 List<Runnable> groupTasks = new ArrayList<Runnable>(servers.size());
                 if (shutdown) {
                     for (ServerIdentity server : servers) {
-                        groupTasks.add (new ServerRestartTask(server, updateSet, policy, responseQueue, gracefulTimeout));
+                        groupTasks.add (new ServerRestartTask(server, updateSet, forRollbacks, policy, responseQueue, gracefulTimeout));
+                    }
+                }
+                else if (forRollbacks) {
+                    // need rollback tasks for this server
+                    for (ServerIdentity server : servers) {
+                        List<AbstractServerModelUpdate<?>> serverRollbacks = null;
+
+                        // Find out what happened first time
+                        List<UpdateResultHandlerResponse<?>> origResults  = updateSet.serverResults.get(server);
+                        if (origResults == null) {
+                            // Must be a new server that appeared. Assume it got
+                            // the invalid model on start; roll 'em all back
+                            serverRollbacks = updateSet.getServerRollbacks();
+                        }
+                        else {
+                            serverRollbacks = new ArrayList<AbstractServerModelUpdate<?>>();
+                            boolean rollingBack = false;
+                            for (int i = origResults.size() - 1; i >= 0; i--) {
+                                UpdateResultHandlerResponse<?> origResult = origResults.get(i);
+                                if (!rollingBack) {
+                                    // See if we need to roll this one back. Once we hit one in the list,
+                                    // the rest need to be rolled back as well
+                                    rollingBack = !origResult.isCancelled() && !origResult.isRolledBack();
+                                }
+
+                                if (rollingBack) {
+                                    serverRollbacks.add(updateSet.getRollbackUpdateForServerUpdate(i));
+                                }
+                            }
+                        }
+                        if (serverRollbacks.size() > 0) {
+                            groupTasks.add (new RunningServerUpdateTask(server, updateSet, serverRollbacks, policy, responseQueue));
+                        }
                     }
                 }
                 else {
@@ -322,11 +435,9 @@ public class DomainDeploymentHandler {
     }
 
     /** Performs the translation from DeploymentAction to domain and server model updates */
-    private static DeploymentSetUpdates createDeploymentSetUpdates(DeploymentSetPlan plan, DomainModel model) throws InvalidDeploymentPlanException {
+    private static DeploymentSetUpdates createDeploymentSetUpdates(DeploymentSetPlan plan, DomainModel model, List<DeploymentAction> actions) throws InvalidDeploymentPlanException {
 
         logger.debugf("Creating DeploymentSetUpdates for deployment set %s", plan.getId());
-
-        List<DeploymentAction> actions = plan.getDeploymentActions();
 
         if (actions.size() == 0) {
             throw new InvalidDeploymentPlanException(String.format("%s %s contains no deployment actions", DeploymentSetPlan.class.getSimpleName(), plan.getId()));
@@ -356,17 +467,19 @@ public class DomainDeploymentHandler {
                     }
                     else if (model.getDeployment(deploymentName) == null) {
                         // Deployment is new to the domain; add it
-                        au.domainUpdates.add(new DomainDeploymentAdd(deploymentName, runtimeName, hash, false));
+                        DomainDeploymentAdd dda = new DomainDeploymentAdd(deploymentName, runtimeName, hash, false);
+                        au.domainUpdates.add(dda);
+                        addDomainRollbackUpdate(dda, au, model, true);
                     }
                     // Now add to serve groups
                     ServerGroupDeploymentAdd sgda = new ServerGroupDeploymentAdd(deploymentName, runtimeName, hash, false);
-                    addServerGroupUpdates(plan, au, sgda);
+                    addServerGroupUpdates(plan, au, sgda, model);
                     break;
                 }
                 case DEPLOY: {
                     logger.tracef("Deploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), true);
-                    addServerGroupUpdates(plan, au, sgdssu);
+                    addServerGroupUpdates(plan, au, sgdssu, model);
                     break;
                 }
                 case FULL_REPLACE: {
@@ -393,6 +506,7 @@ public class DomainDeploymentHandler {
                     boolean start = deployment != null && deployment.isStart();
                     DomainDeploymentFullReplaceUpdate update = new DomainDeploymentFullReplaceUpdate(deploymentName, dai.getNewContentFileName(), dai.getNewContentHash(), start);
                     au.domainUpdates.add(update);
+                    addDomainRollbackUpdate(update, au, model, true);
                     au.serverUpdates.add(update.getServerModelUpdate());
                     break;
                 }
@@ -400,13 +514,14 @@ public class DomainDeploymentHandler {
                     logger.tracef("Redeploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     DomainDeploymentRedeployUpdate update = new DomainDeploymentRedeployUpdate(dai.getDeploymentUnitUniqueName());
                     au.domainUpdates.add(update);
+                    addDomainRollbackUpdate(update, au, model, true);
                     au.serverUpdates.add(update.getServerModelUpdate());
                     break;
                 }
                 case REMOVE: {
                     logger.tracef("Remove of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentRemove sgdr = new ServerGroupDeploymentRemove(dai.getDeploymentUnitUniqueName());
-                    addServerGroupUpdates(plan, au, sgdr);
+                    addServerGroupUpdates(plan, au, sgdr, model);
                     // If no server group is using this, remove from domain
                     Set<String> names = model.getServerGroupNames();
                     for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
@@ -423,20 +538,22 @@ public class DomainDeploymentHandler {
                         }
                     }
                     if (!left) {
-                        au.domainUpdates.add(new DomainDeploymentRemove(dai.getDeploymentUnitUniqueName()));
+                        DomainDeploymentRemove ddr = new DomainDeploymentRemove(dai.getDeploymentUnitUniqueName());
+                        au.domainUpdates.add(ddr);
+                        addDomainRollbackUpdate(ddr, au, model, true);
                     }
                     break;
                 }
                 case REPLACE: {
                     logger.tracef("Replace of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentReplaceUpdate sgdru = new ServerGroupDeploymentReplaceUpdate(dai.getDeploymentUnitUniqueName(), dai.getNewContentFileName(), dai.getNewContentHash(), dai.getReplacedDeploymentUnitUniqueName());
-                    addServerGroupUpdates(plan, au, sgdru);
+                    addServerGroupUpdates(plan, au, sgdru, model);
                     break;
                 }
                 case UNDEPLOY: {
                     logger.tracef("Undeploy of deployment %s", dai.getDeploymentUnitUniqueName());
                     ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), false);
-                    addServerGroupUpdates(plan, au, sgdssu);
+                    addServerGroupUpdates(plan, au, sgdssu, model);
                     break;
                 }
                 default:
@@ -449,15 +566,29 @@ public class DomainDeploymentHandler {
         return new DeploymentSetUpdates(actionUpdates, plan);
     }
 
-    private static void addServerGroupUpdates(final DeploymentSetPlan plan, final ActionUpdates au, final AbstractModelUpdate<ServerGroupElement, ?> serverGroupUpdate) {
+    private static void addServerGroupUpdates(final DeploymentSetPlan plan, final ActionUpdates au, final AbstractModelUpdate<ServerGroupElement, ?> serverGroupUpdate, DomainModel model) {
         AbstractServerModelUpdate<?> smu = null;
         for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
             for (ServerGroupDeploymentPlan sgdp : ssgp) {
                 AbstractDomainModelUpdate<?> dmu = DomainServerGroupUpdate.create(sgdp.getServerGroupName(), serverGroupUpdate);
                 au.domainUpdates.add(dmu);
+                addDomainRollbackUpdate(dmu, au, model, smu == null);
                 if (smu == null) {
                     smu = dmu.getServerModelUpdate();
                     au.serverUpdates.add(smu);
+                }
+            }
+        }
+    }
+
+    private static void addDomainRollbackUpdate(final AbstractDomainModelUpdate<?> dmu, final ActionUpdates au, final DomainModel model, final boolean addServerUpdate) {
+        AbstractDomainModelUpdate<?> rollback = dmu.getCompensatingUpdate(model);
+        if (rollback != null) {
+            au.domainRollbacks.add(0, rollback);
+            if (addServerUpdate) {
+                AbstractServerModelUpdate<?> smu = rollback.getServerModelUpdate();
+                if (smu != null) {
+                    au.serverRollbacks.add(0, smu);
                 }
             }
         }
@@ -469,6 +600,7 @@ public class DomainDeploymentHandler {
         private final DeploymentSetPlan setPlan;
         private final Map<ServerIdentity, List<UpdateResultHandlerResponse<?>>> serverResults = new ConcurrentHashMap<ServerIdentity, List<UpdateResultHandlerResponse<?>>>();
         private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();;
+        private final Map<String, ServerUpdatePolicy> rollbackPolicies = new HashMap<String, ServerUpdatePolicy>();;
 
         private DeploymentSetUpdates(final List<ActionUpdates> actionUpdates, final DeploymentSetPlan setPlan) {
             this.actionUpdates = actionUpdates;
@@ -491,6 +623,24 @@ public class DomainDeploymentHandler {
             return result;
         }
 
+        private List<AbstractDomainModelUpdate<?>> getDomainRollbacks() {
+            List<AbstractDomainModelUpdate<?>>result = new ArrayList<AbstractDomainModelUpdate<?>>();
+            for (int i = actionUpdates.size() -1; i >= 0; i--) {
+                ActionUpdates au = actionUpdates.get(i);
+                result.addAll(au.domainRollbacks);
+            }
+            return result;
+        }
+
+        private List<AbstractServerModelUpdate<?>> getServerRollbacks() {
+            List<AbstractServerModelUpdate<?>>result = new ArrayList<AbstractServerModelUpdate<?>>();
+            for (int i = actionUpdates.size() -1; i >= 0; i--) {
+                ActionUpdates au = actionUpdates.get(i);
+                result.addAll(au.serverRollbacks);
+            }
+            return result;
+        }
+
         private boolean isLastDomainUpdateForAction(int index) {
             int count = 0;
             for (ActionUpdates au : actionUpdates) {
@@ -499,6 +649,17 @@ public class DomainDeploymentHandler {
                     return (index == count - 1);
             }
             throw new IndexOutOfBoundsException(index + " is larger than the index of the last domain update (" + (getDomainUpdates().size() - 1) + ")");
+        }
+
+        private boolean isLastDomainRollbackForAction(int index) {
+            int count = 0;
+            for (int i = actionUpdates.size() -1; i >= 0; i--) {
+                ActionUpdates au = actionUpdates.get(i);
+                count += au.domainRollbacks.size();
+                if (index < count)
+                    return (index == count - 1);
+            }
+            throw new IndexOutOfBoundsException(index + " is larger than the index of the last domain rollback update (" + (getDomainRollbacks().size() - 1) + ")");
         }
 
         private DeploymentAction getDeploymentActionForDomainUpdate(int index) {
@@ -522,6 +683,17 @@ public class DomainDeploymentHandler {
             throw new IndexOutOfBoundsException(index + " is larger than the index of the last server update (" + (getServerUpdates().size() - 1) + ")");
         }
 
+        private boolean isLastServerRollbackUpdateForAction(int index) {
+            int count = 0;
+            for (int i = actionUpdates.size() -1; i >= 0; i--) {
+                ActionUpdates au = actionUpdates.get(i);
+                count += au.serverRollbacks.size();
+                if (index < count)
+                    return (index == count - 1);
+            }
+            throw new IndexOutOfBoundsException(index + " is larger than the index of the last server rollback update (" + (getServerRollbacks().size() - 1) + ")");
+        }
+
         private DeploymentAction getDeploymentActionForServerUpdate(int index) {
             int count = 0;
             for (ActionUpdates au : actionUpdates) {
@@ -529,6 +701,22 @@ public class DomainDeploymentHandler {
                 if (index < count) {
                     return au.action;
                 }
+            }
+            throw new IndexOutOfBoundsException(index + " is larger than the index of the last server update (" + (getServerUpdates().size() - 1) + ")");
+        }
+
+        private AbstractServerModelUpdate<?> getRollbackUpdateForServerUpdate(int index) {
+
+            int count = 0;
+            int lastCount = 0;
+            for (ActionUpdates au : actionUpdates) {
+                count += au.serverUpdates.size();
+                if (index < count) {
+                    int pos = index - lastCount;
+                    pos = au.serverRollbacks.size() - 1 - pos;
+                    return au.serverRollbacks.get(pos);
+                }
+                lastCount = count;
             }
             throw new IndexOutOfBoundsException(index + " is larger than the index of the last domain update (" + (getServerUpdates().size() - 1) + ")");
         }
@@ -539,6 +727,8 @@ public class DomainDeploymentHandler {
         private final DeploymentAction action;
         private final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
         private final List<AbstractServerModelUpdate<?>> serverUpdates = new ArrayList<AbstractServerModelUpdate<?>>();
+        private final List<AbstractDomainModelUpdate<?>> domainRollbacks = new ArrayList<AbstractDomainModelUpdate<?>>();
+        private final List<AbstractServerModelUpdate<?>> serverRollbacks = new ArrayList<AbstractServerModelUpdate<?>>();
 
         private ActionUpdates(DeploymentAction action) {
             this.action = action;
@@ -550,13 +740,16 @@ public class DomainDeploymentHandler {
         protected final ServerIdentity serverId;
         protected final DeploymentSetUpdates updates;
         protected final BlockingQueue<List<StreamedResponse>> responseQueue;
+        protected final boolean forRollback;
 
         AbstractServerUpdateTask(final ServerIdentity serverId, final DeploymentSetUpdates updates,
-                final ServerUpdatePolicy updatePolicy, final BlockingQueue<List<StreamedResponse>> responseQueue) {
+                final boolean forRollback, final ServerUpdatePolicy updatePolicy,
+                final BlockingQueue<List<StreamedResponse>> responseQueue) {
             this.serverId = serverId;
             this.updatePolicy = updatePolicy;
             this.responseQueue = responseQueue;
             this.updates = updates;
+            this.forRollback = forRollback;
         }
 
         @Override
@@ -583,7 +776,11 @@ public class DomainDeploymentHandler {
 
         protected void sendServerUpdateResult(UUID actionId, UpdateResultHandlerResponse<?> urhr) {
             List<StreamedResponse> responses = new ArrayList<StreamedResponse>();
-            responses.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_SERVER_DEPLOYMENT, actionId));
+
+            byte type = forRollback ? (byte) DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_ROLLBACK
+                                    : (byte) DomainClientProtocol.RETURN_SERVER_DEPLOYMENT;
+            responses.add(new StreamedResponse(type, actionId));
+
             responses.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_HOST_NAME, serverId.getHostName()));
             responses.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_SERVER_GROUP_NAME, serverId.getServerGroupName()));
             responses.add(new StreamedResponse((byte) DomainClientProtocol.RETURN_SERVER_NAME, serverId.getServerName()));
@@ -591,7 +788,7 @@ public class DomainDeploymentHandler {
             try {
                 responseQueue.put(responses);
             } catch (InterruptedException e) {
-                logger.errorf("%s interrupted sending cancellation responses for %s %s", toString(), DeploymentSetPlan.class.getSimpleName(), updates.setPlan.getId());
+                logger.errorf("%s interrupted sending server update responses for %s %s", toString(), DeploymentSetPlan.class.getSimpleName(), updates.setPlan.getId());
                 Thread.currentThread().interrupt();
             }
         }
@@ -610,12 +807,32 @@ public class DomainDeploymentHandler {
     private class RunningServerUpdateTask extends AbstractServerUpdateTask {
 
         private final boolean allowOverallRollback;
+        private final List<AbstractServerModelUpdate<?>> serverUpdates;
 
-        private RunningServerUpdateTask(final ServerIdentity serverId, final DeploymentSetUpdates updates,
-                final ServerUpdatePolicy updatePolicy, final BlockingQueue<List<StreamedResponse>> responseQueue,
+        /**
+         * Constructor for the normal case
+         */
+        private RunningServerUpdateTask(final ServerIdentity serverId,
+                final DeploymentSetUpdates updates,
+                final ServerUpdatePolicy updatePolicy,
+                final BlockingQueue<List<StreamedResponse>> responseQueue,
                 final boolean allowOverallRollback) {
-            super(serverId, updates, updatePolicy, responseQueue);
+            super(serverId, updates, false, updatePolicy, responseQueue);
             this.allowOverallRollback = allowOverallRollback;
+            this.serverUpdates = updates.getServerUpdates();
+        }
+
+        /**
+         * Constructor for the rollback case
+         */
+        private RunningServerUpdateTask(final ServerIdentity serverId,
+                final DeploymentSetUpdates updates,
+                final List<AbstractServerModelUpdate<?>> serverUpdates,
+                final ServerUpdatePolicy updatePolicy,
+                final BlockingQueue<List<StreamedResponse>> responseQueue) {
+            super(serverId, updates, true, updatePolicy, responseQueue);
+            this.allowOverallRollback = false;
+            this.serverUpdates = serverUpdates;
         }
 
         @Override
@@ -623,8 +840,10 @@ public class DomainDeploymentHandler {
             try {
                 logger.debugf("Applying %s updates to  %s", updates.getServerUpdates().size(), serverId);
                 List<UpdateResultHandlerResponse<?>> rsps =
-                    domainController.applyUpdatesToServer(serverId, updates.getServerUpdates(), allowOverallRollback);
-                updates.serverResults.put(serverId, rsps);
+                    domainController.applyUpdatesToServer(serverId, serverUpdates, allowOverallRollback);
+                if (!forRollback) {
+                    updates.serverResults.put(serverId, rsps);
+                }
                 updatePolicy.recordServerResult(serverId, rsps);
 
                 // Push responses to client
@@ -634,7 +853,16 @@ public class DomainDeploymentHandler {
                     // There can be multiple server updates for a given action, but we
                     // only send one response. Use this update result for the response if
                     // 1) it failed or 2) it's the last update associated with the action
-                    if (urhr.getFailureResult() != null || updates.isLastServerUpdateForAction(i)) {
+                    boolean sendResponse = urhr.getFailureResult() != null;
+                    if (!sendResponse) {
+                        if (forRollback) {
+                            sendResponse = updates.isLastServerRollbackUpdateForAction(i);
+                        }
+                        else {
+                            sendResponse = updates.isLastServerUpdateForAction(i);
+                        }
+                    }
+                    if (sendResponse) {
                         DeploymentAction action = updates.getDeploymentActionForServerUpdate(i);
                         if (action != lastResponseAction) {
                             sendServerUpdateResult(action.getId(), urhr);
@@ -655,9 +883,9 @@ public class DomainDeploymentHandler {
         private final long gracefulTimeout;
 
         private ServerRestartTask(final ServerIdentity serverId, final DeploymentSetUpdates updates,
-                final ServerUpdatePolicy updatePolicy, final BlockingQueue<List<StreamedResponse>> responseQueue,
-                final long gracefulTimeout) {
-            super(serverId, updates, updatePolicy, responseQueue);
+                final boolean forRollback, final ServerUpdatePolicy updatePolicy,
+                final BlockingQueue<List<StreamedResponse>> responseQueue, final long gracefulTimeout) {
+            super(serverId, updates, forRollback, updatePolicy, responseQueue);
             this.gracefulTimeout = gracefulTimeout;
         }
 
@@ -691,6 +919,9 @@ public class DomainDeploymentHandler {
             }
             return val;
         }
+    }
 
+    private static class RollbackFailedException extends Exception {
+        private static final long serialVersionUID = 3524620474555254562L;
     }
 }

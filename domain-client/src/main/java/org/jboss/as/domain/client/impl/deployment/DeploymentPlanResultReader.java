@@ -223,7 +223,7 @@ public class DeploymentPlanResultReader {
         // If the set plan generated server updates, those will come next
         if (nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_ROLLBACK) {
             do {
-                nextHeader = readServerDeploymentRollbacks(setResult);
+                nextHeader = readServerDeploymentRollback(setResult);
             }
             while(nextHeader == DomainClientProtocol.RETURN_SERVER_DEPLOYMENT_ROLLBACK);
         }
@@ -266,7 +266,7 @@ public class DeploymentPlanResultReader {
         return nextHeader;
     }
 
-    private byte readServerDeploymentRollbacks(DeploymentSetPlanResult setResult) throws IOException {
+    private byte readServerDeploymentRollback(DeploymentSetPlanResult setResult) throws IOException {
 
         UUID actionId = unmarshal(unmarshaller, UUID.class);
         DeploymentActionResultImpl actionResult = (DeploymentActionResultImpl) setResult.getDeploymentActionResults().get(actionId);

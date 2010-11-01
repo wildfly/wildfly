@@ -37,6 +37,15 @@ class ServerUpdatePolicy {
     private int failureCount;
     private final int maxFailed;
 
+    /**
+     * Constructor for normal case where the max number of failures before
+     * plan is considered failed comes from the plan.
+     *
+     * @param parent parent policy
+     * @param serverGroupName the name of the server group being updated
+     * @param servers servers that are being updated
+     * @param groupPlan plan from which rollback policies can be determined
+     */
     ServerUpdatePolicy(final ConcurrentGroupServerUpdatePolicy parent,
                             final String serverGroupName,
                             final Set<ServerIdentity> servers,
@@ -55,6 +64,26 @@ class ServerUpdatePolicy {
         else {
             this.maxFailed = groupPlan.getMaxServerFailures();
         }
+    }
+
+    /**
+     * Constructor for the rollback case where failure on one server should
+     * not prevent execution on the others
+     * @param parent parent policy
+     * @param serverGroupName the name of the server group being updated
+     * @param servers servers that are being updated
+     */
+    ServerUpdatePolicy(final ConcurrentGroupServerUpdatePolicy parent,
+                       final String serverGroupName,
+                       final Set<ServerIdentity> servers) {
+        assert parent != null : "parent is null";
+        assert serverGroupName != null : "serverGroupName is null";
+        assert servers != null : "servers is null";
+
+        this.parent = parent;
+        this.serverGroupName = serverGroupName;
+        this.servers = servers;
+        this.maxFailed = servers.size();
     }
 
     public String getServerGroupName() {
