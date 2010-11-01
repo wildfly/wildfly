@@ -84,7 +84,7 @@
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.CR8</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.CR8</version.org.jboss.marshalling.jboss-marshalling-river>
         <version.org.jboss.msc.jboss-msc>1.0.0.Beta4</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.modules.jboss-modules>1.0.0.Beta9</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.0.0.Beta10</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.metadata.common>2.0.0.Alpha17</version.org.jboss.metadata.common>
         <version.org.jboss.metadata.war>2.0.0.Alpha14</version.org.jboss.metadata.war>
         <version.org.jboss.netty>3.2.1.Final</version.org.jboss.netty>
