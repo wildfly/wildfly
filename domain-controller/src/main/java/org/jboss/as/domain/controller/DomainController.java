@@ -701,6 +701,7 @@ public class DomainController implements Service<DomainController> {
         ServerStatus status = restartServer(server.getHostName(), server.getServerName(), gracefulTimeout);
         switch (status) {
             case STARTED:
+            case STARTING:
                 return UpdateResultHandlerResponse.createRestartResponse();
             default: {
                 UpdateFailedException ufe = new UpdateFailedException("Server " + server + " did not restart. Server status is " + status);

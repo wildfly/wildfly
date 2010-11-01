@@ -250,7 +250,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(File file) throws IOException;
+    RemoveDeploymentPlanBuilder replace(File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -270,7 +270,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(URL url) throws IOException;
+    RemoveDeploymentPlanBuilder replace(URL url) throws IOException;
 
     /**
      * Indicates the content of the specified file should be added to the content
@@ -289,7 +289,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(String name, File file) throws IOException;
+    RemoveDeploymentPlanBuilder replace(String name, File file) throws IOException;
 
     /**
      * Indicates the content at the specified URL should be added to the content
@@ -308,7 +308,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(String name, URL url) throws IOException;
+    RemoveDeploymentPlanBuilder replace(String name, URL url) throws IOException;
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -331,7 +331,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(String name, InputStream stream) throws IOException;
+    RemoveDeploymentPlanBuilder replace(String name, InputStream stream) throws IOException;
 
     /**
      * Indicates the content readable from the specified <code>InputStream</code>
@@ -366,7 +366,7 @@ public interface DeploymentPlanBuilder {
      * @IOException if an exception occurs passing the deployment content to
      *              the server
      */
-    ServerGroupDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException;
+    RemoveDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException;
 
     /**
      * Indicates the specified deployment content should be removed from the

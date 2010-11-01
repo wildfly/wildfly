@@ -39,8 +39,9 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.as.domain.client.api.DomainClient;
-import org.jboss.as.domain.client.api.deployment.DeployDeploymentPlanBuilder;
+import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlanBuilder;
+import org.jboss.as.domain.client.api.deployment.DeploymentSetActionsCompleteBuilder;
 import org.jboss.as.domain.client.api.deployment.DomainDeploymentManager;
 import org.jboss.as.domain.client.api.deployment.DuplicateDeploymentNameException;
 import org.jboss.as.domain.client.api.deployment.RemoveDeploymentPlanBuilder;
@@ -92,12 +93,15 @@ public class DomainDeploymentUtils implements Closeable {
 
     public synchronized void deploy()  throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException  {
         DeploymentPlanBuilder builder = manager.newDeploymentPlan();
-        DeployDeploymentPlanBuilder deployBuilder = null;
+        DeploymentSetActionsCompleteBuilder deployBuilder = null;
         for (Deployment deployment : deployments) {
             deployBuilder = deployment.addDeployment(manager, builder);
             builder = deployBuilder;
         }
-        manager.execute(deployBuilder.toServerGroup("main-server-group").build()).get();
+        DeploymentPlan plan = deployBuilder.toServerGroup("main-server-group")
+                                           .rollingToServerGroup("other-server-group")
+                                           .build();
+        manager.execute(plan).get();
     }
 
     public synchronized void undeploy() throws ExecutionException, InterruptedException {
@@ -167,19 +171,21 @@ public class DomainDeploymentUtils implements Closeable {
             }
         }
 
-        public synchronized DeployDeploymentPlanBuilder addDeployment(DomainDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
+        public synchronized DeploymentSetActionsCompleteBuilder addDeployment(DomainDeploymentManager manager, DeploymentPlanBuilder builder) throws DuplicateDeploymentNameException, IOException, ExecutionException, InterruptedException {
             System.out.println("Deploying " + realArchive.getName());
             DomainModel dm = client.getDomainModel();
+            DeploymentSetActionsCompleteBuilder result;
             DeploymentUnitElement due = dm.getDeployment(archiveName);
             if (due  != null) {
-                if (due.isStart()) {
-                    builder = builder.undeploy(archiveName).andRemoveUndeployed();
-                }
-                else {
-                    builder = builder.remove(archiveName);
+                result = builder.replace(archiveName, realArchive);
+                if (!due.isStart()) {
+                    result = result.deploy(archiveName);
                 }
             }
-            return builder.add(archiveName, realArchive).andDeploy();
+            else {
+                result = builder.add(archiveName, realArchive).andDeploy();
+            }
+            return result;
         }
 
         public synchronized RemoveDeploymentPlanBuilder removeDeployment(DeploymentPlanBuilder builder) {

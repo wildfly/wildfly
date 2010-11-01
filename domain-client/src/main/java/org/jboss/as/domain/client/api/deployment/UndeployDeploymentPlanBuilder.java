@@ -29,26 +29,7 @@ package org.jboss.as.domain.client.api.deployment;
  *
  * @author Brian Stansberry
  */
-public interface UndeployDeploymentPlanBuilder extends DeploymentPlanBuilder {
-
-    /**
-     * Indicates that the current set of {@link DeploymentAction.Type#DEPLOYMENT_START_STOP deploy},
-     * {@link DeploymentAction.Type#RELACE replace} and
-     * {@link DeploymentAction.Type#UNDEPLOY undeploy} deployment actions comprise
-     * a {@link DeploymentSetPlan} and should be applied to a server group.
-     * Once this method is invoked, no further actions will be included in the
-     * <code>DeploymentSetPlan</code>.
-     * <p>
-     * Any subsequent <code>add</code>, <code>remove</code>, <code>deploy</code>,
-     * <code>replace</code> or <code>undeploy</code> builder operations will
-     * signal the start of new <code>DeploymentSetPlan</code>.
-     * </p>
-     *
-     * @param serverGroupName the name of the server group. Cannot be <code>null</code>
-     *
-     * @return a builder that can continue building the overall deployment plan
-     */
-    ServerGroupDeploymentPlanBuilder toServerGroup(String serverGroupName);
+public interface UndeployDeploymentPlanBuilder extends DeploymentSetActionsCompleteBuilder {
 
     /**
      * Indicates that deployment content that was undeployed via the preceding

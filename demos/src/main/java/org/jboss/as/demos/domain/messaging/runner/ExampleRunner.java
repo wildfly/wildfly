@@ -46,7 +46,6 @@ public class ExampleRunner {
             utils.deploy();
             ObjectName objectName = new ObjectName("jboss:name=test,type=messaging");
 
-
             System.out.println("Accessing server-one");
             System.out.println();
 
@@ -56,6 +55,7 @@ public class ExampleRunner {
             System.out.println("Sending message: Test");
             mbeanServer.invoke(objectName, "sendMessage", new Object[] {"Test"}, new String[] {"java.lang.String"});
             Thread.sleep(1000);
+            @SuppressWarnings("unchecked")
             List<String> msgs = (List<String>)mbeanServer.invoke(objectName, "readMessages", new Object[] {"Test"}, new String[] {"java.lang.String"});
             System.out.println("Received messages: " + msgs);
 
@@ -68,8 +68,9 @@ public class ExampleRunner {
             System.out.println("Sending message: Test");
             mbeanServer.invoke(objectName, "sendMessage", new Object[] {"Test"}, new String[] {"java.lang.String"});
             Thread.sleep(1000);
-            msgs = (List<String>)mbeanServer.invoke(objectName, "readMessages", new Object[] {"Test"}, new String[] {"java.lang.String"});
-            System.out.println("Received messages: " + msgs);
+            @SuppressWarnings("unchecked")
+            List<String> moreMsgs = (List<String>)mbeanServer.invoke(objectName, "readMessages", new Object[] {"Test"}, new String[] {"java.lang.String"});
+            System.out.println("Received messages: " + moreMsgs);
         } finally {
             utils.undeploy();
             safeClose(utils);

@@ -55,7 +55,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
         this.uuid = UUID.randomUUID();
         this.rollback = false;
         this.shutdown = false;
-        this.gracefulShutdownPeriod = 0;
+        this.gracefulShutdownPeriod = -1;
         this.serverGroupPlans.add(new LinkedHashSet<ServerGroupDeploymentPlan>());
     }
 
@@ -149,7 +149,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     }
 
     DeploymentSetPlanImpl setShutdown() {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, true, 0);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, true, -1);
         return result;
     }
 
@@ -167,7 +167,7 @@ public class DeploymentSetPlanImpl implements DeploymentSetPlan, Serializable {
     }
 
     DeploymentSetPlanImpl storeRollToServerGroup(final ServerGroupDeploymentPlan groupPlan) {
-        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, true, this.gracefulShutdownPeriod);
+        DeploymentSetPlanImpl result = new DeploymentSetPlanImpl(this.uuid, this.deploymentActions, this.serverGroupPlans, this.rollback, this.shutdown, this.gracefulShutdownPeriod);
         Set<ServerGroupDeploymentPlan> set = result.serverGroupPlans.get(result.serverGroupPlans.size() - 1);
         result.serverGroupPlans.set(result.serverGroupPlans.size() - 1, Collections.unmodifiableSet(set));
         set = new LinkedHashSet<ServerGroupDeploymentPlan>();

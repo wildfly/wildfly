@@ -318,6 +318,8 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             synchronized (this) {
                 notifyAll();
             }
+            // Ignore any further notifications
+            controller.removeListener(this);
             log.infof("Undeployed %s", deploymentName);
         }
 
