@@ -21,13 +21,14 @@
  */
 package org.jboss.as.demos.ds.runner;
 
+import static org.jboss.as.protocol.StreamUtils.safeClose;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.ds.mbean.Test;
-import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Runner for the datasource demo

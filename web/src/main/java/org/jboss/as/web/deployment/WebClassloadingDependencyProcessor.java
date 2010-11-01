@@ -38,16 +38,14 @@ public class WebClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(300L);
 
-    private static final ModuleIdentifier JAVAX_SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
-    private static final ModuleIdentifier JAVAX_SERVLET_JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
+    private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
     private static final ModuleIdentifier SYSTEM = ModuleIdentifier.create("system");
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        // Add module dependencies on Servlet and JSP APIs
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_SERVLET_API, true, false, false));
-        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_SERVLET_JSP_API, true, false, false));
+        // Add module dependencies on Java EE apis
+        ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAEE_API_ID, true, false, false));
         // FIXME we need to revise the exports of the web module, so that we
         // don't export our internals
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_WEB, true, false, false));

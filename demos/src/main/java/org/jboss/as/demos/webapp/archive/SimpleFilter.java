@@ -19,23 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.jms.client.mbean;
+package org.jboss.as.demos.webapp.archive;
 
-import javax.naming.InitialContext;
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 
 /**
- * MBean to do JNDI lookups on the server on client's behalf. Once remote JNDI is supported
- * this should be removed
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class FakeJndi implements FakeJndiMBean {
-
+@WebFilter("/simple")
+public class SimpleFilter implements Filter {
     @Override
-    public Object lookup(String name) throws Exception {
-        InitialContext context = new InitialContext();
-        return context.lookup(name);
+    public void doFilter(ServletRequest req, ServletResponse resp,
+            FilterChain chain) throws IOException, ServletException {
+        System.out.println("SimpleFilter invoked for " + req.getServletContext().getContextPath());
+        req.setAttribute("Filtered", true);
+        chain.doFilter(req, resp);
     }
 
+    @Override
+    public void destroy() {
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
 }

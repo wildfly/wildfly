@@ -19,7 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.demos.jms.client.mbean;
+package org.jboss.as.demos.fakejndi;
+
+import javax.naming.InitialContext;
 
 /**
  * MBean to do JNDI lookups on the server on client's behalf. Once remote JNDI is supported
@@ -28,6 +30,12 @@ package org.jboss.as.demos.jms.client.mbean;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public interface FakeJndiMBean {
-    Object lookup(String name) throws Exception;
+public class FakeJndi implements FakeJndiMBean {
+
+    @Override
+    public Object lookup(String name) throws Exception {
+        InitialContext context = new InitialContext();
+        return context.lookup(name);
+    }
+
 }
