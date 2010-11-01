@@ -79,6 +79,7 @@ public class SimpleServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String value = req.getParameter("value");
+        log.info("Received request");
 
         Writer writer = resp.getWriter();
         writer.write("Servlet Response\n");
@@ -89,6 +90,7 @@ public class SimpleServlet extends HttpServlet {
         Connection sqlConn = null;
         PreparedStatement stmt = null;
         try {
+            log.info("Inserting '" + value + "' into database");
             sqlConn = ds.getConnection();
             stmt = sqlConn.prepareCall("INSERT INTO WebAppTestTable (value) VALUES ('" + value + "')");
             stmt.executeUpdate();
@@ -122,6 +124,7 @@ public class SimpleServlet extends HttpServlet {
             session = conn.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
             QueueSender sender = session.createSender(queue);
             TextMessage msg = session.createTextMessage(value);
+            log.info("Sending '" + value + "' via queue");
             sender.send(msg);
         } catch (JMSException e) {
             throw new ServletException(e);
@@ -174,7 +177,7 @@ public class SimpleServlet extends HttpServlet {
                     safeClose(stmt);
                     safeClose(sqlConn);
                 }
-                System.out.println("Created table");
+                log.info("Created table");
             }
         }
     }
@@ -186,7 +189,7 @@ public class SimpleServlet extends HttpServlet {
         CallableStatement stmt = null;
         try {
             sqlConn = ds.getConnection();
-            System.out.println("Dropping table");
+            log.info("Dropping table");
             stmt = sqlConn.prepareCall("DROP TABLE WebAppTestTable");
             stmt.execute();
         } catch (SQLException e) {

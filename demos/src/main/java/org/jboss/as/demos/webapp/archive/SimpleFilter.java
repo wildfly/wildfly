@@ -31,6 +31,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 
+import org.jboss.logging.Logger;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -38,10 +40,13 @@ import javax.servlet.annotation.WebFilter;
  */
 @WebFilter("/simple")
 public class SimpleFilter implements Filter {
+
+    Logger log = Logger.getLogger(SimpleFilter.class);
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp,
             FilterChain chain) throws IOException, ServletException {
-        System.out.println("SimpleFilter invoked for " + req.getServletContext().getContextPath());
+        log.info("SimpleFilter invoked for " + req.getServletContext().getContextPath());
         req.setAttribute("Filtered", true);
         chain.doFilter(req, resp);
     }
