@@ -63,6 +63,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartException;
@@ -71,6 +72,8 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
+
+    public static final ServiceName AS_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("as", "server");
 
     private static final long serialVersionUID = -8505496119636153918L;
 
@@ -131,7 +134,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         };
 
         // Root service
-        final BatchServiceBuilder<Void> builder = batchBuilder.addService(ServiceName.JBOSS.append("as", "server"), Service.NULL);
+        final BatchServiceBuilder<Void> builder = batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL);
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         // Services specified by the creator of this object
@@ -265,6 +268,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 try {
                     deploymentBatchBuilder.install();
                     serverStartupListener.finishBatch();
+
                 } catch (ServiceRegistryException e) {
                     throw new RuntimeException(e); // TODO: better exception handling.
                 }

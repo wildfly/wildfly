@@ -25,6 +25,21 @@ package org.jboss.as.connector.subsystems.datasources;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.deployers.RaDeploymentChainSelector;
+import org.jboss.as.connector.deployers.processors.DsDependencyProcessor;
+import org.jboss.as.connector.deployers.processors.DsDeploymentProcessor;
+import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
+import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
+import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
+import org.jboss.as.deployment.module.ModuleConfigProcessor;
+import org.jboss.as.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.module.NestedJarInlineProcessor;
+import org.jboss.as.deployment.naming.ModuleContextProcessor;
+import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
@@ -32,6 +47,8 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+
+import static org.jboss.as.connector.deployers.RaDeploymentActivator.RAR_DEPLOYMENT_CHAIN_SERVICE_NAME;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
@@ -70,12 +87,29 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
             return;
 
         if (datasources.getDataSource().size() > 0 || datasources.getXaDataSource().size() > 0) {
-            serviceBuilder = builder.addServiceValueIfNotExist(JDBCRARDeployService.NAME, new JDBCRARDeployService());
-            serviceBuilder.addDependency(RaDeploymentActivator.RAR_DEPLOYMENT_CHAIN_SERVICE_NAME);
-            serviceBuilder.addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE);
-            serviceBuilder.addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE);
-            serviceBuilder.addDependency(ConnectorServices.IRONJACAMAR_MDR);
-            serviceBuilder.setInitialMode(Mode.ACTIVE);
+            serviceBuilder = builder.addServiceValueIfNotExist(JDBCRARDeployService.NAME, new JDBCRARDeployService())
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR)
+
+                 // Even uglier hack
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(NestedJarInlineProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ManifestAttachmentProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(AnnotationIndexProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(RarConfigProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ModuleDependencyProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ModuleConfigProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(DeploymentModuleLoaderProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ModuleDeploymentProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ModuleContextProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(RaDeploymentParsingProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(IronJacamarDeploymentParsingProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(ParsedRaDeploymentProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(RaXmlDeploymentProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(DsDependencyProcessor.class.getName()))
+                .addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(DsDeploymentProcessor.class.getName()))
+
+                .setInitialMode(Mode.ACTIVE);
         }
     }
 

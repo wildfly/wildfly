@@ -140,10 +140,10 @@ public class ServerStartBatchBuilder implements BatchBuilder {
 
         @Override
         public BatchServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
-            if(mode.equals(ServiceController.Mode.ON_DEMAND)) {
-                serverStartupListener.expectOnDemand(serviceName);
+            if (mode != ServiceController.Mode.ACTIVE) {
+                serverStartupListener.expectNonActive(serviceName);
             } else {
-                serverStartupListener.unexpectOnDemand(serviceName);
+                serverStartupListener.unexpectNonActive(serviceName);
             }
             delegate.setInitialMode(mode);
             return this;
