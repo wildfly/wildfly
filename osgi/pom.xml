@@ -55,6 +55,12 @@
             <artifactId>jboss-as-jmx</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+            <!-- TODO: remove after Alpha1 -->
+            <version>1.0.0.Beta8</version>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.osgi.deployment</groupId>
             <artifactId>jboss-osgi-deployment</artifactId>
         </dependency>
