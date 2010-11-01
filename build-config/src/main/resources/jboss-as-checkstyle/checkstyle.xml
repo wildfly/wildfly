@@ -4,9 +4,6 @@
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
-    <!-- Checks whether files end with a new line.                        -->
-    <module name="NewlineAtEndOfFile"/>
-
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
