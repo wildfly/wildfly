@@ -53,6 +53,7 @@ public abstract class AbstractLoggerElement<E extends AbstractLoggerElement<E>> 
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        writeAttributes(streamWriter);
         if (level != null) {
             streamWriter.writeEmptyElement(Element.LEVEL.getLocalName());
             streamWriter.writeAttribute(Attribute.NAME.getLocalName(), level);

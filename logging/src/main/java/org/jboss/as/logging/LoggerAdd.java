@@ -53,17 +53,6 @@ public class LoggerAdd extends AbstractLoggerAdd {
         this.name = name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected void applyUpdate(LoggingSubsystemElement element) throws UpdateFailedException {
-        final LoggerElement logger = new LoggerElement(name);
-        logger.setUseParentHandlers(useParentHandlers);
-        if (!element.addLogger(logger)) {
-            throw new UpdateFailedException("duplicate logger " + name);
-        }
-    }
-
     protected AbstractLoggerElement<?> addNewElement(final LoggingSubsystemElement element) throws UpdateFailedException {
         final LoggerElement newElement = new LoggerElement(name);
         newElement.setUseParentHandlers(useParentHandlers);

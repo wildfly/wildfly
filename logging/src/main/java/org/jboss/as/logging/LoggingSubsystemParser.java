@@ -171,7 +171,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         // Attributes
         String name = null;
         boolean useParentHandlers = true;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.CATEGORY);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
