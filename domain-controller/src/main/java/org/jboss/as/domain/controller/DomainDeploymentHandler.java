@@ -155,6 +155,7 @@ public class DomainDeploymentHandler {
                     }
                 }
                 catch (RollbackFailedException e) {
+                    // Deployment set execution failed and it also failed to roll itself back
                     ok = false;
                     rollbackFailed = true;
                     logger.errorf("Rollback of deployment set %s did not succeed", updateSet.setPlan.getId());
@@ -229,6 +230,7 @@ public class DomainDeploymentHandler {
             }
         }
 
+        // See if the above was successful before moving on to servers
         DomainUpdateApplierResponse last = rsps.get(rsps.size() - 1);
         if (last.getDomainFailure() != null || last.getHostFailures().size() > 0) {
             // DomainModel update failed; don't apply to servers. The DomainController will
@@ -412,6 +414,7 @@ public class DomainDeploymentHandler {
                     }
                 }
                 else {
+                    // Standard case
                     for (ServerIdentity server : servers) {
                         groupTasks.add (new RunningServerUpdateTask(server, updateSet, policy, responseQueue, groupPlan.isRollback()));
                     }
@@ -449,115 +452,117 @@ public class DomainDeploymentHandler {
             ActionUpdates au = new ActionUpdates(action);
             actionUpdates.add(au);
 
-            DeploymentActionImpl dai = (DeploymentActionImpl) action;
-            switch (action.getType()) {
-                case ADD: {
-                    String deploymentName = dai.getDeploymentUnitUniqueName();
-                    logger.tracef("Add of deployment %s", deploymentName);
-                    String runtimeName = dai.getNewContentFileName();
-                    byte[] hash = dai.getNewContentHash();
-                    if (runtimeName == null) {
-                        // This is a request to add already existing content to this set's server groups
-                        DeploymentUnitElement de = model.getDeployment(deploymentName);
-                        if (de == null) {
-                            throw new InvalidDeploymentPlanException("Unknown deployment unit " + deploymentName);
+            try {
+                DeploymentActionImpl dai = (DeploymentActionImpl) action;
+                switch (action.getType()) {
+                    case ADD: {
+                        String deploymentName = dai.getDeploymentUnitUniqueName();
+                        logger.tracef("Add of deployment %s", deploymentName);
+                        String runtimeName = dai.getNewContentFileName();
+                        byte[] hash = dai.getNewContentHash();
+                        if (runtimeName == null) {
+                            // This is a request to add already existing content to this set's server groups
+                            DeploymentUnitElement de = model.getDeployment(deploymentName);
+                            if (de == null) {
+                                throw new InvalidDeploymentPlanException("Unknown deployment unit " + deploymentName);
+                            }
+                            runtimeName = de.getRuntimeName();
+                            hash = de.getSha1Hash();
                         }
-                        runtimeName = de.getRuntimeName();
-                        hash = de.getSha1Hash();
-                    }
-                    else if (model.getDeployment(deploymentName) == null) {
-                        // Deployment is new to the domain; add it
-                        DomainDeploymentAdd dda = new DomainDeploymentAdd(deploymentName, runtimeName, hash, false);
-                        au.domainUpdates.add(dda);
-                        addDomainRollbackUpdate(dda, au, model, true);
-                    }
-                    // Now add to serve groups
-                    ServerGroupDeploymentAdd sgda = new ServerGroupDeploymentAdd(deploymentName, runtimeName, hash, false);
-                    addServerGroupUpdates(plan, au, sgda, model);
-                    break;
-                }
-                case DEPLOY: {
-                    logger.tracef("Deploy of deployment %s", dai.getDeploymentUnitUniqueName());
-                    ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), true);
-                    addServerGroupUpdates(plan, au, sgdssu, model);
-                    break;
-                }
-                case FULL_REPLACE: {
-                    logger.tracef("Full replace of deployment %s", dai.getDeploymentUnitUniqueName());
-                    // Validate all relevant server groups are touched
-                    String deploymentName = dai.getDeploymentUnitUniqueName();
-                    Set<String> names = new LinkedHashSet<String>(model.getServerGroupNames());
-                    for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
-                        for (ServerGroupDeploymentPlan sgdp : ssgp) {
-                            names.remove(sgdp.getServerGroupName());
+                        else if (model.getDeployment(deploymentName) == null) {
+                            // Deployment is new to the domain; add it
+                            DomainDeploymentAdd dda = new DomainDeploymentAdd(deploymentName, runtimeName, hash, false);
+                            au.domainUpdates.add(new DomainUpdate(dda, model, true));
                         }
+                        // Now add to serve groups
+                        ServerGroupDeploymentAdd sgda = new ServerGroupDeploymentAdd(deploymentName, runtimeName, hash, false);
+                        addServerGroupUpdates(plan, au, sgda, model);
+                        break;
                     }
-                    for (Iterator<String> it = names.iterator(); it.hasNext();) {
-                        String name = it.next();
-                        ServerGroupElement sge = model.getServerGroup(name);
-                        if (sge.getDeployment(dai.getDeploymentUnitUniqueName()) == null) {
-                            it.remove();
+                    case DEPLOY: {
+                        logger.tracef("Deploy of deployment %s", dai.getDeploymentUnitUniqueName());
+                        ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), true);
+                        addServerGroupUpdates(plan, au, sgdssu, model);
+                        break;
+                    }
+                    case FULL_REPLACE: {
+                        logger.tracef("Full replace of deployment %s", dai.getDeploymentUnitUniqueName());
+                        // Validate all relevant server groups are touched
+                        String deploymentName = dai.getDeploymentUnitUniqueName();
+                        Set<String> names = new LinkedHashSet<String>(model.getServerGroupNames());
+                        for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
+                            for (ServerGroupDeploymentPlan sgdp : ssgp) {
+                                names.remove(sgdp.getServerGroupName());
+                            }
                         }
-                    }
-                    if (names.size() > 0) {
-                        throw new IncompleteDeploymentReplaceException(deploymentName, names.toArray(new String[names.size()]));
-                    }
-                    DeploymentUnitElement deployment = model.getDeployment(dai.getDeploymentUnitUniqueName());
-                    boolean start = deployment != null && deployment.isStart();
-                    DomainDeploymentFullReplaceUpdate update = new DomainDeploymentFullReplaceUpdate(deploymentName, dai.getNewContentFileName(), dai.getNewContentHash(), start);
-                    au.domainUpdates.add(update);
-                    addDomainRollbackUpdate(update, au, model, true);
-                    au.serverUpdates.add(update.getServerModelUpdate());
-                    break;
-                }
-                case REDEPLOY: {
-                    logger.tracef("Redeploy of deployment %s", dai.getDeploymentUnitUniqueName());
-                    DomainDeploymentRedeployUpdate update = new DomainDeploymentRedeployUpdate(dai.getDeploymentUnitUniqueName());
-                    au.domainUpdates.add(update);
-                    addDomainRollbackUpdate(update, au, model, true);
-                    au.serverUpdates.add(update.getServerModelUpdate());
-                    break;
-                }
-                case REMOVE: {
-                    logger.tracef("Remove of deployment %s", dai.getDeploymentUnitUniqueName());
-                    ServerGroupDeploymentRemove sgdr = new ServerGroupDeploymentRemove(dai.getDeploymentUnitUniqueName());
-                    addServerGroupUpdates(plan, au, sgdr, model);
-                    // If no server group is using this, remove from domain
-                    Set<String> names = model.getServerGroupNames();
-                    for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
-                        for (ServerGroupDeploymentPlan sgdp : ssgp) {
-                            names.remove(sgdp.getServerGroupName());
+                        for (Iterator<String> it = names.iterator(); it.hasNext();) {
+                            String name = it.next();
+                            ServerGroupElement sge = model.getServerGroup(name);
+                            if (sge.getDeployment(dai.getDeploymentUnitUniqueName()) == null) {
+                                it.remove();
+                            }
                         }
-                    }
-                    boolean left = false;
-                    for (String name : names) {
-                        ServerGroupElement sge = model.getServerGroup(name);
-                        if (sge.getDeployment(dai.getDeploymentUnitUniqueName()) != null) {
-                            left = true;
-                            break;
+                        if (names.size() > 0) {
+                            throw new IncompleteDeploymentReplaceException(deploymentName, names.toArray(new String[names.size()]));
                         }
+                        DeploymentUnitElement deployment = model.getDeployment(dai.getDeploymentUnitUniqueName());
+                        boolean start = deployment != null && deployment.isStart();
+                        DomainDeploymentFullReplaceUpdate ddfru = new DomainDeploymentFullReplaceUpdate(deploymentName, dai.getNewContentFileName(), dai.getNewContentHash(), start);
+                        au.domainUpdates.add(new DomainUpdate(ddfru, model, true));
+                        break;
                     }
-                    if (!left) {
-                        DomainDeploymentRemove ddr = new DomainDeploymentRemove(dai.getDeploymentUnitUniqueName());
-                        au.domainUpdates.add(ddr);
-                        addDomainRollbackUpdate(ddr, au, model, true);
+                    case REDEPLOY: {
+                        logger.tracef("Redeploy of deployment %s", dai.getDeploymentUnitUniqueName());
+                        DomainDeploymentRedeployUpdate ddru = new DomainDeploymentRedeployUpdate(dai.getDeploymentUnitUniqueName());
+                        au.domainUpdates.add(new DomainUpdate(ddru, model, true));
+                        break;
                     }
-                    break;
+                    case REMOVE: {
+                        logger.tracef("Remove of deployment %s", dai.getDeploymentUnitUniqueName());
+                        ServerGroupDeploymentRemove sgdr = new ServerGroupDeploymentRemove(dai.getDeploymentUnitUniqueName());
+                        addServerGroupUpdates(plan, au, sgdr, model);
+                        // If no server group is using this, remove from domain
+                        Set<String> names = model.getServerGroupNames();
+                        for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
+                            for (ServerGroupDeploymentPlan sgdp : ssgp) {
+                                names.remove(sgdp.getServerGroupName());
+                            }
+                        }
+                        boolean left = false;
+                        for (String name : names) {
+                            ServerGroupElement sge = model.getServerGroup(name);
+                            if (sge.getDeployment(dai.getDeploymentUnitUniqueName()) != null) {
+                                left = true;
+                                break;
+                            }
+                        }
+                        if (!left) {
+                            DomainDeploymentRemove ddr = new DomainDeploymentRemove(dai.getDeploymentUnitUniqueName());
+                            au.domainUpdates.add(new DomainUpdate(ddr, model, true));
+                        }
+                        break;
+                    }
+                    case REPLACE: {
+                        logger.tracef("Replace of deployment %s", dai.getDeploymentUnitUniqueName());
+                        ServerGroupDeploymentReplaceUpdate sgdru = new ServerGroupDeploymentReplaceUpdate(dai.getDeploymentUnitUniqueName(), dai.getNewContentFileName(), dai.getNewContentHash(), dai.getReplacedDeploymentUnitUniqueName());
+                        addServerGroupUpdates(plan, au, sgdru, model);
+                        break;
+                    }
+                    case UNDEPLOY: {
+                        logger.tracef("Undeploy of deployment %s", dai.getDeploymentUnitUniqueName());
+                        ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), false);
+                        addServerGroupUpdates(plan, au, sgdssu, model);
+                        break;
+                    }
+                    default:
+                        throw new IllegalStateException(String.format("Unknown %s %s", DeploymentAction.class.getSimpleName(), action.getType()));
                 }
-                case REPLACE: {
-                    logger.tracef("Replace of deployment %s", dai.getDeploymentUnitUniqueName());
-                    ServerGroupDeploymentReplaceUpdate sgdru = new ServerGroupDeploymentReplaceUpdate(dai.getDeploymentUnitUniqueName(), dai.getNewContentFileName(), dai.getNewContentHash(), dai.getReplacedDeploymentUnitUniqueName());
-                    addServerGroupUpdates(plan, au, sgdru, model);
-                    break;
-                }
-                case UNDEPLOY: {
-                    logger.tracef("Undeploy of deployment %s", dai.getDeploymentUnitUniqueName());
-                    ServerGroupDeploymentStartStopUpdate sgdssu = new ServerGroupDeploymentStartStopUpdate(dai.getDeploymentUnitUniqueName(), false);
-                    addServerGroupUpdates(plan, au, sgdssu, model);
-                    break;
-                }
-                default:
-                    throw new IllegalStateException(String.format("Unknown %s %s", DeploymentAction.class.getSimpleName(), action.getType()));
+            }
+            catch (InvalidDeploymentPlanException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                throw new InvalidDeploymentPlanException(String.format("Deployment action %s of type %s primarily affecting deployment %s is invalid", action.getId(), action.getType(), action.getDeploymentUnitUniqueName()), e);
             }
         }
 
@@ -567,29 +572,13 @@ public class DomainDeploymentHandler {
     }
 
     private static void addServerGroupUpdates(final DeploymentSetPlan plan, final ActionUpdates au, final AbstractModelUpdate<ServerGroupElement, ?> serverGroupUpdate, DomainModel model) {
-        AbstractServerModelUpdate<?> smu = null;
+        boolean setSMU = true;
         for (Set<ServerGroupDeploymentPlan> ssgp : plan.getServerGroupDeploymentPlans()) {
             for (ServerGroupDeploymentPlan sgdp : ssgp) {
                 AbstractDomainModelUpdate<?> dmu = DomainServerGroupUpdate.create(sgdp.getServerGroupName(), serverGroupUpdate);
-                au.domainUpdates.add(dmu);
-                addDomainRollbackUpdate(dmu, au, model, smu == null);
-                if (smu == null) {
-                    smu = dmu.getServerModelUpdate();
-                    au.serverUpdates.add(smu);
-                }
-            }
-        }
-    }
-
-    private static void addDomainRollbackUpdate(final AbstractDomainModelUpdate<?> dmu, final ActionUpdates au, final DomainModel model, final boolean addServerUpdate) {
-        AbstractDomainModelUpdate<?> rollback = dmu.getCompensatingUpdate(model);
-        if (rollback != null) {
-            au.domainRollbacks.add(0, rollback);
-            if (addServerUpdate) {
-                AbstractServerModelUpdate<?> smu = rollback.getServerModelUpdate();
-                if (smu != null) {
-                    au.serverRollbacks.add(0, smu);
-                }
+                DomainUpdate du = new DomainUpdate(dmu, model, setSMU);
+                au.domainUpdates.add(du);
+                setSMU = setSMU && du.serverUpdate == null;
             }
         }
     }
@@ -610,7 +599,9 @@ public class DomainDeploymentHandler {
         private List<AbstractDomainModelUpdate<?>> getDomainUpdates() {
             List<AbstractDomainModelUpdate<?>>result = new ArrayList<AbstractDomainModelUpdate<?>>();
             for (ActionUpdates au : actionUpdates) {
-                result.addAll(au.domainUpdates);
+                for (DomainUpdate du : au.domainUpdates) {
+                    result.add(du.update);
+                }
             }
             return result;
         }
@@ -618,25 +609,36 @@ public class DomainDeploymentHandler {
         private List<AbstractServerModelUpdate<?>> getServerUpdates() {
             List<AbstractServerModelUpdate<?>>result = new ArrayList<AbstractServerModelUpdate<?>>();
             for (ActionUpdates au : actionUpdates) {
-                result.addAll(au.serverUpdates);
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null) {
+                        result.add(du.serverUpdate.update);
+                    }
+                }
             }
             return result;
         }
 
         private List<AbstractDomainModelUpdate<?>> getDomainRollbacks() {
             List<AbstractDomainModelUpdate<?>>result = new ArrayList<AbstractDomainModelUpdate<?>>();
-            for (int i = actionUpdates.size() -1; i >= 0; i--) {
-                ActionUpdates au = actionUpdates.get(i);
-                result.addAll(au.domainRollbacks);
+            for (ActionUpdates au : actionUpdates) {
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.compensatingUpdate != null)
+                    result.add(du.compensatingUpdate);
+                }
             }
             return result;
         }
 
         private List<AbstractServerModelUpdate<?>> getServerRollbacks() {
             List<AbstractServerModelUpdate<?>>result = new ArrayList<AbstractServerModelUpdate<?>>();
-            for (int i = actionUpdates.size() -1; i >= 0; i--) {
-                ActionUpdates au = actionUpdates.get(i);
-                result.addAll(au.serverRollbacks);
+            for (ActionUpdates au : actionUpdates) {
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null) {
+                        if (du.serverUpdate.compensatingUpdate != null) {
+                            result.add(du.serverUpdate.compensatingUpdate);
+                        }
+                    }
+                }
             }
             return result;
         }
@@ -655,7 +657,12 @@ public class DomainDeploymentHandler {
             int count = 0;
             for (int i = actionUpdates.size() -1; i >= 0; i--) {
                 ActionUpdates au = actionUpdates.get(i);
-                count += au.domainRollbacks.size();
+                int rbCount = 0;
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.compensatingUpdate != null)
+                        rbCount++;
+                }
+                count += rbCount;
                 if (index < count)
                     return (index == count - 1);
             }
@@ -676,7 +683,12 @@ public class DomainDeploymentHandler {
         private boolean isLastServerUpdateForAction(int index) {
             int count = 0;
             for (ActionUpdates au : actionUpdates) {
-                count += au.serverUpdates.size();
+                int suCount = 0;
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null)
+                        suCount++;
+                }
+                count += suCount;
                 if (index < count)
                     return (index == count - 1);
             }
@@ -687,7 +699,12 @@ public class DomainDeploymentHandler {
             int count = 0;
             for (int i = actionUpdates.size() -1; i >= 0; i--) {
                 ActionUpdates au = actionUpdates.get(i);
-                count += au.serverRollbacks.size();
+                int suCount = 0;
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null && du.serverUpdate.compensatingUpdate != null)
+                        suCount++;
+                }
+                count += suCount;
                 if (index < count)
                     return (index == count - 1);
             }
@@ -697,7 +714,28 @@ public class DomainDeploymentHandler {
         private DeploymentAction getDeploymentActionForServerUpdate(int index) {
             int count = 0;
             for (ActionUpdates au : actionUpdates) {
-                count += au.serverUpdates.size();
+                int suCount = 0;
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null)
+                        suCount++;
+                }
+                count += suCount;
+                if (index < count) {
+                    return au.action;
+                }
+            }
+            throw new IndexOutOfBoundsException(index + " is larger than the index of the last server update (" + (getServerUpdates().size() - 1) + ")");
+        }
+
+        private DeploymentAction getDeploymentActionForServerRollbackUpdate(int index) {
+            int count = 0;
+            for (ActionUpdates au : actionUpdates) {
+                int suCount = 0;
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null && du.serverUpdate.compensatingUpdate != null)
+                        suCount++;
+                }
+                count += suCount;
                 if (index < count) {
                     return au.action;
                 }
@@ -708,15 +746,14 @@ public class DomainDeploymentHandler {
         private AbstractServerModelUpdate<?> getRollbackUpdateForServerUpdate(int index) {
 
             int count = 0;
-            int lastCount = 0;
             for (ActionUpdates au : actionUpdates) {
-                count += au.serverUpdates.size();
-                if (index < count) {
-                    int pos = index - lastCount;
-                    pos = au.serverRollbacks.size() - 1 - pos;
-                    return au.serverRollbacks.get(pos);
+                for (DomainUpdate du : au.domainUpdates) {
+                    if (du.serverUpdate != null) {
+                        if (index == count++) {
+                            return du.serverUpdate.compensatingUpdate;
+                        }
+                    }
                 }
-                lastCount = count;
             }
             throw new IndexOutOfBoundsException(index + " is larger than the index of the last domain update (" + (getServerUpdates().size() - 1) + ")");
         }
@@ -725,10 +762,7 @@ public class DomainDeploymentHandler {
     /** Simple data class to associate an action with the relevant update objects */
     private static class ActionUpdates {
         private final DeploymentAction action;
-        private final List<AbstractDomainModelUpdate<?>> domainUpdates = new ArrayList<AbstractDomainModelUpdate<?>>();
-        private final List<AbstractServerModelUpdate<?>> serverUpdates = new ArrayList<AbstractServerModelUpdate<?>>();
-        private final List<AbstractDomainModelUpdate<?>> domainRollbacks = new ArrayList<AbstractDomainModelUpdate<?>>();
-        private final List<AbstractServerModelUpdate<?>> serverRollbacks = new ArrayList<AbstractServerModelUpdate<?>>();
+        private final List<DomainUpdate> domainUpdates = new ArrayList<DomainUpdate>();
 
         private ActionUpdates(DeploymentAction action) {
             this.action = action;
@@ -855,15 +889,12 @@ public class DomainDeploymentHandler {
                     // 1) it failed or 2) it's the last update associated with the action
                     boolean sendResponse = urhr.getFailureResult() != null;
                     if (!sendResponse) {
-                        if (forRollback) {
-                            sendResponse = updates.isLastServerRollbackUpdateForAction(i);
-                        }
-                        else {
-                            sendResponse = updates.isLastServerUpdateForAction(i);
-                        }
+                        sendResponse = forRollback ? updates.isLastServerRollbackUpdateForAction(i)
+                                                   : updates.isLastServerUpdateForAction(i);
                     }
                     if (sendResponse) {
-                        DeploymentAction action = updates.getDeploymentActionForServerUpdate(i);
+                        DeploymentAction action = forRollback ? updates.getDeploymentActionForServerRollbackUpdate(i)
+                                                              : updates.getDeploymentActionForServerUpdate(i);
                         if (action != lastResponseAction) {
                             sendServerUpdateResult(action.getId(), urhr);
                             lastResponseAction = action;
@@ -921,7 +952,43 @@ public class DomainDeploymentHandler {
         }
     }
 
+    /** Exception indicating the rollback of a deployment set failed */
     private static class RollbackFailedException extends Exception {
         private static final long serialVersionUID = 3524620474555254562L;
+    }
+
+    /** Associates a domain update with its compensating update and its server update */
+    private static class DomainUpdate {
+        private final AbstractDomainModelUpdate<?> update;
+        private final AbstractDomainModelUpdate<?> compensatingUpdate;
+        private final ServerUpdate serverUpdate;
+
+        private DomainUpdate(final AbstractDomainModelUpdate<?> update,
+                             final DomainModel model,
+                             final boolean createServerUpdate) {
+            this.update = update;
+            this.compensatingUpdate = update.getCompensatingUpdate(model);
+            if (createServerUpdate) {
+                AbstractServerModelUpdate<?> smu = update.getServerModelUpdate();
+                if (smu != null) {
+                    AbstractServerModelUpdate<?> csmu = compensatingUpdate == null ? null : compensatingUpdate.getServerModelUpdate();
+                    serverUpdate = new ServerUpdate(smu, csmu);
+                }
+                else serverUpdate = null;
+            }
+            else serverUpdate = null;
+        }
+    }
+
+    /** Associates a server update with its compensating update */
+    private static class ServerUpdate {
+        private final AbstractServerModelUpdate<?> update;
+        private final AbstractServerModelUpdate<?> compensatingUpdate;
+
+        private ServerUpdate(final AbstractServerModelUpdate<?> update,
+                final AbstractServerModelUpdate<?> compensatingUpdate) {
+            this.update = update;
+            this.compensatingUpdate = compensatingUpdate;
+        }
     }
 }

@@ -41,4 +41,14 @@ public class InvalidDeploymentPlanException extends Exception {
         super(message);
     }
 
+    /**
+     * Constructs a new InvalidDeploymentPlanException with the given message and cause.
+     *
+     * @param message the message
+     * @param cause the cause
+     */
+    public InvalidDeploymentPlanException(String message, Exception cause) {
+        super(message, cause);
+    }
+
 }
