@@ -29,13 +29,13 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Alpha1</version>
+        <version>7.0.0.Alpha2-SNAPSHOT</version>
         <relativePath>../../../</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-protocol-base</artifactId>
-    <version>7.0.0.Alpha1</version>
+    <version>7.0.0.Alpha2-SNAPSHOT</version>
 
     <name>JBoss Application Server: Test Suite: Protocol Tests Base</name>
 </project>

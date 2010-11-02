@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Alpha1</version>
+        <version>7.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-web</artifactId>
-    <version>7.0.0.Alpha1</version>
+    <version>7.0.0.Alpha2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JBoss Application Server: Web Subsystem</name>
