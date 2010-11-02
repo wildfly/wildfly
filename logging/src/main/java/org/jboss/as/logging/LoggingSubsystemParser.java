@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -100,23 +101,25 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         }
 
         // Elements
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        final Set<String> loggerNames = new HashSet<String>();
+        final Set<String> handlerNames = new HashSet<String>();
+        boolean gotRoot = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (encountered.contains(element)) {
-                        throw duplicateNamedElement(reader, reader.getLocalName());
-                    }
-                    encountered.add(element);
                     switch (element) {
                         case LOGGER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parseLoggerElement(reader, updates);
+                            parseLoggerElement(reader, updates, loggerNames);
                             break;
                         }
                         case ROOT_LOGGER: {
+                            if (gotRoot) {
+                                throw unexpectedElement(reader);
+                            }
+                            gotRoot = true;
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
                             parseRootLoggerElement(reader, updates);
@@ -125,31 +128,31 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                         case CONSOLE_HANDLER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parseConsoleHandlerElement(reader, updates);
+                            parseConsoleHandlerElement(reader, updates, handlerNames);
                             break;
                         }
                         case FILE_HANDLER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parseFileHandlerElement(reader, updates);
+                            parseFileHandlerElement(reader, updates, handlerNames);
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parsePeriodicRotatingFileHandlerElement(reader, updates);
+                            parsePeriodicRotatingFileHandlerElement(reader, updates, handlerNames);
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parseSizeRotatingHandlerElement(reader, updates);
+                            parseSizeRotatingHandlerElement(reader, updates, handlerNames);
                             break;
                         }
                         case ASYNC_HANDLER: {
                             // http://youtrack.jetbrains.net/issue/IDEA-59290
                             //noinspection unchecked
-                            parseAsyncHandlerElement(reader, updates);
+                            parseAsyncHandlerElement(reader, updates, handlerNames);
                             break;
                         }
                         default: {
@@ -166,7 +169,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         }
     }
 
-    private static void parseLoggerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parseLoggerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
 
         // Attributes
         String name = null;
@@ -198,6 +201,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
             throw missingRequired(reader, required);
         }
         assert name != null;
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         final LoggerAdd add = new LoggerAdd(name);
         add.setUseParentHandlers(useParentHandlers);
 
@@ -381,7 +387,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return spec;
     }
 
-    private static void parseConsoleHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parseConsoleHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
@@ -448,6 +454,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                 }
             }
         }
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         final ConsoleHandlerAdd add = new ConsoleHandlerAdd(name);
         add.setAutoflush(Boolean.valueOf(autoflush));
         add.setLevelName(levelName);
@@ -457,7 +466,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         list.add(add);
     }
 
-    private static void parseFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parseFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
@@ -532,6 +541,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         final FileHandlerAdd add = new FileHandlerAdd(name);
         add.setAutoflush(Boolean.valueOf(autoflush));
         add.setLevelName(levelName);
@@ -575,7 +587,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return new FileSpec(relativeTo, path);
     }
 
-    private static void parsePeriodicRotatingFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parsePeriodicRotatingFileHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
@@ -655,6 +667,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         final PeriodicRotatingFileHandlerAdd add = new PeriodicRotatingFileHandlerAdd(name);
         add.setAutoflush(Boolean.valueOf(autoflush));
         add.setLevelName(levelName);
@@ -667,7 +682,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         list.add(add);
     }
 
-    private static void parseSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parseSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
@@ -756,6 +771,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
         final SizeRotatingFileHandlerAdd add = new SizeRotatingFileHandlerAdd(name);
         add.setAutoflush(Boolean.valueOf(autoflush));
         add.setLevelName(levelName);
@@ -810,7 +828,7 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
         return qty;
     }
 
-    private static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list) throws XMLStreamException {
+    private static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, List<? super AbstractLoggingSubsystemUpdate<?>> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
         boolean autoflush = true;
@@ -869,6 +887,9 @@ public final class LoggingSubsystemParser implements XMLElementReader<ParseResul
                     throw unexpectedElement(reader);
                 }
             }
+        }
+        if (names.contains(name)) {
+            throw duplicateNamedElement(reader, name);
         }
         final AsyncHandlerAdd add = new AsyncHandlerAdd(name);
         if (subhandlers != null) add.setSubhandlers(subhandlers.toArray(new String[subhandlers.size()]));
