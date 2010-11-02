@@ -37,7 +37,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
 
     private static final long serialVersionUID = 1079329665126341623L;
-    private static final String BASE_DIR = "jboss.home.dir";
+    private static final String TEMP_DIR = "jboss.server.temp.dir";
     private String defaultHost;
     private WebContainerConfigElement config;
 
@@ -50,7 +50,7 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
         final String defaultHost = this.defaultHost != null ? this.defaultHost : "localhost";
         final WebServerService service = new WebServerService(defaultHost);
         context.getBatchBuilder().addService(WebSubsystemElement.JBOSS_WEB, service)
-            .addDependency(AbstractPathService.pathNameOf(BASE_DIR), String.class, service.getPathInjector())
+            .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
             .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND);

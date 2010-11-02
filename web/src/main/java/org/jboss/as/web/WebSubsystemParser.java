@@ -449,6 +449,7 @@ public class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<
         accessLog.setPrefix(prefix);
         accessLog.setRotate(rotate);
         accessLog.setResolveHosts(resolveHosts);
+        accessLog.setDirectory(directory);
         return accessLog;
     }
 
