@@ -53,7 +53,7 @@ public class RemoteDomainControllerTestCase {
         communicationService = new ManagementCommunicationService();
         communicationService.getThreadFactoryInjector().inject(Executors.defaultThreadFactory());
         communicationService.getExecutorServiceInjector().inject(executorService);
-        final NetworkInterfaceService networkInterfaceService = new NetworkInterfaceService("test", false, false, true, null);
+        final NetworkInterfaceService networkInterfaceService = new NetworkInterfaceService("test", true, false, true, null);
         networkInterfaceService.start(null);
         communicationService.getInterfaceInjector().inject(networkInterfaceService.getValue());
         communicationService.getPortInjector().inject(12345);
