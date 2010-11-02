@@ -69,7 +69,7 @@
             <inet-address value="127.0.0.1"/>
         </interface>
         <interface name="external">
-            <any-address/>
+            <any-ipv4-address/>
         </interface>
         <interface name="internal">
             <!-- 
