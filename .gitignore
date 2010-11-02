@@ -14,3 +14,5 @@ target
 maven-ant-tasks.jar
 test-output
 transaction.log
+# vim files
+*.swp
