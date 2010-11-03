@@ -28,17 +28,13 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.metadata.parser.ee.DescriptionGroupMetaDataParser;
-import org.jboss.as.metadata.parser.ee.EnvironmentRefsGroupMetaDataParser;
 import org.jboss.as.metadata.parser.util.MetaDataElementParser;
 import org.jboss.metadata.web.jboss.JBoss4xDTDWebMetaData;
 import org.jboss.metadata.web.jboss.JBoss50DTDWebMetaData;
 import org.jboss.metadata.web.jboss.JBoss50WebMetaData;
 import org.jboss.metadata.web.jboss.JBoss60WebMetaData;
-import org.jboss.metadata.web.jboss.JBossAnnotationMetaData;
 import org.jboss.metadata.web.jboss.JBossAnnotationsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.HttpMethodConstraintMetaData;
 
 
 /**

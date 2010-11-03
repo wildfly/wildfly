@@ -26,16 +26,11 @@ package org.jboss.as.web.deployment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.ServletContainerInitializer;
@@ -120,8 +115,6 @@ public class JBossContextConfig extends ContextConfig {
     private DeploymentUnitContext deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
 
-    private boolean runDestroy = false;
-
     /**
      * <p>
      * Creates a new instance of {@code JBossContextConfig}.
@@ -130,15 +123,6 @@ public class JBossContextConfig extends ContextConfig {
     public JBossContextConfig(DeploymentUnitContext deploymentUnitContext) {
         super();
         this.deploymentUnitContext = deploymentUnitContext;
-        try {
-            Map authMap = this.getAuthenticators();
-            if (authMap.size() > 0)
-                customAuthenticators = authMap;
-        } catch (Exception e) {
-            log.debug("Failed to load the customized authenticators", e);
-        }
-        // FIXME: Get that from config somewhere ?
-        // runDestroy = deployerConfig.get().isDeleteWorkDirs();
     }
 
     public void lifecycleEvent(LifecycleEvent event) {
@@ -168,7 +152,6 @@ public class JBossContextConfig extends ContextConfig {
     protected void applicationWebConfig() {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         processWebMetaData(warMetaData.getMergedJBossWebMetaData());
-        // processContextParameters();
     }
 
     protected void defaultWebConfig() {
@@ -491,79 +474,15 @@ public class JBossContextConfig extends ContextConfig {
     }
 
     /**
-     * <p>
-     * Retrieves the map of authenticators according to the settings made
-     * available by {@code TomcatService}.
-     * </p>
-     *
-     * @return a {@code Map} containing the authenticator that must be used for
-     *         each authentication method.
-     * @throws Exception if an error occurs while getting the authenticators.
-     */
-    protected Map getAuthenticators() throws Exception {
-        Map authenticators = new HashMap();
-        ClassLoader tcl = Thread.currentThread().getContextClassLoader();
-
-        Properties authProps = this.getAuthenticatorsFromJndi();
-        if (authProps != null) {
-            Set keys = authProps.keySet();
-            Iterator iter = keys != null ? keys.iterator() : null;
-            while (iter != null && iter.hasNext()) {
-                String key = (String) iter.next();
-                String authenticatorStr = (String) authProps.get(key);
-                Class authClass = tcl.loadClass(authenticatorStr);
-                authenticators.put(key, authClass.newInstance());
-            }
-        }
-        if (log.isTraceEnabled())
-            log.trace("Authenticators plugged in::" + authenticators);
-        return authenticators;
-    }
-
-    /**
-     * <p>
-     * Get the key-pair of authenticators from the JNDI.
-     * </p>
-     *
-     * @return a {@code Properties} object containing the authenticator class
-     *         name for each authentication method.
-     * @throws NamingException if an error occurs while looking up the JNDI.
-     */
-    private Properties getAuthenticatorsFromJndi() throws NamingException {
-        return (Properties) new InitialContext().lookup("TomcatAuthenticators");
-    }
-
-    /**
-     * Process the context parameters. Let a user application override the
-     * sharedMetaData values.
-     */
-    // FIXME: Make sure processContextParameters is really useless ...
-
-    /**
      * Process a "init" event for this Context.
      */
     protected void init() {
-
         context.setConfigured(false);
         ok = true;
-
-        if (!context.getOverride()) {
-            processContextConfig("context.xml", false);
-            processContextConfig(getHostConfigPath(org.apache.catalina.startup.Constants.HostContextXml), false);
-        }
-        // This should come from the deployment unit
-        processContextConfig("WEB-INF/context.xml", true);
-
-    }
-
-    protected void processContextConfig(String resourceName, boolean local) {
-        // FIXME: Implement context.xml again ?
+        // FIXME: Add clustered manager support
     }
 
     protected void destroy() {
-        if (runDestroy) {
-            super.destroy();
-        }
     }
 
     /**
@@ -840,8 +759,6 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
-    // FIXME: Support JBoss managers ...
-
     protected void completeConfig() {
         final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
         JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
@@ -904,6 +821,14 @@ public class JBossContextConfig extends ContextConfig {
                 }
             }
         }
+
+        // FIXME: Add security association valve after the authorization valves
+        /*
+        if (!config.isStandalone()) {
+           SecurityAssociationValve securityAssociationValve = new SecurityAssociationValve(metaData, config.getSecurityManagerService());
+           securityAssociationValve.setSubjectAttributeName(config.getSubjectAttributeName());
+           context.addValve(securityAssociationValve);
+        }*/
 
         // Make our application unavailable if problems were encountered
         if (!ok) {

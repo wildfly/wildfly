@@ -57,17 +57,6 @@ class WebDeploymentService implements Service<Context> {
             throw new StartException("failed to start context", e);
         }
         log.info("registering web context: " + context.getName());
-        /*
-         * Add security association valve after the authorization valves so that the authenticated user may be associated
-         * with the request thread/session.
-         */
-        /* TODO
-        if (!config.isStandalone())
-        {
-           SecurityAssociationValve securityAssociationValve = new SecurityAssociationValve(metaData, config.getSecurityManagerService());
-           securityAssociationValve.setSubjectAttributeName(config.getSubjectAttributeName());
-           context.addValve(securityAssociationValve);
-        }*/
     }
 
     /** {@inheritDoc} */
