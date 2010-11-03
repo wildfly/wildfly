@@ -122,9 +122,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             processLifecycleMethods(managedBeanConfiguration, beanClass, index);
 
             final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
-            managedBeanConfiguration.setResourceConfigurations(processResources(classAnnotations, beanClass));
+            managedBeanConfiguration.setResourceConfigurations(processResources(classAnnotations, beanClass, classLoader));
 
-            managedBeanConfiguration.setInterceptorConfigurations(processInterceptors(index, classAnnotations, beanClass));
+            managedBeanConfiguration.setInterceptorConfigurations(processInterceptors(index, classAnnotations, beanClass, classLoader));
 
             managedBeanConfigurations.add(managedBeanConfiguration);
         }
@@ -151,7 +151,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         managedBeanConfiguration.setPreDestroyMethods(preDestroyMethods);
     }
 
-    private List<InterceptorConfiguration> processInterceptors(final Index index, final Map<DotName, List<AnnotationTarget>> beanClassAnnotations, final Class<?> beanClass) throws DeploymentUnitProcessingException {
+    private List<InterceptorConfiguration> processInterceptors(final Index index, final Map<DotName, List<AnnotationTarget>> beanClassAnnotations, final Class<?> beanClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
         final List<AnnotationTarget> interceptorTargets = beanClassAnnotations.get(INTERCEPTORS_ANNOTATION_NAME);
         if (interceptorTargets == null || interceptorTargets.isEmpty()) {
             return Collections.emptyList();
@@ -167,7 +167,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final Map<DotName, List<AnnotationTarget>> interceptorClassAnnotations = classInfo.annotations();
 
             final Method aroundInvokeMethod = getSingleAnnotatedMethod(interceptorType, classInfo, AroundInvoke.class, true);
-            final List<ResourceConfiguration> resourceConfigurations = processResources(interceptorClassAnnotations, interceptorType);
+            final List<ResourceConfiguration> resourceConfigurations = processResources(interceptorClassAnnotations, interceptorType, moduleClassLoader);
             interceptorConfigurations.add(new InterceptorConfiguration(interceptorType, aroundInvokeMethod, resourceConfigurations));
         }
 
@@ -229,7 +229,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         } else {
             // No index information.  Default to normal reflection
             for(Method typeMethod : type.getDeclaredMethods()) {
-                if(method.isAnnotationPresent(annotationType)) {
+                if(typeMethod.isAnnotationPresent(annotationType)) {
                     method = typeMethod;
                     switch (method.getParameterTypes().length){
                         case 0:
@@ -254,7 +254,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         return method;
     }
 
-    private List<ResourceConfiguration> processResources(final Map<DotName, List<AnnotationTarget>> classAnnotations, final Class<?> owningClass) throws DeploymentUnitProcessingException {
+    private List<ResourceConfiguration> processResources(final Map<DotName, List<AnnotationTarget>> classAnnotations, final Class<?> owningClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
         final List<AnnotationTarget> resourceTargets = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
         if (resourceTargets == null) {
             return Collections.emptyList();
@@ -265,7 +265,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             if (annotationTarget instanceof FieldInfo) {
                 resourceConfiguration = processFieldResource(FieldInfo.class.cast(annotationTarget), owningClass);
             } else if(annotationTarget instanceof MethodInfo) {
-                resourceConfiguration = processMethodResource(MethodInfo.class.cast(annotationTarget), owningClass);
+                resourceConfiguration = processMethodResource(MethodInfo.class.cast(annotationTarget), owningClass, moduleClassLoader);
             } else if(annotationTarget instanceof ClassInfo) {
                 final Resource resource = owningClass.getAnnotation(Resource.class);
                 if(resource == null) {
@@ -301,14 +301,22 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         return null;
     }
 
-    private ResourceConfiguration processMethodResource(final MethodInfo methodInfo, final Class<?> owningClass) throws DeploymentUnitProcessingException {
+    private ResourceConfiguration processMethodResource(final MethodInfo methodInfo, final Class<?> owningClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new DeploymentUnitProcessingException("@Resource injection target is invalid.  Only setter methods are allowed: " + methodInfo);
         }
+        final Class<?> argClass;
+        try {
+           // TODO: should I rely on DotName.toString() or compose the FQN myself?
+           // TODO: to easily support primitives and arrays org.jboss.util.Classes.loadClass(String name, ClassLoader cl) could be used
+           argClass = moduleClassLoader.loadClass(methodInfo.args()[0].name().toString());
+        } catch(ClassNotFoundException e) {
+           throw new DeploymentUnitProcessingException("Failed to load " + owningClass.getName() + "." + methodName + "'s argument type " + methodInfo.args()[0].name(), e);
+        }
         final Method method;
         try {
-            method = owningClass.getMethod(methodName);
+            method = owningClass.getMethod(methodName, argClass);
             method.setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new DeploymentUnitProcessingException("Failed to get method '" + methodName + "' from class '" + owningClass + "'", e);
@@ -316,7 +324,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final Resource resource = method.getAnnotation(Resource.class);
         if (resource != null) {
             final String contextNameSuffix = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-            final Class<?> injectionType = resource.type().equals(Object.class) ? method.getReturnType() : resource.type();
+            final Class<?> injectionType = resource.type().equals(Object.class) ? argClass : resource.type();
             final String localContextName = resource.name().isEmpty() ? contextNameSuffix : resource.name();
             return new ResourceConfiguration(methodName, method, ResourceConfiguration.TargetType.METHOD, injectionType, localContextName, getTargetContextName(resource, contextNameSuffix, injectionType));
         }
