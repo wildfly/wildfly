@@ -631,6 +631,8 @@ public class DomainController implements Service<DomainController> {
         }
         Map<ServerIdentity, List<AbstractServerModelUpdate<?>>> updatesByServer = getUpdatesByServer(updates, domainResults, serverByDomain);
 
+        log.debugf("updates affect %s", updatesByServer.keySet());
+
         // TODO Add param to configure pushing out concurrently
         for (Map.Entry<ServerIdentity, List<AbstractServerModelUpdate<?>>> entry : updatesByServer.entrySet()) {
             ServerIdentity server = entry.getKey();

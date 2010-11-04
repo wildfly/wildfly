@@ -160,7 +160,7 @@ public class DomainUpdateResult<R> implements Serializable {
      */
     public boolean isSuccess() {
         return !cancelled
-            && rolledBack
+            && !rolledBack
             && domainFailure == null
             && (hostFailures == null || hostFailures.size() == 0)
             && (serverFailures == null || serverFailures.size() == 0)
@@ -172,30 +172,35 @@ public class DomainUpdateResult<R> implements Serializable {
     public DomainUpdateResult<R> newWithAddedResult(ServerIdentity server, R result) {
         checkAllowServer();
         Map<ServerIdentity, R> sr = (serverResults == null) ? new HashMap<ServerIdentity, R>() : new HashMap<ServerIdentity, R>(serverResults);
+        sr.put(server, result);
         return new DomainUpdateResult<R>(sr, serverFailures, serverCancellations, serverTimeouts, serverRollbacks);
     }
 
     public DomainUpdateResult<R> newWithAddedFailure(ServerIdentity server, Throwable failure) {
         checkAllowServer();
         Map<ServerIdentity, Throwable> sf = (serverFailures == null) ? new HashMap<ServerIdentity, Throwable>() : new HashMap<ServerIdentity, Throwable>(serverFailures);
+        sf.put(server, failure);
         return new DomainUpdateResult<R>(serverResults, sf, serverCancellations, serverTimeouts, serverRollbacks);
     }
 
     public DomainUpdateResult<R> newWithAddedCancellation(ServerIdentity server) {
         checkAllowServer();
         Set<ServerIdentity> sc = (serverCancellations == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverCancellations);
+        sc.add(server);
         return new DomainUpdateResult<R>(serverResults, serverFailures, sc, serverTimeouts, serverRollbacks);
     }
 
     public DomainUpdateResult<R> newWithAddedTimeout(ServerIdentity server) {
         checkAllowServer();
         Set<ServerIdentity> st = (serverTimeouts == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverTimeouts);
+        st.add(server);
         return new DomainUpdateResult<R>(serverResults, serverFailures, serverCancellations, st, serverRollbacks);
     }
 
     public DomainUpdateResult<R> newWithAddedRollback(ServerIdentity server) {
         checkAllowServer();
         Set<ServerIdentity> sr = (serverRollbacks == null) ? new HashSet<ServerIdentity>() : new HashSet<ServerIdentity>(serverRollbacks);
+        sr.add(server);
         return new DomainUpdateResult<R>(serverResults, serverFailures, serverCancellations, serverTimeouts, sr);
     }
 

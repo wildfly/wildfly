@@ -55,11 +55,6 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
     public void applyUpdate(ServerModel element) throws UpdateFailedException {
         ServerGroupDeploymentElement toRemove = element.getDeployment(deploymentUniqueName);
         if (toRemove != null) {
-            if (!redeploy && toRemove.isStart()) {
-                throw new UpdateFailedException("Cannot remove deployment " +
-                        deploymentUniqueName + " as its " + Attribute.START +
-                        " attribute is 'true'. Deployment must be undeployed before removal.");
-            }
             element.removeDeployment(deploymentUniqueName);
         }
         element.addDeployment(new ServerGroupDeploymentElement(deploymentUniqueName, deploymentRuntimeName, hash, redeploy));

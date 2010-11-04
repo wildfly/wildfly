@@ -24,6 +24,7 @@ package org.jboss.as.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -119,6 +120,35 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     }
 
     /**
+     * Gets the configuration for a profile, along with the configuration
+     * for any profiles it includes (and for any profiles they include, recursively).
+     *
+     * @param name the name of the profile
+     * @return
+     */
+    public Map<String, ProfileElement> getProfiles(String name) {
+        Map<String, ProfileElement> result = new HashMap<String, ProfileElement>();
+        synchronized (profiles) {
+            getProfiles(result, name);
+        }
+        return result;
+    }
+
+    private void getProfiles(Map<String, ProfileElement> profiles, String name) {
+        if (profiles.containsKey(name))
+            return;
+
+        ProfileElement pe = getProfile(name);
+        if (pe == null) {
+            throw new IllegalArgumentException("Profile " + name + " is unknown");
+        }
+        profiles.put(name, pe);
+        for (String included : pe.getIncludedProfiles()) {
+            getProfiles(profiles, included);
+        }
+    }
+
+    /**
      * Get the paths.
      *
      * @return the paths
@@ -201,6 +231,12 @@ public final class DomainModel extends AbstractModel<DomainModel> {
     public DeploymentUnitElement getDeployment(String uniqueName) {
         synchronized (deployments) {
             return deployments.get(uniqueName);
+        }
+    }
+
+    public Set<String> getDeploymentNames() {
+        synchronized (deployments) {
+            return new LinkedHashSet<String>(deployments.keySet());
         }
     }
 

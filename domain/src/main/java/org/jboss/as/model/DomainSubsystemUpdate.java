@@ -24,7 +24,10 @@ package org.jboss.as.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -107,10 +110,20 @@ public final class DomainSubsystemUpdate<E extends AbstractSubsystemElement<E>, 
         }
         else {
             List<String> result = new ArrayList<String>();
+
+            // Relevant profiles keyed by the name of those that include them
+            Map<String, Set<String>> includedProfilesByRoot = new HashMap<String, Set<String>>();
+
             for (String server : hostModel.getActiveServerNames()) {
                 String serverGroupName =  hostModel.getServer(server).getServerGroup();
+                String sgProfileName = domainModel.getServerGroup(serverGroupName).getProfileName();
 
-                if (profileName.equals(domainModel.getServerGroup(serverGroupName).getProfileName())) {
+                if (!includedProfilesByRoot.containsKey(sgProfileName)) {
+                    // Find all the profiles related to this server group's profile
+                    includedProfilesByRoot.put(sgProfileName, domainModel.getProfiles(sgProfileName).keySet());
+                }
+
+                if (includedProfilesByRoot.get(sgProfileName).contains(profileName)) {
                     result.add(server);
                 }
             }
