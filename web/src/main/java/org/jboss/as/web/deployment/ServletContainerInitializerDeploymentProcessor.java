@@ -36,6 +36,8 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.module.ModuleConfig;
+import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -49,6 +51,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -91,14 +94,19 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             handlesTypes = new HashMap<ServletContainerInitializer, Set<Class<?>>>();
             scisMetaData.setHandlesTypes(handlesTypes);
         }
-        // Find the SCI list through the classloader
-        // FIXME: Need to use a shared libraries module class loader and maybe custom lookup
-        ServiceLoader<ServletContainerInitializer> serviceLoader =
-            ServiceLoader.load(ServletContainerInitializer.class, classLoader);
-        for (ServletContainerInitializer service : serviceLoader) {
-            scis.add(service);
+        // Find the SCIs from shared modules
+        // FIXME: for now, look in all dependencies for SCIs
+        for (ModuleConfig.Dependency dependency : ModuleDependencies.getAttachedDependencies(context).getDependencies()) {
+            ServiceLoader<ServletContainerInitializer> serviceLoader;
+            try {
+                serviceLoader = Module.loadServiceFromCurrent(dependency.getIdentifier(), ServletContainerInitializer.class);
+                for (ServletContainerInitializer service : serviceLoader) {
+                    scis.add(service);
+                }
+            } catch (ModuleLoadException e) {
+                throw new DeploymentUnitProcessingException("Error loading SCI from module: " + dependency.getIdentifier(), e);
+            }
         }
-        // END FIXME
         // Find local ServletContainerInitializer services
         List<String> order = warMetaData.getOrder();
         Map<String, VirtualFile> localScis = warMetaData.getScis();
