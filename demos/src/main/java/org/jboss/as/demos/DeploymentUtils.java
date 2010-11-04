@@ -168,6 +168,20 @@ public class DeploymentUtils implements Closeable {
             }
         }
 
+        protected File getSourceWebInfDir(String archiveName) {
+           String name = "archives/" + archiveName + "/WEB-INF";
+
+           URL url = Thread.currentThread().getContextClassLoader().getResource(name);
+           if (url == null) {
+              return null;
+           }
+           try {
+               return new File(url.toURI());
+           } catch (URISyntaxException e) {
+               throw new RuntimeException("Could not get file for " + url);
+           }
+       }
+
         protected File getOutputDir() {
             File file = new File("target");
             if (!file.exists()) {
@@ -233,6 +247,11 @@ public class DeploymentUtils implements Closeable {
 
             File sourceMetaInf = getSourceMetaInfDir(archiveName);
             addFiles(archive, sourceMetaInf, metaInf);
+
+            File sourceWebInf = getSourceWebInfDir(archiveName);
+            if (sourceWebInf != null) {
+               addFiles(archive, sourceWebInf, ArchivePaths.create("WEB-INF"));
+            }
 
             System.out.println(archive.toString(show));
             realArchive = createArchive(archive);

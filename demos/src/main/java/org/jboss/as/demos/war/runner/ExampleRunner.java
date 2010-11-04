@@ -38,32 +38,38 @@ import org.jboss.as.demos.war.archive.SimpleServlet;
  */
 public class ExampleRunner {
 
-    public static void main(String[] args) throws Exception {
-        DeploymentUtils utils = null;
-        URLConnection conn = null;
-        InputStream in = null;
-        try {
-            utils = new DeploymentUtils();
-            utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);
-            utils.deploy();
+   public static void main(String[] args) throws Exception {
+      DeploymentUtils utils = null;
+      try {
+         utils = new DeploymentUtils();
+         utils.addWarDeployment("war-example.war", SimpleServlet.class.getPackage(), true);
+         utils.deploy();
 
-            URL url = new URL("http://localhost:8080/war-example/simple?input=Hello");
-            System.out.println("Reading response from " + url + ":");
-            conn = url.openConnection();
-            conn.setDoInput(true);
-            in = new BufferedInputStream(conn.getInputStream());
-            int i = in.read();
-            while (i != -1) {
-                System.out.print((char)i);
-                i = in.read();
-            }
-            System.out.println("");
+         performCall("simple");
+         performCall("legacy");
+      } finally {
+         utils.undeploy();
+         safeClose(utils);
+      }
+   }
 
-        } finally {
-            safeClose(in);
-            utils.undeploy();
-            safeClose(utils);
-        }
-    }
-
+   private static void performCall(String urlPattern) throws Exception {
+      URLConnection conn = null;
+      InputStream in = null;
+      try {
+         URL url = new URL("http://localhost:8080/war-example/" + urlPattern + "?input=Hello");
+         System.out.println("Reading response from " + url + ":");
+         conn = url.openConnection();
+         conn.setDoInput(true);
+         in = new BufferedInputStream(conn.getInputStream());
+         int i = in.read();
+         while (i != -1) {
+            System.out.print((char) i);
+            i = in.read();
+         }
+         System.out.println("");
+      } finally {
+         safeClose(in);
+      }
+   }
 }
