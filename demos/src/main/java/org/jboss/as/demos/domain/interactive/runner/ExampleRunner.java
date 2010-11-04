@@ -24,6 +24,7 @@ package org.jboss.as.demos.domain.interactive.runner;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -61,6 +63,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -134,6 +137,7 @@ public class ExampleRunner implements Runnable {
 
     private final DomainClient client;
     private final Reader stdin;
+    private String swingLAF;
 
 
     private ExampleRunner(InetAddress address, int port) {
@@ -872,8 +876,8 @@ public class ExampleRunner implements Runnable {
 
     }
 
-    private File chooseFile() {
-
+    private File chooseFile() throws IOException {
+        initializeSwing();
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
             "Archives", "jar", "war", "sar");
@@ -883,6 +887,56 @@ public class ExampleRunner implements Runnable {
            return chooser.getSelectedFile();
         }
         return null;
+    }
+
+    private synchronized void initializeSwing() {
+        if (swingLAF != null)
+            return;
+
+        if (System.getProperty("swing.defaultlaf") != null)
+            return;
+
+        String sep = File.separator;
+        String javaHome = System.getProperty("java.home");
+        if (javaHome != null) {
+            Properties props = new Properties();
+            File file = new File(javaHome + sep + "lib" + sep + "swing.properties");
+            if (file.exists()) {
+                // InputStream has been buffered in Properties
+                // class
+                FileInputStream ins = null;
+                try {
+                    ins = new FileInputStream(file);
+                    props.load(ins);
+                }
+                catch (IOException ignored) {}
+                finally {
+                    if (ins != null) {
+                        try {
+                            ins.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+            String clazz = props.getProperty("swing.defaultlaf");
+            if (clazz != null) {
+                try {
+                     getClass().getClassLoader().loadClass(clazz);
+                     swingLAF = clazz;
+                } catch (ClassNotFoundException e) {
+                    // ignore; we'll use Metal below
+                }
+            }
+        }
+
+        if (swingLAF == null) {
+            // Configure swing to use a L&F that's in classes.jar javax.swing package
+            swingLAF = MetalLookAndFeel.class.getName();
+            System.setProperty("swing.defaultlaf", swingLAF);
+        }
+
     }
 
     private boolean addJmsQueue() throws Exception {
