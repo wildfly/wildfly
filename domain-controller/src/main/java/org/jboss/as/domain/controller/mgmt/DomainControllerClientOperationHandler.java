@@ -69,6 +69,9 @@ import static org.jboss.marshalling.Marshalling.createByteOutput;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -88,7 +91,12 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
     private static final MarshallingConfiguration CONFIG;
     static {
         CONFIG = new MarshallingConfiguration();
-        CONFIG.setClassResolver(new SimpleClassResolver(DomainControllerClientOperationHandler.class.getClassLoader()));
+        try {
+            final ClassLoader cl = Module.getModuleFromDefaultLoader(ModuleIdentifier.create("org.jboss.as.aggregate")).getClassLoader();
+            CONFIG.setClassResolver(new SimpleClassResolver(cl));
+        } catch (ModuleLoadException e) {
+            throw new RuntimeException(e);
+        }
     }
     private static final Logger log = Logger.getLogger("org.jboss.as.management");
     public static final ServiceName SERVICE_NAME = DomainController.SERVICE_NAME.append("client", "operation", "handler");
