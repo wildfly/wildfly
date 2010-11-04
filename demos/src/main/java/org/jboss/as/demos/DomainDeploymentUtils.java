@@ -67,9 +67,15 @@ public class DomainDeploymentUtils implements Closeable {
     private final List<Deployment> deployments = new ArrayList<Deployment>();
     private final DomainClient client;
     private final DomainDeploymentManager manager;
+    private boolean injectedClient = true;
 
     public DomainDeploymentUtils() throws UnknownHostException {
-        client = DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        this(DomainClient.Factory.create(InetAddress.getByName("localhost"), 9999));
+        this.injectedClient = false;
+    }
+
+    public DomainDeploymentUtils(DomainClient client) throws UnknownHostException {
+        this.client = client;
         manager = client.getDeploymentManager();
     }
 
@@ -133,7 +139,9 @@ public class DomainDeploymentUtils implements Closeable {
     }
 
     public void close() throws IOException {
-        safeClose(client);
+        if (!injectedClient) {
+            safeClose(client);
+        }
     }
 
     private class Deployment {
