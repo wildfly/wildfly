@@ -61,7 +61,9 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.jboss.annotation.javaee.Icon;
+import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -106,6 +108,7 @@ import org.jboss.metadata.web.spec.VariableMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
+import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -878,15 +881,9 @@ public class JBossContextConfig extends ContextConfig {
                 if (context.getResources() instanceof ProxyDirContext) {
                     ProxyDirContext resources = (ProxyDirContext) context.getResources();
                     for (VirtualFile overlay : overlays) {
-                        FileDirContext dirContext = new FileDirContext();
-                        try {
-                            dirContext.setDocBase(overlay.getPhysicalFile().getAbsolutePath());
-                            resources.addOverlay(dirContext);
-                        } catch (IOException e) {
-                            log.error(sm.getString("contextConfig.noOverlay", context.getName()), e);
-                            ok = false;
-                            break;
-                        }
+                        VFSDirContext dirContext = new VFSDirContext();
+                        dirContext.setVirtualFile(overlay);
+                        resources.addOverlay(dirContext);
                     }
                 } else if (overlays.size() > 0) {
                     // Error, overlays need a ProxyDirContext to compose results
