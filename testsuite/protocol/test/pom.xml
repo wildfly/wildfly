@@ -30,13 +30,13 @@
         <groupId>org.jboss.as</groupId>
         <!--  We don't want the full testsuite classpath here -->
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.0.0.Alpha2-SNAPSHOT</version>
+        <version>7.0.0.Alpha1</version>
         <relativePath>../../..</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-protocol-test</artifactId>
-    <version>7.0.0.Alpha2-SNAPSHOT</version>
+    <version>7.0.0.Alpha1</version>
 
     <name>JBoss Application Server: Test Suite: Protocol Tests</name>
     
