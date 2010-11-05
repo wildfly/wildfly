@@ -77,7 +77,7 @@
    </xs:complexType>
 
    <xs:complexType name="static-resourcesType">
-      <xs:attribute name="listings" default="true" type="xs:boolean" />
+      <xs:attribute name="listings" default="false" type="xs:boolean" />
       <xs:attribute name="sendfile" default="49152" />
       <xs:attribute name="file-encoding" />
       <xs:attribute name="read-only" default="true" type="xs:boolean" />

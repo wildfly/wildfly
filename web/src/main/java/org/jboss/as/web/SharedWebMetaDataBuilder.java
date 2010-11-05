@@ -120,14 +120,19 @@ class SharedWebMetaDataBuilder {
         final ServletMetaData servlet = new ServletMetaData();
         servlet.setName("DefaultServlet");
         servlet.setLoadOnStartup("" + 1);
-        servlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
+        if (resourcesConfig != null && resourcesConfig.isWebDav() != null 
+                && Boolean.TRUE.equals(resourcesConfig.isWebDav())) {
+            servlet.setServletClass("org.apache.catalina.servlets.WebdavServlet");
+        } else {
+            servlet.setServletClass("org.apache.catalina.servlets.DefaultServlet");
+        }
 
         final List<ParamValueMetaData> initParams = new ArrayList<ParamValueMetaData>();
 
         if (resourcesConfig != null && resourcesConfig.isDisabled() != null)
             initParams.add(createParameter("listings", String.valueOf(resourcesConfig.isListings())));
         else
-            initParams.add(createParameter("listings", "true"));
+            initParams.add(createParameter("listings", "false"));
 
         if (resourcesConfig != null && resourcesConfig.isReadOnly() != null)
             initParams.add(createParameter("readonly", String.valueOf(resourcesConfig.isReadOnly())));
@@ -141,11 +146,6 @@ class SharedWebMetaDataBuilder {
 
         if (resourcesConfig != null && resourcesConfig.getFileEncoding() != null)
             initParams.add(createParameter("file-encoding", String.valueOf(resourcesConfig.getFileEncoding())));
-
-        if (resourcesConfig != null && resourcesConfig.isWebDav() != null)
-            initParams.add(createParameter("webdav", String.valueOf(resourcesConfig.isWebDav())));
-        else
-            initParams.add(createParameter("webdav", "false"));
 
         if (resourcesConfig != null && resourcesConfig.getSecret() != null)
             initParams.add(createParameter("secret", String.valueOf(resourcesConfig.getSecret())));
