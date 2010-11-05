@@ -215,6 +215,7 @@ public enum Phase {
     public static final int PARSE_BEAN_RESOURCE_INJECTION_ANNOTATION    = 0x1500;
     public static final int PARSE_MANAGED_BEAN_RESOURCE_TARGET          = 0x1600;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x1700;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x2000;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_MODULE                         = 0x100;
@@ -228,6 +229,7 @@ public enum Phase {
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x900;
     public static final int DEPENDENCIES_WELD                           = 0xA00;
     public static final int DEPENDENCIES_NAMING                         = 0xB00;
+    public static final int DEPENDENCIES_WS                             = 0xC00;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_WAR                        = 0x100;

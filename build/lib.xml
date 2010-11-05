@@ -95,6 +95,32 @@
         
     </macrodef>
 
+    <macrodef name="maven-resource-with-classifier" >
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <attribute name="classifier"/>
+        <attribute name="export-all" default="false"/>
+        
+        <sequential>
+            <!-- Copy the jar to the module dir -->
+            <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
+                <fileset file="${@{group}:@{artifact}:jar:@{classifier}}"/> <!-- http://jira.codehaus.org/browse/MANTRUN-159 -->
+                <mapper type="flatten" />
+            </copy>
+
+            <basename file="${@{group}:@{artifact}:jar:@{classifier}}" property="resourcename.@{group}.@{artifact}.@{classifier}"/>
+
+            <jar index="true" file="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}.@{classifier}}" update="true"/>
+
+            <!-- Update the resource entry in module.xml -->
+            <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}" export-all="@{export-all}"/>
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+                <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
+            </replace>
+        </sequential>
+        
+    </macrodef>
+
     <scriptdef name="define-resource-root" language="javascript">
         <attribute name="path"/>
         <attribute name="export-all"/>

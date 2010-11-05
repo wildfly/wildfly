@@ -26,6 +26,9 @@ import org.jboss.as.server.Extension;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,7 +59,16 @@ public final class ServerExtensionAdd extends AbstractServerModelUpdate<Void> {
     public void applyUpdateBootAction(final BootUpdateContext updateContext) {
         try {
             for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
-                extension.activate(null);
+                final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
+                    public ServiceTarget getServiceTarget() {
+                        return updateContext.getServiceTarget();
+                    }
+
+                    public ServiceRegistry getServiceRegistry() {
+                        return updateContext.getServiceRegistry();
+                    }
+                };
+                extension.activate(serviceActivatorContext);
             }
         } catch (ModuleLoadException e) {
             // todo

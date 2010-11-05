@@ -25,6 +25,7 @@ import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -106,18 +107,32 @@ public class PollingUtils {
     public static class UrlConnectionTask implements Task {
         private final URL url;
         private String response;
+        private final String request;
 
         public UrlConnectionTask(URL url) {
             this.url = url;
+            this.request = null;
+        }
+
+        public UrlConnectionTask(URL url, String request) {
+            this.url = url;
+            this.request = request;
         }
 
         @Override
         public boolean execute() throws Exception {
             URLConnection conn = null;
             InputStream in = null;
+            OutputStreamWriter osw = null;
             try {
                 conn = url.openConnection();
                 conn.setDoInput(true);
+                if (request != null) {
+                    conn.setDoOutput(true);
+                    osw = new OutputStreamWriter(conn.getOutputStream());
+                    osw.write(request);
+                    osw.flush();
+                }
                 in = new BufferedInputStream(conn.getInputStream());
                 int i = in.read();
                 StringBuilder sb = new StringBuilder();
@@ -130,6 +145,9 @@ public class PollingUtils {
             } catch (Exception e) {
                 return false;
             }finally {
+                if (osw != null) {
+                    safeClose(osw);
+                }
                 safeClose(in);
             }
         }
