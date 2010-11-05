@@ -120,7 +120,7 @@ class SharedWebMetaDataBuilder {
         final ServletMetaData servlet = new ServletMetaData();
         servlet.setName("DefaultServlet");
         servlet.setLoadOnStartup("" + 1);
-        if (resourcesConfig != null && resourcesConfig.isWebDav() != null 
+        if (resourcesConfig != null && resourcesConfig.isWebDav() != null
                 && Boolean.TRUE.equals(resourcesConfig.isWebDav())) {
             servlet.setServletClass("org.apache.catalina.servlets.WebdavServlet");
         } else {
