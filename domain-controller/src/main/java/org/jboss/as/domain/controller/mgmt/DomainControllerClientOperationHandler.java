@@ -82,8 +82,8 @@ import org.jboss.msc.value.InjectedValue;
 
 
 /**
- * {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} implementation used to handle request
- * intended for the domain controller.
+ * {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} implementation
+ * used to handle external client requests intended for the domain controller.
  *
  * @author John Bailey
  */
@@ -672,7 +672,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_RUNTIME_NAME);
                 final String deploymentRuntimeName = input.readUTF();
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_CONTENT);
-                deploymentHash = domainController.getDomainDeploymentRepository().addDeploymentContent(deploymentName, deploymentRuntimeName, (InputStream) input);
+                deploymentHash = domainController.addDeploymentContent(deploymentName, deploymentRuntimeName, (InputStream) input);
            } finally {
                 safeClose(input);
             }

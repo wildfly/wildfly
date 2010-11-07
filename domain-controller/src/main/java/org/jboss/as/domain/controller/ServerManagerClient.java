@@ -45,9 +45,11 @@ import org.jboss.as.model.UpdateResultHandlerResponse;
  */
 public interface ServerManagerClient {
     /**
-     * Get the identifier for the client.
+     * Get the identifier for the Server Manager.
      *
-     * @return The identifier
+     * @return the identifier. Cannot be <code>null</code>. Must match the
+     *   {@link HostModel#getName() name property} of the Server Manager's
+     *   {@link HostModel}.
      */
     String getId();
 

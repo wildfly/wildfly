@@ -38,6 +38,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import org.jboss.as.domain.client.api.ServerIdentity;
+import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.client.api.deployment.DeploymentAction;
 import org.jboss.as.domain.client.api.deployment.DeploymentPlan;
 import org.jboss.as.domain.client.api.deployment.DeploymentSetPlan;
@@ -62,11 +63,12 @@ import org.jboss.as.model.ServerGroupDeploymentRemove;
 import org.jboss.as.model.ServerGroupDeploymentReplaceUpdate;
 import org.jboss.as.model.ServerGroupDeploymentStartStopUpdate;
 import org.jboss.as.model.ServerGroupElement;
+import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.logging.Logger;
 
 /**
- * Handles the DomainController's execution of a {@link DeploymentPlan}.
+ * Handles the DomainControllerImpl's execution of a {@link DeploymentPlan}.
  *
  * @author Brian Stansberry
  */
@@ -233,7 +235,7 @@ public class DomainDeploymentHandler {
         // See if the above was successful before moving on to servers
         DomainUpdateApplierResponse last = rsps.get(rsps.size() - 1);
         if (last.getDomainFailure() != null || last.getHostFailures().size() > 0) {
-            // DomainModel update failed; don't apply to servers. The DomainController will
+            // DomainModel update failed; don't apply to servers. The DomainControllerImpl will
             // have already rolled back the domain model update
             return false;
         }
@@ -923,7 +925,17 @@ public class DomainDeploymentHandler {
         @Override
         protected void processUpdates() {
 
-            UpdateResultHandlerResponse<?> urhr = domainController.restartServer(serverId, gracefulTimeout);
+            UpdateResultHandlerResponse<?> urhr;
+            ServerStatus status = domainController.restartServer(serverId.getHostName(), serverId.getServerName(), gracefulTimeout);
+            switch (status) {
+                case STARTED:
+                case STARTING:
+                    urhr = UpdateResultHandlerResponse.createRestartResponse();
+                default: {
+                    UpdateFailedException ufe = new UpdateFailedException("Server " + serverId.getServerName() + " did not restart. Server status is " + status);
+                    urhr = UpdateResultHandlerResponse.createFailureResponse(ufe);
+                }
+            }
             List<UpdateResultHandlerResponse<?>> rsps = Collections.<UpdateResultHandlerResponse<?>>singletonList(urhr);
             updates.serverResults.put(serverId, rsps);
             updatePolicy.recordServerResult(serverId, rsps);

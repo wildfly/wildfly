@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.ServerManagerClient;
@@ -146,7 +147,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         if (operation == null) {
             throw new IOException("Invalid command code " + commandCode + " received from server manager");
         }
-        log.debugf("Received DomainController operation [%s]", operation);
+        log.debugf("Received DomainControllerImpl operation [%s]", operation);
 
         operation.handle(connection, input);
     }

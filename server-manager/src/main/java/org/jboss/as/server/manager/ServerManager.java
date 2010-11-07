@@ -46,6 +46,7 @@ import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.client.impl.HostUpdateApplierResponse;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.mgmt.DomainControllerClientOperationHandler;
 import org.jboss.as.model.AbstractHostModelUpdate;
@@ -202,7 +203,7 @@ public class ServerManager {
 
     /**
      * Starts the ServerManager. This brings this ServerManager to the point where
-     * it has processed its own configuration file, registered with the DomainController
+     * it has processed its own configuration file, registered with the DomainControllerImpl
      * (including starting one if the host configuration specifies that),
      * obtained the domain configuration, and launched any systems needed to make
      * this process manageable by remote clients.
@@ -353,7 +354,7 @@ public class ServerManager {
             domainControllerConnection.unregister();
         }
         serviceContainer.shutdown();
-        // FIXME stop any local DomainController, stop other internal SM services
+        // FIXME stop any local DomainControllerImpl, stop other internal SM services
     }
 
     /**
@@ -527,7 +528,7 @@ public class ServerManager {
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
 
-            final DomainController domainController = new DomainController();
+            final DomainControllerImpl domainController = new DomainControllerImpl();
 
             batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
                 .addInjection(domainController.getXmlMapperInjector(), mapper)

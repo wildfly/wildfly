@@ -26,7 +26,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.DomainControllerImpl;
 import org.jboss.as.domain.controller.mgmt.DomainControllerOperationHandler;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.server.manager.LocalFileRepository;
@@ -63,7 +63,7 @@ public class RemoteDomainControllerTestCase {
         operationHandler.getExecutorServiceInjector().inject(executorService);
         operationHandler.getLocalFileRepositoryInjector().inject(new LocalFileRepository(new ServerManagerEnvironment(System.getProperties(), false, System.in, System.out, System.err, "test", InetAddress.getLocalHost(), 3223, InetAddress.getLocalHost(), 3223, "java")));
 
-        final DomainController domainController = new DomainController();
+        final DomainControllerImpl domainController = new DomainControllerImpl();
         domainController.getDomainConfigDirInjector().inject(new File(getClass().getResource("/test/configuration").toURI()));
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
         File deploymentDir = new File(tmpDir, "domain-deployments-" + ((int) Math.random()));
