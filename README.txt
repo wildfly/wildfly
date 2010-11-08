@@ -63,4 +63,3 @@ The following steps are recommended:
    and deselect all actions except for "Remove trailing whitespace"
 8. Use import on the root pom, which will pull in all modules
 9. Wait (m2eclipse takes awhile on initial import, especially if you did not do step 3)
-
