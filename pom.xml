@@ -157,6 +157,7 @@
         <module>build</module>
         <module>testsuite</module>
         <module>demos</module>
+        <module>mc</module>
     </modules>
 
     <build>
