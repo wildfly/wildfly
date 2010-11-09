@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -354,8 +355,12 @@ public class DomainDeploymentHandler {
         ConcurrentGroupServerUpdatePolicy predecessor = null;
         for (Set<ServerGroupDeploymentPlan> groupPlans : updateSet.setPlan.getServerGroupDeploymentPlans()) {
 
+            Set<String> groupNames = new HashSet<String>(groupPlans.size());
+            for (ServerGroupDeploymentPlan groupPlan : groupPlans) {
+                groupNames.add(groupPlan.getServerGroupName());
+            }
             List<Runnable> concurrentGroupsList = new ArrayList<Runnable>(groupPlans.size());
-            ConcurrentGroupServerUpdatePolicy parent = new ConcurrentGroupServerUpdatePolicy(predecessor, groupPlans);
+            ConcurrentGroupServerUpdatePolicy parent = new ConcurrentGroupServerUpdatePolicy(predecessor, groupNames);
             predecessor = parent;
 
             for (ServerGroupDeploymentPlan groupPlan : groupPlans) {
@@ -372,7 +377,14 @@ public class DomainDeploymentHandler {
                     updateSet.rollbackPolicies.put(serverGroupName, policy);
                 }
                 else {
-                    policy = new ServerUpdatePolicy(parent, serverGroupName, servers, groupPlan);
+                    int maxFailures;
+                    if (groupPlan.getMaxServerFailurePercentage() > 0) {
+                        maxFailures = ((servers.size() * groupPlan.getMaxServerFailurePercentage()) / 100);
+                    }
+                    else {
+                        maxFailures = groupPlan.getMaxServerFailures();
+                    }
+                    policy = new ServerUpdatePolicy(parent, serverGroupName, servers, maxFailures);
                     updateSet.updatePolicies.put(serverGroupName, policy);
                 }
 

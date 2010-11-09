@@ -26,9 +26,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.domain.client.api.ServerIdentity;
-import org.jboss.as.domain.client.api.deployment.ServerGroupDeploymentPlan;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 
+/**
+ * Policy used to determine whether a server can be updated, based on the result
+ * of updates made to other servers.
+ *
+ * @author Brian Stansberry
+ */
 class ServerUpdatePolicy {
     private final ConcurrentGroupServerUpdatePolicy parent;
     private final String serverGroupName;
@@ -49,26 +54,21 @@ class ServerUpdatePolicy {
     ServerUpdatePolicy(final ConcurrentGroupServerUpdatePolicy parent,
                             final String serverGroupName,
                             final Set<ServerIdentity> servers,
-                            final ServerGroupDeploymentPlan groupPlan) {
+                            final int maxFailures) {
         assert parent != null : "parent is null";
         assert serverGroupName != null : "serverGroupName is null";
         assert servers != null : "servers is null";
-        assert groupPlan != null : "groupPlan is null";
 
         this.parent = parent;
         this.serverGroupName = serverGroupName;
         this.servers = servers;
-        if (groupPlan.getMaxServerFailurePercentage() > 0) {
-            this.maxFailed = ((servers.size() * groupPlan.getMaxServerFailurePercentage()) / 100);
-        }
-        else {
-            this.maxFailed = groupPlan.getMaxServerFailures();
-        }
+        this.maxFailed = maxFailures;
     }
 
     /**
      * Constructor for the rollback case where failure on one server should
-     * not prevent execution on the others
+     * not prevent execution on the others.
+     *
      * @param parent parent policy
      * @param serverGroupName the name of the server group being updated
      * @param servers servers that are being updated
@@ -86,10 +86,26 @@ class ServerUpdatePolicy {
         this.maxFailed = servers.size();
     }
 
+    /**
+     * Gets the name of the server group to which this policy is scoped.
+     *
+     * @return the name of the server group. Will not be <code>null</code>
+     */
     public String getServerGroupName() {
         return serverGroupName;
     }
 
+    /**
+     * Gets whether the given server can be updated.
+     *
+     * @param server the id of the server. Cannot be <code>null</code>
+     *
+     * @return <code>true</code> if the server can be updated; <code>false</code>
+     *          if the update should be cancelled
+     *
+     * @throws IllegalStateException if this policy is not expecting a request
+     *           to update the given server
+     */
     public boolean canUpdateServer(ServerIdentity server) {
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
             throw new IllegalStateException("Unknown server " + server);
@@ -103,6 +119,12 @@ class ServerUpdatePolicy {
         }
     }
 
+    /**
+     * Records the result of updating a server.
+     *
+     * @param server  the id of the server. Cannot be <code>null</code>
+     * @param responses the results of the updates
+     */
     public void recordServerResult(ServerIdentity server, List<UpdateResultHandlerResponse<?>> responses) {
 
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
@@ -135,6 +157,13 @@ class ServerUpdatePolicy {
         }
     }
 
+    /**
+     * Gets whether the {@link #recordServerResult(ServerIdentity, List) recorded results}
+     * constitute a failed server group update per this policy.
+     *
+     * @return <code>true</code> if the server group update is considered to be a failure;
+     *         <code>false</code> otherwise
+     */
     public synchronized boolean isFailed() {
         return failureCount > maxFailed;
     }
