@@ -117,6 +117,10 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final ManagedBean managedBeanAnnotation = beanClass.getAnnotation(ManagedBean.class);
             final String beanName = managedBeanAnnotation.value().isEmpty() ? beanClassName : managedBeanAnnotation.value();
+            if(managedBeanConfigurations.containsName(beanName)) {
+               ManagedBeanConfiguration first = managedBeanConfigurations.getConfigurations().get(beanName);
+               throw new DeploymentUnitProcessingException("Duplicate managed bean name '" + beanName + "': " + beanClassName + ", " + first.getType().getName());
+            }
             final ManagedBeanConfiguration managedBeanConfiguration = new ManagedBeanConfiguration(beanName, beanClass);
 
             processLifecycleMethods(managedBeanConfiguration, beanClass, index);
