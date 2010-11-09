@@ -48,6 +48,10 @@ public class DeploymentModuleLoaderImpl extends DeploymentModuleLoader {
         }
     }
 
+    public ModuleSpec removeModuleSpec(ModuleIdentifier moduleId) {
+       return moduleSpecs.remove(moduleId);
+   }
+
     @Override
     protected Module preloadModule(final ModuleIdentifier identifier) throws ModuleLoadException {
         if (identifier.getName().startsWith("deployment.")) {

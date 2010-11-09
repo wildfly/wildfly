@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 
@@ -40,6 +41,13 @@ public abstract class DeploymentModuleLoader extends ModuleLoader {
      * @param moduleSpec The module spec to add
      */
     public abstract void addModuleSpec(ModuleSpec moduleSpec);
+
+    /**
+     * Remove a module spec from the module loader.
+     *
+     * @param moduleId The identifier of the module spec to be removed
+     */
+    public abstract ModuleSpec removeModuleSpec(ModuleIdentifier moduleId);
 
     /**
      * Remove a module from the module loader.
