@@ -1,18 +1,5 @@
 package org.jboss.as.messaging.test;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
 import org.jboss.as.messaging.AbstractTransportElement;
@@ -25,6 +12,18 @@ import org.jboss.as.model.ServerModel;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Tests of the messaging/hornetq configuration parsing.
@@ -124,7 +123,7 @@ public class ConfigParsingUnitTestCase {
    protected XMLMapper createXMLMapper() throws Exception {
       XMLMapper mapper = XMLMapper.Factory.create();
       mapper.registerRootElement(new QName("urn:jboss:domain:1.0", "standalone"), ModelXmlParsers.SERVER_XML_READER);
-      mapper.registerRootElement(new QName(namespace), MessagingSubsystemParser.getInstance());
+      mapper.registerRootElement(new QName(namespace, "subsystem"), MessagingSubsystemParser.getInstance());
       return mapper;
    }
 }

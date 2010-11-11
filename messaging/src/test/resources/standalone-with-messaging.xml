@@ -33,8 +33,6 @@
                             urn:jboss:domain:messaging:1.0 jboss-messaging.xsd"
         >
 
-    <name>Standalone</name>
-
     <profile name="something">
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <journal-type>NIO</journal-type>

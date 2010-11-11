@@ -22,16 +22,14 @@
 
 package org.jboss.as.messaging.test;
 
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
-
 import junit.framework.TestCase;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import javax.xml.XMLConstants;
+import javax.xml.validation.SchemaFactory;
+import java.net.URL;
 
 /**
  * @author Emanuel Muckenhuber
