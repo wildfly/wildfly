@@ -51,7 +51,13 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private int requestId = 0;
     private final ResponseFuture<T> future = new ResponseFuture<T>();
     private ManagementRequestConnectionStrategy connectionStrategy;
+    // @GuardedBy(resultLock)
     private T result;
+    /**
+     * Ensures the assignment of 'result' by thread running responseBodyHandler
+     * is visible to thread running responseEndHandler.
+     */
+    private final Object resultLock = new Object();
 
     /**
      * Get the handler id of the request.  These should match the id of a @{link org.jboss.as.server.manager.management.ManagementOperationHandler}.
@@ -102,6 +108,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void handle(Connection connection, InputStream input) throws IOException {
         try {
             connection.setMessageHandler(responseBodyHandler);
@@ -116,6 +123,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     }
 
     private MessageHandler initiatingMessageHandler = new AbstractMessageHandler() {
+        @Override
         public final void handle(final Connection connection, final InputStream inputStream) throws IOException {
             final ManagementResponseHeader responseHeader;
             ByteDataInput input = null;
@@ -185,18 +193,24 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     protected abstract byte getResponseCode();
 
     private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
+        @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(responseEndHandler);
             expectHeader(input, ManagementProtocol.RESPONSE_BODY);
-            result = receiveResponse(input);
+            synchronized (resultLock) {
+                result = receiveResponse(input);
+            }
         }
     };
 
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
+        @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
             connection.setMessageHandler(MessageHandler.NULL);
             expectHeader(input, ManagementProtocol.RESPONSE_END);
-            future.set(result);
+            synchronized (resultLock) {
+                future.set(result);
+            }
             connectionStrategy.complete();
         }
     };
