@@ -28,9 +28,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
-import org.jboss.logging.Logger;
 
 import javax.net.ServerSocketFactory;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -48,9 +49,10 @@ public final class ProtocolServer {
     private final Executor readExecutor;
     private volatile boolean stop;
     private volatile Thread thread;
+    private volatile ServerSocket serverSocket;
     private volatile InetSocketAddress boundAddress;
 
-    public ProtocolServer(final Configuration configuration) {
+    public ProtocolServer(final Configuration configuration) throws IOException {
         threadFactory = configuration.getThreadFactory();
         socketFactory = configuration.getSocketFactory();
         connectionHandler = configuration.getConnectionHandler();
@@ -68,7 +70,9 @@ public final class ProtocolServer {
 
     public void start() throws IOException {
         stop = false;
+
         final ServerSocket serverSocket = socketFactory.createServerSocket();
+        this.serverSocket = serverSocket;
         thread = threadFactory.newThread(new Runnable() {
             public void run() {
                 try {
@@ -94,11 +98,7 @@ public final class ProtocolServer {
                         }
                     }
                 } finally {
-                    try {
-                        serverSocket.close();
-                    } catch (IOException e) {
-                        log.errorf(e, "Failed to close the server socket");
-                    }
+                    StreamUtils.safeClose(serverSocket);
                 }
             }
         });
@@ -106,6 +106,7 @@ public final class ProtocolServer {
             throw new IOException("Failed to create server thread");
         }
         thread.setName("Accept thread");
+        serverSocket.setReuseAddress(true);
         serverSocket.bind(bindAddress, backlog);
         boundAddress = (InetSocketAddress) serverSocket.getLocalSocketAddress();
         thread.start();
@@ -118,6 +119,7 @@ public final class ProtocolServer {
         if (thread != null) {
             thread.interrupt();
         }
+        StreamUtils.safeClose(serverSocket);
     }
 
     private void safeHandleConnection(final Socket socket) {
