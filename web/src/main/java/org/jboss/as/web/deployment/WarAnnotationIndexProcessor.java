@@ -28,6 +28,7 @@ import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -45,6 +46,9 @@ public class WarAnnotationIndexProcessor implements DeploymentUnitProcessor {
 
     /** {@inheritDoc} */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         if(context.getAttachment(ATTACHMENT_KEY) != null) {
             return;
         }

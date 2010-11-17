@@ -36,16 +36,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
  */
 public class DeploymentChainImpl implements DeploymentChain {
     private final Set<OrderedProcessor> orderedProcessors = new ConcurrentSkipListSet<OrderedProcessor>();
-    private final String name;
-
-    public DeploymentChainImpl(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
 
     /**
      * Process the deployment unit using the chain of DeploymentUnitProcessor instances.
@@ -75,7 +65,7 @@ public class DeploymentChainImpl implements DeploymentChain {
 
     @Override
     public String toString() {
-        return "DeploymentChainImpl{name='" + name + "' processors=" + orderedProcessors + "}";
+        return "DeploymentChainImpl{processors=" + orderedProcessors + "}";
     }
 
     private static final class OrderedProcessor implements Comparable<OrderedProcessor> {

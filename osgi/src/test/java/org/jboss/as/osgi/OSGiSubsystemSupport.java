@@ -22,6 +22,7 @@
 
 package org.jboss.as.osgi;
 
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -44,12 +45,9 @@ import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainProvider.Selector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
@@ -115,7 +113,6 @@ public class OSGiSubsystemSupport {
     private final ServiceContainer serviceContainer;
     private OSGiSubsystemState subsystemState;
     private DeploymentChain deploymentChain;
-    private Selector selector;
 
     public OSGiSubsystemSupport() throws Exception {
         this(OSGiSubsystemState.DEFAULT_CONFIGURATION);
@@ -156,7 +153,7 @@ public class OSGiSubsystemSupport {
     }
 
     public String getUniqueName(String prefix) {
-        return prefix + archiveCount.incrementAndGet();
+        return prefix + archiveCount.incrementAndGet() + ".jar";
     }
 
     public void assertServiceUp(ServiceName serviceName) {
@@ -176,14 +173,8 @@ public class OSGiSubsystemSupport {
     }
 
     public void shutdown() {
-        if (deploymentChain != null && selector != null)
-            removeDeploymentChain();
         if (serviceContainer != null)
             serviceContainer.shutdown();
-    }
-
-    public void removeDeploymentChain() {
-        DeploymentChainProvider.INSTANCE.removeDeploymentChain(deploymentChain, selector, 0);
     }
 
     public void setupServices(final BatchBuilder batchBuilder) throws Exception {
@@ -208,9 +199,8 @@ public class OSGiSubsystemSupport {
 
     public void setupDeploymentServices(final BatchBuilder batchBuilder) {
         batchBuilder.addService(TestServerDeploymentRepository.SERVICE_NAME, new TestServerDeploymentRepository());
-        selector = getDeploymentChainSelector();
-        deploymentChain = new DeploymentChainImpl("deployment.chain");
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, selector, 0);
+        deploymentChain = new DeploymentChainImpl();
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
         OSGiDeploymentService.enableListener = false;
     }
 
@@ -219,16 +209,6 @@ public class OSGiSubsystemSupport {
         TestBundleManagerService.addService(batchBuilder);
         FrameworkService.addService(batchBuilder, Activation.EAGER);
         PackageAdminService.addService(batchBuilder);
-    }
-
-    private DeploymentChainProvider.Selector getDeploymentChainSelector() {
-        DeploymentChainProvider.Selector selector;
-        selector = new DeploymentChainProvider.Selector() {
-            public boolean supports(DeploymentUnitContext context) {
-                return true;
-            }
-        };
-        return selector;
     }
 
     public BundleManager getBundleManager() {
@@ -272,6 +252,14 @@ public class OSGiSubsystemSupport {
         return module;
     }
 
+    public String getDeploymentName(final JavaArchive archive) {
+        return getDeploymentName(archive.getName());
+    }
+
+    public String getDeploymentName(final String archiveName) {
+        return archiveName.replace('.', '_');
+    }
+
     public Bundle executeDeploy(final JavaArchive archive) throws Exception {
         final String depname = archive.getName();
         TestServerDeploymentRepository.getServiceValue(serviceContainer).registerDeploymentArchive(depname, archive);
@@ -304,7 +292,7 @@ public class OSGiSubsystemSupport {
             }
         };
 
-        ServiceName serviceName = DeploymentService.SERVICE_NAME.append(archive.getName());
+        ServiceName serviceName = DeploymentService.SERVICE_NAME.append(getDeploymentName(archive));
         ServiceController<?> controller = serviceContainer.getService(serviceName);
         controller.addListener(serviceStopListener);
         controller.setMode(ServiceController.Mode.REMOVE);

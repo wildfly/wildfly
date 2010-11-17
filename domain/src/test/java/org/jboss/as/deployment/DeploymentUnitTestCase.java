@@ -22,14 +22,9 @@
 
 package org.jboss.as.deployment;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,18 +36,6 @@ import static org.junit.Assert.assertNotNull;
  * @author John E. Bailey
  */
 public class DeploymentUnitTestCase extends AbstractDeploymentTest {
-
-    @BeforeClass
-    public static void setupChain() {
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(new DeploymentChainImpl("test.chain"),
-            new DeploymentChainProvider.Selector() {
-                public boolean supports(DeploymentUnitContext deploymentUnitContext) {
-                    VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
-                    return "testDeployment".equals(virtualFile.getName());
-                }
-            }
-        );
-    }
 
     @Test
     public void testDeployVirtualFile() throws Exception {

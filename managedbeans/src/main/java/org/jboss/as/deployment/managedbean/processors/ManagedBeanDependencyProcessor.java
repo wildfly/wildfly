@@ -22,13 +22,16 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
+import java.util.List;
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
@@ -43,7 +46,8 @@ import javax.annotation.ManagedBean;
  */
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
     public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
-    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");;
+    private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
+    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
     private static ModuleIdentifier JBOSS_LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
 
@@ -53,8 +57,17 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
      *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
+        if (index == null) {
+            return; // Skip if there is no annotation index
+        }
+
+        if (index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME) == null) {
+            return; // Skip if there are no ManagedBean instances
+        }
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAEE_API_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_LOGGING_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVASSIST_ID, true, false, false));

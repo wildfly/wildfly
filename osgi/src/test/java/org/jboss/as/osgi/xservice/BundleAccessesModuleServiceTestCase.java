@@ -132,7 +132,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
         JavaArchive archive = getTargetModuleArchive();
         assertNull("Bundle null", executeDeploy(archive));
 
-        final ModuleIdentifier moduleId = ModuleIdentifier.create("test." + archive.getName());
+        final ModuleIdentifier moduleId = ModuleIdentifier.create("test." + support.getDeploymentName(archive));
         assertNotNull("Module not null", loadModule(moduleId));
 
         // Register the {@link EchoService}
@@ -155,7 +155,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
         JavaArchive archive = getTargetModuleArchive();
         assertNull("Bundle null", executeDeploy(archive));
 
-        ModuleIdentifier moduleId = ModuleIdentifier.create("test." + archive.getName());
+        ModuleIdentifier moduleId = ModuleIdentifier.create("test." + support.getDeploymentName(archive));
         assertNotNull("Module not null", loadModule(moduleId));
 
         // Register the {@link EchoService}

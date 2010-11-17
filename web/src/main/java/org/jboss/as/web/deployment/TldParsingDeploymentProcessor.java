@@ -37,6 +37,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
@@ -56,6 +57,9 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String IMPLICIT_TLD = "implicit.tld";
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
         TldsMetaData tldsMetaData = context.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         if (tldsMetaData == null) {

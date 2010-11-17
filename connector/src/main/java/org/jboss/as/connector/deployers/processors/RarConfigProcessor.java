@@ -1,5 +1,6 @@
 package org.jboss.as.connector.deployers.processors;
 
+import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
@@ -27,6 +28,9 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
+            return;  // Skip non ra deployments
+        }
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(LOGGING_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(IRON_JACAMAR_ID, true, false, false));

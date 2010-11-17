@@ -20,33 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.chain;
+package org.jboss.as.web.deployment;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 /**
- * Service wrapper for the deployment chain provider.  Used to allow services to interact through injection.
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class DeploymentChainProviderService implements Service<DeploymentChainProvider> {
-    public static final ServiceName SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("provider");
+public class WarDeploymentMarker {
+    private static final AttachmentKey<WarDeploymentMarker> ATTACHMENT_KEY = new AttachmentKey<WarDeploymentMarker>(WarDeploymentMarker.class);
 
-    @Override
-    public void start(StartContext context) throws StartException {
-        // NO-OP
+    private static final WarDeploymentMarker INSTANCE = new WarDeploymentMarker();
+
+    static void markDeployment(final DeploymentUnitContext context) {
+        context.putAttachment(ATTACHMENT_KEY, INSTANCE);
     }
 
-    @Override
-    public void stop(StopContext context) {
-        // NO-OP
-    }
 
-    @Override
-    public DeploymentChainProvider getValue() throws IllegalStateException {
-        return DeploymentChainProvider.INSTANCE;
+    static boolean isWarDeployment(final DeploymentUnitContext context) {
+        return context.getAttachment(ATTACHMENT_KEY) != null;
     }
 }

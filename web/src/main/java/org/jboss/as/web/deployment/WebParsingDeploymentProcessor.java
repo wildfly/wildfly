@@ -34,6 +34,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.servlet.WebMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -46,6 +47,9 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String WEB_XML = "WEB-INF/web.xml";
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
         final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
         WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);

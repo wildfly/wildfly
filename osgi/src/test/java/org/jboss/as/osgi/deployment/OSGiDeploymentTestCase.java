@@ -95,13 +95,15 @@ public class OSGiDeploymentTestCase extends AbstractOSGiSubsystemTest {
         assertNotNull("Bundle not null", bundle);
         assertBundleState(Bundle.INSTALLED, bundle.getState());
 
-        assertServiceUp(DeploymentService.SERVICE_NAME.append(archive.getName()));
-        assertServiceUp(OSGiDeploymentService.SERVICE_NAME.append(archive.getName()));
+        final String deploymentName = support.getDeploymentName(archive);
+
+        assertServiceUp(DeploymentService.SERVICE_NAME.append(deploymentName));
+        assertServiceUp(OSGiDeploymentService.SERVICE_NAME.append(deploymentName));
 
         executeUndeploy(archive);
 
-        assertServiceDown(DeploymentService.SERVICE_NAME.append(archive.getName()));
-        assertServiceDown(OSGiDeploymentService.SERVICE_NAME.append(archive.getName()));
+        assertServiceDown(DeploymentService.SERVICE_NAME.append(deploymentName));
+        assertServiceDown(OSGiDeploymentService.SERVICE_NAME.append(deploymentName));
         assertBundleState(Bundle.UNINSTALLED, bundle.getState());
     }
 
@@ -122,7 +124,8 @@ public class OSGiDeploymentTestCase extends AbstractOSGiSubsystemTest {
             }
         };
 
-        ServiceName serviceName = DeploymentService.SERVICE_NAME.append(archive.getName());
+        final String deploymentName = support.getDeploymentName(archive);
+        ServiceName serviceName = DeploymentService.SERVICE_NAME.append(deploymentName);
         ServiceController<?> controller = getServiceContainer().getRequiredService(serviceName);
         controller.addListener(serviceListener);
 
@@ -133,8 +136,8 @@ public class OSGiDeploymentTestCase extends AbstractOSGiSubsystemTest {
         if (latch.getCount() != 0)
             fail("Did not remove service within 5 seconds.");
 
-        assertServiceDown(DeploymentService.SERVICE_NAME.append(archive.getName()));
-        assertServiceDown(OSGiDeploymentService.SERVICE_NAME.append(archive.getName()));
+        assertServiceDown(DeploymentService.SERVICE_NAME.append(deploymentName));
+        assertServiceDown(OSGiDeploymentService.SERVICE_NAME.append(deploymentName));
     }
 
     @Test

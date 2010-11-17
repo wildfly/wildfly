@@ -29,7 +29,6 @@ import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.module.NestedJarInlineProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.processor.ServiceActivatorDependencyProcessor;
@@ -40,10 +39,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
 
 /**
  * Service activator which installs the various service required for jar deployments.
@@ -51,8 +47,6 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class JarDeploymentActivator implements ServiceActivator {
-    public static final long JAR_DEPLOYMENT_CHAIN_PRIORITY = 1000000000L;
-    public static final ServiceName JAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("jar");
 
     /**
      * Activate the services required for service deployments.
@@ -61,12 +55,6 @@ public class JarDeploymentActivator implements ServiceActivator {
      */
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
-
-        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain)new DeploymentChainImpl(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()))   ;
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
-        batchBuilder.addService(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new JarDeploymentChainSelector(), JAR_DEPLOYMENT_CHAIN_PRIORITY));
 
         addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
@@ -83,7 +71,7 @@ public class JarDeploymentActivator implements ServiceActivator {
 
     private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
         final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+        return batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
+            .addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }

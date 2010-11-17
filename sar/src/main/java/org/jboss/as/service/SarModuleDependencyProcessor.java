@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.service;
 
 import org.jboss.as.deployment.DeploymentPhases;
+import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -47,6 +49,11 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        final JBossServiceXmlDescriptor serviceXmlDescriptor = context.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
+        if(serviceXmlDescriptor == null) {
+            return; // Skip deployments with out a service xml descriptor
+        }
+
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_LOGGING_ID, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JBOSS_MODULES_ID, true, false, false));
     }

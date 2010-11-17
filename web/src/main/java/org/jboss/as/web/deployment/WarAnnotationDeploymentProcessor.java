@@ -39,6 +39,7 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -80,6 +81,9 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
      * Process web annotations.
      */
     public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         final WarAnnotationIndex index = context.getAttachment(WarAnnotationIndexProcessor.ATTACHMENT_KEY);
         if (index == null) {
             return; // Skip if there is no annotation index

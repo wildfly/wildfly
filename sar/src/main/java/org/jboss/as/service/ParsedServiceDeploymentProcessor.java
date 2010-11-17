@@ -82,8 +82,9 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final JBossServiceXmlDescriptor serviceXmlDescriptor = context.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
-        if(serviceXmlDescriptor == null)
-            return;
+        if(serviceXmlDescriptor == null) {
+            return; // Skip deployments with out a service xml descriptor
+        }
 
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if(module == null)

@@ -20,43 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment;
+package org.jboss.as.web.deployment;
 
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-
-import org.jboss.as.deployment.attachment.ManifestAttachment;
+import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.markDeployment;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * Deployment chain selector which determines whether the OSGi deployment chain should handle this deployment.
+ * Processor that marks a war deployment.
  *
- * @author Thomas.Diesler@jboss.com
+ * @author John Bailey
  */
-public class OSGiDeploymentChainSelector implements DeploymentChainProvider.Selector {
+public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
+    public static final long PRIORITY = DeploymentPhases.STRUCTURE.plus(1000);
 
-    private static final String ARCHIVE_EXTENSION = ".jar";
+    static final String WAR_EXTENSION = ".war";
 
-    /**
-     * Determine where this deployment is supported by OSGi deployer chain.
-     *
-     * @param virtualFile The deployment file
-     * @return true if this is s service deployment, and false if not
-     */
-    public boolean supports(final DeploymentUnitContext context) {
-
+    public void processDeployment(final DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
-        boolean jarMatch = virtualFile.getName().toLowerCase().endsWith(ARCHIVE_EXTENSION);
-        boolean pathMatch = virtualFile.getChild(JarFile.MANIFEST_NAME).exists();
-        if (!jarMatch || !pathMatch)
-            return false;
-
-        // Check whether this is a valid OSGi deployment
-        Manifest manifest = ManifestAttachment.getManifestAttachment(context);
-        return BundleInfo.isValidateBundleManifest(manifest);
+        if(virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
+            markDeployment(context);
+        }
     }
 }

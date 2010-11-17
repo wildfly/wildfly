@@ -32,12 +32,6 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface DeploymentChain extends DeploymentUnitProcessor {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "chain");
-    /**
-     * Get the name of the deployment chain.  Ex. "deployment.chain.war"
-     *
-     * @return the name
-     */
-    String getName();
 
     /**
      * Add a new DeploymentUnitProcessor to the chain with a specified priority.

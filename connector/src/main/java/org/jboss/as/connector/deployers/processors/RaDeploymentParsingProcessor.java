@@ -68,10 +68,11 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             return;
 
         final String deploymentRootName = deploymentRoot.getName();
-        VirtualFile serviceXmlFile = null;
-        if (deploymentRootName.endsWith(".rar")) {
-            serviceXmlFile = deploymentRoot.getChild("/META-INF/ra.xml");
+        if (!deploymentRootName.endsWith(".rar")) {
+            return;
         }
+
+        VirtualFile serviceXmlFile = deploymentRoot.getChild("/META-INF/ra.xml");
 
         InputStream xmlStream = null;
         Connector result = null;

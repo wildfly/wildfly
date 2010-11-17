@@ -36,23 +36,8 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainProviderInjector;
-import org.jboss.as.deployment.chain.DeploymentChainProviderService;
-import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.as.deployment.chain.JarDeploymentActivator;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
-import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.deployment.module.ModuleConfigProcessor;
-import org.jboss.as.deployment.module.ModuleDependencyProcessor;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.module.NestedJarInlineProcessor;
-import org.jboss.as.deployment.naming.ModuleContextProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.naming.service.NamingService;
@@ -66,10 +51,6 @@ import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
 
 /**
  * Service activator which installs the various service required for rar
@@ -77,48 +58,18 @@ import org.jboss.msc.value.Values;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentActivator implements ServiceActivator {
-
-    public static final long RAR_DEPLOYMENT_CHAIN_PRIORITY = JarDeploymentActivator.JAR_DEPLOYMENT_CHAIN_PRIORITY - 100;
-    public static final ServiceName RAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("rar");
-
     /**
      * Activate the services required for service deployments.
      * @param context The service activator context
      */
     @Override
     public void activate(final ServiceActivatorContext context) {
-
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME,
-                new DeploymentChainProviderService());
-
-        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain) new DeploymentChainImpl(
-                RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()));
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
-        batchBuilder.addService(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService).addDependency(
-                DeploymentChainProviderService.SERVICE_NAME,
-                DeploymentChainProvider.class,
-                new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new RaDeploymentChainSelector(),
-                        RAR_DEPLOYMENT_CHAIN_PRIORITY));
-
         addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), NestedJarInlineProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new RarConfigProcessor(), RarConfigProcessor.PRIORITY);
 
-        addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
 
         // add resources here
-        final InjectedValue<DeploymentModuleLoader> deploymentModuleLoaderValue = new InjectedValue<DeploymentModuleLoader>();
-        DeploymentModuleLoaderProcessor deploymentLoaderProcessor = new DeploymentModuleLoaderProcessor(
-                deploymentModuleLoaderValue);
-        addDeploymentProcessor(batchBuilder, deploymentLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY)
-                .addDependency(DeploymentModuleLoaderService.SERVICE_NAME, DeploymentModuleLoader.class,
-                        deploymentModuleLoaderValue);
-        addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-
         MdrService mdrService = new MdrService();
         batchBuilder.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService);
 
@@ -187,10 +138,9 @@ public class RaDeploymentActivator implements ServiceActivator {
 
     private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder,
             final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(
-                deploymentUnitProcessor);
-        return batchBuilder.addService(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()),
-                deploymentUnitProcessorService).addDependency(RAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class,
+        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
+        return batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()),
+                deploymentUnitProcessorService).addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class,
                 new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }

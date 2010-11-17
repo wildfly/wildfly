@@ -64,13 +64,12 @@ public class DeploymentChainProcessorInjectorTestCase {
         });
         batchBuilder.addListener(listener);
 
-        final ServiceName chainServiceName = ServiceName.of("deployment", "chain");
-        batchBuilder.addService(chainServiceName, new DeploymentChainService(Values.immediateValue((DeploymentChain)new DeploymentChainImpl("test.chain"))));
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(Values.immediateValue((DeploymentChain)new DeploymentChainImpl())));
 
         final ServiceName processorServiceName = ServiceName.of("deployment", "processor");
         final DeploymentUnitProcessorService<MockProcessor> deploymentUnitProcessorService = new DeploymentUnitProcessorService<MockProcessor>(Values.immediateValue(new MockProcessor()));
         batchBuilder.addService(processorServiceName, deploymentUnitProcessorService)
-            .addDependency(chainServiceName, DeploymentChain.class, new DeploymentChainProcessorInjector<MockProcessor>(deploymentUnitProcessorService, 100L));
+            .addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<MockProcessor>(deploymentUnitProcessorService, 100L));
 
         batchBuilder.install();
         listener.finishBatch();
@@ -80,7 +79,7 @@ public class DeploymentChainProcessorInjectorTestCase {
 
         assertNotNull(serviceContainer.getService(processorServiceName));
 
-        final ServiceController<?> serviceController = serviceContainer.getService(chainServiceName);
+        final ServiceController<?> serviceController = serviceContainer.getService(DeploymentChain.SERVICE_NAME);
         assertNotNull(serviceController);
 
         final DeploymentChain deploymentChain = (DeploymentChain)serviceController.getValue();

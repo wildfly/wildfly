@@ -35,6 +35,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.as.metadata.parser.util.NoopXmlResolver;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
@@ -49,6 +50,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         WarMetaData warMetaData = context.getAttachment(WarMetaData.ATTACHMENT_KEY);
         assert warMetaData != null;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();

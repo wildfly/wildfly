@@ -34,7 +34,6 @@ import org.jboss.as.deployment.DeploymentService;
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContextImpl;
@@ -192,8 +191,9 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             }
 
             // Execute the deployment chain
-            final DeploymentChainProvider deploymentChainProvider = DeploymentChainProvider.INSTANCE;
-            final DeploymentChain deploymentChain = deploymentChainProvider.determineDeploymentChain(deploymentUnitContext);
+            final ServiceController<?> deploymentChainController = serviceContainer.getService(DeploymentChain.SERVICE_NAME);
+            final DeploymentChain deploymentChain = (DeploymentChain)deploymentChainController.getValue();
+
             log.debugf("Executing deployment '%s' with chain: %s", deploymentName, deploymentChain);
             if(deploymentChain == null)
                 throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);

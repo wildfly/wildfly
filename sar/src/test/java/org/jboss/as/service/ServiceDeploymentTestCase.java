@@ -22,10 +22,9 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
@@ -33,14 +32,12 @@ import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -57,9 +54,13 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
     private static final ServiceName TEST_TWO_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=testTwo,type=service");
     private static final ServiceName TEST_THREE_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "jboss:name=testThree,type=service");
 
-    @BeforeClass
-    public static void setupChain() {
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+    @Override
+    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        super.setupServices(batchBuilder);
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
+
+        final DeploymentChain deploymentChain = new DeploymentChainImpl();
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
         deploymentChain.addProcessor(new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
@@ -68,20 +69,6 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
         deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
         deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
-            new DeploymentChainProvider.Selector() {
-                public boolean supports(DeploymentUnitContext deploymentUnitContext) {
-                    VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
-                    return "serviceXmlDeployment.jar".equals(virtualFile.getName());
-                }
-            }
-        );
-    }
-
-    @Override
-    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
-        super.setupServices(batchBuilder);
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
     }
 
     @Test

@@ -22,21 +22,8 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.DeploymentChainProviderInjector;
-import org.jboss.as.deployment.chain.DeploymentChainProviderService;
-import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.as.deployment.module.DeploymentModuleLoader;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
-import org.jboss.as.deployment.module.ModuleDependencyProcessor;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.naming.ModuleContextProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
@@ -45,6 +32,7 @@ import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WarAnnotationDeploymentProcessor;
 import org.jboss.as.web.deployment.WarAnnotationIndexProcessor;
 import org.jboss.as.web.deployment.WarClassloadingDependencyProcessor;
+import org.jboss.as.web.deployment.WarDeploymentInitializingProcessor;
 import org.jboss.as.web.deployment.WarDeploymentProcessor;
 import org.jboss.as.web.deployment.WarMetaDataProcessor;
 import org.jboss.as.web.deployment.WarModuleConfigProcessor;
@@ -53,46 +41,15 @@ import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * @author Emanuel Muckenhuber
  */
 class WebDeploymentActivator {
 
-    public static final long WAR_DEPLOYMENT_CHAIN_PRIORITY = 100000L;
-    public static final ServiceName WAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("war");
-
-    public static class WarDeploymentChainSelector implements DeploymentChainProvider.Selector {
-        static final String WAR_EXTENSION = ".war";
-
-        /** {@inheritDoc} */
-        public boolean supports(DeploymentUnitContext deploymentUnitContext) {
-            VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
-            return virtualFile.getName().toLowerCase().endsWith(WAR_EXTENSION);
-        }
-    }
-
     static void activate(final String defaultHost, final SharedWebMetaDataBuilder sharedWebBuilder, final SharedTldsMetaDataBuilder sharedTldsBuilder, final BatchBuilder batchBuilder) {
-        batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
-
-        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain) new DeploymentChainImpl(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()));
-        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
-        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService).addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class,
-                new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY));
-
-        addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        final InjectedValue<DeploymentModuleLoader> moduleLoaderInjector = new InjectedValue<DeploymentModuleLoader>();
-        addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(moduleLoaderInjector), DeploymentModuleLoaderProcessor.PRIORITY)
-            .addDependency(DeploymentModuleLoaderService.SERVICE_NAME, DeploymentModuleLoader.class, moduleLoaderInjector);
-        addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-
         // Web specific deployment processors ....
+        addDeploymentProcessor(batchBuilder, new WarDeploymentInitializingProcessor(), WarDeploymentInitializingProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), WarStructureDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarAnnotationIndexProcessor(), WarAnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WarModuleConfigProcessor(), WarModuleConfigProcessor.PRIORITY);
@@ -110,8 +67,8 @@ class WebDeploymentActivator {
 
     static <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
         final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService).addDependency(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class,
-                new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+        return batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
+            .addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 
 }

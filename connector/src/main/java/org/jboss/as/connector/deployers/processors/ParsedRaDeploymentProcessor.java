@@ -99,6 +99,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        if(connectorXmlDescriptor == null) {
+            return;  // Skip non ra deployments
+        }
         final IronJacamarXmlDescriptor ironJacamarXmlDescriptor = context
                 .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
 

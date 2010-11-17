@@ -99,7 +99,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
                     specBuilder.addResourceRoot(new VirtualFileResourceLoader(AbstractVFS.adapt(virtualFile)));
 
                     if (context.getName().equals(apiArchiveName) == false) {
-                        ModuleIdentifier apiid = ModuleIdentifier.create("test." + apiArchiveName);
+                        ModuleIdentifier apiid = ModuleIdentifier.create("test." + support.getDeploymentName(apiArchiveName));
                         specBuilder.addDependency(DependencySpec.createModuleDependencySpec(apiid));
                     }
 
@@ -136,7 +136,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
         JavaArchive apiArchive = getAPIModuleArchive();
         assertNull("Bundle null", executeDeploy(apiArchive));
 
-        ModuleIdentifier apiId = ModuleIdentifier.create("test." + apiArchive.getName());
+        ModuleIdentifier apiId = ModuleIdentifier.create("test." + support.getDeploymentName(apiArchive));
         assertNotNull("Module not null", loadModule(apiId));
 
         Bundle apiBundle = getBundleManager().installBundle(apiId);
@@ -165,7 +165,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
         JavaArchive apiArchive = getAPIModuleArchive();
         assertNull("Bundle null", executeDeploy(apiArchive));
 
-        ModuleIdentifier apiId = ModuleIdentifier.create("test." + apiArchive.getName());
+        ModuleIdentifier apiId = ModuleIdentifier.create("test." + support.getDeploymentName(apiArchive));
         assertNotNull("Module not null", loadModule(apiId));
 
         Bundle apiBundle = getBundleManager().installBundle(apiId);
@@ -181,7 +181,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
         JavaArchive clientArchive = getClientModuleArchive();
         assertNull("Bundle null", executeDeploy(clientArchive));
 
-        ModuleIdentifier clientId = ModuleIdentifier.create("test." + clientArchive.getName());
+        ModuleIdentifier clientId = ModuleIdentifier.create("test." + support.getDeploymentName(clientArchive));
         assertNotNull("Module not null", loadModule(clientId));
 
         registerClientService(clientId);
@@ -246,7 +246,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleVersion("1.0.0");
                 builder.addBundleActivator(TargetBundleActivator.class);
-                builder.addRequireBundle("test." + apiArchiveName);
+                builder.addRequireBundle("test." + support.getDeploymentName(apiArchiveName));
                 builder.addImportPackages(Echo.class);
                 return builder.openStream();
             }

@@ -35,6 +35,7 @@ import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure;
 import org.jboss.as.web.deployment.helpers.DeploymentStructure.ClassPathEntry;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -75,6 +76,9 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
     /** {@inheritDoc} */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
         if(deploymentRoot == null) {
             return;

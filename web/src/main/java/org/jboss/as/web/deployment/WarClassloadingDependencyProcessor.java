@@ -27,6 +27,7 @@ import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -46,6 +47,9 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
     private static final ModuleIdentifier LOG = ModuleIdentifier.create("org.jboss.logging");
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+        if(!isWarDeployment(context)) {
+            return; // Skip non web deployments
+        }
         // Add module dependencies on Java EE apis
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_SERVLET_API, true, false, false));
         ModuleDependencies.addDependency(context, new ModuleConfig.Dependency(JAVAX_SERVLET_JSP_API, true, false, false));
