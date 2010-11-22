@@ -21,7 +21,6 @@
  */
 package org.jboss.as.process.support;
 
-import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -38,13 +37,9 @@ public class LoggingTestRunner extends BlockJUnit4ClassRunner{
         super(klass);
     }
 
-    protected EachTestNotifier makeNotifier(FrameworkMethod method,
-            RunNotifier notifier) {
-
+    @Override
+    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
         System.err.println("\n===== Test " + getTestClass().getJavaClass().getSimpleName() + "." + testName(method) + " ===========");
-        return super.makeNotifier(method, notifier);
+        super.runChild(method, notifier);
     }
-
-
-
 }

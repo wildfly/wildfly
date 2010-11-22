@@ -154,10 +154,35 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-osgi-bundle</artifactId>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-api</artifactId>
         </dependency>
-            
+
+        <dependency>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-impl-base</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-junit</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.arquillian</groupId>
+          <artifactId>arquillian-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-jmx-executor</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-connector</artifactId>

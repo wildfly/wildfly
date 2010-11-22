@@ -37,6 +37,9 @@ public class InterceptorBean {
 
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
+        if (!context.getMethod().getName().equals("echo")) {
+            return context.proceed();
+        }
         log.info("-----> Intercepting call to " + context.getMethod().getDeclaringClass() + "." +  context.getMethod().getName() + "()");
         return "#InterceptorBean#" + context.proceed();
     }

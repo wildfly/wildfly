@@ -170,6 +170,10 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def name="junit.junit">
+            <maven-resource group="junit" artifact="junit"/>
+        </module-def>
+
         <module-def name="org.apache.aries.jmx">
             <maven-resource group="org.apache.aries.jmx" artifact="org.apache.aries.jmx"/>
         </module-def>
@@ -199,8 +203,40 @@
             <maven-resource group="javassist" artifact="javassist"/>
         </module-def>
 
-       	<module-def name="org.jboss.as.aggregate" />
+        <module-def name="org.jboss.arquillian.api">
+            <maven-resource group="org.jboss.arquillian" artifact="arquillian-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.arquillian.impl">
+            <maven-resource group="org.jboss.arquillian" artifact="arquillian-impl-base"/>
+        </module-def>
+
+        <module-def name="org.jboss.arquillian.junit">
+            <maven-resource group="org.jboss.arquillian" artifact="arquillian-junit"/>
+        </module-def>
+
+        <module-def name="org.jboss.arquillian.spi">
+            <maven-resource group="org.jboss.arquillian" artifact="arquillian-spi"/>
+        </module-def>
+        <!--
+        <module-def name="org.jboss.arquillian.testenricher.msc">
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-msc"/>
+        </module-def>
+
+    	<module-def name="org.jboss.arquillian.testenricher.osgi">
+            <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-osgi"/>
+        </module-def>
+        -->
+    	<module-def name="org.jboss.as.aggregate" />
     	
+        <module-def name="org.jboss.as.arquillian.service">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.arquillian.jmx-executor">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-jmx-executor"/>
+        </module-def>
+
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
         </module-def>
@@ -394,6 +430,18 @@
         
         <module-def name="org.jboss.threads">
             <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.shrinkwrap.api">
+            <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
+        </module-def>
+        
+        <module-def name="org.jboss.shrinkwrap.spi">
+            <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
+        </module-def>
+        
+        <module-def name="org.jboss.shrinkwrap.impl">
+            <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-impl-base"/>
         </module-def>
 
         <module-def name="org.jboss.staxmapper">

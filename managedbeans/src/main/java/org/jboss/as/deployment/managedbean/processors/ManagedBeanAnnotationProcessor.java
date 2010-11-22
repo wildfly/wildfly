@@ -22,6 +22,23 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.ManagedBean;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptors;
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
@@ -39,22 +56,6 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.jboss.modules.Module;
-
-import javax.annotation.ManagedBean;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptors;
-import javax.interceptor.InvocationContext;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -112,6 +113,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             } catch (ClassNotFoundException e) {
                 throw new DeploymentUnitProcessingException("Failed to load managed bean class: " + beanClassName);
             }
+
 
             // Get the managed bean name from the annotation
             final ManagedBean managedBeanAnnotation = beanClass.getAnnotation(ManagedBean.class);

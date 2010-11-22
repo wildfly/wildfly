@@ -21,83 +21,23 @@
  */
 package org.jboss.as.server;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.xml.stream.XMLInputFactory;
-
-import org.jboss.as.model.AbstractServerModelUpdate;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.staxmapper.XMLMapper;
 
 /**
- * The standalone server.
+ * The standalone server interface.
  *
- * @author Emanuel Muckenhuber
+ * This is used by Arquillian, please preserve compatiblity.
+ *
+ * @author Thomas.Diesler@jboss.com
+ * @since 17-Nov-2010
  */
-public class StandaloneServer {
+public interface StandaloneServer {
 
-    private static final String STANDALONE_XML = "standalone.xml";
-    private final StandardElementReaderRegistrar extensionRegistrar;
+    void start() throws ServerStartException;
 
-    static final Logger log = Logger.getLogger("org.jboss.as.server");
+    void start(List<ServiceActivator> serviceActivators) throws ServerStartException;
 
-    private final ServerEnvironment environment;
-
-    public StandaloneServer(ServerEnvironment environment) {
-        if (environment == null) {
-            throw new IllegalArgumentException("bootstrapConfig is null");
-        }
-        this.environment = environment;
-        extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
-    }
-
-    public void start() throws ServerStartException {
-       start(Collections.<ServiceActivator>emptyList());
-    }
-
-    public void start(List<ServiceActivator> serviceActivators) throws ServerStartException {
-        final File standalone = new File(environment.getServerConfigurationDir(), STANDALONE_XML);
-        if(! standalone.isFile()) {
-            throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
-        }
-        if(! standalone.canWrite() ) {
-            throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writable.");
-        }
-        final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
-        try {
-            final XMLMapper mapper = XMLMapper.Factory.create();
-            extensionRegistrar.registerStandardStandaloneReaders(mapper);
-            mapper.parseDocument(updates, XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(new FileInputStream(standalone))));
-        } catch (Exception e) {
-            throw new ServerStartException("Caught exception during processing of standalone.xml", e);
-        }
-
-        final ServerStartTask startTask = new ServerStartTask(0, serviceActivators, updates, environment);
-        startTask.run(Collections.<ServiceActivator>emptyList());
-
-        // TODO remove life thread
-        new Thread() { {
-                setName("Server Life Thread");
-                setDaemon(false);
-                setPriority(MIN_PRIORITY);
-            }
-
-            @Override
-            public void run() {
-                for (;;)
-                    try {
-                        sleep(1000000L);
-                    } catch (InterruptedException ignore) {
-                        //
-                    }
-            }
-        }.start();
-    }
+    void stop();
 }
-

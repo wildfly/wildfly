@@ -110,7 +110,7 @@ public final class
         this.providedEnvironment = environment;
     }
 
-    public void run(final List<ServiceActivator> startServices) {
+    public void run(final List<ServiceActivator> runServices) {
         if (serverName != null) {
             MDC.put("process", "server-" + serverName);
 
@@ -147,7 +147,7 @@ public final class
         }
 
         // Services specified to this method
-        for (ServiceActivator service : startServices) {
+        for (ServiceActivator service : runServices) {
             service.activate(serviceActivatorContext);
         }
 

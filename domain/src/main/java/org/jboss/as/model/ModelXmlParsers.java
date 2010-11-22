@@ -476,9 +476,16 @@ public final class ModelXmlParsers {
             try {
                //for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
                Module module = Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString(moduleName));
+               boolean initialized = false;
                for (Extension extension : module.loadService(Extension.class)) {
                     extension.initialize(extensionContext);
-                }
+                    if (!initialized) {
+                        initialized = true;
+                    }
+               }
+               if (!initialized) {
+                   throw new IllegalStateException("No META-INF/services/" + Extension.class.getName() + " found for " + module.getIdentifier());
+               }
             } catch (ModuleLoadException e) {
                 throw new XMLStreamException("Failed to load module", e);
             }

@@ -49,22 +49,65 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
+                    <!-- Common among all test executions  -->
+                    <skipExec>${skipExecUnitTests}</skipExec>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
+                    <systemProperties>
+                        <property>
+                          <name>java.util.logging.manager</name>
+                          <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                          <name>jboss.home</name>
+                          <value>../../build/target/jboss-${jboss.as.release.version}</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
+                <executions>
+                    <execution>
+                        <!-- (Legacy) Tests not using arquillian  -->
+                        <id>default-test</id>
+                        <configuration>
+		                    <includes>
+		                        <include>org/jboss/as/test/flat/**/*TestCase.java</include>
+		                    </includes>
+                        </configuration>
+                    </execution>
+                    <execution> 
+                        <!-- Tests that run using arquillian + embedded AS-->
+                        <id>arquillian</id>
+                        <phase>test</phase>
+                        <goals>
+                             <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
     
     <dependencies>
-      <dependency>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-server</artifactId>
-        <version>${project.version}</version>
-        <scope>test</scope>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-demos</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
+    
 </project>

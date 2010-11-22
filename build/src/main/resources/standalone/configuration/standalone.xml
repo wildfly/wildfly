@@ -23,6 +23,7 @@
 <server xmlns="urn:jboss:domain:1.0" 
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
+                            urn:jboss:domain:arquillian:1.0 jboss-arquillian.xsd
                             urn:jboss:domain:threads:1.0 jboss-threads.xsd
                             urn:jboss:domain:naming:1.0 jboss-naming.xsd
                             urn:jboss:domain:transactions:1.0 jboss-txn.xsd
@@ -37,6 +38,7 @@
                             urn:jboss:domain:web:1.0 jboss-web.xsd">
 
     <extensions>
+        <extension module="org.jboss.as.arquillian.service"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
@@ -97,6 +99,7 @@
                 <keepalive-time time="10" unit="seconds"/>
             </bounded-queue-thread-pool>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:arquillian:1.0" />        
         <subsystem xmlns="urn:jboss:domain:naming:1.0" />
         <subsystem xmlns="urn:jboss:domain:remoting:1.0" thread-pool="remoting"/>
         <subsystem xmlns="urn:jboss:domain:jmx:1.0">

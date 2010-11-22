@@ -57,8 +57,15 @@ public class BeanWithSimpleInjected {
         return msg;
     }
 
+    public SimpleManagedBean getSimple() {
+        return simple;
+    }
+
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
+        if (!context.getMethod().getName().equals("echo")) {
+            return context.proceed();
+        }
         log.info("-----> Intercepting call to " + context.getMethod());
         return "#BeanWithSimpleInjected#" + context.proceed();
     }

@@ -63,13 +63,13 @@
         <version.javax.validation.validation-api>1.0.0.GA</version.javax.validation.validation-api>
         <version.javax.ws.rs.jsr311-api>1.0</version.javax.ws.rs.jsr311-api>
         <version.javax.xml.jaxrpc-api>1.1</version.javax.xml.jaxrpc-api>
-        <version.junit>4.6</version.junit>
+        <version.junit>4.8.1</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.org.apache.aries.jmx>0.1-incubating</version.org.apache.aries.jmx>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian>1.0.0.Alpha4.SP3</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.0.0.Alpha4</version.org.jboss.arquillian>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
@@ -155,6 +155,7 @@
         <module>osgi</module>
         <module>web</module>
         <module>build</module>
+        <module>arquillian</module>
         <module>testsuite</module>
         <module>demos</module>
         <module>mc</module>
@@ -346,6 +347,30 @@
             
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-embedded</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-jmx-executor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-build</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
@@ -368,6 +393,12 @@
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+	        <dependency>
+	            <groupId>org.jboss.as</groupId>
+	            <artifactId>jboss-as-demos</artifactId>
+                <version>${project.version}</version>
+	        </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -638,6 +669,30 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-vfs</artifactId>
                 <version>${version.org.jboss.jboss-vfs}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-api</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-junit</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-spi</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
             </dependency>
 
             <dependency>

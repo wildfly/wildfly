@@ -86,7 +86,7 @@ public final class Main {
                 abort(null);
             } else {
                 if(config.isStandalone()) {
-                    server = new StandaloneServer(config);
+                    server = StandaloneServerFactory.create(config);
                 } else {
                     throw new IllegalStateException();
                 }

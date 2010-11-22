@@ -55,6 +55,7 @@ public final class Phase {
     public static final int IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR   = PARSE + 0xC00;
     public static final int RESOURCE_ADAPTERS_ATTACHING_PROCESSOR       = PARSE + 0xD00;
     public static final int DATA_SOURCES_ATTACHMENT_PROCESSOR           = PARSE + 0xE00;
+    public static final int ARQUILLIAN_MANIFEST_PROCESSOR               = PARSE + 0xF00;
 
     public static final int DEPENDENCIES    = 0x00400000;
 
@@ -64,6 +65,7 @@ public final class Phase {
     public static final int MANAGED_BEAN_DEPENDENCY_PROCESSOR           = DEPENDENCIES + 0x400;
     public static final int SAR_MODULE_DEPENDENCY_PROCESSOR             = DEPENDENCIES + 0x500;
     public static final int WAR_CLASSLOADING_DEPENDENCY_PROCESSOR       = DEPENDENCIES + 0x600;
+    public static final int ARQUILLIAN_DEPENDENCY_PROCESSOR             = DEPENDENCIES + 0x700;
 
     public static final int MODULARIZE      = 0x00500000;
 
@@ -76,6 +78,8 @@ public final class Phase {
 
     public static final int MANAGED_BEAN_ANNOTATION_PROCESSOR           = POST_MODULE + 0x100;
     public static final int WAR_ANNOTATION_DEPLOYMENT_PROCESSOR         = POST_MODULE + 0x200;
+    public static final int ARQUILLIAN_JUNIT_ANNOTATION_PROCESSOR       = POST_MODULE + 0x300;
+
 
     public static final int INSTALL         = 0x00700000;
 
@@ -92,6 +96,7 @@ public final class Phase {
     public static final int MANAGED_BEAN_DEPLOYMENT_PROCESSOR           = INSTALL + 0x900;
     public static final int SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR  = INSTALL + 0xA00;
     public static final int WAR_DEPLOYMENT_PROCESSOR                    = INSTALL + 0xB00;
+    public static final int ARQUILLIAN_DEPLOYMENT_PROCESSOR             = INSTALL + 0xC00;
 
     public static final int CLEANUP         = 0x00800000;
 }

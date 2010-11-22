@@ -25,6 +25,9 @@ package org.jboss.as.protocol;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -45,18 +48,40 @@ public class ProtocolUtils {
     public static final MarshallingConfiguration MODULAR_CONFIG;
 
     static {
-        MarshallerFactory marshallerFactory;
-        try {
-            marshallerFactory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-        } catch (ModuleLoadException e) {
+
+        MarshallerFactory marshallerFactory = null;
+        final boolean isSystemClassLoader = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+
+            @Override
+            public Boolean run() {
+                return ProtocolUtils.class.getClassLoader() == ClassLoader.getSystemClassLoader() || ProtocolUtils.class.getClassLoader() == null;
+            }
+        });
+
+        if (!isSystemClassLoader) {
+            try {
+                marshallerFactory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
+            } catch (ModuleLoadException e) {
+            }
+        }
+
+        if (marshallerFactory == null) {
             marshallerFactory = Marshalling.getMarshallerFactory("river", ProtocolUtils.class.getClassLoader());
         }
+
         if(marshallerFactory == null) {
             throw new RuntimeException("Failed to construct a Marshaller factory");
         }
+
+
         MARSHALLER_FACTORY = marshallerFactory;
         MODULAR_CONFIG = new MarshallingConfiguration();
         MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance());
+    }
+
+    static void outputMarshalling() {
+        System.out.println("M " + Marshalling.class.getClassLoader());
+        System.out.println("MF: " + MarshallerFactory.class.getClassLoader());
     }
 
     private ProtocolUtils() {
