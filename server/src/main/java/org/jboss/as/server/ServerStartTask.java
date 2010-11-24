@@ -35,17 +35,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.chain.JarDeploymentActivator;
-import org.jboss.as.deployment.module.ClassifyingModuleLoaderInjector;
 import org.jboss.as.deployment.module.ClassifyingModuleLoaderService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
-import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
@@ -73,7 +74,8 @@ import org.jboss.msc.service.StartException;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
+public final class
+        ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
     public static final ServiceName AS_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("as", "server");
 
@@ -196,20 +198,13 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // Activate deployment module loader
         batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
 
-        final DeploymentModuleLoaderService deploymentModuleLoaderService = new DeploymentModuleLoaderService(new DeploymentModuleLoaderImpl());
-        batchBuilder.addService(DeploymentModuleLoaderService.SERVICE_NAME, deploymentModuleLoaderService)
-            .addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, new ClassifyingModuleLoaderInjector("deployment", deploymentModuleLoaderService));
-
         // todo move elsewhere...
-
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
+            .setInitialMode(ServiceController.Mode.ACTIVE);
 
-        new JarDeploymentActivator().activate(new ServiceActivatorContext() {
-            public BatchBuilder getBatchBuilder() {
-                return batchBuilder;
-            }
-        });
+        new JarDeploymentActivator().activate(deploymentChain);
 
         for (AbstractServerModelUpdate<?> update : updates) {
             try {
@@ -219,13 +214,17 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
-        final UpdateContext context = new UpdateContext() {
+        final BootUpdateContext context = new BootUpdateContext() {
             public BatchBuilder getBatchBuilder() {
                 return batchBuilder;
             }
 
             public ServiceContainer getServiceContainer() {
                 return container;
+            }
+
+            public void addDeploymentProcessor(DeploymentUnitProcessor processor, long priority) {
+                deploymentChain.addProcessor(processor, priority);
             }
         };
 
@@ -235,51 +234,22 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
         }
 
+        // Deployment chain should be configured now..
+        for (AbstractServerModelUpdate<?> update : updates) {
+            if(update.isDeploymentUpdate()) {
+                update.applyUpdateBootAction(context);
+            }
+        }
+
         StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
 
         try {
-            serverStartupListener.startBatch(createDeploymentTask(container, serverStartupListener));
+            serverStartupListener.finish();
             batchBuilder.install();
             serverStartupListener.finishBatch();
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
-    }
-
-    private Runnable createDeploymentTask(final ServiceContainer container, final ServerStartupListener serverStartupListener) {
-        return new Runnable() {
-            public void run() {
-                // Activate deployments once the first batch is complete.
-                final ServerStartBatchBuilder deploymentBatchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
-                deploymentBatchBuilder.addListener(serverStartupListener);
-                serverStartupListener.startBatch(null);
-
-                final UpdateContext context = new UpdateContext() {
-                    public BatchBuilder getBatchBuilder() {
-                        return deploymentBatchBuilder;
-                    }
-
-                    public ServiceContainer getServiceContainer() {
-                        return container;
-                    }
-                };
-
-                for (AbstractServerModelUpdate<?> update : updates) {
-                    if(update.isDeploymentUpdate()) {
-                        update.applyUpdateBootAction(context);
-                    }
-                }
-
-                serverStartupListener.finish(); // We have finished adding everything for the server start
-                try {
-                    deploymentBatchBuilder.install();
-                    serverStartupListener.finishBatch();
-
-                } catch (ServiceRegistryException e) {
-                    throw new RuntimeException(e); // TODO: better exception handling.
-                }
-            }
-        };
     }
 
     ServerStartupListener.Callback createListenerCallback() {

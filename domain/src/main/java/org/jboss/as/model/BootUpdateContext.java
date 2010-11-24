@@ -20,23 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment;
+package org.jboss.as.model;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.model.BootUpdateContext;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 
 /**
- * Service activator which installs the various service required for OSGi deployments.
+ * Update context specific to server boot updates.  Provides the ability to add a {@link org.jboss.as.deployment.unit.DeploymentUnitProcessor}.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 07-Oct-2010
+ * @author John Bailey
  */
-public class OSGiDeploymentActivator {
+public interface BootUpdateContext extends UpdateContext {
     /**
-     * Activate the services required for service deployments.
+     * Add a deployment processor.
+     *
+     * @param processor The processor
+     * @param priority The processor priority
      */
-    public void activate(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(new OSGiManifestDeploymentProcessor(), Phase.OSGI_MANIFEST_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new OSGiAttachmentsDeploymentProcessor(), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
-    }
+    void addDeploymentProcessor(final DeploymentUnitProcessor processor, final long priority);
 }

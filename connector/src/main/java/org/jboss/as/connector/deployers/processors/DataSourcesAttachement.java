@@ -20,38 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.module;
+package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.jca.common.api.metadata.ds.DataSources;
 
 /**
- * Service used to wrap a deployment module loader as a service.
+ * Utility used to manage attaching an instance of {@link org.jboss.jca.common.api.metadata.ds.DataSources}.
  *
- * @author John E. Bailey
+ * @author John Bailey
  */
-public class DeploymentModuleLoaderService implements Service<DeploymentModuleLoader> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment", "module", "loader");
+public class DataSourcesAttachement {
+    private static final AttachmentKey<DataSources> ATTACHMENT_KEY = new AttachmentKey<DataSources>(DataSources.class);
 
-    private final DeploymentModuleLoader deploymentModuleLoader;
-
-    public DeploymentModuleLoaderService(final DeploymentModuleLoader deploymentModuleLoader) {
-        this.deploymentModuleLoader = deploymentModuleLoader;
+    static DataSources getDataSourcesAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(ATTACHMENT_KEY);
     }
 
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    @Override
-    public DeploymentModuleLoader getValue() throws IllegalStateException {
-        return deploymentModuleLoader;
+    static void attachDataSources(final DeploymentUnitContext context, final DataSources dataSources) {
+        context.putAttachment(ATTACHMENT_KEY, dataSources);
     }
 }

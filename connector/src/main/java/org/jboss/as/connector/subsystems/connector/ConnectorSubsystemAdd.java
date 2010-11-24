@@ -29,6 +29,7 @@ import org.jboss.as.connector.bootstrap.DefaultBootStrapContextService;
 import org.jboss.as.connector.deployers.RaDeploymentActivator;
 import org.jboss.as.connector.workmanager.WorkManagerService;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
@@ -40,7 +41,6 @@ import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.tm.JBossXATerminator;
 
@@ -68,12 +68,6 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
-
-        new RaDeploymentActivator().activate(new ServiceActivatorContext() {
-            public BatchBuilder getBatchBuilder() {
-                return builder;
-            }
-        });
 
         WorkManager wm = new WorkManagerImpl();
 
@@ -114,6 +108,11 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         configServiceBuilder.addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,
                 CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector());
         configServiceBuilder.setInitialMode(Mode.ACTIVE);
+    }
+
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
+        new RaDeploymentActivator().activate(updateContext);
     }
 
     protected void applyUpdate(ConnectorSubsystemElement element) throws UpdateFailedException {

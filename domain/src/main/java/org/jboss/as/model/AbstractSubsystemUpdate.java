@@ -75,7 +75,7 @@ public abstract class AbstractSubsystemUpdate<E extends AbstractSubsystemElement
      *
      * @param updateContext the update context
      */
-    protected void applyUpdateBootAction(UpdateContext updateContext) {
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
     }
 

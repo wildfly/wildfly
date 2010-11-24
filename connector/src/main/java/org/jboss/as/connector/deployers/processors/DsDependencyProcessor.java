@@ -23,6 +23,7 @@
 package org.jboss.as.connector.deployers.processors;
 
 import java.util.List;
+import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
@@ -36,8 +37,6 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata to add Module dependencies for
@@ -51,15 +50,12 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
-    private final InjectedValue<DataSources> dsValue = new InjectedValue<DataSources>();
-
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
-        final DataSources datasources = dsValue.getValue();
-
+        final DataSources datasources = getDataSourcesAttachment(context);
         if (datasources == null || deploymentName == null || !deploymentName.startsWith("jdbc"))
             return;
 
@@ -116,9 +112,5 @@ public class DsDependencyProcessor implements DeploymentUnitProcessor {
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }
-    }
-
-    public Injector<DataSources> getDsValueInjector() {
-        return dsValue;
     }
 }

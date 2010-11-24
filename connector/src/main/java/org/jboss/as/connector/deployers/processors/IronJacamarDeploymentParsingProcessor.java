@@ -32,9 +32,6 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -46,8 +43,6 @@ import org.jboss.vfs.VirtualFile;
  *         Maestri</a>
  */
 public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProcessor {
-
-    private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
 
     /**
      * Construct a new instance.
@@ -94,12 +89,5 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         } finally {
             VFSUtils.safeClose(xmlStream);
         }
-    }
-
-    /**
-     * @return the mdr
-     */
-    public Injector<MetadataRepository> getMdrInjector() {
-        return mdr;
     }
 }

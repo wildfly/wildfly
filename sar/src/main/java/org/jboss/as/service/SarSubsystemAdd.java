@@ -23,15 +23,10 @@
 package org.jboss.as.service;
 
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,23 +39,18 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
         super(SarExtension.NAMESPACE);
     }
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
+    }
 
-        addDeploymentProcessor(batchBuilder, new SarModuleDependencyProcessor(), Phase.SAR_MODULE_DEPENDENCY_PROCESSOR);
-        addDeploymentProcessor(batchBuilder, new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
-        addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
+    @Override
+    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        updateContext.addDeploymentProcessor(new SarModuleDependencyProcessor(), Phase.SAR_MODULE_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
     }
 
     @Override
     protected SarSubsystemElement createSubsystemElement() {
         return new SarSubsystemElement();
-    }
-
-    private static <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }

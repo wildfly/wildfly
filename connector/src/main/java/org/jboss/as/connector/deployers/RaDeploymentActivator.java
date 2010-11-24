@@ -28,47 +28,28 @@ import org.jboss.as.connector.deployers.processors.DsDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.processors.RaNestedJarInlineProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
 import org.jboss.as.connector.jndi.JndiStrategyService;
 import org.jboss.as.connector.mdr.MdrService;
-import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
-import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.module.NestedJarInlineProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
-import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.txn.TxnServices;
-import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.core.spi.naming.JndiStrategy;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * Service activator which installs the various service required for rar
  * deployments.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public class RaDeploymentActivator implements ServiceActivator {
+public class RaDeploymentActivator {
     /**
      * Activate the services required for service deployments.
-     * @param context The service activator context
+     * @param updateContext The update context
      */
-    @Override
-    public void activate(final ServiceActivatorContext context) {
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
-        addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), Phase.NESTED_JAR_INLINE_PROCESSOR);
-        addDeploymentProcessor(batchBuilder, new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
-
+    public void activate(final BootUpdateContext updateContext) {
+        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
 
         // add resources here
         MdrService mdrService = new MdrService();
@@ -80,68 +61,13 @@ public class RaDeploymentActivator implements ServiceActivator {
         JndiStrategyService jndiStrategyService = new JndiStrategyService();
         batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService);
 
-        RaDeploymentParsingProcessor raDeploymentParsingProcessor = new RaDeploymentParsingProcessor();
-        addDeploymentProcessor(batchBuilder, raDeploymentParsingProcessor, Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
-
-        IronJacamarDeploymentParsingProcessor ironJacamarDeploymentParsingProcessor = new IronJacamarDeploymentParsingProcessor();
-        addDeploymentProcessor(batchBuilder, ironJacamarDeploymentParsingProcessor,
-                Phase.IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR).addDependency(ConnectorServices.IRONJACAMAR_MDR,
-                MetadataRepository.class, ironJacamarDeploymentParsingProcessor.getMdrInjector());
-
-        ParsedRaDeploymentProcessor parsedRaDeploymentProcessor = new ParsedRaDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, parsedRaDeploymentProcessor, Phase.PARSED_RA_DEPLOYMENT_PROCESSOR)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
-                        com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
-                        parsedRaDeploymentProcessor.getTxmInjector())
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
-                        parsedRaDeploymentProcessor.getMdrInjector())
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class,
-                        parsedRaDeploymentProcessor.getRegistryInjector())
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class,
-                        parsedRaDeploymentProcessor.getConfigInjector()).addDependency(NamingService.SERVICE_NAME)
-                .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class,
-                        parsedRaDeploymentProcessor.getJndiInjector())
-                .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE);
-
-        RaXmlDeploymentProcessor raXmlDeploymentProcessor = new RaXmlDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, raXmlDeploymentProcessor, Phase.RA_XML_DEPLOYMENT_PROCESSOR)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
-                        com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, raXmlDeploymentProcessor.getTxmInjector())
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raXmlDeploymentProcessor.getMdrInjector())
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class,
-                        raXmlDeploymentProcessor.getRegistryInjector())
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class,
-                        raXmlDeploymentProcessor.getConfigInjector())
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdapters.class,
-                        raXmlDeploymentProcessor.getRaxmlValueInjector()).addDependency(NamingService.SERVICE_NAME)
-                .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class,
-                        raXmlDeploymentProcessor.getJndiInjector())
-                .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE);
-
-        DsDependencyProcessor dsDependencyProcessor = new DsDependencyProcessor();
-        addDeploymentProcessor(batchBuilder, dsDependencyProcessor, Phase.DS_DEPENDENCY_PROCESSOR)
-                .addDependency(ConnectorServices.DATASOURCES_SERVICE, DataSources.class,
-                        dsDependencyProcessor.getDsValueInjector()).setInitialMode(Mode.ACTIVE);
-
-        DsDeploymentProcessor dsDeploymentProcessor = new DsDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, dsDeploymentProcessor, Phase.DS_DEPLOYMENT_PROCESSOR)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
-                        com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dsDeploymentProcessor.getTxmInjector())
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dsDeploymentProcessor.getMdrInjector())
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class,
-                        dsDeploymentProcessor.getRegistryInjector())
-                .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class,
-                        dsDeploymentProcessor.getJndiInjector())
-                .addDependency(ConnectorServices.DATASOURCES_SERVICE, DataSources.class,
-                        dsDeploymentProcessor.getDsValueInjector()).setInitialMode(Mode.ACTIVE);
-
-    }
-
-    private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder,
-            final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()),
-                deploymentUnitProcessorService).addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class,
-                new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+        updateContext.addDeploymentProcessor(new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
+        updateContext.addDeploymentProcessor(new RaDeploymentParsingProcessor(), Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(new IronJacamarDeploymentParsingProcessor(), Phase.IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ParsedRaDeploymentProcessor(), Phase.PARSED_RA_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(new RaXmlDeploymentProcessor(mdrService.getValue()), Phase.RA_XML_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(new DsDependencyProcessor(), Phase.DS_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(new DsDeploymentProcessor(), Phase.DS_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(new RaNestedJarInlineProcessor(), Phase.RA_NESTED_JAR_INLINE_PROCESSOR);
     }
 }

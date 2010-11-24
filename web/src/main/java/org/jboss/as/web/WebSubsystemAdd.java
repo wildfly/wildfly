@@ -25,6 +25,7 @@ package org.jboss.as.web;
 import javax.management.MBeanServer;
 
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
@@ -47,15 +48,18 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final String defaultHost = this.defaultHost != null ? this.defaultHost : "localhost";
         final WebServerService service = new WebServerService(defaultHost);
         context.getBatchBuilder().addService(WebSubsystemElement.JBOSS_WEB, service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
             .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND);
+    }
 
-        WebDeploymentActivator.activate(defaultHost, new SharedWebMetaDataBuilder(config), new SharedTldsMetaDataBuilder(config), context.getBatchBuilder());
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
+        final String defaultHost = this.defaultHost != null ? this.defaultHost : "localhost";
+        WebDeploymentActivator.activate(defaultHost, new SharedWebMetaDataBuilder(config), new SharedTldsMetaDataBuilder(config), updateContext);
     }
 
     /** {@inheritDoc} */

@@ -20,23 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment;
+package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.model.BootUpdateContext;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 
 /**
- * Service activator which installs the various service required for OSGi deployments.
+ * Utility used to manage attaching an instance of {@link org.jboss.jca.common.api.metadata.ds.ResourceAdapters}.
  *
- * @author Thomas.Diesler@jboss.com
- * @since 07-Oct-2010
+ * @author John Bailey
  */
-public class OSGiDeploymentActivator {
-    /**
-     * Activate the services required for service deployments.
-     */
-    public void activate(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(new OSGiManifestDeploymentProcessor(), Phase.OSGI_MANIFEST_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new OSGiAttachmentsDeploymentProcessor(), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
+public class ResourceAdapterAttachment {
+    private static final AttachmentKey<ResourceAdapters> ATTACHMENT_KEY = new AttachmentKey<ResourceAdapters>(ResourceAdapters.class);
+
+    static ResourceAdapters getResourceAdaptersAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(ATTACHMENT_KEY);
+    }
+
+    static void attachResourceAdapters(final DeploymentUnitContext context, final ResourceAdapters resourceAdapters) {
+        context.putAttachment(ATTACHMENT_KEY, resourceAdapters);
     }
 }

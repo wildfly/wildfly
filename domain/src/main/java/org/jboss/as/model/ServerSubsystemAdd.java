@@ -51,6 +51,10 @@ public final class ServerSubsystemAdd extends AbstractServerModelUpdate<Void> {
         subsystemAdd.applyUpdate(updateContext, handler, param);
     }
 
+    public void applyUpdateBootAction(BootUpdateContext updateContext) {
+        subsystemAdd.applyUpdateBootAction(updateContext);
+    }
+
     public ServerSubsystemRemove getCompensatingUpdate(final ServerModel original) {
         return new ServerSubsystemRemove(subsystemAdd.getCompensatingUpdate(original.getProfile()));
     }

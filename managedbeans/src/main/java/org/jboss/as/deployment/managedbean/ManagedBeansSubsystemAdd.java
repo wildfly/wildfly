@@ -22,18 +22,15 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.as.model.UpdateResultHandler;
+
 import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanDependencyProcessor;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanDeploymentProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
-import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 
 /**
  * The managed subsystem add update.
@@ -48,23 +45,18 @@ public class ManagedBeansSubsystemAdd extends AbstractSubsystemAdd<ManagedBeansS
         super(ManagedBeansExtension.NAMESPACE);
     }
 
-    /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        addDeploymentProcessor(batchBuilder, new ManagedBeanDependencyProcessor(), Phase.MANAGED_BEAN_DEPENDENCY_PROCESSOR);
-        addDeploymentProcessor(batchBuilder, new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
-        addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
+    }
+
+    /** {@inheritDoc} */
+    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        updateContext.addDeploymentProcessor(new ManagedBeanDependencyProcessor(), Phase.MANAGED_BEAN_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
     }
 
     /** {@inheritDoc} */
     protected ManagedBeansSubsystemElement createSubsystemElement() {
         return new ManagedBeansSubsystemElement();
     }
-
-    static <T extends DeploymentUnitProcessor> void addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        batchBuilder.addService(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(DeploymentChain.SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
-    }
-
 }

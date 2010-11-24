@@ -43,7 +43,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
 
-    protected final ResourceAdapterDeployment value;
+    // Must be set by the start method
+    protected ResourceAdapterDeployment value;
 
     protected final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
 
@@ -51,17 +52,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected final InjectedValue<JndiStrategy> jndiStrategy = new InjectedValue<JndiStrategy>();
 
-    /** create an instance **/
-    public AbstractResourceAdapterDeploymentService(ResourceAdapterDeployment value) {
-        super();
-        this.value = value;
-    }
-
     public ResourceAdapterDeployment getValue() throws IllegalStateException {
         return ConnectorServices.notNull(value);
-    }
-
-    public void start(StartContext context) throws StartException {
     }
 
     /**

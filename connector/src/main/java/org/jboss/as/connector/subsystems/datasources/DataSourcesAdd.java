@@ -23,23 +23,10 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.deployers.processors.DsDependencyProcessor;
-import org.jboss.as.connector.deployers.processors.DsDeploymentProcessor;
-import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
-import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
-import org.jboss.as.connector.deployers.processors.RarConfigProcessor;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
-import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.deployment.module.ModuleConfigProcessor;
-import org.jboss.as.deployment.module.ModuleDependencyProcessor;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
-import org.jboss.as.deployment.module.NestedJarInlineProcessor;
-import org.jboss.as.deployment.naming.ModuleContextProcessor;
-import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.connector.deployers.processors.DataSourcesAttachmentProcessor;
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
@@ -70,9 +57,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
         super(Namespace.CURRENT.getUriString());
     }
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
-            final P param) {
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
         final DataSourcesService dsService = new DataSourcesService(datasources);
@@ -88,26 +73,14 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-
-                 // Even uglier hack
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(NestedJarInlineProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ManifestAttachmentProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(AnnotationIndexProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(RarConfigProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ModuleDependencyProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ModuleConfigProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(DeploymentModuleLoaderProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ModuleDeploymentProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ModuleContextProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(RaDeploymentParsingProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(IronJacamarDeploymentParsingProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(ParsedRaDeploymentProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(RaXmlDeploymentProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(DsDependencyProcessor.class.getName()))
-                .addDependency(DeploymentUnitProcessor.SERVICE_NAME_BASE.append(DsDeploymentProcessor.class.getName()))
-
                 .setInitialMode(Mode.ACTIVE);
         }
+    }
+
+    @Override
+    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
+        updateContext.addDeploymentProcessor(new DataSourcesAttachmentProcessor(datasources), Phase.DATA_SOURCES_ATTACHMENT_PROCESSOR);
     }
 
     protected DataSourcesSubsystemElement createSubsystemElement() {

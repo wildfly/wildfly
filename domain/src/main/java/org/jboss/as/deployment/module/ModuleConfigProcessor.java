@@ -37,7 +37,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleConfigProcessor implements DeploymentUnitProcessor {
-
     private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
 
     /**

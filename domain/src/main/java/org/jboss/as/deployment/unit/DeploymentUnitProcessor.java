@@ -37,8 +37,6 @@ import org.jboss.msc.service.ServiceName;
  *
  */
 public interface DeploymentUnitProcessor {
-    ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("deployment", "processor");
-
     /**
      * Process the deployment unit.
      *

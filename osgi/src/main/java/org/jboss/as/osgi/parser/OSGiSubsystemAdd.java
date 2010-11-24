@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.parser;
 
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
@@ -61,7 +62,6 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         return subsystemState;
     }
 
-    @Override
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         log.infof("Activating OSGi Subsystem");
 
@@ -77,6 +77,10 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         BundleManagerService.addService(batchBuilder);
         FrameworkService.addService(batchBuilder, policy);
         PackageAdminService.addService(batchBuilder);
-        new OSGiDeploymentActivator().activate(batchBuilder);
+    }
+
+    protected void applyUpdateBootAction(BootUpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
+        new OSGiDeploymentActivator().activate(updateContext);
     }
 }

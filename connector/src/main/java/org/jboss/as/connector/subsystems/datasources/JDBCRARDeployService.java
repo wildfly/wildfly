@@ -37,7 +37,7 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Jason T. Greene
  */
-final class JDBCRARDeployService implements Service<JDBCRARDeployService> {
+public final class JDBCRARDeployService implements Service<JDBCRARDeployService> {
     public static final ServiceName NAME = ServiceName.JBOSS.append("connector", "jdbc-rar-deployer");
 
     private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");

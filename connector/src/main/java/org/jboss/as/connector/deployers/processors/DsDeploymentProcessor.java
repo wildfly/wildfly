@@ -29,13 +29,20 @@ import java.util.List;
 
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.connector.ConnectorServices;
+import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
+import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
+import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
@@ -48,12 +55,16 @@ import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
@@ -61,24 +72,16 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
-    private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
-
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txm = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
-
-    private final InjectedValue<DataSources> dsValue = new InjectedValue<DataSources>();
-
-    private final InjectedValue<ResourceAdapterDeploymentRegistry> registry = new InjectedValue<ResourceAdapterDeploymentRegistry>();
-
-    private final InjectedValue<JndiStrategy> jndiStrategy = new InjectedValue<JndiStrategy>();
-
     public DsDeploymentProcessor() {
         super();
     }
 
     /**
      * Deploy datasources
+     *
      * @param context the deployment unit context
      * @throws DeploymentUnitProcessingException
+     *
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
         final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
@@ -87,10 +90,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
 
         String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
 
-        DataSources datasources = null;
-
-        datasources = dsValue.getValue();
-
+        DataSources datasources = getDataSourcesAttachment(context);
         if (datasources == null || deploymentName == null || !deploymentName.startsWith("jdbc"))
             return;
 
@@ -99,161 +99,50 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         if (module == null)
             throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
 
-        try {
-            if (deploymentName.indexOf("local") != -1) {
-                // Local datasources
-                List<DataSource> dss = datasources.getDataSource();
-                if (dss != null && dss.size() > 0) {
-                    AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log);
 
-                    String uniqueJdbcLocalId = deploymentName;
-                    String uniqueJdbcXAId = null;
+        String uniqueJdbcLocalId = null;
+        String uniqueJdbcXAId = null;
+        boolean shouldDeploy = false;
 
-                    deployer.setTransactionManager(getTransactionManager());
-                    deployer.setMetadataRepository(mdr.getValue());
-
-                    deployer.doDeploy(new URL("file://DataSourceDeployment"), deploymentName, uniqueJdbcLocalId,
-                            uniqueJdbcXAId, datasources, module.getClassLoader());
-                }
-            } else {
-                // XA datasources
-                List<XaDataSource> xadss = datasources.getXaDataSource();
-                if (xadss != null && xadss.size() > 0) {
-                    AS7Deployer deployer = new AS7Deployer(jndiStrategy.getValue(), module.getClassLoader(), log);
-
-                    String uniqueJdbcLocalId = null;
-                    String uniqueJdbcXAId = deploymentName;
-
-                    deployer.setTransactionManager(getTransactionManager());
-                    deployer.setMetadataRepository(mdr.getValue());
-
-                    deployer.doDeploy(new URL("file://DataSourceDeployment"), deploymentName, uniqueJdbcLocalId,
-                            uniqueJdbcXAId, datasources, module.getClassLoader());
-                }
+        if (deploymentName.indexOf("local") != -1) {
+            // Local datasources
+            List<DataSource> dss = datasources.getDataSource();
+            if (dss != null && dss.size() > 0) {
+                uniqueJdbcLocalId = deploymentName;
+                shouldDeploy = true;
             }
-        } catch (Throwable t) {
-            throw new DeploymentUnitProcessingException(t);
-        }
-    }
-
-    protected TransactionManager getTransactionManager() {
-        AccessController.doPrivileged(new SetContextLoaderAction(com.arjuna.ats.jbossatx.jta.TransactionManagerService.class
-                .getClassLoader()));
-        try {
-            return getTxm().getValue().getTransactionManager();
-        } finally {
-            AccessController.doPrivileged(CLEAR_ACTION);
-        }
-    }
-
-    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
-
-    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
-
-        private final ClassLoader classLoader;
-
-        public SetContextLoaderAction(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
+        } else {
+            // XA datasources
+            List<XaDataSource> xadss = datasources.getXaDataSource();
+            if (xadss != null && xadss.size() > 0) {
+                uniqueJdbcXAId = deploymentName;
+                shouldDeploy = true;
+            }
         }
 
-        public Void run() {
-            Thread.currentThread().setContextClassLoader(classLoader);
-            return null;
-        }
-    }
+        if(shouldDeploy) {
+            final BatchBuilder batchBuilder = context.getBatchBuilder();
 
-    public Value<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxm() {
-        return txm;
-    }
-
-    private static class AS7Deployer extends AbstractDsDeployer {
-
-        private JndiStrategy js;
-        private ClassLoader cl;
-
-        public AS7Deployer(JndiStrategy js, ClassLoader cl, Logger log) {
-            super(log);
-            this.js = js;
-            this.cl = cl;
-        }
-
-        public AS7Deployer(ClassLoader cl, Logger log) {
-            super(log);
-            this.cl = cl;
-        }
-
-        public CommonDeployment doDeploy(URL url, String deploymentName, String uniqueJdbcLocalId, String uniqueJdbcXaId,
-                DataSources dataSources, ClassLoader parentClassLoader) throws DeployException {
-
-            return createObjectsAndInjectValue(url, deploymentName, uniqueJdbcLocalId, uniqueJdbcXaId, dataSources,
-                    parentClassLoader);
-        }
-
-        @Override
-        protected ClassLoader getDeploymentClassLoader(String uniqueId) {
-            return cl;
-        }
-
-        @Override
-        protected String[] bindConnectionFactory(String deployment, String jndi, Object cf) throws Throwable {
-            String[] result = js.bindConnectionFactories(deployment, new Object[] { cf }, new String[] { jndi });
-            log.infof("Bound Data Source at %s", jndi);
-            return result;
-        }
-
-        @Override
-        protected Object initAndInject(String className, List<? extends ConfigProperty> configs, ClassLoader cl)
-                throws DeployException {
-            try {
-                Class clz = Class.forName(className, true, cl);
-                Object o = clz.newInstance();
-
-                if (configs != null) {
-                    Injection injector = new Injection();
-                    for (ConfigProperty cpmd : configs) {
-                        if (cpmd.isValueSet()) {
-                            boolean setValue = true;
-
-                            if (cpmd instanceof org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) {
-                                org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16 cpmd16 = (org.jboss.jca.common.api.metadata.ra.ra16.ConfigProperty16) cpmd;
-
-                                if (cpmd16.getConfigPropertyIgnore() != null && cpmd16.getConfigPropertyIgnore().booleanValue())
-                                    setValue = false;
-                            }
-
-                            if (setValue)
-                                injector.inject(cpmd.getConfigPropertyType().getValue(), cpmd.getConfigPropertyName()
-                                        .getValue(), cpmd.getConfigPropertyValue().getValue(), o);
-                        }
-                    }
-                }
-
-                return o;
-            } catch (Throwable t) {
-                throw new DeployException("Deployment " + className + " failed", t);
+            final DataSourceDeploymentService dataSourceDeploymentService = new DataSourceDeploymentService(deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module);
+            BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
+                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceDeploymentService.getMdrInjector())
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, dataSourceDeploymentService.getRegistryInjector())
+                    .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, dataSourceDeploymentService.getJndiInjector())
+                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dataSourceDeploymentService.getTxmInjector())
+                    .addDependency(JDBCRARDeployService.NAME)
+                    .addDependency(NamingService.SERVICE_NAME)
+                    .setInitialMode(ServiceController.Mode.ACTIVE);
+            if(uniqueJdbcLocalId != null) {
+                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcLocalId));
+                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcLocalId));
+            } else if(uniqueJdbcXAId != null) {
+                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcXAId));
+                serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcXAId));
             }
 
         }
 
-    }
 
-    public Injector<MetadataRepository> getMdrInjector() {
-        return mdr;
-    }
 
-    public Injector<DataSources> getDsValueInjector() {
-        return dsValue;
-    }
-
-    public Injector<ResourceAdapterDeploymentRegistry> getRegistryInjector() {
-        return registry;
-    }
-
-    public Injector<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTxmInjector() {
-        return txm;
-    }
-
-    public Injector<JndiStrategy> getJndiInjector() {
-        return jndiStrategy;
     }
 }

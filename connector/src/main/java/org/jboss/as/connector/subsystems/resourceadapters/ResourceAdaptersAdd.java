@@ -23,7 +23,10 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.connector.deployers.processors.ResourceAdaptersAttachingProcessor;
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
@@ -53,15 +56,18 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
         super(Namespace.CURRENT.getUriString());
     }
 
-    @Override
-    protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
-            final P param) {
+    protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
         final ResourceAdaptersService raService = new ResourceAdaptersService(resourceAdapters);
         final BatchServiceBuilder<ResourceAdapters> serviceBuilder = builder.addService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE, raService);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
+    }
 
+    @Override
+    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        applyUpdate(updateContext, UpdateResultHandler.NULL, null);
+        updateContext.addDeploymentProcessor(new ResourceAdaptersAttachingProcessor(resourceAdapters), Phase.RESOURCE_ADAPTERS_ATTACHING_PROCESSOR);
     }
 
     protected ResourceAdaptersSubsystemElement createSubsystemElement() {
