@@ -34,9 +34,8 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileVisitor;
@@ -93,7 +92,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
         context.getBatchServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
     }
 
-    static class CloseListener implements ServiceListener<Void> {
+    static class CloseListener extends AbstractServiceListener<Void> {
         private Closeable[] closeables;
 
         CloseListener(Closeable[] closeables) {
@@ -113,24 +112,5 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
                 closeables = null;
             }
         }
-
-        public void listenerAdded(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceStarting(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceStarted(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceFailed(ServiceController<? extends Void> controller, StartException reason) {
-        }
-
-        public void serviceStopping(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceRemoved(ServiceController<? extends Void> controller) {
-        }
-
     }
 }

@@ -34,9 +34,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.StartException;
 
 /**
  * Processor responsible for creating a module for the deployment and attach it to the deployment.
@@ -92,7 +91,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    static class ModuleRemoveListener implements ServiceListener<Void> {
+    static class ModuleRemoveListener extends AbstractServiceListener<Void> {
         ModuleRemoveListener(DeploymentModuleLoader deploymentModuleLoader, Module module) {
             this.deploymentModuleLoader = deploymentModuleLoader;
             this.module = module;
@@ -105,24 +104,5 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         public void serviceStopped(ServiceController<? extends Void> controller) {
             deploymentModuleLoader.removeModule(module);
         }
-
-        public void listenerAdded(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceStarting(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceStarted(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceFailed(ServiceController<? extends Void> controller, StartException reason) {
-        }
-
-        public void serviceStopping(ServiceController<? extends Void> controller) {
-        }
-
-        public void serviceRemoved(ServiceController<? extends Void> controller) {
-        }
-
     }
 }
