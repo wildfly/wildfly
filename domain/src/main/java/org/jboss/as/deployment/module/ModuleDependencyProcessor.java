@@ -24,7 +24,6 @@ package org.jboss.as.deployment.module;
 
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -37,7 +36,6 @@ import org.jboss.modules.ModuleIdentifier;
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(100L);
 
     /**
      * Process the deployment root for module dependency information.

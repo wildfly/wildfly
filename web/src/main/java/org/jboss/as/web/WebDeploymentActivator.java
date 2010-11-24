@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -49,19 +50,19 @@ class WebDeploymentActivator {
 
     static void activate(final String defaultHost, final SharedWebMetaDataBuilder sharedWebBuilder, final SharedTldsMetaDataBuilder sharedTldsBuilder, final BatchBuilder batchBuilder) {
         // Web specific deployment processors ....
-        addDeploymentProcessor(batchBuilder, new WarDeploymentInitializingProcessor(), WarDeploymentInitializingProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), WarStructureDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarAnnotationIndexProcessor(), WarAnnotationIndexProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarModuleConfigProcessor(), WarModuleConfigProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), WebParsingDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WebFragmentParsingDeploymentProcessor(), WebFragmentParsingDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new JBossWebParsingDeploymentProcessor(), JBossWebParsingDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new TldParsingDeploymentProcessor(), TldParsingDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarClassloadingDependencyProcessor(), WarClassloadingDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarAnnotationDeploymentProcessor(), WarAnnotationDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ServletContainerInitializerDeploymentProcessor(), ServletContainerInitializerDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarMetaDataProcessor(), WarMetaDataProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new WarDeploymentProcessor(defaultHost), WarDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WarDeploymentInitializingProcessor(), Phase.WAR_DEPLOYMENT_INITIALIZING_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), Phase.WAR_STRUCTURE_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarAnnotationIndexProcessor(), Phase.WAR_ANNOTATION_INDEX_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarModuleConfigProcessor(), Phase.WAR_MODULE_CONFIG_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), Phase.WEB_PARSING_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WebFragmentParsingDeploymentProcessor(), Phase.WEB_FRAGMENT_PARSING_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new JBossWebParsingDeploymentProcessor(), Phase.JBOSS_WEB_PARSING_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new TldParsingDeploymentProcessor(), Phase.TLD_PARSING_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarClassloadingDependencyProcessor(), Phase.WAR_CLASSLOADING_DEPENDENCY_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarAnnotationDeploymentProcessor(), Phase.WAR_ANNOTATION_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ServletContainerInitializerDeploymentProcessor(), Phase.SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarMetaDataProcessor(), Phase.WAR_META_DATA_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new WarDeploymentProcessor(defaultHost), Phase.WAR_DEPLOYMENT_PROCESSOR);
 
     }
 

@@ -25,7 +25,6 @@ package org.jboss.as.web.deployment;
 import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 import static org.jboss.as.deployment.module.ModuleDependencies.getAttachedDependencies;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleConfig.ResourceRoot;
 import org.jboss.as.deployment.module.ModuleDependencies;
@@ -53,7 +52,6 @@ public class WarModuleConfigProcessor implements DeploymentUnitProcessor {
 
     public static final VirtualFileFilter DEFAULT_WEB_INF_LIB_FILTER = new SuffixMatchFilter(".jar", VisitorAttributes.DEFAULT);
 
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
     private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
 
     /**

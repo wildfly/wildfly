@@ -35,6 +35,7 @@ import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.module.NestedJarInlineProcessor;
@@ -65,8 +66,8 @@ public class RaDeploymentActivator implements ServiceActivator {
     @Override
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), NestedJarInlineProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new RarConfigProcessor(), RarConfigProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new NestedJarInlineProcessor(), Phase.NESTED_JAR_INLINE_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
 
 
         // add resources here
@@ -80,15 +81,15 @@ public class RaDeploymentActivator implements ServiceActivator {
         batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService);
 
         RaDeploymentParsingProcessor raDeploymentParsingProcessor = new RaDeploymentParsingProcessor();
-        addDeploymentProcessor(batchBuilder, raDeploymentParsingProcessor, RaDeploymentParsingProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, raDeploymentParsingProcessor, Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
 
         IronJacamarDeploymentParsingProcessor ironJacamarDeploymentParsingProcessor = new IronJacamarDeploymentParsingProcessor();
         addDeploymentProcessor(batchBuilder, ironJacamarDeploymentParsingProcessor,
-                IronJacamarDeploymentParsingProcessor.PRIORITY).addDependency(ConnectorServices.IRONJACAMAR_MDR,
+                Phase.IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR).addDependency(ConnectorServices.IRONJACAMAR_MDR,
                 MetadataRepository.class, ironJacamarDeploymentParsingProcessor.getMdrInjector());
 
         ParsedRaDeploymentProcessor parsedRaDeploymentProcessor = new ParsedRaDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, parsedRaDeploymentProcessor, ParsedRaDeploymentProcessor.PRIORITY)
+        addDeploymentProcessor(batchBuilder, parsedRaDeploymentProcessor, Phase.PARSED_RA_DEPLOYMENT_PROCESSOR)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
                         com.arjuna.ats.jbossatx.jta.TransactionManagerService.class,
                         parsedRaDeploymentProcessor.getTxmInjector())
@@ -103,7 +104,7 @@ public class RaDeploymentActivator implements ServiceActivator {
                 .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE);
 
         RaXmlDeploymentProcessor raXmlDeploymentProcessor = new RaXmlDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, raXmlDeploymentProcessor, RaXmlDeploymentProcessor.PRIORITY)
+        addDeploymentProcessor(batchBuilder, raXmlDeploymentProcessor, Phase.RA_XML_DEPLOYMENT_PROCESSOR)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
                         com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, raXmlDeploymentProcessor.getTxmInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raXmlDeploymentProcessor.getMdrInjector())
@@ -118,12 +119,12 @@ public class RaDeploymentActivator implements ServiceActivator {
                 .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE);
 
         DsDependencyProcessor dsDependencyProcessor = new DsDependencyProcessor();
-        addDeploymentProcessor(batchBuilder, dsDependencyProcessor, DsDependencyProcessor.PRIORITY)
+        addDeploymentProcessor(batchBuilder, dsDependencyProcessor, Phase.DS_DEPENDENCY_PROCESSOR)
                 .addDependency(ConnectorServices.DATASOURCES_SERVICE, DataSources.class,
                         dsDependencyProcessor.getDsValueInjector()).setInitialMode(Mode.ACTIVE);
 
         DsDeploymentProcessor dsDeploymentProcessor = new DsDeploymentProcessor();
-        addDeploymentProcessor(batchBuilder, dsDeploymentProcessor, DsDeploymentProcessor.PRIORITY)
+        addDeploymentProcessor(batchBuilder, dsDeploymentProcessor, Phase.DS_DEPLOYMENT_PROCESSOR)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
                         com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dsDeploymentProcessor.getTxmInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dsDeploymentProcessor.getMdrInjector())

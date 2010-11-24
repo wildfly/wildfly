@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.chain;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.module.DeploymentModuleLoader;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
@@ -56,17 +57,17 @@ public class JarDeploymentActivator implements ServiceActivator {
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
 
-        addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
         final InjectedValue<DeploymentModuleLoader> moduleLoaderInjector = new InjectedValue<DeploymentModuleLoader>();
-        addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(moduleLoaderInjector), DeploymentModuleLoaderProcessor.PRIORITY)
+        addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(moduleLoaderInjector), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR)
             .addDependency(DeploymentModuleLoaderService.SERVICE_NAME, DeploymentModuleLoader.class, moduleLoaderInjector);
-        addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ServiceActivatorDependencyProcessor(), ServiceActivatorDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ServiceActivatorProcessor(), ServiceActivatorProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), Phase.MODULE_CONTEXT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ServiceActivatorDependencyProcessor(), Phase.SERVICE_ACTIVATION_DEPENDENCY_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ServiceActivatorProcessor(), Phase.SERVICE_ACTIVATOR_PROCESSOR);
     }
 
     private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {

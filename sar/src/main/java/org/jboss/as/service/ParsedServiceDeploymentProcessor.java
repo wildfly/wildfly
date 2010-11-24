@@ -23,7 +23,7 @@
 package org.jboss.as.service;
 
 import javax.management.MBeanServer;
-import org.jboss.as.deployment.DeploymentPhases;
+
 import org.jboss.as.deployment.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConfig;
 import org.jboss.as.deployment.descriptor.JBossServiceConstructorConfig;
@@ -68,7 +68,7 @@ import java.util.List;
  * @author John E. Bailey
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
+
     public static final Logger log = Logger.getLogger("org.jboss.as.deployment.service");
     private static final ServiceName MBEAN_SERVICE_NAME_BASE = ServiceName.JBOSS.append("mbean","service");
     private static final String CREATE_SUFFIX = "create";

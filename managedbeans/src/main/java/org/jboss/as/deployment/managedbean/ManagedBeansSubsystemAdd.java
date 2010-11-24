@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.managedbean.processors.ManagedBeanAnnotationProcessor;
@@ -50,9 +51,9 @@ public class ManagedBeansSubsystemAdd extends AbstractSubsystemAdd<ManagedBeansS
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        addDeploymentProcessor(batchBuilder, new ManagedBeanDependencyProcessor(), ManagedBeanDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanDependencyProcessor(), Phase.MANAGED_BEAN_DEPENDENCY_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
     }
 
     /** {@inheritDoc} */

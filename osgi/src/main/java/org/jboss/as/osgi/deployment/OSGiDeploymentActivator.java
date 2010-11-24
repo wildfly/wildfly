@@ -22,6 +22,7 @@
 
 package org.jboss.as.osgi.deployment;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -41,8 +42,8 @@ public class OSGiDeploymentActivator {
      * Activate the services required for service deployments.
      */
     public void activate(final BatchBuilder batchBuilder) {
-        addDeploymentProcessor(batchBuilder, new OSGiManifestDeploymentProcessor(), OSGiManifestDeploymentProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new OSGiAttachmentsDeploymentProcessor(), OSGiAttachmentsDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new OSGiManifestDeploymentProcessor(), Phase.OSGI_MANIFEST_DEPLOYMENT_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new OSGiAttachmentsDeploymentProcessor(), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
     }
 
     private <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {

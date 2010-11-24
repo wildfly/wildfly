@@ -22,7 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -36,7 +35,6 @@ import org.jboss.vfs.VirtualFile;
  * @author John Bailey
  */
 public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.STRUCTURE.plus(1000);
 
     static final String WAR_EXTENSION = ".war";
 

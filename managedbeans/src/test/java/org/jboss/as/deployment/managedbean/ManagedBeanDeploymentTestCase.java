@@ -22,6 +22,7 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainService;
@@ -65,22 +66,22 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
 
     @BeforeClass
     public static void setupChain() {
-        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
+        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleContextProcessor(), Phase.MODULE_CONTEXT_PROCESSOR);
+        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
     }
 
     @Override
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
         super.setupServices(batchBuilder);
-        deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
+        deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
-        deploymentChain.addProcessor(deploymentModuleLoaderProcessor, DeploymentModuleLoaderProcessor.PRIORITY);
+        deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
 
         javaContext = new MockContext();
         batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext));

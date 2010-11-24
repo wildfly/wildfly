@@ -29,7 +29,6 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -44,8 +43,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Remy Maucherat
  */
 public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(310L);
 
     private static final String WEB_FRAGMENT_XML = "META-INF/web-fragment.xml";
 

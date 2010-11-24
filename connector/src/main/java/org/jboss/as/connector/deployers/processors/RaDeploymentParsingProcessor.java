@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -45,7 +44,6 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
 
     /**
      * Construct a new instance.

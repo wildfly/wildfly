@@ -22,13 +22,10 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.net.URL;
 import java.util.List;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
-import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -51,7 +48,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  */
 public class DsDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(120L);
+
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     private final InjectedValue<DataSources> dsValue = new InjectedValue<DataSources>();

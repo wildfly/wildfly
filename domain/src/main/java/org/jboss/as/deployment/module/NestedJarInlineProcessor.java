@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -48,9 +47,6 @@ import org.jboss.vfs.VisitorAttributes;
  */
 public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
     private static final Logger log = Logger.getLogger("org.jboss.as.deployment");
-
-    public static final long PRIORITY = DeploymentPhases.STRUCTURE.plus(100);
-
 
     /**
      * Mounts all nested jars inline with the mount of the deployment jar.

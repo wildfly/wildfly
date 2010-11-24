@@ -27,7 +27,6 @@ import java.io.InputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -41,8 +40,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Jean-Frederic Clere
  */
 public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
 
     private static final String WEB_XML = "WEB-INF/web.xml";
 

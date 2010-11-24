@@ -32,7 +32,6 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -51,8 +50,6 @@ import org.jboss.vfs.VirtualFile;
  */
 public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    /** The deployment processor priority. */
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(300L);
     private final String defaultHost;
 
     public WarDeploymentProcessor(String defaultHost) {

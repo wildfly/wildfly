@@ -34,7 +34,6 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -66,8 +65,6 @@ import org.jboss.modules.Module;
  * @author Remy Maucherat
  */
 public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.POST_MODULE_DESCRIPTORS.plus(300L);
 
     private static final DotName webFilter = DotName.createSimple(WebFilter.class.getName());
     private static final DotName webListener = DotName.createSimple(WebListener.class.getName());

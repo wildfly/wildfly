@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -46,8 +45,6 @@ import org.osgi.framework.Version;
  * @since 20-Sep-2010
  */
 public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {

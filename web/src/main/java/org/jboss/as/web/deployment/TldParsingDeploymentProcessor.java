@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -46,8 +45,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Remy Maucherat
  */
 public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(330L);
 
     private static final String TLD = ".tld";
     private static final String META_INF = "META-INF";

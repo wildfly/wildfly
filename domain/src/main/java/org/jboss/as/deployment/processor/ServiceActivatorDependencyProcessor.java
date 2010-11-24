@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
@@ -39,7 +38,7 @@ import org.jboss.vfs.VirtualFile;
  * @author John Bailey
  */
 public class ServiceActivatorDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+
     private static final String SERVICE_ACTIVATOR_PATH = "META-INF/services/" + ServiceActivator.class.getName();
     private static final ModuleConfig.Dependency MSC_DEP = new ModuleConfig.Dependency(ModuleIdentifier.create("org.jboss.msc"), true, false, false);
 

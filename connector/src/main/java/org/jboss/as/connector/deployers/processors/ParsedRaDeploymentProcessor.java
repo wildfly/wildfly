@@ -42,7 +42,6 @@ import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.util.Injection;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -78,7 +77,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(101L);
+
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.radeployer");
 
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();

@@ -27,7 +27,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
 import java.io.InputStream;
 
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -47,7 +46,6 @@ import org.jboss.vfs.VirtualFile;
  *         Maestri</a>
  */
 public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(501L);
 
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
 

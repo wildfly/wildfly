@@ -22,7 +22,6 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
@@ -37,7 +36,7 @@ import org.jboss.modules.ModuleIdentifier;
  * @version $Revision: 1.1 $
  */
 public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
+
     private static ModuleIdentifier JBOSS_LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
 

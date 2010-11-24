@@ -27,7 +27,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
 import java.io.IOException;
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -44,7 +43,6 @@ import org.jboss.vfs.VirtualFile;
  * @since 14-Oct-2010
  */
 public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
     /**
      * Process the deployment root for the manifest.

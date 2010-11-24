@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -35,7 +34,6 @@ import org.jboss.msc.value.Values;
  * @author John E. Bailey
  */
 public class DeploymentModuleLoaderProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(500L);
 
     static final AttachmentKey<DeploymentModuleLoader> ATTACHMENT_KEY = new AttachmentKey<DeploymentModuleLoader>(DeploymentModuleLoader.class);
 

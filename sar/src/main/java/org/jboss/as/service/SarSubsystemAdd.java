@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -47,9 +48,9 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
 
-        addDeploymentProcessor(batchBuilder, new SarModuleDependencyProcessor(), SarModuleDependencyProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new SarModuleDependencyProcessor(), Phase.SAR_MODULE_DEPENDENCY_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
+        addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
     }
 
     @Override

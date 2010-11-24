@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.naming;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -37,7 +36,7 @@ import javax.naming.Context;
  * @author John E. Bailey
  */
 public class ModuleContextProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(5L);
+
     /**
      * Add a ContextService for this module.
      *

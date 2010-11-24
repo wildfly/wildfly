@@ -25,7 +25,6 @@ package org.jboss.as.osgi.deployment;
 import java.io.IOException;
 import java.util.jar.Manifest;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.ManifestAttachment;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -46,8 +45,6 @@ import org.osgi.framework.BundleException;
  * @since 20-Sep-2010
  */
 public class OSGiManifestDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {

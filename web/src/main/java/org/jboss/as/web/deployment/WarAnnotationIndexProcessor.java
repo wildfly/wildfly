@@ -23,7 +23,6 @@
 package org.jboss.as.web.deployment;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -42,7 +41,6 @@ import org.jboss.vfs.VirtualFile;
 public class WarAnnotationIndexProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<WarAnnotationIndex> ATTACHMENT_KEY = new AttachmentKey<WarAnnotationIndex>(WarAnnotationIndex.class);
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(200L);
 
     /** {@inheritDoc} */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {

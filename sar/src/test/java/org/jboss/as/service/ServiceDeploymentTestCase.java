@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainService;
@@ -61,14 +62,14 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
 
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
         batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
-        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), ManifestAttachmentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), DeploymentModuleLoaderProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
+        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
+        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
     }
 
     @Test

@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
 import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
@@ -67,7 +66,6 @@ import static org.jboss.as.deployment.naming.NamespaceBindings.getNamespaceBindi
  * @author John E. Bailey
  */
 public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(200L);
 
     /**
      * Process the deployment and add a managed bean service for each managed bean configuration in the deployment.

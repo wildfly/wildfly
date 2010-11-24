@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -56,8 +55,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Remy Maucherat
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(100L);
 
     /**
      * Merge everything into WarMetaData.

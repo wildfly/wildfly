@@ -22,7 +22,6 @@
 
 package org.jboss.as.service;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.deployment.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -46,7 +45,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
 
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();

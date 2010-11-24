@@ -25,7 +25,6 @@ package org.jboss.as.deployment.module;
 import java.io.IOException;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -44,7 +43,7 @@ import org.jboss.msc.service.ServiceController;
  * @author Jason T. Greene
  */
 public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(750L);
+
     public static final AttachmentKey<Module> MODULE_ATTACHMENT_KEY = new AttachmentKey<Module>(Module.class);
 
 

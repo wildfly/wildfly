@@ -22,16 +22,12 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import java.util.List;
-import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.ModuleIdentifier;
@@ -45,7 +41,7 @@ import javax.annotation.ManagedBean;
  * @author Jason T. Greene
  */
 public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
+
     private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
     private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
     private static ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");

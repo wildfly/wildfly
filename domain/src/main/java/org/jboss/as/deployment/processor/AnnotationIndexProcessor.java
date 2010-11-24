@@ -23,7 +23,6 @@
 package org.jboss.as.deployment.processor;
 
 import org.jboss.as.deployment.AttachmentKey;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -46,7 +45,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  */
 public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
     public static final AttachmentKey<Index> ATTACHMENT_KEY = new AttachmentKey<Index>(Index.class);
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(200L);
 
     /**
      * Process this deployment for annotations.  This will use an annotation indexer to create an index of all annotations

@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.processor;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -38,7 +37,6 @@ import org.jboss.msc.service.ServiceActivatorContextImpl;
  * @author John Bailey
  */
 public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(50L);
 
     /**
      * If the deployment has a module attached it will ask the module to load the ServiceActivator services.

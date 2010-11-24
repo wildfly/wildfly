@@ -1,7 +1,6 @@
 package org.jboss.as.connector.deployers.processors;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -10,7 +9,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 
 public class RarConfigProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(200L);
+
     private static ModuleIdentifier JAVAX_ID = ModuleIdentifier.create("javax.resource.api");
     private static ModuleIdentifier LOGGING_ID = ModuleIdentifier.create("org.jboss.logging");
     private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");

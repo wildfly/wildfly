@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
@@ -64,7 +63,7 @@ import java.util.Map;
  * @author John E. Bailey
  */
 public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.POST_MODULE_DESCRIPTORS.plus(100L);
+
     private static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName INTERCEPTORS_ANNOTATION_NAME = DotName.createSimple(Interceptors.class.getName());

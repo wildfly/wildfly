@@ -22,7 +22,6 @@
 
 package org.jboss.as.deployment.module;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -38,7 +37,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleConfigProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.MODULARIZE.plus(100L);
+
     private static final ModuleConfig.Dependency[] NO_DEPS = new ModuleConfig.Dependency[0];
 
     /**

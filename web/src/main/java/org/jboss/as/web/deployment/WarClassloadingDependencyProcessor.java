@@ -21,7 +21,6 @@
  */
 package org.jboss.as.web.deployment;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -36,8 +35,6 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Emanuel Muckenhuber
  */
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(300L);
 
     private static final ModuleIdentifier JAVAEE_API_ID = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier JAVAX_SERVLET_API = ModuleIdentifier.create("javax.servlet.api");

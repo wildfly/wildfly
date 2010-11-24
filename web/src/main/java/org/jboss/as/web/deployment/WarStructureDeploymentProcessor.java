@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.module.TempFileProviderService;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
@@ -58,8 +57,6 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * @author Emanuel Muckenhuber
  */
 public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.VALIDATE.plus(300L);
 
     public static final String WEB_INF_LIB = "WEB-INF/lib";
     public static final String WEB_INF_CLASSES = "WEB-INF/classes";

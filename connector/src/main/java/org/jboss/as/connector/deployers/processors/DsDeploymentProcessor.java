@@ -32,7 +32,6 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.util.Injection;
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -59,7 +58,7 @@ import org.jboss.msc.value.Value;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class DsDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(120L);
+
     public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
 
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();

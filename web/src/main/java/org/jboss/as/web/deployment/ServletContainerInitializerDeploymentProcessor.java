@@ -35,7 +35,6 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleConfig;
 import org.jboss.as.deployment.module.ModuleDependencies;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
@@ -62,8 +61,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Remy Maucherat
  */
 public class ServletContainerInitializerDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(200L);
 
     /**
      * Process SCIs.
