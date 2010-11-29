@@ -131,6 +131,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, dataSourceDeploymentService.getTxmInjector())
                     .addDependency(JDBCRARDeployService.NAME)
                     .addDependency(NamingService.SERVICE_NAME)
+                    .addDependency(JDBCRARDeployService.NAME)
                     .setInitialMode(ServiceController.Mode.ACTIVE);
             if(uniqueJdbcLocalId != null) {
                 serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcLocalId));

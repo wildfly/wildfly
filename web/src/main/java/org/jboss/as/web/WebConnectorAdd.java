@@ -94,7 +94,7 @@ public class WebConnectorAdd extends AbstractWebSubsystemUpdate<Void> {
             .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getServer())
             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-            .setInitialMode(enabled ? Mode.IMMEDIATE : Mode.NEVER);
+            .setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
     }
 
     /** {@inheritDoc} */

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,6 +38,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
 
 /**
@@ -68,11 +70,6 @@ class BatchBuilderSupport implements BatchBuilder {
 
     public <T> ServiceBuilder<T> addService(ServiceName name, Service<T> service) throws IllegalArgumentException {
         return new ServiceBuilderWrapper<T>(name, delegate.addService(name, service));
-    }
-
-    public <T> ServiceBuilder<T> addServiceValueIfNotExist(ServiceName name, Value<? extends Service<T>> value)
-            throws IllegalArgumentException {
-        return new ServiceBuilderWrapper<T>(name, delegate.addServiceValueIfNotExist(name, value));
     }
 
     public BatchBuilder addListener(ServiceListener<Object> listener) {
@@ -109,13 +106,24 @@ class BatchBuilderSupport implements BatchBuilder {
         delegate.install();
     }
 
-    public BatchBuilder subBatchBuilder() {
-        delegate.subBatchBuilder();
-        return this;
+    public Set<ServiceListener<Object>> getListeners() {
+        return delegate.getListeners();
+    }
+
+    public Set<ServiceName> getDependencies() {
+        return delegate.getDependencies();
+    }
+
+    public ServiceTarget subTarget() {
+        return delegate.subTarget();
+    }
+
+    public BatchBuilder batchBuilder() {
+        return delegate.batchBuilder();
     }
 
     private class ServiceBuilderWrapper<T> implements ServiceBuilder<T> {
-        private final ServiceName serviceName;;
+        private final ServiceName serviceName;
         private final ServiceBuilder<T> delegate;
 
         ServiceBuilderWrapper(ServiceName serviceName, ServiceBuilder<T> delegate) {
@@ -217,6 +225,10 @@ class BatchBuilderSupport implements BatchBuilder {
         public ServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> listeners) {
             delegate.addListener(listeners);
             return this;
+        }
+
+        public void install() throws ServiceRegistryException {
+            delegate.install();
         }
     }
 }

@@ -60,21 +60,16 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
+        builder.addService(JDBCRARDeployService.NAME, new JDBCRARDeployService())
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR)
+                .setInitialMode(Mode.ON_DEMAND);
+
         final DataSourcesService dsService = new DataSourcesService(datasources);
         ServiceBuilder<?> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
                 dsService);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
-
-        if (datasources == null)
-            return;
-
-        if (datasources.getDataSource().size() > 0 || datasources.getXaDataSource().size() > 0) {
-            serviceBuilder = builder.addServiceValueIfNotExist(JDBCRARDeployService.NAME, new JDBCRARDeployService())
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-                .setInitialMode(Mode.ACTIVE);
-        }
     }
 
     @Override

@@ -25,10 +25,8 @@ package org.jboss.as.naming.service;
 import org.jboss.as.model.AbstractSubsystemAdd;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.context.NamespaceObjectFactory;
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -36,9 +34,7 @@ import org.jboss.msc.value.Values;
 
 import javax.management.MBeanServer;
 import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.spi.NamingManager;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

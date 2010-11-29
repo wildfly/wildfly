@@ -118,7 +118,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
 
-        final Value<Constructor> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
+        final Value<Constructor<?>> constructorValue = cached(new LookupConstructorValue(classValue, constructorSignature));
         final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, constructorArguments));
 
         final CreateDestroyService<Object> createDestroyService = new CreateDestroyService<Object>(constructedValue);
