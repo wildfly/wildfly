@@ -85,7 +85,7 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             // Add a listener so we can get ahold of the DeploymentService
             batchBuilder.addListener(new DeploymentServiceTracker<P>(deploymentServiceName, resultHandler, param));
 
-            activate(deploymentName, runtimeName, deploymentHash, deploymentServiceName, new ServiceActivatorContextImpl(batchBuilder), serviceContainer);
+            activate(deploymentName, runtimeName, deploymentHash, deploymentServiceName, new ServiceActivatorContextImpl(batchBuilder, serviceContainer), serviceContainer);
         }
         catch (RuntimeException e) {
             resultHandler.handleFailure(e, param);

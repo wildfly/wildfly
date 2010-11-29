@@ -30,6 +30,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
+import org.jboss.msc.service.ServiceRegistryException;
 
 /**
  * Deployment processor responsible for executing any ServiceActivator instances for a deployment.
@@ -51,9 +52,13 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
         if (module == null)
             return; // Skip deployments with no module
 
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(context.getBatchBuilder());
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(context.getBatchBuilder(), null /* TODO: add a service registry to DeploymentUnitContext */);
         for(ServiceActivator serviceActivator : module.loadService(ServiceActivator.class)) {
-            serviceActivator.activate(serviceActivatorContext);
+            try {
+                serviceActivator.activate(serviceActivatorContext);
+            } catch (ServiceRegistryException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
         }
     }
 }
