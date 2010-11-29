@@ -105,7 +105,7 @@ public final class Main {
             t.printStackTrace(System.err);
         }
         try {
-            // Inform the process manager that we are shutting down on purpose
+            // Inform the process controller that we are shutting down on purpose
             // so it doesn't try to respawn us
             // FIXME implement shutdown()
             throw new UnsupportedOperationException("implement me");

@@ -171,7 +171,7 @@ public class HostUpdateResult<R> implements Serializable {
 
     private void checkAllowServer() {
         if (cancelled || rolledBack || hostFailure != null )
-            throw new IllegalStateException("Cannot add server results to an update that was not successfully applied to the server manager");
+            throw new IllegalStateException("Cannot add server results to an update that was not successfully applied to the host controller");
     }
 
 }

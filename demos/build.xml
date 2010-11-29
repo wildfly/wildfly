@@ -45,12 +45,12 @@
         <echo>  web.connector    - creates and removes a jboss web connector</echo>
         <echo/>
         <echo>Valid example names to run against a JBoss AS domain are</echo>
-        <echo>  domain.configs     - reads the domain config and any available server manager configs</echo>
+        <echo>  domain.configs     - reads the domain config and any available host controller configs</echo>
         <echo>  domain.ds          - deploys deploys a test bean for data sources</echo>
         <echo>  domain.interactive - interactive client that allows user to perform various management operations</echo>
         <echo>  domain.messaging   - deploys HornetQ native sender and receiver</echo>
         <echo>  domain.rar         - deploys deploys a resource adapter</echo>
-        <echo>  domain.servers     - shows domain, server manager and server configs, starts/stops servers</echo>
+        <echo>  domain.servers     - shows domain, host controller and server configs, starts/stops servers</echo>
     </target>
         
     <target name="run" if="example">

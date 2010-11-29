@@ -24,23 +24,22 @@ package org.jboss.as.server;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public enum ServerState {
-    /** ServerManager has told the PM to start the server and is waiting for the SERVER_AVAILABLE message back from the server */
+    /** HostController has told the process controller to start the server and is waiting for the SERVER_AVAILABLE message back from the server */
     BOOTING (true),
 
-    /** The server has sent the available command back to the SERVER_MANAGER */
+    /** The server has sent the available command back to the HostController */
     AVAILABLE (true),
 
-    /** ServerManager has received the SERVER_AVAILABLE message from the server process, has sent the config
+    /** HostController has received the SERVER_AVAILABLE message from the server process, has sent the config
      *  to the server and is waiting for the SERVER_STARTED or SERVER_FAILED message */
     STARTING (false),
 
     /** The server sent back the SERVER_STARTED message and is up and running */
     STARTED (false),
 
-    /** ServerManager has told the server to stop and is waiting for the SERVER_STOPPED message */
+    /** HostController has told the server to stop and is waiting for the SERVER_STOPPED message */
     STOPPING (false),
 
     /** We have received the SERVER_STOPPED message */

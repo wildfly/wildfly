@@ -21,7 +21,7 @@
  */
 package org.jboss.test.as.protocol.support.server.manager;
 
-import org.jboss.as.server.manager.SystemExiter.Exiter;
+import org.jboss.as.host.controller.SystemExiter.Exiter;
 
 /**
  *

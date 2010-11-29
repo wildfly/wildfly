@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.as.host.controller.HostController;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.as.server.manager.ServerManagerEnvironment;
 import org.jboss.test.as.protocol.support.server.TestServerProcess;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessageHandler.ServerMessage;
 
@@ -43,7 +43,7 @@ import org.jboss.test.as.protocol.support.server.manager.TestServerManagerMessag
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class MockServerManagerProcess extends ServerManager {
+public class MockServerManagerProcess extends HostController {
 
     private final Managed managed;
     private final Map<String, List<String>> serverCommands = new ConcurrentHashMap<String, List<String>>();
@@ -52,7 +52,7 @@ public class MockServerManagerProcess extends ServerManager {
     private volatile TestDirectServerManagerCommunicationListener serverListener;
     private volatile ProcessManagerSlave pmSlave;
 
-    private MockServerManagerProcess(Managed managed, ServerManagerEnvironment environment) {
+    private MockServerManagerProcess(Managed managed, HostControllerEnvironment environment) {
         super(environment, authCode);
         this.managed = managed;
     }
@@ -66,7 +66,7 @@ public class MockServerManagerProcess extends ServerManager {
             throw new IllegalArgumentException("Null managed");
         }
         for (int i = 0 ; i < command.size() ; i++) {
-            if (command.get(i).equals(CommandLineConstants.INTERPROCESS_PM_PORT)) {
+            if (command.get(i).equals(CommandLineConstants.INTERPROCESS_PC_PORT)) {
                 return create(managed, Integer.valueOf(command.get(++i)));
             }
         }
@@ -165,7 +165,7 @@ public class MockServerManagerProcess extends ServerManager {
         return serverHandler;
     }
 
-    static class MockServerManagerEnvironment extends ServerManagerEnvironment {
+    static class MockServerManagerEnvironment extends HostControllerEnvironment {
 
         public MockServerManagerEnvironment(boolean isRestart, int pmPort) throws Exception{
             super(System.getProperties(), false, System.in, System.out, System.err, "ServerManager", InetAddress.getLocalHost(), pmPort, InetAddress.getLocalHost(), 0, null);

@@ -25,7 +25,7 @@ package org.jboss.as.protocol.mgmt;
 import org.jboss.as.protocol.MessageHandler;
 
 /**
- * Interface for handling management operations coming into a server manager process.  Each handler
+ * Interface for handling management operations coming into a host controller process.  Each handler
  * is identified by a single byte that will be used to route the operation request to the correct handler.
  *
  * @author John Bailey

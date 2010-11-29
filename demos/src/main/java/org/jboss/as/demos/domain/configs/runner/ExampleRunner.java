@@ -38,7 +38,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * Demonstration of basic aspects of reading domain and server manager configurations
+ * Demonstration of basic aspects of reading domain and host controller configurations
  * via the domain management API.
  *
  * @author Brian Stansberry
@@ -52,15 +52,15 @@ public class ExampleRunner {
 
             System.out.println("\nReading the domain configuration:\n");
             System.out.println(writeModel("domain", client.getDomainModel()));
-            System.out.println("\nReading the list of active server managers:\n");
-            List<String> serverManagers = client.getServerManagerNames();
-            for (String sm : serverManagers) {
-                System.out.println(sm);
+            System.out.println("\nReading the list of active host controllers:\n");
+            List<String> hostControllers = client.getHostControllerNames();
+            for (String hc : hostControllers) {
+                System.out.println(hc);
             }
 
-            for (String sm : serverManagers) {
-                System.out.println("\nReading host configuration for server manager " + sm + "\n");
-                System.out.println(writeModel("host", client.getHostModel(sm)));
+            for (String hc : hostControllers) {
+                System.out.println("\nReading host configuration for host controller " + hc + "\n");
+                System.out.println(writeModel("host", client.getHostModel(hc)));
             }
 
         } finally {

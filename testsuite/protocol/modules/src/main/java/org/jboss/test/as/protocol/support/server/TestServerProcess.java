@@ -60,13 +60,13 @@ public class TestServerProcess extends Server {
         String[] args = new String[] {
                 CommandLineConstants.INTERPROCESS_NAME,
                 serverName,
-                CommandLineConstants.INTERPROCESS_PM_ADDRESS,
+                CommandLineConstants.INTERPROCESS_PC_ADDRESS,
                 InetAddress.getLocalHost().getHostAddress(),
-                CommandLineConstants.INTERPROCESS_PM_PORT,
+                CommandLineConstants.INTERPROCESS_PC_PORT,
                 String.valueOf(pmPort),
-                CommandLineConstants.INTERPROCESS_SM_ADDRESS,
+                CommandLineConstants.INTERPROCESS_HC_ADDRESS,
                 InetAddress.getLocalHost().getHostAddress(),
-                CommandLineConstants.INTERPROCESS_SM_PORT,
+                CommandLineConstants.INTERPROCESS_HC_PORT,
                 String.valueOf(smPort)
         };
 

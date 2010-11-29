@@ -34,31 +34,31 @@ public interface HostUpdateApplier<R, P> {
     /**
      * Handle the event of the execution of the update being cancelled.
      * This would occur as a result of a previously executed update in the same set of updates
-     * failing to apply successfully to the server manager.
+     * failing to apply successfully to the host controller.
      */
     void handleCancelled();
 
     /**
      * Handle the event of the execution of the update being rolled back
-     * after it was successfully applied to the server manager.
+     * after it was successfully applied to the host controller.
      * This would occur as a result of another subsequent update in the same set of updates
-     * failing to apply successfully to the server manager.
+     * failing to apply successfully to the host controller.
      */
     void handleRolledBack();
 
     /**
-     * Handle the event of the update failing to apply to the server manager.
+     * Handle the event of the update failing to apply to the host controller.
      *
      * @param reason the reason for the failure
      */
     void handleHostFailed(UpdateFailedException reason);
 
     /**
-     * Handle the event of the update successfully applying to the server
-     * manager.  The given context should be used to acquire the list of affected servers and
-     * to apply the change to each of the servers according to the desired policy.  If the update should be
-     * reverted, the {@link Context#cancel()} method should be invoked, which will cause the remaining changes to
-     * not be applied.
+     * Handle the event of the update successfully applying to the host controller.
+     * The given context should be used to acquire the list of affected servers and to apply
+     * the change to each of the servers according to the desired policy.  If the update should be
+     * reverted, the {@link Context#cancel()} method should be invoked, which will cause
+     * the remaining changes to not be applied.
      *
      * @param context
      * @param param

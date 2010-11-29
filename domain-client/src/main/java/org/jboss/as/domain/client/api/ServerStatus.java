@@ -43,9 +43,9 @@ public enum ServerStatus {
     FAILED,
     /**
      * The status of the server is currently unknown. This is the status of
-     * any server whose server manager is currently unreachable.
+     * any server whose host controller is currently unreachable.
      */
     UNKNOWN,
-    /** Status indicating the server manager does not recognize the server name */
+    /** Status indicating the host controller does not recognize the server name */
     DOES_NOT_EXIST
 }

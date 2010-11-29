@@ -27,7 +27,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Configuration for a server manager management socket on a {@link org.jboss.as.model.HostModel}.
+ * Configuration for a host controller management socket on a {@link org.jboss.as.model.HostModel}.
  *
  * @author John Bailey
  */

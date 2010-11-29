@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.host.controller.Main;
+import org.jboss.as.host.controller.HostController;
+import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.SystemExiter;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ProcessOutputStreamHandler.Managed;
-import org.jboss.as.server.manager.Main;
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.as.server.manager.ServerManagerEnvironment;
-import org.jboss.as.server.manager.SystemExiter;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
 
 /**
@@ -44,7 +44,7 @@ import org.jboss.test.as.protocol.support.process.TestProcessManager;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class TestServerManagerProcess extends ServerManager {
+public class TestServerManagerProcess extends HostController {
 
     private final Managed managed;
 
@@ -52,11 +52,11 @@ public class TestServerManagerProcess extends ServerManager {
     private volatile CountDownLatch domainModelLatch = new CountDownLatch(1);
     private volatile CountDownLatch downLatch = new CountDownLatch(1);
 
-    public static ServerManager createServerManager(TestProcessManager pm) throws Exception{
+    public static HostController createServerManager(TestProcessManager pm) throws Exception{
         return createServerManager(pm, false);
     }
 
-    public TestServerManagerProcess(Managed managed, ServerManagerEnvironment environment) {
+    public TestServerManagerProcess(Managed managed, HostControllerEnvironment environment) {
         super(environment, authCode);
         this.managed = managed;
     }
@@ -65,20 +65,20 @@ public class TestServerManagerProcess extends ServerManager {
         String[] args = new String[] {
                 CommandLineConstants.INTERPROCESS_NAME,
                 "ServerManager",
-                CommandLineConstants.INTERPROCESS_PM_ADDRESS,
+                CommandLineConstants.INTERPROCESS_PC_ADDRESS,
                 InetAddress.getLocalHost().getHostAddress(),
-                CommandLineConstants.INTERPROCESS_PM_PORT,
+                CommandLineConstants.INTERPROCESS_PC_PORT,
                 String.valueOf(pm.getPort()),
-                CommandLineConstants.INTERPROCESS_SM_ADDRESS,
+                CommandLineConstants.INTERPROCESS_HC_ADDRESS,
                 InetAddress.getLocalHost().getHostAddress(),
-                CommandLineConstants.INTERPROCESS_SM_PORT,
+                CommandLineConstants.INTERPROCESS_HC_PORT,
                 "0"
         };
 
         if (restart) {
             int length = args.length;
             args = Arrays.copyOf(args,  length + 1);
-            args[length] = CommandLineConstants.RESTART_SERVER_MANAGER;
+            args[length] = CommandLineConstants.RESTART_HOST_CONTROLLER;
         }
 
         return TestServerManagerProcess.createServerManager(null, Arrays.asList(args), System.in, System.out, System.err);
@@ -90,7 +90,7 @@ public class TestServerManagerProcess extends ServerManager {
         //The command created by TestProcessManager only contains the args
         String[] args = command.toArray(new String[command.size()]);
 
-        ServerManagerEnvironment config = Main.determineEnvironment(args, System.getProperties(), stdin, stdout, stderr);
+        HostControllerEnvironment config = Main.determineEnvironment(args, System.getProperties(), stdin, stdout, stderr);
         if (config == null) {
             throw new RuntimeException("Could not determine SM environment");
         } else {

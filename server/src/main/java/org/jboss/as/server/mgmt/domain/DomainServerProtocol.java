@@ -26,7 +26,7 @@ package org.jboss.as.server.mgmt.domain;
  * @author John Bailey
  */
 public interface DomainServerProtocol {
-    int SERVER_TO_SERVER_MANAGER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
+    int SERVER_TO_HOST_CONTROLLER_OPERATION = Byte.MAX_VALUE; // TODO: Correct
     int REGISTER_REQUEST = 0x00;
     int PARAM_SERVER_NAME = 0x01;
     int REGISTER_RESPONSE = 0x02;

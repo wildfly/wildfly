@@ -32,7 +32,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.jboss.as.server.manager.ServerManagerEnvironment;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.manager.ServerManagerNoopExiter;
 
@@ -44,7 +44,7 @@ import org.jboss.test.as.protocol.support.server.manager.ServerManagerNoopExiter
 public class AbstractProtocolTestModule {
 
     static {
-        org.jboss.as.server.manager.SystemExiter.initialize(new ServerManagerNoopExiter());
+        org.jboss.as.host.controller.SystemExiter.initialize(new ServerManagerNoopExiter());
         org.jboss.as.server.SystemExiter.initialize(new ServerNoopExiter());
     }
 
@@ -56,7 +56,7 @@ public class AbstractProtocolTestModule {
     }
 
     protected void setDomainConfigDir(String name) throws URISyntaxException {
-        addProperty(ServerManagerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
+        addProperty(HostControllerEnvironment.DOMAIN_CONFIG_DIR, findDomainConfigsDir(name));
     }
 
     public void beforeTest() throws Exception {

@@ -50,7 +50,7 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-server-manager</artifactId>
+        <artifactId>jboss-as-host-controller</artifactId>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

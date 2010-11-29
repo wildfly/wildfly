@@ -27,13 +27,13 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.jboss.as.host.controller.ManagedServer;
+import org.jboss.as.host.controller.HostController;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.ServerState;
 import org.jboss.as.server.ServerManagerProtocol.Command;
 import org.jboss.as.server.ServerManagerProtocol.ServerManagerToServerProtocolCommand;
 import org.jboss.as.server.ServerManagerProtocol.ServerToServerManagerProtocolCommand;
-import org.jboss.as.server.manager.ManagedServer;
-import org.jboss.as.server.manager.ServerManager;
 import org.jboss.test.as.protocol.support.process.TestProcessManager;
 import org.jboss.test.as.protocol.support.server.ServerNoopExiter;
 import org.jboss.test.as.protocol.support.server.manager.TestServerManagerProcess;
@@ -580,7 +580,7 @@ public class ServerManagerTestModule extends AbstractProtocolTestModule implemen
         return parsePort(parts[1]);
     }
 
-    private Map<String, ManagedServer> checkServerManagerServers(ServerManager sm, int timeoutMs, ServerManagerCheck...checks) throws Exception {
+    private Map<String, ManagedServer> checkServerManagerServers(HostController sm, int timeoutMs, ServerManagerCheck...checks) throws Exception {
         long end = System.currentTimeMillis() + timeoutMs;
         while (System.currentTimeMillis() < end) {
             Map<String, ManagedServer> servers = sm.getServers();

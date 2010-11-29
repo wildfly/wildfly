@@ -31,7 +31,7 @@ import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.model.UpdateFailedException;
 
 /**
- * Encapsulates the results provided by the server manager in response
+ * Encapsulates the results provided by the host controller in response
  * to a request to apply an update to the host model.
  * Used to provide input parameters to the callback methods in a
  * {@link DomainUpdateApplier}.

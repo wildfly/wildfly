@@ -116,7 +116,7 @@ public class DeploymentPlanResultReader {
         byte nextHeader = unmarshaller.readByte();
         expectHeader(nextHeader, DomainClientProtocol.RETURN_DEPLOYMENT_ACTION_ID);
 
-        // Next the server will send all the results of applying set plan updates to DC and SM domain model
+        // Next the server will send all the results of applying set plan updates to DC and HC domain model
         Map<UUID, DeploymentActionResult> actionResults = new HashMap<UUID, DeploymentActionResult>();
         do {
             nextHeader = readDeploymentActionResult(setPlan, actionResults);

@@ -27,10 +27,10 @@ import java.io.FileReader;
 
 import javax.xml.stream.XMLInputFactory;
 
+import org.jboss.as.host.controller.StandardElementReaderRegistrar;
 import org.jboss.as.model.DomainModel;
 import org.jboss.as.model.HostModel;
 import org.jboss.as.model.ParseResult;
-import org.jboss.as.server.manager.StandardElementReaderRegistrar;
 import org.jboss.staxmapper.XMLMapper;
 
 /**

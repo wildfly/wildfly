@@ -35,7 +35,7 @@
             <xs:documentation>
                 Root element for the master document specifying the core configuration
                 for the servers in a domain. There should be one such master
-                document per domain, available to the server manager that
+                document per domain, available to the host controller that
                 is configured to act as the domain controller. 
             </xs:documentation>
         </xs:annotation>
@@ -56,9 +56,9 @@
     <xs:element name="host">
         <xs:annotation>
             <xs:documentation>
-                Root element for a document configuring a server manager and 
-                the group of servers under the control of that server manager.
-                The standard usage would be for a domain to have one such server manager
+                Root element for a document configuring a host controller and 
+                the group of servers under the control of that host controller.
+                The standard usage would be for a domain to have one such host controller
                 on each physical (or virtual) host machine. Emphasis in this 
                 document is on enumerating the servers, configuring items that 
                 are specific to the host environment (e.g. IP addresses), and
@@ -79,7 +79,7 @@
             <xs:attribute name="name" type="xs:string" use="optional">        
                 <xs:annotation>
                     <xs:documentation>
-                        The name to use for this host's server manager. Must be
+                        The name to use for this host's host controller. Must be
                         unique across the domain. If not set, defaults to the 
                         runtime value of InetAddress.getLocalHost().getHostName().
                     </xs:documentation>
@@ -412,7 +412,7 @@
     <!-- domain-configuration related definitions -->
     <xs:complexType name="domain-configurationType">
         <xs:annotation>
-            <xs:documentation>The domain manager/server bootstrap configuration</xs:documentation>
+            <xs:documentation>The domain controller/server bootstrap configuration</xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element ref="bootstrapURI"/>
@@ -1013,7 +1013,7 @@
                                        log file storage                
                 jboss.server.tmp.dir - directory the server will use for 
                                        temporary file storage
-                jboss.domain.servers.dir - directory under which a server manager
+                jboss.domain.servers.dir - directory under which a host controller
                                            will create the working area for
                                            individual server instances
                 </xs:documentation>
@@ -1107,7 +1107,7 @@
                                        log file storage                
                 jboss.server.tmp.dir - directory the server will use for 
                                        temporary file storage
-                jboss.domain.servers.dir - directory under which a server manager
+                jboss.domain.servers.dir - directory under which a host controller
                                            will create the working area for
                                            individual server instances
                 </xs:documentation>

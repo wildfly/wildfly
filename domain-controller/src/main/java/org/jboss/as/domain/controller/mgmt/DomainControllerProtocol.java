@@ -28,9 +28,9 @@ package org.jboss.as.domain.controller.mgmt;
 public interface DomainControllerProtocol {
     int DOMAIN_CONTROLLER_REQUEST = 0x08;
 
-    int PARAM_SERVER_MANAGER_ID = 0x09;
-    int PARAM_SERVER_MANAGER_HOST = 0x10;
-    int PARAM_SERVER_MANAGER_PORT = 0x11;
+    int PARAM_HOST_CONTROLLER_ID = 0x09;
+    int PARAM_HOST_CONTROLLER_HOST = 0x10;
+    int PARAM_HOST_CONTROLLER_PORT = 0x11;
     int REGISTER_REQUEST = 0x12;
     int PARAM_DOMAIN_MODEL = 0x13;
     int REGISTER_RESPONSE = 0x14;

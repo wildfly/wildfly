@@ -148,7 +148,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
         final AbstractMessageHandler operation = operationFor(commandCode);
         if (operation == null) {
-            throw new IOException("Invalid command code " + commandCode + " received from server manager");
+            throw new IOException("Invalid command code " + commandCode + " received from host controller");
         }
         log.debugf("Received DomainClient operation [%s]", operation);
 
@@ -175,8 +175,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 return new ApplyHostModelUpdatesOperation();
             case DomainClientProtocol.GET_HOST_MODEL_REQUEST:
                 return new GetHostModelOperation();
-            case DomainClientProtocol.GET_SERVER_MANAGER_NAMES_REQUEST:
-                return new GetServerManagerNamesOperation();
+            case DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_REQUEST:
+                return new GetHostControllerNamesOperation();
             case DomainClientProtocol.GET_SERVER_STATUSES_REQUEST:
                 return new GetServerStatusesOperation();
             case DomainClientProtocol.GET_SERVER_MODEL_REQUEST:
@@ -210,21 +210,21 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         }
     }
 
-    private class GetServerManagerNamesOperation extends ManagementResponse {
+    private class GetHostControllerNamesOperation extends ManagementResponse {
 
         @Override
         protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_SERVER_MANAGER_NAMES_RESPONSE;
+            return DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_RESPONSE;
         }
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
                 final Marshaller marshaller = getMarshaller();
                 marshaller.start(createByteOutput(outputStream));
-                Set<String> serverManagerNames = domainController.getServerManagerNames();
-                marshaller.writeByte(DomainClientProtocol.RETURN_SERVER_MANAGER_COUNT);
-                marshaller.writeInt(serverManagerNames.size());
-                for (String name : serverManagerNames) {
+                Set<String> hostControllerNames = domainController.getHostControllerNames();
+                marshaller.writeByte(DomainClientProtocol.RETURN_HOST_CONTROLLER_COUNT);
+                marshaller.writeInt(hostControllerNames.size());
+                for (String name : hostControllerNames) {
                     marshaller.writeByte(DomainClientProtocol.RETURN_HOST_NAME);
                     marshaller.writeUTF(name);
                 }
@@ -234,7 +234,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
     private class GetHostModelOperation extends ManagementResponse {
 
-        private String serverManagerName;
+        private String hostControllerName;
 
         @Override
         protected final byte getResponseCode() {
@@ -246,7 +246,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-            serverManagerName = unmarshaller.readUTF();
+            hostControllerName = unmarshaller.readUTF();
             unmarshaller.finish();
         }
 
@@ -255,7 +255,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
                 final Marshaller marshaller = getMarshaller();
                 marshaller.start(createByteOutput(outputStream));
                 marshaller.writeByte(DomainClientProtocol.RETURN_HOST_MODEL);
-                marshaller.writeObject(domainController.getHostModel(serverManagerName));
+                marshaller.writeObject(domainController.getHostModel(hostControllerName));
                 marshaller.finish();
         }
     }
@@ -291,7 +291,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
     private class GetServerModelOperation extends ManagementResponse {
 
-        private String serverManagerName;
+        private String hostControllerName;
         private String serverName;
 
         @Override
@@ -304,7 +304,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-            serverManagerName = unmarshaller.readUTF();
+            hostControllerName = unmarshaller.readUTF();
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
             serverName = unmarshaller.readUTF();
             unmarshaller.finish();
@@ -312,7 +312,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ServerModel serverModel = domainController.getServerModel(serverManagerName, serverName);
+            ServerModel serverModel = domainController.getServerModel(hostControllerName, serverName);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(outputStream));
             marshaller.writeByte(DomainClientProtocol.RETURN_SERVER_MODEL);
@@ -333,8 +333,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         }
 
         @Override
-        protected ServerStatus processChange(String serverManagerName, String serverName, long gracefulTimeout) {
-            return  domainController.startServer(serverManagerName, serverName);
+        protected ServerStatus processChange(String hostControllerName, String serverName, long gracefulTimeout) {
+            return  domainController.startServer(hostControllerName, serverName);
         }
     }
 
@@ -349,8 +349,8 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         }
 
         @Override
-        protected ServerStatus processChange(String serverManagerName, String serverName, long gracefulTimeout) {
-            return domainController.restartServer(serverManagerName, serverName, gracefulTimeout);
+        protected ServerStatus processChange(String hostControllerName, String serverName, long gracefulTimeout) {
+            return domainController.restartServer(hostControllerName, serverName, gracefulTimeout);
         }
     }
 
@@ -366,15 +366,15 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
         }
 
         @Override
-        protected ServerStatus processChange(String serverManagerName, String serverName, long gracefulTimeout) {
-            return domainController.stopServer(serverManagerName, serverName, gracefulTimeout);
+        protected ServerStatus processChange(String hostControllerName, String serverName, long gracefulTimeout) {
+            return domainController.stopServer(hostControllerName, serverName, gracefulTimeout);
         }
     }
 
     private abstract class ServerStatusChangeOperation extends ManagementResponse {
 
         private final boolean expectTimeout;
-        private String serverManagerName;
+        private String hostControllerName;
         private String serverName;
         private long gracefulTimeout;
 
@@ -382,14 +382,14 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             this.expectTimeout = expectTimeout;
         }
 
-        protected abstract ServerStatus processChange(String serverManagerName, String serverName, long gracefulTimeout);
+        protected abstract ServerStatus processChange(String hostControllerName, String serverName, long gracefulTimeout);
 
         @Override
         protected final void readRequest(final InputStream inputStream) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-            serverManagerName = unmarshaller.readUTF();
+            hostControllerName = unmarshaller.readUTF();
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_SERVER_NAME);
             serverName = unmarshaller.readUTF();
             if (expectTimeout) {
@@ -401,7 +401,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
         @Override
         protected void sendResponse(final OutputStream outputStream) throws IOException {
-            ServerStatus status = processChange(serverManagerName, serverName, gracefulTimeout);
+            ServerStatus status = processChange(hostControllerName, serverName, gracefulTimeout);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(outputStream));
             marshaller.writeByte(DomainClientProtocol.RETURN_SERVER_STATUS);
@@ -453,7 +453,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
     private class ApplyHostModelUpdatesOperation extends ManagementResponse {
 
-        private String serverManagerName;
+        private String hostControllerName;
         private List<AbstractHostModelUpdate<?>> updates;
 
         @Override
@@ -466,7 +466,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_HOST_NAME);
-            serverManagerName = unmarshaller.readUTF();
+            hostControllerName = unmarshaller.readUTF();
             expectHeader(unmarshaller, DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
             int count = unmarshaller.readInt();
             updates = new ArrayList<AbstractHostModelUpdate<?>>(count);
@@ -481,7 +481,7 @@ public class  DomainControllerClientOperationHandler extends AbstractMessageHand
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
-            List<HostUpdateResult<?>> responses = domainController.applyHostUpdates(serverManagerName, updates);
+            List<HostUpdateResult<?>> responses = domainController.applyHostUpdates(hostControllerName, updates);
 
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));

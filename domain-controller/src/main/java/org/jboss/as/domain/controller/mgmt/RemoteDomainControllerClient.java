@@ -38,7 +38,7 @@ import org.jboss.as.domain.client.api.HostUpdateResult;
 import org.jboss.as.domain.client.api.ServerIdentity;
 import org.jboss.as.domain.client.api.ServerStatus;
 import org.jboss.as.domain.controller.ModelUpdateResponse;
-import org.jboss.as.domain.controller.ServerManagerClient;
+import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.model.AbstractDomainModelUpdate;
 import org.jboss.as.model.AbstractHostModelUpdate;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -51,7 +51,7 @@ import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
-import org.jboss.as.protocol.mgmt.ServerManagerProtocol;
+import org.jboss.as.protocol.mgmt.HostControllerProtocol;
 import org.jboss.marshalling.Marshaller;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
@@ -62,7 +62,7 @@ import org.jboss.marshalling.Unmarshaller;
  *
  * @author John Bailey
  */
-public class RemoteDomainControllerClient implements ServerManagerClient {
+public class RemoteDomainControllerClient implements HostControllerClient {
     private final String id;
     private final InetAddress address;
     private final int port;
@@ -193,23 +193,23 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
                 '}';
     }
 
-    private abstract class ServerManagerRequest<T> extends ManagementRequest<T> {
+    private abstract class HostControllerRequest<T> extends ManagementRequest<T> {
         @Override
         protected byte getHandlerId() {
-            return ServerManagerProtocol.SERVER_MANAGER_REQUEST;
+            return HostControllerProtocol.HOST_CONTROLLER_REQUEST;
         }
     }
 
-    private class GetHostModelRequest extends ServerManagerRequest<HostModel> {
+    private class GetHostModelRequest extends HostControllerRequest<HostModel> {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.GET_HOST_MODEL_REQUEST;
+            return HostControllerProtocol.GET_HOST_MODEL_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.GET_HOST_MODEL_RESPONSE;
+            return HostControllerProtocol.GET_HOST_MODEL_RESPONSE;
         }
 
         @Override
@@ -222,7 +222,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class UpdateFullDomainRequest extends ServerManagerRequest<Void> {
+    private class UpdateFullDomainRequest extends HostControllerRequest<Void> {
         private final DomainModel domainModel;
 
         private UpdateFullDomainRequest(DomainModel domainModel) {
@@ -231,33 +231,33 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.UPDATE_FULL_DOMAIN_REQUEST;
+            return HostControllerProtocol.UPDATE_FULL_DOMAIN_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.UPDATE_FULL_DOMAIN_RESPONSE;
+            return HostControllerProtocol.UPDATE_FULL_DOMAIN_RESPONSE;
         }
 
         @Override
         protected final void sendRequest(final int protocolVersion, final OutputStream outputStream) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(outputStream));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_DOMAIN_MODEL);
+            marshaller.writeByte(HostControllerProtocol.PARAM_DOMAIN_MODEL);
             marshaller.writeObject(domainModel);
             marshaller.finish();
         }
     }
 
-    private class IsActiveRequest extends ServerManagerRequest<Boolean> {
+    private class IsActiveRequest extends HostControllerRequest<Boolean> {
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.IS_ACTIVE_REQUEST;
+            return HostControllerProtocol.IS_ACTIVE_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.IS_ACTIVE_RESPONSE;
+            return HostControllerProtocol.IS_ACTIVE_RESPONSE;
         }
 
         @Override
@@ -267,7 +267,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
     }
 
 
-    private class UpdateDomainModelRequest extends ServerManagerRequest<List<ModelUpdateResponse<List<ServerIdentity>>>> {
+    private class UpdateDomainModelRequest extends HostControllerRequest<List<ModelUpdateResponse<List<ServerIdentity>>>> {
         private final List<AbstractDomainModelUpdate<?>> updates;
 
         private UpdateDomainModelRequest(final List<AbstractDomainModelUpdate<?>> updates) {
@@ -276,22 +276,22 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.UPDATE_DOMAIN_MODEL_REQUEST;
+            return HostControllerProtocol.UPDATE_DOMAIN_MODEL_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.UPDATE_DOMAIN_MODEL_RESPONSE;
+            return HostControllerProtocol.UPDATE_DOMAIN_MODEL_RESPONSE;
         }
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
+            marshaller.writeByte(HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for(AbstractDomainModelUpdate<?> update : updates) {
-                marshaller.writeByte(ServerManagerProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                marshaller.writeByte(HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE);
                 marshaller.writeObject(update);
             }
             marshaller.finish();
@@ -301,14 +301,14 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected List<ModelUpdateResponse<List<ServerIdentity>>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
             int responseCount = unmarshaller.readInt();
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid domain model update response.  Response count not equal to update count.");
             }
             final List<ModelUpdateResponse<List<ServerIdentity>>> responses = new ArrayList<ModelUpdateResponse<List<ServerIdentity>>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
                 @SuppressWarnings("unchecked")
                 final ModelUpdateResponse<List<ServerIdentity>> response = unmarshal(unmarshaller, ModelUpdateResponse.class);
                 responses.add(response);
@@ -318,7 +318,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class UpdateHostModelRequest extends ServerManagerRequest<List<HostUpdateResult<?>>> {
+    private class UpdateHostModelRequest extends HostControllerRequest<List<HostUpdateResult<?>>> {
         private final List<AbstractHostModelUpdate<?>> updates;
 
         private UpdateHostModelRequest(final List<AbstractHostModelUpdate<?>> updates) {
@@ -327,22 +327,22 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.UPDATE_HOST_MODEL_REQUEST;
+            return HostControllerProtocol.UPDATE_HOST_MODEL_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.UPDATE_HOST_MODEL_RESPONSE;
+            return HostControllerProtocol.UPDATE_HOST_MODEL_RESPONSE;
         }
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
+            marshaller.writeByte(HostControllerProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for(AbstractHostModelUpdate<?> update : updates) {
-                marshaller.writeByte(ServerManagerProtocol.PARAM_HOST_MODEL_UPDATE);
+                marshaller.writeByte(HostControllerProtocol.PARAM_HOST_MODEL_UPDATE);
                 marshaller.writeObject(update);
             }
             marshaller.finish();
@@ -352,14 +352,14 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected List<HostUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
             int responseCount = unmarshaller.readInt();
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid host model update response.  Response count not equal to update count.");
             }
             final List<HostUpdateResult<?>> responses = new ArrayList<HostUpdateResult<?>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
                 final HostUpdateResult<?> response = unmarshal(unmarshaller, HostUpdateResult.class);
                 responses.add(response);
             }
@@ -368,7 +368,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class UpdateServerModelRequest extends ServerManagerRequest<List<UpdateResultHandlerResponse<?>>> {
+    private class UpdateServerModelRequest extends HostControllerRequest<List<UpdateResultHandlerResponse<?>>> {
         private final List<AbstractServerModelUpdate<?>> updates;
         private final String serverName;
         private final boolean allowOverallRollback;
@@ -382,26 +382,26 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.UPDATE_SERVER_MODEL_REQUEST;
+            return HostControllerProtocol.UPDATE_SERVER_MODEL_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.UPDATE_SERVER_MODEL_RESPONSE;
+            return HostControllerProtocol.UPDATE_SERVER_MODEL_RESPONSE;
         }
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
+            marshaller.writeByte(HostControllerProtocol.PARAM_SERVER_NAME);
             marshaller.writeUTF(serverName);
-            marshaller.writeByte(ServerManagerProtocol.PARAM_ALLOW_ROLLBACK);
+            marshaller.writeByte(HostControllerProtocol.PARAM_ALLOW_ROLLBACK);
             marshaller.writeBoolean(allowOverallRollback);
-            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+            marshaller.writeByte(HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for(AbstractServerModelUpdate<?> update : updates) {
-                marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_MODEL_UPDATE);
+                marshaller.writeByte(HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE);
                 marshaller.writeObject(update);
             }
             marshaller.finish();
@@ -411,14 +411,14 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected List<UpdateResultHandlerResponse<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
             int responseCount = unmarshaller.readInt();
             if(responseCount != updates.size()) {
                 throw new IOException("Invalid host model update response.  Response count not equal to update count.");
             }
             final List<UpdateResultHandlerResponse<?>> responses = new ArrayList<UpdateResultHandlerResponse<?>>(responseCount);
             for(int i = 0; i < responseCount; i++) {
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
                 final UpdateResultHandlerResponse<?> response = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
                 responses.add(response);
             }
@@ -427,31 +427,31 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class GetServerStatusesRequest extends ServerManagerRequest<Map<ServerIdentity, ServerStatus>> {
+    private class GetServerStatusesRequest extends HostControllerRequest<Map<ServerIdentity, ServerStatus>> {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.GET_SERVER_LIST_REQUEST;
+            return HostControllerProtocol.GET_SERVER_LIST_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.GET_SERVER_LIST_RESPONSE;
+            return HostControllerProtocol.GET_SERVER_LIST_RESPONSE;
         }
 
         @Override
         protected Map<ServerIdentity, ServerStatus> receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_COUNT);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_COUNT);
             int count = unmarshaller.readInt();
             final Map<ServerIdentity, ServerStatus> map = new HashMap<ServerIdentity, ServerStatus>();
             for (int i = 0; i < count; i ++) {
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_NAME);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_NAME);
                 String serverName = unmarshaller.readUTF();
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_GROUP_NAME);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_GROUP_NAME);
                 String groupName = unmarshaller.readUTF();
-                ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_STATUS);
+                ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_STATUS);
                 ServerStatus status = unmarshal(unmarshaller, ServerStatus.class);
                 map.put(new ServerIdentity(id, groupName, serverName), status);
             }
@@ -459,7 +459,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         }
     }
 
-    private class GetServerModelRequest extends ServerManagerRequest<ServerModel> {
+    private class GetServerModelRequest extends HostControllerRequest<ServerModel> {
         private final String serverName;
 
         private GetServerModelRequest(final String serverName) {
@@ -468,19 +468,19 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.GET_SERVER_MODEL_REQUEST;
+            return HostControllerProtocol.GET_SERVER_MODEL_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.GET_SERVER_MODEL_RESPONSE;
+            return HostControllerProtocol.GET_SERVER_MODEL_RESPONSE;
         }
 
         @Override
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
+            marshaller.writeByte(HostControllerProtocol.PARAM_SERVER_NAME);
             marshaller.writeUTF(serverName);
             marshaller.finish();
         }
@@ -489,7 +489,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected ServerModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_MODEL);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_MODEL);
             final ServerModel response = unmarshal(unmarshaller, ServerModel.class);
             unmarshaller.finish();
             return response;
@@ -504,12 +504,12 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.START_SERVER_REQUEST;
+            return HostControllerProtocol.START_SERVER_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.START_SERVER_RESPONSE;
+            return HostControllerProtocol.START_SERVER_RESPONSE;
         }
     }
 
@@ -521,12 +521,12 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.RESTART_SERVER_REQUEST;
+            return HostControllerProtocol.RESTART_SERVER_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.RESTART_SERVER_RESPONSE;
+            return HostControllerProtocol.RESTART_SERVER_RESPONSE;
         }
     }
 
@@ -538,16 +538,16 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
 
         @Override
         public final byte getRequestCode() {
-            return ServerManagerProtocol.STOP_SERVER_REQUEST;
+            return HostControllerProtocol.STOP_SERVER_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return ServerManagerProtocol.STOP_SERVER_RESPONSE;
+            return HostControllerProtocol.STOP_SERVER_RESPONSE;
         }
     }
 
-    private abstract class ServerStatusChangeRequest extends ServerManagerRequest<ServerStatus> {
+    private abstract class ServerStatusChangeRequest extends HostControllerRequest<ServerStatus> {
         private final String serverName;
         private final Long gracefulTimeout;
 
@@ -560,10 +560,10 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(ServerManagerProtocol.PARAM_SERVER_NAME);
+            marshaller.writeByte(HostControllerProtocol.PARAM_SERVER_NAME);
             marshaller.writeUTF(serverName);
             if (gracefulTimeout != null) {
-                marshaller.writeByte(ServerManagerProtocol.PARAM_GRACEFUL_TIMEOUT);
+                marshaller.writeByte(HostControllerProtocol.PARAM_GRACEFUL_TIMEOUT);
                 marshaller.writeLong(gracefulTimeout);
             }
             marshaller.finish();
@@ -573,7 +573,7 @@ public class RemoteDomainControllerClient implements ServerManagerClient {
         protected ServerStatus receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            ProtocolUtils.expectHeader(unmarshaller, ServerManagerProtocol.RETURN_SERVER_STATUS);
+            ProtocolUtils.expectHeader(unmarshaller, HostControllerProtocol.RETURN_SERVER_STATUS);
             ServerStatus response = unmarshal(unmarshaller, ServerStatus.class);
             unmarshaller.finish();
             return response;

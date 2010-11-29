@@ -210,7 +210,7 @@ public class DomainDeploymentHandler {
 
         logger.debugf("Executing deployment set %s", updateSet.setPlan.getId());
 
-        // Execute domain model update on domain controller and server managers
+        // Execute domain model update on domain controller and host controllers
         List<DomainUpdateApplierResponse> rsps = domainController.applyUpdatesToModel(updateSet.getDomainUpdates());
 
         // Inform client of results
@@ -287,7 +287,7 @@ public class DomainDeploymentHandler {
 
         logger.debugf("Rolling back deployment set %s", updateSet.setPlan.getId());
 
-        // Execute domain model update on domain controller and server managers
+        // Execute domain model update on domain controller and host controllers
         List<DomainUpdateApplierResponse> rsps = domainController.applyUpdatesToModel(updateSet.getDomainRollbacks());
 
         // Inform client of results
@@ -332,7 +332,7 @@ public class DomainDeploymentHandler {
             final BlockingQueue<List<StreamedResponse>> responseQueue) {
 
         logger.debugf("Creating server tasks for %s domain responses", rsps.size());
-        // Organize all the impacted servers by ServerGroup, sorted within a group by ServerManager
+        // Organize all the impacted servers by ServerGroup, sorted within a group by HostController
         Map<String, SortedSet<ServerIdentity>> serversByGroup = new HashMap<String, SortedSet<ServerIdentity>>();
         for (DomainUpdateApplierResponse duar : rsps) {
             for (ServerIdentity serverId : duar.getServers()) {

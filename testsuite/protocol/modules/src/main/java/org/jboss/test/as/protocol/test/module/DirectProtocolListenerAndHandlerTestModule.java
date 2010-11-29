@@ -44,7 +44,7 @@ import org.jboss.test.as.protocol.test.base.DirectProtocolListenerAndHandlerTest
 public class DirectProtocolListenerAndHandlerTestModule implements DirectProtocolListenerAndHandlerTest{
 
     static {
-        org.jboss.as.server.manager.SystemExiter.initialize(new ServerManagerNoopExiter());
+        org.jboss.as.host.controller.SystemExiter.initialize(new ServerManagerNoopExiter());
         org.jboss.as.server.SystemExiter.initialize(new ServerNoopExiter());
     }
 

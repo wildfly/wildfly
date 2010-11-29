@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.ServerManagerClient;
+import org.jboss.as.domain.controller.HostControllerClient;
 import org.jboss.as.model.DeploymentUnitElement;
 import org.jboss.as.protocol.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
@@ -145,7 +145,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
 
         final AbstractMessageHandler operation = operationFor(commandCode);
         if (operation == null) {
-            throw new IOException("Invalid command code " + commandCode + " received from server manager");
+            throw new IOException("Invalid command code " + commandCode + " received from host controller");
         }
         log.debugf("Received DomainControllerImpl operation [%s]", operation);
 
@@ -170,13 +170,13 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         @Override
         protected void readRequest(final InputStream input) throws IOException {
             super.readRequest(input);
-            final String serverManagerId;
-            expectHeader(input, DomainControllerProtocol.PARAM_SERVER_MANAGER_ID);
-            serverManagerId = readUTFZBytes(input);
-            readRequest(serverManagerId, input);
+            final String hostControllerId;
+            expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_ID);
+            hostControllerId = readUTFZBytes(input);
+            readRequest(hostControllerId, input);
         }
 
-        protected abstract void readRequest(final String serverManagerId, final InputStream input) throws IOException;
+        protected abstract void readRequest(final String hostControllerId, final InputStream input) throws IOException;
     }
 
     private class RegisterOperation extends DomainControllerOperation {
@@ -186,20 +186,20 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final InputStream inputStream) throws IOException {
+        protected final void readRequest(final String hostControllerId, final InputStream inputStream) throws IOException {
             ByteDataInput input = null;
             try {
                 input = new SimpleByteDataInput(inputStream);
-                expectHeader(input, DomainControllerProtocol.PARAM_SERVER_MANAGER_HOST);
+                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_HOST);
                 final int addressSize = input.readInt();
                 byte[] addressBytes = new byte[addressSize];
                 input.readFully(addressBytes);
-                expectHeader(input, DomainControllerProtocol.PARAM_SERVER_MANAGER_PORT);
+                expectHeader(input, DomainControllerProtocol.PARAM_HOST_CONTROLLER_PORT);
                 final int port = input.readInt();
                 final InetAddress address = InetAddress.getByAddress(addressBytes);
-                final ServerManagerClient client = new RemoteDomainControllerClient(serverManagerId, address, port, executorService, threadFactory);
+                final HostControllerClient client = new RemoteDomainControllerClient(hostControllerId, address, port, executorService, threadFactory);
                 domainController.addClient(client);
-                log.infof("Server manager registered [%s]", client);
+                log.infof("host controller registered [%s]", client);
             } finally {
                 safeClose(input);
             }
@@ -222,9 +222,9 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final InputStream input) throws IOException {
-            log.infof("Server manager unregistered [%s]", serverManagerId);
-            domainController.removeClient(serverManagerId);
+        protected final void readRequest(final String hostControllerId, final InputStream input) throws IOException {
+            log.infof("host controller unregistered [%s]", hostControllerId);
+            domainController.removeClient(hostControllerId);
         }
     }
 
@@ -237,7 +237,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         }
 
         @Override
-        protected final void readRequest(final String serverManagerId, final InputStream inputStream) throws IOException {
+        protected final void readRequest(final String hostControllerId, final InputStream inputStream) throws IOException {
             final byte rootId;
             final String filePath;
             ByteDataInput input = null;
@@ -248,7 +248,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
                 filePath = input.readUTF();
 
-                log.debugf("Server manager [%s] requested file [%s] from root [%d]", serverManagerId, filePath, rootId);
+                log.debugf("host controller [%s] requested file [%s] from root [%d]", hostControllerId, filePath, rootId);
                 switch (rootId) {
                     case (byte)DomainControllerProtocol.PARAM_ROOT_ID_FILE: {
                         localPath = localFileRepository.getFile(filePath);

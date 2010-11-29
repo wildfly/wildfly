@@ -86,15 +86,15 @@ public class TestProcessManager extends ProcessManagerMaster {
 
     private void addAndStartServerManager(boolean startServerManager, RespawnPolicy respawnPolicy) throws Exception {
         List<String> command = new ArrayList<String>();
-        command.add(CommandLineConstants.INTERPROCESS_PM_ADDRESS);
+        command.add(CommandLineConstants.INTERPROCESS_PC_ADDRESS);
         command.add(getInetAddress().getHostAddress());
-        command.add(CommandLineConstants.INTERPROCESS_PM_PORT);
+        command.add(CommandLineConstants.INTERPROCESS_PC_PORT);
         command.add(getPort().toString());
         command.add(CommandLineConstants.INTERPROCESS_NAME);
         command.add("ServerManager");
-        command.add(CommandLineConstants.INTERPROCESS_SM_ADDRESS);
+        command.add(CommandLineConstants.INTERPROCESS_HC_ADDRESS);
         command.add(InetAddress.getLocalHost().getHostAddress());
-        command.add(CommandLineConstants.INTERPROCESS_SM_PORT);
+        command.add(CommandLineConstants.INTERPROCESS_HC_PORT);
         command.add("0");
 
         addProcess(ProcessManagerMaster.SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), ".", respawnPolicy != null ? respawnPolicy : RespawnPolicy.DefaultRespawnPolicy.INSTANCE);

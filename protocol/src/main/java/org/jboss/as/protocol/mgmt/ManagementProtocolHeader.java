@@ -29,7 +29,7 @@ import java.util.Arrays;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 
 /**
- * DomainClientProtocol header used to send the required information to establish a request with a remote server manager.  The primary
+ * DomainClientProtocol header used to send the required information to establish a request with a remote host controller.  The primary
  * pieces of the request are the protocol signature and the protocol version being used.
  *
  * @author John Bailey

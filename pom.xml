@@ -139,10 +139,10 @@
         <module>domain-client</module>
         <module>standalone-client</module>
         <module>connector</module>
-        <module>server-manager</module>
+        <module>host-controller</module>
         <module>server</module>
         <module>domain-controller</module>
-        <module>process-manager</module>
+        <module>process-controller</module>
         <module>remoting</module>
         <module>threads</module>
         <module>logging</module>
@@ -382,6 +382,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-host-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -418,7 +424,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-process-manager</artifactId>
+                <artifactId>jboss-as-process-controller</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -443,12 +449,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-server-manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -890,7 +890,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
-                        <artifactId>jboss-server-manager</artifactId>
+                        <artifactId>jboss-host-controller</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.ejb</groupId>
@@ -1010,7 +1010,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.jbossas</groupId>
-                        <artifactId>jboss-server-manager</artifactId>
+                        <artifactId>jboss-host-controller</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.ejb</groupId>

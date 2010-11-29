@@ -170,27 +170,27 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public HostModel getHostModel(String serverManagerName) {
+    public HostModel getHostModel(String hostControllerName) {
         try {
-            return new GetHostModelOperation(serverManagerName).executeForResult(getConnectionStrategy());
+            return new GetHostModelOperation(hostControllerName).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to get host model", e);
         }
     }
 
     @Override
-    public List<String> getServerManagerNames() {
+    public List<String> getHostControllerNames() {
         try {
-            return new GetServerManagerNamesOperation().executeForResult(getConnectionStrategy());
+            return new GethostControllerNamesOperation().executeForResult(getConnectionStrategy());
         } catch (Exception e) {
-            throw new ManagementException("Failed to get server manager names", e);
+            throw new ManagementException("Failed to get host controller names", e);
         }
     }
 
     @Override
-    public ServerModel getServerModel(String serverManagerName, String serverName) {
+    public ServerModel getServerModel(String hostControllerName, String serverName) {
         try {
-            return new GetServerModelOperation(serverManagerName, serverName).executeForResult(getConnectionStrategy());
+            return new GetServerModelOperation(hostControllerName, serverName).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to get server model", e);
         }
@@ -206,29 +206,29 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
-    public ServerStatus startServer(String serverManagerName, String serverName) {
+    public ServerStatus startServer(String hostControllerName, String serverName) {
         try {
-            return new StartServerOperation(serverManagerName, serverName).executeForResult(getConnectionStrategy());
+            return new StartServerOperation(hostControllerName, serverName).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to start server " + serverName, e);
         }
     }
 
     @Override
-    public ServerStatus stopServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
+    public ServerStatus stopServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
         long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
         try {
-            return new StopServerOperation(serverManagerName, serverName, ms).executeForResult(getConnectionStrategy());
+            return new StopServerOperation(hostControllerName, serverName, ms).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to stop server " + serverName, e);
         }
     }
 
     @Override
-    public ServerStatus restartServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
+    public ServerStatus restartServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeUnit) {
         long ms = gracefulShutdownTimeout < 0 ? - 1 : timeUnit.toMillis(gracefulShutdownTimeout);
         try {
-            return new RestartServerOperation(serverManagerName, serverName, ms).executeForResult(getConnectionStrategy());
+            return new RestartServerOperation(hostControllerName, serverName, ms).executeForResult(getConnectionStrategy());
         } catch (Exception e) {
             throw new ManagementException("Failed to restart server " + serverName, e);
         }
@@ -295,22 +295,22 @@ public class DomainClientImpl implements DomainClient {
         }
     }
 
-    private class GetServerManagerNamesOperation extends DomainClientRequest<List<String>> {
+    private class GethostControllerNamesOperation extends DomainClientRequest<List<String>> {
         @Override
         public final byte getRequestCode() {
-            return DomainClientProtocol.GET_SERVER_MANAGER_NAMES_REQUEST;
+            return DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_REQUEST;
         }
 
         @Override
         protected final byte getResponseCode() {
-            return DomainClientProtocol.GET_SERVER_MANAGER_NAMES_RESPONSE;
+            return DomainClientProtocol.GET_HOST_CONTROLLER_NAMES_RESPONSE;
         }
 
         @Override
         protected final List<String> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_MANAGER_COUNT);
+            expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_CONTROLLER_COUNT);
             final int count = unmarshaller.readInt();
             final List<String> results = new ArrayList<String>(count);
             for (int i = 0; i < count; i++) {
@@ -324,10 +324,10 @@ public class DomainClientImpl implements DomainClient {
 
     private class GetHostModelOperation extends DomainClientRequest<HostModel> {
 
-        private final String serverManagerName;
+        private final String hostControllerName;
 
-        private GetHostModelOperation(final String serverManagerName) {
-            this.serverManagerName = serverManagerName;
+        private GetHostModelOperation(final String hostControllerName) {
+            this.hostControllerName = hostControllerName;
         }
 
         @Override
@@ -345,7 +345,7 @@ public class DomainClientImpl implements DomainClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(serverManagerName);
+            marshaller.writeUTF(hostControllerName);
             marshaller.finish();
         }
 
@@ -362,11 +362,11 @@ public class DomainClientImpl implements DomainClient {
 
     private class GetServerModelOperation extends DomainClientRequest<ServerModel> {
 
-        private final String serverManagerName;
+        private final String hostControllerName;
         private final String serverName;
 
-        private GetServerModelOperation(final String serverManagerName, final String serverName) {
-            this.serverManagerName = serverManagerName;
+        private GetServerModelOperation(final String hostControllerName, final String serverName) {
+            this.hostControllerName = hostControllerName;
             this.serverName = serverName;
         }
 
@@ -385,7 +385,7 @@ public class DomainClientImpl implements DomainClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(serverManagerName);
+            marshaller.writeUTF(hostControllerName);
             marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
             marshaller.writeUTF(serverName);
             marshaller.finish();
@@ -438,8 +438,8 @@ public class DomainClientImpl implements DomainClient {
 
     private class StartServerOperation extends ServerStatusChangeOperation {
 
-        private StartServerOperation(final String serverManagerName, final String serverName) {
-            super(serverManagerName, serverName, null);
+        private StartServerOperation(final String hostControllerName, final String serverName) {
+            super(hostControllerName, serverName, null);
         }
 
         @Override
@@ -455,8 +455,8 @@ public class DomainClientImpl implements DomainClient {
 
     private class StopServerOperation extends ServerStatusChangeOperation {
 
-        private StopServerOperation(final String serverManagerName, final String serverName, final long gracefulTimeout) {
-            super(serverManagerName, serverName, gracefulTimeout);
+        private StopServerOperation(final String hostControllerName, final String serverName, final long gracefulTimeout) {
+            super(hostControllerName, serverName, gracefulTimeout);
         }
 
         @Override
@@ -472,8 +472,8 @@ public class DomainClientImpl implements DomainClient {
 
     private class RestartServerOperation extends ServerStatusChangeOperation {
 
-        private RestartServerOperation(final String serverManagerName, final String serverName, final long gracefulTimeout) {
-            super(serverManagerName, serverName, gracefulTimeout);
+        private RestartServerOperation(final String hostControllerName, final String serverName, final long gracefulTimeout) {
+            super(hostControllerName, serverName, gracefulTimeout);
         }
 
         @Override
@@ -489,12 +489,12 @@ public class DomainClientImpl implements DomainClient {
 
     private abstract class ServerStatusChangeOperation extends DomainClientRequest<ServerStatus> {
 
-        private final String serverManagerName;
+        private final String hostControllerName;
         private final String serverName;
         private final Long gracefulTimeout;
 
-        private ServerStatusChangeOperation(final String serverManagerName, final String serverName, final Long gracefulTimeout) {
-            this.serverManagerName = serverManagerName;
+        private ServerStatusChangeOperation(final String hostControllerName, final String serverName, final Long gracefulTimeout) {
+            this.hostControllerName = hostControllerName;
             this.serverName = serverName;
             this.gracefulTimeout = gracefulTimeout;
         }
@@ -504,7 +504,7 @@ public class DomainClientImpl implements DomainClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(serverManagerName);
+            marshaller.writeUTF(hostControllerName);
             marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
             marshaller.writeUTF(serverName);
             if (gracefulTimeout != null) {
@@ -574,11 +574,11 @@ public class DomainClientImpl implements DomainClient {
 
     private class ApplyHostUpdatesOperation extends DomainClientRequest<List<HostUpdateResult<?>>> {
 
-        final String serverManagerName;
+        final String hostControllerName;
         final List<AbstractHostModelUpdate<?>> updates;
 
-        private ApplyHostUpdatesOperation(final String serverManagerName, final List<AbstractHostModelUpdate<?>> updates) {
-            this.serverManagerName = serverManagerName;
+        private ApplyHostUpdatesOperation(final String hostControllerName, final List<AbstractHostModelUpdate<?>> updates) {
+            this.hostControllerName = hostControllerName;
             this.updates = updates;
         }
 
@@ -597,7 +597,7 @@ public class DomainClientImpl implements DomainClient {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
             marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(serverManagerName);
+            marshaller.writeUTF(hostControllerName);
             marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
             marshaller.writeInt(updates.size());
             for (AbstractHostModelUpdate<?> update : updates) {

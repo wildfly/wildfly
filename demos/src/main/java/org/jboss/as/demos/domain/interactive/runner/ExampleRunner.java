@@ -189,12 +189,12 @@ public class ExampleRunner implements Runnable {
                         quit = dumpDomainConfig();
                         break;
                     }
-                    case LIST_SMS: {
-                        quit = listServerManagers();
+                    case LIST_HCS: {
+                        quit = listHostControllers();
                         break;
                     }
-                    case SM_CFG: {
-                        quit = dumpServerManager();
+                    case HC_CFG: {
+                        quit = dumpHostController();
                         break;
                     }
                     case LIST_SERVERS: {
@@ -291,47 +291,47 @@ public class ExampleRunner implements Runnable {
         return continuePrompt();
     }
 
-    private boolean listServerManagers() throws Exception {
+    private boolean listHostControllers() throws Exception {
 
-        stdout.println("\nReading the list of active server managers:\n");
-        List<String> serverManagers = client.getServerManagerNames();
-        for (String sm : serverManagers) {
-            stdout.println(sm);
+        stdout.println("\nReading the list of active host controller s:\n");
+        List<String> hostControllers = client.getHostControllerNames();
+        for (String hc : hostControllers) {
+            stdout.println(hc);
         }
         return continuePrompt();
     }
 
-    private boolean dumpServerManager()  throws Exception {
-        List<String> serverManagers = client.getServerManagerNames();
-        if (serverManagers.size() == 0) {
+    private boolean dumpHostController()  throws Exception {
+        List<String> hostControllers = client.getHostControllerNames();
+        if (hostControllers.size() == 0) {
             // this isn't possible :-)
-            stdout.println("No server managers available");
+            stdout.println("No host controllers available");
         }
-        else if (serverManagers.size() == 1) {
-            writeServerManager(serverManagers.get(0));
+        else if (hostControllers.size() == 1) {
+            writeHostController(hostControllers.get(0));
         }
         else {
-            stdout.println("Choose a Server Manager:");
-            Map<String, Object> choices = writeMenuBody(serverManagers);
+            stdout.println("Choose a Host Controller:");
+            Map<String, Object> choices = writeMenuBody(hostControllers);
             stdout.println("[C]   Cancel");
             String choice = readStdIn();
             if (!"C".equals(choice.toUpperCase())) {
-                Object sm = choices.get(choice);
-                if (sm != null) {
-                    writeServerManager(sm.toString());
+                Object hc = choices.get(choice);
+                if (hc != null) {
+                    writeHostController(hc.toString());
                 }
                 else {
                     stdout.println(choice + " is not a valid selection");
-                    return dumpServerManager();
+                    return dumpHostController();
                 }
             }
         }
         return continuePrompt();
     }
 
-    private void writeServerManager(String sm) throws Exception {
-        stdout.println("\nReading host configuration for server manager " + sm + "\n");
-        stdout.println(writeModel("host", client.getHostModel(sm)));
+    private void writeHostController(String hc) throws Exception {
+        stdout.println("\nReading host configuration for host controller " + hc + "\n");
+        stdout.println(writeModel("host", client.getHostModel(hc)));
     }
 
     private boolean listServers() throws Exception {
@@ -340,7 +340,7 @@ public class ExampleRunner implements Runnable {
             ServerIdentity id = server.getKey();
             stdout.println("\nServer:\n");
             stdout.println("server name:         " + id.getServerName());
-            stdout.println("server manager name: " + id.getHostName());
+            stdout.println("host controller name: " + id.getHostName());
             stdout.println("server group name:   " + id.getServerGroupName());
             stdout.println("status:              " + server.getValue());
         }
@@ -351,12 +351,12 @@ public class ExampleRunner implements Runnable {
         ServerIdentity server = chooseServer(ServerStatus.STARTED);
         if (server != null) {
             stdout.println("\nReading runtime configuration for " + server.getServerName() + "\n");
-            ServerModel sm = client.getServerModel(server.getHostName(), server.getServerName());
-            if (sm == null) {
+            ServerModel hc = client.getServerModel(server.getHostName(), server.getServerName());
+            if (hc == null) {
                 stdout.println("ERROR: server model is null");
             }
             else {
-                stdout.println(writeModel("server", sm));
+                stdout.println(writeModel("server", hc));
             }
         }
         return continuePrompt();
@@ -399,15 +399,15 @@ public class ExampleRunner implements Runnable {
         if ("C".equals(serverName.toUpperCase()))
             return continuePrompt();
 
-        String serverManager = null;
-        List<String> serverManagers = client.getServerManagerNames();
-        if (serverManagers.size() == 1) {
-            serverManager = serverManagers.get(0);
+        String hostController = null;
+        List<String> hostControllers = client.getHostControllerNames();
+        if (hostControllers.size() == 1) {
+            hostController = hostControllers.get(0);
         }
         else {
             do {
-                stdout.println("Choose a Server Manager for the new Server:");
-                Map<String, Object> choices = writeMenuBody(serverManagers);
+                stdout.println("Choose a Host Controller for the new Server:");
+                Map<String, Object> choices = writeMenuBody(hostControllers);
                 stdout.println("[C]   Cancel");
                 String choice = readStdIn();
                 if ("C".equals(choice.toUpperCase())) {
@@ -419,10 +419,10 @@ public class ExampleRunner implements Runnable {
                     stdout.println(choice + " is not a valid selection");
                 }
                 else {
-                    serverManager = obj.toString();
+                    hostController = obj.toString();
                 }
             }
-            while (serverManager == null);
+            while (hostController == null);
         }
 
         String serverGroup = null;
@@ -447,19 +447,19 @@ public class ExampleRunner implements Runnable {
         }
         while (serverGroup == null);
 
-        stdout.println("\nCreating new server: " + serverName + " on server manager " + serverManager + " in server group: " + serverGroup);
+        stdout.println("\nCreating new server: " + serverName + " on host controller " + hostController + " in server group: " + serverGroup);
         List<AbstractHostModelUpdate<?>> updates = new ArrayList<AbstractHostModelUpdate<?>>(2);
         updates.add(new HostServerAdd(serverName, serverGroup));
         updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingGroupUpdate("standard-sockets")));
         addCount++;
         updates.add(HostServerUpdate.create(serverName, new ServerElementSocketBindingPortOffsetUpdate(addCount * 1000)));
-        List<HostUpdateResult<?>> results = client.applyHostUpdates(serverManager, updates);
+        List<HostUpdateResult<?>> results = client.applyHostUpdates(hostController, updates);
         HostUpdateResult<?> result = results.get(0);
         System.out.println("Add success: " + result.isSuccess());
 
         if(result.isSuccess()) {
             System.out.println("Starting server " + serverName);
-            ServerStatus status = client.startServer(serverManager, serverName);
+            ServerStatus status = client.startServer(hostController, serverName);
             System.out.println("Start executed. Server status is " + status);
         }
         return continuePrompt();
@@ -504,9 +504,9 @@ public class ExampleRunner implements Runnable {
             stdout.println("[C]   Cancel");
             String choice = readStdIn();
             if (!"C".equals(choice.toUpperCase())) {
-                Object sm = choices.get(choice);
-                if (sm != null) {
-                    result = servers.get(sm.toString());
+                Object hc = choices.get(choice);
+                if (hc != null) {
+                    result = servers.get(hc.toString());
                 }
                 else {
                     stdout.println(choice + " is not a valid selection");
@@ -980,7 +980,7 @@ public class ExampleRunner implements Runnable {
             }
             else if (result.getHostFailures().size() > 0) {
                 for (Map.Entry<String, UpdateFailedException> entry : result.getHostFailures().entrySet()) {
-                    stdout.println("\nQueue addition failed on Server Manager " + entry.getKey());
+                    stdout.println("\nQueue addition failed on Host Controller " + entry.getKey());
                     entry.getValue().printStackTrace(stdout);
                 }
             }
@@ -1131,8 +1131,8 @@ public class ExampleRunner implements Runnable {
     private static enum MainMenu implements MenuItem {
 
         DOMAIN_CFG("1", "Dump Domain Configuration"),
-        LIST_SMS("2", "List Server Managers"),
-        SM_CFG("3", "Dump Server Manager Configuration"),
+        LIST_HCS("2", "List Host Controllers"),
+        HC_CFG("3", "Dump Host Controller Configuration"),
         LIST_SERVERS("4", "List Servers"),
         SERVER_CFG("5", "Dump a Server's Current Runtime Configuration"),
         SERVER_STOP("6", "Stop a Server"),

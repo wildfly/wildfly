@@ -26,7 +26,7 @@ import java.io.Serializable;
 import org.jboss.as.model.UpdateFailedException;
 
 /**
- * Response object used to relay information back the DC when an update is passed to a server manager to process.
+ * Response object used to relay information back the DC when an update is passed to a host controller to process.
  *
  * @param <R> the type of result that is returned by this update type
  *

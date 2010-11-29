@@ -46,15 +46,15 @@ public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerId
     void handleDomainFailed(UpdateFailedException reason);
 
     /**
-     * Handle the event of the update failing to apply to one or more server managers (hosts).
+     * Handle the event of the update failing to apply to one or more host controllers.
      *
      * @param hostFailureReasons a map of host name to failure cause
      */
     void handleHostFailed(Map<String, UpdateFailedException> hostFailureReasons);
 
     /**
-     * Handle the event of the update successfully applying to the domain and to applicable server
-     * managers (hosts).
+     * Handle the event of the update successfully applying to the domain and to applicable host
+     * controllers.
      *
      * @param affectedServers the servers to which the update will be applied (resulting in
      *  subsequent invocations on the methods in the {@link UpdateResultHandler super-interface}
@@ -70,7 +70,7 @@ public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerId
 
     /**
      * Handle the event of the execution of the update being rolled back
-     * after it was successfully applied to the domain and to the server managers.
+     * after it was successfully applied to the domain and to the host controllers.
      * This would occur as a result of another update in the same set of updates
      * failing to apply successfully.
      */
@@ -85,7 +85,7 @@ public interface DomainUpdateListener<R> extends UpdateResultHandler<R, ServerId
 
     /**
      * Handle the event of the rollback of the update failing to apply to one
-     * or more server managers (hosts).
+     * or more host controllers.
      *
      * @param hostFailureReasons a map of host name to failure cause
      */

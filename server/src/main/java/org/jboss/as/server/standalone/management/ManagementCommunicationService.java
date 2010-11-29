@@ -54,18 +54,18 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service responsible for accepting remote communication to server manager processes.  This will wait on a {@link java.net.ServerSocket}
+ * Service responsible for accepting remote communication to host controller processes.  This will wait on a {@link java.net.ServerSocket}
  * for requests and will and the requesting socket over to a {@link org.jboss.as.protocol.mgmt.ManagementOperationHandler} to
  * process the request.
  *
  * @author John E. Bailey
  */
 public class ManagementCommunicationService implements Service<ManagementCommunicationService>, ConnectionHandler {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "manager", "management", "communication");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "management", "communication");
 
     /**
      * The (invalid if received here) protocol identifier for a client wishing
-     * to communicate with a server manager.
+     * to communicate with a host controller.
      */
     private final byte DOMAIN_CONTROLLER_CLIENT_REQUEST = 0x0A;
 

@@ -36,22 +36,22 @@ public interface DomainController {
 
     /**
      * {@link ServiceName} under which a DomainController instance should be registered
-     * with the service container of a Server Manager that is acting as the domain controller.
+     * with the service container of a Host Controller that is acting as the domain controller.
      */
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("domain", "controller");
 
     /**
-     * Registers a Server Manager with this domain controller.
+     * Registers a Host Controller with this domain controller.
      *
-     * @param serverManagerClient client the domain controller can use to communicate with the Server Manager.
+     * @param hostControllerClient client the domain controller can use to communicate with the Host Controller.
      */
-    void addClient(final ServerManagerClient serverManagerClient);
+    void addClient(final HostControllerClient hostControllerClient);
 
     /**
-     * Deregisters a previously registered Server Manager.
+     * Deregisters a previously registered Host Controller.
      *
-     * @param id the {@link ServerManagerClient#getId() id} of the previously
-     *           registered Server Manager
+     * @param id the {@link HostControllerClient#getId() id} of the previously
+     *           registered Host Controller
      */
     void removeClient(final String id);
 
@@ -64,25 +64,25 @@ public interface DomainController {
 
     /**
      * Gets the {@link HostModel#getName() names} of the currently registered
-     * Server Managers.
+     * Host Controllers.
      *
-     * @return the names, or an empty set if no server managers are registered.
+     * @return the names, or an empty set if no host controllers are registered.
      */
-    Set<String> getServerManagerNames();
+    Set<String> getHostControllerNames();
 
     /**
-     * Gets the current configuration for the given Server Manager.
+     * Gets the current configuration for the given Host Controller.
      *
-     * @param serverManagerName the {@link HostModel#getName() name} of the Server Manager
+     * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller
      *
-     * @return the server manager configuration, or <code>null</code> if no
-     *         Server Manager with the given name is currently registered
+     * @return the host controller configuration, or <code>null</code> if no
+     *         Host Controller with the given name is currently registered
      */
-    HostModel getHostModel(final String serverManagerName);
+    HostModel getHostModel(final String hostControllerName);
 
     /**
      * Gets the status of all servers known to the currently registered
-     * Server Managers.
+     * Host Controllers.
      *
      * @return map keyed by the {@link ServerIdentity fully-specified identity} of the servers
      *        with the server's current {@link ServerStatus} status as the value.
@@ -92,28 +92,28 @@ public interface DomainController {
     /**
      * Gets the current running configuration for a server.
      *
-     * @param serverManagerName the {@link HostModel#getName() name} of the Server Manager responsible for the server
+     * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
      * @param serverName the {@link ServerElement#getName() name of the server}
      *
-     * @return the current server configuration, or <code>null</code> if the Server Manager isn't currently
+     * @return the current server configuration, or <code>null</code> if the Host Controller isn't currently
      *          registered or the server isn't started
      */
-    ServerModel getServerModel(final String serverManagerName, final String serverName);
+    ServerModel getServerModel(final String hostControllerName, final String serverName);
 
     /**
      * Attempts to start a server.
      *
-     * @param serverManagerName the {@link HostModel#getName() name} of the Server Manager responsible for the server
+     * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
      * @param serverName the {@link ServerElement#getName() name of the server}
      *
      * @return the status of the server after the attempt to start it
      */
-    ServerStatus startServer(final String serverManagerName, final String serverName);
+    ServerStatus startServer(final String hostControllerName, final String serverName);
 
     /**
      * Attempts to stop a currently running server.
      *
-     * @param serverManagerName the {@link HostModel#getName() name} of the Server Manager responsible for the server
+     * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
      * @param serverName the {@link ServerElement#getName() name of the server}
      * @param maximum period, in milliseconds, the server should wait for any long-running work to gracefully complete
      *           before proceeding with the shutdown. A value of {@code -1} means an attempt at graceful shutdown
@@ -121,12 +121,12 @@ public interface DomainController {
      *
      * @return the status of the server after the attempt to stop it
      */
-    ServerStatus stopServer(final String serverManagerName, final String serverName, final long gracefulTimeout);
+    ServerStatus stopServer(final String hostControllerName, final String serverName, final long gracefulTimeout);
 
     /**
      * Attempts to restart a currently running server.
      *
-     * @param serverManagerName the {@link HostModel#getName() name} of the Server Manager responsible for the server
+     * @param hostControllerName the {@link HostModel#getName() name} of the Host Controller responsible for the server
      * @param serverName the {@link ServerElement#getName() name of the server}
      * @param maximum period, in milliseconds, the server should wait for any long-running work to gracefully complete
      *           before proceeding with the restart. A value of {@code -1} means an attempt at graceful shutdown
@@ -134,11 +134,11 @@ public interface DomainController {
      *
      * @return the status of the server after the attempt to restart it
      */
-    ServerStatus restartServer(final String serverManagerName, final String serverName, final long gracefulTimeout);
+    ServerStatus restartServer(final String hostControllerName, final String serverName, final long gracefulTimeout);
 
     /**
      * Apply a list of updates to the domain model, pushing the change out to
-     * all registered Server Managers and to all currently running servers. Updates
+     * all registered Host Controllers and to all currently running servers. Updates
      * will be rolled to servers one at a time. Failure of an update on a server
      * will not trigger rollback of previously executed updates on that server,
      * although it will prevent application of subsequent updates. Failure to
@@ -154,7 +154,7 @@ public interface DomainController {
 
     /**
      * Apply a single update to the domain model, pushing the change out to
-     * all registered Server Managers and to all currently running servers. The update
+     * all registered Host Controllers and to all currently running servers. The update
      * will be rolled to servers one at a time. Failure to apply the update on
      * one server will not trigger rollback of the updates on other servers,
      * nor will it prevent application of the updates to subsequent servers.
@@ -168,7 +168,7 @@ public interface DomainController {
 
     /**
      * Apply a list of updates to the domain model, pushing the change out to
-     * all registered Server Managers but <strong>not</strong> to the currently
+     * all registered Host Controllers but <strong>not</strong> to the currently
      * running servers.
      *
      * @param updates the updates. Cannot be <code>null</code>
@@ -180,7 +180,7 @@ public interface DomainController {
 
     /**
      * Apply an update to the domain model, pushing the change out to
-     * all registered Server Managers but <strong>not</strong> to the currently
+     * all registered Host Controllers but <strong>not</strong> to the currently
      * running servers.
      *
      * @param update the update. Cannot be <code>null</code>
@@ -191,7 +191,7 @@ public interface DomainController {
     DomainUpdateApplierResponse applyUpdateToModel(AbstractDomainModelUpdate<?> update);
 
     /**
-     * Apply a list of updates to a Server Manager's {@link HostModel}, pushing
+     * Apply a list of updates to a Host Controller's {@link HostModel}, pushing
      * the change out to all currently running servers. Updates
      * will be rolled to servers one at a time. Failure of an update on a server
      * will not trigger rollback of previously executed updates on that server,
@@ -200,11 +200,12 @@ public interface DomainController {
      * other servers, nor will it prevent application of the updates to subsequent
      * servers.
      *
+     * @param hostControllerName the host controller name
      * @param updates the updates. Cannot be <code>null</code>
      *
      * @return the results of the updates
      */
-    List<HostUpdateResult<?>> applyHostUpdates(String serverManagerName, List<AbstractHostModelUpdate<?>> updates);
+    List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates);
 
     /**
      * Push a list of updates out to a running server.

@@ -31,9 +31,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.communication.SocketListener.SocketHandler;
+import org.jboss.as.host.controller.HostController;
+import org.jboss.as.host.controller.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.manager.ServerManager;
-import org.jboss.as.server.manager.DirectServerManagerCommunicationHandler.ShutdownListener;
 import org.jboss.logging.Logger;
 
 /**
@@ -50,7 +50,7 @@ public class TestDirectServerManagerCommunicationListener implements ShutdownLis
     private final SocketListener socketListener;
 
     @SuppressWarnings("unused")
-    private final ServerManager serverManager;
+    private final HostController serverManager;
 
     private final TestServerManagerMessageHandler messageHandler;
 
@@ -58,13 +58,13 @@ public class TestDirectServerManagerCommunicationListener implements ShutdownLis
 
     private final Map<String, DirectServerManagerCommunicationHandler> handlers = new ConcurrentHashMap<String, DirectServerManagerCommunicationHandler>();
 
-    private TestDirectServerManagerCommunicationListener(ServerManager serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
+    private TestDirectServerManagerCommunicationListener(HostController serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
         this.serverManager = serverManager;
         socketListener = SocketListener.createSocketListener("ServerManager", new ServerAcceptor(), address, port, backlog);
         this.messageHandler = messageHandler;
     }
 
-    public static TestDirectServerManagerCommunicationListener create(ServerManager serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
+    public static TestDirectServerManagerCommunicationListener create(HostController serverManager, InetAddress address, int port, int backlog, TestServerManagerMessageHandler messageHandler) throws IOException {
         TestDirectServerManagerCommunicationListener listener = new TestDirectServerManagerCommunicationListener(serverManager, address, port, backlog, messageHandler);
         listener.start();
         return listener;

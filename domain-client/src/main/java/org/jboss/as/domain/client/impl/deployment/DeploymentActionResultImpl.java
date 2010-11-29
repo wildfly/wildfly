@@ -76,7 +76,7 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
     }
 
     @Override
-    public Map<String, UpdateFailedException> getServerManagerFailures() {
+    public Map<String, UpdateFailedException> getHostControllerFailures() {
         return applierResponse.getHostFailures();
     }
 
@@ -96,7 +96,7 @@ class DeploymentActionResultImpl implements DeploymentActionResult {
     }
 
     @Override
-    public Map<String, UpdateFailedException> getServerManagerRollbackFailures() {
+    public Map<String, UpdateFailedException> getHostControllerRollbackFailures() {
         return rollbackResponse == null ? Collections.<String, UpdateFailedException>emptyMap(): rollbackResponse.getHostFailures();
     }
 

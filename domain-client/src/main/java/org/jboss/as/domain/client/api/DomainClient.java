@@ -53,11 +53,11 @@ public interface DomainClient extends Closeable {
     DomainModel getDomainModel();
 
     /**
-     * Gets the list of currently running server managers.
+     * Gets the list of currently running host controllers.
      *
-     * @return the names of the server managers. Will not be <code>null</code>
+     * @return the names of the host controllers. Will not be <code>null</code>
      */
-    List<String> getServerManagerNames();
+    List<String> getHostControllerNames();
 
     /**
      * Apply a series of updates to the domain.
@@ -102,23 +102,23 @@ public interface DomainClient extends Closeable {
     /**
      * Get the host model for the given host.
      *
-     * @param serverManagerName  the name of the server manager responsible for the host
+     * @param hostControllerName  the name of the host controller responsible for the host
      * @return The host model, or <code>null</code> if the host is unknown
      */
-    HostModel getHostModel(String serverManagerName);
+    HostModel getHostModel(String hostControllerName);
 
     /**
-     * Apply a series of updates to a host's server manager.
+     * Apply a series of updates to a host controller.
      *
-     * @param serverManagerName the name of the server manager
+     * @param hostControllerName the name of the host controller
      * @param updates The host updates to apply
      * @return The results of the update
      */
-    List<HostUpdateResult<?>> applyHostUpdates(String serverManagerName, List<AbstractHostModelUpdate<?>> updates);
+    List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates);
 
     /**
      * Gets a list of all servers known to the domain, along with their current
-     * {@link ServerStatus status}. Servers associated with server managers that
+     * {@link ServerStatus status}. Servers associated with host controllers that
      * are currently off line will not be included.
      *
      * @return the servers and their current status. Will not be <code>null</code>
@@ -128,26 +128,26 @@ public interface DomainClient extends Closeable {
     /**
      * Get the server model representing the current running configuration for a server.
      *
-     * @param serverManager the name of the server manager responsible for the server
+     * @param hostControllerName the name of the host controller responsible for the server
      * @param serverName the name of the server
      * @return The server model, or <code>null</code> if the server is unknown or not currently started
      */
-    ServerModel getServerModel(String serverManagerName, String serverName);
+    ServerModel getServerModel(String hostControllerName, String serverName);
 
     /**
      * Starts the given server. Ignored if the server is not stopped.
      *
-     * @param serverManager the name of the server manager responsible for the server
+     * @param hostControllerName the name of the host controller responsible for the server
      * @param serverName the name of the server
      *
      * @return the status of the server following the start. Will not be <code>null</code>
      */
-    ServerStatus startServer(String serverManagerName, String serverName);
+    ServerStatus startServer(String hostControllerName, String serverName);
 
     /**
      * Stops the given server.
      *
-     * @param serverManager the name of the server manager responsible for the server
+     * @param hostControllerName the name of the host controller responsible for the server
      * @param serverName the name of the server
      * @param gracefulShutdownTimeout maximum period to wait to allow the server
      *           to gracefully handle long running tasks before shutting down,
@@ -156,12 +156,12 @@ public interface DomainClient extends Closeable {
      *
      * @return the status of the server following the stop. Will not be <code>null</code>
      */
-    ServerStatus stopServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
+    ServerStatus stopServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
 
     /**
      * Restarts the given server.
      *
-     * @param serverManager the name of the server manager responsible for the server
+     * @param hostControllerName the name of the host controller responsible for the server
      * @param serverName the name of the server
      * @param gracefulShutdownTimeout maximum period to wait to allow the server
      *           to gracefully handle long running tasks before shutting down,
@@ -170,7 +170,7 @@ public interface DomainClient extends Closeable {
      *
      * @return the status of the server following the restart. Will not be <code>null</code>
      */
-    ServerStatus restartServer(String serverManagerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
+    ServerStatus restartServer(String hostControllerName, String serverName, long gracefulShutdownTimeout, TimeUnit timeunit);
 
     /**
      * Factory used to create an {@link org.jboss.as.domain.client.api.DomainClient} instance for a remote address

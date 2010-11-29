@@ -77,7 +77,7 @@ import org.jboss.staxmapper.XMLMapper;
 public class DomainControllerImpl implements Service<DomainController>, DomainController {
     private static final Logger log = Logger.getLogger("org.jboss.as.domain.controller");
     private DomainModel domainModel;
-    private final ConcurrentMap<String, ServerManagerClient> clients = new ConcurrentHashMap<String, ServerManagerClient>();
+    private final ConcurrentMap<String, HostControllerClient> clients = new ConcurrentHashMap<String, HostControllerClient>();
     private final InjectedValue<XMLMapper> xmlMapper = new InjectedValue<XMLMapper>();
     private final InjectedValue<File> domainConfigDir = new InjectedValue<File>();
     private final InjectedValue<File> domainDeploymentsDir = new InjectedValue<File>();
@@ -125,9 +125,9 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
             deploymentPlanHandler = new DomainDeploymentHandler(this, scheduledExecutorService.getValue());
             pollingFuture = scheduledExecutorService.getValue().scheduleAtFixedRate(new Runnable() {
                 public void run() {
-                    for(ServerManagerClient client : clients.values()) {
+                    for(HostControllerClient client : clients.values()) {
                         if(!client.isActive()) {
-                            log.warnf("Registered Server Manager [%s] is no longer active", client.getId());
+                            log.warnf("Registered host controller [%s] is no longer active", client.getId());
                         }
                     }
                 }
@@ -154,13 +154,13 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
         return this;
     }
 
-    // ----------------------------------  Operations invoked by Server Manager
+    // ----------------------------------  Operations invoked by Host Controller
 
     /* (non-Javadoc)
-     * @see org.jboss.as.domain.controller.DomainController#addClient(org.jboss.as.domain.controller.ServerManagerClient)
+     * @see org.jboss.as.domain.controller.DomainController#addClient(org.jboss.as.domain.controller.HostControllerClient)
      */
     @Override
-    public void addClient(final ServerManagerClient domainControllerClient) {
+    public void addClient(final HostControllerClient domainControllerClient) {
         if(clients.putIfAbsent(domainControllerClient.getId(), domainControllerClient) != null) {
             // TODO: Handle duplicate client
         }
@@ -187,10 +187,10 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.as.domain.controller.DomainController#getServerManagerNames()
+     * @see org.jboss.as.domain.controller.DomainController#getHostControllerNames()
      */
     @Override
-    public Set<String> getServerManagerNames() {
+    public Set<String> getHostControllerNames() {
         return Collections.unmodifiableSet(clients.keySet());
     }
 
@@ -198,9 +198,9 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#getHostModel(java.lang.String)
      */
     @Override
-    public HostModel getHostModel(final String serverManagerName) {
+    public HostModel getHostModel(final String hostControllerName) {
 
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             return null;
         }
@@ -216,8 +216,8 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     public Map<ServerIdentity, ServerStatus> getServerStatuses() {
         Map<ServerIdentity, ServerStatus> result = new HashMap<ServerIdentity, ServerStatus>();
         Map<String, Future<Map<ServerIdentity, ServerStatus>>> futures = new HashMap<String, Future<Map<ServerIdentity, ServerStatus>>>();
-        for (Map.Entry<String, ServerManagerClient> entry : clients.entrySet()) {
-            final ServerManagerClient client = entry.getValue();
+        for (Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
+            final HostControllerClient client = entry.getValue();
             Callable<Map<ServerIdentity, ServerStatus>> callable = new Callable<Map<ServerIdentity, ServerStatus>>() {
 
                 @Override
@@ -236,11 +236,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                     result.putAll(map);
                 }
             } catch (InterruptedException e) {
-                log.errorf("Interrupted while reading server statuses from server manager %s -- aborting", entry.getKey());
+                log.errorf("Interrupted while reading server statuses from host controller %s -- aborting", entry.getKey());
                 Thread.currentThread().interrupt();
                 break;
             } catch (ExecutionException e) {
-                log.errorf(e, "Caught exception while reading server statuses from server manager %s -- ignoring that server manager", entry.getKey());
+                log.errorf(e, "Caught exception while reading server statuses from host controller %s -- ignoring that host controller", entry.getKey());
             }
         }
         return result;
@@ -250,11 +250,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#getServerModel(java.lang.String, java.lang.String)
      */
     @Override
-    public ServerModel getServerModel(final String serverManagerName, final String serverName) {
+    public ServerModel getServerModel(final String hostControllerName, final String serverName) {
 
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
-            log.debugf("Received getServerModel request for unknown server manager %s", serverManagerName);
+            log.debugf("Received getServerModel request for unknown host controller %s", hostControllerName);
             return null;
         }
         else {
@@ -266,11 +266,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#startServer(java.lang.String, java.lang.String)
      */
     @Override
-    public ServerStatus startServer(final String serverManagerName, final String serverName) {
+    public ServerStatus startServer(final String hostControllerName, final String serverName) {
 
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
-            log.debugf("Received startServer request for unknown server manager %s", serverManagerName);
+            log.debugf("Received startServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
         }
         else {
@@ -282,11 +282,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#stopServer(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ServerStatus stopServer(final String serverManagerName, final String serverName, final long gracefulTimeout) {
+    public ServerStatus stopServer(final String hostControllerName, final String serverName, final long gracefulTimeout) {
 
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
-            log.debugf("Received stopServer request for unknown server manager %s", serverManagerName);
+            log.debugf("Received stopServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
         }
         else {
@@ -298,11 +298,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#restartServer(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ServerStatus restartServer(final String serverManagerName, final String serverName, final long gracefulTimeout) {
+    public ServerStatus restartServer(final String hostControllerName, final String serverName, final long gracefulTimeout) {
 
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
-            log.debugf("Received restartServer request for unknown server manager %s", serverManagerName);
+            log.debugf("Received restartServer request for unknown host controller %s", hostControllerName);
             return ServerStatus.UNKNOWN;
         }
         else {
@@ -462,11 +462,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
             }
         }
         else {
-            log.debug("Domain updates applied successfully locally; pushing to server managers");
+            log.debug("Domain updates applied successfully locally; pushing to host controllers");
             // Persist model
             configPersister.persistConfiguration(domainModel);
-            // Move on to server managers.
-            result = applyUpdatesToServerManagers(updates, rollbacks);
+            // Move on to host controllers.
+            result = applyUpdatesToHostControllers(updates, rollbacks);
         }
 
         return result;
@@ -478,11 +478,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
     @Override
     public List<UpdateResultHandlerResponse<?>> applyUpdatesToServer(final ServerIdentity server, final List<AbstractServerModelUpdate<?>> updates, final boolean allowOverallRollback) {
 
-        ServerManagerClient client = clients.get(server.getHostName());
+        HostControllerClient client = clients.get(server.getHostName());
         List<UpdateResultHandlerResponse<?>> responses;
 
         if (client == null) {
-            log.debugf("Unknown server manager %s", server.getHostName());
+            log.debugf("Unknown host controller %s", server.getHostName());
             // TODO better handle disappearance of host
             responses = new ArrayList<UpdateResultHandlerResponse<?>>();
             UpdateResultHandlerResponse<?> failure = UpdateResultHandlerResponse.createFailureResponse(new IllegalStateException("unknown host " + server.getHostName()));
@@ -520,15 +520,15 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
         return (domainModel.getDeployment(deploymentName) == null);
     }
 
-    private List<DomainUpdateApplierResponse> applyUpdatesToServerManagers(final List<AbstractDomainModelUpdate<?>> updates,
+    private List<DomainUpdateApplierResponse> applyUpdatesToHostControllers(final List<AbstractDomainModelUpdate<?>> updates,
             List<AbstractDomainModelUpdate<?>> rollbacks) {
 
         List<DomainUpdateApplierResponse> result = new ArrayList<DomainUpdateApplierResponse>(updates.size());
 
-        // We update server managers concurrently
+        // We update host controllers concurrently
         Map<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>> futures = new HashMap<String, Future<List<ModelUpdateResponse<List<ServerIdentity>>>>>();
-        for (Map.Entry<String, ServerManagerClient> entry : clients.entrySet()) {
-            final ServerManagerClient client = entry.getValue();
+        for (Map.Entry<String, HostControllerClient> entry : clients.entrySet()) {
+            final HostControllerClient client = entry.getValue();
             final Callable<List<ModelUpdateResponse<List<ServerIdentity>>>> callable = new Callable<List<ModelUpdateResponse<List<ServerIdentity>>>>() {
 
                 @Override
@@ -541,7 +541,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
             futures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
         }
 
-        log.debugf("Domain updates pushed to %s server manager(s)", futures.size());
+        log.debugf("Domain updates pushed to %s host controller(s)", futures.size());
 
         // Collate the results for each update
         boolean ok = true;
@@ -564,11 +564,11 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                     }
                     // else this host didn't get this far
                 } catch (InterruptedException e) {
-                    log.debug("Interrupted reading server manager response");
+                    log.debug("Interrupted reading host controller response");
                     Thread.currentThread().interrupt();
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
                 } catch (ExecutionException e) {
-                    log.debug("Execution exception reading server manager response", e);
+                    log.debug("Execution exception reading host controller response", e);
                     hostFailures.put(entry.getKey(), new UpdateFailedException(e));
                 }
             }
@@ -577,7 +577,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                 result.add(new DomainUpdateApplierResponse(servers));
             }
             else {
-                log.debugf("%s server managers failed on update %s", hostFailures.size(), i);
+                log.debugf("%s host controllers failed on update %s", hostFailures.size(), i);
                 result.add(new DomainUpdateApplierResponse(hostFailures));
                 ok = false;
                 // No point processing other updates, as we are going to roll them back.
@@ -589,9 +589,9 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
         if (!ok) {
 
-            // Some server manager failed, so we gotta roll 'em all back
+            // Some host controller failed, so we gotta roll 'em all back
 
-            log.warn("One or more updates failed on some server managers; rolling back");
+            log.warn("One or more updates failed on some host controllers; rolling back");
 
             // Apply compensating updates to fix our local model
             for (int i = 0; i < rollbacks.size(); i++) {
@@ -622,23 +622,23 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
                     }
 
                     // Set up the rollback list
-                    final List<AbstractDomainModelUpdate<?>> serverManagerRollbacks =
+                    final List<AbstractDomainModelUpdate<?>> hostControllerRollbacks =
                         (idx == rollbacks.size() -1) ? rollbacks : new ArrayList<AbstractDomainModelUpdate<?>>(idx + 1);
-                    if (serverManagerRollbacks != rollbacks) {
+                    if (hostControllerRollbacks != rollbacks) {
                         // Rollbacks are in reverse order from updates. We take
                         // the last X=idx items from the rollback list since
                         // those correspond to the updates that didn't fail and need rollback
                         for (int j = rollbacks.size() - 1 - idx; j < rollbacks.size(); j++) {
-                            serverManagerRollbacks.add(rollbacks.get(j));
+                            hostControllerRollbacks.add(rollbacks.get(j));
                         }
                     }
                     // Tell the host to roll back
-                    final ServerManagerClient client = clients.get(entry.getKey());
+                    final HostControllerClient client = clients.get(entry.getKey());
                     Callable<Boolean> callable = new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(serverManagerRollbacks);
-                            return Boolean.valueOf(rsp.size() == serverManagerRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
+                            List<ModelUpdateResponse<List<ServerIdentity>>> rsp = client.updateDomainModel(hostControllerRollbacks);
+                            return Boolean.valueOf(rsp.size() == hostControllerRollbacks.size() && rsp.get(rsp.size() - 1).isSuccess());
                         }
                     };
                     rollbackFutures.put(entry.getKey(), scheduledExecutorService.getValue().submit(callable));
@@ -667,7 +667,7 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
 
             for (String host : outOfSync) {
                 // Rollback failed; need to push the whole model
-                ServerManagerClient client = clients.get(host);
+                HostControllerClient client = clients.get(host);
                 client.updateDomainModel(domainModel);
             }
 
@@ -772,13 +772,13 @@ public class DomainControllerImpl implements Service<DomainController>, DomainCo
      * @see org.jboss.as.domain.controller.DomainController#applyHostUpdates(java.lang.String, java.util.List)
      */
     @Override
-    public List<HostUpdateResult<?>> applyHostUpdates(String serverManagerName, List<AbstractHostModelUpdate<?>> updates) {
+    public List<HostUpdateResult<?>> applyHostUpdates(String hostControllerName, List<AbstractHostModelUpdate<?>> updates) {
 
         List<HostUpdateResult<?>> result;
-        ServerManagerClient client = clients.get(serverManagerName);
+        HostControllerClient client = clients.get(hostControllerName);
         if (client == null) {
             result = new ArrayList<HostUpdateResult<?>>(updates.size());
-            HostUpdateResult<Object> hur = new HostUpdateResult<Object>(new UpdateFailedException("Host " + serverManagerName + " is unknown"));
+            HostUpdateResult<Object> hur = new HostUpdateResult<Object>(new UpdateFailedException("Host " + hostControllerName + " is unknown"));
             for (int i = 0; i < updates.size(); i++) {
                 result.add(hur);
             }

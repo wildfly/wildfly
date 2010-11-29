@@ -185,6 +185,11 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-host-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-logging</artifactId>
         </dependency>
 
@@ -215,7 +220,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-process-manager</artifactId>
+            <artifactId>jboss-as-process-controller</artifactId>
         </dependency>
 
         <dependency>
@@ -231,11 +236,6 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-server</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server-manager</artifactId>
         </dependency>
 
         <dependency>

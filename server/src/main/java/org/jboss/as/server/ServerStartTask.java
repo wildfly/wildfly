@@ -89,7 +89,7 @@ public final class
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-    /** Constructor variant for use by the ServerManager */
+    /** Constructor variant for use by the HostController */
     public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
         this(serverName, portOffset, startServices, updates, null);
         if (serverName == null || serverName.length() == 0) {

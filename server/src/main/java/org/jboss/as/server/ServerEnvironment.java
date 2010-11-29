@@ -198,7 +198,7 @@ public class ServerEnvironment {
     }
 
     /**
-     * Get the process name of this process, needed to inform the process manager we have started
+     * Get the process name of this process, needed to inform the process controller we have started
      *
      * @return the process name
      */

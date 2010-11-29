@@ -45,7 +45,7 @@ public class JvmMaxPermgenUpdate extends AbstractModelUpdate<JvmElement, Void> {
     @Override
     protected AbstractServerModelUpdate<Void> getServerModelUpdate() {
         // JvmElement changes do not affect running servers; they are picked up by
-        // ServerManager when it launches servers
+        // HostController when it launches servers
         return null;
     }
 

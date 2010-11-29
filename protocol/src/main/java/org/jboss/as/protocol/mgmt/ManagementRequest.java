@@ -42,8 +42,8 @@ import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
- * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote server manager
- * for performing a task.  It will manage connecting and retreiving the correct response.
+ * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
+ * for performing a task.  It will manage connecting and retrieving the correct response.
  *
  * @author John Bailey
  */
@@ -60,7 +60,7 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private final Object resultLock = new Object();
 
     /**
-     * Get the handler id of the request.  These should match the id of a @{link org.jboss.as.server.manager.management.ManagementOperationHandler}.
+     * Get the handler id of the request.  These should match the id of a @{link org.jboss.as.host.controller.management.ManagementOperationHandler}.
      *
      * @return The handler id
      */

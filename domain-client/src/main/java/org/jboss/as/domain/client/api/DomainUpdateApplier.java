@@ -35,15 +35,15 @@ public interface DomainUpdateApplier<R, P> {
     /**
      * Handle the event of the execution of the update being cancelled.
      * This would occur as a result of a previously executed update in the same set of updates
-     * failing to apply successfully to the domain or to a server manager.
+     * failing to apply successfully to the domain or to a host controller.
      */
     void handleCancelled();
 
     /**
      * Handle the event of the execution of the update being rolled back
-     * after it was successfully applied to the domain and to the server managers.
+     * after it was successfully applied to the domain and to the host controllers.
      * This would occur as a result of another subsequent update in the same set of updates
-     * failing to apply successfully to the domain or to a server manager.
+     * failing to apply successfully to the domain or to a host controller.
      */
     void handleRolledBack();
 
@@ -55,15 +55,15 @@ public interface DomainUpdateApplier<R, P> {
     void handleDomainFailed(UpdateFailedException reason);
 
     /**
-     * Handle the event of the update failing to apply to one or more server managers (hosts).
+     * Handle the event of the update failing to apply to one or more host controllers.
      *
      * @param hostFailureReasons a map of host name to failure cause
      */
     void handleHostFailed(Map<String, UpdateFailedException> hostFailureReasons);
 
     /**
-     * Handle the event of the update successfully applying to the domain and all applicable server
-     * managers (hosts).  The given context should be used to acquire the list of affected servers and
+     * Handle the event of the update successfully applying to the domain and all applicable host
+     * controllers.  The given context should be used to acquire the list of affected servers and
      * to apply the change to each of the servers according to the desired policy.  If the update should be
      * reverted, the {@link Context#cancel()} method should be invoked, which will cause the remaining changes to
      * not be applied.

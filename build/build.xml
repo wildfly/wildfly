@@ -216,6 +216,10 @@
         <module-def name="org.jboss.as.domain-controller">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain-controller"/>
         </module-def>
+    	
+        <module-def name="org.jboss.as.host-controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-host-controller"/>
+        </module-def>
 
         <module-def name="org.jboss.as.jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
@@ -241,8 +245,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi"/>
         </module-def>
 
-        <module-def name="org.jboss.as.process-manager">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-process-manager"/>
+        <module-def name="org.jboss.as.process-controller">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-process-controller"/>
         </module-def>
 
         <module-def name="org.jboss.as.protocol">
@@ -259,10 +263,6 @@
 
         <module-def name="org.jboss.as.server">
             <maven-resource group="org.jboss.as" artifact="jboss-as-server"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.server-manager">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-server-manager"/>
         </module-def>
 
         <module-def name="org.jboss.as.standalone"/>

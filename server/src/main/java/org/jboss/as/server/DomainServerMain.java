@@ -109,7 +109,7 @@ public final class DomainServerMain {
             unmarshaller.finish();
             task.run(Arrays.<ServiceActivator>asList(new ServiceActivator() {
                 public void activate(final ServiceActivatorContext serviceActivatorContext) {
-                    // TODO activate server manager client service
+                    // TODO activate host controller client service
                 }
             }));
         } catch (Exception e) {
@@ -121,7 +121,7 @@ public final class DomainServerMain {
             unmarshaller.start(byteInput);
             final InetSocketAddress socketAddress = unmarshaller.readObject(InetSocketAddress.class);
             unmarshaller.finish();
-            // todo connect to the SM at socketAddress, disconnect from old
+            // todo connect to the HC at socketAddress, disconnect from old
             break;
         } catch (InterruptedIOException e) {
             Thread.interrupted();
