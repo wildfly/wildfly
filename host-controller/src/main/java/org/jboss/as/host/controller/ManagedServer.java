@@ -78,6 +78,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Represents a managed server.
@@ -416,15 +417,15 @@ public final class ManagedServer {
         private static final long serialVersionUID = 2522252040771977214L;
 
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
-            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+            final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
             final HostControllerConnectionService smConnection = new HostControllerConnectionService();
-            batchBuilder.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
+            serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
                 .addInjection(smConnection.getSmAddressInjector(), managementSocket)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
             final HostControllerClient client = new HostControllerClient();
-            batchBuilder.addService(HostControllerClient.SERVICE_NAME, client)
+            serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
                 .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
                 .addDependency(ServerController.SERVICE_NAME, ServerController.class, client.getServerControllerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);

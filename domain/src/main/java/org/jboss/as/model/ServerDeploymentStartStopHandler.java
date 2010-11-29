@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -162,13 +163,13 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
                 throw new RuntimeException("Failed to mount deployment archive", e);
             }
 
-            final BatchBuilder batchBuilder = context.getBatchBuilder();
+            final ServiceTarget target = context.getServiceTarget();
             // Create deployment service
             DeploymentService deploymentService = new DeploymentService(handle);
-            ServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
+            ServiceBuilder<Void> serviceBuilder = target.addService(deploymentServiceName, deploymentService);
 
             // Create a sub-batch for this deployment
-            final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();
+            final BatchBuilder deploymentSubBatch = target.batchBuilder();
 
             // Setup a batch level dependency on deployment service
             deploymentSubBatch.addDependency(deploymentServiceName);
@@ -178,6 +179,7 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
 
             // Create the deployment unit context
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
+
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);
 

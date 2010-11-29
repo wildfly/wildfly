@@ -86,6 +86,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -523,21 +524,21 @@ public class HostController {
 
     private void activateLocalDomainController(final ServiceActivatorContext serviceActivatorContext) {
         try {
-            final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+            final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
             final XMLMapper mapper = XMLMapper.Factory.create();
             extensionRegistrar.registerStandardDomainReaders(mapper);
 
             final DomainControllerImpl domainController = new DomainControllerImpl();
 
-            batchBuilder.addService(DomainController.SERVICE_NAME, domainController)
+            serviceTarget.addService(DomainController.SERVICE_NAME, domainController)
                 .addInjection(domainController.getXmlMapperInjector(), mapper)
                 .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
                 .addInjection(domainController.getDomainDeploymentsDirInjector(), environment.getDomainDeploymentDir())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
 
             final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
-            batchBuilder.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
+            serviceTarget.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerOperationHandler.getDomainControllerInjector())
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
                 .addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerOperationHandler.getThreadFactoryInjector())
@@ -545,11 +546,11 @@ public class HostController {
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
 
             final DomainControllerClientOperationHandler domainControllerClientOperationHandler = new DomainControllerClientOperationHandler();
-            batchBuilder.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
+            serviceTarget.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerClientOperationHandler));
 
-            batchBuilder.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(HostController.this, domainController, fileRepository))
+            serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(HostController.this, domainController, fileRepository))
                 .addDependency(DomainController.SERVICE_NAME);
 
         } catch (Exception e) {
@@ -558,10 +559,10 @@ public class HostController {
     }
 
     private void activateRemoteDomainControllerConnection(final ServiceActivatorContext serviceActivatorContext) {
-        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
-        final ServiceBuilder<DomainControllerConnection> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
+        final ServiceBuilder<DomainControllerConnection> serviceBuilder = serviceTarget.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<DomainControllerConnection>() {
                 @Override
                 public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {
@@ -590,7 +591,7 @@ public class HostController {
     }
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
-        final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
         HostModel hostConfig = getHostModel();
         final ManagementElement managementElement = hostConfig.getManagementElement();
@@ -609,14 +610,14 @@ public class HostController {
 
         // Add the executor
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
-        batchBuilder.addService(threadFactoryServiceName, new ThreadFactoryService());
+        serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService());
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
 
         /**
          * Replace below with fixed ScheduledThreadPoolService
          */
         final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
-        batchBuilder.addService(executorServiceName, new Service<ScheduledExecutorService>() {
+        serviceTarget.addService(executorServiceName, new Service<ScheduledExecutorService>() {
             private ScheduledExecutorService executorService;
             public synchronized void start(StartContext context) throws StartException {
                 executorService = Executors.newScheduledThreadPool(20, threadFactoryValue.getValue());
@@ -633,7 +634,7 @@ public class HostController {
 
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
-        batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
+        serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME, managementCommunicationService)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, managementCommunicationService.getInterfaceInjector())
             .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
@@ -643,13 +644,13 @@ public class HostController {
         //  Add the DC to host controller operation handler
         final ManagementOperationHandlerService<HostControllerOperationHandler> operationHandlerService
                 = new ManagementOperationHandlerService<HostControllerOperationHandler>(new HostControllerOperationHandler(this));
-            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("host", "controller"), operationHandlerService)
+            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("host", "controller"), operationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
 
         //  Add the server to host controller operation handler
         final ManagementOperationHandlerService<ServerToHostControllerOperationHandler> serverOperationHandlerService
                 = new ManagementOperationHandlerService<ServerToHostControllerOperationHandler>(new ServerToHostControllerOperationHandler(this));
-            batchBuilder.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller"), serverOperationHandlerService)
+            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller"), serverOperationHandlerService)
                 .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverOperationHandlerService));
     }
 
