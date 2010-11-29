@@ -61,7 +61,7 @@ import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.logging.MDC;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -137,7 +137,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         };
 
         // Root service
-        final BatchServiceBuilder<Void> builder = batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL);
+        final ServiceBuilder<Void> builder = batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL);
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         // Services specified by the creator of this object

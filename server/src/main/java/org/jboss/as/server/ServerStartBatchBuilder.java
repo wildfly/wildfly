@@ -26,7 +26,7 @@ import java.util.Collection;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -51,18 +51,18 @@ public class ServerStartBatchBuilder implements BatchBuilder {
     }
 
     @Override
-    public <T> BatchServiceBuilder<T> addServiceValue(ServiceName name, Value<? extends Service<T>> value) throws IllegalArgumentException {
-        return new ServerStartBatchServiceBuilder<T>(name, delegate.addServiceValue(name, value));
+    public <T> ServiceBuilder<T> addServiceValue(ServiceName name, Value<? extends Service<T>> value) throws IllegalArgumentException {
+        return new ServerStartServiceBuilder<T>(name, delegate.addServiceValue(name, value));
     }
 
     @Override
-    public <T> BatchServiceBuilder<T> addService(ServiceName name, Service<T> service) throws IllegalArgumentException {
-        return new ServerStartBatchServiceBuilder<T>(name, delegate.addService(name, service));
+    public <T> ServiceBuilder<T> addService(ServiceName name, Service<T> service) throws IllegalArgumentException {
+        return new ServerStartServiceBuilder<T>(name, delegate.addService(name, service));
     }
 
     @Override
-    public <T> BatchServiceBuilder<T> addServiceValueIfNotExist(ServiceName name, Value<? extends Service<T>> value) throws IllegalArgumentException {
-        return new ServerStartBatchServiceBuilder<T>(name, delegate.addServiceValueIfNotExist(name, value));
+    public <T> ServiceBuilder<T> addServiceValueIfNotExist(ServiceName name, Value<? extends Service<T>> value) throws IllegalArgumentException {
+        return new ServerStartServiceBuilder<T>(name, delegate.addServiceValueIfNotExist(name, value));
     }
 
     @Override
@@ -111,35 +111,35 @@ public class ServerStartBatchBuilder implements BatchBuilder {
         return new ServerStartBatchBuilder(delegate.subBatchBuilder(), serverStartupListener);
     }
 
-    private class ServerStartBatchServiceBuilder<T> implements BatchServiceBuilder<T> {
+    private class ServerStartServiceBuilder<T> implements ServiceBuilder<T> {
         private final ServiceName serviceName;
-        final BatchServiceBuilder<T> delegate;
+        final ServiceBuilder<T> delegate;
 
-        private ServerStartBatchServiceBuilder(ServiceName serviceName, BatchServiceBuilder<T> delegate) {
+        private ServerStartServiceBuilder(ServiceName serviceName, ServiceBuilder<T> delegate) {
             this.serviceName = serviceName;
             this.delegate = delegate;
         }
 
         @Override
-        public BatchServiceBuilder<T> addAliases(ServiceName... aliases) {
+        public ServiceBuilder<T> addAliases(ServiceName... aliases) {
             delegate.addAliases(aliases);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> setLocation() {
+        public ServiceBuilder<T> setLocation() {
             delegate.setLocation();
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> setLocation(Location location) {
+        public ServiceBuilder<T> setLocation(Location location) {
             delegate.setLocation(location);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
+        public ServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
             if (mode != ServiceController.Mode.ACTIVE) {
                 serverStartupListener.expectNonActive(serviceName);
             } else {
@@ -150,91 +150,91 @@ public class ServerStartBatchBuilder implements BatchBuilder {
         }
 
         @Override
-        public BatchServiceBuilder<T> addDependencies(ServiceName... dependencies) {
+        public ServiceBuilder<T> addDependencies(ServiceName... dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addOptionalDependencies(ServiceName... dependencies) {
+        public ServiceBuilder<T> addOptionalDependencies(ServiceName... dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addDependencies(Iterable<ServiceName> dependencies) {
+        public ServiceBuilder<T> addDependencies(Iterable<ServiceName> dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
+        public ServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addDependency(ServiceName dependency) {
+        public ServiceBuilder<T> addDependency(ServiceName dependency) {
             delegate.addDependency(dependency);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency) {
+        public ServiceBuilder<T> addOptionalDependency(ServiceName dependency) {
             delegate.addOptionalDependency(dependency);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addDependency(ServiceName dependency, Injector<Object> target) {
+        public ServiceBuilder<T> addDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addDependency(dependency, target);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Injector<Object> target) {
+        public ServiceBuilder<T> addOptionalDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addOptionalDependency(dependency, target);
             return this;
         }
 
         @Override
-        public <I> BatchServiceBuilder<T> addDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
+        public <I> ServiceBuilder<T> addDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addDependency(dependency, type, target);
             return this;
         }
 
         @Override
-        public <I> BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
+        public <I> ServiceBuilder<T> addOptionalDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addOptionalDependency(dependency, type, target);
             return this;
         }
 
         @Override
-        public <I> BatchServiceBuilder<T> addInjection(Injector<? super I> target, I value) {
+        public <I> ServiceBuilder<T> addInjection(Injector<? super I> target, I value) {
             delegate.addInjection(target, value);
             return this;
         }
 
         @Override
-        public <I> BatchServiceBuilder<T> addInjectionValue(Injector<? super I> target, Value<I> value) {
+        public <I> ServiceBuilder<T> addInjectionValue(Injector<? super I> target, Value<I> value) {
             delegate.<I>addInjectionValue(target, value);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addListener(ServiceListener<? super T> serviceListener) {
+        public ServiceBuilder<T> addListener(ServiceListener<? super T> serviceListener) {
             delegate.addListener(serviceListener);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addListener(ServiceListener<? super T>... serviceListeners) {
+        public ServiceBuilder<T> addListener(ServiceListener<? super T>... serviceListeners) {
             delegate.addListener(serviceListeners);
             return this;
         }
 
         @Override
-        public BatchServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> collection) {
+        public ServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> collection) {
             delegate.addListener(collection);
             return this;
         }

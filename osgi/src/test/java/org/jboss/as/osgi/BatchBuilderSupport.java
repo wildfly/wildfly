@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -61,18 +61,18 @@ class BatchBuilderSupport implements BatchBuilder {
         return Collections.unmodifiableMap(initialModes);
     }
 
-    public <T> BatchServiceBuilder<T> addServiceValue(ServiceName name, Value<? extends Service<T>> value)
+    public <T> ServiceBuilder<T> addServiceValue(ServiceName name, Value<? extends Service<T>> value)
             throws IllegalArgumentException {
-        return new BatchServiceBuilderWrapper<T>(name, delegate.addServiceValue(name, value));
+        return new ServiceBuilderWrapper<T>(name, delegate.addServiceValue(name, value));
     }
 
-    public <T> BatchServiceBuilder<T> addService(ServiceName name, Service<T> service) throws IllegalArgumentException {
-        return new BatchServiceBuilderWrapper<T>(name, delegate.addService(name, service));
+    public <T> ServiceBuilder<T> addService(ServiceName name, Service<T> service) throws IllegalArgumentException {
+        return new ServiceBuilderWrapper<T>(name, delegate.addService(name, service));
     }
 
-    public <T> BatchServiceBuilder<T> addServiceValueIfNotExist(ServiceName name, Value<? extends Service<T>> value)
+    public <T> ServiceBuilder<T> addServiceValueIfNotExist(ServiceName name, Value<? extends Service<T>> value)
             throws IllegalArgumentException {
-        return new BatchServiceBuilderWrapper<T>(name, delegate.addServiceValueIfNotExist(name, value));
+        return new ServiceBuilderWrapper<T>(name, delegate.addServiceValueIfNotExist(name, value));
     }
 
     public BatchBuilder addListener(ServiceListener<Object> listener) {
@@ -114,107 +114,107 @@ class BatchBuilderSupport implements BatchBuilder {
         return this;
     }
 
-    private class BatchServiceBuilderWrapper<T> implements BatchServiceBuilder<T> {
+    private class ServiceBuilderWrapper<T> implements ServiceBuilder<T> {
         private final ServiceName serviceName;;
-        private final BatchServiceBuilder<T> delegate;
+        private final ServiceBuilder<T> delegate;
 
-        BatchServiceBuilderWrapper(ServiceName serviceName, BatchServiceBuilder<T> delegate) {
+        ServiceBuilderWrapper(ServiceName serviceName, ServiceBuilder<T> delegate) {
             this.serviceName = serviceName;
             this.delegate = delegate;
         }
 
-        public BatchServiceBuilder<T> addAliases(ServiceName... aliases) {
+        public ServiceBuilder<T> addAliases(ServiceName... aliases) {
             delegate.addAliases(aliases);
             return this;
         }
 
-        public BatchServiceBuilder<T> setLocation() {
+        public ServiceBuilder<T> setLocation() {
             delegate.setLocation();
             return this;
         }
 
-        public BatchServiceBuilder<T> setLocation(Location location) {
+        public ServiceBuilder<T> setLocation(Location location) {
             delegate.setLocation(location);
             return this;
         }
 
-        public BatchServiceBuilder<T> setInitialMode(Mode mode) {
+        public ServiceBuilder<T> setInitialMode(Mode mode) {
             initialModes.get(mode).add(serviceName);
             delegate.setInitialMode(mode);
             return this;
         }
 
-        public BatchServiceBuilder<T> addDependencies(ServiceName... dependencies) {
+        public ServiceBuilder<T> addDependencies(ServiceName... dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
-        public BatchServiceBuilder<T> addOptionalDependencies(ServiceName... dependencies) {
+        public ServiceBuilder<T> addOptionalDependencies(ServiceName... dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
-        public BatchServiceBuilder<T> addDependencies(Iterable<ServiceName> dependencies) {
+        public ServiceBuilder<T> addDependencies(Iterable<ServiceName> dependencies) {
             delegate.addDependencies(dependencies);
             return this;
         }
 
-        public BatchServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
+        public ServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;
         }
 
-        public BatchServiceBuilder<T> addDependency(ServiceName dependency) {
+        public ServiceBuilder<T> addDependency(ServiceName dependency) {
             delegate.addDependency(dependency);
             return this;
         }
 
-        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency) {
+        public ServiceBuilder<T> addOptionalDependency(ServiceName dependency) {
             delegate.addOptionalDependency(dependency);
             return this;
         }
 
-        public BatchServiceBuilder<T> addDependency(ServiceName dependency, Injector<Object> target) {
+        public ServiceBuilder<T> addDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addDependency(dependency, target);
             return this;
         }
 
-        public BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Injector<Object> target) {
+        public ServiceBuilder<T> addOptionalDependency(ServiceName dependency, Injector<Object> target) {
             delegate.addOptionalDependency(dependency, target);
             return this;
         }
 
-        public <I> BatchServiceBuilder<T> addDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
+        public <I> ServiceBuilder<T> addDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addDependency(dependency, type, target);
             return this;
         }
 
-        public <I> BatchServiceBuilder<T> addOptionalDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
+        public <I> ServiceBuilder<T> addOptionalDependency(ServiceName dependency, Class<I> type, Injector<I> target) {
             delegate.addOptionalDependency(dependency, type, target);
             return this;
         }
 
-        public <I> BatchServiceBuilder<T> addInjection(Injector<? super I> target, I value) {
+        public <I> ServiceBuilder<T> addInjection(Injector<? super I> target, I value) {
             delegate.addInjection(target, value);
             return this;
         }
 
-        public <I> BatchServiceBuilder<T> addInjectionValue(Injector<? super I> target, Value<I> value) {
+        public <I> ServiceBuilder<T> addInjectionValue(Injector<? super I> target, Value<I> value) {
             delegate.addInjectionValue(target, value);
             return this;
         }
 
-        public BatchServiceBuilder<T> addListener(ServiceListener<? super T> listener) {
+        public ServiceBuilder<T> addListener(ServiceListener<? super T> listener) {
             delegate.addListener(listener);
             return this;
         }
 
-        public BatchServiceBuilder<T> addListener(ServiceListener<? super T>... listeners) {
+        public ServiceBuilder<T> addListener(ServiceListener<? super T>... listeners) {
             delegate.addListener(listeners);
             return this;
         }
 
-        public BatchServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> listeners) {
+        public ServiceBuilder<T> addListener(Collection<? extends ServiceListener<? super T>> listeners) {
             delegate.addListener(listeners);
             return this;
         }

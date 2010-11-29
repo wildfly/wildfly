@@ -25,7 +25,7 @@ import java.net.InetAddress;
 
 import org.jboss.as.model.socket.SocketBindingAdd;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.StartContext;
@@ -88,10 +88,10 @@ public class SocketBindingService implements Service<SocketBinding> {
         return interfaceBinding;
     }
 
-    public static BatchServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd add) {
+    public static ServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd add) {
         SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
                    add.getMulticastAddress(), add.getMulticastPort());
-        BatchServiceBuilder<SocketBinding> batch = builder
+        ServiceBuilder<SocketBinding> batch = builder
             .addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service);
         batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()),
                 NetworkInterfaceBinding.class, service.getInterfaceBinding());

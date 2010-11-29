@@ -78,7 +78,7 @@ import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
@@ -561,7 +561,7 @@ public class HostController {
         final BatchBuilder batchBuilder = serviceActivatorContext.getBatchBuilder();
 
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
-        final BatchServiceBuilder<DomainControllerConnection> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
+        final ServiceBuilder<DomainControllerConnection> serviceBuilder = batchBuilder.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
             .addListener(new AbstractServiceListener<DomainControllerConnection>() {
                 @Override
                 public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {

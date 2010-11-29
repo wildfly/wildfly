@@ -50,7 +50,7 @@ import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -203,7 +203,7 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {
                 Object service = loadClass(moduleId, EchoInvokerService.class.getName()).newInstance();
-                BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoInvokerService.SERVICE_NAME, (Service<?>) service);
+                ServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoInvokerService.SERVICE_NAME, (Service<?>) service);
                 serviceBuilder.addDependency(FrameworkService.SERVICE_NAME);
                 serviceBuilder.setInitialMode(Mode.ACTIVE);
             }

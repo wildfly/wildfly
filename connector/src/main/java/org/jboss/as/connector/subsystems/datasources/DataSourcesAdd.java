@@ -31,7 +31,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -61,7 +61,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
         final BatchBuilder builder = updateContext.getBatchBuilder();
 
         final DataSourcesService dsService = new DataSourcesService(datasources);
-        BatchServiceBuilder<?> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
+        ServiceBuilder<?> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
                 dsService);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
 

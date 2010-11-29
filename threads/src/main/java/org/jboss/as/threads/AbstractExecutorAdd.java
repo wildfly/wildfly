@@ -28,7 +28,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -85,7 +85,7 @@ public abstract class AbstractExecutorAdd extends AbstractThreadsSubsystemUpdate
         return properties;
     }
 
-    protected <T> BatchServiceBuilder<T> addThreadFactoryDependency(final ServiceName serviceName, BatchServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, BatchBuilder builder) {
+    protected <T> ServiceBuilder<T> addThreadFactoryDependency(final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, BatchBuilder builder) {
         final ServiceName threadFactoryName;
         if (threadFactory == null) {
             threadFactoryName = serviceName.append("thread-factory");

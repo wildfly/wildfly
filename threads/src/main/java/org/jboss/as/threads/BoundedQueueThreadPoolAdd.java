@@ -29,7 +29,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -64,7 +64,7 @@ public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
         final String name = getName();
         final ServiceName serviceName = ThreadsServices.executorName(name);
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(coreThreads, maxThreads, queueLength, blocking, getKeepaliveTime(), allowCoreTimeout);
-        final BatchServiceBuilder<Executor> serviceBuilder = builder.addService(serviceName, service);
+        final ServiceBuilder<Executor> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
     }
 

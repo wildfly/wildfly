@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.services.path.AbsolutePathService;
 import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -69,7 +69,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static BatchServiceBuilder<DeploymentScanner> addService(final BatchBuilder batchBuilder,
+    public static ServiceBuilder<DeploymentScanner> addService(final BatchBuilder batchBuilder,
             final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
         final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
         final ServiceName serviceName = getServiceName(name);

@@ -85,7 +85,7 @@ public class NestedJarInlineProcessor implements DeploymentUnitProcessor {
         }
 
         context.putAttachment(NestedMounts.ATTACHMENT_KEY, mounts);
-        context.getBatchServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
+        context.getServiceBuilder().addListener(new CloseListener(mounts.getClosables()));
     }
 
     static class CloseListener extends AbstractServiceListener<Void> {

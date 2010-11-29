@@ -56,7 +56,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
@@ -124,7 +124,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
             final BatchBuilder batchBuilder = context.getBatchBuilder();
 
             final DataSourceDeploymentService dataSourceDeploymentService = new DataSourceDeploymentService(deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module);
-            BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
+            ServiceBuilder<?> serviceBuilder = batchBuilder.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
                  .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceDeploymentService.getMdrInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, dataSourceDeploymentService.getRegistryInjector())
                     .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, dataSourceDeploymentService.getJndiInjector())

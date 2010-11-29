@@ -40,7 +40,7 @@ import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.tm.JBossXATerminator;
 
@@ -72,7 +72,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         WorkManager wm = new WorkManagerImpl();
 
         final WorkManagerService wmService = new WorkManagerService(wm);
-        final BatchServiceBuilder<WorkManager> wmServiceBuilder = builder.addService(ConnectorServices.WORKMANAGER_SERVICE,
+        final ServiceBuilder<WorkManager> wmServiceBuilder = builder.addService(ConnectorServices.WORKMANAGER_SERVICE,
                 wmService);
         wmServiceBuilder.addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
                 wmService.getExecutorShortInjector());
@@ -84,7 +84,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
 
         CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
         final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
-        final BatchServiceBuilder<CloneableBootstrapContext> defaultBootCtxServiceBuilder = builder.addService(
+        final ServiceBuilder<CloneableBootstrapContext> defaultBootCtxServiceBuilder = builder.addService(
                 ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService);
         defaultBootCtxServiceBuilder.addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
                 defaultBootCtxService.getWorkManagerValueInjector());
@@ -103,7 +103,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         config.setBeanValidation(false);
 
         final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-        final BatchServiceBuilder<ConnectorSubsystemConfiguration> configServiceBuilder = builder.addService(
+        final ServiceBuilder<ConnectorSubsystemConfiguration> configServiceBuilder = builder.addService(
                 ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
         configServiceBuilder.addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,
                 CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector());

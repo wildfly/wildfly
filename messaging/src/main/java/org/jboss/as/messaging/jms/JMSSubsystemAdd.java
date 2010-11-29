@@ -47,7 +47,7 @@ public class JMSSubsystemAdd extends AbstractSubsystemAdd<JMSSubsystemElement> {
         // FIXME the JMSServer is started as part of the messaging subsystem for now
         // final BatchBuilder builder = context.getBatchBuilder();
         // final JMSService service = new JMSService();
-        // final BatchServiceBuilder<?> serviceBuilder = builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
+        // final ServiceBuilder<?> serviceBuilder = builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
         //    .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
         //    .addOptionalDependency(JNDI_SERVICE_NAME);
         // serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));

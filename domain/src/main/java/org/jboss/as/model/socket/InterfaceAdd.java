@@ -37,7 +37,7 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
 
@@ -101,7 +101,7 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
 
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batch = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<NetworkInterfaceBinding> builder = batch.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name),
+        final ServiceBuilder<NetworkInterfaceBinding> builder = batch.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name),
                 createInterfaceService())
                 .setInitialMode(Mode.ON_DEMAND);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));

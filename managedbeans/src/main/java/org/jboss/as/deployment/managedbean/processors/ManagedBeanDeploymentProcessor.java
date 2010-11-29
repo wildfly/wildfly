@@ -45,7 +45,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
@@ -104,7 +104,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName moduleContextServiceName = moduleContext.getContextServiceName();
 
         final ServiceName managedBeanServiceName = ManagedBeanService.SERVICE_NAME.append(deploymentContext.getName(), managedBeanName);
-        final BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
+        final ServiceBuilder<?> serviceBuilder = batchBuilder.addService(managedBeanServiceName, managedBeanService);
 
         final ServiceName managedBeanContextServiceName = moduleContextServiceName.append(managedBeanName, "context");
         final JndiName managedBeanContextJndiName = moduleContext.getContextName().append(managedBeanName + "-context");
@@ -139,7 +139,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         return new ManagedBeanService<T>(new ManagedBeanContainer<T>(beanClass, classLoader, managedBeanConfiguration.getPostConstructMethods(), managedBeanConfiguration.getPreDestroyMethods(), resourceInjections, interceptors));
     }
 
-    private <T> ResourceInjection<T> processResource(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final Class<T> valueType, final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder<?> serviceBuilder, final ServiceName beanContextServiceName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
+    private <T> ResourceInjection<T> processResource(final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final Class<T> valueType, final ResourceConfiguration resourceConfiguration, final BatchBuilder batchBuilder, final ServiceBuilder<?> serviceBuilder, final ServiceName beanContextServiceName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
         final JndiName localContextName = managedBeanContextJndiName.append(resourceConfiguration.getLocalContextName());
         final String targetContextName = resourceConfiguration.getTargetContextName();
 
@@ -163,7 +163,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         if(shouldBind) {
             final ResourceBinder<LinkRef> resourceBinder = new ResourceBinder<LinkRef>(localContextName, Values.immediateValue(linkRef));
 
-            final BatchServiceBuilder<Object> binderServiceBuilder = batchBuilder.addService(binderName, resourceBinder);
+            final ServiceBuilder<Object> binderServiceBuilder = batchBuilder.addService(binderName, resourceBinder);
             binderServiceBuilder.addDependency(beanContextServiceName, Context.class, resourceBinder.getContextInjector());
 
             if(targetContextName.startsWith("java:")) {
@@ -187,7 +187,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private <T> ManagedBeanInterceptor<T> processInterceptor(final Class<T> interceptorType, final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final InterceptorConfiguration interceptorConfiguration, final BatchBuilder batchBuilder, final BatchServiceBuilder<?> serviceBuilder, final ServiceName managedBeanContextName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
+    private <T> ManagedBeanInterceptor<T> processInterceptor(final Class<T> interceptorType, final DeploymentUnitContext deploymentContext, final ModuleContextConfig moduleContext, final InterceptorConfiguration interceptorConfiguration, final BatchBuilder batchBuilder, final ServiceBuilder<?> serviceBuilder, final ServiceName managedBeanContextName, final JndiName managedBeanContextJndiName) throws DeploymentUnitProcessingException {
         final List<ResourceInjection<?>> resourceInjections = new ArrayList<ResourceInjection<?>>();
 
         for (ResourceConfiguration resourceConfiguration : interceptorConfiguration.getResourceConfigurations()) {

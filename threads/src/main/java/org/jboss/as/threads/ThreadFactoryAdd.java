@@ -29,7 +29,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 
@@ -64,7 +64,7 @@ public final class ThreadFactoryAdd extends AbstractThreadsSubsystemUpdate<Void>
         service.setThreadGroupName(groupName);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(handler, param);
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<ThreadFactory> builder = batchBuilder.addService(ThreadsServices.threadFactoryName(name), service);
+        final ServiceBuilder<ThreadFactory> builder = batchBuilder.addService(ThreadsServices.threadFactoryName(name), service);
         builder.addListener(listener);
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
         try {

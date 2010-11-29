@@ -40,7 +40,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
@@ -126,9 +126,9 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
         final String serviceName = serviceConfig.getName();
         final ServiceName createDestroyServiceName = convert(serviceName).append(CREATE_SUFFIX);
-        final BatchServiceBuilder<?> createDestroyServiceBuilder = batchBuilder.addService(createDestroyServiceName, createDestroyService);
+        final ServiceBuilder<?> createDestroyServiceBuilder = batchBuilder.addService(createDestroyServiceName, createDestroyService);
         final ServiceName startStopServiceName = convert(serviceName).append(START_SUFFIX);
-        final BatchServiceBuilder<?> startStopServiceBuilder = batchBuilder.addService(startStopServiceName, startStopService);
+        final ServiceBuilder<?> startStopServiceBuilder = batchBuilder.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = serviceConfig.getDependencyConfigs();

@@ -29,7 +29,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -53,7 +53,7 @@ public final class QueuelessThreadPoolAdd extends AbstractExecutorAdd {
         final String name = getName();
         final ServiceName serviceName = ThreadsServices.executorName(name);
         final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads, blocking, getKeepaliveTime());
-        final BatchServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
+        final ServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
     }
 

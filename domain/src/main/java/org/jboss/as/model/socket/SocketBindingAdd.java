@@ -31,7 +31,7 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.services.net.SocketBindingService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * @author Emanuel Muckenhuber
@@ -89,7 +89,7 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<SocketBinding> builder = SocketBindingService.addService(batchBuilder, this);
+        final ServiceBuilder<SocketBinding> builder = SocketBindingService.addService(batchBuilder, this);
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param);
         builder.addListener(listener);
     }

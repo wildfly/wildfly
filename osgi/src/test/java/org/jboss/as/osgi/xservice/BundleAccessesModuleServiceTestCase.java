@@ -49,7 +49,7 @@ import org.jboss.modules.DependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleSpec;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -186,7 +186,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {
                 Object service = loadClass(moduleId, EchoTargetService.class.getName()).newInstance();
-                BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoTargetService.SERVICE_NAME, (Service<?>) service);
+                ServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoTargetService.SERVICE_NAME, (Service<?>) service);
                 // Add the alias that the OSGi layer can use to lookup the service
                 serviceBuilder.addAliases(ServiceName.of(Constants.JBOSGI_PREFIX, Echo.class.getName()));
                 serviceBuilder.setInitialMode(Mode.ACTIVE);

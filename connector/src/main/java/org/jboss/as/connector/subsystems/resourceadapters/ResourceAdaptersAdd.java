@@ -31,7 +31,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 
 /**
@@ -59,7 +59,7 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
         final ResourceAdaptersService raService = new ResourceAdaptersService(resourceAdapters);
-        final BatchServiceBuilder<ResourceAdapters> serviceBuilder = builder.addService(
+        final ServiceBuilder<ResourceAdapters> serviceBuilder = builder.addService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE, raService);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
     }

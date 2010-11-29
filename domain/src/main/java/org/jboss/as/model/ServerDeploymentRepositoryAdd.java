@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.deployment.scanner.DeploymentScannerService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * Update adding a new {@code DeploymentRepositoryElement} to a {@code ServerModel}.
@@ -88,7 +88,7 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     @Override
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
         final BatchBuilder batch = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<?> builder = DeploymentScannerService.addService(batch, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
+        final ServiceBuilder<?> builder = DeploymentScannerService.addService(batch, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
         builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
     }
 

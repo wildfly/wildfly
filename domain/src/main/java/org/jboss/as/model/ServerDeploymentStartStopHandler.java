@@ -41,7 +41,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
@@ -165,7 +165,7 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             final BatchBuilder batchBuilder = context.getBatchBuilder();
             // Create deployment service
             DeploymentService deploymentService = new DeploymentService(handle);
-            BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
+            ServiceBuilder<Void> serviceBuilder = batchBuilder.addService(deploymentServiceName, deploymentService);
 
             // Create a sub-batch for this deployment
             final BatchBuilder deploymentSubBatch = batchBuilder.subBatchBuilder();

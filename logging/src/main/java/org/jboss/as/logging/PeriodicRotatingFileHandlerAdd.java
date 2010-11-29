@@ -28,7 +28,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.logging.Handler;
@@ -66,7 +66,7 @@ public class PeriodicRotatingFileHandlerAdd extends FileHandlerAdd {
         try {
             final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
             final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
-            final BatchServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
+            final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = getRelativeTo();
             if (relativeTo != null) {
                 serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, service.getRelativeToInjector());

@@ -28,7 +28,7 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.logging.Handler;
@@ -85,7 +85,7 @@ public class FileHandlerAdd extends AbstractHandlerAdd {
         try {
             final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
             final FileHandlerService service = new FileHandlerService();
-            final BatchServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
+            final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = this.relativeTo;
             if (relativeTo != null) {
                 serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo), String.class, service.getRelativeToInjector());

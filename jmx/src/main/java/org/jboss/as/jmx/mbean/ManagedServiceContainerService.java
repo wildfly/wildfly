@@ -39,7 +39,7 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.jmx.ObjectNameFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -67,7 +67,7 @@ public class ManagedServiceContainerService implements Service<Void> {
 
     public static void addService(final BatchBuilder batchBuilder) {
         ManagedServiceContainerService service = new ManagedServiceContainerService();
-        BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, service);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
     }

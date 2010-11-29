@@ -84,7 +84,7 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             final Module module = deploymentModuleLoader.loadModule(moduleIdentifier);
             context.putAttachment(MODULE_ATTACHMENT_KEY, module);
-            context.getBatchServiceBuilder().addListener(new ModuleRemoveListener(deploymentModuleLoader, module));
+            context.getServiceBuilder().addListener(new ModuleRemoveListener(deploymentModuleLoader, module));
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }

@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.service;
 
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -52,7 +52,7 @@ public class PackageAdminService implements Service<PackageAdmin> {
 
     public static void addService(final BatchBuilder batchBuilder) {
         PackageAdminService service = new PackageAdminService();
-        BatchServiceBuilder<?> serviceBuilder = batchBuilder.addService(PackageAdminService.SERVICE_NAME, service);
+        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(PackageAdminService.SERVICE_NAME, service);
         serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, BundleContext.class, service.injectedContext);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
     }

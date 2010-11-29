@@ -25,7 +25,7 @@ package org.jboss.as.services.path;
 import java.io.File;
 
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -38,11 +38,11 @@ public class AbsolutePathService extends AbstractPathService {
 
     private final String absolutePath;
 
-    public static BatchServiceBuilder<String> addService(final String name, final String abstractPath, final BatchBuilder batchBuilder) {
+    public static ServiceBuilder<String> addService(final String name, final String abstractPath, final BatchBuilder batchBuilder) {
         return addService(pathNameOf(name), abstractPath, batchBuilder);
     }
 
-    public static BatchServiceBuilder<String> addService(final ServiceName sname, final String abstractPath, final BatchBuilder batchBuilder) {
+    public static ServiceBuilder<String> addService(final ServiceName sname, final String abstractPath, final BatchBuilder batchBuilder) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
         return batchBuilder.addService(sname, service);
     }

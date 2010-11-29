@@ -31,7 +31,7 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
 import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * @author Emanuel Muckenhuber
@@ -66,7 +66,7 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final BatchBuilder builder = updateContext.getBatchBuilder();
         final WebVirtualHostService service = new WebVirtualHostService(name, aliases());
-        final BatchServiceBuilder<?> serviceBuilder =  builder.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
+        final ServiceBuilder<?> serviceBuilder =  builder.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())
             .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getWebServer());
         if(accessLog != null) {

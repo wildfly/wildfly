@@ -45,7 +45,7 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -149,7 +149,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         hqservice.setConfiguration(hqConfig);
 
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        final BatchServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
+        final ServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
                 .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
 
         // FIXME move the JMSService into the jms subsystem
@@ -314,7 +314,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
         queues.add(queue);
     }
 
-    static void addPathDependency(String name, HornetQService hqService, BatchServiceBuilder<?> serviceBuilder) {
+    static void addPathDependency(String name, HornetQService hqService, ServiceBuilder<?> serviceBuilder) {
         serviceBuilder.addDependency(PATH_BASE.append(name), String.class, hqService.getPathInjector(name));
     }
 

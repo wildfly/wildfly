@@ -33,7 +33,7 @@ import org.jboss.as.osgi.service.PackageAdminService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -82,7 +82,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         BatchBuilder batchBuilder = context.getBatchBuilder();
         OSGiDeploymentService service = new OSGiDeploymentService(deployment);
         ServiceName serviceName = OSGiDeploymentService.SERVICE_NAME.append(deploymentServiceName.getSimpleName());
-        BatchServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(serviceName, service);
+        ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(serviceName, service);
         serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, BundleContext.class, service.injectedContext);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
         serviceBuilder.addDependency(deploymentServiceName);
