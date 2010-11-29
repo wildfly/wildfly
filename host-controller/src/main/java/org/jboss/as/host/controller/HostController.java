@@ -230,7 +230,7 @@ public class HostController {
             }
         });
 
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder, serviceContainer);
 
         // Always activate the management port
         activateManagementCommunication(serviceActivatorContext);
