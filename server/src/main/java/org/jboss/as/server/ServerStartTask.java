@@ -68,7 +68,9 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -125,14 +127,18 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
 
         final ServerStartupListener serverStartupListener = new ServerStartupListener(createListenerCallback());
-        final ServerStartBatchBuilder batchBuilder = new ServerStartBatchBuilder(container.batchBuilder(), serverStartupListener);
+        final BatchBuilder batchBuilder = container.batchBuilder();
         batchBuilder.addListener(serverStartupListener);
 
         // First-stage (boot) services
 
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
-            public BatchBuilder getBatchBuilder() {
-                return batchBuilder;
+            public ServiceTarget getServiceTarget() {
+                return container;
+            }
+
+            public ServiceRegistry getServiceRegistry() {
+                return container;
             }
         };
 
@@ -141,12 +147,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         // Services specified by the creator of this object
-        for (ServiceActivator service : this.startServices) {
-            service.activate(serviceActivatorContext);
-        }
-
-        // Services specified to this method
-        for (ServiceActivator service : runServices) {
+        for (ServiceActivator service : startServices) {
             service.activate(serviceActivatorContext);
         }
 
