@@ -135,8 +135,16 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
                 }
                 connection.setMessageHandler(ManagementRequest.this);
                 sendRequest(responseHeader.getVersion(), connection);
+            } catch (Exception e) {
+                future.setException(e);
             } finally {
                 safeClose(input);
+                if (future.isDone()) {
+                    // We must have failed above and set the exception.
+                    // If we fail sending we shouldn't expect a response,
+                    // so consider the connection complete
+                    connectionStrategy.complete();
+                }
             }
         }
     };
@@ -195,10 +203,15 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private MessageHandler responseBodyHandler = new AbstractMessageHandler() {
         @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
-            connection.setMessageHandler(responseEndHandler);
-            expectHeader(input, ManagementProtocol.RESPONSE_BODY);
-            synchronized (resultLock) {
-                result = receiveResponse(input);
+            try {
+                connection.setMessageHandler(responseEndHandler);
+                expectHeader(input, ManagementProtocol.RESPONSE_BODY);
+                synchronized (resultLock) {
+                    result = receiveResponse(input);
+                }
+            }
+            catch (Exception e) {
+                future.setException(e);
             }
         }
     };
@@ -206,12 +219,19 @@ public abstract class ManagementRequest<T> extends AbstractMessageHandler {
     private MessageHandler responseEndHandler = new AbstractMessageHandler() {
         @Override
         public final void handle(final Connection connection, final InputStream input) throws IOException {
-            connection.setMessageHandler(MessageHandler.NULL);
-            expectHeader(input, ManagementProtocol.RESPONSE_END);
-            synchronized (resultLock) {
-                future.set(result);
+            try {
+                connection.setMessageHandler(MessageHandler.NULL);
+                expectHeader(input, ManagementProtocol.RESPONSE_END);
+                synchronized (resultLock) {
+                    future.set(result);
+                }
             }
-            connectionStrategy.complete();
+            catch (Exception e) {
+                future.setException(e);
+            }
+            finally {
+                connectionStrategy.complete();
+            }
         }
     };
 
