@@ -31,7 +31,6 @@
     </resources>
 
     <dependencies>
-        <module name="system"/>
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager"/>

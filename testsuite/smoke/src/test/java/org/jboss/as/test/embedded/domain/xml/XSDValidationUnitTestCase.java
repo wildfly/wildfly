@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.flat.domain.xml;
+package org.jboss.as.test.embedded.domain.xml;
 
 import java.net.URL;
 
@@ -28,6 +28,7 @@ import javax.xml.validation.SchemaFactory;
 
 import junit.framework.TestCase;
 
+import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -39,14 +40,18 @@ import org.xml.sax.SAXParseException;
  * @version $Revision: 1.1 $
  */
 public class XSDValidationUnitTestCase extends TestCase {
+
+    @Test
     public void testJBoss70() throws Exception {
         validateXsd("jboss_7_0.xsd");
     }
 
+    @Test
     public void testJBossConnector() throws Exception {
         validateXsd("jboss-connector.xsd");
     }
 
+    @Test
     public void testJBossDatasources() throws Exception {
         // FIXME disabled until it passes
         if (Boolean.TRUE)
@@ -54,6 +59,7 @@ public class XSDValidationUnitTestCase extends TestCase {
         validateXsd("jboss-datasources.xsd");
     }
 
+    @Test
     public void testJBossResourceAdapters() throws Exception {
         // FIXME disabled until it passes
         if (Boolean.TRUE)
@@ -61,38 +67,47 @@ public class XSDValidationUnitTestCase extends TestCase {
         validateXsd("jboss-resource-adapters.xsd");
     }
 
+    @Test
     public void testJBossJmx() throws Exception {
         validateXsd("jboss-jmx.xsd");
     }
 
+    @Test
     public void testJBossLogging() throws Exception {
         validateXsd("jboss-logging.xsd");
     }
 
+    @Test
     public void testJBossManagedBean() throws Exception {
         validateXsd("jboss-managedbean.xsd");
     }
 
+    @Test
     public void testJBossMessaging() throws Exception {
         validateXsd("jboss-messaging.xsd");
     }
 
+    @Test
     public void testJBossJMS() throws Exception {
         validateXsd("jboss-jms.xsd");
     }
 
+    @Test
     public void testJBossNaming() throws Exception {
         validateXsd("jboss-naming.xsd");
     }
 
+    @Test
     public void testJBossRemoting() throws Exception {
         validateXsd("jboss-remoting.xsd");
     }
 
+    @Test
     public void testJBossSar() throws Exception {
         validateXsd("jboss-sar.xsd");
     }
 
+    @Test
     public void testJBossThreads() throws Exception {
         validateXsd("jboss-threads.xsd");
     }

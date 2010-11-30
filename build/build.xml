@@ -166,6 +166,8 @@
             <maven-resource group="org.jboss.spec.javax.xml.soap" artifact="jboss-saaj-api_1.3_spec"/>
         </module-def>
 
+        <module-def name="javax.xml.stream.api"/>
+
         <module-def name="javax.xml.ws.api">
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>

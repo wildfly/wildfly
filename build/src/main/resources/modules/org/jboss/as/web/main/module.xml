@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="javax.annotation.api"/>
+        <module name="javax.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
         <module name="org.jboss.jandex"/>
@@ -41,6 +42,5 @@
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.common-core" />
-        <module name="system" />
     </dependencies>
 </module>

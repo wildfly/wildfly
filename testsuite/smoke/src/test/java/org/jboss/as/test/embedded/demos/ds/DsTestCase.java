@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignored until connector better supports adding datasources programatically (since the ds is commented out in standalone.xml). Also, we need a patch to jboss-modules as explained in http://lists.jboss.org/pipermail/jboss-as7-dev/2010-November/000024.html")
+@Ignore("Ignored until connector better supports adding datasources programatically (since the ds is commented out in standalone.xml).")
 public class DsTestCase {
     private static final String JNDI_NAME = "java:/H2DS";
 

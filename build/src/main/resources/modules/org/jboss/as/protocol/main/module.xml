@@ -29,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module name="system"/>
+        <module name="javax.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
     </dependencies>

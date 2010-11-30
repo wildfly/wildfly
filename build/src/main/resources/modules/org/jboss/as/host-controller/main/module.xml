@@ -46,6 +46,5 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.stdio"/>
-        <module name="system"/>
     </dependencies>
 </module>

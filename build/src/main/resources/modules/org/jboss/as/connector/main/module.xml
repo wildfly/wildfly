@@ -49,7 +49,6 @@
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
-        <module name="system"/>
     </dependencies>
 
 </module>

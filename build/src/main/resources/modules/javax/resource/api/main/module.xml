@@ -25,7 +25,11 @@
 <module xmlns="urn:jboss:module:1.0" name="javax.resource.api">
     <dependencies>
         <module name="javax.transaction.api" export="true"/>
-        <module name="system"/>
+        <module name="javax.api" export="true">
+            <exports>
+                <include path="javax.naming"/>
+            </exports>
+        </module>
     </dependencies>
 
     <resources>

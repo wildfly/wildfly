@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
@@ -51,6 +52,5 @@
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="system"/>
     </dependencies>
 </module>

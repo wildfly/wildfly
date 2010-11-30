@@ -22,12 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.staxmapper">
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
+<module xmlns="urn:jboss:module:1.0" name="javax.xml.stream.api">
 
     <dependencies>
-        <module name="javax.xml.stream.api" export="true"/>
+        <module name="system" export="true">
+            <exports>
+                <include path="javax/xml/stream"/>
+                <include path="javax/xml/stream/events"/> 
+                <include path="javax/xml/stream/util"/> 
+                <exclude path="**"/> 
+            </exports>
+        </module>
     </dependencies>
 </module>

@@ -28,5 +28,11 @@
     </resources>
 
     <dependencies>
+        <module name="system" export="true">
+            <exports>
+                <include path="org/jboss/logmanager/**"/>
+                <exclude path="**"/> 
+            </exports>
+        </module>
     </dependencies>
 </module>

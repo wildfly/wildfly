@@ -35,7 +35,6 @@ import org.jboss.as.test.modular.utils.PollingUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.test.modular.utils.PollingUtils.JndiLookupTask;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +45,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.IN_CONTAINER)
-@Ignore("Ignored until modules have been reorganized as mentioned in http://lists.jboss.org/pipermail/jboss-as7-dev/2010-November/000025.html")
+//@Ignore("Ignored until modules have been reorganized as mentioned in http://lists.jboss.org/pipermail/jboss-as7-dev/2010-November/000025.html")
 public class ManagedBeanTestCase {
 
     @Deployment

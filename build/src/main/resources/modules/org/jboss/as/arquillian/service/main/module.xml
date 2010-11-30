@@ -29,6 +29,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="junit.junit"/>
         <module name="org.jboss.as.domain" />
         <module name="org.jboss.as.jmx" />
         <module name="org.jboss.as.osgi" />
@@ -37,11 +39,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.arquillian.junit"/>
         <module name="org.jboss.as.arquillian.jmx-executor" />
-        <!-- module name="org.jboss.arquillian.testenricher.msc"/>
-        <module name="org.jboss.arquillian.testenricher.osgi"/-->
         <module name="org.jboss.jandex"/>
-        <module name="junit.junit"/>
-        <module name="system" />
     </dependencies>
 
 </module>

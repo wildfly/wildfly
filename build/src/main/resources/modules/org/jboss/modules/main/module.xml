@@ -27,6 +27,7 @@
         <module name="system" export="true">
             <exports>
                 <include path="org/jboss/modules"/>
+                <exclude path="**"/> 
             </exports>
         </module>
     </dependencies>

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.flat.domain.xml;
+package org.jboss.as.test.embedded.domain.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import junit.framework.TestCase;
+import junit.framework.Assert;
 
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -47,12 +53,20 @@ import org.xml.sax.XMLReader;
  * @author Brian Stansberry
  * @version $Revision: 1.1 $
  */
-public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
+@RunWith(Arquillian.class)
+public class StandardConfigsXMLValidationUnitTestCase {
 
+    @Deployment
+    public static Archive<?> getDeployment(){
+        return ShrinkWrapUtils.createJavaArchive("domain-xml/standard-validation.jar", StandardConfigsXMLValidationUnitTestCase.class);
+    }
+
+    @Test
     public void testHost() throws Exception {
         parseXml("domain/configuration/host.xml");
     }
 
+    @Test
     public void testDomain() throws Exception {
         // FIXME disabled until it passes
         if (Boolean.TRUE)
@@ -60,6 +74,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
         parseXml("domain/configuration/domain.xml");
     }
 
+    @Test
     public void testStandalone() throws Exception {
         // FIXME disabled until it passes
         if (Boolean.TRUE)
@@ -85,7 +100,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
             @Override
             public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                 if (systemId == null)
-                    fail("Failed to resolve schema: systemId is null");
+                    Assert.fail("Failed to resolve schema: systemId is null");
                 int lastSlash = systemId.lastIndexOf('/');
                 if (lastSlash > 0)
                     systemId = systemId.substring(lastSlash + 1);
@@ -110,7 +125,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
                     f = child;
 
         if (f == null)
-            fail("Server not built");
+            Assert.fail("Server not built");
 
         f = new File(f, xmlName);
         return f.toURI().toURL();
@@ -122,19 +137,19 @@ public class StandardConfigsXMLValidationUnitTestCase extends TestCase {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
         if (url == null)
             url = Thread.currentThread().getContextClassLoader().getResource(xsdName);
-        assertNotNull(resourceName + " not found", url);
+        Assert.assertNotNull(resourceName + " not found", url);
         return url;
     }
 
     private final class ErrorHandlerImpl implements ErrorHandler {
         @Override
         public void error(SAXParseException e) throws SAXException {
-            fail(formatMessage(e));
+            Assert.fail(formatMessage(e));
         }
 
         @Override
         public void fatalError(SAXParseException e) throws SAXException {
-            fail(formatMessage(e));
+            Assert.fail(formatMessage(e));
         }
 
         @Override

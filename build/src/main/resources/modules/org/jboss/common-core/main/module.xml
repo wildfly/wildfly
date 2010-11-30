@@ -28,8 +28,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.logging"/>
-        <module name="system"/>
         <!-- <module name="stax.stax-api"/> -->
     </dependencies>
 </module>

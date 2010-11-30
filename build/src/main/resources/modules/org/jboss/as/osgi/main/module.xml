@@ -29,6 +29,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.as.domain"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.jmx"/>
@@ -38,6 +39,5 @@
         <module name="org.jboss.osgi.framework"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.osgi.core"/>
-        <module name="system"/>
     </dependencies>
 </module>

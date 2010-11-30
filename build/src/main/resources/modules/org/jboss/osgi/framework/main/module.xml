@@ -44,6 +44,5 @@
                 <exclude path="**"/>
             </exports>
         </module>
-        <module name="system" export="true"/>
     </dependencies>
 </module>

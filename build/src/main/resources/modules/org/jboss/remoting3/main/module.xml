@@ -28,8 +28,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.marshalling" export="true"/>
         <module name="org.jboss.xnio" export="true"/>
-        <module name="system" />
     </dependencies>
 </module>
