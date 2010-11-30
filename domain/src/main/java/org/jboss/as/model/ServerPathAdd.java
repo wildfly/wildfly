@@ -26,6 +26,7 @@ import org.jboss.as.services.path.AbsolutePathService;
 import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Update to the {@code ServerModel} to add a new {@code PathElement}
@@ -70,16 +71,16 @@ public class ServerPathAdd extends AbstractServerModelUpdate<Void> {
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final BatchBuilder batch = context.getBatchBuilder();
-        final ServiceBuilder<?> builder = createService(batch);
-        builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+        final ServiceTarget target = context.getBatchBuilder().subTarget();
+        target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+        createService(target);
     }
 
-    ServiceBuilder<String> createService(final BatchBuilder batch) {
+    void createService(final ServiceTarget target) {
         if(update.isAbsolutePath()) {
-            return AbsolutePathService.addService(update.getName(), update.getPath(), batch);
+            AbsolutePathService.addService(update.getName(), update.getPath(), target);
         } else {
-            return RelativePathService.addService(update.getName(), update.getPath(), update.getRelativeTo(), batch);
+            RelativePathService.addService(update.getName(), update.getPath(), update.getRelativeTo(), target);
         }
     }
 

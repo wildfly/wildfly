@@ -30,6 +30,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -85,15 +86,15 @@ public abstract class AbstractExecutorAdd extends AbstractThreadsSubsystemUpdate
         return properties;
     }
 
-    protected <T> ServiceBuilder<T> addThreadFactoryDependency(final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, BatchBuilder builder) {
+    protected <T> void addThreadFactoryDependency(final ServiceName serviceName, ServiceBuilder<T> serviceBuilder, Injector<ThreadFactory> injector, ServiceTarget target) {
         final ServiceName threadFactoryName;
         if (threadFactory == null) {
             threadFactoryName = serviceName.append("thread-factory");
-            builder.addService(threadFactoryName, new ThreadFactoryService());
+            target.addService(threadFactoryName, new ThreadFactoryService());
         } else {
             threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
         }
-        return serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, injector);
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, injector);
     }
 
     public final ExecutorRemove getCompensatingUpdate(final ThreadsSubsystemElement original) {

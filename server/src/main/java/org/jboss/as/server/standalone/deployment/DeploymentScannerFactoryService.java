@@ -34,6 +34,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -54,13 +55,13 @@ public class DeploymentScannerFactoryService implements DeploymentScannerFactory
     private ServerDeploymentManager deploymentMgr;
     private ServerModel model;
 
-    public static ServiceBuilder<?> addService(final BatchBuilder builder) {
+    public static void addService(final ServiceTarget target) {
         final DeploymentScannerFactoryService service = new DeploymentScannerFactoryService();
         // FIXME inject ScheduledExecutorService from an external service dependency
         final ScheduledExecutorService hack = Executors.newSingleThreadScheduledExecutor();
 
         service.injectedScheduleExecutor.inject(hack);
-        return builder.addService(DeploymentScannerFactory.SERVICE_NAME, service)
+        target.addService(DeploymentScannerFactory.SERVICE_NAME, service)
                 .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager)
                 .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.injectedServerModel)
                 .setInitialMode(Mode.ON_DEMAND);

@@ -30,6 +30,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -69,7 +70,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static ServiceBuilder<DeploymentScanner> addService(final BatchBuilder batchBuilder,
+    public static void addService(final ServiceTarget batchBuilder,
             final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
         final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
         final ServiceName serviceName = getServiceName(name);
@@ -81,7 +82,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             AbsolutePathService.addService(pathService, path, batchBuilder);
         }
 
-        return batchBuilder.addService(serviceName, service)
+        batchBuilder.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(DeploymentScannerFactory.SERVICE_NAME, DeploymentScannerFactory.class, service.scannerFactory)
             .setInitialMode(Mode.ACTIVE);

@@ -46,6 +46,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -73,14 +74,13 @@ public class JMXConnectorService implements Service<Void> {
     private RMIJRMPServerImpl rmiServer;
     private Registry registry;
 
-    public static ServiceBuilder<?> addService(final BatchBuilder batchBuilder, final String serverBinding, final String registryBinding) {
+    public static void addService(final ServiceTarget target, final String serverBinding, final String registryBinding) {
         JMXConnectorService jmxConnectorService = new JMXConnectorService();
-        ServiceBuilder<Void> serviceBuilder = batchBuilder.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
+        target.addService(JMXConnectorService.SERVICE_NAME, jmxConnectorService)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(registryBinding), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(serverBinding), SocketBinding.class, jmxConnectorService.getServerPortBinding())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
-        return serviceBuilder;
     }
 
     @Override

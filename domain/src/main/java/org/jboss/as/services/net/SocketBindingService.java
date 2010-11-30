@@ -28,6 +28,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -88,17 +89,16 @@ public class SocketBindingService implements Service<SocketBinding> {
         return interfaceBinding;
     }
 
-    public static ServiceBuilder<SocketBinding> addService(BatchBuilder builder, SocketBindingAdd add) {
+    public static void addService(ServiceTarget target, SocketBindingAdd add) {
         SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
                    add.getMulticastAddress(), add.getMulticastPort());
-        ServiceBuilder<SocketBinding> batch = builder
+        ServiceBuilder<SocketBinding> batch = target
             .addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service);
         batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()),
                 NetworkInterfaceBinding.class, service.getInterfaceBinding());
         batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
                 SocketBindingManager.class, service.getSocketBindings());
         batch.setInitialMode(Mode.ON_DEMAND);
-        return batch;
     }
 
 }
