@@ -22,7 +22,14 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.deployment.DeploymentPhases;
+import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
+
+import java.io.InputStream;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -33,13 +40,6 @@ import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.InputStream;
-
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
-
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
  * descriptor and attaching the corresponding KernelDeploymentXmlDescriptor.
@@ -47,7 +47,6 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(500L);
 
     private final XMLMapper xmlMapper = XMLMapper.Factory.create();
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();

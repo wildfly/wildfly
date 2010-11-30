@@ -22,17 +22,12 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 
-import static org.jboss.as.deployment.chain.JarDeploymentActivator.JAR_DEPLOYMENT_CHAIN_SERVICE_NAME;
 
 /**
  * Microcontainer substem add.
@@ -50,19 +45,15 @@ final class McSubsystemAdd extends AbstractSubsystemAdd<McSubsystemElement> {
 
     @Override
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-        addDeploymentProcessor(batchBuilder, new KernelDeploymentParsingProcessor(), KernelDeploymentParsingProcessor.PRIORITY);
-        addDeploymentProcessor(batchBuilder, new ParsedKernelDeploymentProcessor(), ParsedKernelDeploymentProcessor.PRIORITY);
+    }
+
+    protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
+        updateContext.addDeploymentProcessor(new KernelDeploymentParsingProcessor(), Phase.MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ParsedKernelDeploymentProcessor(), Phase.PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR);
     }
 
     @Override
     protected McSubsystemElement createSubsystemElement() {
         return new McSubsystemElement();
-    }
-
-    private static <T extends DeploymentUnitProcessor> BatchServiceBuilder<T> addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
-        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        return batchBuilder.addService(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(JAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }

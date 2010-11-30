@@ -51,6 +51,7 @@ public final class Phase {
     public static final int TLD_PARSING_DEPLOYMENT_PROCESSOR            = PARSE + 0x900;
     public static final int RA_DEPLOYMENT_PARSING_PROCESSOR             = PARSE + 0xA00;
     public static final int SERVICE_DEPLOYMENT_PARSING_PROCESSOR        = PARSE + 0xB00;
+    public static final int MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR        = PARSE + 0xB80;
     public static final int IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR   = PARSE + 0xC00;
     public static final int RESOURCE_ADAPTERS_ATTACHING_PROCESSOR       = PARSE + 0xD00;
     public static final int DATA_SOURCES_ATTACHMENT_PROCESSOR           = PARSE + 0xE00;
@@ -84,6 +85,8 @@ public final class Phase {
     public static final int WAR_META_DATA_PROCESSOR                     = INSTALL + 0x400;
     public static final int PARSED_RA_DEPLOYMENT_PROCESSOR              = INSTALL + 0x500;
     public static final int PARSED_SERVICE_DEPLOYMENT_PROCESSOR         = INSTALL + 0x600;
+    public static final int PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR         = INSTALL + 0x680;
+
     public static final int RA_XML_DEPLOYMENT_PROCESSOR                 = INSTALL + 0x700;
     public static final int DS_DEPLOYMENT_PROCESSOR                     = INSTALL + 0x800;
     public static final int MANAGED_BEAN_DEPLOYMENT_PROCESSOR           = INSTALL + 0x900;

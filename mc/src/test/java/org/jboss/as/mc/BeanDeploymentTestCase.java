@@ -22,34 +22,37 @@
 
 package org.jboss.as.mc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.jboss.as.deployment.attachment.VirtualFileAttachment;
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.JarDeploymentActivator;
+import org.jboss.as.deployment.chain.DeploymentChainImpl;
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.module.DeploymentModuleLoaderImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderService;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
+import org.jboss.as.deployment.module.ModuleConfigProcessor;
+import org.jboss.as.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
-import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Simple MC beans test.
- * 
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
@@ -64,14 +67,18 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
     protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
         super.setupServices(batchBuilder);
 
-        final DeploymentModuleLoaderService deploymentModuleLoaderService = new DeploymentModuleLoaderService(new DeploymentModuleLoaderImpl());
-        batchBuilder.addService(DeploymentModuleLoaderService.SERVICE_NAME, deploymentModuleLoaderService);
+        final DeploymentChain deploymentChain = new DeploymentChainImpl();
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
 
-        new JarDeploymentActivator().activate(new ServiceActivatorContext() {
-            public BatchBuilder getBatchBuilder() {
-                return batchBuilder;
-            }
-        });
+        deploymentChain.addProcessor(new KernelDeploymentParsingProcessor(), Phase.MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR);
+        deploymentChain.addProcessor(new ParsedKernelDeploymentProcessor(), Phase.PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR);
+
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
 
         Service<Context> ns = new AbstractService<Context>() {
             @Override
@@ -88,18 +95,6 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
 
     @Test
     public void testDeployment() throws Exception {
-
-        DeploymentChain deploymentChain = (DeploymentChain) serviceContainer.getService(JarDeploymentActivator.JAR_DEPLOYMENT_CHAIN_SERVICE_NAME).getValue();
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
-            new DeploymentChainProvider.Selector() {
-                public boolean supports(DeploymentUnitContext deploymentUnitContext) {
-                    VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(deploymentUnitContext);
-                    return "mcXmlDeployment.jar".equals(virtualFile.getName());
-                }
-            }
-        );
-        deploymentChain.addProcessor(new KernelDeploymentParsingProcessor(), KernelDeploymentParsingProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ParsedKernelDeploymentProcessor(), ParsedKernelDeploymentProcessor.PRIORITY);
 
         executeDeployment(initializeDeployment("/test/mcXmlDeployment.jar"));
 

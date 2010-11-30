@@ -26,7 +26,6 @@ import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -50,7 +49,6 @@ import org.jboss.msc.value.Values;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.INSTALL_SERVICES.plus(102L);
 
     /**
      * Process a deployment for KernelDeployment confguration.
