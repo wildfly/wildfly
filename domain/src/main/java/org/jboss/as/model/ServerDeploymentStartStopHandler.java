@@ -180,8 +180,6 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             // Create the deployment unit context
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
 
-            serviceBuilder.install();
-
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);
 
@@ -203,6 +201,9 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
                 throw new RuntimeException("Failed determine the deployment chain for deployment root: " + deploymentRoot);
             try {
                 deploymentChain.processDeployment(deploymentUnitContext);
+                // FIXME install the service after the chain is complete
+                serviceBuilder.install();
+                deploymentSubBatch.install();
             } catch (DeploymentUnitProcessingException e) {
                 throw new RuntimeException("Failed to process deployment chain.", e);
             }

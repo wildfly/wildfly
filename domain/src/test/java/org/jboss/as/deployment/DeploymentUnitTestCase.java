@@ -22,6 +22,10 @@
 
 package org.jboss.as.deployment;
 
+import org.jboss.as.deployment.chain.DeploymentChain;
+import org.jboss.as.deployment.chain.DeploymentChainImpl;
+import org.jboss.as.deployment.chain.DeploymentChainService;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
@@ -36,6 +40,14 @@ import static org.junit.Assert.assertNotNull;
  * @author John E. Bailey
  */
 public class DeploymentUnitTestCase extends AbstractDeploymentTest {
+
+    @Override
+    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
+        super.setupServices(batchBuilder);
+
+        final DeploymentChain deploymentChain = new DeploymentChainImpl();
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain)).install();
+    }
 
     @Test
     public void testDeployVirtualFile() throws Exception {
