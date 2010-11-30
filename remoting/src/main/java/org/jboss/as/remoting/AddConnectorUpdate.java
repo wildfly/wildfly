@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,15 +30,12 @@ import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
-import org.jboss.xnio.ChannelListener;
 import org.jboss.xnio.OptionMap;
-import org.jboss.xnio.channels.ConnectedStreamChannel;
 
 /**
  * Add a connector to a remoting container.
@@ -80,14 +76,16 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
 
         // Register the service with the container and inject dependencies.
         final ServiceName connectorName = ConnectorElement.connectorName(name);
-        final ServiceBuilder<ChannelListener<ConnectedStreamChannel<InetSocketAddress>>> serviceBuilder = batchBuilder.addService(connectorName, connectorService);
-        serviceBuilder.addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector());
-        serviceBuilder.addDependency(RemotingSubsystemElement.JBOSS_REMOTING_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector());
-        serviceBuilder.addListener(listener);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        try {
+            batchBuilder.addService(connectorName, connectorService)
+                .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
+                .addDependency(RemotingSubsystemElement.JBOSS_REMOTING_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+                .addListener(listener)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         // TODO create XNIO connector service from socket-binding, with dependency on connectorName
-        try {
+
             batchBuilder.install();
         } catch (ServiceRegistryException e) {
             resultHandler.handleFailure(e, param);

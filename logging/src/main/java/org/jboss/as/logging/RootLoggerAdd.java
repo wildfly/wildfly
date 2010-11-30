@@ -59,9 +59,10 @@ public class RootLoggerAdd extends AbstractLoggerAdd {
             final RootLoggerService service = new RootLoggerService();
             service.setLevel(Level.parse(getLevelName()));
             final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
-            final ServiceBuilder<Logger> builder = batchBuilder.addService(LogServices.ROOT_LOGGER, service);
-            builder.setInitialMode(ServiceController.Mode.ACTIVE);
-            builder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+            batchBuilder.addService(LogServices.ROOT_LOGGER, service)
+                .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
         } catch (Throwable t) {
             resultHandler.handleFailure(t, param);
             return;

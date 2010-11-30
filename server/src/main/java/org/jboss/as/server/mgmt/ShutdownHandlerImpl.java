@@ -48,7 +48,7 @@ public class ShutdownHandlerImpl implements ShutdownHandler, Service<ShutdownHan
     public static void addService(BatchBuilder batchBuilder) {
 
         ShutdownHandlerImpl service = new ShutdownHandlerImpl();
-        batchBuilder.addService(SERVICE_NAME, service);
+        batchBuilder.addService(SERVICE_NAME, service).install();
     }
 
     // ShutdownHandler

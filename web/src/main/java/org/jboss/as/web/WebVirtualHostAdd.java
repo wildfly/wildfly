@@ -78,6 +78,7 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
         if(rewrite != null) {
             service.setRewrite(rewrite);
         }
+        serviceBuilder.install();
     }
 
     /** {@inheritDoc} */

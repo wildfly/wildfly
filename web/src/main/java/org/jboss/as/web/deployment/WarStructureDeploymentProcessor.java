@@ -88,10 +88,11 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
             final BatchBuilder builder = context.getBatchBuilder();
             final ServiceName sName = ServiceName.JBOSS.append("deployment", context.getName(), "structure");
-            builder.addService(sName, new DeploymentStructureService(structure));
+            builder.addService(sName, new DeploymentStructureService(structure))
+                .install();
             builder.addDependency(sName);
 
-        } catch(IOException e) {
+        } catch(Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
         // Add the war metadata

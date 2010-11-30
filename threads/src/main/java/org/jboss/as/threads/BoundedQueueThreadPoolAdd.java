@@ -66,6 +66,7 @@ public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(coreThreads, maxThreads, queueLength, blocking, getKeepaliveTime(), allowCoreTimeout);
         final ServiceBuilder<Executor> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
+        serviceBuilder.install();
     }
 
     protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {

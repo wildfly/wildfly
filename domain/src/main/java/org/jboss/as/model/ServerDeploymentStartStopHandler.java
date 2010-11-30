@@ -180,6 +180,8 @@ public final class ServerDeploymentStartStopHandler implements Serializable {
             // Create the deployment unit context
             final DeploymentUnitContext deploymentUnitContext = new DeploymentUnitContextImpl(deploymentServiceName.getSimpleName(), deploymentSubBatch, serviceBuilder);
 
+            serviceBuilder.install();
+
             attachVirtualFile(deploymentUnitContext, deploymentRoot);
             deploymentUnitContext.putAttachment(MountHandle.ATTACHMENT_KEY, handle);
 

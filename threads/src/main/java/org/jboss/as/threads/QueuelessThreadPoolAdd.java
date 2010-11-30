@@ -55,6 +55,7 @@ public final class QueuelessThreadPoolAdd extends AbstractExecutorAdd {
         final QueuelessThreadPoolService service = new QueuelessThreadPoolService(maxThreads, blocking, getKeepaliveTime());
         final ServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
+        serviceBuilder.install();
     }
 
     protected void applyUpdate(final ThreadsSubsystemElement element) throws UpdateFailedException {

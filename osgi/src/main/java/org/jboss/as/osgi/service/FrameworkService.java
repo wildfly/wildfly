@@ -33,7 +33,6 @@ import org.jboss.as.osgi.parser.OSGiSubsystemState.OSGiModule;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -74,11 +73,12 @@ public class FrameworkService implements Service<BundleContext> {
 
     public static void addService(final BatchBuilder batchBuilder, Activation policy) {
         FrameworkService service = new FrameworkService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(FrameworkService.SERVICE_NAME, service);
-        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
-        serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
-        serviceBuilder.setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE);
+        batchBuilder.addService(FrameworkService.SERVICE_NAME, service)
+            .addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager)
+            .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer)
+            .addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig)
+            .setInitialMode(policy == Activation.LAZY ? Mode.ON_DEMAND : Mode.ACTIVE)
+            .install();
     }
 
     public static BundleContext getServiceValue(ServiceContainer container) {

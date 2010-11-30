@@ -122,9 +122,12 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             interceptors.add(processInterceptor(interceptorConfiguration.getInterceptorClass(), deploymentContext, moduleContext, interceptorConfiguration, batchBuilder, serviceBuilder, managedBeanContextServiceName, managedBeanContextJndiName));
         }
 
+        serviceBuilder.install();
+
         final ContextService actualBeanContext = new ContextService(managedBeanContextJndiName);
         batchBuilder.addService(managedBeanContextServiceName, actualBeanContext)
-            .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector());
+            .addDependency(moduleContextServiceName, Context.class, actualBeanContext.getParentContextInjector())
+            .install();
 
         // Add an object factory reference for this managed bean
         final Reference managedBeanFactoryReference = ManagedBeanObjectFactory.createReference(beanClass, managedBeanServiceName.toString());
@@ -132,7 +135,8 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName referenceBinderName = moduleContextServiceName.append(managedBeanName);
         batchBuilder.addService(referenceBinderName, managedBeanFactoryBinder)
             .addDependency(moduleContextServiceName, Context.class, managedBeanFactoryBinder.getContextInjector())
-            .addDependency(managedBeanServiceName);
+            .addDependency(managedBeanServiceName)
+            .install();
     }
 
     private <T> ManagedBeanService<T> createManagedBeanService(final Class<T> beanClass, final ClassLoader classLoader, final ManagedBeanConfiguration managedBeanConfiguration, List<ResourceInjection<?>> resourceInjections, final List<ManagedBeanInterceptor<?>> interceptors) {
@@ -171,6 +175,7 @@ public class ManagedBeanDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 binderServiceBuilder.addOptionalDependency(moduleContext.getContextServiceName().append(targetContextName));
             }
+            binderServiceBuilder.install();
         }
 
         return resourceInjection;

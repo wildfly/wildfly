@@ -58,11 +58,12 @@ public final class LoggerHandlerAdd extends AbstractLoggingSubsystemUpdate<Void>
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
             final LoggerHandlerService service = new LoggerHandlerService(loggerName);
-            final ServiceBuilder<Logger> serviceBuilder = updateContext.getBatchBuilder().addService(LogServices.loggerHandlerName(loggerName, handlerName), service);
-            serviceBuilder.addDependency(LogServices.loggerName(loggerName));
             final Injector<Handler> injector = service.getHandlerInjector();
-            serviceBuilder.addDependency(LogServices.handlerName(handlerName), Handler.class, injector);
-            serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
+            updateContext.getBatchBuilder().addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
+                .addDependency(LogServices.loggerName(loggerName))
+                .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
+                .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
+                .install();
         } catch (Throwable t) {
             handler.handleFailure(t, param);
             return;

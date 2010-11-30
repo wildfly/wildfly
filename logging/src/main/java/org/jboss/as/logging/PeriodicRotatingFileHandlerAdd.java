@@ -80,6 +80,7 @@ public class PeriodicRotatingFileHandlerAdd extends FileHandlerAdd {
             service.setSuffix(suffix);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
+            serviceBuilder.install();
         } catch (Throwable t) {
             handler.handleFailure(t, param);
         }

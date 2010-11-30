@@ -22,21 +22,15 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.List;
 
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
-import org.jboss.as.connector.subsystems.connector.ConnectorSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
 import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
-import org.jboss.as.connector.util.Injection;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
@@ -46,20 +40,13 @@ import org.jboss.as.txn.TxnServices;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
-import org.jboss.jca.deployers.common.AbstractDsDeployer;
-import org.jboss.jca.deployers.common.CommonDeployment;
-import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -140,7 +127,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(uniqueJdbcXAId));
                 serviceBuilder.addOptionalDependencies(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(uniqueJdbcXAId));
             }
-
+            serviceBuilder.install();
         }
 
 

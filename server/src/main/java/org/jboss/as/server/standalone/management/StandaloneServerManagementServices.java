@@ -53,7 +53,8 @@ public class StandaloneServerManagementServices {
                     .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
                     .addInjection(managementCommunicationService.getExecutorServiceInjector(), Executors.newCachedThreadPool())
                     .addInjection(managementCommunicationService.getThreadFactoryInjector(), Executors.defaultThreadFactory())
-                    .setInitialMode(ServiceController.Mode.ACTIVE);
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
             // Handlers
             final ServerControllerOperationHandler clientOperationHandler = new ServerControllerOperationHandler(container);
             batchBuilder.addService(ServerControllerOperationHandler.SERVICE_NAME, clientOperationHandler)
@@ -65,7 +66,8 @@ public class StandaloneServerManagementServices {
                     .addDependency(ShutdownHandler.SERVICE_NAME, ShutdownHandler.class, clientOperationHandler.getShutdownHandlerValue())
                     // FIXME inject executor
                     .addInjection(clientOperationHandler.getExecutorValue(), Executors.newCachedThreadPool())
-                    .setInitialMode(ServiceController.Mode.ACTIVE);
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
         }
     }
 

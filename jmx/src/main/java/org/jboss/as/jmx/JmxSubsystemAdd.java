@@ -46,6 +46,7 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
 
         MBeanServerService.addService(batchBuilder);
         ManagedServiceContainerService.addService(batchBuilder);
+
     }
 
     @Override

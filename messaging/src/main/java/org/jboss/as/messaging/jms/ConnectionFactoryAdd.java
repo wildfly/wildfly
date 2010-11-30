@@ -60,7 +60,8 @@ public class ConnectionFactoryAdd extends AbstractJMSSubsystemUpdate<Void> {
         context.getBatchBuilder().addService(serviceName, service)
                 .addDependency(JMSSubsystemElement.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
-                .setInitialMode(Mode.ACTIVE);
+                .setInitialMode(Mode.ACTIVE)
+                .install();
     }
 
     /** {@inheritDoc} */

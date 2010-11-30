@@ -193,6 +193,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
             }
         }
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        serviceBuilder.install();
     }
 
     @Override

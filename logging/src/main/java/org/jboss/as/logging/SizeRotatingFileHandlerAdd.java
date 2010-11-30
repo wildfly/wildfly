@@ -102,6 +102,7 @@ public class SizeRotatingFileHandlerAdd extends FileHandlerAdd {
             service.setRotateSize(rotateSize);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
+            serviceBuilder.install();
         } catch (Throwable t) {
             handler.handleFailure(t, param);
         }

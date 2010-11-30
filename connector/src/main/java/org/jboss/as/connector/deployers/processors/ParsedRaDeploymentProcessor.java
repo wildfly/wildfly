@@ -110,8 +110,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, raDeployementService.getTxmInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class, raDeployementService.getConfigInjector())
                     .addDependency(NamingService.SERVICE_NAME)
-                    .setInitialMode(Mode.ACTIVE);
-
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);
         }

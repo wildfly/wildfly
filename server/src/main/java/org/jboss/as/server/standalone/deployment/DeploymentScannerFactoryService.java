@@ -64,7 +64,8 @@ public class DeploymentScannerFactoryService implements DeploymentScannerFactory
         target.addService(DeploymentScannerFactory.SERVICE_NAME, service)
                 .addDependency(ServerDeploymentManager.SERVICE_NAME_LOCAL, ServerDeploymentManager.class, service.injectedDeploymentManager)
                 .addDependency(ServerModel.SERVICE_NAME, ServerModel.class, service.injectedServerModel)
-                .setInitialMode(Mode.ON_DEMAND);
+                .setInitialMode(Mode.ON_DEMAND)
+                .install();
     }
 
     /** {@inheritDoc} */

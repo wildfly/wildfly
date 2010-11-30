@@ -65,7 +65,8 @@ public class ServerEnvironmentService implements Service<ServerEnvironment> {
      * @param batchBuilder the batch builder. Cannot be {@code null}
      */
     public static void addService(ServerEnvironment serverEnvironment, BatchBuilder batchBuilder) {
-        batchBuilder.addService(SERVICE_NAME, new ServerEnvironmentService(serverEnvironment));
+        batchBuilder.addService(SERVICE_NAME, new ServerEnvironmentService(serverEnvironment))
+            .install();
     }
 
     private final ServerEnvironment serverEnvironment;

@@ -90,7 +90,8 @@ public abstract class AbstractExecutorAdd extends AbstractThreadsSubsystemUpdate
         final ServiceName threadFactoryName;
         if (threadFactory == null) {
             threadFactoryName = serviceName.append("thread-factory");
-            target.addService(threadFactoryName, new ThreadFactoryService());
+            target.addService(threadFactoryName, new ThreadFactoryService())
+                .install();
         } else {
             threadFactoryName = ThreadsServices.threadFactoryName(threadFactory);
         }

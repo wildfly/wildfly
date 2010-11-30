@@ -89,6 +89,7 @@ public class OSGiDeploymentService implements Service<Deployment> {
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         if (enableListener)
             serviceBuilder.addListener(listener);
+        serviceBuilder.install();
     }
 
     /**

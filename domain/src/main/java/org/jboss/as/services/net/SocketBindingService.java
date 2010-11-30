@@ -92,13 +92,11 @@ public class SocketBindingService implements Service<SocketBinding> {
     public static void addService(ServiceTarget target, SocketBindingAdd add) {
         SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
                    add.getMulticastAddress(), add.getMulticastPort());
-        ServiceBuilder<SocketBinding> batch = target
-            .addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service);
-        batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()),
-                NetworkInterfaceBinding.class, service.getInterfaceBinding());
-        batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
-                SocketBindingManager.class, service.getSocketBindings());
-        batch.setInitialMode(Mode.ON_DEMAND);
+        target.addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service)
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()), NetworkInterfaceBinding.class, service.getInterfaceBinding())
+            .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
+            .setInitialMode(Mode.ON_DEMAND)
+            .install();
     }
 
 }

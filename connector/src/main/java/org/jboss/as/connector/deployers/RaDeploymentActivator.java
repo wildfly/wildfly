@@ -53,13 +53,13 @@ public class RaDeploymentActivator {
 
         // add resources here
         MdrService mdrService = new MdrService();
-        batchBuilder.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService);
+        batchBuilder.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService);
+        batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService).install();
 
         JndiStrategyService jndiStrategyService = new JndiStrategyService();
-        batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService);
+        batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
 
         updateContext.addDeploymentProcessor(new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
         updateContext.addDeploymentProcessor(new RaDeploymentParsingProcessor(), Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);

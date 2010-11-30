@@ -66,7 +66,6 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param relativeTo the relative to
      * @param path the path
      * @param scanInterval the scan interval
-     * @param timeUnit the time unit
      * @param scanEnabled scan enabled
      * @return
      */
@@ -85,8 +84,8 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         batchBuilder.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(DeploymentScannerFactory.SERVICE_NAME, DeploymentScannerFactory.class, service.scannerFactory)
-            .setInitialMode(Mode.ACTIVE);
-
+            .setInitialMode(Mode.ACTIVE)
+            .install();
     }
 
     DeploymentScannerService(final long interval, final TimeUnit unit, final boolean enabled) {

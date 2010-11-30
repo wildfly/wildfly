@@ -43,6 +43,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -143,9 +144,14 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Add the context service
         final BatchBuilder builder = context.getBatchBuilder();
-        builder.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
-            .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
-            .setInitialMode(Mode.ACTIVE);
+        try {
+            builder.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
+                .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
+                .setInitialMode(Mode.ACTIVE)
+                .install();
+        } catch (ServiceRegistryException e) {
+            throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
+        }
     }
 
 }

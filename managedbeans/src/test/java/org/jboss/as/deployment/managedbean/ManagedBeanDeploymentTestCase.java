@@ -84,12 +84,15 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
 
         javaContext = new MockContext();
-        batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext));
+        batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext))
+            .install();
         final Context globalContext = javaContext.createSubcontext("global");
-        batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext));
+        batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext))
+            .install();
         globalContext.bind("someNumber", Integer.valueOf(99));
 
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
+            .install();
     }
 
     @Test

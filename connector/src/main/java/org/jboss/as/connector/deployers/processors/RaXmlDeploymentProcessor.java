@@ -122,7 +122,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.getTxmInjector())
                         .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, ConnectorSubsystemConfiguration.class, service.getConfigInjector())
                         .addDependency(NamingService.SERVICE_NAME)
-                        .setInitialMode(Mode.ACTIVE);
+                        .setInitialMode(Mode.ACTIVE)
+                        .install();
                 }
             }
         } catch (Throwable t) {

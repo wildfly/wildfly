@@ -108,6 +108,7 @@ public class FileHandlerAdd extends AbstractHandlerAdd {
             service.setFormatterSpec(getFormatter());
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param));
+            serviceBuilder.install();
         } catch (Throwable t) {
             handler.handleFailure(t, param);
             return;

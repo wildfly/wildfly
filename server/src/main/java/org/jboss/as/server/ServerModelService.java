@@ -48,7 +48,8 @@ public class ServerModelService implements Service<ServerModel> {
      */
     public static void addService(final ServerModel serverModel, final BatchBuilder batchBuilder) {
         ServerModelService service = new ServerModelService(serverModel);
-        batchBuilder.addService(ServerModel.SERVICE_NAME, service);
+        batchBuilder.addService(ServerModel.SERVICE_NAME, service)
+            .install();
     }
 
     private ServerModelService(ServerModel serverModel) {

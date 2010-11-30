@@ -72,28 +72,21 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         WorkManager wm = new WorkManagerImpl();
 
         final WorkManagerService wmService = new WorkManagerService(wm);
-        final ServiceBuilder<WorkManager> wmServiceBuilder = builder.addService(ConnectorServices.WORKMANAGER_SERVICE,
-                wmService);
-        wmServiceBuilder.addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class,
-                wmService.getExecutorShortInjector());
-        wmServiceBuilder.addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class,
-                wmService.getExecutorLongInjector());
-        wmServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
-                wmService.getXaTerminatorInjector());
-        wmServiceBuilder.setInitialMode(Mode.ACTIVE);
+        builder.addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
+            .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class, wmService.getExecutorShortInjector())
+            .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class, wmService.getExecutorLongInjector())
+            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
+            .setInitialMode(Mode.ACTIVE)
+            .install();
 
         CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
         final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
-        final ServiceBuilder<CloneableBootstrapContext> defaultBootCtxServiceBuilder = builder.addService(
-                ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService);
-        defaultBootCtxServiceBuilder.addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class,
-                defaultBootCtxService.getWorkManagerValueInjector());
-        defaultBootCtxServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class,
-                defaultBootCtxService.getXaTerminatorInjector());
-        defaultBootCtxServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
-                com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, defaultBootCtxService.getTxManagerInjector());
-
-        defaultBootCtxServiceBuilder.setInitialMode(Mode.ACTIVE);
+        builder.addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
+            .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class, defaultBootCtxService.getWorkManagerValueInjector())
+            .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, defaultBootCtxService.getXaTerminatorInjector())
+            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, defaultBootCtxService.getTxManagerInjector())
+            .setInitialMode(Mode.ACTIVE)
+            .install();
 
         final ConnectorSubsystemConfiguration config = new ConnectorSubsystemConfiguration();
 
@@ -103,11 +96,10 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         config.setBeanValidation(false);
 
         final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-        final ServiceBuilder<ConnectorSubsystemConfiguration> configServiceBuilder = builder.addService(
-                ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService);
-        configServiceBuilder.addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE,
-                CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector());
-        configServiceBuilder.setInitialMode(Mode.ACTIVE);
+        builder.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
+            .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector())
+            .setInitialMode(Mode.ACTIVE)
+            .install();
     }
 
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {

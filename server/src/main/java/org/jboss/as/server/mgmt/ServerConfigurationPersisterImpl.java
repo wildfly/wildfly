@@ -63,7 +63,8 @@ public class ServerConfigurationPersisterImpl implements ServerConfigurationPers
     public static void addService(ServerModel configuration, BatchBuilder batchBuilder) {
         ServerConfigurationPersisterImpl service = new ServerConfigurationPersisterImpl(configuration);
         batchBuilder.addService(SERVICE_NAME, service)
-                    .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.serverEnvironment);
+            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.serverEnvironment)
+            .install();
     }
 
     public ServerConfigurationPersisterImpl(ServerModel configuration) {

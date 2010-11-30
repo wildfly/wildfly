@@ -186,10 +186,11 @@ public class BundleAccessesModuleServiceTestCase extends AbstractOSGiSubsystemTe
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {
                 Object service = loadClass(moduleId, EchoTargetService.class.getName()).newInstance();
-                ServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoTargetService.SERVICE_NAME, (Service<?>) service);
+                batchBuilder.addService(EchoTargetService.SERVICE_NAME, (Service<?>) service)
                 // Add the alias that the OSGi layer can use to lookup the service
-                serviceBuilder.addAliases(ServiceName.of(Constants.JBOSGI_PREFIX, Echo.class.getName()));
-                serviceBuilder.setInitialMode(Mode.ACTIVE);
+                    .addAliases(ServiceName.of(Constants.JBOSGI_PREFIX, Echo.class.getName()))
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
             }
         };
         runWithLatchedBatch(work);

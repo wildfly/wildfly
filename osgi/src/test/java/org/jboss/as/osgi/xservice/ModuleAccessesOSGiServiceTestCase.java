@@ -203,9 +203,10 @@ public class ModuleAccessesOSGiServiceTestCase extends AbstractOSGiSubsystemTest
             @Override
             public void execute(BatchBuilder batchBuilder) throws Exception {
                 Object service = loadClass(moduleId, EchoInvokerService.class.getName()).newInstance();
-                ServiceBuilder<?> serviceBuilder = batchBuilder.addService(EchoInvokerService.SERVICE_NAME, (Service<?>) service);
-                serviceBuilder.addDependency(FrameworkService.SERVICE_NAME);
-                serviceBuilder.setInitialMode(Mode.ACTIVE);
+                batchBuilder.addService(EchoInvokerService.SERVICE_NAME, (Service<?>) service)
+                    .addDependency(FrameworkService.SERVICE_NAME)
+                    .setInitialMode(Mode.ACTIVE)
+                    .install();
             }
         };
         runWithLatchedBatch(work);

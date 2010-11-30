@@ -93,6 +93,7 @@ public class AsyncHandlerAdd extends AbstractHandlerAdd {
             service.setOverflowAction(overflowAction);
             serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
             serviceBuilder.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
+            serviceBuilder.install();
         } catch (Throwable t) {
             resultHandler.handleFailure(t, param);
             return;

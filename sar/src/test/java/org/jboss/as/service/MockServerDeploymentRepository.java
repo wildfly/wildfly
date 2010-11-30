@@ -51,7 +51,7 @@ public class MockServerDeploymentRepository implements ServerDeploymentRepositor
 
     public static void addService(BatchBuilder batchBuilder, File root) {
         MockServerDeploymentRepository service = new MockServerDeploymentRepository(root);
-        batchBuilder.addService(SERVICE_NAME, service);
+        batchBuilder.addService(SERVICE_NAME, service).install();
     }
     public MockServerDeploymentRepository(File root) {
         this.root = root;

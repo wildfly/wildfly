@@ -53,6 +53,7 @@ public final class ScheduledThreadPoolAdd extends AbstractExecutorAdd {
         final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(maxThreads, getKeepaliveTime());
         final ServiceBuilder<ExecutorService> serviceBuilder = builder.addService(serviceName, service);
         addThreadFactoryDependency(serviceName, serviceBuilder, service.getThreadFactoryInjector(), builder);
+        serviceBuilder.install();
     }
 
     @Override

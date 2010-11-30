@@ -70,7 +70,8 @@ public class ServerDeploymentRepositoryImpl implements ServerDeploymentRepositor
     public static void addService(BatchBuilder batchBuilder) {
         ServerDeploymentRepositoryImpl service = new ServerDeploymentRepositoryImpl();
         batchBuilder.addService(SERVICE_NAME, service)
-                    .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.serverEnvironment);
+            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.serverEnvironment)
+            .install();
     }
 
     /**

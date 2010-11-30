@@ -58,10 +58,10 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
     @Override
     protected void setupServices(BatchBuilder batchBuilder) throws Exception {
         super.setupServices(batchBuilder);
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService()).install();
 
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain)).install();
         deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
         deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);

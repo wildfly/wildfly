@@ -167,6 +167,31 @@ class BatchBuilderSupport implements BatchBuilder {
             return this;
         }
 
+        public ServiceBuilder<T> addDependencies(DependencyType dependencyType, ServiceName... dependencies) {
+            delegate.addDependencies(dependencyType, dependencies);
+            return this;
+        }
+
+        public ServiceBuilder<T> addDependencies(DependencyType dependencyType, Iterable<ServiceName> dependencies) {
+            delegate.addDependencies(dependencyType, dependencies);
+            return this;
+        }
+
+        public ServiceBuilder<T> addDependency(DependencyType dependencyType, ServiceName dependency) {
+            delegate.addDependency(dependencyType, dependency);
+            return this;
+        }
+
+        public ServiceBuilder<T> addDependency(DependencyType dependencyType, ServiceName dependency, Injector<Object> target) {
+            delegate.addDependency(dependencyType, dependency);
+            return this;
+        }
+
+        public <I> ServiceBuilder<T> addDependency(DependencyType dependencyType, ServiceName dependency, Class<I> type, Injector<I> target) {
+            delegate.addDependency(dependencyType, dependency, type, target);
+            return this;
+        }
+
         public ServiceBuilder<T> addOptionalDependencies(Iterable<ServiceName> dependencies) {
             delegate.addOptionalDependencies(dependencies);
             return this;

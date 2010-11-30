@@ -61,7 +61,6 @@ import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.logging.MDC;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -143,8 +142,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         };
 
         // Root service
-        final ServiceBuilder<Void> builder = batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL);
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
+        batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL)
+        .setInitialMode(ServiceController.Mode.ACTIVE)
+        .install();
 
         // Services specified by the creator of this object
         for (ServiceActivator service : startServices) {
@@ -169,7 +169,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, environment.isStandalone());
         batchBuilder.addService(ServerController.SERVICE_NAME, serverController)
             .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, serverController.getConfigurationPersisterValue())
-            .addInjection(serverController.getExecutorValue(), Executors.newCachedThreadPool());
+            .addInjection(serverController.getExecutorValue(), Executors.newCachedThreadPool())
+            .install();
 
         // Server environment services
         ServerEnvironmentServices.addServices(environment, batchBuilder);
@@ -193,16 +194,19 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         DeploymentScannerFactoryService.addService(batchBuilder);
 
         batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-                new SocketBindingManagerService(portOffset)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+                new SocketBindingManagerService(portOffset)).setInitialMode(ServiceController.Mode.ON_DEMAND)
+            .install();
 
         // Activate deployment module loader
-        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
+        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
+            .install();
 
         // todo move elsewhere...
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
         deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
         batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
-            .setInitialMode(ServiceController.Mode.ACTIVE);
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
 
         new JarDeploymentActivator().activate(deploymentChain);
 

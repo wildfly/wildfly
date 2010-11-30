@@ -53,7 +53,8 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
             .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
-            .setInitialMode(Mode.ON_DEMAND);
+            .setInitialMode(Mode.ON_DEMAND)
+            .install();
     }
 
     protected void applyUpdateBootAction(BootUpdateContext updateContext) {

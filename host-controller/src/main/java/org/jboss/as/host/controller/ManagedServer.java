@@ -74,7 +74,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
@@ -422,13 +421,15 @@ public final class ManagedServer {
             final HostControllerConnectionService smConnection = new HostControllerConnectionService();
             serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, smConnection)
                 .addInjection(smConnection.getSmAddressInjector(), managementSocket)
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
             final HostControllerClient client = new HostControllerClient();
             serviceTarget.addService(HostControllerClient.SERVICE_NAME, client)
                 .addDependency(HostControllerConnectionService.SERVICE_NAME, Connection.class, client.getSmConnectionInjector())
                 .addDependency(ServerController.SERVICE_NAME, ServerController.class, client.getServerControllerInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
         }
     }
 

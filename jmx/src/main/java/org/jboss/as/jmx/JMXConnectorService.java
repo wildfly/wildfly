@@ -41,8 +41,6 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 
 import org.jboss.as.services.net.SocketBinding;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -80,7 +78,8 @@ public class JMXConnectorService implements Service<Void> {
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, jmxConnectorService.getMBeanServerServiceInjector())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(registryBinding), SocketBinding.class, jmxConnectorService.getRegistryPortBinding())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(serverBinding), SocketBinding.class, jmxConnectorService.getServerPortBinding())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     @Override

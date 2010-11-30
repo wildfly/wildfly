@@ -107,7 +107,8 @@ public class ServerDeploymentManagerImpl implements ServerDeploymentManager, Ser
         batchBuilder.addService(SERVICE_NAME_LOCAL, service)
             .addDependency(ServerDeploymentRepository.SERVICE_NAME, ServerDeploymentRepository.class, service.injectedDeploymentRepository)
             .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, service.injectedConfigurationPersister)
-            .addDependency(ShutdownHandler.SERVICE_NAME, ShutdownHandler.class, service.injectedShutdownHandler);
+            .addDependency(ShutdownHandler.SERVICE_NAME, ShutdownHandler.class, service.injectedShutdownHandler)
+            .install();
 
         // FIXME inject Executor from an external service dependency
         final Executor hack = Executors.newCachedThreadPool();

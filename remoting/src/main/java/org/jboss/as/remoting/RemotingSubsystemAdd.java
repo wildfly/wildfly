@@ -30,9 +30,7 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.remoting3.Endpoint;
 import org.jboss.xnio.OptionMap;
 
 /**
@@ -54,10 +52,12 @@ public final class RemotingSubsystemAdd extends AbstractSubsystemAdd<RemotingSub
         final EndpointService endpointService = new EndpointService();
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
-        final ServiceBuilder<Endpoint> endpointBuilder = updateContext.getBatchBuilder().addService(RemotingServices.ENDPOINT, endpointService);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        endpointBuilder.addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class));
-        endpointBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+
+        updateContext.getBatchBuilder().addService(RemotingServices.ENDPOINT, endpointService)
+            .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
     }
 
     protected RemotingSubsystemElement createSubsystemElement() {

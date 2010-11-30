@@ -192,20 +192,25 @@ public class OSGiSubsystemSupport {
     }
 
     public void setupModuleLoaderServices(final BatchBuilder batchBuilder) {
-        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService());
+        batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
+            .install();
         batchBuilder.addService(TestModuleLoader.SERVICE_NAME, new TestModuleLoader("test")).addDependency(
-                ClassifyingModuleLoaderService.SERVICE_NAME);
+                ClassifyingModuleLoaderService.SERVICE_NAME)
+            .install();
     }
 
     public void setupDeploymentServices(final BatchBuilder batchBuilder) {
-        batchBuilder.addService(TestServerDeploymentRepository.SERVICE_NAME, new TestServerDeploymentRepository());
+        batchBuilder.addService(TestServerDeploymentRepository.SERVICE_NAME, new TestServerDeploymentRepository())
+            .install();
         deploymentChain = new DeploymentChainImpl();
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
+        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
+            .install();
         OSGiDeploymentService.enableListener = false;
     }
 
     public void setupFrameworkServices(final BatchBuilder batchBuilder) {
-        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService());
+        batchBuilder.addService(MBeanServerService.SERVICE_NAME, new MBeanServerService())
+            .install();
         TestBundleManagerService.addService(batchBuilder);
         FrameworkService.addService(batchBuilder, Activation.EAGER);
         PackageAdminService.addService(batchBuilder);
@@ -475,10 +480,10 @@ public class OSGiSubsystemSupport {
 
         public static void addService(final BatchBuilder batchBuilder) {
             TestBundleManagerService service = new TestBundleManagerService();
-            ServiceBuilder<?> serviceBuilder = batchBuilder.addService(BundleManagerService.SERVICE_NAME, service);
-            serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class,
-                    service.injectedModuleLoader);
-            serviceBuilder.addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig);
+            batchBuilder.addService(BundleManagerService.SERVICE_NAME, service)
+                .addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader)
+                .addDependency(Configuration.SERVICE_NAME, Configuration.class, service.injectedConfig)
+                .install();
         }
 
         public static BundleManager getServiceValue(ServiceContainer container) {

@@ -78,14 +78,12 @@ import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -244,17 +242,15 @@ public class HostController {
         // Last but not least the host controller service
         final ManagementElement managementElement = getHostModel().getManagementElement();
         final HostControllerService hostControllerService = new HostControllerService(this);
+
         batchBuilder.addService(SERVICE_NAME_BASE, hostControllerService)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, hostControllerService.getManagementInterfaceInjector())
             .addInjection(hostControllerService.getManagementPortInjector(), managementElement.getPort())
             .addDependency(DomainControllerConnection.SERVICE_NAME, DomainControllerConnection.class, hostControllerService.getDomainControllerConnectionInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
 
-        try {
-            batchBuilder.install();
-        } catch (ServiceRegistryException e) {
-            throw new RuntimeException(e);
-        }
+        batchBuilder.install();
     }
 
     /**
@@ -535,7 +531,8 @@ public class HostController {
                 .addInjection(domainController.getXmlMapperInjector(), mapper)
                 .addInjection(domainController.getDomainConfigDirInjector(), environment.getDomainConfigurationDir())
                 .addInjection(domainController.getDomainDeploymentsDirInjector(), environment.getDomainDeploymentDir())
-                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector());
+                .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainController.getScheduledExecutorServiceInjector())
+                .install();
 
             final DomainControllerOperationHandler domainControllerOperationHandler = new DomainControllerOperationHandler();
             serviceTarget.addService(DomainControllerOperationHandler.SERVICE_NAME, domainControllerOperationHandler)
@@ -543,15 +540,18 @@ public class HostController {
                 .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerOperationHandler.getExecutorServiceInjector())
                 .addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerOperationHandler.getThreadFactoryInjector())
                 .addInjection(domainControllerOperationHandler.getLocalFileRepositoryInjector(), fileRepository)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler));
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerOperationHandler))
+                .install();
 
             final DomainControllerClientOperationHandler domainControllerClientOperationHandler = new DomainControllerClientOperationHandler();
             serviceTarget.addService(DomainControllerClientOperationHandler.SERVICE_NAME, domainControllerClientOperationHandler)
                 .addDependency(DomainController.SERVICE_NAME, DomainController.class, domainControllerClientOperationHandler.getDomainControllerInjector())
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerClientOperationHandler));
+                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(domainControllerClientOperationHandler))
+                .install();
 
             serviceTarget.addService(DomainControllerConnection.SERVICE_NAME, new LocalDomainControllerConnection(HostController.this, domainController, fileRepository))
-                .addDependency(DomainController.SERVICE_NAME);
+                .addDependency(DomainController.SERVICE_NAME)
+                .install();
 
         } catch (Exception e) {
             throw new RuntimeException("Exception starting local domain controller", e);
@@ -562,15 +562,6 @@ public class HostController {
         final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
 
         final DomainControllerConnectionService domainControllerClientService = new DomainControllerConnectionService(this, fileRepository, 10L);
-        final ServiceBuilder<DomainControllerConnection> serviceBuilder = serviceTarget.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
-            .addListener(new AbstractServiceListener<DomainControllerConnection>() {
-                @Override
-                public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {
-                    log.error("Failed to register with domain controller.", reason);
-                }
-            })
-            .addAliases(DomainControllerConnection.SERVICE_NAME)
-            .setInitialMode(ServiceController.Mode.ACTIVE);
 
         HostModel hostConfig = getHostModel();
         final RemoteDomainControllerElement remoteDomainControllerElement = hostConfig.getRemoteDomainControllerElement();
@@ -580,14 +571,24 @@ public class HostController {
         } catch (UnknownHostException e) {
             throw new RuntimeException("Failed to get remote domain controller address", e);
         }
-        serviceBuilder.addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress);
-        serviceBuilder.addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort());
-
         final ManagementElement managementElement = hostConfig.getManagementElement();
-        serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, domainControllerClientService.getLocalManagementInterfaceInjector());
-        serviceBuilder.addInjection(domainControllerClientService.getLocalManagementPortInjector(), managementElement.getPort());
-        serviceBuilder.addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerClientService.getExecutorServiceInjector());
-        serviceBuilder.addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerClientService.getThreadFactoryInjector());
+
+        serviceTarget.addService(DomainControllerConnectionService.SERVICE_NAME, domainControllerClientService)
+            .addListener(new AbstractServiceListener<DomainControllerConnection>() {
+                @Override
+                public void serviceFailed(ServiceController<? extends DomainControllerConnection> serviceController, StartException reason) {
+                    log.error("Failed to register with domain controller.", reason);
+                }
+            })
+            .addInjection(domainControllerClientService.getDomainControllerAddressInjector(), hostAddress)
+            .addInjection(domainControllerClientService.getDomainControllerPortInjector(), remoteDomainControllerElement.getPort())
+            .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(managementElement.getInterfaceName()), NetworkInterfaceBinding.class, domainControllerClientService.getLocalManagementInterfaceInjector())
+            .addInjection(domainControllerClientService.getLocalManagementPortInjector(), managementElement.getPort())
+            .addDependency(SERVICE_NAME_BASE.append("executor"), ScheduledExecutorService.class, domainControllerClientService.getExecutorServiceInjector())
+            .addDependency(SERVICE_NAME_BASE.append("thread-factory"), ThreadFactory.class, domainControllerClientService.getThreadFactoryInjector())
+        .addAliases(DomainControllerConnection.SERVICE_NAME)
+        .setInitialMode(ServiceController.Mode.ACTIVE)
+        .install();
     }
 
     private void activateManagementCommunication(final ServiceActivatorContext serviceActivatorContext) {
@@ -610,7 +611,9 @@ public class HostController {
 
         // Add the executor
         final ServiceName threadFactoryServiceName = SERVICE_NAME_BASE.append("thread-factory");
-        serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService());
+            serviceTarget.addService(threadFactoryServiceName, new ThreadFactoryService())
+                .install();
+
         final ServiceName executorServiceName = SERVICE_NAME_BASE.append("executor");
 
         /**
@@ -630,7 +633,8 @@ public class HostController {
             public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
                 return executorService;
             }
-        }).addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryValue);
+        }).addDependency(threadFactoryServiceName, ThreadFactory.class, threadFactoryValue)
+        .install();
 
         //  Add the management communication service
         final ManagementCommunicationService managementCommunicationService = new ManagementCommunicationService();
@@ -639,19 +643,22 @@ public class HostController {
             .addInjection(managementCommunicationService.getPortInjector(), managementElement.getPort())
             .addDependency(executorServiceName, ExecutorService.class, managementCommunicationService.getExecutorServiceInjector())
             .addDependency(threadFactoryServiceName, ThreadFactory.class, managementCommunicationService.getThreadFactoryInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
 
         //  Add the DC to host controller operation handler
         final ManagementOperationHandlerService<HostControllerOperationHandler> operationHandlerService
                 = new ManagementOperationHandlerService<HostControllerOperationHandler>(new HostControllerOperationHandler(this));
-            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("host", "controller"), operationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService));
+        serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("host", "controller"), operationHandlerService)
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class, new ManagementCommunicationServiceInjector(operationHandlerService))
+            .install();
 
         //  Add the server to host controller operation handler
         final ManagementOperationHandlerService<ServerToHostControllerOperationHandler> serverOperationHandlerService
                 = new ManagementOperationHandlerService<ServerToHostControllerOperationHandler>(new ServerToHostControllerOperationHandler(this));
-            serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller"), serverOperationHandlerService)
-                .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverOperationHandlerService));
+        serviceTarget.addService(ManagementCommunicationService.SERVICE_NAME.append("server", "to", "host", "controller"), serverOperationHandlerService)
+            .addDependency(ManagementCommunicationService.SERVICE_NAME, ManagementCommunicationService.class,  new ManagementCommunicationServiceInjector(serverOperationHandlerService))
+            .install();
     }
 
     void setDomainControllerConnection(final DomainControllerConnection domainControllerConnection) {

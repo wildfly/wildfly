@@ -50,7 +50,8 @@ public class RelativePathService extends AbstractPathService {
             final String relativeTo, final ServiceTarget target) {
         RelativePathService service = new RelativePathService(relativePath);
         target.addService(name, service)
-                    .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath);
+            .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath)
+            .install();
     }
 
     public RelativePathService(final String relativePath) {

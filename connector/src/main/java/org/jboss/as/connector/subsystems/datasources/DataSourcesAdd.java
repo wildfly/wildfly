@@ -64,12 +64,12 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-                .setInitialMode(Mode.ON_DEMAND);
+                .setInitialMode(Mode.ON_DEMAND)
+                .install();
 
-        final DataSourcesService dsService = new DataSourcesService(datasources);
-        ServiceBuilder<?> serviceBuilder = builder.addService(ConnectorServices.DATASOURCES_SERVICE,
-                dsService);
-        serviceBuilder.setInitialMode(Mode.ACTIVE);
+        builder.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+            .setInitialMode(Mode.ACTIVE)
+            .install();
     }
 
     @Override

@@ -184,7 +184,8 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     /** {@inheritDoc} */
     public void activate(ServiceActivatorContext context) {
         context.getServiceTarget().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name),
-                new NetworkInterfaceService(name, anyLocalV4, anyLocalV6, anyLocal, getInterfaceCriteria()));
+                new NetworkInterfaceService(name, anyLocalV4, anyLocalV6, anyLocal, getInterfaceCriteria()))
+            .install();
     }
 
     List<AbstractInterfaceCriteriaElement<?>> getCriteriaElements() {
