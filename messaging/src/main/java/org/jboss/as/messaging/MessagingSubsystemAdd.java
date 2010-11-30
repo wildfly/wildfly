@@ -48,6 +48,7 @@ import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 /**
  * General messaging subsystem update.
@@ -150,7 +151,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
         final ServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
-                .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
 
         // FIXME move the JMSService into the jms subsystem
         JMSService.addService(batchBuilder);

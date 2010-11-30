@@ -29,9 +29,9 @@ import org.jboss.as.services.net.SocketBinding;
 import org.jboss.as.services.path.AbstractPathService;
 import org.jboss.as.services.path.RelativePathService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
@@ -68,7 +68,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
 
         final TransactionManagerService transactionManagerService = new TransactionManagerService(nodeIdentifier, maxPorts, coordinatorEnableStatistics, coordinatorDefaultTimeout);
         builder.addService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, transactionManagerService)
-            .addOptionalDependency(ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
+            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())
             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, transactionManagerService.getRecoveryBindingInjector())
             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, transactionManagerService.getStatusBindingInjector())

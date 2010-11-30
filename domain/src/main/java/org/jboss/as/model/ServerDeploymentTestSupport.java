@@ -44,6 +44,7 @@ public class ServerDeploymentTestSupport {
         private static final NoOpUpdateResultHandler INSTANCE = new NoOpUpdateResultHandler();
         @Override
         public void handleFailure(Throwable cause, Void param) {
+            cause.printStackTrace();
         }
         @Override
         public void handleSuccess(Void result, Void param) {

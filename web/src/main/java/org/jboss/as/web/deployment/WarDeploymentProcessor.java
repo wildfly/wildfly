@@ -41,7 +41,7 @@ import org.jboss.as.web.WebSubsystemElement;
 import org.jboss.as.web.deployment.mock.MemoryRealm;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.vfs.VirtualFile;
@@ -143,9 +143,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Add the context service
-        final BatchBuilder builder = context.getBatchBuilder();
+        final ServiceTarget target = context.getBatchBuilder();
         try {
-            builder.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
+            target.addService(WebSubsystemElement.JBOSS_WEB.append(deploymentName), new WebDeploymentService(webContext))
                 .addDependency(WebSubsystemElement.JBOSS_WEB_HOST.append(hostName), Host.class, new WebContextInjector(webContext))
                 .setInitialMode(Mode.ACTIVE)
                 .install();

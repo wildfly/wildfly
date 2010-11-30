@@ -30,12 +30,12 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.MessagingSubsystemElement;
 import org.jboss.as.naming.service.JavaContextService;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -49,12 +49,13 @@ public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<Context> contextInjector = new InjectedValue<Context>();
     private JMSServerManager jmsServer;
 
-    public static void addService(final BatchBuilder builder) {
+    public static void addService(final ServiceTarget target) {
         final JMSService service = new JMSService();
-        builder.addService(JMSSubsystemElement.JMS_MANAGER, service)
+        target.addService(JMSSubsystemElement.JMS_MANAGER, service)
             .addDependency(MessagingSubsystemElement.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
             .addDependency(JavaContextService.SERVICE_NAME, Context.class, service.getContextInjector())
-            .setInitialMode(Mode.ACTIVE);
+            .setInitialMode(Mode.ACTIVE)
+            .install();
     }
 
     protected JMSService() {

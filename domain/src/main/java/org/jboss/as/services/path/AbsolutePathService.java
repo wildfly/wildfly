@@ -24,7 +24,6 @@ package org.jboss.as.services.path;
 
 import java.io.File;
 
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 

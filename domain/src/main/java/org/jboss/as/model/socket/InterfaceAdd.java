@@ -37,7 +37,6 @@ import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController.Mode;
 

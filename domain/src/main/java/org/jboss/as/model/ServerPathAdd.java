@@ -24,8 +24,6 @@ package org.jboss.as.model;
 
 import org.jboss.as.services.path.AbsolutePathService;
 import org.jboss.as.services.path.RelativePathService;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**

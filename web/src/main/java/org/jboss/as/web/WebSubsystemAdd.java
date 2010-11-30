@@ -29,6 +29,7 @@ import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 
@@ -51,7 +52,7 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
         final WebServerService service = new WebServerService(defaultHost);
         context.getBatchBuilder().addService(WebSubsystemElement.JBOSS_WEB, service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
-            .addOptionalDependency(ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
+            .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND)
             .install();

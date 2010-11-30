@@ -26,15 +26,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.services.path.AbsolutePathService;
 import org.jboss.as.services.path.RelativePathService;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -61,7 +59,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     /**
      * Add the deployment scanner service to a batch.
      *
-     * @param batchBuilder the batch builder
+     * @param target the service target
      * @param name the repository name
      * @param relativeTo the relative to
      * @param path the path
@@ -69,19 +67,19 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static void addService(final ServiceTarget batchBuilder,
+    public static void addService(final ServiceTarget target,
             final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
         final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
 
         if(relativeTo != null) {
-            RelativePathService.addService(pathService, path, relativeTo, batchBuilder);
+            RelativePathService.addService(pathService, path, relativeTo, target);
         } else {
-            AbsolutePathService.addService(pathService, path, batchBuilder);
+            AbsolutePathService.addService(pathService, path, target);
         }
 
-        batchBuilder.addService(serviceName, service)
+        target.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(DeploymentScannerFactory.SERVICE_NAME, DeploymentScannerFactory.class, service.scannerFactory)
             .setInitialMode(Mode.ACTIVE)
