@@ -52,6 +52,8 @@ import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
+
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.as.server.ServerController;
@@ -457,31 +459,39 @@ public final class ManagedServer {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
-            marshaller.writeBoolean(allowOverallRollback);
-            marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-            marshaller.writeInt(updates.size());
-            for (AbstractServerModelUpdate<?> update : updates) {
-                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
-                marshaller.writeObject(update);
+            try {
+                marshaller.writeByte(DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
+                marshaller.writeBoolean(allowOverallRollback);
+                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
+                for (AbstractServerModelUpdate<?> update : updates) {
+                    marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    marshaller.writeObject(update);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         @Override
         protected final List<UpdateResultHandlerResponse<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
-            final int updateCount = unmarshaller.readInt();
-            final List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(updateCount);
-            for (int i = 0; i < updateCount; i++) {
-                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
-                UpdateResultHandlerResponse<?> updateResult = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
-                results.add(updateResult);
+            try {
+                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
+                final int updateCount = unmarshaller.readInt();
+                final List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(updateCount);
+                for (int i = 0; i < updateCount; i++) {
+                    expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
+                    UpdateResultHandlerResponse<?> updateResult = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
+                    results.add(updateResult);
+                }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return results;
         }
     }
 
@@ -506,10 +516,14 @@ public final class ManagedServer {
         protected final ServerModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainServerProtocol.RETURN_SERVER_MODEL);
-            ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
-            unmarshaller.finish();
-            return serverModel;
+            try {
+                expectHeader(unmarshaller, DomainServerProtocol.RETURN_SERVER_MODEL);
+                ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
+                unmarshaller.finish();
+                return serverModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 

@@ -51,6 +51,7 @@ import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.readUTFZBytes;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import org.jboss.logging.Logger;
@@ -200,6 +201,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 final HostControllerClient client = new RemoteDomainControllerClient(hostControllerId, address, port, executorService, threadFactory);
                 domainController.addClient(client);
                 log.infof("host controller registered [%s]", client);
+                input.close();
             } finally {
                 safeClose(input);
             }
@@ -209,9 +211,13 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
         protected final void sendResponse(final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainControllerProtocol.PARAM_DOMAIN_MODEL);
-            marshaller.writeObject(domainController.getDomainModel());
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainControllerProtocol.PARAM_DOMAIN_MODEL);
+                marshaller.writeObject(domainController.getDomainModel());
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -247,6 +253,7 @@ public class  DomainControllerOperationHandler extends AbstractMessageHandler im
                 rootId = input.readByte();
                 expectHeader(input, DomainControllerProtocol.PARAM_FILE_PATH);
                 filePath = input.readUTF();
+                input.close();
 
                 log.debugf("host controller [%s] requested file [%s] from root [%d]", hostControllerId, filePath, rootId);
                 switch (rootId) {

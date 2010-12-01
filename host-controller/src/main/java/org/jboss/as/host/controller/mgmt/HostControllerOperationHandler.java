@@ -43,6 +43,8 @@ import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.as.protocol.ProtocolUtils;
 import static org.jboss.as.protocol.StreamUtils.readByte;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
+
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.Connection;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
@@ -157,11 +159,15 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL);
-            final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
-            hostController.setDomain(domainModel);
-            unmarshaller.finish();
-            log.info("Received domain update.");
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL);
+                final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
+                hostController.setDomain(domainModel);
+                unmarshaller.finish();
+                log.info("Received domain update.");
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -177,16 +183,20 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
-            int count = unmarshaller.readInt();
-            updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
-            for(int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                final AbstractDomainModelUpdate<?> update = unmarshal(unmarshaller, AbstractDomainModelUpdate.class);
-                updates.add(update);
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
+                updates = new ArrayList<AbstractDomainModelUpdate<?>>(count);
+                for(int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, HostControllerProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    final AbstractDomainModelUpdate<?> update = unmarshal(unmarshaller, AbstractDomainModelUpdate.class);
+                    updates.add(update);
+                }
+                unmarshaller.finish();
+                log.infof("Received domain model updates %s", updates);
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            log.infof("Received domain model updates %s", updates);
         }
 
         @Override
@@ -197,13 +207,17 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
             }
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-            marshaller.writeInt(responses.size());
-            for(ModelUpdateResponse<?> response : responses) {
-                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                marshaller.writeObject(response);
+            try {
+                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
+                for(ModelUpdateResponse<?> response : responses) {
+                    marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         private ModelUpdateResponse<List<ServerIdentity>> processUpdate(final AbstractDomainModelUpdate<?> update) {
@@ -228,16 +242,20 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
-            int count = unmarshaller.readInt();
-            updates = new ArrayList<AbstractHostModelUpdate<?>>(count);
-            for(int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, HostControllerProtocol.PARAM_HOST_MODEL_UPDATE);
-                final AbstractHostModelUpdate<?> update = unmarshal(unmarshaller, AbstractHostModelUpdate.class);
-                updates.add(update);
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_HOST_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
+                updates = new ArrayList<AbstractHostModelUpdate<?>>(count);
+                for(int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, HostControllerProtocol.PARAM_HOST_MODEL_UPDATE);
+                    final AbstractHostModelUpdate<?> update = unmarshal(unmarshaller, AbstractHostModelUpdate.class);
+                    updates.add(update);
+                }
+                unmarshaller.finish();
+                log.infof("Received host model updates %s", updates);
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            log.infof("Received host model updates %s", updates);
         }
 
         @Override
@@ -245,13 +263,17 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
             List<HostUpdateResult<?>> responses = hostController.applyHostUpdates(updates);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-            marshaller.writeInt(responses.size());
-            for(HostUpdateResult<?> response : responses) {
-                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                marshaller.writeObject(response);
+            try {
+                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
+                for(HostUpdateResult<?> response : responses) {
+                    marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
     }
 
@@ -266,8 +288,12 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected void sendResponse(final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeObject(hostController.getModelManager().getHostModel());
-            marshaller.finish();
+            try {
+                marshaller.writeObject(hostController.getModelManager().getHostModel());
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -282,20 +308,24 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected void sendResponse(final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            Map<ServerIdentity, ServerStatus> serverStatuses = hostController.getServerStatuses();
+            try {
+                Map<ServerIdentity, ServerStatus> serverStatuses = hostController.getServerStatuses();
 
-            marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_COUNT);
-            marshaller.writeInt(serverStatuses.size());
-            for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
-                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_NAME);
-                marshaller.writeUTF(entry.getKey().getServerName());
-                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_GROUP_NAME);
-                marshaller.writeUTF(entry.getKey().getServerGroupName());
-                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_STATUS);
-                marshaller.writeObject(entry.getValue());
+                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_COUNT);
+                marshaller.writeInt(serverStatuses.size());
+                for (Map.Entry<ServerIdentity, ServerStatus> entry : serverStatuses.entrySet()) {
+                    marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_NAME);
+                    marshaller.writeUTF(entry.getKey().getServerName());
+                    marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_GROUP_NAME);
+                    marshaller.writeUTF(entry.getKey().getServerGroupName());
+                    marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_STATUS);
+                    marshaller.writeObject(entry.getValue());
+                }
+
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-
-            marshaller.finish();
         }
     }
 
@@ -366,12 +396,16 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
-            serverName = unmarshaller.readUTF();
-            if (expectGracefulTimeout) {
-                expectHeader(unmarshaller, HostControllerProtocol.PARAM_GRACEFUL_TIMEOUT);
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
+                serverName = unmarshaller.readUTF();
+                if (expectGracefulTimeout) {
+                    expectHeader(unmarshaller, HostControllerProtocol.PARAM_GRACEFUL_TIMEOUT);
+                }
+                unmarshaller.finish();
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
         }
 
         @Override
@@ -379,9 +413,13 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
             ServerStatus serverStatus = processChange(serverName, gracefulTimeout);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_STATUS);
-            marshaller.writeObject(serverStatus);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_STATUS);
+                marshaller.writeObject(serverStatus);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -397,9 +435,13 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
-            serverName = unmarshaller.readUTF();
-            unmarshaller.finish();
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
+                serverName = unmarshaller.readUTF();
+                unmarshaller.finish();
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
 
         @Override
@@ -407,9 +449,13 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
             ServerModel serverModel = hostController.getServerModel(serverName);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_MODEL);
-            marshaller.writeObject(serverModel);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(HostControllerProtocol.RETURN_SERVER_MODEL);
+                marshaller.writeObject(serverModel);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -427,20 +473,24 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
         protected void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
-            serverName = unmarshaller.readUTF();
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_ALLOW_ROLLBACK);
-            allowOverallRollback = unmarshaller.readBoolean();
-            expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-            int count = unmarshaller.readInt();
-            updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
-            for(int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE);
-                final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
-                updates.add(update);
+            try {
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_NAME);
+                serverName = unmarshaller.readUTF();
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_ALLOW_ROLLBACK);
+                allowOverallRollback = unmarshaller.readBoolean();
+                expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
+                updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
+                for(int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, HostControllerProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
+                    updates.add(update);
+                }
+                unmarshaller.finish();
+                log.infof("Received server model updates %s", updates);
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            log.infof("Received server model updates %s", updates);
         }
 
         @Override
@@ -448,13 +498,17 @@ public class HostControllerOperationHandler extends AbstractMessageHandler imple
             List<UpdateResultHandlerResponse<?>> responses = hostController.applyServerUpdates(serverName, updates, allowOverallRollback);
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
-            marshaller.writeInt(responses.size());
-            for(UpdateResultHandlerResponse<?> response : responses) {
-                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
-                marshaller.writeObject(response);
+            try {
+                marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
+                for(UpdateResultHandlerResponse<?> response : responses) {
+                    marshaller.writeByte(HostControllerProtocol.PARAM_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
     }
 

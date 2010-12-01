@@ -46,6 +46,7 @@ import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
 import org.jboss.logging.Logger;
@@ -178,11 +179,15 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
         protected final DomainModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(Marshalling.createByteInput(input));
-            expectHeader(unmarshaller, DomainControllerProtocol.PARAM_DOMAIN_MODEL);
-            log.infof("Registered with remote domain controller");
-            final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
-            unmarshaller.finish();
-            return domainModel;
+            try {
+                expectHeader(unmarshaller, DomainControllerProtocol.PARAM_DOMAIN_MODEL);
+                log.infof("Registered with remote domain controller");
+                final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
+                unmarshaller.finish();
+                return domainModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -321,6 +326,7 @@ public class RemoteDomainControllerConnection implements DomainControllerConnect
                         }
                     }
                 }
+                input.close();
             } finally {
                 safeClose(input);
             }

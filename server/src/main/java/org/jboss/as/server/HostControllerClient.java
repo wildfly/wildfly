@@ -41,6 +41,7 @@ import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import org.jboss.as.protocol.StreamUtils;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import static org.jboss.as.protocol.StreamUtils.writeUTFZBytes;
 import org.jboss.as.protocol.mgmt.AbstractMessageHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -230,17 +231,21 @@ public class HostControllerClient implements Service<Void> {
         protected final void readRequest(final InputStream inputStream) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(inputStream));
-            expectHeader(unmarshaller, DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
-            allowRollback = unmarshaller.readBoolean();
-            expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
-            int count = unmarshaller.readInt();
-            updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
-            for (int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
-                final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
-                updates.add(update);
+            try {
+                expectHeader(unmarshaller, DomainServerProtocol.PARAM_ALLOW_ROLLBACK);
+                allowRollback = unmarshaller.readBoolean();
+                expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_COUNT);
+                int count = unmarshaller.readInt();
+                updates = new ArrayList<AbstractServerModelUpdate<?>>(count);
+                for (int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
+                    updates.add(update);
+                }
+                unmarshaller.finish();
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
         }
 
         @Override
@@ -248,13 +253,17 @@ public class HostControllerClient implements Service<Void> {
             List<UpdateResultHandlerResponse<?>> responses = processUpdates();
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
-            marshaller.writeInt(responses.size());
-            for (UpdateResultHandlerResponse<?> response : responses) {
-                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
-                marshaller.writeObject(response);
+            try {
+                marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE_COUNT);
+                marshaller.writeInt(responses.size());
+                for (UpdateResultHandlerResponse<?> response : responses) {
+                    marshaller.writeByte(DomainServerProtocol.PARAM_SERVER_MODEL_UPDATE_RESPONSE);
+                    marshaller.writeObject(response);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         private List<UpdateResultHandlerResponse<?>> processUpdates() {
@@ -284,9 +293,13 @@ public class HostControllerClient implements Service<Void> {
 
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainServerProtocol.RETURN_SERVER_MODEL);
-            marshaller.writeObject(sm);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainServerProtocol.RETURN_SERVER_MODEL);
+                marshaller.writeObject(sm);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 

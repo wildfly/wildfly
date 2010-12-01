@@ -62,6 +62,7 @@ import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import org.jboss.as.protocol.SimpleByteDataInput;
 import org.jboss.as.protocol.SimpleByteDataOutput;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import org.jboss.as.protocol.mgmt.ManagementException;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestConnectionStrategy;
@@ -288,10 +289,14 @@ public class DomainClientImpl implements DomainClient {
         protected final DomainModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_DOMAIN_MODEL);
-            final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
-            unmarshaller.finish();
-            return domainModel;
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_DOMAIN_MODEL);
+                final DomainModel domainModel = unmarshal(unmarshaller, DomainModel.class);
+                unmarshaller.finish();
+                return domainModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -310,15 +315,19 @@ public class DomainClientImpl implements DomainClient {
         protected final List<String> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_CONTROLLER_COUNT);
-            final int count = unmarshaller.readInt();
-            final List<String> results = new ArrayList<String>(count);
-            for (int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
-                results.add(unmarshaller.readUTF());
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_CONTROLLER_COUNT);
+                final int count = unmarshaller.readInt();
+                final List<String> results = new ArrayList<String>(count);
+                for (int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
+                    results.add(unmarshaller.readUTF());
+                }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return results;
         }
     }
 
@@ -344,19 +353,27 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(hostControllerName);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(hostControllerName);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         @Override
         protected final HostModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_MODEL);
-            final HostModel hostModel = unmarshal(unmarshaller, HostModel.class);
-            unmarshaller.finish();
-            return hostModel;
+                try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_MODEL);
+                final HostModel hostModel = unmarshal(unmarshaller, HostModel.class);
+                unmarshaller.finish();
+                return hostModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -384,21 +401,29 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(hostControllerName);
-            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-            marshaller.writeUTF(serverName);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(hostControllerName);
+                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
+                marshaller.writeUTF(serverName);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         @Override
         protected final ServerModel receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_MODEL);
-            final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
-            unmarshaller.finish();
-            return serverModel;
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_MODEL);
+                final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
+                unmarshaller.finish();
+                return serverModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -417,22 +442,26 @@ public class DomainClientImpl implements DomainClient {
         protected final Map<ServerIdentity, ServerStatus> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS_COUNT);
-            final int count = unmarshaller.readInt();
-            final Map<ServerIdentity, ServerStatus> results = new HashMap<ServerIdentity, ServerStatus>(count);
-            for (int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
-                final String hostName = unmarshaller.readUTF();
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_GROUP_NAME);
-                final String groupName = unmarshaller.readUTF();
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_NAME);
-                final String serverName = unmarshaller.readUTF();
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
-                final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
-                results.put(new ServerIdentity(hostName, groupName, serverName), serverStatus);
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS_COUNT);
+                final int count = unmarshaller.readInt();
+                final Map<ServerIdentity, ServerStatus> results = new HashMap<ServerIdentity, ServerStatus>(count);
+                for (int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_HOST_NAME);
+                    final String hostName = unmarshaller.readUTF();
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_GROUP_NAME);
+                    final String groupName = unmarshaller.readUTF();
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_NAME);
+                    final String serverName = unmarshaller.readUTF();
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
+                    final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
+                    results.put(new ServerIdentity(hostName, groupName, serverName), serverStatus);
+                }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return results;
         }
     }
 
@@ -503,25 +532,33 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(hostControllerName);
-            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-            marshaller.writeUTF(serverName);
-            if (gracefulTimeout != null) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_GRACEFUL_TIMEOUT);
-                marshaller.writeLong(gracefulTimeout);
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(hostControllerName);
+                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
+                marshaller.writeUTF(serverName);
+                if (gracefulTimeout != null) {
+                    marshaller.writeByte(DomainClientProtocol.PARAM_GRACEFUL_TIMEOUT);
+                    marshaller.writeLong(gracefulTimeout);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         @Override
         protected final ServerStatus receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
-            final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
-            unmarshaller.finish();
-            return serverStatus;
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_SERVER_STATUS);
+                final ServerStatus serverStatus = unmarshal(unmarshaller, ServerStatus.class);
+                unmarshaller.finish();
+                return serverStatus;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -546,29 +583,37 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
-            marshaller.writeInt(updates.size());
-            for (AbstractDomainModelUpdate<?> update : updates) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-                marshaller.writeObject(update);
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
+                for (AbstractDomainModelUpdate<?> update : updates) {
+                    marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                    marshaller.writeObject(update);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         @Override
         protected final List<DomainUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
-            final int updateCount = unmarshaller.readInt();
-            final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
-            for (int i = 0; i < updateCount; i++) {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
-                DomainUpdateResult<?> updateResult = unmarshal(unmarshaller, DomainUpdateResult.class);
-                results.add(updateResult);
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
+                final int updateCount = unmarshaller.readInt();
+                final List<DomainUpdateResult<?>> results = new ArrayList<DomainUpdateResult<?>>(updateCount);
+                for (int i = 0; i < updateCount; i++) {
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
+                    DomainUpdateResult<?> updateResult = unmarshal(unmarshaller, DomainUpdateResult.class);
+                    results.add(updateResult);
+                }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return results;
         }
     }
 
@@ -596,31 +641,39 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(hostControllerName);
-            marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
-            marshaller.writeInt(updates.size());
-            for (AbstractHostModelUpdate<?> update : updates) {
-                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_MODEL_UPDATE);
-                marshaller.writeObject(update);
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(hostControllerName);
+                marshaller.writeByte(DomainClientProtocol.PARAM_APPLY_UPDATES_UPDATE_COUNT);
+                marshaller.writeInt(updates.size());
+                for (AbstractHostModelUpdate<?> update : updates) {
+                    marshaller.writeByte(DomainClientProtocol.PARAM_HOST_MODEL_UPDATE);
+                    marshaller.writeObject(update);
+                }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
         }
 
         @Override
         protected final List<HostUpdateResult<?>> receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
-            final int updateCount = unmarshaller.readInt();
-            final List<HostUpdateResult<?>> results = new ArrayList<HostUpdateResult<?>>(updateCount);
-            for (int i = 0; i < updateCount; i++) {
-                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_HOST_UPDATE);
-                HostUpdateResult<?> updateResult = unmarshal(unmarshaller, HostUpdateResult.class);
-                results.add(updateResult);
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATES_RESULT_COUNT);
+                final int updateCount = unmarshaller.readInt();
+                final List<HostUpdateResult<?>> results = new ArrayList<HostUpdateResult<?>>(updateCount);
+                for (int i = 0; i < updateCount; i++) {
+                    expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_HOST_UPDATE);
+                    HostUpdateResult<?> updateResult = unmarshal(unmarshaller, HostUpdateResult.class);
+                    results.add(updateResult);
+                }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return results;
         }
     }
 
@@ -645,19 +698,27 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
-            marshaller.writeObject(update);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_DOMAIN_MODEL_UPDATE);
+                marshaller.writeObject(update);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         @Override
         protected final DomainUpdateApplierResponse receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
-            DomainUpdateApplierResponse rsp = unmarshal(unmarshaller, DomainUpdateApplierResponse.class);
-            unmarshaller.finish();
-            return rsp;
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_UPDATE);
+                DomainUpdateApplierResponse rsp = unmarshal(unmarshaller, DomainUpdateApplierResponse.class);
+                unmarshaller.finish();
+                return rsp;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -691,44 +752,52 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
-            marshaller.writeUTF(server.getHostName());
-            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
-            marshaller.writeUTF(server.getServerGroupName());
-            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
-            marshaller.writeUTF(server.getServerName());
-            marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-            marshaller.writeObject(update);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_HOST_NAME);
+                marshaller.writeUTF(server.getHostName());
+                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_GROUP_NAME);
+                marshaller.writeUTF(server.getServerGroupName());
+                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_NAME);
+                marshaller.writeUTF(server.getServerName());
+                marshaller.writeByte(DomainClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+                marshaller.writeObject(update);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         @Override
         protected final Void receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_SERVER_MODEL_UPDATE);
-            @SuppressWarnings("unchecked")
-            final UpdateResultHandlerResponse<R> result = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
-            unmarshaller.finish();
-            if (resultHandler != null) {
-                if (result.isCancelled()) {
-                    resultHandler.handleCancellation(param);
+            try {
+                expectHeader(unmarshaller, DomainClientProtocol.RETURN_APPLY_SERVER_MODEL_UPDATE);
+                @SuppressWarnings("unchecked")
+                final UpdateResultHandlerResponse<R> result = unmarshal(unmarshaller, UpdateResultHandlerResponse.class);
+                unmarshaller.finish();
+                if (resultHandler != null) {
+                    if (result.isCancelled()) {
+                        resultHandler.handleCancellation(param);
+                    }
+                    else if (result.isRolledBack()) {
+                        resultHandler.handleRollbackSuccess(param);
+                    }
+                    else if (result.isTimedOut()) {
+                        resultHandler.handleTimeout(param);
+                    }
+                    else if (result.getFailureResult() != null) {
+                        resultHandler.handleFailure(result.getFailureResult(), param);
+                    }
+                    else {
+                        resultHandler.handleSuccess(result.getSuccessResult(), param);
+                    }
                 }
-                else if (result.isRolledBack()) {
-                    resultHandler.handleRollbackSuccess(param);
-                }
-                else if (result.isTimedOut()) {
-                    resultHandler.handleTimeout(param);
-                }
-                else if (result.getFailureResult() != null) {
-                    resultHandler.handleFailure(result.getFailureResult(), param);
-                }
-                else {
-                    resultHandler.handleSuccess(result.getSuccessResult(), param);
-                }
+                unmarshaller.finish();
+                return null;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
-            return null;
         }
     }
 
@@ -753,19 +822,27 @@ public class DomainClientImpl implements DomainClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN);
-            marshaller.writeObject(deploymentPlan);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(DomainClientProtocol.PARAM_DEPLOYMENT_PLAN);
+                marshaller.writeObject(deploymentPlan);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         @Override
         protected final DeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            DeploymentPlanResultReader reader = new DeploymentPlanResultReader(deploymentPlan, unmarshaller);
-            final DeploymentPlanResult result = reader.readResult();
-            unmarshaller.finish();
-            return result;
+            try {
+                DeploymentPlanResultReader reader = new DeploymentPlanResultReader(deploymentPlan, unmarshaller);
+                final DeploymentPlanResult result = reader.readResult();
+                unmarshaller.finish();
+                return result;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -825,6 +902,7 @@ public class DomainClientImpl implements DomainClient {
                 byte[] hash = new byte[length];
                 expectHeader(input, DomainClientProtocol.RETURN_DEPLOYMENT_HASH);
                 input.readFully(hash);
+                input.close();
                 return hash;
             } finally {
                  safeClose(input);
@@ -869,7 +947,9 @@ public class DomainClientImpl implements DomainClient {
             try {
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, DomainClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
-                return input.readBoolean();
+                Boolean b = Boolean.valueOf(input.readBoolean());
+                input.close();
+                return b;
             } finally {
                 safeClose(input);
             }
