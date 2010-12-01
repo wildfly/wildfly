@@ -162,6 +162,7 @@
                 <include path="org/xml/sax"/>
                 <include path="org/xml/sax/ext"/>
                 <include path="org/xml/sax/helpers"/>
+                <exclude path="**"/>
             </exports>
         </module>
     </dependencies>
