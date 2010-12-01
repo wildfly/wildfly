@@ -32,6 +32,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -306,6 +308,22 @@ public final class StreamUtils {
             serverSocket.close();
         } catch (IOException e) {
             log.errorf(e, "Failed to close the server socket %s", serverSocket);
+        }
+    }
+
+    public static void safeFinish(Marshaller marshaller) {
+        if (marshaller != null) try {
+            marshaller.finish();
+        } catch (IOException e) {
+            log.errorf(e, "Failed to finish the marshaller %s", marshaller);
+        }
+    }
+
+    public static void safeFinish(Unmarshaller unmarshaller) {
+        if (unmarshaller != null) try {
+            unmarshaller.finish();
+        } catch (IOException e) {
+            log.errorf(e, "Failed to finish the unmarshaller %s", unmarshaller);
         }
     }
 }

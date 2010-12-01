@@ -25,6 +25,7 @@ package org.jboss.as.standalone.client.impl;
 import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -125,7 +126,8 @@ public class StandaloneClientImpl implements StandaloneClient {
 
     boolean isDeploymentNameUnique(String name) {
         try {
-            return new CheckUnitDeploymentNameOperation(name).executeForResult(getConnectionStrategy());
+            Boolean b = new CheckUnitDeploymentNameOperation(name).executeForResult(getConnectionStrategy());
+            return b.booleanValue();
         } catch (Exception e) {
             throw new ManagementException("Failed to check deployment name uniqueness.", e);
         }
@@ -161,10 +163,14 @@ public class StandaloneClientImpl implements StandaloneClient {
         protected ServerModel receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL);
-            final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
-            unmarshaller.finish();
-            return serverModel;
+            try {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL);
+                final ServerModel serverModel = unmarshal(unmarshaller, ServerModel.class);
+                unmarshaller.finish();
+                return serverModel;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -190,14 +196,19 @@ public class StandaloneClientImpl implements StandaloneClient {
         @Override
         protected void sendRequest(int protocolVersion, OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-            marshaller.writeInt(updates.size());
-            for (AbstractServerModelUpdate<?> update : updates) {
-                marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-                marshaller.writeObject(update);
+            try {
+                marshaller.start(createByteOutput(output));
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                marshaller.writeInt(updates.size());
+                for (AbstractServerModelUpdate<?> update : updates) {
+                    marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    marshaller.writeObject(update);
+                }
+                marshaller.finish();
             }
-            marshaller.finish();
+            finally {
+                safeFinish(marshaller);
+            }
         }
 
         /** {@inheritDoc} */
@@ -205,21 +216,26 @@ public class StandaloneClientImpl implements StandaloneClient {
         protected List<StandaloneUpdateResult<?>> receiveResponse(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-            final int updateCount = unmarshaller.readInt();
-            List<StandaloneUpdateResult<?>> results = new ArrayList<StandaloneUpdateResult<?>>();
-            for (int i = 0; i < updateCount; i++) {
-                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                byte resultCode = unmarshaller.readByte();
-                if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
-                    final UpdateFailedException failure = unmarshal(unmarshaller, UpdateFailedException.class);
-                    results.add(new StandaloneUpdateResult<Object>(null, failure));
-                } else {
-                    final Object result = unmarshal(unmarshaller, Object.class);
-                    results.add(new StandaloneUpdateResult<Object>(result, null));
+            try {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                final int updateCount = unmarshaller.readInt();
+                List<StandaloneUpdateResult<?>> results = new ArrayList<StandaloneUpdateResult<?>>();
+                for (int i = 0; i < updateCount; i++) {
+                    expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+                    byte resultCode = unmarshaller.readByte();
+                    if (resultCode == (byte) StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION) {
+                        final UpdateFailedException failure = unmarshal(unmarshaller, UpdateFailedException.class);
+                        results.add(new StandaloneUpdateResult<Object>(null, failure));
+                    } else {
+                        final Object result = unmarshal(unmarshaller, Object.class);
+                        results.add(new StandaloneUpdateResult<Object>(result, null));
+                    }
                 }
+                unmarshaller.finish();
+                return results;
+            } finally {
+                safeFinish(unmarshaller);
             }
-            return results;
         }
     }
 
@@ -260,6 +276,7 @@ public class StandaloneClientImpl implements StandaloneClient {
                 while ((read = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, read);
                 }
+                inputStream.close();
             } finally {
                 safeClose(inputStream);
             }
@@ -276,6 +293,7 @@ public class StandaloneClientImpl implements StandaloneClient {
                 byte[] hash = new byte[length];
                 expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_HASH);
                 input.readFully(hash);
+                input.close();
                 return hash;
             } finally {
                  safeClose(input);
@@ -307,9 +325,13 @@ public class StandaloneClientImpl implements StandaloneClient {
         protected void sendRequest(final int protocolVersion, final OutputStream output) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
-            marshaller.writeObject(deploymentPlan);
-            marshaller.finish();
+            try {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
+                marshaller.writeObject(deploymentPlan);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
 
         /** {@inheritDoc} */
@@ -317,10 +339,14 @@ public class StandaloneClientImpl implements StandaloneClient {
         protected final ServerDeploymentPlanResult receiveResponse(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
-            final ServerDeploymentPlanResult result = unmarshal(unmarshaller, ServerDeploymentPlanResult.class);
-            unmarshaller.finish();
-            return result;
+            try {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+                final ServerDeploymentPlanResult result = unmarshal(unmarshaller, ServerDeploymentPlanResult.class);
+                unmarshaller.finish();
+                return result;
+            } finally {
+                safeFinish(unmarshaller);
+            }
         }
     }
 
@@ -364,7 +390,9 @@ public class StandaloneClientImpl implements StandaloneClient {
             try {
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME_UNIQUE);
-                return input.readBoolean();
+                Boolean b = Boolean.valueOf(input.readBoolean());
+                input.close();
+                return b;
             } finally {
                 safeClose(input);
             }

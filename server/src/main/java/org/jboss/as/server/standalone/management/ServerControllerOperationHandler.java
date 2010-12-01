@@ -26,6 +26,7 @@ import static org.jboss.as.protocol.ProtocolUtils.expectHeader;
 import static org.jboss.as.protocol.ProtocolUtils.unmarshal;
 import static org.jboss.as.protocol.StreamUtils.readByte;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeFinish;
 import static org.jboss.marshalling.Marshalling.createByteInput;
 import static org.jboss.marshalling.Marshalling.createByteOutput;
 
@@ -35,9 +36,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.UpdateFailedException;
@@ -214,9 +214,13 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         protected void sendResponse(final OutputStream outputStream) throws IOException {
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(outputStream));
-            marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL);
-            marshaller.writeObject(serverController.getServerModel());
-            marshaller.finish();
+            try {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_SERVER_MODEL);
+                marshaller.writeObject(serverController.getServerModel());
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -236,15 +240,19 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         protected void readRequest(InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-            int count = unmarshaller.readInt();
-            updates = new ArrayList<AbstractServerModelUpdate<?>>();
-            for (int i = 0; i < count; i++) {
-                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
-                final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
-                updates.add(update);
+            try {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                int count = unmarshaller.readInt();
+                updates = new ArrayList<AbstractServerModelUpdate<?>>();
+                for (int i = 0; i < count; i++) {
+                    expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_SERVER_MODEL_UPDATE);
+                    final AbstractServerModelUpdate<?> update = unmarshal(unmarshaller, AbstractServerModelUpdate.class);
+                    updates.add(update);
+                }
+                unmarshaller.finish();
+            } finally {
+                safeFinish(unmarshaller);
             }
-            unmarshaller.finish();
         }
 
         /** {@inheritDoc} */
@@ -277,19 +285,24 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
 
             final Marshaller marshaller = getMarshaller();
             marshaller.start(createByteOutput(output));
-            marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
-            marshaller.writeInt(results.size());
-            for(ResultHandler<?, Void> result : results) {
-                marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
-                if(result.failure != null) {
-                    marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
-                    marshaller.writeObject(result.failure);
-                } else {
-                    marshaller.writeByte(StandaloneClientProtocol.APPLY_UPDATE_RESULT_SERVER_MODEL_SUCCESS);
-                    marshaller.writeObject(result.result);
+            try {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATES_RESULT_COUNT);
+                marshaller.writeInt(results.size());
+                for(ResultHandler<?, Void> result : results) {
+                    marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT);
+                    if(result.failure != null) {
+                        marshaller.writeByte(StandaloneClientProtocol.PARAM_APPLY_UPDATE_RESULT_EXCEPTION);
+                        marshaller.writeObject(result.failure);
+                    } else {
+                        marshaller.writeByte(StandaloneClientProtocol.APPLY_UPDATE_RESULT_SERVER_MODEL_SUCCESS);
+                        marshaller.writeObject(result.result);
+                    }
                 }
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
             }
-            marshaller.finish();
+
             if(! preventShutdown && requiresRestart) {
                 executor.execute(new Runnable() {
                      public void run() {
@@ -356,23 +369,37 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
         protected final void readRequest(final InputStream input) throws IOException {
             final Unmarshaller unmarshaller = getUnmarshaller();
             unmarshaller.start(createByteInput(input));
-            expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
-            deploymentPlan = unmarshal(unmarshaller, DeploymentPlan.class);
-            unmarshaller.finish();
+            try {
+                expectHeader(unmarshaller, StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN);
+                deploymentPlan = unmarshal(unmarshaller, DeploymentPlan.class);
+                unmarshaller.finish();
+            }
+            finally {
+                safeFinish(unmarshaller);
+            }
         }
 
         @Override
         protected void sendResponse(final OutputStream output) throws IOException {
-            final Future<ServerDeploymentPlanResult> result = deploymentManager.execute(deploymentPlan);
-            final Marshaller marshaller = getMarshaller();
-            marshaller.start(createByteOutput(output));
-            marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+            ServerDeploymentPlanResult result = null;
             try {
-                marshaller.writeObject(result.get());
-            } catch (Exception e) {
+                result = deploymentManager.execute(deploymentPlan).get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ManagementException("Failed get deployment plan result.", e);
+            } catch (ExecutionException e) {
                 throw new ManagementException("Failed get deployment plan result.", e);
             }
-            marshaller.finish();
+
+            final Marshaller marshaller = getMarshaller();
+            marshaller.start(createByteOutput(output));
+            try {
+                marshaller.writeByte(StandaloneClientProtocol.PARAM_DEPLOYMENT_PLAN_RESULT);
+                marshaller.writeObject(result);
+                marshaller.finish();
+            } finally {
+                safeFinish(marshaller);
+            }
         }
     }
 
@@ -392,10 +419,10 @@ class ServerControllerOperationHandler extends AbstractMessageHandler implements
                 input = new SimpleByteDataInput(inputStream);
                 expectHeader(input, StandaloneClientProtocol.PARAM_DEPLOYMENT_NAME);
                 deploymentName = input.readUTF();
+                input.close();
             } finally {
                 safeClose(input);
             }
-
         }
 
         @Override
