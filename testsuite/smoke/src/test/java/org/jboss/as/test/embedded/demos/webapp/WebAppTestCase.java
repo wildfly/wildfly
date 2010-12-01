@@ -115,7 +115,6 @@ public class WebAppTestCase {
         InputStream in = null;
         try {
             URL url = new URL("http://localhost:8080/webapp-example/" + urlPart);
-            System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             try {
@@ -130,7 +129,6 @@ public class WebAppTestCase {
                 sb.append((char)i);
                 i = in.read();
             }
-            System.out.println(sb.toString());
         } finally {
             safeClose(in);
         }

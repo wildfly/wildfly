@@ -16,9 +16,6 @@
  */
 package org.jboss.as.server;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Use to construct a standalone server assuming modular classloading has already been set up
@@ -35,13 +32,4 @@ public final class StandaloneServerFactory {
     public static StandaloneServer create(final ServerEnvironment environment) {
         return new StandaloneServerImpl(environment);
     }
-
-    protected static URL failsafeURL(File modulesJar) {
-        try {
-            return modulesJar.toURI().toURL();
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(modulesJar.getAbsolutePath());
-        }
-    }
-
 }

@@ -79,11 +79,6 @@ public class ProtocolUtils {
         MODULAR_CONFIG.setClassResolver(ModularClassResolver.getInstance());
     }
 
-    static void outputMarshalling() {
-        System.out.println("M " + Marshalling.class.getClassLoader());
-        System.out.println("MF: " + MarshallerFactory.class.getClassLoader());
-    }
-
     private ProtocolUtils() {
     }
 

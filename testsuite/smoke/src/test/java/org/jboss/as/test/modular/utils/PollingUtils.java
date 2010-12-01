@@ -116,7 +116,6 @@ public class PollingUtils {
             URLConnection conn = null;
             InputStream in = null;
             try {
-                System.out.println("Reading response from " + url + ":");
                 conn = url.openConnection();
                 conn.setDoInput(true);
                 in = new BufferedInputStream(conn.getInputStream());

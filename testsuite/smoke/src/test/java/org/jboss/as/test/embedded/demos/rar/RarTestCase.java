@@ -23,6 +23,8 @@ package org.jboss.as.test.embedded.demos.rar;
 
 import javax.naming.InitialContext;
 
+import junit.framework.Assert;
+
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.rar.archive.HelloWorldConnection;
@@ -55,13 +57,13 @@ public class RarTestCase {
     @Test
     public void helloWorld() throws Exception {
         String s = getConnection().helloWorld();
-        System.out.println("======" + s);
+        Assert.assertEquals("Hello World, AS 7 !", s);
     }
 
     @Test
     public void helloWorld2() throws Exception {
         String s = getConnection().helloWorld("Test");
-        System.out.println("======" + s);
+        Assert.assertEquals("Hello World, Test !", s);
     }
 
     private HelloWorldConnection getConnection() throws Exception {

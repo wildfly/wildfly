@@ -107,7 +107,6 @@ public class EmbeddedServerFactory {
     public static void main(String[] args) throws Throwable {
         SecurityActions.setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
 
-        System.setProperty("jboss.home", "/Users/kabir/sourcecontrol/jboss-as7/git/jboss-as/build/target/jboss-7.0.0.Alpha2");
         String jbossHomeKey = "jboss.home";
         String jbossHomeProp = System.getProperty(jbossHomeKey);
         if (jbossHomeProp == null)

@@ -66,7 +66,6 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             log.info("Starting container with: " + cmd.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             processBuilder.redirectErrorStream(true);
-            System.out.println("!!!!! Starting");
             process = processBuilder.start();
 
             long timeout = 5000;
@@ -93,7 +92,6 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
 
     @Override
     public void stop(Context context) throws LifecycleException {
-        System.out.println("!!!!! Stopping");
         try {
             if (process != null) {
                 process.destroy();
@@ -101,7 +99,6 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
                 process = null;
             }
         } catch (Exception e) {
-            System.out.println("NO!!!");
             throw new LifecycleException("Could not stop container", e);
         }
     }

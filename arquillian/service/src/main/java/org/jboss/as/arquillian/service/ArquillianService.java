@@ -125,7 +125,6 @@ public class ArquillianService implements Service<ArquillianService> {
                     log.warn("Not registering existing class " + clazz);
                     config.removeTestClass(clazz);
                 }
-                System.out.println("------> Registering " + clazz.getName());
                 deployedTests.put(clazz.getName(), clazz);
             }
         }
@@ -135,7 +134,6 @@ public class ArquillianService implements Service<ArquillianService> {
         synchronized (deployedTests) {
             ArquillianConfig config = context.getAttachment(ArquillianConfig.ATTACHMENT_KEY);
             for (Class<?> clazz : config.getTestClasses()) {
-                System.out.println("------> Removing " + clazz.getName());
                 if (deployedTests.remove(clazz.getName()) == null){
                     log.warn("Could not find class " + clazz.getName());
                 }
@@ -148,7 +146,6 @@ public class ArquillianService implements Service<ArquillianService> {
         @Override
         public Class<?> loadTestClass(String className) throws ClassNotFoundException {
             synchronized (deployedTests) {
-                System.out.println("------> Looking for " + className);
 
                 Class<?> result = deployedTests.get(className);
                 if (result == null)

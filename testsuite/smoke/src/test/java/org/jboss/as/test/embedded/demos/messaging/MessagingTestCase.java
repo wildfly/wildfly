@@ -146,7 +146,6 @@ public class MessagingTestCase {
     }
 
     private void sendMessage(String txt) throws Exception {
-        System.out.println("-----> Attempting to send message");
         ClientProducer producer = session.createProducer(QUEUE_EXAMPLE_QUEUE);
         ClientMessage message = session.createMessage(false);
 

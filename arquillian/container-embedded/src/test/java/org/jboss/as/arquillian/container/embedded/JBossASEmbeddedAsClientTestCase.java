@@ -63,7 +63,6 @@ public class JBossASEmbeddedAsClientTestCase extends JBossASEmbeddedInContainerT
                 }
             } catch (Exception e) {
             }
-            System.out.println("Not there yet");
             Thread.sleep(100);
         } while (System.currentTimeMillis() < end);
     }

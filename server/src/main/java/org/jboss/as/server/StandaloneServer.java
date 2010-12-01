@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceActivator;
 /**
  * The standalone server interface.
  *
- * This is used by Arquillian, please preserve compatiblity.
+ * This is used by the Arquillian embedded container, please preserve compatiblity.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010

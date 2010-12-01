@@ -59,11 +59,8 @@ public class SarTestCase {
 
         PollingUtils.retryWithTimeout(2000, new PollingUtils.WaitForMBeanTask(mbeanServer, objectName));
 
-        System.out.println("Checking the IntervalSeconds property");
         Object o = mbeanServer.getAttribute(objectName, "IntervalSeconds");
-        System.out.println("IntervalSeconds was " + o + ", setting it to 2");
         mbeanServer.setAttribute(objectName, new Attribute("IntervalSeconds", 2));
-        System.out.println("IntervalSeconds set");
     }
 
 }

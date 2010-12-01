@@ -57,7 +57,6 @@ public class DsTestCase {
 
     @Test
     public void testDatasource() throws Exception {
-        System.out.println("=========== " + Thread.currentThread().getContextClassLoader());
         InitialContext context = new InitialContext();
         DataSource ds = (DataSource) context.lookup(JNDI_NAME);
         Connection conn = ds.getConnection();

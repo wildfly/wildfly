@@ -76,7 +76,6 @@ public class MessagingClientTestCase {
     @Test
     public void testMessagingClient() throws Exception {
 
-        System.out.println("TCL " + Thread.currentThread().getContextClassLoader() + " : " + this.getClass().getClassLoader());
         final String queueName = "queue.standalone";
 
         final ClientSessionFactory sf = createClientSessionFactory("localhost", 5445);
@@ -105,7 +104,6 @@ public class MessagingClientTestCase {
 
                final String propName = "myprop";
                message.putStringProperty(propName, "Hello sent at " + new Date());
-               System.out.println("Sending the message.");
 
                producer.send(message);
 
@@ -113,7 +111,6 @@ public class MessagingClientTestCase {
                session.start();
 
                ClientMessage messageReceived = messageConsumer.receive(1000);
-               System.out.println("Received TextMessage:" + messageReceived.getStringProperty(propName));
             } finally {
                if (session != null) {
                   session.close();
