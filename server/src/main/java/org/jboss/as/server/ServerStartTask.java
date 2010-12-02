@@ -143,8 +143,8 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // Root service
         batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL)
-        .setInitialMode(ServiceController.Mode.ACTIVE)
-        .install();
+            .setInitialMode(ServiceController.Mode.ACTIVE)
+            .install();
 
         // Services specified by the creator of this object
         for (ServiceActivator service : startServices) {
@@ -152,6 +152,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
 
         // Next-stage services
+        for(ServiceActivator service : runServices) {
+            service.activate(serviceActivatorContext);
+        }
 
         // Initial model
         final ServerModel serverModel = new ServerModel(serverName, portOffset);

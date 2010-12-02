@@ -22,12 +22,13 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import static org.jboss.as.connector.deployers.processors.ResourceAdapterAttachment.getResourceAdaptersAttachment;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
 import org.jboss.as.connector.ConnectorServices;
-import static org.jboss.as.connector.deployers.processors.ResourceAdapterAttachment.getResourceAdaptersAttachment;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
@@ -46,8 +47,8 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -89,7 +90,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException("Failed to get module attachment for deployment: " + context.getName());
 
         try {
-            final BatchBuilder batchBuilder = context.getBatchBuilder();
+            final ServiceTarget serviceTarget = context.getBatchBuilder();
 
             for (org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
@@ -114,7 +115,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
                     ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor, raxml, cmd, ijmd, module, deploymentName, root);
                     // Create the service
-                    batchBuilder
+                    serviceTarget
                         .addService(ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(deploymentName), service)
                         .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
                         .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, service.getRegistryInjector())

@@ -45,8 +45,8 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -100,10 +100,10 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module);
 
-            final BatchBuilder batchBuilder = context.getBatchBuilder();
+            final ServiceTarget serviceTarget = context.getBatchBuilder();
 
             // Create the service
-            batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
+            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raDeployementService.getMdrInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeployementService.getRegistryInjector())
                     .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, raDeployementService.getJndiInjector())

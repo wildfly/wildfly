@@ -87,10 +87,10 @@ public class SocketBindingService implements Service<SocketBinding> {
         return interfaceBinding;
     }
 
-    public static void addService(ServiceTarget target, SocketBindingAdd add) {
+    public static void addService(ServiceTarget serviceTarget, SocketBindingAdd add) {
         SocketBindingService service = new SocketBindingService(add.getName(), add.getPort(), add.isFixedPort(),
                    add.getMulticastAddress(), add.getMulticastPort());
-        target.addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service)
+        serviceTarget.addService(SocketBinding.JBOSS_BINDING_NAME.append(add.getName()), service)
             .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(add.getInterfaceName()), NetworkInterfaceBinding.class, service.getInterfaceBinding())
             .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getSocketBindings())
             .setInitialMode(Mode.ON_DEMAND)

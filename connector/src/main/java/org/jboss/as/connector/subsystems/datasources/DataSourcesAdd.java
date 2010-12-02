@@ -30,9 +30,8 @@ import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
@@ -58,16 +57,16 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
 
-        builder.addService(JDBCRARDeployService.NAME, new JDBCRARDeployService())
+        serviceTarget.addService(JDBCRARDeployService.NAME, new JDBCRARDeployService())
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR)
                 .setInitialMode(Mode.ON_DEMAND)
                 .install();
 
-        builder.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
+        serviceTarget.addService(ConnectorServices.DATASOURCES_SERVICE, new DataSourcesService(datasources))
             .setInitialMode(Mode.ACTIVE)
             .install();
     }

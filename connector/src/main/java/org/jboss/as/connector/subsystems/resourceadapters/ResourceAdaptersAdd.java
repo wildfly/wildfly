@@ -30,9 +30,8 @@ import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
@@ -57,8 +56,8 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
-        builder.addService( ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
+        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
+        serviceTarget.addService( ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
             .setInitialMode(Mode.ACTIVE)
             .install();
     }

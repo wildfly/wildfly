@@ -22,6 +22,13 @@
 
 package org.jboss.as.deployment.managedbean;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import javax.naming.Context;
+import javax.naming.LinkRef;
+
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
@@ -39,19 +46,12 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.naming.Context;
-import javax.naming.LinkRef;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test case to do some basic Managed bean deployment functionality checking.
@@ -77,21 +77,21 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
     }
 
     @Override
-    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
-        super.setupServices(batchBuilder);
+    protected void setupServices(final ServiceTarget target) throws Exception {
+        super.setupServices(target);
         deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
         deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
 
         javaContext = new MockContext();
-        batchBuilder.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext))
+        target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext))
             .install();
         final Context globalContext = javaContext.createSubcontext("global");
-        batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext))
+        target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(globalContext))
             .install();
         globalContext.bind("someNumber", Integer.valueOf(99));
 
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
+        target.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
             .install();
     }
 
@@ -152,7 +152,7 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
         final ManagedBeanContainer<TestManagedBeanWithInjection> managedBeanContainer = (ManagedBeanContainer<TestManagedBeanWithInjection>) testServiceController.getValue();
         final TestManagedBeanWithInjection testManagedBean = managedBeanContainer.createInstance();
         assertNotNull(testManagedBean);
-        
+
         TestInterceptor.invoked = false;
         TestManagedBeanWithInjection.invoked = false;
         assertNotNull(testManagedBean.getOther());

@@ -36,16 +36,14 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -65,7 +63,6 @@ public class StandaloneServerImpl implements StandaloneServer {
     static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final ServerEnvironment environment;
-    private volatile CountDownLatch startStopLatch = new CountDownLatch(1);
     private volatile ServiceContainer serviceContainer;
 
     StandaloneServerImpl(ServerEnvironment environment) {
@@ -101,26 +98,34 @@ public class StandaloneServerImpl implements StandaloneServer {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
 
+        final CountDownLatch startStopLatch = new CountDownLatch(1);
         final ServerStartTask startTask = new ServerStartTask(0, serviceActivators, updates, environment);
-        startTask.run(Collections.<ServiceActivator> singletonList(new ServerStartupService()));
+        startTask.run(Collections.<ServiceActivator> singletonList(new ServerStartupService(startStopLatch)));
 
         try {
             startStopLatch.await(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            //
         }
 
-        if (serviceContainer == null)
+        if (serviceContainer == null) {
             throw new ServerStartException("ServiceContainer not available");
+        }
     }
 
     @Override
     public void stop() {
-        if (serviceContainer == null)
+        if (serviceContainer == null) {
             throw new IllegalStateException("Server not started");
-
-        startStopLatch = new CountDownLatch(1);
+        }
+        final CountDownLatch startStopLatch = new CountDownLatch(1);
         ServiceController<?> controller = serviceContainer.getService(ServerStartTask.AS_SERVER_SERVICE_NAME);
-        ServiceListener<Object> listener = new AbstractServiceListener<Object>() {
+        controller.addListener(new AbstractServiceListener<Object>() {
+
+            @Override
+            public void listenerAdded(ServiceController<? extends Object> controller) {
+                controller.setMode(Mode.REMOVE);
+            }
 
             @Override
             public void serviceStopped(ServiceController<? extends Object> controller) {
@@ -133,25 +138,30 @@ public class StandaloneServerImpl implements StandaloneServer {
                 startStopLatch.countDown();
                 serviceContainer = null;
             }
-        };
-        controller.addListener(listener);
-        controller.setMode(Mode.REMOVE);
+        });
 
         try {
             startStopLatch.await(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            //
         }
     }
 
     class ServerStartupService implements Service<Void>, ServiceActivator {
 
         private ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "startup");
+        private final CountDownLatch startStopLatch;
+
+        ServerStartupService(final CountDownLatch startStopLatch) {
+            this.startStopLatch = startStopLatch;
+        }
 
         @Override
         public void activate(ServiceActivatorContext context) {
-            BatchBuilder batchBuilder = context.getBatchBuilder();
-            BatchServiceBuilder<Void> serviceBuilder = batchBuilder.addService(SERVICE_NAME, this);
-            serviceBuilder.addDependency(ServerStartTask.AS_SERVER_SERVICE_NAME);
+            final ServiceTarget serviceTarget = context.getServiceTarget();
+            serviceTarget.addService(SERVICE_NAME, this)
+                    .addDependency(ServerStartTask.AS_SERVER_SERVICE_NAME)
+                    .install();
         }
 
         @Override

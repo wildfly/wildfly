@@ -22,11 +22,11 @@
 
 package org.jboss.as.connector.deployers.processors;
 
+import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
+
 import java.util.List;
 
-
 import org.jboss.as.connector.ConnectorServices;
-import static org.jboss.as.connector.deployers.processors.DataSourcesAttachement.getDataSourcesAttachment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
@@ -44,9 +44,9 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -108,10 +108,10 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if(shouldDeploy) {
-            final BatchBuilder batchBuilder = context.getBatchBuilder();
+            final ServiceTarget serviceTarget = context.getBatchBuilder();
 
             final DataSourceDeploymentService dataSourceDeploymentService = new DataSourceDeploymentService(deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module);
-            ServiceBuilder<?> serviceBuilder = batchBuilder.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
+            ServiceBuilder<?> serviceBuilder = serviceTarget.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
                  .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceDeploymentService.getMdrInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, dataSourceDeploymentService.getRegistryInjector())
                     .addDependency(ConnectorServices.JNDI_STRATEGY_SERVICE, JndiStrategy.class, dataSourceDeploymentService.getJndiInjector())

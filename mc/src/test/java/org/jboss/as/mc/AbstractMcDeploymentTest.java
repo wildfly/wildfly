@@ -22,23 +22,28 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.model.ServerDeploymentTestSupport;
-import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VFSUtils;
-import org.jboss.vfs.VirtualFile;
-import org.junit.After;
-import org.junit.Before;
+import static org.junit.Assert.fail;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.fail;
+import org.jboss.as.model.ServerDeploymentTestSupport;
+import org.jboss.as.model.ServerGroupDeploymentElement;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
+import org.jboss.vfs.VirtualFile;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author John E. Bailey
@@ -62,8 +67,8 @@ public class AbstractMcDeploymentTest {
         });
     }
 
-    protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
-        MockServerDeploymentRepository.addService(batchBuilder, VFS.getChild(getResource(AbstractMcDeploymentTest.class, "/test")).getPhysicalFile());
+    protected void setupServices(final ServiceTarget serviceTarget) throws Exception {
+        MockServerDeploymentRepository.addService(serviceTarget, VFS.getChild(getResource(AbstractMcDeploymentTest.class, "/test")).getPhysicalFile());
     }
 
     @After

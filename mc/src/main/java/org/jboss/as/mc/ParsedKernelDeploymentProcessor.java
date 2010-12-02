@@ -34,8 +34,8 @@ import org.jboss.as.mc.descriptor.BeanMetaDataConfig;
 import org.jboss.as.mc.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.LookupClassValue;
 import org.jboss.msc.value.LookupConstructorValue;
@@ -70,21 +70,21 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         final Value<ClassLoader> classLoaderValue = Values.immediateValue(classLoader);
 
         final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        final ServiceTarget serviceTarget = context.getBatchBuilder();
         for(final BeanMetaDataConfig beanConfig : beanConfigs) {
-            addBean(batchBuilder, beanConfig, classLoaderValue);
+            addBean(serviceTarget, beanConfig, classLoaderValue);
         }
     }
 
     @SuppressWarnings({"unchecked"})
-    private void addBean(BatchBuilder batchBuilder, BeanMetaDataConfig beanConfig, Value<ClassLoader> classLoaderValue) {
+    private void addBean(final ServiceTarget serviceTarget, BeanMetaDataConfig beanConfig, Value<ClassLoader> classLoaderValue) {
         final String className = beanConfig.getBeanClass();
         final Value<Class<?>> classValue = cached(new LookupClassValue(className, classLoaderValue));
         final List<? extends Value<Class<?>>> types = Collections.emptyList();
-        final Value<Constructor> constructorValue = cached(new LookupConstructorValue(classValue, types));
+        final Value<Constructor<?>> constructorValue = cached(new LookupConstructorValue(classValue, types));
         final List<? extends Value<?>> args = Collections.emptyList();
         final Value<Object> constructedValue = cached(new ConstructedValue(constructorValue, args));
-        batchBuilder.addService(ServiceName.of(beanConfig.getName()), new AbstractService<Object>() {
+        serviceTarget.addService(ServiceName.of(beanConfig.getName()), new AbstractService<Object>() {
             @Override
             public Object getValue() throws IllegalStateException {
                 return constructedValue.getValue();

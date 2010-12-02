@@ -22,16 +22,27 @@
 
 package org.jboss.as.deployment.managedbean.processors;
 
-import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
+import static org.jboss.as.deployment.naming.NamespaceBindings.getNamespaceBindings;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.naming.Context;
+import javax.naming.LinkRef;
+import javax.naming.Reference;
+
 import org.jboss.as.deployment.managedbean.config.InterceptorConfiguration;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfiguration;
-import org.jboss.as.deployment.managedbean.container.FieldResourceInjection;
 import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
+import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
+import org.jboss.as.deployment.managedbean.container.FieldResourceInjection;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanContainer;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanInterceptor;
 import org.jboss.as.deployment.managedbean.container.ManagedBeanObjectFactory;
+import org.jboss.as.deployment.managedbean.container.ManagedBeanService;
 import org.jboss.as.deployment.managedbean.container.MethodResourceInjection;
-import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
 import org.jboss.as.deployment.managedbean.container.ResourceInjection;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextService;
@@ -49,16 +60,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
-
-import javax.naming.Context;
-import javax.naming.LinkRef;
-import javax.naming.Reference;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.as.deployment.naming.NamespaceBindings.getNamespaceBindings;
 
 /**
  * Deployment unit processors responsible for adding deployment items for each managed bean configuration.

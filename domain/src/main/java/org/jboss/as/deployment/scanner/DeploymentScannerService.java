@@ -59,7 +59,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     /**
      * Add the deployment scanner service to a batch.
      *
-     * @param target the service target
+     * @param serviceTarget the service target
      * @param name the repository name
      * @param relativeTo the relative to
      * @param path the path
@@ -67,19 +67,19 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param scanEnabled scan enabled
      * @return
      */
-    public static void addService(final ServiceTarget target,
+    public static void addService(final ServiceTarget serviceTarget,
             final String name, final String relativeTo, final String path, final int scanInterval, TimeUnit unit, final boolean scanEnabled) {
         final DeploymentScannerService service = new DeploymentScannerService(scanInterval, unit, scanEnabled);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
 
         if(relativeTo != null) {
-            RelativePathService.addService(pathService, path, relativeTo, target);
+            RelativePathService.addService(pathService, path, relativeTo, serviceTarget);
         } else {
-            AbsolutePathService.addService(pathService, path, target);
+            AbsolutePathService.addService(pathService, path, serviceTarget);
         }
 
-        target.addService(serviceName, service)
+        serviceTarget.addService(serviceName, service)
             .addDependency(pathService, String.class, service.pathValue)
             .addDependency(DeploymentScannerFactory.SERVICE_NAME, DeploymentScannerFactory.class, service.scannerFactory)
             .setInitialMode(Mode.ACTIVE)
@@ -102,6 +102,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             if(enabled) {
                 scanner.startScanner();
             }
+            this.scanner = scanner;
         } catch (Exception e) {
             throw new StartException(e);
         }

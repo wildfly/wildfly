@@ -25,9 +25,9 @@ package org.jboss.as.arquillian.service;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -50,10 +50,11 @@ public class ArquillianDeploymentUnitProcessor implements DeploymentUnitProcesso
             return;
         }
 
-        BatchBuilder batchBuilder = context.getBatchBuilder();
+        final ServiceTarget serviceTarget = context.getBatchBuilder();
         DeploymentTrackerService tracker = new DeploymentTrackerService(context);
-        batchBuilder.addService(NAME_BASE.append(context.getName()), tracker)
-            .addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService);
+        serviceTarget.addService(NAME_BASE.append(context.getName()), tracker)
+            .addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService)
+            .install();
     }
 
     private class DeploymentTrackerService implements Service<Object>{

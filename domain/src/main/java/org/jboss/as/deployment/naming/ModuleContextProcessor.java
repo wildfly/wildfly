@@ -22,14 +22,13 @@
 
 package org.jboss.as.deployment.naming;
 
+import javax.naming.Context;
+
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.naming.Context;
-import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Deployment processor that deploys a naming context for the current module.
@@ -45,11 +44,11 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        final ServiceTarget serviceTarget = context.getBatchBuilder();
         final ServiceName moduleContextServiceName = ContextNames.GLOBAL_CONTEXT_SERVICE_NAME.append(context.getName());
         final JndiName moduleContextJndiName = ContextNames.GLOBAL_CONTEXT_NAME.append(context.getName());
         final ContextService contextService = new ContextService(moduleContextJndiName);
-        batchBuilder.addService(moduleContextServiceName, contextService)
+        serviceTarget.addService(moduleContextServiceName, contextService)
             .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, Context.class, contextService.getParentContextInjector())
             .install();
 

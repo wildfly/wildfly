@@ -31,8 +31,8 @@ import java.util.Set;
 
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -49,9 +49,9 @@ public class MockServerDeploymentRepository implements ServerDeploymentRepositor
     private Set<Closeable> handles = new HashSet<Closeable>();
     private final File root;
 
-    public static void addService(BatchBuilder batchBuilder, File root) {
+    public static void addService(final ServiceTarget target, File root) {
         MockServerDeploymentRepository service = new MockServerDeploymentRepository(root);
-        batchBuilder.addService(SERVICE_NAME, service).install();
+        target.addService(SERVICE_NAME, service).install();
     }
     public MockServerDeploymentRepository(File root) {
         this.root = root;

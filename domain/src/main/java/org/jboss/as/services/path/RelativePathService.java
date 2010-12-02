@@ -40,14 +40,14 @@ public class RelativePathService extends AbstractPathService {
     private final InjectedValue<String> injectedPath = new InjectedValue<String>();
 
     public static void addService(final String name, final String relativePath,
-            final String relativeTo, final ServiceTarget target) {
-        addService(pathNameOf(name), relativePath, relativeTo, target);
+            final String relativeTo, final ServiceTarget serviceTarget) {
+        addService(pathNameOf(name), relativePath, relativeTo, serviceTarget);
     }
 
     public static void addService(final ServiceName name, final String relativePath,
-            final String relativeTo, final ServiceTarget target) {
+            final String relativeTo, final ServiceTarget serviceTarget) {
         RelativePathService service = new RelativePathService(relativePath);
-        target.addService(name, service)
+        serviceTarget.addService(name, service)
             .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath)
             .install();
     }

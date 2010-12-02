@@ -37,13 +37,13 @@ public class AbsolutePathService extends AbstractPathService {
 
     private final String absolutePath;
 
-    public static void addService(final String name, final String abstractPath, final ServiceTarget target) {
-        addService(pathNameOf(name), abstractPath, target);
+    public static void addService(final String name, final String abstractPath, final ServiceTarget serviceTarget) {
+        addService(pathNameOf(name), abstractPath, serviceTarget);
     }
 
-    public static void addService(final ServiceName sname, final String abstractPath, final ServiceTarget target) {
+    public static void addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
-        target.addService(sname, service).install();
+        serviceTarget.addService(sname, service).install();
     }
 
     public AbsolutePathService(final String abstractPath) {

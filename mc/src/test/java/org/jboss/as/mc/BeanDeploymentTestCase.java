@@ -41,10 +41,10 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.naming.ContextNames;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.BeforeClass;
@@ -64,8 +64,8 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
     }
 
     @Override
-    protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
-        super.setupServices(batchBuilder);
+    protected void setupServices(final ServiceTarget serviceTarget) throws Exception {
+        super.setupServices(serviceTarget);
 
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
         deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
@@ -78,7 +78,7 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
         deploymentChain.addProcessor(new KernelDeploymentParsingProcessor(), Phase.MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR);
         deploymentChain.addProcessor(new ParsedKernelDeploymentProcessor(), Phase.PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR);
 
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
+        serviceTarget.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain));
 
         Service<Context> ns = new AbstractService<Context>() {
             @Override
@@ -90,7 +90,7 @@ public class BeanDeploymentTestCase extends AbstractMcDeploymentTest {
                 }
             }
         };
-        batchBuilder.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, ns);
+        serviceTarget.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, ns);
     }
 
     @Test

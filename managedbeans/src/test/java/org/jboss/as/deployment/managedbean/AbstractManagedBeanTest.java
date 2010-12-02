@@ -38,6 +38,7 @@ import org.jboss.as.model.ServerDeploymentTestSupport;
 import org.jboss.as.model.ServerGroupDeploymentElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -67,8 +68,8 @@ public abstract class AbstractManagedBeanTest {
         });
     }
 
-    protected void setupServices(final BatchBuilder batchBuilder) throws Exception {
-        MockServerDeploymentRepository.addService(batchBuilder, VFS.getChild(getResource(AbstractManagedBeanTest.class, "/test")).getPhysicalFile());
+    protected void setupServices(final ServiceTarget target) throws Exception {
+        MockServerDeploymentRepository.addService(target, VFS.getChild(getResource(AbstractManagedBeanTest.class, "/test")).getPhysicalFile());
     }
 
     @After

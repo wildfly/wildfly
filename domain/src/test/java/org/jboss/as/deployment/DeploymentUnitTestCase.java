@@ -22,17 +22,17 @@
 
 package org.jboss.as.deployment;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainService;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test to verify the DeploymentUnitElement correctly installs the deployment service.
@@ -42,11 +42,11 @@ import static org.junit.Assert.assertNotNull;
 public class DeploymentUnitTestCase extends AbstractDeploymentTest {
 
     @Override
-    protected void setupServices(BatchBuilder batchBuilder) throws Exception {
-        super.setupServices(batchBuilder);
+    protected void setupServices(final ServiceTarget target) throws Exception {
+        super.setupServices(target);
 
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
-        batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain)).install();
+        target.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain)).install();
     }
 
     @Test

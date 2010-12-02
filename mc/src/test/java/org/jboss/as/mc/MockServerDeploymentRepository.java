@@ -22,18 +22,22 @@
 
 package org.jboss.as.mc;
 
-import org.jboss.as.deployment.ServerDeploymentRepository;
-import org.jboss.as.deployment.module.TempFileProviderService;
-import org.jboss.msc.service.*;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.as.deployment.ServerDeploymentRepository;
+import org.jboss.as.deployment.module.TempFileProviderService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Mock implementation of ServerDeploymentRepository.
@@ -45,9 +49,9 @@ public class MockServerDeploymentRepository implements ServerDeploymentRepositor
     private Set<Closeable> handles = new HashSet<Closeable>();
     private final File root;
 
-    public static void addService(BatchBuilder batchBuilder, File root) {
+    public static void addService(final ServiceTarget serviceTarget, File root) {
         MockServerDeploymentRepository service = new MockServerDeploymentRepository(root);
-        batchBuilder.addService(SERVICE_NAME, service);
+        serviceTarget.addService(SERVICE_NAME, service);
     }
     public MockServerDeploymentRepository(File root) {
         this.root = root;

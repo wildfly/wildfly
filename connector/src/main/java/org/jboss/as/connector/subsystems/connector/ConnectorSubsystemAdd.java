@@ -39,9 +39,8 @@ import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.JBossXATerminator;
 
 /**
@@ -67,12 +66,12 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
 
         WorkManager wm = new WorkManagerImpl();
 
         final WorkManagerService wmService = new WorkManagerService(wm);
-        builder.addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
+        serviceTarget.addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
             .addDependency(ThreadsServices.EXECUTOR.append(shortRunningThreadPool), Executor.class, wmService.getExecutorShortInjector())
             .addDependency(ThreadsServices.EXECUTOR.append(longRunningThreadPool), Executor.class, wmService.getExecutorLongInjector())
             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
@@ -81,7 +80,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
 
         CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
         final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
-        builder.addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
+        serviceTarget.addService(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, defaultBootCtxService)
             .addDependency(ConnectorServices.WORKMANAGER_SERVICE, WorkManager.class, defaultBootCtxService.getWorkManagerValueInjector())
             .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, defaultBootCtxService.getXaTerminatorInjector())
             .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, defaultBootCtxService.getTxManagerInjector())
@@ -96,7 +95,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
         config.setBeanValidation(false);
 
         final ConnectorConfigService connectorConfigService = new ConnectorConfigService(config);
-        builder.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
+        serviceTarget.addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
             .addDependency(ConnectorServices.DEFAULT_BOOTSTRAP_CONTEXT_SERVICE, CloneableBootstrapContext.class, connectorConfigService.getDefaultBootstrapContextInjector())
             .setInitialMode(Mode.ACTIVE)
             .install();

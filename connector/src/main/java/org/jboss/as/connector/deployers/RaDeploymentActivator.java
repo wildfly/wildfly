@@ -36,7 +36,7 @@ import org.jboss.as.connector.mdr.MdrService;
 import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistryService;
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.BootUpdateContext;
-import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Service activator which installs the various service required for rar
@@ -49,17 +49,17 @@ public class RaDeploymentActivator {
      * @param updateContext The update context
      */
     public void activate(final BootUpdateContext updateContext) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
 
         // add resources here
         MdrService mdrService = new MdrService();
-        batchBuilder.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
+        serviceTarget.addService(ConnectorServices.IRONJACAMAR_MDR, mdrService).install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        batchBuilder.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService).install();
+        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService).install();
 
         JndiStrategyService jndiStrategyService = new JndiStrategyService();
-        batchBuilder.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
+        serviceTarget.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
 
         updateContext.addDeploymentProcessor(new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
         updateContext.addDeploymentProcessor(new RaDeploymentParsingProcessor(), Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
