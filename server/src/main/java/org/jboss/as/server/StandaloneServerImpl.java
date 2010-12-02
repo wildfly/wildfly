@@ -52,7 +52,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
- * The standalone server implemenation.
+ * The standalone server implementation.
  *
  * @author Emanuel Muckenhuber
  * @author Thomas.Diesler@jboss.com
@@ -65,8 +65,8 @@ public class StandaloneServerImpl implements StandaloneServer {
     static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final ServerEnvironment environment;
-    private CountDownLatch startStopLatch = new CountDownLatch(1);
-    private ServiceContainer serviceContainer;
+    private volatile CountDownLatch startStopLatch = new CountDownLatch(1);
+    private volatile ServiceContainer serviceContainer;
 
     StandaloneServerImpl(ServerEnvironment environment) {
         if (environment == null) {
