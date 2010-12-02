@@ -82,8 +82,8 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
 
                 testRunnerMBeanAvaialble = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
 
-                Thread.sleep(1000);
-                timeout -= 1000;
+                Thread.sleep(100);
+                timeout -= 100;
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);

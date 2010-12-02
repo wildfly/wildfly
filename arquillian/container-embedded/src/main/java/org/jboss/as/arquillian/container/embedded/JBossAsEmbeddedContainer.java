@@ -84,8 +84,8 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
 
                 testRunnerMBeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
 
-                Thread.sleep(1000);
-                timeout -= 1000;
+                Thread.sleep(100);
+                timeout -= 100;
             }
         } catch (Throwable th) {
             throw handleStartThrowable(th);
