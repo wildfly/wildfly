@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
@@ -41,13 +39,12 @@ import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.jmx.MBeanProxy;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
 /**
@@ -80,7 +77,7 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
         try {
             // If this is an OSGi archive
-            if (BundleInfo.isValidateBundleManifest(getManifest(archive)))
+            if (BundleInfo.isValidateBundleManifest(ManifestUtils.getManifest(archive, false)))
                 startOSGiSubsystem();
 
             InputStream input = archive.as(ZipExporter.class).exportZip();
@@ -176,19 +173,6 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         if (State.valueOf(proxy.getState(serviceName.getCanonicalName())) != State.UP) {
             proxy.setMode(serviceName.getCanonicalName(), Mode.ACTIVE.toString());
             waitForServiceState(serviceName, State.UP, 5000);
-        }
-    }
-
-    private Manifest getManifest(Archive<?> archive) {
-        Manifest manifest = null;
-        try {
-            Node node = archive.get(JarFile.MANIFEST_NAME);
-            if (node != null) {
-                manifest = new Manifest(node.getAsset().openStream());
-            }
-            return manifest;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot obtain manifest", ex);
         }
     }
 }

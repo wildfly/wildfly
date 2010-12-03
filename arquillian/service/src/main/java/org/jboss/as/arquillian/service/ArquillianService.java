@@ -161,6 +161,7 @@ public class ArquillianService implements Service<ArquillianService> {
                             BundleAssociation.setBundle(bundle);
                             BundleContext sysContext = getSystemBundleContext();
                             BundleContextAssociation.setBundleContext(sysContext);
+                            result = bundle.loadClass(className);
                             break;
                         }
                     }
