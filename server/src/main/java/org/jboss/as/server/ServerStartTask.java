@@ -74,8 +74,7 @@ import org.jboss.msc.service.StartException;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class
-        ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
+public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
 
     public static final ServiceName AS_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("as", "server");
 
@@ -234,19 +233,12 @@ public final class
             }
         }
 
-        // Deployment chain should be configured now..
-        for (AbstractServerModelUpdate<?> update : updates) {
-            if(update.isDeploymentUpdate()) {
-                update.applyUpdateBootAction(context);
-            }
-        }
+        DeploymentUpdateService.addService(batchBuilder, updates, serverStartupListener);
 
         StandaloneServerManagementServices.addServices(serverModel, container, batchBuilder);
 
         try {
-            serverStartupListener.finish();
             batchBuilder.install();
-            serverStartupListener.finishBatch();
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
