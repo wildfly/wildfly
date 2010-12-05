@@ -149,6 +149,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>${surefire.system.args}</argLine>
+                    <skipTests>true</skipTests>
                     <systemProperties>
                         <property>
                             <name>java.util.logging.manager</name>

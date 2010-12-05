@@ -11,35 +11,7 @@
   <name>JBoss AS Demos</name>
   <description>Some demo applications for JBoss AS</description>
   
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.4</version>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>build-dist</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <tasks>
-                <ant antfile="build.xml"  inheritRefs="true">
-                  <target name="example"/>
-                </ant>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-  
   <dependencies>
-
     <dependency>
         <groupId>org.hornetq</groupId>
         <artifactId>hornetq-core</artifactId>
@@ -147,6 +119,33 @@
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
-        
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.4</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>build-dist</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <ant antfile="build.xml"  inheritRefs="true">
+                  <target name="example"/>
+                </ant>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  
 </project>

@@ -51,6 +51,7 @@
                 <configuration>
                     <!-- Common among all test executions  -->
                     <skipExec>${skipExecUnitTests}</skipExec>
+                    <skipTests>true</skipTests>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
