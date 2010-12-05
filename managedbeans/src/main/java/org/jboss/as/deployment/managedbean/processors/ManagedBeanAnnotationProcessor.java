@@ -83,18 +83,16 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         }
 
         final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
-        if (index == null) {
+        if (index == null)
             return; // Skip if there is no annotation index
-        }
 
         final List<AnnotationTarget> targets = index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME);
-        if (targets == null) {
+        if (targets == null)
             return; // Skip if there are no ManagedBean instances
-        }
 
         final Module module = context.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Manged bean annotation processing requires a module.");
+            return; // Skip if there are no Module
 
         final ClassLoader classLoader = module.getClassLoader();
 

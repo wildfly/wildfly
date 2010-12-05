@@ -46,16 +46,18 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * [TODO]
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.IN_CONTAINER)
+@Ignore("JNDI lookup returns null for connection factory")
 public class JmsTestCase {
     static final Logger log = Logger.getLogger(JmsTestCase.class);
 

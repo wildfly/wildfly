@@ -21,6 +21,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
+<!-- 
+  Set these VM properties in your IDE debugger 
+  
+    -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+    -Djboss.home=../../build/target/jboss-7.0.0.Alpha2
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -51,7 +57,6 @@
                 <configuration>
                     <!-- Common among all test executions  -->
                     <skipExec>${skipExecUnitTests}</skipExec>
-                    <skipTests>true</skipTests>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>                    
                     <enableAssertions>true</enableAssertions>
                     <systemProperties>
@@ -65,30 +70,6 @@
                         </property>
                     </systemProperties>
                 </configuration>
-                <executions>
-                    <execution>
-                        <!-- (Legacy) Tests not using arquillian  -->
-                        <id>default-test</id>
-                        <configuration>
-		                    <includes>
-		                        <include>org/jboss/as/test/flat/**/*TestCase.java</include>
-		                    </includes>
-                        </configuration>
-                    </execution>
-                    <execution> 
-                        <!-- Tests that run using arquillian + embedded AS-->
-                        <id>arquillian</id>
-                        <phase>test</phase>
-                        <goals>
-                             <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>org/jboss/as/test/embedded/**/*TestCase.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

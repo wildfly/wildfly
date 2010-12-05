@@ -77,8 +77,8 @@ public class ArquillianService implements Service<ArquillianService> {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> serviceBuilder = batchBuilder.addService(ArquillianService.SERVICE_NAME, service);
         serviceBuilder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class,
-                service.injectedModuleLoader);
+        serviceBuilder.addDependency(ClassifyingModuleLoaderService.SERVICE_NAME, ClassifyingModuleLoaderService.class, service.injectedModuleLoader);
+        serviceBuilder.install();
     }
 
     public synchronized void start(StartContext context) throws StartException {

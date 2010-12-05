@@ -150,14 +150,14 @@
                 </property>
                 <property name="org.osgi.framework.system.packages.extra">
                 javax.transaction;version=1.1,
-                    org.apache.log4j;version=1.2,
-                    org.jboss.logging;version=3.0,
-                    org.jboss.osgi.deployment.deployer;version=1.0,
-                    org.jboss.osgi.deployment.interceptor;version=1.0,
-                    org.jboss.osgi.spi;version=1.0,
-                    org.jboss.osgi.spi.capability;version=1.0,
-                    org.jboss.osgi.spi.util;version=1.0,
-                    org.jboss.osgi.testing;version=1.0,
+                org.apache.log4j;version=1.2,
+                org.jboss.logging;version=3.0,
+                org.jboss.osgi.deployment.deployer;version=1.0,
+                org.jboss.osgi.deployment.interceptor;version=1.0,
+                org.jboss.osgi.spi;version=1.0,
+                org.jboss.osgi.spi.capability;version=1.0,
+                org.jboss.osgi.spi.util;version=1.0,
+                org.jboss.osgi.testing;version=1.0,
                 org.jboss.osgi.vfs;version=1.0,
                 
                 org.jboss.arquillian.api, org.jboss.arquillian.junit, org.jboss.arquillian.osgi,
