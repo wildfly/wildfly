@@ -124,40 +124,13 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.4</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>build-dist</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                        <configuration>
-                            <tasks>
-                                <ant antfile="build.xml" inheritRefs="true">
-                                    <target name="modules"/>
-                                </ant>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>${surefire.system.args}</argLine>
-                    <skipTests>true</skipTests>
                     <systemProperties>
                         <property>
                             <name>java.util.logging.manager</name>
                             <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                        <property>
-                            <name>module.path</name>
-                            <value>${project.build.directory}/test-modules</value>
                         </property>
                     </systemProperties>
                 </configuration>

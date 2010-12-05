@@ -134,31 +134,31 @@
 
     <modules>
         <module>build-config</module>
-        <module>protocol</module>
-        <module>domain</module>
-        <module>domain-client</module>
-        <module>standalone-client</module>
-        <module>connector</module>
-        <module>host-controller</module>
-        <module>server</module>
-        <module>domain-controller</module>
-        <module>process-controller</module>
-        <module>remoting</module>
-        <module>threads</module>
-        <module>logging</module>
-        <module>transactions</module>
-        <module>naming</module>
-        <module>jmx</module>
-        <module>sar</module>
-        <module>managedbeans</module>
-        <module>messaging</module>
-        <module>osgi</module>
-        <module>web</module>
         <module>build</module>
         <module>arquillian</module>
-        <module>testsuite</module>
+        <module>connector</module>
         <module>demos</module>
+        <module>domain-client</module>
+        <module>domain-controller</module>
+        <module>domain</module>
+        <module>host-controller</module>
+        <module>jmx</module>
+        <module>logging</module>
+        <module>managedbeans</module>
         <module>mc</module>
+        <module>messaging</module>
+        <module>naming</module>
+        <module>osgi</module>
+        <module>process-controller</module>
+        <module>protocol</module>
+        <module>remoting</module>
+        <module>sar</module>
+        <module>server</module>
+        <module>standalone-client</module>
+        <module>testsuite</module>
+        <module>threads</module>
+        <module>transactions</module>
+        <module>web</module>
     </modules>
 
     <build>
