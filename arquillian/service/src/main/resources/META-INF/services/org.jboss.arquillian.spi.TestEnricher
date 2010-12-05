@@ -1,2 +1,3 @@
-#org.jboss.arquillian.testenricher.msc.ServiceContainerEnricher
+org.jboss.arquillian.testenricher.msc.ServiceContainerEnricher
+org.jboss.arquillian.testenricher.osgi.OSGiTestEnricher
 

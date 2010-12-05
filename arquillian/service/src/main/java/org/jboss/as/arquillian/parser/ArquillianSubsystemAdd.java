@@ -22,10 +22,8 @@
 
 package org.jboss.as.arquillian.parser;
 
-import org.jboss.as.arquillian.service.ArquillianDependencyProcessor;
-import org.jboss.as.arquillian.service.ArquillianDeploymentUnitProcessor;
-import org.jboss.as.arquillian.service.ArquillianJunitAnnotationProcessor;
-import org.jboss.as.arquillian.service.ArquillianManifestProcessor;
+import org.jboss.as.arquillian.service.ArquillianDeploymentProcessor;
+import org.jboss.as.arquillian.service.ArquillianRunWithAnnotationProcessor;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.AbstractSubsystemAdd;
@@ -63,10 +61,8 @@ public final class ArquillianSubsystemAdd extends AbstractSubsystemAdd<Arquillia
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         log.infof("Activating Arquillian Subsystem");
         ArquillianService.addService(updateContext.getBatchBuilder());
-        updateContext.addDeploymentProcessor(new ArquillianManifestProcessor(), Phase.ARQUILLIAN_MANIFEST_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ArquillianDependencyProcessor(), Phase.ARQUILLIAN_DEPENDENCY_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ArquillianJunitAnnotationProcessor(), Phase.ARQUILLIAN_JUNIT_ANNOTATION_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ArquillianDeploymentUnitProcessor(), Phase.ARQUILLIAN_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ArquillianRunWithAnnotationProcessor(), Phase.ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR);
+        updateContext.addDeploymentProcessor(new ArquillianDeploymentProcessor(), Phase.ARQUILLIAN_DEPLOYMENT_PROCESSOR);
     }
 
 }

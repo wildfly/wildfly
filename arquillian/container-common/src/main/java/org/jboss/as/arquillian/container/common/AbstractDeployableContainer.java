@@ -21,21 +21,19 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import javax.management.ObjectName;
 
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
-import org.jboss.as.arquillian.jmx.JMXMethodExecutor;
-import org.jboss.as.arquillian.jmx.JMXTestRunnerMBean;
-import org.jboss.as.arquillian.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.as.jmx.mbean.ManagedServiceContainerService.ManagedServiceContainer;
 import org.jboss.as.standalone.client.api.StandaloneClient;
 import org.jboss.as.standalone.client.api.deployment.DeploymentAction;
 import org.jboss.as.standalone.client.api.deployment.DeploymentPlan;
@@ -43,7 +41,13 @@ import org.jboss.as.standalone.client.api.deployment.DeploymentPlanBuilder;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.standalone.client.api.deployment.ServerDeploymentPlanResult;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.jmx.MBeanProxy;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
 /**
@@ -53,41 +57,32 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
  * @since 17-Nov-2010
  */
 public abstract class AbstractDeployableContainer implements DeployableContainer {
+
     private final Logger log = Logger.getLogger(AbstractDeployableContainer.class.getName());
 
-    private JBossAsContainerConfiguration config;
+    private JBossAsContainerConfiguration containerConfig;
     private ServerDeploymentManager deploymentManager;
-    private JMXConnector jmxConnector;
 
     private final Map<Archive<?>, String> registry = new HashMap<Archive<?>, String>();
 
     @Override
     public void setup(Context context, Configuration configuration) {
-        config = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        StandaloneClient client = StandaloneClient.Factory.create(config.getBindAddress(), config.getManagementPort());
+        containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
+        StandaloneClient client = StandaloneClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
         deploymentManager = client.getDeploymentManager();
     }
 
-    public MBeanServerConnection getMBeanServerConnection() {
-        int port = config.getJmxPort();
-        String host = config.getBindAddress().getHostAddress();
-        String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
-        try {
-            if (jmxConnector == null) {
-                log.fine("Connecting JMXConnector to: " + urlString);
-                JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-                jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-            }
-
-            return jmxConnector.getMBeanServerConnection();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
-        }
+    protected JBossAsContainerConfiguration getContainerConfiguration() {
+        return containerConfig;
     }
 
     @Override
     public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
         try {
+            // If this is an OSGi archive
+            if (BundleInfo.isValidateBundleManifest(getManifest(archive)))
+                startOSGiSubsystem();
+
             InputStream input = archive.as(ZipExporter.class).exportZip();
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
             builder = builder.add(archive.getName(), input).andDeploy();
@@ -117,6 +112,45 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         }
     }
 
+    protected void waitForMBean(ObjectName objectName, long timeout) throws IOException, InterruptedException {
+        boolean mbeanAvailable = false;
+        MBeanServerConnection mbeanServer = null;
+        while (timeout > 0 && mbeanAvailable == false) {
+            if (mbeanServer == null) {
+                try {
+                    mbeanServer = getMBeanServerConnection();
+                } catch (Exception ex) {
+                    // ignore
+                }
+            }
+            mbeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(objectName));
+            Thread.sleep(100);
+            timeout -= 100;
+        }
+        if (mbeanAvailable == false)
+            throw new IllegalStateException("MBean not available: " + objectName);
+    }
+
+    protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) throws IOException, InterruptedException {
+
+        ObjectName objectName = ManagedServiceContainer.OBJECT_NAME;
+        MBeanServerConnection mbeanServer = getMBeanServerConnection();
+        ManagedServiceContainer proxy = MBeanProxy.get(mbeanServer, objectName, ManagedServiceContainer.class);
+
+        State currentState = State.valueOf(proxy.getState(serviceName.getCanonicalName()));
+        while (timeout > 0 && currentState != expectedState) {
+            Thread.sleep(100);
+            timeout -= 100;
+            currentState = State.valueOf(proxy.getState(serviceName.getCanonicalName()));
+        }
+        if (currentState != expectedState)
+            throw new IllegalStateException("Unexpected state for [" + serviceName + "] - " + currentState);
+    }
+
+    protected abstract MBeanServerConnection getMBeanServerConnection();
+
+    protected abstract ContainerMethodExecutor getContainerMethodExecutor();
+
     private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
         Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
         ServerDeploymentPlanResult planResult = future.get();
@@ -131,7 +165,30 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         return deployAction.getDeploymentUnitUniqueName();
     }
 
-    protected ContainerMethodExecutor getContainerMethodExecutor() {
-         return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE, JMXTestRunnerMBean.OBJECT_NAME);
+    private void startOSGiSubsystem() throws IOException, InterruptedException {
+
+        ObjectName objectName = ManagedServiceContainer.OBJECT_NAME;
+        waitForMBean(objectName, 5000);
+
+        MBeanServerConnection mbeanServer = getMBeanServerConnection();
+        ManagedServiceContainer proxy = MBeanProxy.get(mbeanServer, objectName, ManagedServiceContainer.class);
+        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "context");
+        if (State.valueOf(proxy.getState(serviceName.getCanonicalName())) != State.UP) {
+            proxy.setMode(serviceName.getCanonicalName(), Mode.ACTIVE.toString());
+            waitForServiceState(serviceName, State.UP, 5000);
+        }
+    }
+
+    private Manifest getManifest(Archive<?> archive) {
+        Manifest manifest = null;
+        try {
+            Node node = archive.get(JarFile.MANIFEST_NAME);
+            if (node != null) {
+                manifest = new Manifest(node.getAsset().openStream());
+            }
+            return manifest;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot obtain manifest", ex);
+        }
     }
 }

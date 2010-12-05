@@ -21,35 +21,38 @@
  */
 package org.jboss.as.arquillian.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 
 /**
+ * [TODO]
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class ArquillianConfig {
 
-    static final AttachmentKey<ArquillianConfig> ATTACHMENT_KEY = new AttachmentKey<ArquillianConfig>(ArquillianConfig.class);
+    static final AttachmentKey<ArquillianConfig> KEY = new AttachmentKey<ArquillianConfig>(ArquillianConfig.class);
 
-    private List<Class<?>> testClasses;
+    private DeploymentUnitContext context;
+    private List<String> testClasses = new ArrayList<String>();
 
-    ArquillianConfig(){
+    ArquillianConfig(DeploymentUnitContext context){
+        this.context = context;
     }
 
-    void setTestClasses(List<Class<?>> testClasses) {
-        this.testClasses = testClasses;
+    DeploymentUnitContext getDeploymentUnitContext() {
+        return context;
     }
 
-    void removeTestClass(Class<?> clazz) {
-        if (testClasses != null) {
-            testClasses.remove(clazz);
-        }
-    }
 
-    List<Class<?>> getTestClasses(){
+    List<String> getTestClasses(){
         return testClasses;
+    }
+
+    void addTestClass(String testClass) {
+        testClasses.add(testClass);
     }
 }

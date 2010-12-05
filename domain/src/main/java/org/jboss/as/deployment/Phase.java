@@ -56,7 +56,7 @@ public final class Phase {
     public static final int IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR   = PARSE + 0xC00;
     public static final int RESOURCE_ADAPTERS_ATTACHING_PROCESSOR       = PARSE + 0xD00;
     public static final int DATA_SOURCES_ATTACHMENT_PROCESSOR           = PARSE + 0xE00;
-    public static final int ARQUILLIAN_MANIFEST_PROCESSOR               = PARSE + 0xF00;
+    public static final int ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR     = PARSE + 0xF00;
 
     public static final int DEPENDENCIES    = 0x00400000;
 

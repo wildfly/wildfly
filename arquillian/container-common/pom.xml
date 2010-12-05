@@ -46,14 +46,32 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-jmx-executor</artifactId>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
-
+        <dependency>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-osgi</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-msc</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-osgi</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-standalone-client</artifactId>
         </dependency>
-
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-jmx</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.osgi</groupId>
+          <artifactId>org.osgi.core</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -69,7 +69,7 @@
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
         <version.org.hornetq.hornetq-jms>2.1.2.Final</version.org.hornetq.hornetq-jms>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian>1.0.0.Alpha4</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.0.0.Alpha4.SP5-SNAPSHOT</version.org.jboss.arquillian>
         <version.org.jboss.integration.jboss-jca-spi>6.0.0.CR1</version.org.jboss.integration.jboss-jca-spi>
         <version.org.jboss.integration.jboss-transaction-spi>6.0.0.CR1</version.org.jboss.integration.jboss-transaction-spi>
         <version.org.jboss.ironjacamar>1.0.0.Beta3</version.org.jboss.ironjacamar>
@@ -360,12 +360,6 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-arquillian-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-jmx-executor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             
@@ -697,14 +691,26 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-osgi-bundle</artifactId>
+              <artifactId>arquillian-protocol-jmx</artifactId>
                 <version>${version.org.jboss.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                </exclusions>
+            </dependency>
+            
+            <dependency>
+              <groupId>org.jboss.arquillian.protocol</groupId>
+              <artifactId>arquillian-protocol-osgi</artifactId>
+              <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-msc</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-osgi</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
             </dependency>
 
             <dependency>

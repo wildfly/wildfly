@@ -23,10 +23,16 @@ import java.util.logging.Logger;
 
 import javax.management.MBeanServerConnection;
 
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
+import org.jboss.arquillian.spi.Configuration;
+import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
-import org.jboss.as.arquillian.jmx.JMXTestRunnerMBean;
+import org.jboss.as.arquillian.container.common.JBossAsContainerConfiguration;
+import org.jboss.as.arquillian.container.common.MBeanServerConnectionProvider;
 
 /**
  * JBossASEmbeddedContainer
@@ -35,8 +41,17 @@ import org.jboss.as.arquillian.jmx.JMXTestRunnerMBean;
  * @since 17-Nov-2010
  */
 public class JBossAsManagedContainer extends AbstractDeployableContainer {
+
     private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
+    private MBeanServerConnectionProvider provider;
     private Process process;
+
+    @Override
+    public void setup(Context context, Configuration configuration) {
+        super.setup(context, configuration);
+        JBossAsContainerConfiguration config = getContainerConfiguration();
+        provider = new MBeanServerConnectionProvider(config.getBindAddress(), config.getJmxPort());
+    }
 
     @Override
     public void start(Context context) throws LifecycleException {
@@ -102,4 +117,14 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             throw new LifecycleException("Could not stop container", e);
         }
     }
+
+    @Override
+    protected MBeanServerConnection getMBeanServerConnection() {
+        return provider.getConnection();
+    }
+
+    @Override
+    protected ContainerMethodExecutor getContainerMethodExecutor() {
+        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE);
+   }
 }

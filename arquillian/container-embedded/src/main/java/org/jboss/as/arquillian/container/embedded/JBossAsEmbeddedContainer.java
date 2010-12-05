@@ -24,13 +24,13 @@ import java.util.Properties;
 
 import javax.management.MBeanServerConnection;
 
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
-import org.jboss.as.arquillian.jmx.JMXMethodExecutor;
-import org.jboss.as.arquillian.jmx.JMXTestRunnerMBean;
-import org.jboss.as.arquillian.jmx.JMXMethodExecutor.ExecutionType;
 import org.jboss.as.server.EmbeddedServerFactory;
 import org.jboss.as.server.StandaloneServer;
 
@@ -70,23 +70,8 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
             server = EmbeddedServerFactory.create(jbossHomeDir, sysprops);
             server.start();
 
-            long timeout = 5000;
-            boolean testRunnerMBeanAvailable = false;
-            MBeanServerConnection mbeanServer = null;
-            while (timeout > 0 && testRunnerMBeanAvailable == false) {
-                if (mbeanServer == null) {
-                    try {
-                        mbeanServer = getMBeanServerConnection();
-                    } catch (Exception ex) {
-                        // ignore
-                    }
-                }
+            waitForMBean(JMXTestRunnerMBean.OBJECT_NAME, 5000);
 
-                testRunnerMBeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
-
-                Thread.sleep(100);
-                timeout -= 100;
-            }
         } catch (Throwable th) {
             throw handleStartThrowable(th);
         }
@@ -109,7 +94,7 @@ public class JBossAsEmbeddedContainer extends AbstractDeployableContainer {
 
     @Override
     protected ContainerMethodExecutor getContainerMethodExecutor() {
-        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.EMBEDDED, JMXTestRunnerMBean.OBJECT_NAME);
+        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.EMBEDDED);
     }
 
     private LifecycleException handleStartThrowable(Throwable th) throws LifecycleException {

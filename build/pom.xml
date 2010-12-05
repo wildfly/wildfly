@@ -174,13 +174,18 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-service</artifactId>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
-
+        
+        <dependency>
+          <groupId>org.jboss.arquillian.protocol</groupId>
+          <artifactId>arquillian-protocol-osgi</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-jmx-executor</artifactId>
+            <artifactId>jboss-as-arquillian-service</artifactId>
         </dependency>
 
         <dependency>

@@ -22,61 +22,71 @@
 
 package org.jboss.as.arquillian.service;
 
+import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.osgi.deployment.OSGiDeploymentService;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.deployment.deployer.Deployment;
 
 /**
- * Service responsible for creating and managing the life-cycle of the Arquillian service.
+ * [TODO]
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
- * @version $Revision: 1.1 $
  */
-public class ArquillianDeploymentUnitProcessor implements DeploymentUnitProcessor {
+public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final ServiceName NAME_BASE = ServiceName.JBOSS.append("arquillian", "deployment", "tracker");
+    private static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("arquillian", "deployment", "tracker");
 
     @Override
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        if (context.getAttachment(ArquillianConfig.ATTACHMENT_KEY) == null) {
-            return;
-        }
 
-        final ServiceTarget serviceTarget = context.getBatchBuilder();
-        DeploymentTrackerService tracker = new DeploymentTrackerService(context);
-        serviceTarget.addService(NAME_BASE.append(context.getName()), tracker)
-            .addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService)
-            .install();
+        ArquillianConfig arqConfig = context.getAttachment(ArquillianConfig.KEY);
+        if (arqConfig == null)
+            return;
+
+        BatchBuilder batchBuilder = context.getBatchBuilder();
+        DeploymentTrackerService tracker = new DeploymentTrackerService(arqConfig);
+        ServiceBuilder<Object> serviceBuilder = batchBuilder.addService(SERVICE_NAME_BASE.append(context.getName()), tracker);
+        serviceBuilder.addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, tracker.injectedArquillianService);
+
+        // If this is an OSGi deployment, add a dependency on the associated service
+        Deployment osgiDeployment = OSGiDeploymentAttachment.getAttachment(context);
+        if (osgiDeployment != null) {
+            ServiceName serviceName = OSGiDeploymentService.getServiceName(context.getName());
+            serviceBuilder.addDependency(serviceName);
+            osgiDeployment.setAutoStart(false);
+        }
+        serviceBuilder.install();
     }
 
     private class DeploymentTrackerService implements Service<Object>{
-        private final DeploymentUnitContext deploymentUnitContext;
+        private final ArquillianConfig arqConfig;
         private final InjectedValue<ArquillianService> injectedArquillianService = new InjectedValue<ArquillianService>();
 
-        public DeploymentTrackerService(DeploymentUnitContext deploymentUnitContext) {
-            this.deploymentUnitContext = deploymentUnitContext;
+        public DeploymentTrackerService(ArquillianConfig arqConfig) {
+            this.arqConfig = arqConfig;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
             ArquillianService service = injectedArquillianService.getValue();
-            service.registerDeployment(deploymentUnitContext);
+            service.registerDeployment(arqConfig);
         }
 
         @Override
         public void stop(StopContext context) {
             ArquillianService service = injectedArquillianService.getValue();
-            service.unregisterDeployment(deploymentUnitContext);
-            //Remove this just to be sure we don't leak classes
-            deploymentUnitContext.removeAttachment(ArquillianConfig.ATTACHMENT_KEY);
+            service.unregisterDeployment(arqConfig);
         }
 
         @Override

@@ -16,9 +16,17 @@
  */
 package org.jboss.as.arquillian.container.remote;
 
+import javax.management.MBeanServerConnection;
+
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
+import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
+import org.jboss.arquillian.spi.Configuration;
+import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
+import org.jboss.as.arquillian.container.common.JBossAsContainerConfiguration;
+import org.jboss.as.arquillian.container.common.MBeanServerConnectionProvider;
 
 /**
  * JBossASRemoteContainer
@@ -27,11 +35,33 @@ import org.jboss.as.arquillian.container.common.AbstractDeployableContainer;
  * @since 17-Nov-2010
  */
 public class JBossAsRemoteContainer extends AbstractDeployableContainer {
+
+    private MBeanServerConnectionProvider provider;
+
+    @Override
+    public void setup(Context context, Configuration configuration) {
+        super.setup(context, configuration);
+        JBossAsContainerConfiguration config = getContainerConfiguration();
+        provider = new MBeanServerConnectionProvider(config.getBindAddress(), config.getJmxPort());
+    }
+
+    @Override
     public void start(Context context) throws LifecycleException {
         // nothing to do
     }
 
+    @Override
     public void stop(Context context) throws LifecycleException {
         // nothing to do
+    }
+
+    @Override
+    protected MBeanServerConnection getMBeanServerConnection() {
+        return provider.getConnection();
+    }
+
+    @Override
+    protected ContainerMethodExecutor getContainerMethodExecutor() {
+        return new JMXMethodExecutor(getMBeanServerConnection(), ExecutionType.REMOTE);
     }
 }

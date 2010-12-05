@@ -29,10 +29,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="org.jboss.logging" export="true"/>
         <module name="org.jboss.msc" export="true"/>
-        <module name="org.jboss.modules" export="true"/>
         <module name="org.jboss.osgi.deployment" export="true"/>
         <module name="org.jboss.osgi.spi" export="true"/>
         <module name="org.jboss.osgi.resolver" export="true"/>
@@ -43,6 +41,13 @@
             <exports>
                 <!-- [TODO] Move this to org.osgi.util when the build supports it -->
                 <include path="org/osgi/util/tracker"/>
+                <exclude path="**"/>
+            </exports>
+        </module>
+        <module name="javax.transaction.api" export="true"/>
+        <module name="system" export="true">
+            <exports>
+                <include path="javax/management"/>
                 <exclude path="**"/>
             </exports>
         </module>

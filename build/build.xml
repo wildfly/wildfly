@@ -217,10 +217,18 @@
             <maven-resource group="org.jboss.arquillian" artifact="arquillian-junit"/>
         </module-def>
 
+        <module-def name="org.jboss.arquillian.protocol.jmx">
+            <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-jmx"/>
+        </module-def>
+        
+        <module-def name="org.jboss.arquillian.protocol.osgi">
+            <maven-resource group="org.jboss.arquillian.protocol" artifact="arquillian-protocol-osgi"/>
+        </module-def>
+        
         <module-def name="org.jboss.arquillian.spi">
             <maven-resource group="org.jboss.arquillian" artifact="arquillian-spi"/>
         </module-def>
-        <!--
+        
         <module-def name="org.jboss.arquillian.testenricher.msc">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-msc"/>
         </module-def>
@@ -228,15 +236,11 @@
     	<module-def name="org.jboss.arquillian.testenricher.osgi">
             <maven-resource group="org.jboss.arquillian.testenricher" artifact="arquillian-testenricher-osgi"/>
         </module-def>
-        -->
+        
     	<module-def name="org.jboss.as.aggregate" />
     	
         <module-def name="org.jboss.as.arquillian.service">
             <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-service"/>
-        </module-def>
-
-        <module-def name="org.jboss.as.arquillian.jmx-executor">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-arquillian-jmx-executor"/>
         </module-def>
 
         <module-def name="org.jboss.as.connector">

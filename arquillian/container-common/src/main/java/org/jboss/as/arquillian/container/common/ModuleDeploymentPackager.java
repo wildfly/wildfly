@@ -16,9 +16,19 @@
  */
 package org.jboss.as.arquillian.container.common;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
+import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.DeploymentPackager;
 import org.jboss.arquillian.spi.TestDeployment;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
 /**
  * JBossASDeploymentPackager
@@ -27,25 +37,22 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class JBossAsDeploymentPackager implements DeploymentPackager {
+public class ModuleDeploymentPackager implements DeploymentPackager {
 
-    public Archive<?> generateDeployment(TestDeployment testDeployment) {
+    public Archive<?> generateDeployment(Context context, TestDeployment testDeployment) {
+
         Archive<?> appArchive = testDeployment.getApplicationArchive();
-
-        //addDefaultDependencies(appArchive);
-
-        //TODO merge auxilliary archives
-
+        addDefaultDependencies(appArchive);
         return appArchive;
     }
 
     //These are now added in JBossAsArquillianDependencyProcessor and JBossAsArchiveProcessor
-    /*private void addDefaultDependencies(Archive<?> appArchive) {
-        if (appArchive instanceof ManifestContainer<?> == false) {
-            throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
-        }
+    private void addDefaultDependencies(Archive<?> appArchive) {
 
-        final Manifest manifest = getOrCreateManifest(appArchive);
+        if (appArchive instanceof ManifestContainer<?> == false)
+            throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
+
+        final Manifest manifest = DelegatingDeploymentPackager.getOrCreateManifest(appArchive);
         Attributes attributes = manifest.getMainAttributes();
         String value = attributes.getValue("Dependencies");
         StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value + "," : "");
@@ -60,8 +67,6 @@ public class JBossAsDeploymentPackager implements DeploymentPackager {
         ((ManifestContainer<?>)appArchive).setManifest(new Asset() {
             public InputStream openStream() {
                 try {
-                    manifest.write(System.out);
-
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     manifest.write(baos);
                     return new ByteArrayInputStream(baos.toByteArray());
@@ -71,21 +76,4 @@ public class JBossAsDeploymentPackager implements DeploymentPackager {
             }
         });
     }
-
-    private Manifest getOrCreateManifest(Archive<?> archive) {
-        Manifest manifest;
-        try {
-            Node node = archive.get("META-INF/MANIFEST.MF");
-            if (node == null) {
-                manifest = new Manifest();
-                Attributes attributes = manifest.getMainAttributes();
-                attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
-            } else {
-                manifest = new Manifest(node.getAsset().openStream());
-            }
-            return manifest;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot obtain manifest", ex);
-        }
-    }*/
 }

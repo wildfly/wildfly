@@ -44,7 +44,6 @@
         <module>container-embedded</module>
         <module>container-managed</module>
         <module>container-remote</module>
-        <module>jmx-executor</module>
     </modules>
 
     <packaging>pom</packaging>

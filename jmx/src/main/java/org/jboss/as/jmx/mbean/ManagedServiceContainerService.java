@@ -58,8 +58,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ManagedServiceContainerService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "service", "container");
-    public static final ObjectName OBJECT_NAME = ObjectNameFactory.create("jboss.internal", "mbean", "ServiceContainer");
-
     private final Logger log = Logger.getLogger(ManagedServiceContainerService.class);
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private ServiceContainer serviceContainer;
@@ -99,6 +97,24 @@ public class ManagedServiceContainerService implements Service<Void> {
             }
 
             @Override
+            public String getState(String name) {
+                if (name == null)
+                    throw new IllegalArgumentException("Null name");
+                ServiceName serviceName = ServiceName.parse(name.trim());
+                ServiceController<?> controller = serviceContainer.getService(serviceName);
+                return controller != null ? controller.getState().toString() : null;
+            }
+
+            @Override
+            public String getMode(String name) {
+                if (name == null)
+                    throw new IllegalArgumentException("Null name");
+                ServiceName serviceName = ServiceName.parse(name.trim());
+                ServiceController<?> controller = serviceContainer.getService(serviceName);
+                return controller != null ? controller.getMode().toString() : null;
+            }
+
+            @Override
             public void setMode(String name, String mode) {
                 if (name == null)
                     throw new IllegalArgumentException("Null name");
@@ -107,7 +123,7 @@ public class ManagedServiceContainerService implements Service<Void> {
                 ServiceName serviceName = ServiceName.parse(name.trim());
                 ServiceController<?> controller = serviceContainer.getService(serviceName);
                 if (controller == null)
-                    throw new IllegalStateException("Cannot obtain service: " + serviceName);
+                    throw new IllegalArgumentException("Cannot obtain service: " + name);
                 controller.setMode(Mode.valueOf(mode.trim().toUpperCase()));
             }
 
@@ -132,9 +148,9 @@ public class ManagedServiceContainerService implements Service<Void> {
         };
         try {
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
-            mbeanServer.registerMBean(new StandardMBean(mbean, ManagedServiceContainer.class), OBJECT_NAME);
+            mbeanServer.registerMBean(new StandardMBean(mbean, ManagedServiceContainer.class), ManagedServiceContainer.OBJECT_NAME);
         } catch (Exception ex) {
-            new StartException("Cannot register: " + OBJECT_NAME, ex);
+            new StartException("Cannot register: " + ManagedServiceContainer.OBJECT_NAME, ex);
         }
     }
 
@@ -142,9 +158,9 @@ public class ManagedServiceContainerService implements Service<Void> {
     public synchronized void stop(final StopContext context) {
         try {
             MBeanServer mbeanServer = injectedMBeanServer.getValue();
-            mbeanServer.unregisterMBean(OBJECT_NAME);
+            mbeanServer.unregisterMBean(ManagedServiceContainer.OBJECT_NAME);
         } catch (Exception ex) {
-            log.errorf(ex, "Cannot unregister: " + OBJECT_NAME);
+            log.errorf(ex, "Cannot unregister: " + ManagedServiceContainer.OBJECT_NAME);
         }
     }
 
@@ -154,11 +170,18 @@ public class ManagedServiceContainerService implements Service<Void> {
     }
 
     public interface ManagedServiceContainer {
+
+        ObjectName OBJECT_NAME = ObjectNameFactory.create("jboss.internal", "mbean", "ServiceContainer");
+
         List<String> listServices();
 
         List<String> listServicesByMode(String mode);
 
         List<String> listServicesByState(String state);
+
+        String getState(String serviceName);
+
+        String getMode(String serviceName);
 
         void setMode(String serviceName, String mode);
     }
