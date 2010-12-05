@@ -39,7 +39,6 @@
     <name>JBoss Application Server: Arquillian: Embedded Container</name>
 
     <packaging>jar</packaging>
-    
 
     <dependencies>
         <dependency>
@@ -69,6 +68,16 @@
             <artifactId>javax.inject</artifactId>
             <scope>test</scope>
         </dependency>
-        
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

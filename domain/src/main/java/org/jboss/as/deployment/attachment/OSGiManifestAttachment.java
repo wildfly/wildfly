@@ -20,25 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment;
+package org.jboss.as.deployment.attachment;
+
+import java.util.jar.Manifest;
 
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.osgi.deployment.deployer.Deployment;
 
 /**
- * Utility to help attach and retrieve a Deployment from a deployment context.
+ * Utility to help attach and retrieve an OSGi Manifest from a deployment context.
  *
  * @author Thomas.Diesler@jboss.com
+ * @since 02-Dec-2010
  */
-public class DeploymentAttachment {
-    public static final AttachmentKey<Deployment> KEY = AttachmentKey.create(Deployment.class);
+public class OSGiManifestAttachment {
+    public static final AttachmentKey<OSGiManifest> KEY = AttachmentKey.create(OSGiManifest.class);
 
-    public static void attachDeployment(final DeploymentUnitContext context, final Deployment dep) {
-        context.putAttachment(KEY, dep);
+    public static void attachManifest(final DeploymentUnitContext context, final Manifest manifest) {
+        context.putAttachment(KEY, new OSGiManifest(manifest));
     }
 
-    public static Deployment getDeploymentAttachment(final DeploymentUnitContext context) {
-        return context.getAttachment(KEY);
+    public static Manifest getManifestAttachment(final DeploymentUnitContext context) {
+        OSGiManifest value = context.getAttachment(KEY);
+        return value != null ? value.getManifest() : null;
+    }
+
+    static class OSGiManifest {
+        private Manifest manifest;
+
+        OSGiManifest(Manifest manifest) {
+            this.manifest = manifest;
+        }
+
+        Manifest getManifest() {
+            return manifest;
+        }
     }
 }

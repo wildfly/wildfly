@@ -25,6 +25,7 @@ package org.jboss.as.osgi.deployment;
 import java.io.IOException;
 
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
+import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -50,7 +51,7 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = DeploymentAttachment.getDeploymentAttachment(context);
+        Deployment deployment = OSGiDeploymentAttachment.getAttachment(context);
         if (deployment != null)
             return;
 
@@ -67,7 +68,7 @@ public class OSGiXServicesDeploymentProcessor implements DeploymentUnitProcessor
                 deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
                 deployment.addAttachment(OSGiMetaData.class, metadata);
                 OSGiMetaDataAttachment.attachOSGiMetaData(context, metadata);
-                DeploymentAttachment.attachDeployment(context, deployment);
+                OSGiDeploymentAttachment.attachDeployment(context, deployment);
             } catch (IOException ex) {
                 throw new DeploymentUnitProcessingException("Cannot parse: " + xserviceFile);
             }

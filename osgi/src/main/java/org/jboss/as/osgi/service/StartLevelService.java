@@ -36,32 +36,32 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
- * Service that provides access to the OSGi PackageAdmin.
+ * Service that provides access to the OSGi StartLevel.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 15-Oct-2010
+ * @since 24-Nov-2010
  */
-public class PackageAdminService implements Service<PackageAdmin> {
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "packageadmin");
+public class StartLevelService implements Service<StartLevel> {
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "startlevel");
 
     private InjectedValue<BundleContext> injectedContext = new InjectedValue<BundleContext>();
-    private PackageAdmin packageAdmin;
+    private StartLevel startLevel;
 
     public static void addService(final BatchBuilder batchBuilder) {
-        PackageAdminService service = new PackageAdminService();
-        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(PackageAdminService.SERVICE_NAME, service);
+        StartLevelService service = new StartLevelService();
+        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(StartLevelService.SERVICE_NAME, service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedContext);
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
         serviceBuilder.install();
     }
 
-    public static PackageAdmin getServiceValue(ServiceContainer container) {
+    public static StartLevel getServiceValue(ServiceContainer container) {
         try {
             ServiceController<?> controller = container.getRequiredService(SERVICE_NAME);
-            return (PackageAdmin) controller.getValue();
+            return (StartLevel) controller.getValue();
         } catch (ServiceNotFoundException ex) {
             throw new IllegalStateException("Cannot obtain required service: " + SERVICE_NAME);
         }
@@ -70,10 +70,10 @@ public class PackageAdminService implements Service<PackageAdmin> {
     public synchronized void start(StartContext context) throws StartException {
         try {
             BundleContext sysContext = injectedContext.getValue();
-            ServiceReference sref = sysContext.getServiceReference(PackageAdmin.class.getName());
-            packageAdmin = (PackageAdmin) sysContext.getService(sref);
+            ServiceReference sref = sysContext.getServiceReference(StartLevel.class.getName());
+            startLevel = (StartLevel) sysContext.getService(sref);
         } catch (Throwable t) {
-            throw new StartException("Failed to start PackageAdmin service", t);
+            throw new StartException("Failed to start StartLevel service", t);
         }
     }
 
@@ -81,7 +81,7 @@ public class PackageAdminService implements Service<PackageAdmin> {
     }
 
     @Override
-    public PackageAdmin getValue() throws IllegalStateException {
-        return packageAdmin;
+    public StartLevel getValue() throws IllegalStateException {
+        return startLevel;
     }
 }

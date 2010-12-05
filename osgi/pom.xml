@@ -62,7 +62,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.deployment</groupId>
-            <artifactId>jboss-osgi-deployment</artifactId>
+            <artifactId>jbosgi-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.osgi.framework</groupId>

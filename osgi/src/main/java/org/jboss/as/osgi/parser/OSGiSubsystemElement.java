@@ -111,7 +111,9 @@ public final class OSGiSubsystemElement extends AbstractSubsystemElement<OSGiSub
                 for (OSGiModule module : modules) {
                     ModuleIdentifier identifier = module.getIdentifier();
                     streamWriter.writeStartElement(Element.MODULE.getLocalName());
-                    String canonicalName = identifier.getName() + ":" + identifier.getSlot();
+                    String canonicalName = identifier.getName();
+                    if ("main".equals(identifier.getSlot()) == false)
+                        canonicalName += ":" + identifier.getSlot();
                     streamWriter.writeAttribute(Attribute.IDENTIFIER.getLocalName(), canonicalName);
                     if (module.isStart())
                         streamWriter.writeAttribute(Attribute.START.getLocalName(), "true");

@@ -41,7 +41,8 @@ public final class Phase {
     public static final int PARSE           = 0x00300000;
 
     public static final int MANIFEST_ATTACHMENT_PROCESSOR               = PARSE + 0x100;
-    public static final int OSGI_MANIFEST_DEPLOYMENT_PROCESSOR          = PARSE + 0x200;
+    public static final int OSGI_MANIFEST_ATTACHMENT_PROCESSOR          = PARSE + 0x200;
+    public static final int OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR       = PARSE + 0x250;
     public static final int ANNOTATION_INDEX_PROCESSOR                  = PARSE + 0x300;
     public static final int WAR_ANNOTATION_INDEX_PROCESSOR              = PARSE + 0x400;
     public static final int SERVICE_ACTIVATION_DEPENDENCY_PROCESSOR     = PARSE + 0x500;

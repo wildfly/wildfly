@@ -27,6 +27,7 @@ import org.jboss.as.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.deployment.module.ModuleConfigProcessor;
 import org.jboss.as.deployment.module.ModuleDependencyProcessor;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.module.OSGiManifestAttachmentProcessor;
 import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.processor.ServiceActivatorDependencyProcessor;
@@ -46,6 +47,7 @@ public class JarDeploymentActivator {
      */
     public void activate(final DeploymentChain deploymentChain) {
         deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
+        deploymentChain.addProcessor(new OSGiManifestAttachmentProcessor(), Phase.OSGI_MANIFEST_ATTACHMENT_PROCESSOR);
         deploymentChain.addProcessor(new AnnotationIndexProcessor(),  Phase.ANNOTATION_INDEX_PROCESSOR);
         deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
         deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);

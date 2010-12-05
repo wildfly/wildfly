@@ -24,9 +24,10 @@ package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.model.BootUpdateContext;
+import org.jboss.msc.service.ServiceContainer;
 
 /**
- * Service activator which installs the various service required for OSGi deployments.
+ * Installs the various {@link DeploymentUnitProcessor}s required for OSGi deployments.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 07-Oct-2010
@@ -36,7 +37,8 @@ public class OSGiDeploymentActivator {
      * Activate the services required for service deployments.
      */
     public void activate(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(new OSGiManifestDeploymentProcessor(), Phase.OSGI_MANIFEST_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new OSGiAttachmentsDeploymentProcessor(), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
+        ServiceContainer serviceContainer = updateContext.getServiceContainer();
+        updateContext.addDeploymentProcessor(new BundleInfoAttachmentProcessor(serviceContainer), Phase.OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(new OSGiAttachmentsDeploymentProcessor(serviceContainer), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
     }
 }

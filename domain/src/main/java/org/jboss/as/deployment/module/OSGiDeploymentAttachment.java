@@ -20,30 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment.b;
+package org.jboss.as.deployment.module;
 
-import org.jboss.as.osgi.deployment.c.Echo;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.osgi.deployment.deployer.Deployment;
 
-public class ClientBundleActivator implements BundleActivator {
+/**
+ * Utility to help attach and retrieve an OSGi Deployment from a deployment context.
+ *
+ * @author Thomas.Diesler@jboss.com
+ */
+public class OSGiDeploymentAttachment {
+    public static final AttachmentKey<Deployment> KEY = AttachmentKey.create(Deployment.class);
 
-    @Override
-    public void start(final BundleContext context) throws Exception {
-
-        EchoInvoker invoker = new EchoInvoker() {
-            @Override
-            public String invoke(String message) {
-                ServiceReference sref = context.getServiceReference(Echo.class.getName());
-                Echo service = (Echo) context.getService(sref);
-                return service.echo(message);
-            }
-        };
-        context.registerService(EchoInvoker.class.getName(), invoker, null);
+    public static void attachDeployment(final DeploymentUnitContext context, final Deployment dep) {
+        context.putAttachment(KEY, dep);
     }
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
+    public static Deployment getAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

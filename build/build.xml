@@ -399,7 +399,7 @@
         </module-def>
         
         <module-def name="org.jboss.osgi.deployment">
-            <maven-resource group="org.jboss.osgi.deployment" artifact="jboss-osgi-deployment"/>
+            <maven-resource group="org.jboss.osgi.deployment" artifact="jbosgi-deployment"/>
         </module-def>
         
         <module-def name="org.jboss.osgi.framework">
@@ -418,7 +418,7 @@
         </module-def>
         
         <module-def name="org.jboss.osgi.spi">
-            <maven-resource group="org.jboss.osgi" artifact="jboss-osgi-spi"/>
+            <maven-resource group="org.jboss.osgi.spi" artifact="jbosgi-spi"/>
         </module-def>
         
         <module-def name="org.jboss.osgi.vfs">

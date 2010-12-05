@@ -22,14 +22,14 @@
 
 package org.jboss.as.deployment.module;
 
+import org.jboss.as.deployment.attachment.OSGiManifestAttachment;
+import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.as.deployment.module.ModuleDependencies.getAttachedDependencies;
-import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtualFileAttachment;
 
 /**
  * DeploymentUnitProcessor capable of reading dependency information for a manifest and creating a ModuleConfg attachment.
@@ -46,9 +46,14 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+
         if(context.getAttachment(ModuleConfig.ATTACHMENT_KEY) != null)
             return;
-        final VirtualFile deploymentRoot = getVirtualFileAttachment(context);
+
+        if(OSGiManifestAttachment.getManifestAttachment(context) != null)
+            return;
+
+        final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
         final MountHandle rootMount = context.getAttachment(MountHandle.ATTACHMENT_KEY);
         final NestedMounts mounts = context.getAttachment(NestedMounts.ATTACHMENT_KEY);
 
@@ -65,7 +70,7 @@ public class ModuleConfigProcessor implements DeploymentUnitProcessor {
         }
         resourceRoots[0] = new ModuleConfig.ResourceRoot(deploymentRoot, rootMount);
 
-        final ModuleDependencies dependenciesAttachment = getAttachedDependencies(context);
+        final ModuleDependencies dependenciesAttachment = ModuleDependencies.getAttachedDependencies(context);
         final ModuleConfig.Dependency[] dependencies = dependenciesAttachment != null ? dependenciesAttachment.getDependencies() : NO_DEPS;
         final ModuleConfig moduleConfig = new ModuleConfig(moduleIdentifier, dependencies, resourceRoots);
         context.putAttachment(ModuleConfig.ATTACHMENT_KEY, moduleConfig);

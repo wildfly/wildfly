@@ -35,6 +35,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -64,10 +65,10 @@ public class Configuration implements Service<Configuration> {
 
     public static void addService(final BatchBuilder batchBuilder, final OSGiSubsystemState state) {
         Configuration config = new Configuration(state);
-        batchBuilder.addService(SERVICE_NAME, config)
-            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, config.injectedEnvironment)
-            .setInitialMode(Mode.ACTIVE)
-            .install();
+        ServiceBuilder<?> serviceBuilder = batchBuilder.addService(SERVICE_NAME, config);
+        serviceBuilder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, config.injectedEnvironment);
+        serviceBuilder.setInitialMode(Mode.ACTIVE);
+        serviceBuilder.install();
     }
 
     public static Configuration getServiceValue(ServiceContainer container) {

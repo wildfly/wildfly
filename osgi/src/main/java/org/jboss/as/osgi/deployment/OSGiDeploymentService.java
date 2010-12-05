@@ -27,14 +27,18 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
+import org.jboss.as.osgi.service.BundleContextService;
+import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.as.osgi.service.FrameworkService;
 import org.jboss.as.osgi.service.PackageAdminService;
+import org.jboss.as.osgi.service.StartLevelService;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -43,13 +47,13 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.bundle.BundleManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
@@ -62,34 +66,38 @@ public class OSGiDeploymentService implements Service<Deployment> {
     private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
     private static final OSGiDeploymentListener listener = new OSGiDeploymentListener();
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("osgi", "deployment");
-    public static boolean enableListener = true;
+    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
 
     private final Deployment deployment;
-    private InjectedValue<BundleContext> injectedContext = new InjectedValue<BundleContext>();
+    private InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
 
     private OSGiDeploymentService(Deployment deployment) {
         this.deployment = deployment;
     }
 
     public static void addService(DeploymentUnitContext context) {
+        addService(context.getBatchBuilder(), OSGiDeploymentAttachment.getAttachment(context), context.getName());
+    }
 
-        // Attach the {@link DeploymentService} name so we remove that service on Bundle.uninstall()
-        ServiceName deploymentServiceName = DeploymentService.getServiceName(context.getName());
-        Deployment deployment = DeploymentAttachment.getDeploymentAttachment(context);
-        deployment.addAttachment(ServiceName.class, deploymentServiceName);
-
-        BatchBuilder batchBuilder = context.getBatchBuilder();
+    public static void addService(BatchBuilder batchBuilder, Deployment deployment, String contextName) {
         OSGiDeploymentService service = new OSGiDeploymentService(deployment);
-        ServiceName serviceName = OSGiDeploymentService.SERVICE_NAME.append(deploymentServiceName.getSimpleName());
-        ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(serviceName, service);
-        serviceBuilder.addDependency(FrameworkService.SERVICE_NAME, BundleContext.class, service.injectedContext);
+        ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
+        serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
+        serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);
-        serviceBuilder.addDependency(deploymentServiceName);
+        serviceBuilder.addDependency(DeploymentService.getServiceName(contextName));
         serviceBuilder.setInitialMode(Mode.ACTIVE);
-        if (enableListener)
-            serviceBuilder.addListener(listener);
+        serviceBuilder.addListener(listener);
         serviceBuilder.install();
+    }
+
+    /**
+     * Get the OSGiDeploymentService name for a given context
+     */
+    public static ServiceName getServiceName(String contextName) {
+        ServiceName deploymentServiceName = DeploymentService.getServiceName(contextName);
+        return OSGiDeploymentService.SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
     /**
@@ -104,15 +112,15 @@ public class OSGiDeploymentService implements Service<Deployment> {
         ServiceContainer serviceContainer = controller.getServiceContainer();
 
         // Make sure the Framework does not shut down when the last bundle gets removed
-        ServiceController<?> frameworkController = serviceContainer.getService(FrameworkService.SERVICE_NAME);
-        frameworkController.setMode(Mode.ACTIVE);
+        ServiceController<?> contextController = serviceContainer.getService(FrameworkService.SERVICE_NAME);
+        contextController.setMode(Mode.ACTIVE);
 
         log.tracef("Installing deployment: %s", deployment);
         try {
             boolean autoStart = deployment.isAutoStart();
             deployment.setAutoStart(false);
-            Bundle bundle = getDeployerService().deploy(deployment);
-            deployment.addAttachment(Bundle.class, bundle);
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            bundleManager.installBundle(deployment);
             deployment.setAutoStart(autoStart);
         } catch (Throwable t) {
             throw new StartException("Failed to install deployment: " + deployment, t);
@@ -127,7 +135,8 @@ public class OSGiDeploymentService implements Service<Deployment> {
     public synchronized void stop(StopContext context) {
         log.tracef("Uninstalling deployment: %s", deployment);
         try {
-            getDeployerService().undeploy(deployment);
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
             log.errorf(t, "Failed to uninstall deployment: %s", deployment);
         }
@@ -136,13 +145,6 @@ public class OSGiDeploymentService implements Service<Deployment> {
     @Override
     public Deployment getValue() throws IllegalStateException {
         return deployment;
-    }
-
-    // Get the OSGi {@link DeployerService}
-    private DeployerService getDeployerService() {
-        BundleContext sysContext = injectedContext.getValue();
-        ServiceReference sref = sysContext.getServiceReference(DeployerService.class.getName());
-        return (DeployerService) sysContext.getService(sref);
     }
 
     static class OSGiDeploymentListener extends AbstractServiceListener<Deployment> {
@@ -167,8 +169,10 @@ public class OSGiDeploymentService implements Service<Deployment> {
         }
 
         private void processDeployment(ServiceController<? extends Deployment> controller) {
+
             controller.removeListener(this);
             Set<Deployment> bundlesToStart = null;
+
             synchronized (this) {
                 pendingDeployments.remove(controller.getValue());
                 if (pendingDeployments.isEmpty()) {
@@ -180,14 +184,38 @@ public class OSGiDeploymentService implements Service<Deployment> {
             if (bundlesToStart != null) {
                 ServiceContainer serviceContainer = controller.getServiceContainer();
                 PackageAdmin packageAdmin = PackageAdminService.getServiceValue(serviceContainer);
-                for (Deployment deployment : bundlesToStart) {
-                    Bundle bundle = deployment.getAttachment(Bundle.class);
+                StartLevel startLevel = StartLevelService.getServiceValue(serviceContainer);
+                for (Deployment dep : bundlesToStart) {
+                    Bundle bundle = dep.getAttachment(Bundle.class);
                     if (packageAdmin.getBundleType(bundle) != PackageAdmin.BUNDLE_TYPE_FRAGMENT) {
-                        log.tracef("Starting bundle: %s", bundle);
-                        try {
-                            bundle.start();
-                        } catch (BundleException ex) {
-                            log.errorf(ex, "Cannot start bundle: %s", bundle);
+
+                        boolean autoStart = dep.isAutoStart();
+
+                        // Obtain the autoStart properties from the initiating deployment
+                        // If this call is not a result of BundleContext.installBundle(...)
+                        // there won't be an {@link InstallBundleInitiatorService}
+                        String contextName = InstallBundleInitiatorService.getContextName(dep);
+                        ServiceName serviceName = InstallBundleInitiatorService.getServiceName(contextName);
+                        ServiceController<?> initiatingController = serviceContainer.getService(serviceName);
+                        if (initiatingController != null) {
+                            try {
+                                Deployment initiatingDeployment = (Deployment) initiatingController.getValue();
+                                autoStart = initiatingDeployment.isAutoStart();
+                                Integer startlevel = initiatingDeployment.getStartLevel();
+                                if (startlevel != null)
+                                    startLevel.setBundleStartLevel(bundle, startlevel);
+                            } finally {
+                                initiatingController.setMode(Mode.REMOVE);
+                            }
+                        }
+
+                        if (autoStart) {
+                            log.tracef("Starting bundle: %s", bundle);
+                            try {
+                                bundle.start();
+                            } catch (BundleException ex) {
+                                log.errorf(ex, "Cannot start bundle: %s", bundle);
+                            }
                         }
                     }
                 }
