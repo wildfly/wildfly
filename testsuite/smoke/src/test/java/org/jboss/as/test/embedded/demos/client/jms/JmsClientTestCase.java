@@ -61,7 +61,6 @@ import org.jboss.as.standalone.client.api.StandaloneUpdateResult;
 import org.jboss.as.test.embedded.demos.fakejndi.FakeJndi;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,7 +71,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.AS_CLIENT)
-@Ignore("Hangs occasionally")
 public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
