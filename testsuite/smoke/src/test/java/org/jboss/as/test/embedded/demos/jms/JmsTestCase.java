@@ -56,7 +56,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.IN_CONTAINER)
-@Ignore("JNDI lookup returns null for connection factory")
 public class JmsTestCase {
     static final Logger log = Logger.getLogger(JmsTestCase.class);
 
