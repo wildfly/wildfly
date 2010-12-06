@@ -81,7 +81,10 @@
             <groupId>org.jboss.stdio</groupId>
             <artifactId>jboss-stdio</artifactId>
         </dependency>
-        
+        <dependency>
+            <groupId>org.jboss.threads</groupId>
+            <artifactId>jboss-threads</artifactId>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>

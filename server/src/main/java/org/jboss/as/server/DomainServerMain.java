@@ -90,12 +90,7 @@ public final class DomainServerMain {
             throw new IllegalStateException(); // not reached
         }
 
-        final MarshallerFactory factory;
-        try {
-            factory = Marshalling.getMarshallerFactory("river", Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString("org.jboss.marshalling.river")).getClassLoader());
-        } catch (ModuleLoadException e) {
-            throw new IllegalStateException("Failed to start server", e);
-        }
+        final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", DomainServerMain.class.getClassLoader());
         final Unmarshaller unmarshaller;
         final ByteInput byteInput;
         try {
