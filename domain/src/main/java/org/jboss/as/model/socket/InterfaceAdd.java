@@ -99,7 +99,7 @@ public final class InterfaceAdd extends AbstractNetworkInterfaceUpdate {
 
 
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final BatchBuilder batch = updateContext.getBatchBuilder();
+        final BatchBuilder batch = updateContext.getServiceTarget();
         batch.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(name), createInterfaceService())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
             .setInitialMode(Mode.ON_DEMAND)

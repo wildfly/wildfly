@@ -66,7 +66,7 @@ public final class ConnectorSubsystemAdd extends AbstractSubsystemAdd<ConnectorS
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
-        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
         WorkManager wm = new WorkManagerImpl();
 

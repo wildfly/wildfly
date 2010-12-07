@@ -86,7 +86,7 @@ public class ServerDeploymentRepositoryAdd extends AbstractServerModelUpdate<Voi
     /** {@inheritDoc} */
     @Override
     public <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getBatchBuilder().subTarget();
+        final ServiceTarget target = updateContext.getServiceTarget().subTarget();
         target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
         DeploymentScannerService.addService(target, repositoryName(), relativeTo, path, interval, TimeUnit.MILLISECONDS, enabled);
     }

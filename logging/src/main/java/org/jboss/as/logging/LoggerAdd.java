@@ -68,7 +68,7 @@ public class LoggerAdd extends AbstractLoggerAdd {
             final String loggerName = getLoggerName();
             final LoggerService service = new LoggerService(loggerName);
             service.setLevel(Level.parse(getLevelName()));
-            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
             batchBuilder.addService(LogServices.loggerName(loggerName), service)
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
                 .setInitialMode(ServiceController.Mode.ACTIVE)

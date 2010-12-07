@@ -50,7 +50,7 @@ public class WebSubsystemAdd extends AbstractSubsystemAdd<WebSubsystemElement> {
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final WebServerService service = new WebServerService(defaultHost);
-        context.getBatchBuilder().addService(WebSubsystemElement.JBOSS_WEB, service)
+        context.getServiceTarget().addService(WebSubsystemElement.JBOSS_WEB, service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
             .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))

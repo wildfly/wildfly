@@ -55,7 +55,7 @@ public final class BoundedQueueThreadPoolAdd extends AbstractExecutorAdd {
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final BatchBuilder builder = updateContext.getServiceTarget();
         final ScaledCount coreThreadsCount = getCoreThreads();
         final ScaledCount maxThreadsCount = getMaxThreads();
         final int maxThreads = maxThreadsCount.getScaledCount();

@@ -75,7 +75,7 @@ public class SizeRotatingFileHandlerAdd extends FileHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
             final SizeRotatingFileHandlerService service = new SizeRotatingFileHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = getRelativeTo();

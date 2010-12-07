@@ -57,7 +57,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
         serviceTarget.addService(JDBCRARDeployService.NAME, new JDBCRARDeployService())
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE)

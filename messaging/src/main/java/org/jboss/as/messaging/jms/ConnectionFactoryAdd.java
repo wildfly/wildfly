@@ -57,7 +57,7 @@ public class ConnectionFactoryAdd extends AbstractJMSSubsystemUpdate<Void> {
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
         final ConnectionFactoryService service = new ConnectionFactoryService(transform());
         final ServiceName serviceName = JMSSubsystemElement.JMS_CF_BASE.append(cf.getName());
-        context.getBatchBuilder().addService(serviceName, service)
+        context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSSubsystemElement.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
                 .setInitialMode(Mode.ACTIVE)

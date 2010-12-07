@@ -77,7 +77,7 @@ public class JMSQueueAdd extends AbstractJMSSubsystemUpdate<Void> {
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
         final JMSQueueService service = new JMSQueueService(name, selector, durableDefault(), jndiBindings());
         final ServiceName serviceName = JMSSubsystemElement.JMS_QUEUE_BASE.append(name);
-        context.getBatchBuilder().addService(serviceName, service)
+        context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSSubsystemElement.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))
                 .setInitialMode(Mode.ACTIVE)

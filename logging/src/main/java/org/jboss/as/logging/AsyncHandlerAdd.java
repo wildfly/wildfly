@@ -78,7 +78,7 @@ public class AsyncHandlerAdd extends AbstractHandlerAdd {
      */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         try {
-            final BatchBuilder builder = updateContext.getBatchBuilder();
+            final BatchBuilder builder = updateContext.getServiceTarget();
             final AsyncHandlerService service = new AsyncHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = builder.addService(LogServices.handlerName(getName()), service);
             final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();

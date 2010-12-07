@@ -42,9 +42,9 @@ import org.jboss.as.server.mgmt.ServerUpdateController;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -160,16 +160,16 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     final class UpdateContextImpl implements UpdateContext {
 
-        private final BatchBuilder batchBuilder;
+        private final ServiceTarget serviceTarget;
         private final ServiceContainer serviceContainer;
 
-        UpdateContextImpl(final BatchBuilder batchBuilder, final ServiceContainer serviceContainer) {
-            this.batchBuilder = batchBuilder;
+        UpdateContextImpl(final ServiceTarget serviceTarget, final ServiceContainer serviceContainer) {
+            this.serviceTarget = serviceTarget;
             this.serviceContainer = serviceContainer;
         }
 
-        public BatchBuilder getBatchBuilder() {
-            return batchBuilder;
+        public ServiceTarget getServiceTarget() {
+            return serviceTarget;
         }
 
         public ServiceContainer getServiceContainer() {
@@ -213,7 +213,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         @Override
         public void handleUpdateCommit(ServerUpdateController controller, Status priorStatus) {
             log.tracef("Committed with prior status %s", priorStatus);
-            configurationPersister.configurationModified();
+            configurationPersister.persist(ServerControllerImpl.this, serverModel);
 
             for (int i = 0; i < count; i++) {
                 responses.add(map.get(Integer.valueOf(i)));

@@ -49,7 +49,7 @@ public class RaDeploymentActivator {
      * @param updateContext The update context
      */
     public void activate(final BootUpdateContext updateContext) {
-        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
 
         // add resources here
         MdrService mdrService = new MdrService();

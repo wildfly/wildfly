@@ -56,7 +56,7 @@ public final class NamingSubsystemAdd extends AbstractSubsystemAdd<NamingSubsyst
         NamingContext.initializeNamingManager();
 
         // Create the Naming Service
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final BatchBuilder builder = updateContext.getServiceTarget();
         builder.addService(NamingService.SERVICE_NAME, new NamingService(true)).install();
 
         // Create java: context service

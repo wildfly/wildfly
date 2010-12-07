@@ -86,7 +86,7 @@ public class SocketBindingAdd extends AbstractSocketBindingUpdate {
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getBatchBuilder().subTarget();
+        final ServiceTarget target = updateContext.getServiceTarget().subTarget();
         final UpdateResultHandler.ServiceStartListener<P> listener = new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param);
         target.addListener(listener);
         SocketBindingService.addService(target, this);

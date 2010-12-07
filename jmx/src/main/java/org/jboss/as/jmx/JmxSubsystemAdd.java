@@ -42,7 +42,7 @@ public final class JmxSubsystemAdd extends AbstractSubsystemAdd<JmxSubsystemElem
 
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
 
         MBeanServerService.addService(batchBuilder);
         ManagedServiceContainerService.addService(batchBuilder);

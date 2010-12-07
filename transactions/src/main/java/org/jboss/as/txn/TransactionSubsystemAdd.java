@@ -60,7 +60,7 @@ public final class TransactionSubsystemAdd extends AbstractSubsystemAdd<Transact
     @Override
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler,
             final P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final BatchBuilder builder = updateContext.getServiceTarget();
         // XATerminator has no deps, so just add it in there
         final XATerminatorService xaTerminatorService = new XATerminatorService();
         builder.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(ServiceController.Mode.ACTIVE)

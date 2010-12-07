@@ -90,7 +90,7 @@ public class WebConnectorAdd extends AbstractWebSubsystemUpdate<Void> {
         if(redirectPort != null) service.setRedirectPort(redirectPort);
         if(maxPostSize != null) service.setMaxPostSize(maxPostSize);
         if(maxSavePostSize != null) service.setMaxSavePostSize(maxSavePostSize);
-        context.getBatchBuilder().addService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name), service)
+        context.getServiceTarget().addService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name), service)
             .addDependency(WebSubsystemElement.JBOSS_WEB, WebServer.class, service.getServer())
             .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
             .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))

@@ -76,7 +76,7 @@ public class ServerModelDeploymentStartStopUpdate extends AbstractServerModelUpd
         if (deploymentElement != null) {
             if (isStart) {
                 startStopHandler.deploy(deploymentElement.getUniqueName(), deploymentElement.getRuntimeName(),
-                        deploymentElement.getSha1Hash(), updateContext.getBatchBuilder(), updateContext.getServiceContainer(), resultHandler, param);
+                        deploymentElement.getSha1Hash(), updateContext.getServiceTarget(), updateContext.getServiceContainer(), resultHandler, param);
             }
             else {
                 startStopHandler.undeploy(getDeploymentUnitName(), updateContext.getServiceContainer(), resultHandler, param);

@@ -23,8 +23,8 @@
 package org.jboss.as.server.mgmt;
 
 import org.jboss.as.model.UpdateContext;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Simple implementation of {@link UpdateContext}.
@@ -34,21 +34,21 @@ import org.jboss.msc.service.ServiceContainer;
 class SimpleUpdateContext implements UpdateContext {
 
     private final ServiceContainer serviceContainer;
-    private final BatchBuilder batchBuilder;
+    private final ServiceTarget serviceTarget;
 
-    SimpleUpdateContext(final ServiceContainer serviceContainer, final BatchBuilder batchBuilder) {
+    SimpleUpdateContext(final ServiceContainer serviceContainer, final ServiceTarget serviceTarget) {
         if (serviceContainer == null)
             throw new IllegalArgumentException("serviceContainer is null");
-        if (batchBuilder == null)
-            throw new IllegalArgumentException("batchBuilder is null");
+        if (serviceTarget == null)
+            throw new IllegalArgumentException("serviceTarget is null");
 
         this.serviceContainer = serviceContainer;
-        this.batchBuilder = batchBuilder;
+        this.serviceTarget = serviceTarget;
     }
 
     @Override
-    public BatchBuilder getBatchBuilder() {
-        return batchBuilder;
+    public ServiceTarget getServiceTarget() {
+        return serviceTarget;
     }
 
     @Override

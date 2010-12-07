@@ -64,7 +64,7 @@ public class WebVirtualHostAdd extends AbstractWebSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder builder = updateContext.getBatchBuilder();
+        final BatchBuilder builder = updateContext.getServiceTarget();
         final WebVirtualHostService service = new WebVirtualHostService(name, aliases());
         final ServiceBuilder<?> serviceBuilder =  builder.addService(WebSubsystemElement.JBOSS_WEB_HOST.append(name), service)
             .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getTempPathInjector())

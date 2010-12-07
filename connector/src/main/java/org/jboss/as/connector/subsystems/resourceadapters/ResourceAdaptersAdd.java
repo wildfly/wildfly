@@ -56,7 +56,7 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceTarget serviceTarget = updateContext.getBatchBuilder();
+        final ServiceTarget serviceTarget = updateContext.getServiceTarget();
         serviceTarget.addService( ConnectorServices.RESOURCEADAPTERS_SERVICE, new ResourceAdaptersService(resourceAdapters))
             .setInitialMode(Mode.ACTIVE)
             .install();

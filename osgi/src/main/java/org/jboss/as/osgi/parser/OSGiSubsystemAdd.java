@@ -74,7 +74,7 @@ public final class OSGiSubsystemAdd extends AbstractSubsystemAdd<OSGiSubsystemEl
         System.setProperty("jboss.protocol.handler.modules", value);
 
         Activation policy = subsystemState.getActivationPolicy();
-        BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        BatchBuilder batchBuilder = updateContext.getServiceTarget();
         Configuration.addService(batchBuilder, subsystemState);
         BundleManagerService.addService(batchBuilder);
         FrameworkService.addService(batchBuilder);

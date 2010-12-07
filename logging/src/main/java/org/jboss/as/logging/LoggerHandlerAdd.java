@@ -25,9 +25,7 @@ package org.jboss.as.logging;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.logmanager.Logger;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
 
 import java.util.logging.Handler;
 
@@ -59,7 +57,7 @@ public final class LoggerHandlerAdd extends AbstractLoggingSubsystemUpdate<Void>
         try {
             final LoggerHandlerService service = new LoggerHandlerService(loggerName);
             final Injector<Handler> injector = service.getHandlerInjector();
-            updateContext.getBatchBuilder().addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
+            updateContext.getServiceTarget().addService(LogServices.loggerHandlerName(loggerName, handlerName), service)
                 .addDependency(LogServices.loggerName(loggerName))
                 .addDependency(LogServices.handlerName(handlerName), Handler.class, injector)
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(handler, param))

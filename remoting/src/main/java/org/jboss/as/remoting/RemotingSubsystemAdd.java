@@ -54,7 +54,7 @@ public final class RemotingSubsystemAdd extends AbstractSubsystemAdd<RemotingSub
         endpointService.setOptionMap(OptionMap.EMPTY);
         final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
 
-        updateContext.getBatchBuilder().addService(RemotingServices.ENDPOINT, endpointService)
+        updateContext.getServiceTarget().addService(RemotingServices.ENDPOINT, endpointService)
             .addDependency(ThreadsServices.executorName(threadPoolName), new CastingInjector<Executor>(executorInjector, Executor.class))
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();

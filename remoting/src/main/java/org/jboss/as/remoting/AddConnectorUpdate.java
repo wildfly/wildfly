@@ -60,7 +60,7 @@ public final class AddConnectorUpdate extends AbstractRemotingSubsystemUpdate<Vo
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
         final OptionMap.Builder builder = OptionMap.builder();
 
         // First, apply options to option map.

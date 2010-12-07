@@ -22,8 +22,8 @@
 
 package org.jboss.as.model;
 
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * The update context.
@@ -37,7 +37,7 @@ public interface UpdateContext {
      *
      * @return the batch builder
      */
-    BatchBuilder getBatchBuilder();
+    ServiceTarget getServiceTarget();
 
     /**
      * Get the service container.

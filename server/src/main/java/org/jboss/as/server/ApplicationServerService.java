@@ -23,14 +23,22 @@
 package org.jboss.as.server;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -50,12 +58,12 @@ final class ApplicationServerService implements Service<ServerController> {
     private TrackingServiceTarget serviceTarget;
 
     private final Bootstrap.Configuration configuration;
-    private final List<AbstractServerModelUpdate<?>> initialUpdates;
+    private final ServerConfigurationPersister persister;
     private final List<ServiceActivator> services;
 
-    public ApplicationServerService(final Bootstrap.Configuration configuration, final List<AbstractServerModelUpdate<?>> initialUpdates, final List<ServiceActivator> services) {
+    public ApplicationServerService(final Bootstrap.Configuration configuration, final ServerConfigurationPersister persister, final List<ServiceActivator> services) {
         this.configuration = configuration;
-        this.initialUpdates = initialUpdates;
+        this.persister = persister;
         this.services = services;
     }
 
@@ -70,22 +78,64 @@ final class ApplicationServerService implements Service<ServerController> {
                 return new DelegatingServiceRegistry(context.getController().getServiceContainer());
             }
         };
-        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer());
+        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer(), configuration.getServerEnvironment());
         for (ServiceActivator activator : services) {
             activator.activate(serviceActivatorContext);
         }
-        // todo: apply boot updates here, but don't bother waiting for completion - the updates should install new services
-        
+        final List<AbstractServerModelUpdate<?>> updates;
+        try {
+            updates = persister.load(serverController);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
+        final BootUpdateContext bootUpdateContext = new BootUpdateContext() {
+            public ServiceTarget getServiceTarget() {
+                return serviceTarget;
+            }
+
+            public ServiceContainer getServiceContainer() {
+                return null;
+            }
+
+            public void addDeploymentProcessor(DeploymentUnitProcessor processor, long priority) {
+                deploymentChain.addProcessor(processor, priority);
+            }
+        };
+        for (AbstractServerModelUpdate<?> update : updates) {
+            update.applyUpdateBootAction(bootUpdateContext);
+        }
     }
 
     public synchronized void stop(final StopContext context) {
         serverController = null;
-        Logger.getLogger("org.jboss.as").infof("Stopped JBoss AS in %dms", Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
-        // service cannot be restarted.
-        context.getController().setMode(ServiceController.Mode.REMOVE);
+        final ServiceContainer container = context.getController().getServiceContainer();
+        final AtomicInteger count = new AtomicInteger(1);
+
+        final ServiceListener<Object> removeListener = new AbstractServiceListener<Object>() {
+            public void listenerAdded(final ServiceController<?> controller) {
+                count.incrementAndGet();
+            }
+
+            public void serviceRemoved(final ServiceController<?> controller) {
+                if (count.decrementAndGet() == 0) {
+                    context.complete();
+                    Logger.getLogger("org.jboss.as").infof("Stopped JBoss AS in %dms", Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+                }
+            }
+        };
+        context.asynchronous();
+        for (ServiceName serviceName : serviceTarget.getSet()) {
+            final ServiceController<?> controller = container.getService(serviceName);
+            if (controller != null) {
+                controller.setMode(ServiceController.Mode.REMOVE);
+                controller.addListener(removeListener);
+            }
+        }
+        // tick the count down
+        removeListener.serviceRemoved(null);
     }
 
-    public ServerController getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
+    public synchronized ServerController getValue() throws IllegalStateException, IllegalArgumentException {
+        return serverController;
     }
 }

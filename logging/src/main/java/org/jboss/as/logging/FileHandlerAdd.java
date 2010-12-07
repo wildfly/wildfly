@@ -83,7 +83,7 @@ public class FileHandlerAdd extends AbstractHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
             final FileHandlerService service = new FileHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = this.relativeTo;

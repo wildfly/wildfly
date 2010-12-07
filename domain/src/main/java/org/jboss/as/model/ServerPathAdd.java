@@ -69,7 +69,7 @@ public class ServerPathAdd extends AbstractServerModelUpdate<Void> {
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceTarget target = context.getBatchBuilder().subTarget();
+        final ServiceTarget target = context.getServiceTarget().subTarget();
         target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
         createService(target);
     }

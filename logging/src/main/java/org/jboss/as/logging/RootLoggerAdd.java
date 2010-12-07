@@ -25,9 +25,7 @@ package org.jboss.as.logging;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.logging.Level;
@@ -58,7 +56,7 @@ public class RootLoggerAdd extends AbstractLoggerAdd {
         try {
             final RootLoggerService service = new RootLoggerService();
             service.setLevel(Level.parse(getLevelName()));
-            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
             batchBuilder.addService(LogServices.ROOT_LOGGER, service)
                 .addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param))
                 .setInitialMode(ServiceController.Mode.ACTIVE)

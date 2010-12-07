@@ -26,7 +26,6 @@ import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -52,7 +51,7 @@ public class JMXConnectorAdd extends AbstractSubsystemUpdate<JmxSubsystemElement
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceTarget target = updateContext.getBatchBuilder().subTarget();
+        final ServiceTarget target = updateContext.getServiceTarget().subTarget();
         target.addListener(new UpdateResultHandler.ServiceStartListener<P>(resultHandler, param));
         JMXConnectorService.addService(target, serverBinding, registryBinding);
     }

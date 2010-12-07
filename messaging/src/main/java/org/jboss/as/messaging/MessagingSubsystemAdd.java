@@ -149,7 +149,7 @@ public class MessagingSubsystemAdd extends AbstractSubsystemAdd<MessagingSubsyst
 
         hqservice.setConfiguration(hqConfig);
 
-        final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+        final BatchBuilder batchBuilder = updateContext.getServiceTarget();
         final ServiceBuilder<HornetQServer> serviceBuilder = batchBuilder.addService(MessagingSubsystemElement.JBOSS_MESSAGING, hqservice)
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqservice.getMBeanServer());
 

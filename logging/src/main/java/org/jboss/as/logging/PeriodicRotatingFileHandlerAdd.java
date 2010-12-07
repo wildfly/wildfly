@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
 import org.jboss.as.services.path.AbstractPathService;
@@ -64,7 +62,7 @@ public class PeriodicRotatingFileHandlerAdd extends FileHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder batchBuilder = updateContext.getBatchBuilder();
+            final BatchBuilder batchBuilder = updateContext.getServiceTarget();
             final PeriodicRotatingFileHandlerService service = new PeriodicRotatingFileHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = batchBuilder.addService(LogServices.handlerName(getName()), service);
             final String relativeTo = getRelativeTo();

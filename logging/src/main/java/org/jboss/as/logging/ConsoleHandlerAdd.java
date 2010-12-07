@@ -61,7 +61,7 @@ public class ConsoleHandlerAdd extends AbstractHandlerAdd {
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final BatchBuilder builder = updateContext.getBatchBuilder();
+            final BatchBuilder builder = updateContext.getServiceTarget();
             final ConsoleHandlerService service = new ConsoleHandlerService();
             final ServiceBuilder<Handler> serviceBuilder = builder.addService(LogServices.handlerName(getName()), service);
             service.setLevel(Level.parse(getLevelName()));

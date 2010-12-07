@@ -29,7 +29,6 @@ import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
@@ -43,8 +42,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.mgmt.ServerConfigurationPersister;
-import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
+import org.jboss.as.server.mgmt.StandaloneServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
@@ -60,6 +58,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -119,14 +118,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         log.info("Activating core services");
 
         // The server controller
-        // TODO make ServerConfigurationPersister internal
-        // TODO share thread pool
-        ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container);
-        batchBuilder.addService(ServerController.SERVICE_NAME, serverController)
-            .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, serverController.getConfigurationPersisterValue())
-            .addInjection(serverController.getExecutorValue(), Executors.newCachedThreadPool())
-            .install();
-
         // Server environment services
         ServerEnvironmentServices.addServices(environment, batchBuilder);
 
@@ -143,7 +134,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         ServerDeploymentManagerImpl.addService(serverModel, container, batchBuilder);
 
         // Server configuration persister - TODO: move into startServices, only start in standalone mode
-        ServerConfigurationPersisterImpl.addService(serverModel, batchBuilder);
+        StandaloneServerConfigurationPersister.addService(serverModel, batchBuilder);
 
         // Server deployment scanner factory
         DeploymentScannerFactoryService.addService(batchBuilder);
@@ -174,7 +165,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
 
         final BootUpdateContext context = new BootUpdateContext() {
-            public BatchBuilder getBatchBuilder() {
+            public ServiceTarget getServiceTarget() {
                 return batchBuilder;
             }
 

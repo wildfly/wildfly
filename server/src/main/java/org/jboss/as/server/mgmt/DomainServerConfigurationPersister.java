@@ -26,34 +26,24 @@ import java.util.List;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.server.ServerController;
-import org.jboss.msc.service.ServiceName;
 
 /**
- * An object capable of persisting the configuration for a server.
+ * Implementation of {@link ServerConfigurationPersister} for domain server instances.
  *
- * @author Brian Stansberry
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ServerConfigurationPersister {
-    /**
-     * ServiceName under which an implementation of this interface should be registered.
-     */
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server-configuration-persister");
+public final class DomainServerConfigurationPersister implements ServerConfigurationPersister {
+    private final List<AbstractServerModelUpdate<?>> initialUpdates;
 
-    /**
-     * Notification that the server configuration has been modified
-     * and thus needs to be persisted.
-     *
-     * @param serverController the server controller
-     * @param serverModel the server model
-     */
-    void persist(ServerController serverController, ServerModel serverModel);
+    public DomainServerConfigurationPersister(final List<AbstractServerModelUpdate<?>> updates) {
+        initialUpdates = updates;
+    }
 
-    /**
-     * Load the initial configuration.
-     *
-     * @param serverController the server controller
-     * @return the list of updates to execute in order to create the initial model
-     * @throws Exception if the initial configuration cannot be read
-     */
-    List<AbstractServerModelUpdate<?>> load(ServerController serverController) throws Exception;
+    public void persist(final ServerController serverController, final ServerModel serverModel) {
+        // No operation.
+    }
+
+    public List<AbstractServerModelUpdate<?>> load(final ServerController serverController) throws Exception {
+        return initialUpdates;
+    }
 }
