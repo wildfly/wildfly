@@ -72,6 +72,9 @@ import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * This is the task used by the Host Controller and passed to a Server instance
+ * in order to bootstrap it from a remote source process.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServerStartTask implements ServerTask, Serializable, ObjectInputValidation {
@@ -88,25 +91,15 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
-    /** Constructor variant for use by the HostController */
     public ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates) {
-        this(serverName, portOffset, startServices, updates, null);
         if (serverName == null || serverName.length() == 0) {
             throw new IllegalArgumentException("Server name " + serverName + " is invalid; cannot be null or blank");
         }
-    }
-
-    /** Constructor variant for use by StandaloneServer */
-    public ServerStartTask(final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
-        this(null, portOffset, startServices, updates, environment);
-    }
-
-    private ServerStartTask(final String serverName, final int portOffset, final List<ServiceActivator> startServices, final List<AbstractServerModelUpdate<?>> updates, final ServerEnvironment environment) {
         this.serverName = serverName;
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        this.providedEnvironment = environment;
+        this.providedEnvironment = new ServerEnvironment(System.getProperties(), serverName, false);
     }
 
     public void run(final List<ServiceActivator> runServices) {
@@ -122,7 +115,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         }
 
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        bootstrap.start()
+        bootstrap.start(new Bootstrap.Configuration(), updates, startServices);
 
         final ServiceContainer container = ServiceContainer.Factory.create();
         final int threads = Runtime.getRuntime().availableProcessors();

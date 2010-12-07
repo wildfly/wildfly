@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import java.util.List;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.DelegatingServiceRegistry;
@@ -49,10 +50,10 @@ final class ApplicationServerService implements Service<ServerController> {
     private TrackingServiceTarget serviceTarget;
 
     private final Bootstrap.Configuration configuration;
-    private final List<Object> initialUpdates;
+    private final List<AbstractServerModelUpdate<?>> initialUpdates;
     private final List<ServiceActivator> services;
 
-    public ApplicationServerService(final Bootstrap.Configuration configuration, final List<Object> initialUpdates, final List<ServiceActivator> services) {
+    public ApplicationServerService(final Bootstrap.Configuration configuration, final List<AbstractServerModelUpdate<?>> initialUpdates, final List<ServiceActivator> services) {
         this.configuration = configuration;
         this.initialUpdates = initialUpdates;
         this.services = services;

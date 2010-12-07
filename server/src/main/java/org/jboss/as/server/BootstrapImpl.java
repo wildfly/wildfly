@@ -25,6 +25,7 @@ package org.jboss.as.server;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
@@ -47,7 +48,7 @@ import org.jboss.threads.JBossExecutors;
  */
 final class BootstrapImpl implements Bootstrap {
 
-    public AsyncFuture<ServerController> start(final Configuration configuration, final List<Object> bootUpdates, final List<ServiceActivator> extraServices) {
+    public AsyncFuture<ServerController> start(final Configuration configuration, final List<AbstractServerModelUpdate<?>> bootUpdates, final List<ServiceActivator> extraServices) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
