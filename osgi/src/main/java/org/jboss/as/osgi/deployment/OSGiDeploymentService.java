@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.deployment.DeploymentService;
-import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;

@@ -40,9 +40,5 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.osgi.deployment"/>
-        <module name="org.jboss.osgi.spi"/>
-        <module name="org.jboss.osgi.vfs"/>
-        <module name="org.osgi.core"/>
     </dependencies>
 </module>

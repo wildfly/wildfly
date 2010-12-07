@@ -25,7 +25,6 @@ package org.jboss.as.osgi.deployment;
 import java.io.IOException;
 
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;

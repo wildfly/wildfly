@@ -20,37 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.module;
+package org.jboss.as.osgi.deployment;
 
-import java.util.jar.Manifest;
-
-import org.jboss.as.deployment.attachment.ManifestAttachment;
-import org.jboss.as.deployment.attachment.OSGiManifestAttachment;
+import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.osgi.deployment.deployer.Deployment;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
+ * Utility to help attach and retrieve an OSGi Deployment from a deployment context.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 02-Dec-2010
  */
-public class OSGiManifestAttachmentProcessor implements DeploymentUnitProcessor {
+public class OSGiDeploymentAttachment {
+    public static final AttachmentKey<Deployment> KEY = AttachmentKey.create(Deployment.class);
 
-    @Override
-    public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
+    public static void attachDeployment(final DeploymentUnitContext context, final Deployment dep) {
+        context.putAttachment(KEY, dep);
+    }
 
-        // Check if we already have an OSGiManifestAttachment
-        Manifest manifest = OSGiManifestAttachment.getManifestAttachment(context);
-        if (manifest != null)
-            return;
-
-        // Check whether this is an OSGi manifest
-        manifest = ManifestAttachment.getManifestAttachment(context);
-        if (BundleInfo.isValidateBundleManifest(manifest)) {
-            OSGiManifestAttachment.attachManifest(context, manifest);
-        }
+    public static Deployment getAttachment(final DeploymentUnitContext context) {
+        return context.getAttachment(KEY);
     }
 }

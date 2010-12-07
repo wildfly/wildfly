@@ -103,16 +103,6 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.jboss.osgi.deployment</groupId>
-            <artifactId>jbosgi-deployment</artifactId>
-        </dependency>
-        
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.jboss.marshalling</groupId>

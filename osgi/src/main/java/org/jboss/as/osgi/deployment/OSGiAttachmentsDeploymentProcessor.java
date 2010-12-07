@@ -23,7 +23,6 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
-import org.jboss.as.deployment.module.OSGiDeploymentAttachment;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
