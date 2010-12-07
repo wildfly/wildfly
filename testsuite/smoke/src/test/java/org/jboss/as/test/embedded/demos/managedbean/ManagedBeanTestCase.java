@@ -45,7 +45,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Run(RunModeType.IN_CONTAINER)
-//@Ignore("Ignored until modules have been reorganized as mentioned in http://lists.jboss.org/pipermail/jboss-as7-dev/2010-November/000025.html")
 public class ManagedBeanTestCase {
 
     @Deployment

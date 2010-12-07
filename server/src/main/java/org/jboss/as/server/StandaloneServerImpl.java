@@ -41,12 +41,12 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -149,7 +149,7 @@ public class StandaloneServerImpl implements StandaloneServer {
 
     class ServerStartupService implements Service<Void>, ServiceActivator {
 
-        private ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "startup");
+        private final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("server", "startup");
         private final CountDownLatch startStopLatch;
 
         ServerStartupService(final CountDownLatch startStopLatch) {
@@ -161,6 +161,22 @@ public class StandaloneServerImpl implements StandaloneServer {
             final ServiceTarget serviceTarget = context.getServiceTarget();
             serviceTarget.addService(SERVICE_NAME, this)
                     .addDependency(ServerStartTask.AS_SERVER_SERVICE_NAME)
+                    //FIXME workaround to make this wait for more things that must be up before we can deploy things
+                    //while waiting for the new bootstrap API
+                    .addDependency(ServiceName.JBOSS.append("arquillian", "testrunner"))
+                    .addDependency(ServerController.SERVICE_NAME.append("operation", "handler"))
+                    .addDependency(ServiceName.JBOSS.append("naming", "context", "java", "app"))
+                    .addDependency(ServiceName.JBOSS.append("naming", "context", "java", "global"))
+                    .addDependency(ServiceName.JBOSS.append("naming", "context", "java", "comp"))
+                    .addDependency(ServiceName.JBOSS.append("naming", "context", "java", "module"))
+                    .addDependency(ServiceName.JBOSS.append("deployment-manager", "server", "local"))
+                    .addDependency(ServiceName.JBOSS.append("web", "connector", "http"))
+                    .addDependency(ServiceName.JBOSS.append("connector", "config"))
+                    .addDependency(ServiceName.JBOSS.append("messaging", "jms", "connection-factory", "InVmConnectionFactory"))
+                    .addDependency(ServiceName.JBOSS.append("messaging", "jms", "connection-factory", "RemoteConnectionFactory"))
+                    .addDependency(ServiceName.JBOSS.append("messaging", "jms" , "queue", "testQueue"))
+                    .addDependency(ServiceName.JBOSS.append("messaging", "jms" , "topic", "testTopic"))
+                    .addDependency(ServiceName.JBOSS.append("mbean", "server"))
                     .install();
         }
 
