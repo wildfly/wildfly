@@ -23,6 +23,7 @@
 package org.jboss.as.model;
 
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -44,5 +45,13 @@ public interface UpdateContext {
      *
      * @return the service container
      */
+    @Deprecated
     ServiceContainer getServiceContainer();
+
+    /**
+     * Get the service registry.
+     *
+     * @return the service registry
+     */
+    ServiceRegistry getServiceRegistry();
 }

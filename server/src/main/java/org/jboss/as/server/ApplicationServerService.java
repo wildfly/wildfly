@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
@@ -54,34 +55,32 @@ import org.jboss.msc.service.TrackingServiceTarget;
  */
 final class ApplicationServerService implements Service<ServerController> {
 
-    private ServerController serverController;
-    private TrackingServiceTarget serviceTarget;
-
     private final Bootstrap.Configuration configuration;
     private final ServerConfigurationPersister persister;
-    private final List<ServiceActivator> services;
 
-    public ApplicationServerService(final Bootstrap.Configuration configuration, final ServerConfigurationPersister persister, final List<ServiceActivator> services) {
+    // mutable state
+    private ServerController serverController;
+    private Set<ServiceName> bootServices;
+
+    public ApplicationServerService(final Bootstrap.Configuration configuration, final ServerConfigurationPersister persister) {
         this.configuration = configuration;
         this.persister = persister;
-        this.services = services;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        serviceTarget = new TrackingServiceTarget(context.getController().getServiceContainer());
+        final ServiceContainer container = context.getController().getServiceContainer();
+        final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container);
+        final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             public ServiceTarget getServiceTarget() {
                 return serviceTarget;
             }
 
             public ServiceRegistry getServiceRegistry() {
-                return new DelegatingServiceRegistry(context.getController().getServiceContainer());
+                return serviceRegistry;
             }
         };
-        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer(), configuration.getServerEnvironment());
-        for (ServiceActivator activator : services) {
-            activator.activate(serviceActivatorContext);
-        }
+        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), container, configuration.getServerEnvironment());
         final List<AbstractServerModelUpdate<?>> updates;
         try {
             updates = persister.load(serverController);
@@ -94,7 +93,11 @@ final class ApplicationServerService implements Service<ServerController> {
             }
 
             public ServiceContainer getServiceContainer() {
-                return null;
+                throw new UnsupportedOperationException();
+            }
+
+            public ServiceRegistry getServiceRegistry() {
+                return serviceRegistry;
             }
 
             public void addDeploymentProcessor(DeploymentUnitProcessor processor, long priority) {
@@ -104,13 +107,13 @@ final class ApplicationServerService implements Service<ServerController> {
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(bootUpdateContext);
         }
+        bootServices = serviceTarget.getSet();
     }
 
     public synchronized void stop(final StopContext context) {
         serverController = null;
         final ServiceContainer container = context.getController().getServiceContainer();
         final AtomicInteger count = new AtomicInteger(1);
-
         final ServiceListener<Object> removeListener = new AbstractServiceListener<Object>() {
             public void listenerAdded(final ServiceController<?> controller) {
                 count.incrementAndGet();
@@ -124,7 +127,7 @@ final class ApplicationServerService implements Service<ServerController> {
             }
         };
         context.asynchronous();
-        for (ServiceName serviceName : serviceTarget.getSet()) {
+        for (ServiceName serviceName : bootServices) {
             final ServiceController<?> controller = container.getService(serviceName);
             if (controller != null) {
                 controller.setMode(ServiceController.Mode.REMOVE);
