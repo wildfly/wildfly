@@ -68,6 +68,10 @@
                           <name>jboss.home</name>
                           <value>../../build/target/jboss-${jboss.as.release.version}</value>
                         </property>
+                        <property>
+                          <name>jboss.embedded.root</name>
+                          <value>target/embedded</value>
+                        </property>
                     </systemProperties>
                 </configuration>
             </plugin>

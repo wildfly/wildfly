@@ -21,13 +21,24 @@
  */
 package org.jboss.as.server;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.LogManager;
 
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.modules.JDKModuleLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -35,13 +46,31 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * ServerFactory that sets up a standalone server using modular classloading
+ * <p>
+ * ServerFactory that sets up a standalone server using modular classloading.
+ * </p>
+ * <p>
+ * To use this class the <code>jboss.home.dir</code> system property must be set to the
+ * application server home directory. By default it will use the directories
+ * <code>{$jboss.home.dir}/standalone/config</code> as the <i>configuration</i> directory and
+ * <code>{$jboss.home.dir}/standalone/data</code> as the <i>data</i> directory. This can be overridden
+ * with the <code>${jboss.server.base.dir}</code>, <code>${jboss.server.config.dir}</code> or <code>${jboss.server.config.dir}</code>
+ * system properties as for normal server startup.
+ * </p>
+ * <p>
+ * If a clean run is wanted, you can specify <code>${jboss.embedded.root}</code> to an existing directory
+ * which will copy the contents of the data and configuration directories under a temporary folder. This
+ * has the effect of this run not polluting later runs of the embedded server.
+ * </p>
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  * @version $Revision: 1.1 $
  */
 public class EmbeddedServerFactory {
+
+    public static final String JBOSS_EMBEDDED_ROOT = "jboss.embedded.root";
+
     private EmbeddedServerFactory() {
     }
 
@@ -50,10 +79,11 @@ public class EmbeddedServerFactory {
         if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
             throw new IllegalStateException("Invalid jboss.home.dir: " + jbossHomeDir);
 
-        if (systemProps.getProperty("jboss.home.dir") == null) {
-            systemProps.setProperty("jboss.home.dir", jbossHomeDir.getAbsolutePath());
+        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null) {
+            systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
         }
-        systemProps.setProperty("jboss.home.dir", jbossHomeDir.getAbsolutePath());
+
+        setupCleanDirectories(jbossHomeDir, systemProps);
 
         File modulesDir = new File(jbossHomeDir + "/modules");
         ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, "org.jboss.logmanager");
@@ -102,6 +132,112 @@ public class EmbeddedServerFactory {
         Class<?>[] interfaces = new Class[] { StandaloneServer.class };
         Object proxy = Proxy.newProxyInstance(classLoader, interfaces, invocationHandler);
         return (StandaloneServer) proxy;
+    }
+
+    static void setupCleanDirectories(File jbossHomeDir, Properties props) {
+        File tempRoot = getTempRoot(props);
+        if (tempRoot == null) {
+            return;
+        }
+
+        File originalConfigDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_CONFIG_DIR, "configuration");
+        File orginalDataDir = getFileUnderAsRoot(jbossHomeDir, props, ServerEnvironment.SERVER_DATA_DIR, "data");
+
+        File configDir = new File(tempRoot, "config");
+        configDir.mkdir();
+        File dataDir = new File(tempRoot, "data");
+        dataDir.mkdir();
+
+        copyDirectory(originalConfigDir, configDir);
+        copyDirectory(orginalDataDir, dataDir);
+
+        props.put(ServerEnvironment.SERVER_CONFIG_DIR, configDir.getAbsolutePath());
+        props.put(ServerEnvironment.SERVER_DATA_DIR, dataDir.getAbsolutePath());
+
+    }
+
+    private static File getFileUnderAsRoot(File jbossHomeDir, Properties props, String propName, String relativeLocation) {
+        String prop = props.getProperty(propName, null);
+        if (prop == null) {
+            prop = props.getProperty(ServerEnvironment.SERVER_BASE_DIR, null);
+            if (prop == null) {
+                File dir = new File(jbossHomeDir, "standalone/" + relativeLocation);
+                if (!dir.exists() && !dir.isDirectory()) {
+                    throw new IllegalArgumentException("No directory called 'standalone/' " + relativeLocation + " under " + jbossHomeDir.getAbsolutePath());
+                }
+                return dir;
+            } else {
+                File server = new File(prop);
+                validateDirectory(ServerEnvironment.SERVER_BASE_DIR, server);
+                return new File(server, relativeLocation);
+            }
+        } else {
+            File dir = new File(prop);
+            validateDirectory(ServerEnvironment.SERVER_CONFIG_DIR, dir);
+            return dir;
+        }
+
+    }
+
+    private static File getTempRoot(Properties props) {
+        String tempRoot = props.getProperty(JBOSS_EMBEDDED_ROOT, null);
+        if (tempRoot == null) {
+            return null;
+        }
+
+        File root = new File(tempRoot);
+        if (!root.exists()) {
+            //Attempt to try to create the directory, in case something like target/embedded was specified
+            root.mkdirs();
+        }
+        validateDirectory("jboss.test.clean.root", root);
+        root = new File(root, "configs");
+        root.mkdir();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        root = new File(root, format.format(new Date()));
+        root.mkdir();
+        return root;
+    }
+
+    private static void validateDirectory(String property, File file) {
+        if (!file.exists()) {
+            throw new IllegalArgumentException("-D" + property + "=" + file.getAbsolutePath() + " does not exist");
+        }
+        if (!file.isDirectory()) {
+            throw new IllegalArgumentException("-D" + property + "=" + file.getAbsolutePath() + " is not a directory");
+        }
+    }
+
+    private static void copyDirectory(File src, File dest) {
+        for (String current : src.list()) {
+            final File srcFile = new File(src, current);
+            final File destFile = new File(dest, current);
+
+            if (srcFile.isDirectory()) {
+                destFile.mkdir();
+                copyDirectory(srcFile, destFile);
+            } else {
+                try {
+                    final InputStream in = new BufferedInputStream(new FileInputStream(srcFile));
+                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
+
+                    try {
+                        int i;
+                        while ((i = in.read()) != -1) {
+                            out.write(i);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error copying " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath(), e);
+                    } finally {
+                        StreamUtils.safeClose(in);
+                        StreamUtils.safeClose(out);
+                    }
+
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     public static void main(String[] args) throws Throwable {
