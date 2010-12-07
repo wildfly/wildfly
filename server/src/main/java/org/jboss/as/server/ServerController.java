@@ -31,7 +31,7 @@ import org.jboss.as.model.UpdateResultHandlerResponse;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * The API entry point for a server controller.
+ * The API entry point for a server controller, which manages the state of running server.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -79,9 +79,6 @@ public interface ServerController {
      * @param <P> the result handler parameter type
      */
     <R, P> void update(AbstractServerModelUpdate<R> update, UpdateResultHandler<R, P> resultHandler, P param);
-
-    // TODO - runtime-only updates
-    // <R, P> void update(Something<R> update, UpdateResultHandler<R, P> resultHandler, P param);
 
     /**
      * Shut down the server.

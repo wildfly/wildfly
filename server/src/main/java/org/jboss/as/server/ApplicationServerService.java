@@ -22,11 +22,20 @@
 
 package org.jboss.as.server;
 
+import java.util.List;
+import org.jboss.as.model.ServerModel;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.TrackingServiceTarget;
 
 /**
  * The root service of the JBoss Application Server.  Stopping this
@@ -36,13 +45,43 @@ import org.jboss.msc.service.StopContext;
  */
 final class ApplicationServerService implements Service<ServerController> {
 
-    
+    private ServerController serverController;
+    private TrackingServiceTarget serviceTarget;
 
-    public void start(final StartContext context) throws StartException {
+    private final Bootstrap.Configuration configuration;
+    private final List<Object> initialUpdates;
+    private final List<ServiceActivator> services;
+
+    public ApplicationServerService(final Bootstrap.Configuration configuration, final List<Object> initialUpdates, final List<ServiceActivator> services) {
+        this.configuration = configuration;
+        this.initialUpdates = initialUpdates;
+        this.services = services;
     }
 
-    public void stop(final StopContext context) {
-        Logger.getLogger("org.jboss.as").infof("Stopped JBoss AS in %d ms", Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+    public synchronized void start(final StartContext context) throws StartException {
+        serviceTarget = new TrackingServiceTarget(context.getController().getServiceContainer());
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
+            public ServiceTarget getServiceTarget() {
+                return serviceTarget;
+            }
+
+            public ServiceRegistry getServiceRegistry() {
+                return new DelegatingServiceRegistry(context.getController().getServiceContainer());
+            }
+        };
+        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer(), configuration.getServerEnvironment().isStandalone());
+        for (ServiceActivator activator : services) {
+            activator.activate(serviceActivatorContext);
+        }
+        // todo: apply boot updates here, but don't bother waiting for completion - the updates should install new services
+        
+    }
+
+    public synchronized void stop(final StopContext context) {
+        serverController = null;
+        Logger.getLogger("org.jboss.as").infof("Stopped JBoss AS in %dms", Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        // service cannot be restarted.
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     public ServerController getValue() throws IllegalStateException, IllegalArgumentException {

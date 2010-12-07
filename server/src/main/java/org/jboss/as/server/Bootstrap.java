@@ -25,6 +25,7 @@ package org.jboss.as.server;
 import java.util.List;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -42,9 +43,10 @@ public interface Bootstrap {
      *
      * @param configuration the server configuration
      * @param bootUpdates the update list to apply
+     * @param extraServices additional services to start and stop with the server instance
      * @return the future server controller
      */
-    AsyncFuture<ServerController> start(Configuration configuration, List<Object> bootUpdates);
+    AsyncFuture<ServerController> start(Configuration configuration, List<Object> bootUpdates, List<ServiceActivator> extraServices);
 
     /**
      * The configuration for server bootstrap.

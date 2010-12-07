@@ -30,6 +30,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -46,7 +47,7 @@ import org.jboss.threads.JBossExecutors;
  */
 final class BootstrapImpl implements Bootstrap {
 
-    public AsyncFuture<ServerController> start(final Configuration configuration, final List<Object> bootUpdates) {
+    public AsyncFuture<ServerController> start(final Configuration configuration, final List<Object> bootUpdates, final List<ServiceActivator> extraServices) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
@@ -55,7 +56,6 @@ final class BootstrapImpl implements Bootstrap {
         }
         final ModuleLoader moduleLoader = configuration.getModuleLoader();
         final String name = configuration.getName();
-        final int portOffset = configuration.getPortOffset();
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
         if (moduleLoader == null) {
             throw new IllegalArgumentException("moduleLoader is null");
@@ -69,7 +69,7 @@ final class BootstrapImpl implements Bootstrap {
         final ServiceContainer container = ServiceContainer.Factory.create();
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<ServerController> serverControllerService = new ApplicationServerService();
+        final Service<ServerController> serverControllerService = new ApplicationServerService(configuration, bootUpdates, extraServices);
         tracker.addListener(new BootstrapListener(future, serverControllerService, configuration.getStartTime()));
         tracker.addService(ServiceName.JBOSS.append("as"), serverControllerService).install();
         return future;
@@ -161,9 +161,6 @@ final class BootstrapImpl implements Bootstrap {
                 return;
             }
             final int failed = this.failed.get();
-            if (failed > 0) {
-                future.failed(failed);
-            }
             future.done(serverControllerService.getValue());
             final long elapsedTime = Math.max(System.currentTimeMillis() - startTime, 0L);
             final Logger log = Logger.getLogger("org.jboss.as");
@@ -175,7 +172,7 @@ final class BootstrapImpl implements Bootstrap {
             if (failed == 0) {
                 log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
             } else {
-                log.errorf("JBoss AS server start failed in %dms - Started %d of %d services (%d services failed, %d services are passive or on-demand)", Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
+                log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
             }
         }
     }

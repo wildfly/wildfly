@@ -30,10 +30,14 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.model.Element;
+import org.jboss.as.model.ModelXmlParsers;
+import org.jboss.as.model.Namespace;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
@@ -58,7 +62,6 @@ import org.jboss.staxmapper.XMLMapper;
 public class StandaloneServerImpl implements StandaloneServer {
 
     private static final String STANDALONE_XML = "standalone.xml";
-    private final StandardElementReaderRegistrar extensionRegistrar;
 
     static final Logger log = Logger.getLogger("org.jboss.as.server");
 
@@ -70,7 +73,6 @@ public class StandaloneServerImpl implements StandaloneServer {
             throw new IllegalArgumentException("bootstrapConfig is null");
         }
         this.environment = environment;
-        extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
     }
 
     @Override
@@ -90,7 +92,7 @@ public class StandaloneServerImpl implements StandaloneServer {
         final List<AbstractServerModelUpdate<?>> updates = new ArrayList<AbstractServerModelUpdate<?>>();
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
-            extensionRegistrar.registerStandardStandaloneReaders(mapper);
+            mapper.registerRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), Element.SERVER.getLocalName()), ModelXmlParsers.SERVER_XML_READER);
             BufferedInputStream input = new BufferedInputStream(new FileInputStream(standalone));
             XMLStreamReader streamReader = XMLInputFactory.newInstance().createXMLStreamReader(input);
             mapper.parseDocument(updates, streamReader);

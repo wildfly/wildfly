@@ -70,7 +70,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -121,13 +120,15 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
             log.infof("Starting standalone server");
         }
+
+        final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
+        bootstrap.start()
+
         final ServiceContainer container = ServiceContainer.Factory.create();
         final int threads = Runtime.getRuntime().availableProcessors();
         container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
 
-        final ServerStartupListener serverStartupListener = new ServerStartupListener(createListenerCallback());
         final BatchBuilder batchBuilder = container.batchBuilder();
-        batchBuilder.addListener(serverStartupListener);
 
         // First-stage (boot) services
 
@@ -250,23 +251,6 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         } catch (ServiceRegistryException e) {
             throw new IllegalStateException("Failed to install boot services", e);
         }
-    }
-
-    ServerStartupListener.Callback createListenerCallback() {
-        return new ServerStartupListener.Callback() {
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
-                if(serviceFailures.isEmpty()) {
-                    log.infof("JBoss AS %s \"%s\" started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(totalServices), Integer.valueOf(onDemandServices), Integer.valueOf(startedServices));
-                } else {
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", Integer.valueOf(totalServices), Long.valueOf(elapsedTime)));
-                    buff.append("\nThe following services failed to start:\n");
-                    for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
-                        buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
-                    }
-                    log.error(buff.toString());
-                }
-            }
-        };
     }
 
     public void validateObject() throws InvalidObjectException {
