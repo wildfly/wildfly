@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.util.List;
 
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateResultHandler;
@@ -46,8 +47,17 @@ public interface ServerController {
      * Get the server model
      *
      * @return the server model
+     * @deprecated this is an abstraction leak; in the detyped system, this should return a *copy* of the model only
      */
+    @Deprecated
     ServerModel getServerModel();
+
+    /**
+     * Get this server's environment.
+     *
+     * @return the environment
+     */
+    ServerEnvironment getServerEnvironment();
 
     /**
      * Apply a series of updates.
@@ -66,6 +76,7 @@ public interface ServerController {
      * @throws IllegalStateException if this is not a standalone server and
      *           {@code modelOnly} is {@code true}
      */
+    // TODO: Change this to accept only one update at a time; multi-step updates should be a composite object of some sort
     List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
             boolean rollbackOnFailure, boolean modelOnly);
 
@@ -84,4 +95,25 @@ public interface ServerController {
      * Shut down the server.
      */
     void shutdown();
+
+    /**
+     * Determine whether shutdown is complete.
+     *
+     * @return {@code true} if shutdown is complete
+     */
+    boolean isShutdownComplete();
+
+    /**
+     * Wait for termination to complete.
+     *
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     */
+    void awaitTermination() throws InterruptedException;
+
+    /**
+     * Wait for a certain amount of time for termination to complete.
+     *
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     */
+    void awaitTermination(long time, TimeUnit unit) throws InterruptedException;
 }

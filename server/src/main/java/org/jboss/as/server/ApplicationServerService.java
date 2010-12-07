@@ -70,7 +70,7 @@ final class ApplicationServerService implements Service<ServerController> {
                 return new DelegatingServiceRegistry(context.getController().getServiceContainer());
             }
         };
-        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer(), configuration.getServerEnvironment().isStandalone());
+        serverController = new ServerControllerImpl(new ServerModel(configuration.getName(), configuration.getPortOffset()), context.getController().getServiceContainer());
         for (ServiceActivator activator : services) {
             activator.activate(serviceActivatorContext);
         }

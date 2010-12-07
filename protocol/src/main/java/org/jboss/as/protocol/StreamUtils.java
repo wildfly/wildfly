@@ -35,6 +35,8 @@ import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
 
+import javax.xml.stream.XMLStreamWriter;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -311,7 +313,7 @@ public final class StreamUtils {
         }
     }
 
-    public static void safeFinish(Marshaller marshaller) {
+    public static void safeFinish(final Marshaller marshaller) {
         if (marshaller != null) try {
             marshaller.finish();
         } catch (IOException e) {
@@ -319,11 +321,19 @@ public final class StreamUtils {
         }
     }
 
-    public static void safeFinish(Unmarshaller unmarshaller) {
+    public static void safeFinish(final Unmarshaller unmarshaller) {
         if (unmarshaller != null) try {
             unmarshaller.finish();
         } catch (IOException e) {
             log.errorf(e, "Failed to finish the unmarshaller %s", unmarshaller);
+        }
+    }
+
+    public static void safeClose(final XMLStreamWriter writer) {
+        if (writer != null) try {
+            writer.close();
+        } catch (Throwable t) {
+            log.errorf(t, "Failed to close resource %s", writer);
         }
     }
 }

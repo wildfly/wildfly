@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
+import java.util.concurrent.TimeUnit;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
@@ -61,31 +62,37 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     private final ServiceContainer container;
     private final ServerModel serverModel;
-    private final boolean standalone;
+    private final ServerEnvironment serverEnvironment;
     private ServerConfigurationPersister configurationPersister;
     private ExecutorService executor;
 
-
-    ServerControllerImpl(final ServerModel model, final ServiceContainer container, final boolean standalone) {
-        this.serverModel = model;
+    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment) {
+        this.serverModel = serverModel;
         this.container = container;
-        this.standalone = standalone;
+        this.serverEnvironment = serverEnvironment;
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public ServerModel getServerModel() {
         return serverModel;
     }
 
+    /** {@inheritDoc} */
+    public ServerEnvironment getServerEnvironment() {
+        return serverEnvironment;
+    }
+
+    /** {@inheritDoc} */
     @Override
     public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
             boolean rollbackOnFailure, boolean modelOnly) {
 
         int count = updates.size();
-        log.debugf("Received %s updates", count);
+        log.debugf("Received %d updates", Integer.valueOf(count));
 
         List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
-        if (modelOnly && !standalone) {
+        if (modelOnly && ! serverEnvironment.isStandalone()) {
             Exception e = new IllegalStateException("Update sets that only affect the configuration and not the runtime are not valid on a domain-based server");
             for (int i = 0; i < count; i++) {
                 results.add(UpdateResultHandlerResponse.createFailureResponse(e));
@@ -95,7 +102,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         final CountDownLatch latch = new CountDownLatch(1);
         ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, count, latch);
-        final ServerUpdateController controller = new ServerUpdateController(getServerModel(),
+        final ServerUpdateController controller = new ServerUpdateController(serverModel,
                 container, executor, handler, rollbackOnFailure, !modelOnly);
 
         for(int i = 0; i < count; i++) {
@@ -103,7 +110,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         }
 
         controller.executeUpdates();
-        log.debugf("Executed %s updates", updates.size());
+        log.debugf("Executed %d updates", Integer.valueOf(updates.size()));
         try {
             latch.await();
         } catch(InterruptedException e) {
@@ -129,6 +136,18 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     public void shutdown() {
         container.shutdown();
+    }
+
+    public boolean isShutdownComplete() {
+        return container.isShutdownComplete();
+    }
+
+    public void awaitTermination() throws InterruptedException {
+        container.awaitTermination();
+    }
+
+    public void awaitTermination(final long time, final TimeUnit unit) throws InterruptedException {
+        container.awaitTermination(time, unit);
     }
 
     public InjectedValue<ServerConfigurationPersister> getConfigurationPersisterValue() {
@@ -204,19 +223,19 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         @Override
         public void handleCancellation(Integer param) {
-            log.tracef("Update %s cancelled", param);
+            log.tracef("Update %d cancelled", param);
             map.put(param, UpdateResultHandlerResponse.createCancellationResponse());
         }
 
         @Override
         public void handleFailure(Throwable cause, Integer param) {
-            log.tracef("Update %s failed with %s", param, cause);
+            log.tracef("Update %d failed with %s", param, cause);
             map.put(param, UpdateResultHandlerResponse.createFailureResponse(cause));
         }
 
         @Override
         public void handleRollbackCancellation(Integer param) {
-            log.tracef("Update %s rollback cancelled", param);
+            log.tracef("Update %d rollback cancelled", param);
             UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
@@ -227,7 +246,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         @Override
         public void handleRollbackFailure(Throwable cause, Integer param) {
-            log.tracef("Update %s rollback failed with %s", param, cause);
+            log.tracef("Update %d rollback failed with %s", param, cause);
             UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
@@ -238,7 +257,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         @Override
         public void handleRollbackSuccess(Integer param) {
-            log.tracef("Update %s rolled back", param);
+            log.tracef("Update %d rolled back", param);
             UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
@@ -249,7 +268,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         @Override
         public void handleRollbackTimeout(Integer param) {
-            log.tracef("Update %s rollback timed out", param);
+            log.tracef("Update %d rollback timed out", param);
             UpdateResultHandlerResponse<?> rsp = map.get(param);
             if (rsp == null) {
                 log.warn("No response associated with index " + param);
@@ -260,14 +279,14 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
         @Override
         public void handleSuccess(Object result, Integer param) {
-            log.tracef("Update %s succeeded", param);
+            log.tracef("Update %d succeeded", param);
             map.put(param, UpdateResultHandlerResponse.createSuccessResponse(result));
         }
 
         @Override
         public void handleTimeout(Integer param) {
-            log.tracef("Update %s timed out", param);
-            responses.set(param, UpdateResultHandlerResponse.createTimeoutResponse());
+            log.tracef("Update %d timed out", param);
+            responses.set(param.intValue(), UpdateResultHandlerResponse.createTimeoutResponse());
         }
     }
 }

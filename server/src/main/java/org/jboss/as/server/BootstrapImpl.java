@@ -24,6 +24,9 @@ package org.jboss.as.server;
 
 import java.util.EnumMap;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.version.Version;
@@ -68,6 +71,9 @@ final class BootstrapImpl implements Bootstrap {
             throw new IllegalArgumentException("serverEnvironment is null");
         }
         final ServiceContainer container = ServiceContainer.Factory.create();
+        final int threads = Runtime.getRuntime().availableProcessors();
+        container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
+
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
         final Service<ServerController> serverControllerService = new ApplicationServerService(configuration, bootUpdates, extraServices);

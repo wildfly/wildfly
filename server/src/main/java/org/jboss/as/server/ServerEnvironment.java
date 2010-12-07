@@ -110,7 +110,7 @@ public class ServerEnvironment {
      */
     public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
-    private final String processName;
+    private final String serverName;
 
     private final File homeDir;
     private final File modulesDir;
@@ -123,16 +123,16 @@ public class ServerEnvironment {
     private final boolean standalone;
     private final File serverSystemDeployDir;
 
-    public ServerEnvironment(Properties props, String processName, boolean standalone) {
+    public ServerEnvironment(Properties props, String serverName, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
 
-        if (processName == null && !standalone) {
+        if (serverName == null && !standalone) {
             throw new IllegalArgumentException("processName is null");
         }
-        this.processName = processName;
+        this.serverName = serverName;
 
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
@@ -198,12 +198,15 @@ public class ServerEnvironment {
     }
 
     /**
-     * Get the process name of this process, needed to inform the process controller we have started
+     * Get the name of this server instance.  For domain-mode servers, this is the name
+     * given in the domain configuration.  For standalone servers, this is the name either
+     * provided in the server configuration, or, if not given, the name specified via system
+     * property, or auto-detected based on host name.
      *
-     * @return the process name
+     * @return the server name
      */
-    public String getProcessName() {
-        return processName;
+    public String getServerName() {
+        return serverName;
     }
 
     public File getHomeDir() {

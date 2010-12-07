@@ -28,12 +28,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
@@ -46,7 +42,6 @@ import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
-import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateFailedException;
 import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.server.mgmt.ServerConfigurationPersisterImpl;
@@ -57,19 +52,14 @@ import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
-import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.logging.MDC;
 import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * This is the task used by the Host Controller and passed to a Server instance
@@ -117,41 +107,9 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         bootstrap.start(new Bootstrap.Configuration(), updates, startServices);
 
-        final ServiceContainer container = ServiceContainer.Factory.create();
-        final int threads = Runtime.getRuntime().availableProcessors();
-        container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
-
         final BatchBuilder batchBuilder = container.batchBuilder();
 
         // First-stage (boot) services
-
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
-            public ServiceTarget getServiceTarget() {
-                return container;
-            }
-
-            public ServiceRegistry getServiceRegistry() {
-                return container;
-            }
-        };
-
-        // Root service
-        batchBuilder.addService(AS_SERVER_SERVICE_NAME, Service.NULL)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install();
-
-        // Services specified by the creator of this object
-        for (ServiceActivator service : startServices) {
-            service.activate(serviceActivatorContext);
-        }
-
-        // Next-stage services
-        for(ServiceActivator service : runServices) {
-            service.activate(serviceActivatorContext);
-        }
-
-        // Initial model
-        final ServerModel serverModel = new ServerModel(serverName, portOffset);
 
         final Properties systemProperties = System.getProperties();
         final ServerEnvironment environment = providedEnvironment != null
@@ -163,7 +121,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         // The server controller
         // TODO make ServerConfigurationPersister internal
         // TODO share thread pool
-        ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container, environment.isStandalone());
+        ServerControllerImpl serverController = new ServerControllerImpl(serverModel, container);
         batchBuilder.addService(ServerController.SERVICE_NAME, serverController)
             .addDependency(ServerConfigurationPersister.SERVICE_NAME, ServerConfigurationPersister.class, serverController.getConfigurationPersisterValue())
             .addInjection(serverController.getExecutorValue(), Executors.newCachedThreadPool())

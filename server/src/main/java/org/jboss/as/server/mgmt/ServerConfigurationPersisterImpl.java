@@ -22,7 +22,6 @@
 
 package org.jboss.as.server.mgmt;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.model.Element;
 import org.jboss.as.model.ServerModel;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.logging.Logger;
@@ -46,6 +46,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLContentWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
+import org.jboss.vfs.VFSUtils;
 
 /**
  * Default implementation of {@link ServerConfigurationPersister}.
@@ -76,84 +77,53 @@ public class ServerConfigurationPersisterImpl implements ServerConfigurationPers
     @Override
     public void configurationModified() {
         if (configFile != null) {
-
-            FileOutputStream fos = null;
-            BufferedOutputStream bos = null;
-            XMLStreamWriter writer = null;
             try {
                 backupConfigFile();
                 configFile.createNewFile();
-                fos = new FileOutputStream(configFile);
-                bos = new BufferedOutputStream(fos);
-                writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
-                final XMLMapper mapper = XMLMapper.Factory.create();
-                mapper.deparseDocument(new RootElementWriter(), writer);
-            }
-            catch (Exception e) {
+                final FileOutputStream fos = new FileOutputStream(configFile);
+                try {
+                    final BufferedOutputStream bos = new BufferedOutputStream(fos);
+                    try {
+                        final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(bos);
+                        try {
+                            final XMLMapper mapper = XMLMapper.Factory.create();
+                            mapper.deparseDocument(new RootElementWriter(), writer);
+                        } finally {
+                            StreamUtils.safeClose(writer);
+                        }
+                    } finally {
+                        StreamUtils.safeClose(bos);
+                    }
+                } finally {
+                    StreamUtils.safeClose(fos);
+                }
+            } catch (Exception e) {
                 logger.errorf(e, "Failed persisting configuration file %s" , configFile.getAbsolutePath());
             }
-            finally {
-                 if (writer != null) {
-                     try {
-                        writer.close();
-                    } catch (XMLStreamException e) {
-                        logger.warnf(e, "Failed closing writer to configuration file %s" , configFile.getAbsolutePath());
-                    }
-                 }
-                 if (fos != null) {
-                     try {
-                        fos.close();
-                    } catch (IOException e) {
-                        logger.warnf(e, "Failed closing output stream to configuration file %s" , configFile.getAbsolutePath());
-                    }
-                 }
-            }
-
         }
-
     }
 
     private void backupConfigFile() throws IOException {
         File backup = new File(configFile.getParent(), configFile.getName() + ".last-known-good");
-        copyFile(configFile, backup);
+        moveFile(configFile, backup);
     }
 
-    private void copyFile(File file, File backup) throws IOException {
+    private void moveFile(File file, File backup) throws IOException {
 
         if (backup.exists())
             backup.delete();
 
         if (!file.renameTo(backup)) {
-            FileOutputStream fos = null;
-            BufferedOutputStream bos = null;
-            FileInputStream fis = null;
+            final FileInputStream fis = new FileInputStream(file);
             try {
-                fos = new FileOutputStream(backup);
-                bos = new BufferedOutputStream(fos);
-                fis = new FileInputStream(file);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                byte[] bytes = new byte[8192];
-                int read;
-                while ((read = bis.read(bytes)) > -1) {
-                    bos.write(bytes, 0, read);
-                }
-            }
-            finally {
+                final FileOutputStream fos = new FileOutputStream(backup);
                 try {
-                    if (bos != null) {
-                        bos.close();
-                    }
-                 } catch (Exception ignored) {}
-                 try {
-                     if (fos != null) {
-                         fos.close();
-                     }
-                  } catch (Exception ignored) {}
-                  try {
-                      if (fis != null) {
-                          fis.close();
-                      }
-                   } catch (Exception ignored) {}
+                    VFSUtils.copyStreamAndClose(fis, fos);
+                } finally {
+                    VFSUtils.safeClose(fos);
+                }
+            } finally {
+                VFSUtils.safeClose(fis);
             }
         }
     }
