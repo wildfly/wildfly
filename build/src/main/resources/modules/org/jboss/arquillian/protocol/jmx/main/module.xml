@@ -29,6 +29,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.jboss.arquillian.impl"/>
         <module name="org.jboss.arquillian.junit"/>
         <module name="org.jboss.arquillian.spi"/>
         <module name="org.jboss.logging"/>

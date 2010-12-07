@@ -20,56 +20,20 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.jboss.arquillian.osgi.OSGiDeploymentPackager;
-import org.jboss.arquillian.spi.Context;
-import org.jboss.arquillian.spi.DeploymentPackager;
-import org.jboss.arquillian.spi.TestClass;
-import org.jboss.arquillian.spi.TestDeployment;
-import org.jboss.arquillian.testenricher.osgi.OSGiTestEnricher;
-import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
 
 /**
- * A {@link DeploymentPackager} that delegates to deployment type specific packagers.
+ * An abstract {@link ApplicationArchiveProcessor}.
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class DelegatingDeploymentPackager implements DeploymentPackager {
+public abstract class AbstractApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
-    public Archive<?> generateDeployment(Context context, TestDeployment testDeployment) {
-
-        Archive<?> appArchive = testDeployment.getApplicationArchive();
-
-        DeploymentPackager packager = null;
-        if (isBundleArchive(context, appArchive))
-            packager = new OSGiDeploymentPackager();
-        else
-            packager = new ModuleDeploymentPackager();
-
-        packager.generateDeployment(context, testDeployment);
-
-        return appArchive;
-    }
-
-    private boolean isBundleArchive(Context context, Archive<?> appArchive) {
-
-        // Check if the test class is a valid OSGi injection target
-        TestClass testCase = context.get(TestClass.class);
-        if (OSGiTestEnricher.isInjectionTarget(testCase.getJavaClass()))
-            return true;
-
-        // Check if the archive contains a valid OSGi manifest
-        Manifest manifest = getOrCreateManifest(appArchive);
-        if (BundleInfo.isValidateBundleManifest(manifest))
-            return true;
-
-        return false;
-    }
-
-    static Manifest getOrCreateManifest(Archive<?> archive) {
+    protected Manifest getOrCreateManifest(Archive<?> archive) {
         Manifest manifest;
         try {
             Node node = archive.get(JarFile.MANIFEST_NAME);

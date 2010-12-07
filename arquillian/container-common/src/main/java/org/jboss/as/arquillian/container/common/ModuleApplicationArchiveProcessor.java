@@ -23,36 +23,28 @@ import java.io.InputStream;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.jboss.arquillian.spi.Context;
-import org.jboss.arquillian.spi.DeploymentPackager;
-import org.jboss.arquillian.spi.TestDeployment;
+import org.jboss.arquillian.spi.ApplicationArchiveProcessor;
+import org.jboss.arquillian.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 
 /**
- * JBossASDeploymentPackager
+ * An {@link ApplicationArchiveProcessor} for module test deployments.
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
  * @since 17-Nov-2010
  */
-public class ModuleDeploymentPackager implements DeploymentPackager {
+public class ModuleApplicationArchiveProcessor extends AbstractApplicationArchiveProcessor {
 
-    public Archive<?> generateDeployment(Context context, TestDeployment testDeployment) {
-
-        Archive<?> appArchive = testDeployment.getApplicationArchive();
-        addDefaultDependencies(appArchive);
-        return appArchive;
-    }
-
-    //These are now added in JBossAsArquillianDependencyProcessor and JBossAsArchiveProcessor
-    private void addDefaultDependencies(Archive<?> appArchive) {
+    @Override
+    public void process(Archive<?> appArchive, TestClass testClass) {
 
         if (appArchive instanceof ManifestContainer<?> == false)
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
-        final Manifest manifest = DelegatingDeploymentPackager.getOrCreateManifest(appArchive);
+        final Manifest manifest = getOrCreateManifest(appArchive);
         Attributes attributes = manifest.getMainAttributes();
         String value = attributes.getValue("Dependencies");
         StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value + "," : "");
