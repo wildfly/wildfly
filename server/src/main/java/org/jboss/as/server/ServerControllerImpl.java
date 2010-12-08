@@ -26,9 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -71,19 +69,15 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     private final ServiceRegistry registry;
     private final ServerModel serverModel;
     private final ServerEnvironment serverEnvironment;
-    private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
+    private final EnumMap<Phase, List<DeploymentUnitProcessor>> deployers;
 
     private ServerConfigurationPersister configurationPersister;
     private ExecutorService executor;
-
-    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment) {
+    
+    ServerControllerImpl(final ServerModel serverModel, final ServiceContainer container, final ServerEnvironment serverEnvironment, final EnumMap<Phase, List<DeploymentUnitProcessor>> deployers) {
         this.serverModel = serverModel;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
-        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
-        for (Phase phase : Phase.values()) {
-            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
-        }
         this.deployers = deployers;
         registry = new DelegatingServiceRegistry(container);
     }
@@ -148,19 +142,6 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
             }
         }
         update.applyUpdate(updateContext, resultHandler, param);
-    }
-
-    void registerDeployer(final Phase phase, final DeploymentUnitProcessor processor, final int priority) {
-        if (phase == null) {
-            throw new IllegalArgumentException("phase is null");
-        }
-        if (processor == null) {
-            throw new IllegalArgumentException("processor is null");
-        }
-        if (priority < 0) {
-            throw new IllegalArgumentException("priority is invalid (must be >= 0)");
-        }
-        deployers.get(phase).add(new RegisteredProcessor(priority, processor));
     }
 
     public void shutdown() {

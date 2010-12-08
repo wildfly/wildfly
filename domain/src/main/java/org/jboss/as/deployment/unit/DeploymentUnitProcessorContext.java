@@ -23,35 +23,37 @@
 package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.Attachable;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * The deployment unit context.  This object retains data which is persistent for the life of the
- * deployment.
+ * The deployment unit processor context.  Maintains state pertaining to the current cycle
+ * of deployment/undeployment.  This context object will be discarded when processing is
+ * complete; data which must persist for the life of the deployment should be attached to
+ * the {@link DeploymentUnitContext}.
+ *
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface DeploymentUnitContext extends Attachable {
+public interface DeploymentUnitProcessorContext extends Attachable {
 
     /**
-     * Get the simple name of the deployment unit.
+     * Get the service target into which this phase should install services.
      *
-     * @return the simple name
+     * @return the service target
      */
-    String getName();
+    ServiceTarget getServiceTarget();
 
     /**
-     * Gets the batch service builder for the deployment service associated with this context
+     * Get the service registry for the container, which may be used to look up services.
      *
-     * @return the batch service builder
+     * @return the service registry
      */
-    @Deprecated
-    ServiceBuilder<Void> getServiceBuilder();
+    ServiceRegistry getServiceRegistry();
 
     /**
-     * The batch builder for this deployment item execution.
+     * Get the persistent deployment unit context for this deployment unit.
      *
-     * @return the batch builder
+     * @return the deployment unit context
      */
-    @Deprecated
-    BatchBuilder getBatchBuilder();
+    DeploymentUnitContext getDeploymentUnitContext();
 }

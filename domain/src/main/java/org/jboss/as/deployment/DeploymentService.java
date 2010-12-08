@@ -52,7 +52,7 @@ public class DeploymentService implements Service<Void> {
     }
 
     public static ServiceName getServiceName(String deploymentName) {
-        return DeploymentService.SERVICE_NAME.append(deploymentName.replace('.', '_'));
+        return DeploymentService.SERVICE_NAME.append(deploymentName);
     }
 
     /**

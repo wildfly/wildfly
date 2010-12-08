@@ -22,8 +22,14 @@
 
 package org.jboss.as.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
@@ -78,14 +84,19 @@ final class ApplicationServerService implements Service<ServerController> {
         final DelegatingServiceRegistry serviceRegistry = new DelegatingServiceRegistry(container);
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
-        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment);
         final List<AbstractServerModelUpdate<?>> updates;
         try {
             updates = persister.load(serverController);
         } catch (Exception e) {
             throw new StartException(e);
         }
+
+        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
+        for (Phase phase : Phase.values()) {
+            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
+        }
         final BootUpdateContext bootUpdateContext = new BootUpdateContext() {
+
             public ServiceTarget getServiceTarget() {
                 return serviceTarget;
             }
@@ -99,9 +110,23 @@ final class ApplicationServerService implements Service<ServerController> {
             }
 
             public void addDeploymentProcessor(final Phase phase, final DeploymentUnitProcessor processor, final int priority) {
-                serverController.registerDeployer(phase, processor, priority);
+                if (phase == null) {
+                    throw new IllegalArgumentException("phase is null");
+                }
+                if (processor == null) {
+                    throw new IllegalArgumentException("processor is null");
+                }
+                if (priority < 0) {
+                    throw new IllegalArgumentException("priority is invalid (must be >= 0)");
+                }
+                deployers.get(phase).add(new RegisteredProcessor(priority, processor));
+            }
+
+            public ServerEnvironment getServerEnvironment() {
+                return serverEnvironment;
             }
         };
+
         log.info("Activating core services");
 
         // TODO: decide the fate of these
@@ -118,12 +143,23 @@ final class ApplicationServerService implements Service<ServerController> {
             .setInitialMode(ServiceController.Mode.ON_DEMAND)
             .install();
 
-        
-
         for (AbstractServerModelUpdate<?> update : updates) {
             update.applyUpdateBootAction(bootUpdateContext);
         }
 
+        // All deployers are registered
+
+        final EnumMap<Phase, List<DeploymentUnitProcessor>> finalDeployers = new EnumMap<Phase, List<DeploymentUnitProcessor>>(Phase.class);
+        for (Map.Entry<Phase, SortedSet<RegisteredProcessor>> entry : deployers.entrySet()) {
+            final SortedSet<RegisteredProcessor> processorSet = entry.getValue();
+            final List<DeploymentUnitProcessor> list = new ArrayList<DeploymentUnitProcessor>(processorSet.size());
+            for (RegisteredProcessor processor : processorSet) {
+                list.add(processor.processor);
+            }
+            finalDeployers.put(entry.getKey(), list);
+        }
+
+        final ServerControllerImpl serverController = new ServerControllerImpl(new ServerModel(serverEnvironment.getServerName(), configuration.getPortOffset()), container, serverEnvironment, finalDeployers);
         this.serverController = serverController;
         bootServices = serviceTarget.getSet();
     }
@@ -160,5 +196,20 @@ final class ApplicationServerService implements Service<ServerController> {
     /** {@inheritDoc} */
     public synchronized ServerController getValue() throws IllegalStateException, IllegalArgumentException {
         return serverController;
+    }
+
+    private static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
+        private final int priority;
+        private final DeploymentUnitProcessor processor;
+
+        private RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
+            this.priority = priority;
+            this.processor = processor;
+        }
+
+        public int compareTo(final RegisteredProcessor o) {
+            final int rel = Integer.signum(priority - o.priority);
+            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
+        }
     }
 }
