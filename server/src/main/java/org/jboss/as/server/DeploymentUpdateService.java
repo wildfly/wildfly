@@ -23,12 +23,14 @@
 package org.jboss.as.server;
 
 import java.util.List;
+
 import org.jboss.as.deployment.ServerDeploymentRepository;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
@@ -47,8 +49,9 @@ public class DeploymentUpdateService implements Service<Void> {
     private final ServerStartupListener serverStartupListener;
 
     static final void addService(final BatchBuilder batchBuilder, final List<AbstractServerModelUpdate<?>> updates, final ServerStartupListener serverStartupListener) {
-        batchBuilder.addService(SERVICE_NAME, new DeploymentUpdateService(updates, serverStartupListener))
-            .addDependency(ServerDeploymentRepository.SERVICE_NAME);
+        ServiceBuilder<Void> serviceBuilder = batchBuilder.addService(SERVICE_NAME, new DeploymentUpdateService(updates, serverStartupListener));
+        serviceBuilder.addDependency(ServerDeploymentRepository.SERVICE_NAME);
+        serviceBuilder.install();
     }
 
     public DeploymentUpdateService(final List<AbstractServerModelUpdate<?>> updates, final ServerStartupListener serverStartupListener) {
@@ -59,7 +62,7 @@ public class DeploymentUpdateService implements Service<Void> {
     public void start(StartContext context) throws StartException {
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
-        final ServerStartBatchBuilder batchBuilder = new ServerStartBatchBuilder(serviceContainer.batchBuilder(), serverStartupListener);
+        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
         batchBuilder.addListener(serverStartupListener);
 
         final BootUpdateContext updateContext = new BootUpdateContext() {
