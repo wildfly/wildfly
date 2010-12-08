@@ -35,9 +35,11 @@ import org.jboss.jandex.Index;
 import org.junit.runner.RunWith;
 
 /**
- * [TODO]
+ * Uses the annotation index to check whether there is a class annotated with @RunWith.
+ * In which case an {@link ArquillianConfig} object that names the test class is attached to the context.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProcessor {
 
@@ -45,26 +47,23 @@ public class ArquillianRunWithAnnotationProcessor implements DeploymentUnitProce
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
 
         final Index index = context.getAttachment(AnnotationIndexProcessor.ATTACHMENT_KEY);
-        if (index == null) {
+        if (index == null)
             return; // Skip if there is no annotation index
-        }
 
         final DotName runWithName = DotName.createSimple(RunWith.class.getName());
         final List<AnnotationTarget> targets = index.getAnnotationTargets(runWithName);
-        if (targets == null)
+        if (targets == null || targets.isEmpty())
             return; // Skip if there are no @RunWith annotations
 
         ArquillianConfig arqConfig = new ArquillianConfig(context);
         context.putAttachment(ArquillianConfig.KEY, arqConfig);
 
         for (AnnotationTarget target : targets) {
-            if (target instanceof ClassInfo == false) {
-                continue;
+            if (target instanceof ClassInfo) {
+                final ClassInfo classInfo = (ClassInfo) target;
+                final String testClassName = classInfo.name().toString();
+                arqConfig.addTestClass(testClassName);
             }
-            final ClassInfo classInfo = (ClassInfo) target;
-            final String testClassName = classInfo.name().toString();
-            arqConfig.addTestClass(testClassName);
         }
     }
-
 }
