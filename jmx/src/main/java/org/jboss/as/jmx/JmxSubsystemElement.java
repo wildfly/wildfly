@@ -30,7 +30,6 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -85,8 +84,7 @@ class JmxSubsystemElement extends AbstractSubsystemElement<JmxSubsystemElement> 
 
     /** {@inheritDoc} */
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final ServiceContainer container = updateContext.getServiceContainer();
-        final ServiceController<?> service = container.getService(MBeanServerService.SERVICE_NAME);
+        final ServiceController<?> service = updateContext.getServiceRegistry().getService(MBeanServerService.SERVICE_NAME);
         if (service != null) {
             service.setMode(ServiceController.Mode.REMOVE);
         }

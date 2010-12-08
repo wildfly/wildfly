@@ -54,7 +54,7 @@ public final class RemoveConnectorUpdate extends AbstractRemotingSubsystemUpdate
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> controller = updateContext.getServiceContainer().getService(ConnectorElement.connectorName(name));
+        final ServiceController<?> controller = updateContext.getServiceRegistry().getService(ConnectorElement.connectorName(name));
         if(controller == null) {
             resultHandler.handleSuccess(null, param);
         } else {

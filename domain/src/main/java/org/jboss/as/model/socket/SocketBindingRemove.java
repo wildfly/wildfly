@@ -54,7 +54,7 @@ public class SocketBindingRemove extends AbstractSocketBindingUpdate {
     }
 
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = updateContext.getServiceContainer().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
+        final ServiceController<?> controller = updateContext.getServiceRegistry().getService(SocketBinding.JBOSS_BINDING_NAME.append(name));
         if(controller == null) {
             resultHandler.handleSuccess(null, param);
             return;

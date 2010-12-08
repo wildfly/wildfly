@@ -27,7 +27,6 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -146,8 +145,7 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
 
     @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final ServiceContainer container = updateContext.getServiceContainer();
-        final ServiceController<?> controller = container.getService(RemotingServices.ENDPOINT);
+        final ServiceController<?> controller = updateContext.getServiceRegistry().getService(RemotingServices.ENDPOINT);
         if (controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
         }

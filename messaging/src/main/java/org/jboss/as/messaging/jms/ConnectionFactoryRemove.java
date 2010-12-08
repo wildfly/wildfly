@@ -52,7 +52,7 @@ public class ConnectionFactoryRemove extends AbstractJMSSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(JMSSubsystemElement.JMS_CF_BASE.append(cfName));
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMSSubsystemElement.JMS_CF_BASE.append(cfName));
         if(service == null) {
             handler.handleSuccess(null, param);
         } else {

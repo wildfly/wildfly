@@ -46,7 +46,7 @@ public class JMXConnectorRemove extends AbstractSubsystemUpdate<JmxSubsystemElem
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(JMXConnectorService.SERVICE_NAME);
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMXConnectorService.SERVICE_NAME);
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

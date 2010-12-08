@@ -46,7 +46,7 @@ public final class LoggerHandlerRemove extends AbstractLoggingSubsystemUpdate<Vo
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
         try {
-            final ServiceController<?> controller = updateContext.getServiceContainer().getRequiredService(LogServices.loggerHandlerName(loggerName, handlerName));
+            final ServiceController<?> controller = updateContext.getServiceRegistry().getRequiredService(LogServices.loggerHandlerName(loggerName, handlerName));
             controller.setMode(ServiceController.Mode.REMOVE);
             controller.addListener(new UpdateResultHandler.ServiceRemoveListener<P>(handler, param));
         } catch (Throwable t) {

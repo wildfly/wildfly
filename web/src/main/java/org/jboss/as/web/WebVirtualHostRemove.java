@@ -49,7 +49,7 @@ public class WebVirtualHostRemove extends AbstractWebSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = updateContext.getServiceContainer().getService(WebSubsystemElement.JBOSS_WEB_HOST.append(name));
+        final ServiceController<?> service = updateContext.getServiceRegistry().getService(WebSubsystemElement.JBOSS_WEB_HOST.append(name));
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

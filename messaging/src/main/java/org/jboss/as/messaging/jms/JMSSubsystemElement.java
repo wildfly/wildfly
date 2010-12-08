@@ -85,7 +85,7 @@ public class JMSSubsystemElement extends AbstractSubsystemElement<JMSSubsystemEl
 
     /** {@inheritDoc} */
     protected <P> void applyRemove(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(JMS_MANAGER);
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMS_MANAGER);
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

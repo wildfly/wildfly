@@ -65,7 +65,7 @@ public class ServerModelDeploymentFullReplaceUpdate extends AbstractServerModelU
             UpdateResultHandler<? super Void, P> resultHandler, P param) {
         if (redeploy) {
             ServerDeploymentStartStopHandler startStopHandler = new ServerDeploymentStartStopHandler();
-            startStopHandler.redeploy(deploymentUniqueName, deploymentRuntimeName, hash, updateContext.getServiceContainer(), resultHandler, param);
+            startStopHandler.redeploy(deploymentUniqueName, deploymentRuntimeName, hash, updateContext.getServiceRegistry(), resultHandler, param);
         }
         else if (resultHandler != null) {
             resultHandler.handleSuccess(null, param);

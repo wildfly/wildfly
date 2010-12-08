@@ -54,7 +54,7 @@ public class QueueRemove extends AbstractMessagingSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(MessagingSubsystemElement.CORE_QUEUE_BASE.append(name));
+        final ServiceController<?> service = context.getServiceRegistry().getService(MessagingSubsystemElement.CORE_QUEUE_BASE.append(name));
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

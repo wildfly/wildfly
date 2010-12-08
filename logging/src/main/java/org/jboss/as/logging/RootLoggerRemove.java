@@ -45,7 +45,7 @@ public class RootLoggerRemove extends AbstractLoggingSubsystemUpdate<Void> {
     protected <P> void applyUpdate(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
         final ServiceController<?> service;
         try {
-            service = updateContext.getServiceContainer().getRequiredService(LogServices.ROOT_LOGGER);
+            service = updateContext.getServiceRegistry().getRequiredService(LogServices.ROOT_LOGGER);
         } catch (ServiceNotFoundException e) {
             resultHandler.handleFailure(e, param);
             return;

@@ -29,10 +29,10 @@ import org.jboss.as.osgi.service.BundleManagerService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.bundle.AbstractBundleContext;
@@ -91,9 +91,9 @@ public class InstallBundleInitiatorService extends AbstractService<Deployment> {
         return SERVICE_NAME_BASE.append(deploymentServiceName.getSimpleName());
     }
 
-    public static String getLocation(ServiceContainer container, String contextName) {
+    public static String getLocation(ServiceRegistry registry, String contextName) {
         // If this service is registered use the location from the original deployemnt
-        ServiceController<?> controller = container.getService(getServiceName(contextName));
+        ServiceController<?> controller = registry.getService(getServiceName(contextName));
         return controller != null ? ((Deployment) controller.getValue()).getLocation() : contextName;
     }
 

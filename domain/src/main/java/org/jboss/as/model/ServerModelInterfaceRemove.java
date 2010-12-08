@@ -58,7 +58,7 @@ public class ServerModelInterfaceRemove extends AbstractServerModelUpdate<Void> 
     }
 
     public <P> void applyUpdate(UpdateContext updateContext, org.jboss.as.model.UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = updateContext.getServiceContainer().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName));
+        final ServiceController<?> controller = updateContext.getServiceRegistry().getService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName));
         if(controller == null) {
             resultHandler.handleSuccess(null, param);
             return;

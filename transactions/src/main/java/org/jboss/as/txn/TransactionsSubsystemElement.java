@@ -30,8 +30,8 @@ import org.jboss.as.model.AbstractSubsystemElement;
 import org.jboss.as.model.AbstractSubsystemUpdate;
 import org.jboss.as.model.UpdateContext;
 import org.jboss.as.model.UpdateResultHandler;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
@@ -125,10 +125,10 @@ final class TransactionsSubsystemElement extends AbstractSubsystemElement<Transa
 
     @Override
     protected <P> void applyRemove(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> resultHandler, final P param) {
-        final ServiceContainer container = updateContext.getServiceContainer();
-        final ServiceController<?> tmController = container.getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+        final ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
+        final ServiceController<?> tmController = serviceRegistry.getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
         tmController.setMode(ServiceController.Mode.REMOVE);
-        final ServiceController<?> xaController = container.getService(TxnServices.JBOSS_TXN_XA_TERMINATOR);
+        final ServiceController<?> xaController = serviceRegistry.getService(TxnServices.JBOSS_TXN_XA_TERMINATOR);
         xaController.setMode(ServiceController.Mode.REMOVE);
     }
 }

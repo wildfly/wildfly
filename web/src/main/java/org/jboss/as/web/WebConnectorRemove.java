@@ -54,7 +54,7 @@ public class WebConnectorRemove extends AbstractWebSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name));
+        final ServiceController<?> service = context.getServiceRegistry().getService(WebSubsystemElement.JBOSS_WEB_CONNECTOR.append(name));
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

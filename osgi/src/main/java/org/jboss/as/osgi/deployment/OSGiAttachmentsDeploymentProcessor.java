@@ -27,7 +27,7 @@ import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.metadata.OSGiMetaData;
@@ -47,10 +47,10 @@ import org.osgi.framework.Version;
  */
 public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private ServiceContainer serviceContainer;
+    private ServiceRegistry serviceRegistry;
 
-    public OSGiAttachmentsDeploymentProcessor(ServiceContainer serviceContainer) {
-        this.serviceContainer = serviceContainer;
+    public OSGiAttachmentsDeploymentProcessor(ServiceRegistry serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
         // Check if we already have an OSGi deployment
         Deployment deployment = OSGiDeploymentAttachment.getAttachment(context);
 
-        String location = InstallBundleInitiatorService.getLocation(serviceContainer, context.getName());
+        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, context.getName());
         VirtualFile virtualFile = VirtualFileAttachment.getVirtualFileAttachment(context);
 
         // Check for attached BundleInfo

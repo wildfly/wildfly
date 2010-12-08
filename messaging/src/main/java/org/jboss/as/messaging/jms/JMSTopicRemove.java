@@ -55,7 +55,7 @@ public class JMSTopicRemove extends AbstractJMSSubsystemUpdate<Void> {
 
     /** {@inheritDoc} */
     protected <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void, P> handler, P param) {
-        final ServiceController<?> service = context.getServiceContainer().getService(JMSSubsystemElement.JMS_TOPIC_BASE.append(topicName));
+        final ServiceController<?> service = context.getServiceRegistry().getService(JMSSubsystemElement.JMS_TOPIC_BASE.append(topicName));
         if(service == null) {
             handler.handleSuccess(null, param);
         } else {

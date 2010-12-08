@@ -57,7 +57,7 @@ public class ServerDeploymentRepositoryEnable extends AbstractServerModelUpdate<
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceContainer().getService(DeploymentScannerService.getServiceName(name));
+        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(name));
         if(controller == null) {
             resultHandler.handleFailure(notConfigured(), param);
         } else {

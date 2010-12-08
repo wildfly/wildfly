@@ -51,7 +51,7 @@ public final class ThreadFactoryPriorityUpdate extends AbstractThreadsSubsystemU
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceController<?> service = updateContext.getServiceContainer().getService(ThreadsServices.threadFactoryName(name));
+        final ServiceController<?> service = updateContext.getServiceRegistry().getService(ThreadsServices.threadFactoryName(name));
         if (service == null) {
             handler.handleFailure(notConfigured(), param);
         } else {

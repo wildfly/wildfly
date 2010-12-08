@@ -103,7 +103,7 @@ public final class WebSubsystemElement extends AbstractSubsystemElement<WebSubsy
 
     /** {@inheritDoc} */
     protected <P> void applyRemove(UpdateContext updateContext, UpdateResultHandler<? super Void, P> resultHandler, P param) {
-        final ServiceController<?> service = updateContext.getServiceContainer().getService(WebSubsystemElement.JBOSS_WEB);
+        final ServiceController<?> service = updateContext.getServiceRegistry().getService(WebSubsystemElement.JBOSS_WEB);
         if(service == null) {
             resultHandler.handleSuccess(null, param);
         } else {

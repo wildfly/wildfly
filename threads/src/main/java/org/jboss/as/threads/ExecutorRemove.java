@@ -54,7 +54,7 @@ public final class ExecutorRemove extends AbstractThreadsSubsystemUpdate<Void> {
     }
 
     protected <P> void applyUpdate(final UpdateContext updateContext, final UpdateResultHandler<? super Void, P> handler, final P param) {
-        final ServiceController<?> controller = updateContext.getServiceContainer().getService(ThreadsServices.executorName(name));
+        final ServiceController<?> controller = updateContext.getServiceRegistry().getService(ThreadsServices.executorName(name));
         if (controller == null) {
             handler.handleSuccess(null, param);
             return;

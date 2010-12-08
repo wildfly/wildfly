@@ -61,7 +61,7 @@ public class ServerPathRemove extends AbstractServerModelUpdate<Void> {
 
     @Override
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceContainer().getService(AbstractPathService.pathNameOf(name));
+        final ServiceController<?> controller = context.getServiceRegistry().getService(AbstractPathService.pathNameOf(name));
         if(controller == null) {
             resultHandler.handleSuccess(null, param);
         } else {

@@ -30,7 +30,7 @@ import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.vfs.VFSUtils;
@@ -45,10 +45,10 @@ import org.osgi.framework.BundleException;
  */
 public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
 
-    private ServiceContainer serviceContainer;
+    private ServiceRegistry serviceRegistry;
 
-    public BundleInfoAttachmentProcessor(ServiceContainer serviceContainer) {
-        this.serviceContainer = serviceContainer;
+    public BundleInfoAttachmentProcessor(ServiceRegistry serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
         if (BundleInfo.isValidateBundleManifest(manifest)) {
             // Construct and attach the {@link BundleInfo}
             try {
-                String location = InstallBundleInitiatorService.getLocation(serviceContainer, context.getName());
+                String location = InstallBundleInitiatorService.getLocation(serviceRegistry, context.getName());
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), location);
                 BundleInfoAttachment.attachBundleInfo(context, info);
             } catch (BundleException ex) {

@@ -57,7 +57,7 @@ public class ServerDeploymentRepositoryDisable extends AbstractServerModelUpdate
 
     /** {@inheritDoc} */
     public <P> void applyUpdate(UpdateContext context, UpdateResultHandler<? super Void,P> resultHandler, P param) {
-        final ServiceController<?> controller = context.getServiceContainer().getService(DeploymentScannerService.getServiceName(path));
+        final ServiceController<?> controller = context.getServiceRegistry().getService(DeploymentScannerService.getServiceName(path));
         if(controller == null) {
             resultHandler.handleFailure(notConfigured(), param);
         } else {
