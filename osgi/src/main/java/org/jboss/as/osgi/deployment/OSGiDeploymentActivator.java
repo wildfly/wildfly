@@ -39,8 +39,8 @@ public class OSGiDeploymentActivator {
      */
     public void activate(final BootUpdateContext updateContext) {
         ServiceRegistry serviceRegistry = updateContext.getServiceRegistry();
-        updateContext.addDeploymentProcessor(INIT_ME, new BundleInfoAttachmentProcessor(serviceRegistry), Phase.OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(INIT_ME, new OSGiAttachmentsDeploymentProcessor(serviceRegistry), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(INIT_ME, new OSGiAttachmentsDeploymentProcessor(serviceRegistry), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new BundleInfoAttachmentProcessor(serviceRegistry));
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_ATTACHMENTS, new OSGiAttachmentsDeploymentProcessor(serviceRegistry));
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_OSGI_ATTACHMENTS, new OSGiAttachmentsDeploymentProcessor(serviceRegistry));
     }
 }

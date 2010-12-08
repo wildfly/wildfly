@@ -35,8 +35,8 @@ public interface BootUpdateContext extends UpdateContext {
      * Add a deployment processor.
      *
      * @param phase the processor phase install into (must not be {@code null})
-     * @param processor the processor to install
      * @param priority the priority within the selected phase
+     * @param processor the processor to install
      */
-    void addDeploymentProcessor(Phase phase, final DeploymentUnitProcessor processor, final int priority);
+    void addDeploymentProcessor(Phase phase, final int priority, final DeploymentUnitProcessor processor);
 }

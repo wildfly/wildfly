@@ -62,14 +62,14 @@ public class ServiceDeploymentTestCase extends AbstractSarDeploymentTest {
 
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
         batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain)).install();
-        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
-        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
-        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.PARSE_MANIFEST);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.PARSE_ANNOTATION_INDEX);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.DEPENDENCIES_MODULE);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULARIZE_CONFIG);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULARIZE_DEPLOYMENT);
+        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), Phase.PARSE_SERVICE_DEPLOYMENT);
+        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), Phase.INSTALL_SERVICE_DEPLOYMENT);
     }
 
     @Test

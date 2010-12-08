@@ -23,7 +23,6 @@
 package org.jboss.as.server;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +108,7 @@ final class ApplicationServerService implements Service<ServerController> {
                 return serviceRegistry;
             }
 
-            public void addDeploymentProcessor(final Phase phase, final DeploymentUnitProcessor processor, final int priority) {
+            public void addDeploymentProcessor(final Phase phase, final int priority, final DeploymentUnitProcessor processor) {
                 if (phase == null) {
                     throw new IllegalArgumentException("phase is null");
                 }

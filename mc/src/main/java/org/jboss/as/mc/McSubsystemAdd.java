@@ -48,8 +48,8 @@ final class McSubsystemAdd extends AbstractSubsystemAdd<McSubsystemElement> {
     }
 
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(INIT_ME, new KernelDeploymentParsingProcessor(), Phase.MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR);
-        updateContext.addDeploymentProcessor(INIT_ME, new ParsedKernelDeploymentProcessor(), Phase.PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MC_BEAN_DEPLOYMENT, new KernelDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MC_BEAN_DEPLOYMENT, new ParsedKernelDeploymentProcessor());
     }
 
     @Override

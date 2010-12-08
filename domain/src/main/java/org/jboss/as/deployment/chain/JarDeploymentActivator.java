@@ -45,13 +45,13 @@ public class JarDeploymentActivator {
      * @param deploymentChain The deployment chain
      */
     public void activate(final DeploymentChain deploymentChain) {
-        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(),  Phase.ANNOTATION_INDEX_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleContextProcessor(), Phase.MODULE_CONTEXT_PROCESSOR);
-        deploymentChain.addProcessor(new ServiceActivatorDependencyProcessor(), Phase.SERVICE_ACTIVATION_DEPENDENCY_PROCESSOR);
-        deploymentChain.addProcessor(new ServiceActivatorProcessor(), Phase.SERVICE_ACTIVATOR_PROCESSOR);
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.PARSE_MANIFEST);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(),  Phase.PARSE_ANNOTATION_INDEX);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.DEPENDENCIES_MODULE);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULARIZE_CONFIG);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULARIZE_DEPLOYMENT);
+        deploymentChain.addProcessor(new ModuleContextProcessor(), Phase.INSTALL_MODULE_CONTEXT);
+        deploymentChain.addProcessor(new ServiceActivatorDependencyProcessor(), Phase.PARSE_DEPENDENCY_SERVICE_ACTIVATION);
+        deploymentChain.addProcessor(new ServiceActivatorProcessor(), Phase.INSTALL_SERVICE_ACTIVATOR);
     }
 }

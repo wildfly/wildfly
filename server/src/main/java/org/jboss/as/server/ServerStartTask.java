@@ -28,7 +28,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Properties;
 
 import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.chain.DeploymentChain;
@@ -42,17 +41,11 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.as.model.UpdateFailedException;
-import org.jboss.as.server.mgmt.StandaloneServerConfigurationPersister;
-import org.jboss.as.server.mgmt.ShutdownHandlerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentManagerImpl;
 import org.jboss.as.server.mgmt.deployment.ServerDeploymentRepositoryImpl;
 import org.jboss.as.server.standalone.deployment.DeploymentScannerFactoryService;
 import org.jboss.as.server.standalone.management.StandaloneServerManagementServices;
-import org.jboss.as.services.net.SocketBindingManager;
-import org.jboss.as.services.net.SocketBindingManagerService;
 import org.jboss.logging.Logger;
-import org.jboss.logging.MDC;
-import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -113,7 +106,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
 
         // todo move elsewhere...
         final DeploymentChain deploymentChain = new DeploymentChainImpl();
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl()), Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
         batchBuilder.addService(DeploymentChain.SERVICE_NAME, new DeploymentChainService(deploymentChain))
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install();
@@ -137,7 +130,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 throw new UnsupportedOperationException();
             }
 
-            public void addDeploymentProcessor(final Phase phase, DeploymentUnitProcessor processor, int priority) {
+            public void addDeploymentProcessor(final Phase phase, int priority, DeploymentUnitProcessor processor) {
                 deploymentChain.addProcessor(processor, priority);
             }
 

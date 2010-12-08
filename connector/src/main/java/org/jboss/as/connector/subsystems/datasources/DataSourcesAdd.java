@@ -74,7 +74,7 @@ public final class DataSourcesAdd extends AbstractSubsystemAdd<DataSourcesSubsys
     @Override
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
-        updateContext.addDeploymentProcessor(new DataSourcesAttachmentProcessor(datasources), Phase.DATA_SOURCES_ATTACHMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(Phase.PARSE, new DataSourcesAttachmentProcessor(datasources), Phase.PARSE_DATA_SOURCES);
     }
 
     protected DataSourcesSubsystemElement createSubsystemElement() {

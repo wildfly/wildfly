@@ -66,22 +66,22 @@ public class ManagedBeanDeploymentTestCase extends AbstractManagedBeanTest {
 
     @BeforeClass
     public static void setupChain() {
-        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.MANIFEST_ATTACHMENT_PROCESSOR);
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.ANNOTATION_INDEX_PROCESSOR);
-        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.MODULE_DEPENDENCY_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULE_CONFIG_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULE_DEPLOYMENT_PROCESSOR);
-        deploymentChain.addProcessor(new ModuleContextProcessor(), Phase.MODULE_CONTEXT_PROCESSOR);
-        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
+        deploymentChain.addProcessor(new ManifestAttachmentProcessor(), Phase.PARSE_MANIFEST);
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), Phase.PARSE_ANNOTATION_INDEX);
+        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), Phase.POST_MODULE_ANNOTATION_MANAGED_BEAN);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), Phase.DEPENDENCIES_MODULE);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), Phase.MODULARIZE_CONFIG);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), Phase.MODULARIZE_DEPLOYMENT);
+        deploymentChain.addProcessor(new ModuleContextProcessor(), Phase.INSTALL_MODULE_CONTEXT);
+        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), Phase.INSTALL_MANAGED_BEAN_DEPLOYMENT);
     }
 
     @Override
     protected void setupServices(final ServiceTarget target) throws Exception {
         super.setupServices(target);
-        deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        deploymentChain.removeProcessor(deploymentModuleLoaderProcessor, Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
         deploymentModuleLoaderProcessor = new DeploymentModuleLoaderProcessor(new DeploymentModuleLoaderImpl());
-        deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.DEPLOYMENT_MODULE_LOADER_PROCESSOR);
+        deploymentChain.addProcessor(deploymentModuleLoaderProcessor, Phase.MODULARIZE_DEPLOYMENT_MODULE_LOADER);
 
         javaContext = new MockContext();
         target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new PassthroughService<Context>(javaContext))
