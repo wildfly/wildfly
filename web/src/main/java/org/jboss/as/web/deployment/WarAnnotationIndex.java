@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -106,13 +107,13 @@ public class WarAnnotationIndex {
      * @param annotationName the name of the annotation to look for
      * @return a non-null list of annotation targets
      */
-    public List<AnnotationTarget> getAnnotationTargets(DotName annotationName) {
-        final List<AnnotationTarget> list = new ArrayList<AnnotationTarget>();
+    public List<AnnotationInstance> getAnnotations(DotName annotationName) {
+        final List<AnnotationInstance> list = new ArrayList<AnnotationInstance>();
         if(rootIndex != null) {
-            list.addAll(rootIndex.getAnnotationTargets(annotationName));
+            list.addAll(rootIndex.getAnnotations(annotationName));
         }
         for(final Index index : indexes.values()) {
-            list.addAll(index.getAnnotationTargets(annotationName));
+            list.addAll(index.getAnnotations(annotationName));
         }
         return list;
     }

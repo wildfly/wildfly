@@ -40,6 +40,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -123,10 +124,11 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         Web30MetaData metaData = new Web30MetaData();
         AnnotationFinder<AnnotatedElement> finder = new DefaultAnnotationFinder<AnnotatedElement>();
         // @WebServlet
-        final List<AnnotationTarget> webServletAnnotationTargets = index.getAnnotationTargets(webServlet);
-        if (webServletAnnotationTargets != null && webServletAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> webServletAnnotations = index.getAnnotations(webServlet);
+        if (webServletAnnotations != null && webServletAnnotations.size() > 0) {
             WebServletProcessor processor = new WebServletProcessor(finder);
-            for (final AnnotationTarget target : webServletAnnotationTargets) {
+            for (final AnnotationInstance annotation : webServletAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@WebServlet is only allowed at class level " + target);
                 }
@@ -143,10 +145,11 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @WebFilter
-        final List<AnnotationTarget> webFilterAnnotationTargets = index.getAnnotationTargets(webFilter);
-        if (webFilterAnnotationTargets != null && webFilterAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> webFilterAnnotations = index.getAnnotations(webFilter);
+        if (webFilterAnnotations != null && webFilterAnnotations.size() > 0) {
             WebFilterProcessor processor = new WebFilterProcessor(finder);
-            for (final AnnotationTarget target : webFilterAnnotationTargets) {
+            for (final AnnotationInstance annotation : webFilterAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@WebFilter is only allowed at class level " + target);
                 }
@@ -163,10 +166,11 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @WebListener
-        final List<AnnotationTarget> webListenerAnnotationTargets = index.getAnnotationTargets(webListener);
-        if (webListenerAnnotationTargets != null && webListenerAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> webListenerAnnotations = index.getAnnotations(webListener);
+        if (webListenerAnnotations != null && webListenerAnnotations.size() > 0) {
             WebListenerProcessor processor = new WebListenerProcessor(finder);
-            for (final AnnotationTarget target : webListenerAnnotationTargets) {
+            for (final AnnotationInstance annotation : webListenerAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@WebListener is only allowed at class level " + target);
                 }
@@ -183,15 +187,16 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @RunAs
-        final List<AnnotationTarget> runAsAnnotationTargets = index.getAnnotationTargets(runAs);
-        if (runAsAnnotationTargets != null && runAsAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> runAsAnnotations = index.getAnnotations(runAs);
+        if (runAsAnnotations != null && runAsAnnotations.size() > 0) {
             RunAsProcessor processor = new RunAsProcessor(finder);
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();
                metaData.setAnnotations(annotations);
             }
-            for (final AnnotationTarget target : runAsAnnotationTargets) {
+            for (final AnnotationInstance annotation : runAsAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@RunAs is only allowed at class level " + target);
                 }
@@ -208,15 +213,16 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @DeclareRoles
-        final List<AnnotationTarget> declareRolesAnnotationTargets = index.getAnnotationTargets(declareRoles);
-        if (declareRolesAnnotationTargets != null && declareRolesAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> declareRolesAnnotations = index.getAnnotations(declareRoles);
+        if (declareRolesAnnotations != null && declareRolesAnnotations.size() > 0) {
             DeclareRolesProcessor processor = new DeclareRolesProcessor(finder);
             SecurityRolesMetaData securityRoles = metaData.getSecurityRoles();
             if (securityRoles == null) {
                securityRoles = new SecurityRolesMetaData();
                metaData.setSecurityRoles(securityRoles);
             }
-            for (final AnnotationTarget target : declareRolesAnnotationTargets) {
+            for (final AnnotationInstance annotation : declareRolesAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@DeclareRoles is only allowed at class level " + target);
                 }
@@ -233,15 +239,16 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @MultipartConfig
-        final List<AnnotationTarget> multipartConfigAnnotationTargets = index.getAnnotationTargets(multipartConfig);
-        if (multipartConfigAnnotationTargets != null && multipartConfigAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> multipartConfigAnnotations = index.getAnnotations(multipartConfig);
+        if (multipartConfigAnnotations != null && multipartConfigAnnotations.size() > 0) {
             MultipartConfigProcessor processor = new MultipartConfigProcessor(finder);
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();
                metaData.setAnnotations(annotations);
             }
-            for (final AnnotationTarget target : multipartConfigAnnotationTargets) {
+            for (final AnnotationInstance annotation : multipartConfigAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@MultipartConfig is only allowed at class level " + target);
                 }
@@ -258,15 +265,16 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
         }
         // @ServletSecurity
-        final List<AnnotationTarget> servletSecurityAnnotationTargets = index.getAnnotationTargets(servletSecurity);
-        if (servletSecurityAnnotationTargets != null && servletSecurityAnnotationTargets.size() > 0) {
+        final List<AnnotationInstance> servletSecurityAnnotations = index.getAnnotations(servletSecurity);
+        if (servletSecurityAnnotations != null && servletSecurityAnnotations.size() > 0) {
             ServletSecurityProcessor processor = new ServletSecurityProcessor(finder);
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();
                metaData.setAnnotations(annotations);
             }
-            for (final AnnotationTarget target : servletSecurityAnnotationTargets) {
+            for (final AnnotationInstance annotation : servletSecurityAnnotations) {
+                AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw new DeploymentUnitProcessingException("@ServletSecurity is only allowed at class level " + target);
                 }

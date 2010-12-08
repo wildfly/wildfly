@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -67,10 +68,11 @@ public class JandexAnnotationRepositoryImpl implements AnnotationRepository {
 
     @Override
     public Collection<Annotation> getAnnotation(Class<?> annotationClass) {
-        List<AnnotationTarget> annotationTargets = backingRepository.getAnnotationTargets(DotName.createSimple(annotationClass
+        List<AnnotationInstance> instances = backingRepository.getAnnotations(DotName.createSimple(annotationClass
                 .getName()));
-        ArrayList<Annotation> annotations = new ArrayList<Annotation>(annotationTargets.size());
-        for (AnnotationTarget target : annotationTargets) {
+        ArrayList<Annotation> annotations = new ArrayList<Annotation>(instances.size());
+        for (AnnotationInstance instance : instances) {
+            AnnotationTarget target = instance.target();
             Annotation annotation = null;
             if (target instanceof MethodInfo) {
                 MethodInfo m = (MethodInfo) target;

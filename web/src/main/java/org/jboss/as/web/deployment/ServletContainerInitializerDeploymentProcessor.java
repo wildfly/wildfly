@@ -43,6 +43,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import static org.jboss.as.web.deployment.WarDeploymentMarker.isWarDeployment;
 
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -201,8 +202,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, Index index) throws DeploymentUnitProcessingException {
         Set<ClassInfo> classes = new HashSet<ClassInfo>();
         if (type.isAnnotation()) {
-            List<AnnotationTarget> annotationTargets = index.getAnnotationTargets(typeName);
-            for (AnnotationTarget annotationTarget : annotationTargets) {
+            List<AnnotationInstance> instances = index.getAnnotations(typeName);
+            for (AnnotationInstance instance : instances) {
+                AnnotationTarget annotationTarget = instance.target();
                 if (annotationTarget instanceof ClassInfo) {
                     classes.add((ClassInfo) annotationTarget);
                 } else if (annotationTarget instanceof FieldInfo) {

@@ -61,7 +61,7 @@ public class ManagedBeanDependencyProcessor implements DeploymentUnitProcessor {
             return; // Skip if there is no annotation index
         }
 
-        if (index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME) == null) {
+        if (index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME) == null) {
             return; // Skip if there are no ManagedBean instances
         }
         phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVAEE_API_ID, false, false));

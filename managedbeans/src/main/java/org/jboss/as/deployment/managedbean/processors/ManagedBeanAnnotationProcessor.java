@@ -48,6 +48,7 @@ import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -86,8 +87,8 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         if (index == null)
             return; // Skip if there is no annotation index
 
-        final List<AnnotationTarget> targets = index.getAnnotationTargets(MANAGED_BEAN_ANNOTATION_NAME);
-        if (targets == null)
+        final List<AnnotationInstance> instances = index.getAnnotations(MANAGED_BEAN_ANNOTATION_NAME);
+        if (instances == null)
             return; // Skip if there are no ManagedBean instances
 
         final Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
@@ -99,7 +100,8 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final ManagedBeanConfigurations managedBeanConfigurations = new ManagedBeanConfigurations();
         phaseContext.putAttachment(ManagedBeanConfigurations.ATTACHMENT_KEY, managedBeanConfigurations);
 
-        for (AnnotationTarget target : targets) {
+        for (AnnotationInstance instance : instances) {
+            AnnotationTarget target = instance.target();
             if (!(target instanceof ClassInfo)) {
                 throw new DeploymentUnitProcessingException("The ManagedBean annotation is only allowed at the class level: " + target);
             }
@@ -124,7 +126,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             processLifecycleMethods(managedBeanConfiguration, beanClass, index);
 
-            final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
+            final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
             managedBeanConfiguration.setResourceConfigurations(processResources(classAnnotations, beanClass, classLoader));
 
             managedBeanConfiguration.setInterceptorConfigurations(processInterceptors(index, classAnnotations, beanClass, classLoader));
@@ -154,12 +156,12 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         managedBeanConfiguration.setPreDestroyMethods(preDestroyMethods);
     }
 
-    private List<InterceptorConfiguration> processInterceptors(final Index index, final Map<DotName, List<AnnotationTarget>> beanClassAnnotations, final Class<?> beanClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
-        final List<AnnotationTarget> interceptorTargets = beanClassAnnotations.get(INTERCEPTORS_ANNOTATION_NAME);
-        if (interceptorTargets == null || interceptorTargets.isEmpty()) {
+    private List<InterceptorConfiguration> processInterceptors(final Index index, final Map<DotName, List<AnnotationInstance>> classAnnotations, final Class<?> beanClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
+        final List<AnnotationInstance> interceptorAnnotations = classAnnotations.get(INTERCEPTORS_ANNOTATION_NAME);
+        if (interceptorAnnotations == null || interceptorAnnotations.isEmpty()) {
             return Collections.emptyList();
         }
-        final List<InterceptorConfiguration> interceptorConfigurations = new ArrayList<InterceptorConfiguration>(interceptorTargets.size());
+        final List<InterceptorConfiguration> interceptorConfigurations = new ArrayList<InterceptorConfiguration>(interceptorAnnotations.size());
 
         final Interceptors interceptorsAnnotation = beanClass.getAnnotation(Interceptors.class);
         final Class<?>[] interceptorTypes = interceptorsAnnotation.value();
@@ -167,7 +169,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             final ClassInfo classInfo = index.getClassByName(DotName.createSimple(interceptorType.getName()));
             if(classInfo == null)
                 continue; // TODO: Process without index info
-            final Map<DotName, List<AnnotationTarget>> interceptorClassAnnotations = classInfo.annotations();
+            final Map<DotName, List<AnnotationInstance>> interceptorClassAnnotations = classInfo.annotations();
 
             final Method aroundInvokeMethod = getSingleAnnotatedMethod(interceptorType, classInfo, AroundInvoke.class, true);
             final List<ResourceConfiguration> resourceConfigurations = processResources(interceptorClassAnnotations, interceptorType, moduleClassLoader);
@@ -191,18 +193,18 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         Method method = null;
         if(classInfo != null) {
             // Try to resolve with the help of the annotation index
-            final Map<DotName, List<AnnotationTarget>> classAnnotations = classInfo.annotations();
+            final Map<DotName, List<AnnotationInstance>> classAnnotations = classInfo.annotations();
 
-            final List<AnnotationTarget> targets = classAnnotations.get(DotName.createSimple(annotationType.getName()));
-            if (targets == null || targets.isEmpty()) {
+            final List<AnnotationInstance> instances = classAnnotations.get(DotName.createSimple(annotationType.getName()));
+            if (instances == null || instances.isEmpty()) {
                 return null;
             }
 
-            if (targets.size() > 1) {
+            if (instances.size() > 1) {
                 throw new DeploymentUnitProcessingException("Only one method may be annotated with " + annotationType + " per managed bean.");
             }
 
-            final AnnotationTarget target = targets.get(0);
+            final AnnotationTarget target = instances.get(0).target();
             if (!(target instanceof MethodInfo)) {
                 throw new DeploymentUnitProcessingException(annotationType + " is only valid on method targets.");
             }
@@ -257,13 +259,14 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         return method;
     }
 
-    private List<ResourceConfiguration> processResources(final Map<DotName, List<AnnotationTarget>> classAnnotations, final Class<?> owningClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
-        final List<AnnotationTarget> resourceTargets = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
-        if (resourceTargets == null) {
+    private List<ResourceConfiguration> processResources(final Map<DotName, List<AnnotationInstance>> classAnnotations, final Class<?> owningClass, ClassLoader moduleClassLoader) throws DeploymentUnitProcessingException {
+        final List<AnnotationInstance> resourceAnnotations = classAnnotations.get(RESOURCE_ANNOTATION_NAME);
+        if (resourceAnnotations == null) {
             return Collections.emptyList();
         }
-        final List<ResourceConfiguration> resourceConfigurations = new ArrayList<ResourceConfiguration>(resourceTargets.size());
-        for (AnnotationTarget annotationTarget : resourceTargets) {
+        final List<ResourceConfiguration> resourceConfigurations = new ArrayList<ResourceConfiguration>(resourceAnnotations.size());
+        for (AnnotationInstance annotation : resourceAnnotations) {
+            final AnnotationTarget annotationTarget = annotation.target();
             final ResourceConfiguration resourceConfiguration;
             if (annotationTarget instanceof FieldInfo) {
                 resourceConfiguration = processFieldResource(FieldInfo.class.cast(annotationTarget), owningClass);
