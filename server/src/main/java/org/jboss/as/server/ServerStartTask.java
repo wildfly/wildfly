@@ -57,6 +57,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -88,60 +89,23 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         this.portOffset = portOffset;
         this.startServices = startServices;
         this.updates = updates;
-        this.providedEnvironment = new ServerEnvironment(System.getProperties(), serverName, false);
+        this.providedEnvironment = new ServerEnvironment(System.getProperties(), false);
     }
 
     public void run(final List<ServiceActivator> runServices) {
-        if (serverName != null) {
-            MDC.put("process", "server-" + serverName);
-
-            log.infof("Starting server \"%s\"", serverName);
-        }
-        else {
-            MDC.put("process", "standalone-server");
-
-            log.infof("Starting standalone server");
-        }
-
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
-        bootstrap.start(new Bootstrap.Configuration(), updates, startServices);
-
-        final BatchBuilder batchBuilder = container.batchBuilder();
-
-        // First-stage (boot) services
-
-        final Properties systemProperties = System.getProperties();
-        final ServerEnvironment environment = providedEnvironment != null
-                        ? providedEnvironment
-                        : new ServerEnvironment(systemProperties, serverName, false);
-
-        log.info("Activating core services");
+        bootstrap.start(new Bootstrap.Configuration(), startServices);
 
         // The server controller
-        // Server environment services
-        ServerEnvironmentServices.addServices(environment, batchBuilder);
 
         // Deployment repository
         ServerDeploymentRepositoryImpl.addService(batchBuilder);
 
-        // Graceful shutdown
-        ShutdownHandlerImpl.addService(batchBuilder);
-
-        // Server model service - TODO: replace with ServerController
-        ServerModelService.addService(serverModel, batchBuilder);
-
         // Server deployment manager - TODO: move into startServices, only start in standalone mode
         ServerDeploymentManagerImpl.addService(serverModel, container, batchBuilder);
 
-        // Server configuration persister - TODO: move into startServices, only start in standalone mode
-        StandaloneServerConfigurationPersister.addService(serverModel, batchBuilder);
-
         // Server deployment scanner factory
         DeploymentScannerFactoryService.addService(batchBuilder);
-
-        batchBuilder.addService(SocketBindingManager.SOCKET_BINDING_MANAGER,
-                new SocketBindingManagerService(portOffset)).setInitialMode(ServiceController.Mode.ON_DEMAND)
-            .install();
 
         // Activate deployment module loader
         batchBuilder.addService(ClassifyingModuleLoaderService.SERVICE_NAME, new ClassifyingModuleLoaderService())
@@ -170,19 +134,17 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
             }
 
             public ServiceContainer getServiceContainer() {
-                return container;
+                throw new UnsupportedOperationException();
             }
 
-            public void addDeploymentProcessor(DeploymentUnitProcessor processor, long priority) {
+            public void addDeploymentProcessor(final Phase phase, DeploymentUnitProcessor processor, int priority) {
                 deploymentChain.addProcessor(processor, priority);
             }
-        };
 
-        for (AbstractServerModelUpdate<?> update : updates) {
-            if(!update.isDeploymentUpdate()) {
-                update.applyUpdateBootAction(context);
+            public ServiceRegistry getServiceRegistry() {
+                return getServiceContainer();
             }
-        }
+        };
 
         DeploymentUpdateService.addService(batchBuilder, updates, serverStartupListener);
 

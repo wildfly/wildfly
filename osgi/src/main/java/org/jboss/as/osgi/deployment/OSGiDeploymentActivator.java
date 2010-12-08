@@ -23,6 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.deployment.Phase;
+import org.jboss.as.deployment.module.OSGiManifestAttachmentProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.BootUpdateContext;
 import org.jboss.msc.service.ServiceContainer;
@@ -39,8 +40,8 @@ public class OSGiDeploymentActivator {
      */
     public void activate(final BootUpdateContext updateContext) {
         ServiceContainer serviceContainer = updateContext.getServiceContainer();
-        updateContext.addDeploymentProcessor(new OSGiManifestAttachmentProcessor(), Phase.OSGI_MANIFEST_ATTACHMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new BundleInfoAttachmentProcessor(serviceContainer), Phase.OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new OSGiAttachmentsDeploymentProcessor(serviceContainer), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new OSGiManifestAttachmentProcessor(), Phase.OSGI_MANIFEST_ATTACHMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new BundleInfoAttachmentProcessor(serviceContainer), Phase.OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new OSGiAttachmentsDeploymentProcessor(serviceContainer), Phase.OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR);
     }
 }

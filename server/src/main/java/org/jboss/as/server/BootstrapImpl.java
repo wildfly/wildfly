@@ -28,7 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
 import org.jboss.as.version.Version;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
@@ -51,16 +51,14 @@ import org.jboss.threads.JBossExecutors;
  */
 final class BootstrapImpl implements Bootstrap {
 
-    public AsyncFuture<ServerController> start(final Configuration configuration, final List<AbstractServerModelUpdate<?>> bootUpdates, final List<ServiceActivator> extraServices) {
+    public AsyncFuture<ServerController> start(final Configuration configuration, final List<ServiceActivator> extraServices) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration is null");
         }
-        if (bootUpdates == null) {
-            throw new IllegalArgumentException("bootUpdates is null");
-        }
         final ModuleLoader moduleLoader = configuration.getModuleLoader();
-        final String name = configuration.getName();
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
+        final String name = serverEnvironment.getServerName();
+        final ServerConfigurationPersister configurationPersister = configuration.getConfigurationPersister();
         if (moduleLoader == null) {
             throw new IllegalArgumentException("moduleLoader is null");
         }
@@ -70,13 +68,16 @@ final class BootstrapImpl implements Bootstrap {
         if (serverEnvironment == null) {
             throw new IllegalArgumentException("serverEnvironment is null");
         }
+        if (configurationPersister == null) {
+            throw new IllegalArgumentException("configurationPersister is null");
+        }
         final ServiceContainer container = ServiceContainer.Factory.create();
         final int threads = Runtime.getRuntime().availableProcessors();
         container.setExecutor(new ThreadPoolExecutor(threads, threads, Long.MAX_VALUE, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<Runnable>()));
 
         final StartTask future = new StartTask(container);
         final ServiceTarget tracker = container.subTarget();
-        final Service<ServerController> serverControllerService = new ApplicationServerService(configuration, bootUpdates, extraServices);
+        final Service<ServerController> serverControllerService = new ApplicationServerService(configuration, configurationPersister);
         tracker.addListener(new BootstrapListener(future, serverControllerService, configuration.getStartTime()));
         tracker.addService(ServiceName.JBOSS.append("as"), serverControllerService).install();
         return future;

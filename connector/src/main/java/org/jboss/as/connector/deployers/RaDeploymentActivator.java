@@ -61,13 +61,13 @@ public class RaDeploymentActivator {
         JndiStrategyService jndiStrategyService = new JndiStrategyService();
         serviceTarget.addService(ConnectorServices.JNDI_STRATEGY_SERVICE, jndiStrategyService).install();
 
-        updateContext.addDeploymentProcessor(new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
-        updateContext.addDeploymentProcessor(new RaDeploymentParsingProcessor(), Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
-        updateContext.addDeploymentProcessor(new IronJacamarDeploymentParsingProcessor(), Phase.IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ParsedRaDeploymentProcessor(), Phase.PARSED_RA_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new RaXmlDeploymentProcessor(mdrService.getValue()), Phase.RA_XML_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new DsDependencyProcessor(), Phase.DS_DEPENDENCY_PROCESSOR);
-        updateContext.addDeploymentProcessor(new DsDeploymentProcessor(), Phase.DS_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new RaNestedJarInlineProcessor(), Phase.RA_NESTED_JAR_INLINE_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new RarConfigProcessor(), Phase.RAR_CONFIG_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new RaDeploymentParsingProcessor(), Phase.RA_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new IronJacamarDeploymentParsingProcessor(), Phase.IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ParsedRaDeploymentProcessor(), Phase.PARSED_RA_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new RaXmlDeploymentProcessor(mdrService.getValue()), Phase.RA_XML_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new DsDependencyProcessor(), Phase.DS_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new DsDeploymentProcessor(), Phase.DS_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new RaNestedJarInlineProcessor(), Phase.RA_NESTED_JAR_INLINE_PROCESSOR);
     }
 }

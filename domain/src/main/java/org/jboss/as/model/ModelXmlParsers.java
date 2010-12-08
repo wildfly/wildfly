@@ -474,8 +474,8 @@ public final class ModelXmlParsers {
 
             // Register element handlers for this extension
             try {
-               //for (Extension extension : Module.loadServiceFromCurrent(ModuleIdentifier.fromString(moduleName), Extension.class)) {
-               Module module = Module.getModuleFromDefaultLoader(ModuleIdentifier.fromString(moduleName));
+                // TODO: use a passed-in module loader instance
+               Module module = Module.getSystemModuleLoader().loadModule(ModuleIdentifier.fromString(moduleName));
                boolean initialized = false;
                for (Extension extension : module.loadService(Extension.class)) {
                     extension.initialize(extensionContext);
@@ -1350,7 +1350,7 @@ public final class ModelXmlParsers {
                         if (debugEnabled != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         debugEnabled = Boolean.valueOf(value);
-                        updates.add(new JvmDebugEnabledUpdate(debugEnabled));
+                        updates.add(new JvmDebugEnabledUpdate(debugEnabled.booleanValue()));
                         break;
                     }
                     case DEBUG_OPTIONS: {
@@ -1364,7 +1364,7 @@ public final class ModelXmlParsers {
                         if (envClasspathIgnored != null)
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
                         envClasspathIgnored = Boolean.valueOf(value);
-                        updates.add(new JvmEnvClasspathIgnoredUpdate(envClasspathIgnored));
+                        updates.add(new JvmEnvClasspathIgnoredUpdate(envClasspathIgnored.booleanValue()));
                         break;
                     }
                     default:
@@ -1911,7 +1911,7 @@ public final class ModelXmlParsers {
                     }
                     case PORT: {
                         port = Integer.valueOf(value);
-                        if (port < 1) {
+                        if (port.intValue() < 1) {
                             throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
                                     "' value " + port + " -- cannot be less than one",
                                     reader.getLocation());

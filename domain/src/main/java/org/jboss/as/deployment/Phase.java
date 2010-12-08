@@ -25,79 +25,80 @@ package org.jboss.as.deployment;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class Phase {
+public enum Phase {
+    STRUCTURE,
+    VALIDATE,
+    PARSE,
+    DEPENDENCIES,
+    MODULARIZE,
+    POST_MODULE,
+    INSTALL,
+    CLEANUP,
+    ;
     private Phase() {}
 
-    public static final int STRUCTURE       = 0x00100000;
+    // STRUCTURE
+    public static final int NESTED_JAR_INLINE_PROCESSOR                 = 0x100;
+    public static final int RA_NESTED_JAR_INLINE_PROCESSOR              = 0x200;
+    public static final int WAR_DEPLOYMENT_INITIALIZING_PROCESSOR       = 0x300;
 
-    public static final int NESTED_JAR_INLINE_PROCESSOR                 = STRUCTURE + 0x100;
-    public static final int RA_NESTED_JAR_INLINE_PROCESSOR              = STRUCTURE + 0x200;
-    public static final int WAR_DEPLOYMENT_INITIALIZING_PROCESSOR       = STRUCTURE + 0x300;
+    // VALIDATE
+    public static final int WAR_STRUCTURE_DEPLOYMENT_PROCESSOR          = 0x100;
 
-    public static final int VALIDATE        = 0x00200000;
+    // PARSE
+    public static final int MANIFEST_ATTACHMENT_PROCESSOR               = 0x0100;
+    public static final int OSGI_MANIFEST_ATTACHMENT_PROCESSOR          = 0x0200;
+    public static final int OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR       = 0x0300;
+    public static final int ANNOTATION_INDEX_PROCESSOR                  = 0x0400;
+    public static final int WAR_ANNOTATION_INDEX_PROCESSOR              = 0x0500;
+    public static final int SERVICE_ACTIVATION_DEPENDENCY_PROCESSOR     = 0x0600;
+    public static final int WEB_PARSING_DEPLOYMENT_PROCESSOR            = 0x0700;
+    public static final int WEB_FRAGMENT_PARSING_DEPLOYMENT_PROCESSOR   = 0x0800;
+    public static final int JBOSS_WEB_PARSING_DEPLOYMENT_PROCESSOR      = 0x0900;
+    public static final int TLD_PARSING_DEPLOYMENT_PROCESSOR            = 0x0A00;
+    public static final int RA_DEPLOYMENT_PARSING_PROCESSOR             = 0x0B00;
+    public static final int SERVICE_DEPLOYMENT_PARSING_PROCESSOR        = 0x0C00;
+    public static final int MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR        = 0x0D00;
+    public static final int IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR   = 0x0E00;
+    public static final int RESOURCE_ADAPTERS_ATTACHING_PROCESSOR       = 0x0F00;
+    public static final int DATA_SOURCES_ATTACHMENT_PROCESSOR           = 0x1000;
+    public static final int ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR     = 0x1100;
 
-    public static final int WAR_STRUCTURE_DEPLOYMENT_PROCESSOR          = VALIDATE + 0x100;
+    // DEPENDENCIES
+    public static final int MODULE_DEPENDENCY_PROCESSOR                 = 0x100;
+    public static final int DS_DEPENDENCY_PROCESSOR                     = 0x200;
+    public static final int RAR_CONFIG_PROCESSOR                        = 0x300;
+    public static final int MANAGED_BEAN_DEPENDENCY_PROCESSOR           = 0x400;
+    public static final int SAR_MODULE_DEPENDENCY_PROCESSOR             = 0x500;
+    public static final int WAR_CLASSLOADING_DEPENDENCY_PROCESSOR       = 0x600;
+    public static final int ARQUILLIAN_DEPENDENCY_PROCESSOR             = 0x700;
 
-    public static final int PARSE           = 0x00300000;
+    // MODULARIZE
+    public static final int WAR_MODULE_CONFIG_PROCESSOR                 = 0x100;
+    public static final int MODULE_CONFIG_PROCESSOR                     = 0x200;
+    public static final int DEPLOYMENT_MODULE_LOADER_PROCESSOR          = 0x300;
+    public static final int MODULE_DEPLOYMENT_PROCESSOR                 = 0x400;
 
-    public static final int MANIFEST_ATTACHMENT_PROCESSOR               = PARSE + 0x100;
-    public static final int OSGI_MANIFEST_ATTACHMENT_PROCESSOR          = PARSE + 0x200;
-    public static final int OSGI_BUNDLE_INFO_ATTACHMENT_PROCESSOR       = PARSE + 0x250;
-    public static final int ANNOTATION_INDEX_PROCESSOR                  = PARSE + 0x300;
-    public static final int WAR_ANNOTATION_INDEX_PROCESSOR              = PARSE + 0x400;
-    public static final int SERVICE_ACTIVATION_DEPENDENCY_PROCESSOR     = PARSE + 0x500;
-    public static final int WEB_PARSING_DEPLOYMENT_PROCESSOR            = PARSE + 0x600;
-    public static final int WEB_FRAGMENT_PARSING_DEPLOYMENT_PROCESSOR   = PARSE + 0x700;
-    public static final int JBOSS_WEB_PARSING_DEPLOYMENT_PROCESSOR      = PARSE + 0x800;
-    public static final int TLD_PARSING_DEPLOYMENT_PROCESSOR            = PARSE + 0x900;
-    public static final int RA_DEPLOYMENT_PARSING_PROCESSOR             = PARSE + 0xA00;
-    public static final int SERVICE_DEPLOYMENT_PARSING_PROCESSOR        = PARSE + 0xB00;
-    public static final int MC_BEAN_DEPLOYMENT_PARSING_PROCESSOR        = PARSE + 0xB80;
-    public static final int IRON_JACAMAR_DEPLOYMENT_PARSING_PROCESSOR   = PARSE + 0xC00;
-    public static final int RESOURCE_ADAPTERS_ATTACHING_PROCESSOR       = PARSE + 0xD00;
-    public static final int DATA_SOURCES_ATTACHMENT_PROCESSOR           = PARSE + 0xE00;
-    public static final int ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR     = PARSE + 0xF00;
+    // POST_MODULE
+    public static final int MANAGED_BEAN_ANNOTATION_PROCESSOR           = 0x100;
+    public static final int WAR_ANNOTATION_DEPLOYMENT_PROCESSOR         = 0x200;
+    public static final int ARQUILLIAN_JUNIT_ANNOTATION_PROCESSOR       = 0x300;
 
-    public static final int DEPENDENCIES    = 0x00400000;
+    // INSTALL
+    public static final int MODULE_CONTEXT_PROCESSOR                    = 0x100;
+    public static final int SERVICE_ACTIVATOR_PROCESSOR                 = 0x200;
+    public static final int OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR       = 0x300;
+    public static final int WAR_META_DATA_PROCESSOR                     = 0x400;
+    public static final int PARSED_RA_DEPLOYMENT_PROCESSOR              = 0x500;
+    public static final int PARSED_SERVICE_DEPLOYMENT_PROCESSOR         = 0x600;
+    public static final int PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR         = 0x700;
+    public static final int RA_XML_DEPLOYMENT_PROCESSOR                 = 0x800;
+    public static final int DS_DEPLOYMENT_PROCESSOR                     = 0x900;
+    public static final int MANAGED_BEAN_DEPLOYMENT_PROCESSOR           = 0xA00;
+    public static final int SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR  = 0xB00;
+    public static final int WAR_DEPLOYMENT_PROCESSOR                    = 0xC00;
+    public static final int ARQUILLIAN_DEPLOYMENT_PROCESSOR             = 0xD00;
 
-    public static final int MODULE_DEPENDENCY_PROCESSOR                 = DEPENDENCIES + 0x100;
-    public static final int DS_DEPENDENCY_PROCESSOR                     = DEPENDENCIES + 0x200;
-    public static final int RAR_CONFIG_PROCESSOR                        = DEPENDENCIES + 0x300;
-    public static final int MANAGED_BEAN_DEPENDENCY_PROCESSOR           = DEPENDENCIES + 0x400;
-    public static final int SAR_MODULE_DEPENDENCY_PROCESSOR             = DEPENDENCIES + 0x500;
-    public static final int WAR_CLASSLOADING_DEPENDENCY_PROCESSOR       = DEPENDENCIES + 0x600;
-    public static final int ARQUILLIAN_DEPENDENCY_PROCESSOR             = DEPENDENCIES + 0x700;
-
-    public static final int MODULARIZE      = 0x00500000;
-
-    public static final int WAR_MODULE_CONFIG_PROCESSOR                 = MODULARIZE + 0x100;
-    public static final int MODULE_CONFIG_PROCESSOR                     = MODULARIZE + 0x200;
-    public static final int DEPLOYMENT_MODULE_LOADER_PROCESSOR          = MODULARIZE + 0x300;
-    public static final int MODULE_DEPLOYMENT_PROCESSOR                 = MODULARIZE + 0x400;
-
-    public static final int POST_MODULE     = 0x00600000;
-
-    public static final int MANAGED_BEAN_ANNOTATION_PROCESSOR           = POST_MODULE + 0x100;
-    public static final int WAR_ANNOTATION_DEPLOYMENT_PROCESSOR         = POST_MODULE + 0x200;
-    public static final int ARQUILLIAN_JUNIT_ANNOTATION_PROCESSOR       = POST_MODULE + 0x300;
-
-
-    public static final int INSTALL         = 0x00700000;
-
-    public static final int MODULE_CONTEXT_PROCESSOR                    = INSTALL + 0x100;
-    public static final int SERVICE_ACTIVATOR_PROCESSOR                 = INSTALL + 0x200;
-    public static final int OSGI_ATTACHMENTS_DEPLOYMENT_PROCESSOR       = INSTALL + 0x300;
-    public static final int WAR_META_DATA_PROCESSOR                     = INSTALL + 0x400;
-    public static final int PARSED_RA_DEPLOYMENT_PROCESSOR              = INSTALL + 0x500;
-    public static final int PARSED_SERVICE_DEPLOYMENT_PROCESSOR         = INSTALL + 0x600;
-    public static final int PARSED_MC_BEAN_DEPLOYMENT_PROCESSOR         = INSTALL + 0x680;
-
-    public static final int RA_XML_DEPLOYMENT_PROCESSOR                 = INSTALL + 0x700;
-    public static final int DS_DEPLOYMENT_PROCESSOR                     = INSTALL + 0x800;
-    public static final int MANAGED_BEAN_DEPLOYMENT_PROCESSOR           = INSTALL + 0x900;
-    public static final int SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR  = INSTALL + 0xA00;
-    public static final int WAR_DEPLOYMENT_PROCESSOR                    = INSTALL + 0xB00;
-    public static final int ARQUILLIAN_DEPLOYMENT_PROCESSOR             = INSTALL + 0xC00;
-
-    public static final int CLEANUP         = 0x00800000;
+    // CLEANUP
+    // (none)
 }

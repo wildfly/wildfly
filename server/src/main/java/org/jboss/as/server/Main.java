@@ -26,12 +26,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -45,12 +49,18 @@ import org.jboss.stdio.StdioContext;
  */
 public final class Main {
 
+    private Main() {
+    }
+
     /**
      * The main method.
      *
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
+        SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
+        new BridgeRepositorySelector().start();
+
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();
         final StdioContext context = StdioContext.create(
@@ -60,47 +70,25 @@ public final class Main {
         );
         StdioContext.setStdioContextSelector(new SimpleStdioContextSelector(context));
 
-        // TODO: privileged block
-        System.setProperty("log4j.defaultInitOverride", "true");
-        new BridgeRepositorySelector().start();
-
-        create(args);
-    }
-
-    private static StandaloneServer create(String[] args) {
-        Main main = new Main();
-        return main.boot(args);
-    }
-
-    // TODO: privileged block
-    Properties props = new Properties(System.getProperties());
-
-    private Main() {
-    }
-
-    private StandaloneServer boot(final String[] args) {
-        StandaloneServer server = null;
         try {
-            ServerEnvironment config = determineEnvironment(args, props);
-            if (config == null) {
+            ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment());
+            if (serverEnvironment == null) {
                 abort(null);
             } else {
-                if(config.isStandalone()) {
-                    server = StandaloneServerFactory.create(config);
-                } else {
-                    throw new IllegalStateException();
-                }
-                // Start the server.
-                server.start();
-                return server;
+                final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
+                final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
+                configuration.setServerEnvironment(serverEnvironment);
+                configuration.setModuleLoader(Module.getSystemModuleLoader());
+                configuration.setPortOffset(0);
+                bootstrap.start(configuration, Collections.<ServiceActivator>emptyList()).get();
+                return;
             }
         } catch (Throwable t) {
             abort(t);
         }
-        return null;
     }
 
-    private void abort(Throwable t) {
+    private static void abort(Throwable t) {
         if (t != null) {
             t.printStackTrace(System.err);
         }
@@ -114,8 +102,7 @@ public final class Main {
         }
     }
 
-    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties) {
-        String procName = null;
+    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment) {
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -146,7 +133,8 @@ public final class Main {
                         name = arg.substring(2, idx);
                         value = arg.substring(idx + 1, arg.length());
                     }
-                    System.setProperty(name, value);
+                    systemProperties.setProperty(name, value);
+                    SecurityActions.setSystemProperty(name, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     return null;
@@ -157,7 +145,7 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, procName, true);
+        return new ServerEnvironment(systemProperties, systemEnvironment, true);
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

@@ -44,9 +44,9 @@ public final class SarSubsystemAdd extends AbstractSubsystemAdd<SarSubsystemElem
 
     @Override
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(new SarModuleDependencyProcessor(), Phase.SAR_MODULE_DEPENDENCY_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new SarModuleDependencyProcessor(), Phase.SAR_MODULE_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ServiceDeploymentParsingProcessor(), Phase.SERVICE_DEPLOYMENT_PARSING_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ParsedServiceDeploymentProcessor(), Phase.PARSED_SERVICE_DEPLOYMENT_PROCESSOR);
     }
 
     @Override

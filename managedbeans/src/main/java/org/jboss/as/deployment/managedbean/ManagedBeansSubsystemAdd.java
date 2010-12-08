@@ -50,9 +50,9 @@ public class ManagedBeansSubsystemAdd extends AbstractSubsystemAdd<ManagedBeansS
 
     /** {@inheritDoc} */
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
-        updateContext.addDeploymentProcessor(new ManagedBeanDependencyProcessor(), Phase.MANAGED_BEAN_DEPENDENCY_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ManagedBeanDependencyProcessor(), Phase.MANAGED_BEAN_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ManagedBeanAnnotationProcessor(), Phase.MANAGED_BEAN_ANNOTATION_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ManagedBeanDeploymentProcessor(), Phase.MANAGED_BEAN_DEPLOYMENT_PROCESSOR);
     }
 
     /** {@inheritDoc} */

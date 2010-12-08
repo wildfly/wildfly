@@ -23,13 +23,18 @@
 package org.jboss.as.server;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.TimeUnit;
+import org.jboss.as.deployment.Phase;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.model.AbstractServerModelUpdate;
 import org.jboss.as.model.ServerModel;
 import org.jboss.as.model.UpdateContext;
@@ -42,8 +47,10 @@ import org.jboss.as.server.mgmt.ServerUpdateController;
 import org.jboss.as.server.mgmt.ServerUpdateController.ServerUpdateCommitHandler;
 import org.jboss.as.server.mgmt.ServerUpdateController.Status;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -61,8 +68,11 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     private final InjectedValue<ExecutorService> executorValue = new InjectedValue<ExecutorService>();
 
     private final ServiceContainer container;
+    private final ServiceRegistry registry;
     private final ServerModel serverModel;
     private final ServerEnvironment serverEnvironment;
+    private final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers;
+
     private ServerConfigurationPersister configurationPersister;
     private ExecutorService executor;
 
@@ -70,6 +80,12 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         this.serverModel = serverModel;
         this.container = container;
         this.serverEnvironment = serverEnvironment;
+        final EnumMap<Phase, SortedSet<RegisteredProcessor>> deployers = new EnumMap<Phase, SortedSet<RegisteredProcessor>>(Phase.class);
+        for (Phase phase : Phase.values()) {
+            deployers.put(phase, new ConcurrentSkipListSet<RegisteredProcessor>());
+        }
+        this.deployers = deployers;
+        registry = new DelegatingServiceRegistry(container);
     }
 
     /** {@inheritDoc} */
@@ -85,10 +101,10 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
 
     /** {@inheritDoc} */
     @Override
-    public List<UpdateResultHandlerResponse<?>> applyUpdates(List<AbstractServerModelUpdate<?>> updates,
-            boolean rollbackOnFailure, boolean modelOnly) {
+    public List<UpdateResultHandlerResponse<?>> applyUpdates(final List<AbstractServerModelUpdate<?>> updates,
+            final boolean rollbackOnFailure, final boolean modelOnly) {
 
-        int count = updates.size();
+        final int count = updates.size();
         log.debugf("Received %d updates", Integer.valueOf(count));
 
         List<UpdateResultHandlerResponse<?>> results = new ArrayList<UpdateResultHandlerResponse<?>>(count);
@@ -101,7 +117,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         }
 
         final CountDownLatch latch = new CountDownLatch(1);
-        ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, count, latch);
+        final ServerUpdateCommitHandlerImpl handler = new ServerUpdateCommitHandlerImpl(results, count, latch);
         final ServerUpdateController controller = new ServerUpdateController(serverModel,
                 container, executor, handler, rollbackOnFailure, !modelOnly);
 
@@ -122,7 +138,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     }
 
     public <R, P> void update(final AbstractServerModelUpdate<R> update, final UpdateResultHandler<R, P> resultHandler, final P param) {
-        final UpdateContextImpl updateContext = new UpdateContextImpl(container.batchBuilder(), container);
+        final UpdateContextImpl updateContext = new UpdateContextImpl(container.batchBuilder(), registry);
         synchronized (serverModel) {
             try {
                 serverModel.update(update);
@@ -132,6 +148,19 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
             }
         }
         update.applyUpdate(updateContext, resultHandler, param);
+    }
+
+    void registerDeployer(final Phase phase, final DeploymentUnitProcessor processor, final int priority) {
+        if (phase == null) {
+            throw new IllegalArgumentException("phase is null");
+        }
+        if (processor == null) {
+            throw new IllegalArgumentException("processor is null");
+        }
+        if (priority < 0) {
+            throw new IllegalArgumentException("priority is invalid (must be >= 0)");
+        }
+        deployers.get(phase).add(new RegisteredProcessor(priority, processor));
     }
 
     public void shutdown() {
@@ -161,11 +190,15 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
     final class UpdateContextImpl implements UpdateContext {
 
         private final ServiceTarget serviceTarget;
-        private final ServiceContainer serviceContainer;
+        private final ServiceRegistry serviceRegistry;
 
-        UpdateContextImpl(final ServiceTarget serviceTarget, final ServiceContainer serviceContainer) {
+        UpdateContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry registry) {
             this.serviceTarget = serviceTarget;
-            this.serviceContainer = serviceContainer;
+            serviceRegistry = registry;
+        }
+
+        public ServiceRegistry getServiceRegistry() {
+            return serviceRegistry;
         }
 
         public ServiceTarget getServiceTarget() {
@@ -173,7 +206,7 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         }
 
         public ServiceContainer getServiceContainer() {
-            return serviceContainer;
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -287,6 +320,21 @@ final class ServerControllerImpl implements ServerController, Service<ServerCont
         public void handleTimeout(Integer param) {
             log.tracef("Update %d timed out", param);
             responses.set(param.intValue(), UpdateResultHandlerResponse.createTimeoutResponse());
+        }
+    }
+
+    private static final class RegisteredProcessor implements Comparable<RegisteredProcessor> {
+        private final int priority;
+        private final DeploymentUnitProcessor processor;
+
+        private RegisteredProcessor(final int priority, final DeploymentUnitProcessor processor) {
+            this.priority = priority;
+            this.processor = processor;
+        }
+
+        public int compareTo(final RegisteredProcessor o) {
+            final int rel = Integer.signum(priority - o.priority);
+            return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
         }
     }
 }

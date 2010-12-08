@@ -19,10 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.server;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -30,6 +33,9 @@ import java.security.PrivilegedAction;
  * @version $Revision: 1.1 $
  */
 class SecurityActions {
+
+    private SecurityActions() {
+    }
 
     static String getSystemProperty(final String key) {
         if (System.getSecurityManager() == null) {
@@ -70,6 +76,30 @@ class SecurityActions {
                 public Void run() {
                     System.clearProperty(key);
                     return null;
+                }
+            });
+        }
+    }
+
+    public static Properties getSystemProperties() {
+        if (System.getSecurityManager() == null) {
+            return System.getProperties();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<Properties>() {
+                public Properties run() {
+                    return System.getProperties();
+                }
+            });
+        }
+    }
+
+    public static Map<String, String> getSystemEnvironment() {
+        if (System.getSecurityManager() == null) {
+            return System.getenv();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
+                public Map<String, String> run() {
+                    return System.getenv();
                 }
             });
         }

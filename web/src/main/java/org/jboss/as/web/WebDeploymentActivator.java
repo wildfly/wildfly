@@ -45,18 +45,18 @@ class WebDeploymentActivator {
 
     static void activate(final String defaultHost, final SharedWebMetaDataBuilder sharedWebBuilder, final SharedTldsMetaDataBuilder sharedTldsBuilder, final BootUpdateContext updateContext) {
         // Web specific deployment processors ....
-        updateContext.addDeploymentProcessor(new WarDeploymentInitializingProcessor(), Phase.WAR_DEPLOYMENT_INITIALIZING_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), Phase.WAR_STRUCTURE_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarAnnotationIndexProcessor(), Phase.WAR_ANNOTATION_INDEX_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarModuleConfigProcessor(), Phase.WAR_MODULE_CONFIG_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WebParsingDeploymentProcessor(), Phase.WEB_PARSING_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WebFragmentParsingDeploymentProcessor(), Phase.WEB_FRAGMENT_PARSING_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new JBossWebParsingDeploymentProcessor(), Phase.JBOSS_WEB_PARSING_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new TldParsingDeploymentProcessor(), Phase.TLD_PARSING_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarClassloadingDependencyProcessor(), Phase.WAR_CLASSLOADING_DEPENDENCY_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarAnnotationDeploymentProcessor(), Phase.WAR_ANNOTATION_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ServletContainerInitializerDeploymentProcessor(), Phase.SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarMetaDataProcessor(), Phase.WAR_META_DATA_PROCESSOR);
-        updateContext.addDeploymentProcessor(new WarDeploymentProcessor(defaultHost), Phase.WAR_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarDeploymentInitializingProcessor(), Phase.WAR_DEPLOYMENT_INITIALIZING_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarStructureDeploymentProcessor(sharedWebBuilder.create(), sharedTldsBuilder.create()), Phase.WAR_STRUCTURE_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarAnnotationIndexProcessor(), Phase.WAR_ANNOTATION_INDEX_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarModuleConfigProcessor(), Phase.WAR_MODULE_CONFIG_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WebParsingDeploymentProcessor(), Phase.WEB_PARSING_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WebFragmentParsingDeploymentProcessor(), Phase.WEB_FRAGMENT_PARSING_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new JBossWebParsingDeploymentProcessor(), Phase.JBOSS_WEB_PARSING_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new TldParsingDeploymentProcessor(), Phase.TLD_PARSING_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarClassloadingDependencyProcessor(), Phase.WAR_CLASSLOADING_DEPENDENCY_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarAnnotationDeploymentProcessor(), Phase.WAR_ANNOTATION_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ServletContainerInitializerDeploymentProcessor(), Phase.SERVLET_CONTAINER_INITIALIZER_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarMetaDataProcessor(), Phase.WAR_META_DATA_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new WarDeploymentProcessor(defaultHost), Phase.WAR_DEPLOYMENT_PROCESSOR);
     }
 }

@@ -23,7 +23,8 @@
 package org.jboss.as.server;
 
 import java.util.List;
-import org.jboss.as.model.AbstractServerModelUpdate;
+import org.jboss.as.server.mgmt.ServerConfigurationPersister;
+import org.jboss.as.server.mgmt.StandaloneServerConfigurationPersister;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
@@ -43,42 +44,21 @@ public interface Bootstrap {
      * wait for the result (with an optional timeout) or register an asynchronous callback.
      *
      * @param configuration the server configuration
-     * @param bootUpdates the update list to apply
      * @param extraServices additional services to start and stop with the server instance
      * @return the future server controller
      */
-    AsyncFuture<ServerController> start(Configuration configuration, List<AbstractServerModelUpdate<?>> bootUpdates, List<ServiceActivator> extraServices);
+    AsyncFuture<ServerController> start(Configuration configuration, List<ServiceActivator> extraServices);
 
     /**
      * The configuration for server bootstrap.
      */
     final class Configuration {
-        private String name;
+
         private int portOffset;
         private ServerEnvironment serverEnvironment;
-        private ModuleLoader moduleLoader;
+        private ModuleLoader moduleLoader = Module.getSystemModuleLoader();
+        private ServerConfigurationPersister configurationPersister = new StandaloneServerConfigurationPersister();
         private long startTime = Module.getStartTime();
-
-        /**
-         * Get the server name; must be specified.
-         *
-         * @return the server name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Set the server name; must be specified.
-         *
-         * @return the server name
-         */
-        public void setName(final String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("name is null");
-            }
-            this.name = name;
-        }
 
         /**
          * Get the port offset.
@@ -135,6 +115,24 @@ public interface Bootstrap {
          */
         public void setModuleLoader(final ModuleLoader moduleLoader) {
             this.moduleLoader = moduleLoader;
+        }
+
+        /**
+         * Get the configuration persister to use.
+         *
+         * @return the configuration persister
+         */
+        public ServerConfigurationPersister getConfigurationPersister() {
+            return configurationPersister;
+        }
+
+        /**
+         * Set the configuration persister to use.
+         *
+         * @param configurationPersister the configuration persister
+         */
+        public void setConfigurationPersister(final ServerConfigurationPersister configurationPersister) {
+            this.configurationPersister = configurationPersister;
         }
 
         /**

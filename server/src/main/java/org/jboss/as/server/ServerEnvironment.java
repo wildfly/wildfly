@@ -22,6 +22,9 @@
 package org.jboss.as.server;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -110,7 +113,10 @@ public class ServerEnvironment {
      */
     public static final String SERVER_SYSTEM_DEPLOY_DIR = "jboss.server.system.deploy.dir";
 
+    private final String qualifiedHostName;
+    private final String hostName;
     private final String serverName;
+    private final String nodeName;
 
     private final File homeDir;
     private final File modulesDir;
@@ -123,78 +129,131 @@ public class ServerEnvironment {
     private final boolean standalone;
     private final File serverSystemDeployDir;
 
-    public ServerEnvironment(Properties props, String serverName, boolean standalone) {
+    public ServerEnvironment(Properties props, Map<String, String> env, boolean standalone) {
         this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
 
-        if (serverName == null && !standalone) {
-            throw new IllegalArgumentException("processName is null");
+        // Calculate host and default server name
+        String hostName = props.getProperty("jboss.host.name");
+        String qualifiedHostName = props.getProperty("jboss.qualified.host.name");
+        if (qualifiedHostName == null) {
+            // if host name is specified, don't pick a qualified host name that isn't related to it
+            qualifiedHostName = hostName;
+            if (qualifiedHostName == null) {
+                // POSIX-like OSes including Mac should have this set
+                qualifiedHostName = env.get("HOSTNAME");
+            }
+            if (qualifiedHostName == null) {
+                // Certain versions of Windows
+                qualifiedHostName = env.get("COMPUTERNAME");
+            }
+            if (qualifiedHostName == null) {
+                try {
+                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                } catch (UnknownHostException e) {
+                    qualifiedHostName = null;
+                }
+            }
+            if (qualifiedHostName != null && qualifiedHostName.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$|:")) {
+                // IP address is not acceptable
+                qualifiedHostName = null;
+            }
+            if (qualifiedHostName == null) {
+                // Give up
+                qualifiedHostName = "unknown-host.unknown-domain";
+            }
+            qualifiedHostName = qualifiedHostName.trim().toLowerCase();
+            SecurityActions.setSystemProperty("jboss.qualified.host.name", qualifiedHostName);
+        }
+        this.qualifiedHostName = qualifiedHostName;
+
+        if (hostName == null) {
+            // Use the host part of the qualified host name
+            final int idx = qualifiedHostName.indexOf('.');
+            hostName = idx == -1 ? qualifiedHostName : qualifiedHostName.substring(0, idx);
+            SecurityActions.setSystemProperty("jboss.host.name", hostName);
+        }
+        this.hostName = hostName;
+
+        // Set up the server name for management purposes
+        String serverName = props.getProperty("jboss.server.name");
+        if (serverName == null) {
+            serverName = hostName;
+            SecurityActions.setSystemProperty("jboss.server.name", serverName);
         }
         this.serverName = serverName;
+
+        // Set up the clustering node name
+        String nodeName = props.getProperty("jboss.node.name");
+        if (nodeName == null) {
+            nodeName = serverName;
+            SecurityActions.setSystemProperty("jboss.node.name", nodeName);
+        }
+        this.nodeName = nodeName;
 
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null)
            throw new IllegalStateException("Missing configuration value for: " + HOME_DIR);
-        System.setProperty(HOME_DIR, homeDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(HOME_DIR, homeDir.getAbsolutePath());
 
         File tmp = getFileFromProperty(MODULES_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "modules");
         }
         modulesDir = tmp;
-        System.setProperty(MODULES_DIR, modulesDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(MODULES_DIR, modulesDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_BASE_DIR, props);
         if (tmp == null) {
             tmp = new File(homeDir, "standalone");
         }
         serverBaseDir = tmp;
-        System.setProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_BASE_DIR, serverBaseDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_CONFIG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "configuration");
         }
         serverConfigurationDir = tmp;
-        System.setProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_CONFIG_DIR, serverConfigurationDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_DATA_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "data");
         }
         serverDataDir = tmp;
-        System.setProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_DATA_DIR, serverDataDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_DEPLOY_DIR, props);
         if (tmp == null) {
             tmp = new File(serverDataDir, "content");
         }
         serverDeployDir = tmp;
-        System.setProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_DEPLOY_DIR, serverDeployDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_SYSTEM_DEPLOY_DIR, props);
         if (tmp == null) {
             tmp = new File(serverDataDir, "system-content");
         }
         serverSystemDeployDir = tmp;
-        System.setProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_SYSTEM_DEPLOY_DIR, serverSystemDeployDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_LOG_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "log");
         }
         serverLogDir = tmp;
-        System.setProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_LOG_DIR, serverLogDir.getAbsolutePath());
 
         tmp = getFileFromProperty(SERVER_TEMP_DIR, props);
         if (tmp == null) {
             tmp = new File(serverBaseDir, "tmp");
         }
         serverTempDir = tmp;
-        System.setProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
+        SecurityActions.setSystemProperty(SERVER_TEMP_DIR, serverTempDir.getAbsolutePath());
     }
 
     /**
@@ -207,6 +266,33 @@ public class ServerEnvironment {
      */
     public String getServerName() {
         return serverName;
+    }
+
+    /**
+     * Get the fully-qualified host name detected at server startup.
+     *
+     * @return the qualified host name
+     */
+    public String getQualifiedHostName() {
+        return qualifiedHostName;
+    }
+
+    /**
+     * Get the local host name detected at server startup.
+     *
+     * @return the local host name
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    /**
+     * Get the node name used for clustering purposes.
+     *
+     * @return the node name
+     */
+    public String getNodeName() {
+        return nodeName;
     }
 
     public File getHomeDir() {

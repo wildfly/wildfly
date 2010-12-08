@@ -20,23 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.model;
+package org.jboss.as.server;
 
-import org.jboss.as.deployment.Phase;
-import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * Update context specific to server boot updates.  Provides the ability to add a {@link org.jboss.as.deployment.unit.DeploymentUnitProcessor}.
- *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface BootUpdateContext extends UpdateContext {
-    /**
-     * Add a deployment processor.
-     *
-     * @param phase the processor phase install into (must not be {@code null})
-     * @param processor the processor to install
-     * @param priority the priority within the selected phase
-     */
-    void addDeploymentProcessor(Phase phase, final DeploymentUnitProcessor processor, final int priority);
+public abstract class AbstractDeploymentService<T> implements Service<T> {
+
+    public void start(final StartContext context) throws StartException {
+
+    }
+
+    public void stop(final StopContext context) {
+
+    }
 }

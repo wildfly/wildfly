@@ -65,7 +65,7 @@ public final class ResourceAdaptersAdd extends AbstractSubsystemAdd<ResourceAdap
     @Override
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         applyUpdate(updateContext, UpdateResultHandler.NULL, null);
-        updateContext.addDeploymentProcessor(new ResourceAdaptersAttachingProcessor(resourceAdapters), Phase.RESOURCE_ADAPTERS_ATTACHING_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ResourceAdaptersAttachingProcessor(resourceAdapters), Phase.RESOURCE_ADAPTERS_ATTACHING_PROCESSOR);
     }
 
     protected ResourceAdaptersSubsystemElement createSubsystemElement() {

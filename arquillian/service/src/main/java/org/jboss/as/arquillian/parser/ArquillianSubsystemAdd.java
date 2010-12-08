@@ -61,8 +61,8 @@ public final class ArquillianSubsystemAdd extends AbstractSubsystemAdd<Arquillia
     protected void applyUpdateBootAction(final BootUpdateContext updateContext) {
         log.infof("Activating Arquillian Subsystem");
         ArquillianService.addService(updateContext.getServiceTarget());
-        updateContext.addDeploymentProcessor(new ArquillianRunWithAnnotationProcessor(), Phase.ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR);
-        updateContext.addDeploymentProcessor(new ArquillianDeploymentProcessor(), Phase.ARQUILLIAN_DEPLOYMENT_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ArquillianRunWithAnnotationProcessor(), Phase.ARQUILLIAN_RUNWITH_ANNOTATION_PROCESSOR);
+        updateContext.addDeploymentProcessor(INIT_ME, new ArquillianDeploymentProcessor(), Phase.ARQUILLIAN_DEPLOYMENT_PROCESSOR);
     }
 
 }
