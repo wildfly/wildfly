@@ -30,6 +30,7 @@ import org.jboss.as.osgi.deployment.OSGiDeploymentAttachment;
 import org.jboss.as.osgi.deployment.OSGiDeploymentService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -71,6 +72,11 @@ public class ArquillianDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(final DeploymentUnitContext context) {
+        final ServiceName serviceName = SERVICE_NAME_BASE.append(context.getName());
+        final ServiceController<?> controller = context.getServiceRegistry().getService(serviceName);
+        if(controller != null) {
+            controller.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 
     private class DeploymentTrackerService implements Service<Object>{

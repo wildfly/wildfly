@@ -41,4 +41,8 @@ public class BundleInfoAttachment {
     public static BundleInfo getBundleInfoAttachment(final DeploymentUnitContext context) {
         return context.getAttachment(KEY);
     }
+
+    public static void detachBundleInfo(final DeploymentUnitContext context) {
+        context.removeAttachment(KEY);
+    }
 }

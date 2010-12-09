@@ -27,6 +27,7 @@ import java.util.jar.Manifest;
 
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
@@ -83,5 +84,9 @@ public class BundleInfoAttachmentProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + virtualFile);
             }
         }
+    }
+
+    public void undeploy(DeploymentUnitContext context) {
+        BundleInfoAttachment.detachBundleInfo(context);
     }
 }

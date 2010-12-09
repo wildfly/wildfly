@@ -41,4 +41,8 @@ public class DataSourcesAttachement {
     static void attachDataSources(final DeploymentUnitContext context, final DataSources dataSources) {
         context.putAttachment(ATTACHMENT_KEY, dataSources);
     }
+
+    static void detachDataSources(final DeploymentUnitContext context) {
+        context.removeAttachment(ATTACHMENT_KEY);
+    }
 }

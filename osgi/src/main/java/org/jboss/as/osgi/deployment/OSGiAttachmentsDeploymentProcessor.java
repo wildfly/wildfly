@@ -25,6 +25,7 @@ package org.jboss.as.osgi.deployment;
 import org.jboss.as.deployment.Attachments;
 import org.jboss.as.deployment.module.MountHandle;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceRegistry;
@@ -55,39 +56,42 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnitContext deploymentUnitContext = phaseContext.getDeploymentUnitContext();
 
         // Check if we already have an OSGi deployment
-        Deployment deployment = OSGiDeploymentAttachment.getAttachment(phaseContext);
+        Deployment deployment = OSGiDeploymentAttachment.getAttachment(deploymentUnitContext);
 
-        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, phaseContext.getName());
+        String location = InstallBundleInitiatorService.getLocation(serviceRegistry, deploymentUnitContext.getName());
         VirtualFile virtualFile = phaseContext.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
+
+
         // Check for attached BundleInfo
-        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(phaseContext);
+        BundleInfo info = BundleInfoAttachment.getBundleInfoAttachment(deploymentUnitContext);
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
         }
 
         // Check for attached OSGiMetaData
-        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(phaseContext);
+        OSGiMetaData metadata = OSGiMetaDataAttachment.getOSGiMetaDataAttachment(deploymentUnitContext);
         if (deployment == null && metadata != null) {
             String symbolicName = metadata.getBundleSymbolicName();
             Version version = metadata.getBundleVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(OSGiMetaData.class, metadata);
-            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
         }
 
         // Check for attached XModule
-        XModule resModule = XModuleAttachment.getXModuleAttachment(phaseContext);
+        XModule resModule = XModuleAttachment.getXModuleAttachment(deploymentUnitContext);
         if (deployment == null && resModule != null) {
             String symbolicName = resModule.getName();
             Version version = resModule.getVersion();
             deployment = DeploymentFactory.createDeployment(AbstractVFS.adapt(virtualFile), location, symbolicName, version);
             deployment.addAttachment(XModule.class, resModule);
-            OSGiDeploymentAttachment.attachDeployment(phaseContext, deployment);
+            OSGiDeploymentAttachment.attachDeployment(deploymentUnitContext, deployment);
         }
 
         // Create the {@link OSGiDeploymentService}
@@ -102,5 +106,9 @@ public class OSGiAttachmentsDeploymentProcessor implements DeploymentUnitProcess
 
             OSGiDeploymentService.addService(phaseContext);
         }
+    }
+
+    public void undeploy(DeploymentUnitContext context) {
+        OSGiDeploymentService.removeService(context);
     }
 }

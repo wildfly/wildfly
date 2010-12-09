@@ -87,7 +87,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             URL url = root.toURI().toURL();
             String deploymentName = deploymentRoot.getName().substring(0, deploymentRoot.getName().indexOf(".rar"));
             ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
-            phaseContext.putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+            phaseContext.getDeploymentUnitContext().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
 
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);

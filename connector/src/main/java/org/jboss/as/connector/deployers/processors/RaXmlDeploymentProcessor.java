@@ -74,7 +74,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if(connectorXmlDescriptor == null) {
             return;  // Skip non ra deployments
         }

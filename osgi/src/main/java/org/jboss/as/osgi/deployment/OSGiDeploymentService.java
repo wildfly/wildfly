@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.deployment.DeploymentService;
+import org.jboss.as.deployment.unit.DeploymentPhaseContext;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.osgi.service.BundleContextService;
 import org.jboss.as.osgi.service.BundleManagerService;
@@ -42,6 +43,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -75,13 +77,22 @@ public class OSGiDeploymentService implements Service<Deployment> {
         this.deployment = deployment;
     }
 
-    public static void addService(DeploymentUnitContext context) {
-        addService(context.getBatchBuilder(), OSGiDeploymentAttachment.getAttachment(context), context.getName());
+    public static void addService(DeploymentPhaseContext context) {
+        final DeploymentUnitContext deploymentUnitContext = context.getDeploymentUnitContext();
+        addService(context.getServiceTarget(), OSGiDeploymentAttachment.getAttachment(deploymentUnitContext), deploymentUnitContext.getName());
     }
 
-    public static void addService(BatchBuilder batchBuilder, Deployment deployment, String contextName) {
+    public static void removeService(DeploymentUnitContext context) {
+        final ServiceName serviceName = getServiceName(context.getName());
+        final ServiceController<?> serviceController = context.getServiceRegistry().getService(serviceName);
+        if(serviceController != null) {
+            serviceController.setMode(Mode.REMOVE);
+        }
+    }
+
+    public static void addService(ServiceTarget serviceTarget, Deployment deployment, String contextName) {
         OSGiDeploymentService service = new OSGiDeploymentService(deployment);
-        ServiceBuilder<Deployment> serviceBuilder = batchBuilder.addService(getServiceName(contextName), service);
+        ServiceBuilder<Deployment> serviceBuilder = serviceTarget.addService(getServiceName(contextName), service);
         serviceBuilder.addDependency(BundleContextService.SERVICE_NAME, BundleContext.class, service.injectedBundleContext);
         serviceBuilder.addDependency(BundleManagerService.SERVICE_NAME, BundleManager.class, service.injectedBundleManager);
         serviceBuilder.addDependency(PackageAdminService.SERVICE_NAME);

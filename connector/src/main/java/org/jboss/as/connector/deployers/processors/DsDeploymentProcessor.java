@@ -32,6 +32,7 @@ import org.jboss.as.connector.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.datasources.DataSourceDeploymentService;
 import org.jboss.as.connector.subsystems.datasources.JDBCRARDeployService;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
@@ -46,6 +47,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -71,7 +73,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
      *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
 
         Module module = phaseContext.getAttachment(ModuleDeploymentProcessor.MODULE_ATTACHMENT_KEY);
 
@@ -108,7 +110,7 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if(shouldDeploy) {
-            final ServiceTarget serviceTarget = phaseContext.getBatchBuilder();
+            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             final DataSourceDeploymentService dataSourceDeploymentService = new DataSourceDeploymentService(deploymentName, uniqueJdbcLocalId, uniqueJdbcXAId, datasources, module);
             ServiceBuilder<?> serviceBuilder = serviceTarget.addService(DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName), dataSourceDeploymentService)
@@ -129,8 +131,18 @@ public class DsDeploymentProcessor implements DeploymentUnitProcessor {
             }
             serviceBuilder.install();
         }
+    }
 
-
-
+    public void undeploy(DeploymentUnitContext context) {
+        final ConnectorXmlDescriptor connectorXmlDescriptor = context.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        if(connectorXmlDescriptor == null) {
+            return;
+        }
+        final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
+        final ServiceName serviceName = DataSourceDeploymentService.SERVICE_NAME_BASE.append(deploymentName);
+        final ServiceController<?> serviceController = context.getServiceRegistry().getService(serviceName);
+        if(serviceController != null) {
+            serviceController.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 }

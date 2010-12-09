@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.DependencySpec;
@@ -88,6 +89,9 @@ public class ModuleDeploymentProcessor implements DeploymentUnitProcessor {
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException("Failed to load module: " + moduleIdentifier, e);
         }
+    }
+
+    public void undeploy(DeploymentUnitContext context) {
     }
 
     static class ModuleRemoveListener extends AbstractServiceListener<Void> {

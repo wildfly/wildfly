@@ -28,7 +28,7 @@ public class RarConfigProcessor implements DeploymentUnitProcessor {
      * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if(phaseContext.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
+        if(phaseContext.getDeploymentUnitContext().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
             return;  // Skip non ra deployments
         }
         phaseContext.addToAttachmentList(Attachments.MODULE_DEPENDENCIES, new ModuleDependency(JAVAX_ID, false, false));

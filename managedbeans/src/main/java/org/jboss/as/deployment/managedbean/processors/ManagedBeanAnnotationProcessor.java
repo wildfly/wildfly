@@ -46,6 +46,7 @@ import org.jboss.as.deployment.managedbean.config.ManagedBeanConfigurations;
 import org.jboss.as.deployment.managedbean.config.ResourceConfiguration;
 import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
 import org.jboss.as.deployment.unit.DeploymentPhaseContext;
+import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.jandex.AnnotationInstance;
@@ -133,6 +134,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             managedBeanConfigurations.add(managedBeanConfiguration);
         }
+    }
+
+    public void undeploy(DeploymentUnitContext context) {
     }
 
     private void processLifecycleMethods(final ManagedBeanConfiguration managedBeanConfiguration,  final Class<?> beanClass, final Index index) throws DeploymentUnitProcessingException {

@@ -76,5 +76,6 @@ public class AnnotationIndexProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(final DeploymentUnitContext context) {
+        
     }
 }
