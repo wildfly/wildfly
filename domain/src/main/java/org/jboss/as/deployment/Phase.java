@@ -43,6 +43,17 @@ public enum Phase {
     }
 
     /**
+     * Get the next phase, or {@code null} if none.
+     *
+     * @return the next phase, or {@code null} if there is none
+     */
+    public Phase next() {
+        final int ord = ordinal() + 1;
+        final Phase[] phases = Phase.values();
+        return ord == phases.length ? null : phases[ord];
+    }
+
+    /**
      * Get the attachment key of the {@code DeploymentUnit} attachment that represents the result value
      * of this phase.
      *

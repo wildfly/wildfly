@@ -38,6 +38,7 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.MultipleRemoveListener;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,7 +56,7 @@ import org.jboss.msc.value.InjectedValue;
 final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
-    private final InjectedValue<DeploymentUnit> deploymentUnitContextInjector = new InjectedValue<DeploymentUnit>();
+    private final InjectedValue<DeploymentUnit> deploymentUnitInjector = new InjectedValue<DeploymentUnit>();
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
 
@@ -78,21 +79,23 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     public synchronized void start(final StartContext context) throws StartException {
         final DeployerChains chains = deployerChainsInjector.getValue();
-        final DeploymentUnit deploymentUnitContext = deploymentUnitContextInjector.getValue();
+        final DeploymentUnit deploymentUnit = deploymentUnitInjector.getValue();
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
         final ServiceContainer container = context.getController().getServiceContainer();
         final TrackingServiceTarget serviceTarget = new TrackingServiceTarget(container.subTarget());
-        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), deploymentUnitContext);
+        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), deploymentUnit, phase);
         while (iterator.hasNext()) {
             final DeploymentUnitProcessor processor = iterator.next();
             try {
                 processor.deploy(processorContext);
             } catch (Throwable e) {
-                final StartException cause = new StartException(String.format("Failed to process %s", deploymentUnitContext), e);
+                // Asynchronously remove all services
+                context.asynchronous();
+                final StartException cause = new StartException(String.format("Failed to process phase %s of %s", phase, deploymentUnit), e);
                 while (iterator.hasPrevious()) {
                     final DeploymentUnitProcessor prev = iterator.previous();
-                    safeUndeploy(deploymentUnitContext, prev);
+                    safeUndeploy(deploymentUnit, phase, prev);
                 }
                 final MultipleRemoveListener<Throwable> listener = MultipleRemoveListener.create(new MultipleRemoveListener.Callback<Throwable>() {
                     public void handleDone(final Throwable parameter) {
@@ -110,17 +113,29 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                 return;
             }
         }
+        final Phase nextPhase = phase.next();
+        if (nextPhase != null) {
+            final String name = deploymentUnit.getName();
+            final ServiceName serviceName = Services.DEPLOYMENT_BASE.append(name).append(nextPhase.name());
+            final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(nextPhase);
+            final ServiceBuilder<?> phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
+            phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());
+            phaseServiceBuilder.addDependency(Services.DEPLOYER_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
+            phaseServiceBuilder.addDependency(context.getController().getName());
+            phaseServiceBuilder.install();
+        }
         serviceNames = new HashSet<ServiceName>(serviceTarget.getSet());
     }
 
     public synchronized void stop(final StopContext context) {
-        final DeploymentUnit deploymentUnitContext = deploymentUnitContextInjector.getValue();
+        context.asynchronous();
+        final DeploymentUnit deploymentUnitContext = deploymentUnitInjector.getValue();
         final DeployerChains chains = deployerChainsInjector.getValue();
         final List<DeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<DeploymentUnitProcessor> iterator = list.listIterator();
         while (iterator.hasPrevious()) {
             final DeploymentUnitProcessor prev = iterator.previous();
-            safeUndeploy(deploymentUnitContext, prev);
+            safeUndeploy(deploymentUnitContext, phase, prev);
         }
         final MultipleRemoveListener<LifecycleContext> listener = MultipleRemoveListener.create(context);
         final ServiceContainer container = context.getController().getServiceContainer();
@@ -134,23 +149,23 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         listener.done();
     }
 
-    private static void safeUndeploy(final DeploymentUnit deploymentUnitContext, final DeploymentUnitProcessor prev) {
+    private static void safeUndeploy(final DeploymentUnit deploymentUnit, final Phase phase, final DeploymentUnitProcessor prev) {
         try {
-            prev.undeploy(deploymentUnitContext);
+            prev.undeploy(deploymentUnit);
         } catch (Throwable t) {
-            log.errorf(t, "Deployment unit processor %s unexpectedly threw an exception during undeploy of %s", prev, deploymentUnitContext);
+            log.errorf(t, "Deployment unit processor %s unexpectedly threw an exception during undeploy phase %s of %s", prev, phase, deploymentUnit);
         }
     }
 
     public synchronized T getValue() throws IllegalStateException, IllegalArgumentException {
-        return deploymentUnitContextInjector.getValue().getAttachment(valueKey);
+        return deploymentUnitInjector.getValue().getAttachment(valueKey);
     }
 
     InjectedValue<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
     }
 
-    Injector<DeploymentUnit> getDeploymentUnitContextInjector() {
-        return deploymentUnitContextInjector;
+    Injector<DeploymentUnit> getDeploymentUnitInjector() {
+        return deploymentUnitInjector;
     }
 }

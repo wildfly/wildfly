@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.SimpleAttachable;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -46,6 +47,14 @@ public class DeploymentUnitImpl extends SimpleAttachable implements DeploymentUn
         this.parent = parent;
         this.name = name;
         this.serviceRegistry = serviceRegistry;
+    }
+
+    public ServiceName getServiceName() {
+        if (parent != null) {
+            return parent.getServiceName().append(name);
+        } else {
+            return ServiceName.JBOSS.append("deployment").append(name);
+        }
     }
 
     /** {@inheritDoc} */

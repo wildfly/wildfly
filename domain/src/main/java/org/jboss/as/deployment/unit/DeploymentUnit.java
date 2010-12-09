@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.Attachable;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -30,6 +31,13 @@ import org.jboss.msc.service.ServiceRegistry;
  * deployment.
  */
 public interface DeploymentUnit extends Attachable {
+
+    /**
+     * Get the service name of the root deployment unit service.
+     *
+     * @return the service name
+     */
+    ServiceName getServiceName();
 
     /**
      * Get the deployment unit of the parent (enclosing) deployment.

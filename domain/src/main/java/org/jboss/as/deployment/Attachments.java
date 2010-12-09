@@ -27,11 +27,20 @@ import org.jboss.as.deployment.module.ModuleDependency;
 import org.jboss.as.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Attachments {
+
+    //
+    // GENERAL
+    //
+    /**
+     * A list of service dependencies that must be satisfied before the next deployment phase can begin executing.
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> NEXT_PHASE_DEPS = AttachmentKey.createList(ServiceName.class);
 
     //
     // STRUCTURE

@@ -50,7 +50,7 @@ final class DeploymentUnitService implements Service<DeploymentUnit> {
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
     private final String name;
 
-    private DeploymentUnit deploymentUnitContext;
+    private DeploymentUnit deploymentUnit;
 
     /**
      * Construct a new instance.
@@ -65,13 +65,14 @@ final class DeploymentUnitService implements Service<DeploymentUnit> {
         // Create the first phase deployer
         final ServiceContainer container = context.getController().getServiceContainer();
 
-        deploymentUnitContext = new DeploymentUnitImpl(null, name, new DelegatingServiceRegistry(container));
+        deploymentUnit = new DeploymentUnitImpl(null, name, new DelegatingServiceRegistry(container));
         final ServiceName serviceName = Services.DEPLOYMENT_BASE.append(name).append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
         final DeploymentUnitPhaseService<?> phaseService = DeploymentUnitPhaseService.create(firstPhase);
         final ServiceBuilder<?> phaseServiceBuilder = container.addService(serviceName, phaseService);
         // depend on this service
-        phaseServiceBuilder.addDependency(Services.DEPLOYMENT_BASE.append(name), DeploymentUnit.class, phaseService.getDeploymentUnitContextInjector());
+        phaseServiceBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, phaseService.getDeploymentUnitInjector());
+        phaseServiceBuilder.addDependency(Services.DEPLOYER_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
         phaseServiceBuilder.install();
     }
 
@@ -85,7 +86,7 @@ final class DeploymentUnitService implements Service<DeploymentUnit> {
     }
 
     public synchronized DeploymentUnit getValue() throws IllegalStateException, IllegalArgumentException {
-        return deploymentUnitContext;
+        return deploymentUnit;
     }
 
     Injector<DeployerChains> getDeployerChainsInjector() {

@@ -22,7 +22,9 @@
 
 package org.jboss.as.deployment.unit;
 
+import org.jboss.as.deployment.Phase;
 import org.jboss.as.deployment.SimpleAttachable;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -33,11 +35,17 @@ public final class DeploymentPhaseContextImpl extends SimpleAttachable implement
     private final ServiceTarget serviceTarget;
     private final ServiceRegistry serviceRegistry;
     private final DeploymentUnit deploymentUnitContext;
+    private final Phase phase;
 
-    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext) {
+    public DeploymentPhaseContextImpl(final ServiceTarget serviceTarget, final ServiceRegistry serviceRegistry, final DeploymentUnit deploymentUnitContext, final Phase phase) {
         this.serviceTarget = serviceTarget;
         this.serviceRegistry = serviceRegistry;
         this.deploymentUnitContext = deploymentUnitContext;
+        this.phase = phase;
+    }
+
+    public ServiceName getPhaseServiceName() {
+        return deploymentUnitContext.getServiceName().append(phase.name());
     }
 
     public ServiceTarget getServiceTarget() {

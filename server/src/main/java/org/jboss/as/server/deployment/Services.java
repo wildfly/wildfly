@@ -22,13 +22,16 @@
 
 package org.jboss.as.server.deployment;
 
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Services {
+
     private Services() {}
 
     public static final ServiceName DEPLOYMENT_BASE = ServiceName.JBOSS.append("deployment");
+    public static final ServiceName DEPLOYER_CHAINS = DEPLOYMENT_BASE.append("chains");
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.deployment.unit;
 
 import org.jboss.as.deployment.Attachable;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -37,7 +38,17 @@ import org.jboss.msc.service.ServiceTarget;
 public interface DeploymentPhaseContext extends Attachable {
 
     /**
-     * Get the service target into which this phase should install services.
+     * Get the service name of the current deployment phase.
+     *
+     * @return the deployment phase service name
+     */
+    ServiceName getPhaseServiceName();
+
+    /**
+     * Get the service target into which this phase should install services.  <b>Please note</b> that
+     * services added via this context do <b>not</b> have any implicit dependencies by default; any root-level
+     * deployment services that you add should depend on the service name of the current phase, acquired via
+     * the {@link #getPhaseServiceName()} method.
      *
      * @return the service target
      */
